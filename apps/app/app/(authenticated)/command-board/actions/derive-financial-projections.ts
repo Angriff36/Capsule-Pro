@@ -179,9 +179,8 @@ export async function deriveFinancialProjections(
 
       // Calculate gross profit and margin
       const grossProfit = totalRevenue - totalCosts;
-      const grossProfitMargin = totalRevenue > 0
-        ? (grossProfit / totalRevenue) * 100
-        : 0;
+      const grossProfitMargin =
+        totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0;
 
       // Create projection ID based on period (deterministic)
       const projectionId = `financial-${period}-${tenantId.slice(0, 8)}`;

@@ -1,3 +1,5 @@
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 import { openai } from "@ai-sdk/openai";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
@@ -10,8 +12,7 @@ import {
   type UIMessage,
 } from "ai";
 import { z } from "zod";
-import { existsSync, readFileSync } from "node:fs";
-import { join } from "node:path";
+import { getProjectionsForBoard } from "../../../(authenticated)/command-board/actions/projections";
 import {
   type BoardMutation,
   type DomainCommandStep,
@@ -23,7 +24,6 @@ import {
 } from "../../../(authenticated)/command-board/types/manifest-plan";
 import { createPendingManifestPlan } from "../../../lib/command-board/manifest-plans";
 import { requireTenantId } from "../../../lib/tenant";
-import { getProjectionsForBoard } from "../../../(authenticated)/command-board/actions/projections";
 
 // ---------------------------------------------------------------------------
 // Helper Functions
@@ -47,7 +47,9 @@ interface ProjectionWithLabel {
 /**
  * Helper to get board projections for AI tools with resolved entity labels
  */
-async function getBoardProjections(boardId: string): Promise<ProjectionWithLabel[]> {
+async function getBoardProjections(
+  boardId: string
+): Promise<ProjectionWithLabel[]> {
   const tenantId = await requireTenantId();
   const projections = await getProjectionsForBoard(boardId);
 
@@ -98,7 +100,10 @@ async function getBoardProjections(boardId: string): Promise<ProjectionWithLabel
       select: { id: true, firstName: true, lastName: true },
     });
     for (const e of employees) {
-      entityLabels.set(`employee:${e.id}`, `${e.firstName} ${e.lastName}`.trim());
+      entityLabels.set(
+        `employee:${e.id}`,
+        `${e.firstName} ${e.lastName}`.trim()
+      );
     }
   }
 
@@ -119,10 +124,16 @@ async function getBoardProjections(boardId: string): Promise<ProjectionWithLabel
   if (clientIds.length > 0) {
     const clients = await database.client.findMany({
       where: { tenantId, id: { in: clientIds }, deletedAt: null },
-      select: { id: true, company_name: true, first_name: true, last_name: true },
+      select: {
+        id: true,
+        company_name: true,
+        first_name: true,
+        last_name: true,
+      },
     });
     for (const c of clients) {
-      const nameFallback = `${c.first_name ?? ""} ${c.last_name ?? ""}`.trim() || "Unknown Client";
+      const nameFallback =
+        `${c.first_name ?? ""} ${c.last_name ?? ""}`.trim() || "Unknown Client";
       const label = c.company_name ?? nameFallback;
       entityLabels.set(`client:${c.id}`, label);
     }
@@ -172,12 +183,15 @@ async function getBoardProjections(boardId: string): Promise<ProjectionWithLabel
       select: { id: true, trackingNumber: true },
     });
     for (const s of shipments) {
-      entityLabels.set(`shipment:${s.id}`, s.trackingNumber ?? `Shipment ${s.id.substring(0, 8)}`);
+      entityLabels.set(
+        `shipment:${s.id}`,
+        s.trackingNumber ?? `Shipment ${s.id.substring(0, 8)}`
+      );
     }
   }
 
   // Map projections to include labels
-  return projections.map(p => ({
+  return projections.map((p) => ({
     id: p.id,
     entityId: p.entityId,
     entityType: p.entityType,
@@ -959,7 +973,9 @@ function createBoardTools(params: {
         policyType: z
           .enum(["roles", "overtime", "rates", "all"])
           .optional()
-          .describe("Type of policy to query: roles (all role info), overtime (overtime settings only), rates (pay rates only), all (everything)"),
+          .describe(
+            "Type of policy to query: roles (all role info), overtime (overtime settings only), rates (pay rates only), all (everything)"
+          ),
         roleId: z
           .string()
           .optional()
@@ -1044,11 +1060,14 @@ function createBoardTools(params: {
         "Create a manifest plan to update policy settings such as overtime rules, pay rates, or role configurations. Use this when users want to modify overtime thresholds, change pay rates, or adjust role settings.",
       inputSchema: z.object({
         policyType: z
-          .enum(["overtime_threshold", "overtime_multiplier", "base_rate", "role_settings"])
+          .enum([
+            "overtime_threshold",
+            "overtime_multiplier",
+            "base_rate",
+            "role_settings",
+          ])
           .describe("Type of policy change to make"),
-        roleId: z
-          .string()
-          .describe("The ID of the role to update"),
+        roleId: z.string().describe("The ID of the role to update"),
         currentValue: z
           .union([z.number(), z.string()])
           .describe("The current value (for verification)"),
@@ -1060,7 +1079,13 @@ function createBoardTools(params: {
           .optional()
           .describe("Optional reason for the change"),
       }),
-      execute: async ({ policyType, roleId, currentValue, newValue, reason }) => {
+      execute: async ({
+        policyType,
+        roleId,
+        currentValue,
+        newValue,
+        reason,
+      }) => {
         try {
           if (!boardId) {
             return {
@@ -1157,15 +1182,24 @@ function createBoardTools(params: {
             riskAssessment: {
               level: "low",
               factors: ["Policy modification"],
-              mitigations: ["Change is reversible", "Requires explicit approval"],
+              mitigations: [
+                "Change is reversible",
+                "Requires explicit approval",
+              ],
               affectedEntities: [],
             },
             costImpact: {
               currency: "USD",
               financialDelta: {
                 revenue: 0,
-                cost: policyType === "base_rate" ? (Number(newValue) - actualCurrentValue) * 100 : 0,
-                profit: policyType === "base_rate" ? (actualCurrentValue - Number(newValue)) * 100 : 0,
+                cost:
+                  policyType === "base_rate"
+                    ? (Number(newValue) - actualCurrentValue) * 100
+                    : 0,
+                profit:
+                  policyType === "base_rate"
+                    ? (actualCurrentValue - Number(newValue)) * 100
+                    : 0,
                 marginChange: 0,
               },
             },
@@ -1208,16 +1242,42 @@ function createBoardTools(params: {
       description:
         "Create a simulation scenario to preview changes without affecting the live board. Use when users ask 'what if' questions like 'What if I move this event to next week?' or want to preview the impact of changes before committing.",
       inputSchema: z.object({
-        intent: z.string().min(1).describe("The user's what-if scenario or change to simulate"),
-        targetBoardId: z.string().optional().describe("Optional board ID to simulate on (uses current board if not provided)"),
-        proposedChanges: z.array(z.object({
-          entityType: z.string().describe("Type of entity being changed"),
-          entityId: z.string().optional().describe("ID of entity (if modifying existing)"),
-          changeType: z.enum(["create", "update", "delete", "move"]).describe("Type of change"),
-          description: z.string().describe("Human-readable description of the change"),
-          details: z.record(z.string(), z.unknown()).optional().describe("Additional details about the change"),
-        })).optional().describe("List of proposed changes to simulate"),
-        previewOnly: z.boolean().optional().describe("If true, only preview without creating simulation board"),
+        intent: z
+          .string()
+          .min(1)
+          .describe("The user's what-if scenario or change to simulate"),
+        targetBoardId: z
+          .string()
+          .optional()
+          .describe(
+            "Optional board ID to simulate on (uses current board if not provided)"
+          ),
+        proposedChanges: z
+          .array(
+            z.object({
+              entityType: z.string().describe("Type of entity being changed"),
+              entityId: z
+                .string()
+                .optional()
+                .describe("ID of entity (if modifying existing)"),
+              changeType: z
+                .enum(["create", "update", "delete", "move"])
+                .describe("Type of change"),
+              description: z
+                .string()
+                .describe("Human-readable description of the change"),
+              details: z
+                .record(z.string(), z.unknown())
+                .optional()
+                .describe("Additional details about the change"),
+            })
+          )
+          .optional()
+          .describe("List of proposed changes to simulate"),
+        previewOnly: z
+          .boolean()
+          .optional()
+          .describe("If true, only preview without creating simulation board"),
       }),
       execute: async (input) => {
         const targetBoard = input.targetBoardId ?? boardId;
@@ -1226,7 +1286,8 @@ function createBoardTools(params: {
           return {
             success: false,
             error: "No board available for simulation",
-            message: "Please specify a board or ensure you're working on an active command board.",
+            message:
+              "Please specify a board or ensure you're working on an active command board.",
           };
         }
 
@@ -1249,11 +1310,16 @@ function createBoardTools(params: {
           }
 
           // Import simulation functions dynamically to avoid circular deps
-          const { forkCommandBoard } = await import("../../../(authenticated)/command-board/actions/boards");
+          const { forkCommandBoard } = await import(
+            "../../../(authenticated)/command-board/actions/boards"
+          );
 
           // Create a simulation fork (forkCommandBoard takes sourceBoardId, simulationName)
           const simulationName = `Simulation: ${input.intent.substring(0, 50)}${input.intent.length > 50 ? "..." : ""}`;
-          const forkResult = await forkCommandBoard(targetBoard, simulationName);
+          const forkResult = await forkCommandBoard(
+            targetBoard,
+            simulationName
+          );
 
           if (!forkResult.success) {
             return {
@@ -1301,21 +1367,53 @@ function createBoardTools(params: {
       description:
         "Analyze and optimize event scheduling, staff assignments, and workload distribution. Use when users ask to balance workload, optimize schedules, resolve scheduling conflicts, or improve efficiency.",
       inputSchema: z.object({
-        optimizationType: z.enum(["workload_balance", "conflict_resolution", "efficiency", "timeline_compression"]).describe("Type of optimization to perform"),
-        targetEventIds: z.array(z.string()).optional().describe("Specific events to optimize (all board events if not provided)"),
-        constraints: z.object({
-          respectBlackoutDates: z.boolean().optional().describe("Don't move events to blackout dates"),
-          preserveStaffPreferences: z.boolean().optional().describe("Try to keep preferred staff assignments"),
-          maxDateShift: z.number().optional().describe("Maximum days to move an event"),
-          minStaffPerEvent: z.number().optional().describe("Minimum staff required per event"),
-        }).optional().describe("Optimization constraints"),
-        previewOnly: z.boolean().optional().describe("If true, only preview without making changes"),
+        optimizationType: z
+          .enum([
+            "workload_balance",
+            "conflict_resolution",
+            "efficiency",
+            "timeline_compression",
+          ])
+          .describe("Type of optimization to perform"),
+        targetEventIds: z
+          .array(z.string())
+          .optional()
+          .describe(
+            "Specific events to optimize (all board events if not provided)"
+          ),
+        constraints: z
+          .object({
+            respectBlackoutDates: z
+              .boolean()
+              .optional()
+              .describe("Don't move events to blackout dates"),
+            preserveStaffPreferences: z
+              .boolean()
+              .optional()
+              .describe("Try to keep preferred staff assignments"),
+            maxDateShift: z
+              .number()
+              .optional()
+              .describe("Maximum days to move an event"),
+            minStaffPerEvent: z
+              .number()
+              .optional()
+              .describe("Minimum staff required per event"),
+          })
+          .optional()
+          .describe("Optimization constraints"),
+        previewOnly: z
+          .boolean()
+          .optional()
+          .describe("If true, only preview without making changes"),
       }),
       execute: async (input) => {
         try {
           // Get events from board context
           const projections = boardId ? await getBoardProjections(boardId) : [];
-          const eventProjections = projections.filter(p => p.entityType === "event");
+          const eventProjections = projections.filter(
+            (p) => p.entityType === "event"
+          );
 
           if (eventProjections.length === 0) {
             return {
@@ -1326,17 +1424,23 @@ function createBoardTools(params: {
           }
 
           // Determine conflict types to check based on optimization type
-          const conflictTypesByOptimization: Record<string, ("scheduling" | "staff" | "inventory" | "timeline" | "venue")[]> = {
+          const conflictTypesByOptimization: Record<
+            string,
+            ("scheduling" | "staff" | "inventory" | "timeline" | "venue")[]
+          > = {
             workload_balance: ["scheduling", "staff"],
             conflict_resolution: ["scheduling", "staff", "venue", "timeline"],
             efficiency: ["timeline", "inventory"],
             timeline_compression: ["timeline", "scheduling"],
           };
 
-          const entityTypes = conflictTypesByOptimization[input.optimizationType] || ["scheduling", "staff"];
+          const entityTypes = conflictTypesByOptimization[
+            input.optimizationType
+          ] || ["scheduling", "staff"];
 
           // Call conflicts detect API to get real data
-          const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
+          const baseUrl =
+            process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
           const response = await fetch(`${baseUrl}/conflicts/detect`, {
             method: "POST",
             headers: {
@@ -1376,15 +1480,28 @@ function createBoardTools(params: {
           let conflicts: Conflict[] = [];
           let conflictSummary: {
             total: number;
-            bySeverity: { low: number; medium: number; high: number; critical: number };
-          } = { total: 0, bySeverity: { low: 0, medium: 0, high: 0, critical: 0 } };
+            bySeverity: {
+              low: number;
+              medium: number;
+              high: number;
+              critical: number;
+            };
+          } = {
+            total: 0,
+            bySeverity: { low: 0, medium: 0, high: 0, critical: 0 },
+          };
 
           if (response.ok) {
             const result = (await response.json()) as {
               conflicts: Conflict[];
               summary: {
                 total: number;
-                bySeverity: { low: number; medium: number; high: number; critical: number };
+                bySeverity: {
+                  low: number;
+                  medium: number;
+                  high: number;
+                  critical: number;
+                };
               };
             };
             conflicts = result.conflicts || [];
@@ -1402,7 +1519,9 @@ function createBoardTools(params: {
           }
 
           // Filter conflicts by target events if specified
-          const targetEventIdSet = input.targetEventIds ? new Set(input.targetEventIds) : null;
+          const targetEventIdSet = input.targetEventIds
+            ? new Set(input.targetEventIds)
+            : null;
           const relevantConflicts = targetEventIdSet
             ? conflicts.filter((c) =>
                 c.affectedEntities.some(
@@ -1428,7 +1547,9 @@ function createBoardTools(params: {
 
           for (const conflict of relevantConflicts) {
             // Find the primary event entity for this conflict
-            const eventEntity = conflict.affectedEntities.find((e) => e.type === "event");
+            const eventEntity = conflict.affectedEntities.find(
+              (e) => e.type === "event"
+            );
             const eventId = eventEntity?.id || "unknown";
             const eventName = eventEntity?.name || "Unknown Event";
 
@@ -1446,7 +1567,8 @@ function createBoardTools(params: {
               conflictId: conflict.id,
               conflictType: conflict.type,
               current: conflict.description,
-              suggested: conflict.suggestedAction || "Review and resolve the conflict",
+              suggested:
+                conflict.suggestedAction || "Review and resolve the conflict",
               reason: conflict.title,
               impact: impactMap[conflict.severity] || "medium",
               resolutionOptions: conflict.resolutionOptions,
@@ -1457,7 +1579,9 @@ function createBoardTools(params: {
           const analysis = {
             totalEvents: eventProjections.length,
             targetEvents: input.targetEventIds
-              ? eventProjections.filter((p) => input.targetEventIds?.includes(p.entityId))
+              ? eventProjections.filter((p) =>
+                  input.targetEventIds?.includes(p.entityId)
+                )
               : eventProjections,
             optimizationType: input.optimizationType,
             conflictSummary,
@@ -1507,29 +1631,54 @@ function createBoardTools(params: {
       description:
         "Automatically generate prep task timeline for events. Use when users need prep schedules, cooking timelines, or task breakdowns for upcoming events.",
       inputSchema: z.object({
-        eventIds: z.array(z.string()).optional().describe("Specific events to generate prep for (all board events if not provided)"),
-        leadTimeDays: z.number().min(1).max(14).optional().describe("How many days before event to start prep"),
-        includeRecipeBreakdown: z.boolean().optional().describe("Include per-recipe prep tasks"),
-        groupByStation: z.boolean().optional().describe("Group tasks by kitchen station"),
-        createTasks: z.boolean().optional().describe("If true, create actual prep tasks in the system"),
+        eventIds: z
+          .array(z.string())
+          .optional()
+          .describe(
+            "Specific events to generate prep for (all board events if not provided)"
+          ),
+        leadTimeDays: z
+          .number()
+          .min(1)
+          .max(14)
+          .optional()
+          .describe("How many days before event to start prep"),
+        includeRecipeBreakdown: z
+          .boolean()
+          .optional()
+          .describe("Include per-recipe prep tasks"),
+        groupByStation: z
+          .boolean()
+          .optional()
+          .describe("Group tasks by kitchen station"),
+        createTasks: z
+          .boolean()
+          .optional()
+          .describe("If true, create actual prep tasks in the system"),
       }),
       execute: async (input) => {
         try {
-          const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
+          const baseUrl =
+            process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
 
           // Get events from board
           const projections = boardId ? await getBoardProjections(boardId) : [];
-          const eventProjections = projections.filter(p => p.entityType === "event");
+          const eventProjections = projections.filter(
+            (p) => p.entityType === "event"
+          );
 
           const targetEvents = input.eventIds
-            ? eventProjections.filter(p => input.eventIds?.includes(p.entityId))
+            ? eventProjections.filter((p) =>
+                input.eventIds?.includes(p.entityId)
+              )
             : eventProjections;
 
           if (targetEvents.length === 0) {
             return {
               success: false,
               error: "No events found",
-              message: "No events on the board. Add events first to generate prep timelines.",
+              message:
+                "No events on the board. Add events first to generate prep timelines.",
             };
           }
 
@@ -1562,38 +1711,51 @@ function createBoardTools(params: {
           }
 
           const prepTimeline = [];
-          const allGeneratedTasks: Array<{ eventId: string; tasks: GeneratedPrepTask[] }> = [];
+          const allGeneratedTasks: Array<{
+            eventId: string;
+            tasks: GeneratedPrepTask[];
+          }> = [];
 
           for (const projection of targetEvents) {
-            const generateResponse = await fetch(`${baseUrl}/api/kitchen/ai/bulk-generate/prep-tasks`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                ...(authCookie ? { Cookie: authCookie } : {}),
-              },
-              body: JSON.stringify({
-                eventId: projection.entityId,
-                options: {
-                  includeKitchenTasks: input.includeRecipeBreakdown ?? true,
-                  priorityStrategy: "due_date" as const,
+            const generateResponse = await fetch(
+              `${baseUrl}/api/kitchen/ai/bulk-generate/prep-tasks`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  ...(authCookie ? { Cookie: authCookie } : {}),
                 },
-              }),
-            });
+                body: JSON.stringify({
+                  eventId: projection.entityId,
+                  options: {
+                    includeKitchenTasks: input.includeRecipeBreakdown ?? true,
+                    priorityStrategy: "due_date" as const,
+                  },
+                }),
+              }
+            );
 
             if (!generateResponse.ok) {
               const errorText = await generateResponse.text();
-              console.error(`[AI Chat] Prep generation API error for event ${projection.entityId}:`, errorText);
+              console.error(
+                `[AI Chat] Prep generation API error for event ${projection.entityId}:`,
+                errorText
+              );
               // Continue with other events even if one fails
               continue;
             }
 
-            const generateData = (await generateResponse.json()) as BulkGenerateResponse;
+            const generateData =
+              (await generateResponse.json()) as BulkGenerateResponse;
             const tasks = generateData.tasks || [];
 
             allGeneratedTasks.push({ eventId: projection.entityId, tasks });
 
             // Calculate estimated hours from task minutes
-            const estimatedMinutes = tasks.reduce((sum, t) => sum + (t.estimatedMinutes || 0), 0);
+            const estimatedMinutes = tasks.reduce(
+              (sum, t) => sum + (t.estimatedMinutes || 0),
+              0
+            );
             const estimatedHours = Math.ceil(estimatedMinutes / 60) || 0;
 
             // Group tasks by day offset (relative to event date)
@@ -1601,7 +1763,9 @@ function createBoardTools(params: {
             for (const task of tasks) {
               const dueDate = new Date(task.dueByDate);
               // Calculate day offset - this is approximate without the actual event date
-              const dayKey = Math.floor(dueDate.getTime() / (1000 * 60 * 60 * 24));
+              const dayKey = Math.floor(
+                dueDate.getTime() / (1000 * 60 * 60 * 24)
+              );
               if (!tasksByDay[dayKey]) tasksByDay[dayKey] = [];
               tasksByDay[dayKey].push(task);
             }
@@ -1622,9 +1786,11 @@ function createBoardTools(params: {
 
             prepTimeline.push({
               eventId: projection.entityId,
-              eventName: projection.label ?? `Event ${projection.entityId.substring(0, 8)}`,
+              eventName:
+                projection.label ??
+                `Event ${projection.entityId.substring(0, 8)}`,
               batchId: generateData.batchId,
-              prepTasks: tasks.map(t => ({
+              prepTasks: tasks.map((t) => ({
                 name: t.name,
                 taskType: t.taskType,
                 station: t.station,
@@ -1646,14 +1812,17 @@ function createBoardTools(params: {
             for (const { eventId, tasks } of allGeneratedTasks) {
               if (tasks.length === 0) continue;
 
-              const saveResponse = await fetch(`${baseUrl}/api/kitchen/ai/bulk-generate/prep-tasks/save`, {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json",
-                  ...(authCookie ? { Cookie: authCookie } : {}),
-                },
-                body: JSON.stringify({ eventId, tasks }),
-              });
+              const saveResponse = await fetch(
+                `${baseUrl}/api/kitchen/ai/bulk-generate/prep-tasks/save`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    ...(authCookie ? { Cookie: authCookie } : {}),
+                  },
+                  body: JSON.stringify({ eventId, tasks }),
+                }
+              );
 
               if (saveResponse.ok) {
                 const saveData = await saveResponse.json();
@@ -1661,7 +1830,10 @@ function createBoardTools(params: {
               }
             }
 
-            const totalCreated = saveResults.reduce((sum, r) => sum + (r.created || 0), 0);
+            const totalCreated = saveResults.reduce(
+              (sum, r) => sum + (r.created || 0),
+              0
+            );
 
             return {
               success: true,
@@ -1671,7 +1843,10 @@ function createBoardTools(params: {
               summary: {
                 totalEvents: targetEvents.length,
                 totalTasksCreated: totalCreated,
-                estimatedTotalHours: prepTimeline.reduce((acc, e) => acc + e.estimatedHours, 0),
+                estimatedTotalHours: prepTimeline.reduce(
+                  (acc, e) => acc + e.estimatedHours,
+                  0
+                ),
               },
               nextSteps: [
                 "Review the created prep tasks on the command board",
@@ -1688,18 +1863,26 @@ function createBoardTools(params: {
             message: `Generated prep timeline preview for ${targetEvents.length} events.`,
             summary: {
               totalEvents: targetEvents.length,
-              totalTasks: prepTimeline.reduce((acc, e) => acc + e.prepTasks.length, 0),
-              estimatedTotalHours: prepTimeline.reduce((acc, e) => acc + e.estimatedHours, 0),
+              totalTasks: prepTimeline.reduce(
+                (acc, e) => acc + e.prepTasks.length,
+                0
+              ),
+              estimatedTotalHours: prepTimeline.reduce(
+                (acc, e) => acc + e.estimatedHours,
+                0
+              ),
             },
             nextSteps: [
               "Review the timeline for each event",
               "Say 'create these prep tasks' to add them to the system",
               "Tasks will appear on the command board linked to events",
             ],
-            manifestPlanHint: input.createTasks ? undefined : {
-              domainCommand: "create_prep_tasks",
-              requiresApproval: true,
-            },
+            manifestPlanHint: input.createTasks
+              ? undefined
+              : {
+                  domainCommand: "create_prep_tasks",
+                  requiresApproval: true,
+                },
           };
         } catch (error) {
           console.error("[AI Chat] Prep generation failed:", error);
@@ -1719,10 +1902,24 @@ function createBoardTools(params: {
       description:
         "Automatically generate purchasing list based on upcoming events and current inventory. Use when users need order suggestions, inventory projections, or procurement plans.",
       inputSchema: z.object({
-        eventIds: z.array(z.string()).optional().describe("Specific events to include (all board events if not provided)"),
-        includeLowStock: z.boolean().optional().describe("Also include items that are below reorder level"),
-        groupByVendor: z.boolean().optional().describe("Group purchase items by vendor/supplier"),
-        createPurchaseOrder: z.boolean().optional().describe("If true, create a draft purchase order"),
+        eventIds: z
+          .array(z.string())
+          .optional()
+          .describe(
+            "Specific events to include (all board events if not provided)"
+          ),
+        includeLowStock: z
+          .boolean()
+          .optional()
+          .describe("Also include items that are below reorder level"),
+        groupByVendor: z
+          .boolean()
+          .optional()
+          .describe("Group purchase items by vendor/supplier"),
+        createPurchaseOrder: z
+          .boolean()
+          .optional()
+          .describe("If true, create a draft purchase order"),
       }),
       execute: async (input) => {
         try {
@@ -1730,20 +1927,34 @@ function createBoardTools(params: {
 
           // Get events from board
           const projections = boardId ? await getBoardProjections(boardId) : [];
-          const eventProjections = projections.filter(p => p.entityType === "event");
+          const eventProjections = projections.filter(
+            (p) => p.entityType === "event"
+          );
 
           const targetEventIds = input.eventIds
-            ? eventProjections.filter(p => input.eventIds?.includes(p.entityId)).map(p => p.entityId)
-            : eventProjections.map(p => p.entityId);
+            ? eventProjections
+                .filter((p) => input.eventIds?.includes(p.entityId))
+                .map((p) => p.entityId)
+            : eventProjections.map((p) => p.entityId);
 
           if (targetEventIds.length === 0) {
             return {
               success: true,
               preview: true,
-              purchaseList: { eventBased: [], lowStockItems: [], vendorGroups: undefined },
+              purchaseList: {
+                eventBased: [],
+                lowStockItems: [],
+                vendorGroups: undefined,
+              },
               totalEstimatedCost: 0,
-              summary: { eventsCovered: 0, totalItems: 0, lowStockItems: 0, estimatedCost: 0 },
-              message: "No events found on the board to generate purchase list.",
+              summary: {
+                eventsCovered: 0,
+                totalItems: 0,
+                lowStockItems: 0,
+                estimatedCost: 0,
+              },
+              message:
+                "No events found on the board to generate purchase list.",
               nextSteps: ["Add events to the command board first"],
             };
           }
@@ -1753,7 +1964,7 @@ function createBoardTools(params: {
             where: { tenantId, id: { in: targetEventIds }, deletedAt: null },
             select: { id: true, title: true, guestCount: true },
           });
-          const eventMap = new Map(events.map(e => [e.id, e]));
+          const eventMap = new Map(events.map((e) => [e.id, e]));
 
           // 2. Get event_dishes for those events
           type EventDishRow = {
@@ -1773,26 +1984,41 @@ function createBoardTools(params: {
             return {
               success: true,
               preview: true,
-              purchaseList: { eventBased: [], lowStockItems: [], vendorGroups: undefined },
+              purchaseList: {
+                eventBased: [],
+                lowStockItems: [],
+                vendorGroups: undefined,
+              },
               totalEstimatedCost: 0,
-              summary: { eventsCovered: events.length, totalItems: 0, lowStockItems: 0, estimatedCost: 0 },
+              summary: {
+                eventsCovered: events.length,
+                totalItems: 0,
+                lowStockItems: 0,
+                estimatedCost: 0,
+              },
               message: `Found ${events.length} events but no dishes linked. Add dishes to events to generate purchase suggestions.`,
               nextSteps: ["Link dishes to events via menus"],
             };
           }
 
           // 3. Get dishes with recipeId
-          const dishIds = [...new Set(eventDishes.map(ed => ed.dish_id))];
+          const dishIds = [...new Set(eventDishes.map((ed) => ed.dish_id))];
           const dishes = await database.dish.findMany({
             where: { tenantId, id: { in: dishIds }, deletedAt: null },
             select: { id: true, recipeId: true, name: true },
           });
-          const dishMap = new Map(dishes.map(d => [d.id, d]));
-          const recipeIds = [...new Set(dishes.map(d => d.recipeId).filter(Boolean))] as string[];
+          const dishMap = new Map(dishes.map((d) => [d.id, d]));
+          const recipeIds = [
+            ...new Set(dishes.map((d) => d.recipeId).filter(Boolean)),
+          ] as string[];
 
           // 4. Get latest RecipeVersion for each recipe
           const recipeVersions = await database.$queryRaw<
-            Array<{ recipe_id: string; version_number: number; yield_quantity: number }>
+            Array<{
+              recipe_id: string;
+              version_number: number;
+              yield_quantity: number;
+            }>
           >`
             SELECT DISTINCT ON (recipe_id) recipe_id, version_number, yield_quantity
             FROM tenant_kitchen.recipe_versions
@@ -1801,22 +2027,34 @@ function createBoardTools(params: {
             AND deleted_at IS NULL
             ORDER BY recipe_id, version_number DESC
           `;
-          const recipeVersionMap = new Map(recipeVersions.map(rv => [rv.recipe_id, rv]));
+          const recipeVersionMap = new Map(
+            recipeVersions.map((rv) => [rv.recipe_id, rv])
+          );
 
           // 5. Get RecipeIngredients for those recipe versions
-          const versionIds = recipeVersions.map(rv => rv.recipe_id);
+          const versionIds = recipeVersions.map((rv) => rv.recipe_id);
           const recipeIngredients = await database.recipeIngredient.findMany({
-            where: { tenantId, recipeVersionId: { in: versionIds }, deletedAt: null },
-            select: { recipeVersionId: true, ingredientId: true, quantity: true },
+            where: {
+              tenantId,
+              recipeVersionId: { in: versionIds },
+              deletedAt: null,
+            },
+            select: {
+              recipeVersionId: true,
+              ingredientId: true,
+              quantity: true,
+            },
           });
 
           // 6. Get Ingredient details
-          const ingredientIds = [...new Set(recipeIngredients.map(ri => ri.ingredientId))];
+          const ingredientIds = [
+            ...new Set(recipeIngredients.map((ri) => ri.ingredientId)),
+          ];
           const ingredients = await database.ingredient.findMany({
             where: { tenantId, id: { in: ingredientIds }, deletedAt: null },
             select: { id: true, name: true, category: true },
           });
-          const ingredientMap = new Map(ingredients.map(i => [i.id, i]));
+          const ingredientMap = new Map(ingredients.map((i) => [i.id, i]));
 
           // 7. Get InventoryItems for stock levels (match by name)
           const inventoryItems = await database.inventoryItem.findMany({
@@ -1833,7 +2071,7 @@ function createBoardTools(params: {
           });
 
           // Build a case-insensitive name to inventory item map
-          const inventoryByName = new Map<string, typeof inventoryItems[0]>();
+          const inventoryByName = new Map<string, (typeof inventoryItems)[0]>();
           for (const item of inventoryItems) {
             inventoryByName.set(item.name.toLowerCase(), item);
           }
@@ -1853,7 +2091,16 @@ function createBoardTools(params: {
             eventId: string;
             eventName: string;
             estimatedGuests: number;
-            items: Array<{ category: string; items: Array<{ name: string; quantity: number; unit: string; estimatedCost: number; currentStock: number }> }>;
+            items: Array<{
+              category: string;
+              items: Array<{
+                name: string;
+                quantity: number;
+                unit: string;
+                estimatedCost: number;
+                currentStock: number;
+              }>;
+            }>;
             totalEstimated: number;
           }> = [];
 
@@ -1863,7 +2110,7 @@ function createBoardTools(params: {
           for (const eventDish of eventDishes) {
             const event = eventMap.get(eventDish.event_id);
             const dish = dishMap.get(eventDish.dish_id);
-            if (!event || !dish?.recipeId) continue;
+            if (!(event && dish?.recipeId)) continue;
 
             const recipeVersion = recipeVersionMap.get(dish.recipeId);
             if (!recipeVersion) continue;
@@ -1873,7 +2120,9 @@ function createBoardTools(params: {
             const servingsMultiplier = guestCount / yieldQuantity;
 
             // Get ingredients for this recipe version
-            const dishIngredients = recipeIngredients.filter(ri => ri.recipeVersionId === dish.recipeId);
+            const dishIngredients = recipeIngredients.filter(
+              (ri) => ri.recipeVersionId === dish.recipeId
+            );
 
             for (const ri of dishIngredients) {
               const ingredient = ingredientMap.get(ri.ingredientId);
@@ -1887,7 +2136,9 @@ function createBoardTools(params: {
                 existing.requiredQuantity += requiredQty;
               } else {
                 // Try to find matching inventory item
-                const invItem = inventoryByName.get(ingredient.name.toLowerCase());
+                const invItem = inventoryByName.get(
+                  ingredient.name.toLowerCase()
+                );
                 aggregatedNeeds.set(key, {
                   name: ingredient.name,
                   category: ingredient.category,
@@ -1902,10 +2153,22 @@ function createBoardTools(params: {
           }
 
           // Calculate suggested orders and group by category
-          const categoryGroups = new Map<string, Array<{ name: string; quantity: number; unit: string; estimatedCost: number; currentStock: number }>>();
+          const categoryGroups = new Map<
+            string,
+            Array<{
+              name: string;
+              quantity: number;
+              unit: string;
+              estimatedCost: number;
+              currentStock: number;
+            }>
+          >();
 
           for (const need of aggregatedNeeds.values()) {
-            const shortfall = Math.max(0, need.requiredQuantity - need.currentQuantity);
+            const shortfall = Math.max(
+              0,
+              need.requiredQuantity - need.currentQuantity
+            );
             need.suggestedOrder = shortfall;
             const estimatedCost = shortfall * need.unitCost;
 
@@ -1923,7 +2186,9 @@ function createBoardTools(params: {
 
           // Group by event for response structure
           for (const event of events) {
-            const eventDishesForEvent = eventDishes.filter(ed => ed.event_id === event.id);
+            const eventDishesForEvent = eventDishes.filter(
+              (ed) => ed.event_id === event.id
+            );
             const hasDishes = eventDishesForEvent.length > 0;
 
             eventBasedPurchases.push({
@@ -1931,13 +2196,20 @@ function createBoardTools(params: {
               eventName: event.title,
               estimatedGuests: event.guestCount,
               items: hasDishes
-                ? Array.from(categoryGroups.entries()).map(([category, items]) => ({
-                    category,
-                    items: items.filter(i => i.quantity > 0),
-                  })).filter(g => g.items.length > 0)
+                ? Array.from(categoryGroups.entries())
+                    .map(([category, items]) => ({
+                      category,
+                      items: items.filter((i) => i.quantity > 0),
+                    }))
+                    .filter((g) => g.items.length > 0)
                 : [],
-              totalEstimated: Array.from(aggregatedNeeds.values())
-                .reduce((sum, n) => sum + Math.max(0, n.requiredQuantity - n.currentQuantity) * n.unitCost, 0),
+              totalEstimated: Array.from(aggregatedNeeds.values()).reduce(
+                (sum, n) =>
+                  sum +
+                  Math.max(0, n.requiredQuantity - n.currentQuantity) *
+                    n.unitCost,
+                0
+              ),
             });
           }
 
@@ -1952,14 +2224,18 @@ function createBoardTools(params: {
 
           if (input.includeLowStock) {
             const lowStock = inventoryItems.filter(
-              item => Number(item.parLevel) > 0 && Number(item.quantityOnHand) < Number(item.parLevel)
+              (item) =>
+                Number(item.parLevel) > 0 &&
+                Number(item.quantityOnHand) < Number(item.parLevel)
             );
-            lowStockItems = lowStock.map(item => ({
+            lowStockItems = lowStock.map((item) => ({
               itemId: item.id,
               itemName: item.name,
               currentQuantity: Number(item.quantityOnHand),
               reorderLevel: Number(item.parLevel),
-              suggestedOrder: Math.ceil(Number(item.parLevel) - Number(item.quantityOnHand)),
+              suggestedOrder: Math.ceil(
+                Number(item.parLevel) - Number(item.quantityOnHand)
+              ),
             }));
           }
 
@@ -1967,18 +2243,26 @@ function createBoardTools(params: {
           let vendorGroups: Record<string, string[]> | undefined;
           if (input.groupByVendor) {
             // Get suppliers
-            const supplierIds = [...new Set(inventoryItems.map(i => i.supplierId).filter(Boolean))] as string[];
+            const supplierIds = [
+              ...new Set(
+                inventoryItems.map((i) => i.supplierId).filter(Boolean)
+              ),
+            ] as string[];
             if (supplierIds.length > 0) {
               const suppliers = await database.inventorySupplier.findMany({
                 where: { tenantId, id: { in: supplierIds } },
                 select: { id: true, name: true },
               });
-              const supplierMap = new Map(suppliers.map(s => [s.id, s.name]));
+              const supplierMap = new Map(suppliers.map((s) => [s.id, s.name]));
 
               vendorGroups = {};
               for (const item of inventoryItems) {
-                if (item.supplierId && aggregatedNeeds.has(item.name.toLowerCase())) {
-                  const supplierName = supplierMap.get(item.supplierId) || "Unknown Supplier";
+                if (
+                  item.supplierId &&
+                  aggregatedNeeds.has(item.name.toLowerCase())
+                ) {
+                  const supplierName =
+                    supplierMap.get(item.supplierId) || "Unknown Supplier";
                   if (!vendorGroups[supplierName]) {
                     vendorGroups[supplierName] = [];
                   }
@@ -1994,8 +2278,14 @@ function createBoardTools(params: {
             vendorGroups,
           };
 
-          const totalEstimatedCost = Array.from(aggregatedNeeds.values())
-            .reduce((sum, n) => sum + Math.max(0, n.requiredQuantity - n.currentQuantity) * n.unitCost, 0);
+          const totalEstimatedCost = Array.from(
+            aggregatedNeeds.values()
+          ).reduce(
+            (sum, n) =>
+              sum +
+              Math.max(0, n.requiredQuantity - n.currentQuantity) * n.unitCost,
+            0
+          );
 
           if (input.createPurchaseOrder) {
             return {
@@ -2015,8 +2305,10 @@ function createBoardTools(params: {
             };
           }
 
-          const totalItems = Array.from(categoryGroups.values())
-            .reduce((sum, items) => sum + items.filter(i => i.quantity > 0).length, 0);
+          const totalItems = Array.from(categoryGroups.values()).reduce(
+            (sum, items) => sum + items.filter((i) => i.quantity > 0).length,
+            0
+          );
 
           return {
             success: true,
@@ -2054,14 +2346,31 @@ function createBoardTools(params: {
       description:
         "Generate payroll for a specific pay period. Use when users need to run payroll, calculate employee wages, or view payroll summaries for approval.",
       inputSchema: z.object({
-        periodStart: z.string().describe("Start date of the pay period (ISO date string, e.g., '2026-02-01')"),
-        periodEnd: z.string().describe("End date of the pay period (ISO date string, e.g., '2026-02-15')"),
-        jurisdiction: z.string().optional().describe("Tax jurisdiction (e.g., 'US', 'CA'). Defaults to 'US'"),
-        previewOnly: z.boolean().optional().describe("If true, return preview without persisting. Default: false"),
+        periodStart: z
+          .string()
+          .describe(
+            "Start date of the pay period (ISO date string, e.g., '2026-02-01')"
+          ),
+        periodEnd: z
+          .string()
+          .describe(
+            "End date of the pay period (ISO date string, e.g., '2026-02-15')"
+          ),
+        jurisdiction: z
+          .string()
+          .optional()
+          .describe("Tax jurisdiction (e.g., 'US', 'CA'). Defaults to 'US'"),
+        previewOnly: z
+          .boolean()
+          .optional()
+          .describe(
+            "If true, return preview without persisting. Default: false"
+          ),
       }),
       execute: async (input) => {
         try {
-          const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
+          const baseUrl =
+            process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
 
           // Validate date range
           const startDate = new Date(input.periodStart);
@@ -2131,7 +2440,8 @@ function createBoardTools(params: {
             return {
               success: false,
               error: "Payroll generation failed",
-              message: "The payroll calculation encountered an error. Please check time entries and employee data.",
+              message:
+                "The payroll calculation encountered an error. Please check time entries and employee data.",
             };
           }
 
@@ -2195,17 +2505,34 @@ function createBoardTools(params: {
       description:
         "Create a staff shift for an employee. Use when users need to schedule staff, assign shifts, or add working hours for employees.",
       inputSchema: z.object({
-        employeeId: z.string().describe("ID of the employee to assign the shift to"),
-        date: z.string().describe("Date of the shift (ISO date string, e.g., '2026-02-20')"),
-        startTime: z.string().describe("Start time of the shift (HH:MM format, e.g., '09:00')"),
-        endTime: z.string().describe("End time of the shift (HH:MM format, e.g., '17:00')"),
-        locationId: z.string().describe("ID of the location where the shift takes place"),
-        role: z.string().optional().describe("Role for this shift (e.g., 'Line Cook', 'Prep Cook')"),
-        notes: z.string().optional().describe("Additional notes about the shift"),
+        employeeId: z
+          .string()
+          .describe("ID of the employee to assign the shift to"),
+        date: z
+          .string()
+          .describe("Date of the shift (ISO date string, e.g., '2026-02-20')"),
+        startTime: z
+          .string()
+          .describe("Start time of the shift (HH:MM format, e.g., '09:00')"),
+        endTime: z
+          .string()
+          .describe("End time of the shift (HH:MM format, e.g., '17:00')"),
+        locationId: z
+          .string()
+          .describe("ID of the location where the shift takes place"),
+        role: z
+          .string()
+          .optional()
+          .describe("Role for this shift (e.g., 'Line Cook', 'Prep Cook')"),
+        notes: z
+          .string()
+          .optional()
+          .describe("Additional notes about the shift"),
       }),
       execute: async (input) => {
         try {
-          const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
+          const baseUrl =
+            process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
 
           // Parse date and times to create timestamps
           const shiftDate = new Date(input.date);
@@ -2249,7 +2576,8 @@ function createBoardTools(params: {
           }
 
           // Check for shift duration warning (more than 12 hours)
-          const shiftDurationHours = (shiftEnd.getTime() - shiftStart.getTime()) / (1000 * 60 * 60);
+          const shiftDurationHours =
+            (shiftEnd.getTime() - shiftStart.getTime()) / (1000 * 60 * 60);
           const durationWarning =
             shiftDurationHours > 12
               ? " Warning: This shift is longer than 12 hours."
@@ -2287,7 +2615,9 @@ function createBoardTools(params: {
 
           // Find a schedule for the target date
           const schedule = schedulesData.schedules.find((s) => {
-            const scheduleDate = new Date(s.schedule_date).toISOString().split("T")[0];
+            const scheduleDate = new Date(s.schedule_date)
+              .toISOString()
+              .split("T")[0];
             return scheduleDate === targetDateStr;
           });
 
@@ -2296,18 +2626,21 @@ function createBoardTools(params: {
           if (schedule) {
             scheduleId = schedule.id;
           } else {
-            const createScheduleResponse = await fetch(`${baseUrl}/api/staff/schedules/commands/create`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                ...(authCookie ? { Cookie: authCookie } : {}),
-              },
-              body: JSON.stringify({
-                scheduleDate: targetDateStr,
-                locationId: input.locationId,
-                status: "draft",
-              }),
-            });
+            const createScheduleResponse = await fetch(
+              `${baseUrl}/api/staff/schedules/commands/create`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  ...(authCookie ? { Cookie: authCookie } : {}),
+                },
+                body: JSON.stringify({
+                  scheduleDate: targetDateStr,
+                  locationId: input.locationId,
+                  status: "draft",
+                }),
+              }
+            );
 
             if (!createScheduleResponse.ok) {
               const errorText = await createScheduleResponse.text();
@@ -2319,7 +2652,9 @@ function createBoardTools(params: {
               };
             }
 
-            const newSchedule = (await createScheduleResponse.json()) as { result: { id: string } };
+            const newSchedule = (await createScheduleResponse.json()) as {
+              result: { id: string };
+            };
             scheduleId = newSchedule.result.id;
           }
 
@@ -2419,15 +2754,38 @@ function createBoardTools(params: {
       description:
         "Create a new recipe in the kitchen system. Use when users need to add recipes, create dish templates, or define cooking instructions for menu items.",
       inputSchema: z.object({
-        name: z.string().describe("Name of the recipe (e.g., 'Beef Bourguignon', 'Caesar Salad')"),
-        category: z.string().optional().describe("Recipe category (e.g., 'Appetizer', 'Main Course', 'Dessert', 'Sauce')"),
-        cuisineType: z.string().optional().describe("Type of cuisine (e.g., 'French', 'Italian', 'Asian', 'Mexican')"),
-        description: z.string().optional().describe("Brief description of the recipe"),
-        tags: z.array(z.string()).optional().describe("Tags for searching and categorization (e.g., ['vegetarian', 'gluten-free', 'quick'])"),
+        name: z
+          .string()
+          .describe(
+            "Name of the recipe (e.g., 'Beef Bourguignon', 'Caesar Salad')"
+          ),
+        category: z
+          .string()
+          .optional()
+          .describe(
+            "Recipe category (e.g., 'Appetizer', 'Main Course', 'Dessert', 'Sauce')"
+          ),
+        cuisineType: z
+          .string()
+          .optional()
+          .describe(
+            "Type of cuisine (e.g., 'French', 'Italian', 'Asian', 'Mexican')"
+          ),
+        description: z
+          .string()
+          .optional()
+          .describe("Brief description of the recipe"),
+        tags: z
+          .array(z.string())
+          .optional()
+          .describe(
+            "Tags for searching and categorization (e.g., ['vegetarian', 'gluten-free', 'quick'])"
+          ),
       }),
       execute: async (input) => {
         try {
-          const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
+          const baseUrl =
+            process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
 
           // Validate required fields
           if (!input.name || input.name.trim().length === 0) {
@@ -2439,21 +2797,24 @@ function createBoardTools(params: {
           }
 
           // Create the recipe via manifest runtime
-          const response = await fetch(`${baseUrl}/api/kitchen/recipes/commands/create`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              ...(authCookie ? { Cookie: authCookie } : {}),
-            },
-            body: JSON.stringify({
-              name: input.name.trim(),
-              category: input.category?.trim() || null,
-              cuisineType: input.cuisineType?.trim() || null,
-              description: input.description?.trim() || null,
-              tags: input.tags?.filter((t) => t.trim().length > 0) || [],
-              isActive: true,
-            }),
-          });
+          const response = await fetch(
+            `${baseUrl}/api/kitchen/recipes/commands/create`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                ...(authCookie ? { Cookie: authCookie } : {}),
+              },
+              body: JSON.stringify({
+                name: input.name.trim(),
+                category: input.category?.trim() || null,
+                cuisineType: input.cuisineType?.trim() || null,
+                description: input.description?.trim() || null,
+                tags: input.tags?.filter((t) => t.trim().length > 0) || [],
+                isActive: true,
+              }),
+            }
+          );
 
           if (!response.ok) {
             const errorText = await response.text();
@@ -2646,7 +3007,9 @@ async function createLocalFallbackResponse(params: {
   const userText =
     (lastUserMessage?.parts ?? [])
       .filter((part): part is { type: "text"; text: string } => {
-        return typeof part === "object" && part !== null && part.type === "text";
+        return (
+          typeof part === "object" && part !== null && part.type === "text"
+        );
       })
       .map((part) => part.text)
       .join(" ")
@@ -2654,9 +3017,13 @@ async function createLocalFallbackResponse(params: {
       .toLowerCase() ?? "";
 
   const isSummaryQuery =
-    userText.includes("summary") || userText.includes("what's on") || userText.includes("whats on");
+    userText.includes("summary") ||
+    userText.includes("what's on") ||
+    userText.includes("whats on");
   const isRiskQuery =
-    userText.includes("risk") || userText.includes("conflict") || userText.includes("at risk");
+    userText.includes("risk") ||
+    userText.includes("conflict") ||
+    userText.includes("at risk");
   const isPlanningQuery =
     userText.includes("plan") ||
     userText.includes("create") ||
@@ -2670,7 +3037,9 @@ async function createLocalFallbackResponse(params: {
     try {
       const summary = await queryBoardData(boardId, "summary");
       const total =
-        typeof summary.totalProjections === "number" ? summary.totalProjections : 0;
+        typeof summary.totalProjections === "number"
+          ? summary.totalProjections
+          : 0;
       const byType =
         summary.byType && typeof summary.byType === "object"
           ? Object.entries(summary.byType as Record<string, number>)

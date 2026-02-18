@@ -1,12 +1,12 @@
 import { auth } from "@repo/auth/server";
 import { redirect } from "next/navigation";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { autoPopulateBoard } from "../actions/auto-populate";
 import { getCommandBoard, listCommandBoards } from "../actions/boards";
 import { deriveConnections } from "../actions/derive-connections";
 import { getProjectionsForBoard } from "../actions/projections";
 import { resolveEntities } from "../actions/resolve-entities";
 import { BoardShell } from "../components/board-shell";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 // UUID regex constant at top level for performance
 const UUID_REGEX =

@@ -2,8 +2,8 @@
 
 import { database } from "@repo/database";
 import { requireTenantId } from "../../../lib/tenant";
-import type { DerivedConnection } from "../types/board";
 import type { Conflict } from "../conflict-types";
+import type { DerivedConnection } from "../types/board";
 import type { ResolvedFinancialProjection } from "../types/entities";
 
 // ============================================================================
@@ -354,7 +354,7 @@ export async function deriveConnections(
                   riskProj,
                   affectedProj,
                   "risk_to_entity",
-                  `threatens`
+                  "threatens"
                 );
               }
             }
@@ -392,19 +392,9 @@ export async function deriveConnections(
             const dishProj = findProj("dish", dish.id);
             const recipeProj = findProj("recipe", dish.recipeId);
             if (dishProj && recipeProj) {
-              addConnection(
-                dishProj,
-                recipeProj,
-                "dish_to_recipe",
-                "based on"
-              );
+              addConnection(dishProj, recipeProj, "dish_to_recipe", "based on");
               // Also add reverse direction: recipe → dish
-              addConnection(
-                recipeProj,
-                dishProj,
-                "recipe_to_dish",
-                "used in"
-              );
+              addConnection(recipeProj, dishProj, "recipe_to_dish", "used in");
             }
           }
         } catch (error) {
@@ -424,7 +414,10 @@ export async function deriveConnections(
           const financialProjs = byType.get("financial_projection") ?? [];
 
           // Build a map of financial projection ID to resolved projection data
-          const financialDataMap = new Map<string, ResolvedFinancialProjection>();
+          const financialDataMap = new Map<
+            string,
+            ResolvedFinancialProjection
+          >();
           for (const fp of financialProjections) {
             financialDataMap.set(fp.id, fp);
           }
@@ -432,7 +425,7 @@ export async function deriveConnections(
           for (const finProj of financialProjs) {
             // Get the financial projection data
             const finData = financialDataMap.get(finProj.entityId);
-            if (!finData || !finData.sourceEventIds) {
+            if (!(finData && finData.sourceEventIds)) {
               continue;
             }
 

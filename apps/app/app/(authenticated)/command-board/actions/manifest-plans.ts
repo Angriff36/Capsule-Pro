@@ -1224,22 +1224,27 @@ async function executeCreateRecipeStep(
 
   // Create the recipe via manifest runtime API
   const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
-  const response = await fetch(`${baseUrl}/api/kitchen/recipes/commands/create`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      name: name.trim(),
-      category: asString(step.args.category) || null,
-      cuisineType: asString(step.args.cuisineType) || null,
-      description: asString(step.args.description) || null,
-      tags: Array.isArray(step.args.tags)
-        ? step.args.tags.filter((t: unknown) => typeof t === "string" && t.trim().length > 0)
-        : [],
-      isActive: true,
-    }),
-  });
+  const response = await fetch(
+    `${baseUrl}/api/kitchen/recipes/commands/create`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: name.trim(),
+        category: asString(step.args.category) || null,
+        cuisineType: asString(step.args.cuisineType) || null,
+        description: asString(step.args.description) || null,
+        tags: Array.isArray(step.args.tags)
+          ? step.args.tags.filter(
+              (t: unknown) => typeof t === "string" && t.trim().length > 0
+            )
+          : [],
+        isActive: true,
+      }),
+    }
+  );
 
   if (!response.ok) {
     const errorText = await response.text();
