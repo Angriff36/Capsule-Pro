@@ -424,6 +424,11 @@ export function BoardShell({
                   conflicts={conflicts}
                   errorMessage={conflictsError}
                   onClose={() => setShowConflicts(false)}
+                  simulationBoardId={
+                    boardMode === "simulation"
+                      ? activeSimulation?.id
+                      : undefined
+                  }
                 />
               )}
             </div>
