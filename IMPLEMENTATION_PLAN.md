@@ -52,3 +52,4 @@ No pending tasks. All P0, P1, and P2 items have been implemented.
 - Entity Browser search/filter
 - Test fixes (1449 tests passing: 667 manifest-runtime + 675 API + 107 app)
 - Added missing IR schema for validate command
+- BUG-08: MiniMap/Controls styling - replaced !important with CSS classes

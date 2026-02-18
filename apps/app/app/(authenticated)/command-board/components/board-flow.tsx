@@ -841,28 +841,9 @@ function BoardFlowInner({
         snapGrid={[20, 20]}
         snapToGrid
       >
-        <Background
-          className="!bg-background"
-          gap={20}
-          size={1}
-          variant={BackgroundVariant.Dots}
-        />
-        <Controls
-          style={{
-            backgroundColor: "hsl(var(--card))",
-            border: "1px solid hsl(var(--border))",
-            borderRadius: "6px",
-          }}
-        />
-        <MiniMap
-          maskColor="rgba(0,0,0,0.1)"
-          nodeColor={minimapNodeColor}
-          style={{
-            backgroundColor: "hsl(var(--card))",
-            border: "1px solid hsl(var(--border))",
-            borderRadius: "6px",
-          }}
-        />
+        <Background gap={20} size={1} variant={BackgroundVariant.Dots} />
+        <Controls />
+        <MiniMap maskColor="rgba(0,0,0,0.1)" nodeColor={minimapNodeColor} />
       </ReactFlow>
     </div>
   );
