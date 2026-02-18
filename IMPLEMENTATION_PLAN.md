@@ -52,7 +52,7 @@ Enable full AI-driven command board operations: users can create events, prep li
 
 ---
 
-## Priority Tasks (3 remaining)
+## Priority Tasks (0 remaining - All complete!)
 
 ### P0-1. [x] Fix `auto_generate_prep` AI Tool
 **File**: `apps/app/app/api/command-board/chat/route.ts:1497-1704`
@@ -181,17 +181,19 @@ Enable full AI-driven command board operations: users can create events, prep li
 - Added tool guidance to SYSTEM_PROMPT for when to use create_recipe
 - Added `create_recipe` domain command to manifest-plans.ts
 
-### P2-4. [ ] Wire Simulation Conflicts to UI
+### P2-4. [x] Wire Simulation Conflicts to UI
 **File**: `apps/app/app/(authenticated)/command-board/components/conflict-warning-panel.tsx`
 
-**Problem**: Shows live conflicts only, no simulation-specific analysis.
+**Completed**: 2026-02-18
 
-**Solution**:
-1. Add `simulationBoardId?: string` prop to ConflictWarningPanelProps
-2. When simulationBoardId provided, call `/api/conflicts/detect` for simulation board
-3. Display delta: "Simulation introduces X new conflicts, resolves Y conflicts"
-4. Add visual distinction (blue border) for simulation-specific conflicts
-5. Wire in board-shell.tsx where simulation toggle exists
+**Changes**:
+- Added `simulationBoardId?: string` prop to ConflictWarningPanelProps
+- Added `useSimulationConflicts` hook to fetch simulation board conflicts when simulationBoardId is provided
+- Computes delta between live and simulation conflicts (new conflicts introduced, conflicts resolved)
+- Displays "Simulation Analysis" alert with delta summary (blue border for simulation mode)
+- Adds "New in simulation" badge and red left border for conflicts introduced by simulation
+- Wires simulationBoardId in board-shell.tsx when boardMode === "simulation"
+- Refactored component into sub-components (ConflictItem, SimulationDeltaAlert, ConflictList) to reduce complexity
 
 ---
 
@@ -220,3 +222,4 @@ Enable full AI-driven command board operations: users can create events, prep li
 - [x] **create_shift** AI Tool - Now calls `/api/staff/shifts` via manifest runtime, finds or creates schedule for target date, validates date/time formats and shift duration
 - [x] **create_recipe** AI Tool - Now calls `/api/kitchen/recipes/commands/create` via manifest runtime with name, category, cuisineType, description, tags parameters
 - [x] **create_recipe** Domain Command - Added executeCreateRecipeStep function and routing in manifest-plans.ts
+- [x] **Simulation Conflicts UI** - ConflictWarningPanel now shows simulation-specific conflicts with delta analysis (introduces/resolves), blue border for simulation mode, "New in simulation" badges
