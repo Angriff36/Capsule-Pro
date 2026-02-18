@@ -8,6 +8,7 @@ import {
 } from "@repo/design-system/components/ui/collapsible";
 import { Input } from "@repo/design-system/components/ui/input";
 import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
+import { cn } from "@repo/design-system/lib/utils";
 import { useReactFlow } from "@xyflow/react";
 import {
   BookOpenIcon,
@@ -27,7 +28,14 @@ import {
   UtensilsIcon,
   XIcon,
 } from "lucide-react";
-import { useCallback, useMemo, useState, useTransition } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useTransition,
+} from "react";
 import { toast } from "sonner";
 import { type BrowseItem, browseEntities } from "../actions/browse-entities";
 import { addProjection } from "../actions/projections";
@@ -108,6 +116,12 @@ export function EntityBrowser({
 
   // Search filter
   const [searchQuery, setSearchQuery] = useState("");
+
+  // Keyboard navigation state
+  const [focusedCategoryIndex, setFocusedCategoryIndex] = useState<number>(0);
+  const [focusedItemIndex, setFocusedItemIndex] = useState<number>(-1); // -1 means category header focused
+  const containerRef = useRef<HTMLDivElement>(null);
+  const itemRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
 
   // Filter items based on search query
   const filterItems = useCallback(
@@ -346,8 +360,193 @@ export function EntityBrowser({
     [addingId, boardId, onProjectionAdded, reactFlow, projections.length]
   );
 
+  // ---- Get navigable items for keyboard navigation ----
+  const getNavigableItems = useCallback(
+    (categoryIndex: number): BrowseItem[] => {
+      const category = ENTITY_CATEGORIES[categoryIndex];
+      if (!category) {
+        return [];
+      }
+      const state = categories[category.type];
+      if (!state?.loaded) {
+        return [];
+      }
+      return filterItems(state.items);
+    },
+    [categories, filterItems]
+  );
+
+  // ---- Expand category for navigation ----
+  const expandCategory = useCallback(
+    (categoryIndex: number) => {
+      const category = ENTITY_CATEGORIES[categoryIndex];
+      if (!category) {
+        return;
+      }
+      const state = categories[category.type];
+      // Trigger load if not loaded
+      if (!(state?.loaded || state?.loading)) {
+        handleOpenChange(category.type, true);
+      }
+    },
+    [categories, handleOpenChange]
+  );
+
+  // ---- Keyboard navigation helpers ----
+  const handleArrowDown = useCallback(
+    (currentItems: BrowseItem[], currentItemIndex: number) => {
+      if (currentItemIndex < currentItems.length - 1) {
+        setFocusedItemIndex(currentItemIndex + 1);
+      } else if (
+        currentItemIndex === currentItems.length - 1 &&
+        focusedCategoryIndex < ENTITY_CATEGORIES.length - 1
+      ) {
+        setFocusedCategoryIndex(focusedCategoryIndex + 1);
+        setFocusedItemIndex(-1);
+      }
+    },
+    [focusedCategoryIndex]
+  );
+
+  const handleArrowUp = useCallback(
+    (_currentItems: BrowseItem[], currentItemIndex: number) => {
+      if (currentItemIndex > 0) {
+        setFocusedItemIndex(currentItemIndex - 1);
+      } else if (currentItemIndex === 0) {
+        setFocusedItemIndex(-1);
+      } else if (currentItemIndex === -1 && focusedCategoryIndex > 0) {
+        const prevCategoryIndex = focusedCategoryIndex - 1;
+        const prevItems = getNavigableItems(prevCategoryIndex);
+        setFocusedCategoryIndex(prevCategoryIndex);
+        setFocusedItemIndex(Math.max(-1, prevItems.length - 1));
+        expandCategory(prevCategoryIndex);
+      }
+    },
+    [focusedCategoryIndex, getNavigableItems, expandCategory]
+  );
+
+  const handleEnterOrRight = useCallback(
+    (currentItems: BrowseItem[], currentItemIndex: number) => {
+      if (currentItemIndex >= 0 && currentItems[currentItemIndex]) {
+        const item = currentItems[currentItemIndex];
+        const isOnBoard = onBoardKeys.has(`${item.entityType}:${item.id}`);
+        if (!isOnBoard) {
+          handleAddEntity(item);
+        }
+      } else if (currentItemIndex === -1) {
+        expandCategory(focusedCategoryIndex);
+        const items = getNavigableItems(focusedCategoryIndex);
+        if (items.length > 0) {
+          setFocusedItemIndex(0);
+        }
+      }
+    },
+    [
+      focusedCategoryIndex,
+      getNavigableItems,
+      expandCategory,
+      handleAddEntity,
+      onBoardKeys,
+    ]
+  );
+
+  const handleTab = useCallback(
+    (shiftKey: boolean) => {
+      const direction = shiftKey ? -1 : 1;
+      const nextCategoryIndex = focusedCategoryIndex + direction;
+
+      if (
+        nextCategoryIndex >= 0 &&
+        nextCategoryIndex < ENTITY_CATEGORIES.length
+      ) {
+        setFocusedCategoryIndex(nextCategoryIndex);
+        setFocusedItemIndex(-1);
+        expandCategory(nextCategoryIndex);
+      }
+    },
+    [focusedCategoryIndex, expandCategory]
+  );
+
+  // ---- Keyboard navigation handler ----
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      const currentItems = getNavigableItems(focusedCategoryIndex);
+      const currentItemIndex = focusedItemIndex;
+
+      switch (e.key) {
+        case "ArrowDown": {
+          e.preventDefault();
+          handleArrowDown(currentItems, currentItemIndex);
+          break;
+        }
+        case "ArrowUp": {
+          e.preventDefault();
+          handleArrowUp(currentItems, currentItemIndex);
+          break;
+        }
+        case "ArrowRight":
+        case "Enter": {
+          e.preventDefault();
+          handleEnterOrRight(currentItems, currentItemIndex);
+          break;
+        }
+        case "ArrowLeft": {
+          e.preventDefault();
+          if (currentItemIndex >= 0) {
+            setFocusedItemIndex(-1);
+          }
+          break;
+        }
+        case "Tab": {
+          e.preventDefault();
+          handleTab(e.shiftKey);
+          break;
+        }
+        case "Escape": {
+          e.preventDefault();
+          onClose();
+          break;
+        }
+        default:
+          break;
+      }
+    },
+    [
+      focusedCategoryIndex,
+      focusedItemIndex,
+      getNavigableItems,
+      handleArrowDown,
+      handleArrowUp,
+      handleEnterOrRight,
+      handleTab,
+      onClose,
+    ]
+  );
+
+  // ---- Scroll focused item into view ----
+  useEffect(() => {
+    if (focusedItemIndex >= 0) {
+      const category = ENTITY_CATEGORIES[focusedCategoryIndex];
+      if (category) {
+        const items = getNavigableItems(focusedCategoryIndex);
+        const item = items[focusedItemIndex];
+        if (item) {
+          const key = `${category.type}:${item.id}`;
+          const element = itemRefs.current.get(key);
+          element?.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        }
+      }
+    }
+  }, [focusedCategoryIndex, focusedItemIndex, getNavigableItems]);
+
   return (
-    <div className="flex h-full w-72 flex-col border-l bg-card">
+    <section
+      aria-label="Entity Browser"
+      className="flex h-full w-72 flex-col border-l bg-card"
+      onKeyDown={handleKeyDown}
+      ref={containerRef as React.RefObject<HTMLElement>}
+      tabIndex={-1}
+    >
       {/* Header */}
       <div className="flex items-center justify-between border-b px-3 py-2.5">
         <h2 className="text-sm font-semibold">Entities</h2>
@@ -378,17 +577,27 @@ export function EntityBrowser({
       {/* Scrollable category list */}
       <ScrollArea className="flex-1">
         <div className="p-2">
-          {ENTITY_CATEGORIES.map(({ type, icon: Icon }) => {
+          {ENTITY_CATEGORIES.map(({ type, icon: Icon }, categoryIndex) => {
             const label = ENTITY_TYPE_LABELS[type] ?? type;
             const colors = ENTITY_TYPE_COLORS[type];
             const state = categories[type];
+            const isCategoryFocused =
+              focusedCategoryIndex === categoryIndex && focusedItemIndex === -1;
+            const filteredItems = filterItems(state?.items ?? []);
 
             return (
               <Collapsible
                 key={type}
                 onOpenChange={(isOpen) => handleOpenChange(type, isOpen)}
               >
-                <CollapsibleTrigger className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium hover:bg-muted/50 transition-colors group">
+                <CollapsibleTrigger
+                  className={cn(
+                    "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium transition-colors group",
+                    isCategoryFocused
+                      ? "bg-primary/10 ring-2 ring-primary/50"
+                      : "hover:bg-muted/50"
+                  )}
+                >
                   <ChevronRightIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-90" />
                   <Icon className={`h-4 w-4 shrink-0 ${colors.icon}`} />
                   <span className="flex-1 text-left">{label}s</span>
@@ -434,7 +643,7 @@ export function EntityBrowser({
                     {/* Empty */}
                     {state?.loaded &&
                       !state.error &&
-                      filterItems(state.items).length === 0 && (
+                      filteredItems.length === 0 && (
                         <div className="px-2 py-2 text-xs text-muted-foreground">
                           {searchQuery
                             ? `No matching ${label.toLowerCase()}s`
@@ -443,18 +652,33 @@ export function EntityBrowser({
                       )}
 
                     {/* Items */}
-                    {filterItems(state?.items ?? []).map((item) => {
+                    {filteredItems.map((item, itemIndex) => {
                       const isAdding = addingId === item.id;
                       const isOnBoard = onBoardKeys.has(
                         `${item.entityType}:${item.id}`
                       );
+                      const isItemFocused =
+                        focusedCategoryIndex === categoryIndex &&
+                        focusedItemIndex === itemIndex;
 
                       return (
                         <button
-                          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs hover:bg-muted/50 transition-colors disabled:opacity-50 group/item"
+                          className={cn(
+                            "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-xs transition-colors disabled:opacity-50 group/item",
+                            isItemFocused
+                              ? "bg-primary/10 ring-2 ring-primary/50"
+                              : "hover:bg-muted/50"
+                          )}
                           disabled={isPending || isAdding || isOnBoard}
                           key={item.id}
                           onClick={() => handleAddEntity(item)}
+                          ref={(el) => {
+                            if (el) {
+                              itemRefs.current.set(`${type}:${item.id}`, el);
+                            } else {
+                              itemRefs.current.delete(`${type}:${item.id}`);
+                            }
+                          }}
                           type="button"
                         >
                           <div className="min-w-0 flex-1">
@@ -486,6 +710,6 @@ export function EntityBrowser({
           })}
         </div>
       </ScrollArea>
-    </div>
+    </section>
   );
 }
