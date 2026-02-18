@@ -37,7 +37,11 @@ import {
   useTransition,
 } from "react";
 import { toast } from "sonner";
-import { type BrowseItem, browseEntities } from "../actions/browse-entities";
+import {
+  type BrowseItem,
+  browseEntities,
+  browseEntityCounts,
+} from "../actions/browse-entities";
 import { addProjection } from "../actions/projections";
 import type { BoardProjection } from "../types/board";
 import {
@@ -110,6 +114,28 @@ export function EntityBrowser({
   const [categories, setCategories] = useState<Record<string, CategoryState>>(
     {}
   );
+
+  // Pre-loaded entity counts (loaded on mount)
+  const [entityCounts, setEntityCounts] = useState<Record<EntityType, number>>(
+    {} as Record<EntityType, number>
+  );
+  const [countsLoading, setCountsLoading] = useState(true);
+
+  // Load entity counts on mount
+  useEffect(() => {
+    browseEntityCounts()
+      .then((result) => {
+        if (result.success) {
+          setEntityCounts(result.counts);
+        }
+      })
+      .catch((error) => {
+        console.error("[EntityBrowser] Failed to load entity counts:", error);
+      })
+      .finally(() => {
+        setCountsLoading(false);
+      });
+  }, []);
 
   // Track which item is currently being added
   const [addingId, setAddingId] = useState<string | null>(null);
@@ -631,9 +657,10 @@ export function EntityBrowser({
                   <ChevronRightIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-90" />
                   <Icon className={`h-4 w-4 shrink-0 ${colors.icon}`} />
                   <span className="flex-1 text-left">{label}s</span>
-                  {state?.loaded && (
+                  {/* Show count: loaded count takes precedence, then pre-loaded count */}
+                  {state?.loaded ? (
                     <>
-                      <span className="text-[10px] text-muted-foreground tabular-nums">
+                      <span className="text-xs text-muted-foreground tabular-nums">
                         {state.items.length}
                       </span>
                       <button
@@ -648,6 +675,12 @@ export function EntityBrowser({
                         />
                       </button>
                     </>
+                  ) : (
+                    entityCounts[type] !== undefined && (
+                      <span className="text-xs text-muted-foreground tabular-nums">
+                        {entityCounts[type]}
+                      </span>
+                    )
                   )}
                 </CollapsibleTrigger>
 
@@ -718,7 +751,7 @@ export function EntityBrowser({
                               {item.title}
                             </div>
                             {item.subtitle && (
-                              <div className="truncate text-muted-foreground text-[10px]">
+                              <div className="truncate text-muted-foreground text-xs opacity-70">
                                 {item.subtitle}
                               </div>
                             )}
@@ -726,7 +759,7 @@ export function EntityBrowser({
                           {isAdding ? (
                             <Loader2Icon className="h-3 w-3 shrink-0 animate-spin text-muted-foreground" />
                           ) : isOnBoard ? (
-                            <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+                            <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
                               On board
                             </span>
                           ) : (

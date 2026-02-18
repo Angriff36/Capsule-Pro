@@ -34,19 +34,23 @@ Enable full AI-driven command board operations: users can create events, prep li
 
 ---
 
-## Priority Tasks (P1 Lower Priority remaining)
+## Priority Tasks
 
 ### P1 - Completed
 - [x] Card hover action buttons (remove, detail, pin) - HIGH IMPACT
 - [x] Edge hover state (thicken on hover + tooltip)
 - [x] Empty state with quick action buttons
 - [x] Entity Browser: refresh button for categories
-
-### P1 - Lower Priority
 - [x] Card hover/selection smooth animations
 - [x] Entity Browser: drag-to-add functionality
 - [x] Entity Browser: keyboard navigation
 - [x] Smooth edge routing
+- [x] Entity Browser: search within browser
+- [x] Entity Browser: pre-load category counts
+- [x] Browser text size fix (text-[10px] → text-xs)
+
+### P2 - Remaining
+- [ ] Canvas background brand colors
 
 ---
 
@@ -71,3 +75,5 @@ Enable full AI-driven command board operations: users can create events, prep li
 - Entity Browser: drag-to-add functionality with visual drop feedback
 - Card hover/selection smooth animations (scale transforms, fade-in action buttons)
 - Smooth edge routing using getSmoothStepPath with rounded corners
+- Entity Browser: pre-load category counts (parallel count queries on mount)
+- Entity Browser: text size fix (text-[10px] → text-xs for readability)

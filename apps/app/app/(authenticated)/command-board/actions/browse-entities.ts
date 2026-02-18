@@ -22,6 +22,12 @@ export interface BrowseEntitiesResult {
   error?: string;
 }
 
+export interface EntityCountsResult {
+  success: boolean;
+  counts: Record<EntityType, number>;
+  error?: string;
+}
+
 /** Max items per category */
 const BROWSE_LIMIT = 25;
 
@@ -121,6 +127,74 @@ export async function browseEntities(
       items: [],
       error:
         error instanceof Error ? error.message : "Failed to browse entities",
+    };
+  }
+}
+
+// ============================================================================
+// Entity Counts
+// ============================================================================
+
+/**
+ * Fetch counts for all entity types in a single call.
+ * Used to pre-load category counts in the Entity Browser.
+ */
+export async function browseEntityCounts(): Promise<EntityCountsResult> {
+  try {
+    const tenantId = await requireTenantId();
+
+    // Run all count queries in parallel for efficiency
+    const [
+      eventCount,
+      clientCount,
+      prepTaskCount,
+      kitchenTaskCount,
+      employeeCount,
+      inventoryCount,
+      recipeCount,
+      dishCount,
+      proposalCount,
+      shipmentCount,
+      noteCount,
+    ] = await Promise.all([
+      database.event.count({ where: { tenantId, deletedAt: null } }),
+      database.client.count({ where: { tenantId, deletedAt: null } }),
+      database.prepTask.count({ where: { tenantId, deletedAt: null } }),
+      database.kitchenTask.count({ where: { tenantId, deletedAt: null } }),
+      database.user.count({ where: { tenantId, deletedAt: null } }),
+      database.inventoryItem.count({ where: { tenantId, deletedAt: null } }),
+      database.recipe.count({ where: { tenantId, deletedAt: null } }),
+      database.dish.count({ where: { tenantId, deletedAt: null } }),
+      database.proposal.count({ where: { tenantId, deletedAt: null } }),
+      database.shipment.count({ where: { tenantId, deletedAt: null } }),
+      database.note.count({ where: { tenantId, deletedAt: null } }),
+    ]);
+
+    return {
+      success: true,
+      counts: {
+        event: eventCount,
+        client: clientCount,
+        prep_task: prepTaskCount,
+        kitchen_task: kitchenTaskCount,
+        employee: employeeCount,
+        inventory_item: inventoryCount,
+        recipe: recipeCount,
+        dish: dishCount,
+        proposal: proposalCount,
+        shipment: shipmentCount,
+        note: noteCount,
+        risk: 0, // Risks are derived, not stored
+        financial_projection: 0, // Financial projections are derived
+      },
+    };
+  } catch (error) {
+    console.error("[browse-entities] Failed to fetch entity counts:", error);
+    return {
+      success: false,
+      counts: {} as Record<EntityType, number>,
+      error:
+        error instanceof Error ? error.message : "Failed to fetch counts",
     };
   }
 }
