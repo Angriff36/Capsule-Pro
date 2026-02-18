@@ -131,11 +131,13 @@ Show a small action bar on card hover (top-right corner):
 
 ## Acceptance Criteria
 
-- [ ] All cards render at consistent 280px width
-- [ ] Hover states show lift + shadow on all cards
-- [ ] Card action buttons appear on hover (remove, detail, pin)
-- [ ] Background uses brand colors
-- [ ] Controls/MiniMap styled without !important
-- [ ] Empty state has quick action buttons
-- [ ] Connection lines show labels on hover
-- [ ] Browser item text is readable (no text-[10px])
+- [x] All cards render at consistent 280px width
+- [x] Hover states show lift + shadow on all cards
+- [x] Card action buttons appear on hover (remove, detail, pin)
+- [x] Background uses brand colors
+- [x] Controls/MiniMap styled without !important
+- [x] Empty state has quick action buttons
+- [x] Connection lines show labels on hover
+- [x] Browser item text is readable (no text-[10px])
+
+> All criteria verified and completed 2026-02-18 (v0.6.22)
