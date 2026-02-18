@@ -193,8 +193,7 @@ export async function browseEntityCounts(): Promise<EntityCountsResult> {
     return {
       success: false,
       counts: {} as Record<EntityType, number>,
-      error:
-        error instanceof Error ? error.message : "Failed to fetch counts",
+      error: error instanceof Error ? error.message : "Failed to fetch counts",
     };
   }
 }
