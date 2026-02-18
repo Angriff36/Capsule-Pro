@@ -74,7 +74,7 @@ vi.mock("@repo/database", () => {
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(() =>
     Promise.resolve({
-      runCommand: vi.fn((command: string, body: Record<string, unknown>) => {
+      runCommand: vi.fn((_command: string, body: Record<string, unknown>) => {
         // Simulate constraint validation for RecipeVersion
         if (body.difficulty && (body.difficulty < 1 || body.difficulty > 5)) {
           return Promise.resolve({
@@ -86,9 +86,9 @@ vi.mock("@/lib/manifest-runtime", () => ({
           });
         }
         if (
-          typeof body.prepTime === "number" && body.prepTime < 0 ||
-          typeof body.cookTime === "number" && body.cookTime < 0 ||
-          typeof body.restTime === "number" && body.restTime < 0
+          (typeof body.prepTime === "number" && body.prepTime < 0) ||
+          (typeof body.cookTime === "number" && body.cookTime < 0) ||
+          (typeof body.restTime === "number" && body.restTime < 0)
         ) {
           return Promise.resolve({
             success: false,

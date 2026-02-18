@@ -49,8 +49,9 @@ vi.mock("@repo/database", () => {
     database: mockDb,
     Prisma: {
       Decimal: class Decimal {
+        value: string | number;
         constructor(value: string | number) {
-          return value;
+          this.value = value;
         }
       },
     },
@@ -61,7 +62,7 @@ vi.mock("@repo/database", () => {
 vi.mock("@/lib/manifest-runtime", () => ({
   createManifestRuntime: vi.fn(() =>
     Promise.resolve({
-      runCommand: vi.fn((command: string, body: Record<string, unknown>) => {
+      runCommand: vi.fn((_command: string, body: Record<string, unknown>) => {
         // Simulate manifest constraint validation
         if (body.difficulty && (body.difficulty < 1 || body.difficulty > 5)) {
           return Promise.resolve({
