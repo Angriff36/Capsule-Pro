@@ -158,11 +158,14 @@ async function getManifestIR(manifestName: string): Promise<ManifestIR> {
   const { ir, hash } = await getCompiledManifestBundle();
 
   if (process.env.DEBUG_MANIFEST_IR === "true") {
-    console.log(`[manifest-runtime] Loaded manifest bundle for ${manifestName}`, {
-      hash,
-      entities: ir.entities.length,
-      commands: ir.commands.length,
-    });
+    console.log(
+      `[manifest-runtime] Loaded manifest bundle for ${manifestName}`,
+      {
+        hash,
+        entities: ir.entities.length,
+        commands: ir.commands.length,
+      }
+    );
   }
 
   return ir;

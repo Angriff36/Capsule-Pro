@@ -23,16 +23,19 @@ async function createFixtureDir() {
 
 afterEach(async () => {
   await Promise.all(
-    tempDirs.splice(0, tempDirs.length).map((dir) =>
-      rm(dir, { recursive: true, force: true })
-    )
+    tempDirs
+      .splice(0, tempDirs.length)
+      .map((dir) => rm(dir, { recursive: true, force: true }))
   );
 });
 
 describe("manifest loader invariants", () => {
   it("changes hash when a manifest file changes", async () => {
     const dir = await createFixtureDir();
-    const fixture = await readFile(join(FIXTURE_DIR, "menu-rules.manifest"), "utf8");
+    const fixture = await readFile(
+      join(FIXTURE_DIR, "menu-rules.manifest"),
+      "utf8"
+    );
     const targetFile = join(dir, "menu-rules.manifest");
 
     await writeFile(targetFile, fixture, "utf8");
@@ -40,14 +43,20 @@ describe("manifest loader invariants", () => {
     const first = await loadManifests({ manifestsDir: dir, forceReload: true });
 
     await writeFile(targetFile, `${fixture}\n// hash-change`, "utf8");
-    const second = await loadManifests({ manifestsDir: dir, forceReload: true });
+    const second = await loadManifests({
+      manifestsDir: dir,
+      forceReload: true,
+    });
 
     expect(first.hash).not.toBe(second.hash);
   });
 
   it("produces deterministic compiled IR for identical inputs", async () => {
     const dir = await createFixtureDir();
-    const menu = await readFile(join(FIXTURE_DIR, "menu-rules.manifest"), "utf8");
+    const menu = await readFile(
+      join(FIXTURE_DIR, "menu-rules.manifest"),
+      "utf8"
+    );
     const station = await readFile(
       join(FIXTURE_DIR, "station-rules.manifest"),
       "utf8"
