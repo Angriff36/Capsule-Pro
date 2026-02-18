@@ -85,6 +85,9 @@ function parseRelativeDate(value: string): Date {
     case "m":
       result.setMonth(result.getMonth() + sign * amount);
       break;
+    default:
+      // Unknown unit, return unchanged date
+      break;
   }
 
   return result;
@@ -477,9 +480,9 @@ export async function autoPopulateBoard(
     );
 
     // Create projections one-by-one so uniqueness races don't fail the whole run.
-    const createdRows: Array<
-      Awaited<ReturnType<typeof database.boardProjection.create>>
-    > = [];
+    const createdRows: Awaited<
+      ReturnType<typeof database.boardProjection.create>
+    >[] = [];
     let raceSkippedCount = 0;
 
     for (const [index, entity] of newEntities.entries()) {
