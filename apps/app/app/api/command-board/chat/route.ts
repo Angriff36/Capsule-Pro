@@ -257,6 +257,8 @@ For suggest_manifest_plan, provide a compact draft (title, summary, optional sco
 
 **When users need to schedule staff or create shifts** (e.g., "schedule John for tomorrow", "create a shift for Maria", "assign shifts for next week"), use the create_shift tool to create staff shifts for employees.
 
+**When users need to create or add recipes** (e.g., "create a new recipe", "add a recipe for lasagna", "I need to set up a dish template"), use the create_recipe tool to create recipes in the kitchen system.
+
 **Guidelines:**
 - Be concise and actionable
 - When suggesting board modifications, use the suggest_board_action tool
@@ -273,6 +275,7 @@ For suggest_manifest_plan, provide a compact draft (title, summary, optional sco
 - When users need purchasing lists, use auto_generate_purchase
 - When users need to run payroll, use generate_payroll
 - When users need to create staff shifts, use create_shift
+- When users need to create recipes, use create_recipe
 - Always explain WHY you're suggesting an action
 - Use markdown formatting for readability
 - Keep responses under 200 words unless the user asks for detail`;
@@ -2404,6 +2407,109 @@ function createBoardTools(params: {
             success: false,
             error: "Shift creation failed",
             message: `An error occurred while creating the shift: ${error instanceof Error ? error.message : "Unknown error"}`,
+          };
+        }
+      },
+    }),
+
+    // -------------------------------------------------------------------------
+    // create_recipe - Create a new recipe
+    // -------------------------------------------------------------------------
+    create_recipe: tool({
+      description:
+        "Create a new recipe in the kitchen system. Use when users need to add recipes, create dish templates, or define cooking instructions for menu items.",
+      inputSchema: z.object({
+        name: z.string().describe("Name of the recipe (e.g., 'Beef Bourguignon', 'Caesar Salad')"),
+        category: z.string().optional().describe("Recipe category (e.g., 'Appetizer', 'Main Course', 'Dessert', 'Sauce')"),
+        cuisineType: z.string().optional().describe("Type of cuisine (e.g., 'French', 'Italian', 'Asian', 'Mexican')"),
+        description: z.string().optional().describe("Brief description of the recipe"),
+        tags: z.array(z.string()).optional().describe("Tags for searching and categorization (e.g., ['vegetarian', 'gluten-free', 'quick'])"),
+      }),
+      execute: async (input) => {
+        try {
+          const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
+
+          // Validate required fields
+          if (!input.name || input.name.trim().length === 0) {
+            return {
+              success: false,
+              error: "Invalid recipe name",
+              message: "Recipe name is required and cannot be empty",
+            };
+          }
+
+          // Create the recipe via manifest runtime
+          const response = await fetch(`${baseUrl}/api/kitchen/recipes/commands/create`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(authCookie ? { Cookie: authCookie } : {}),
+            },
+            body: JSON.stringify({
+              name: input.name.trim(),
+              category: input.category?.trim() || null,
+              cuisineType: input.cuisineType?.trim() || null,
+              description: input.description?.trim() || null,
+              tags: input.tags?.filter((t) => t.trim().length > 0) || [],
+              isActive: true,
+            }),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error("[AI Chat] Recipe creation API error:", errorText);
+            return {
+              success: false,
+              error: "Recipe creation failed",
+              message: `Failed to create recipe: ${response.status} ${response.statusText}`,
+            };
+          }
+
+          const data = (await response.json()) as {
+            result: {
+              id: string;
+              name: string;
+              category?: string | null;
+              cuisineType?: string | null;
+              description?: string | null;
+              tags?: string[];
+              isActive: boolean;
+            };
+          };
+
+          return {
+            success: true,
+            recipeId: data.result.id,
+            recipe: {
+              id: data.result.id,
+              name: data.result.name,
+              category: data.result.category,
+              cuisineType: data.result.cuisineType,
+              description: data.result.description,
+              tags: data.result.tags,
+              isActive: data.result.isActive,
+            },
+            message: `Created recipe: "${data.result.name}"${data.result.category ? ` (${data.result.category})` : ""}`,
+            nextSteps: [
+              "Add ingredients to the recipe via the recipe editor",
+              "Create a recipe version with cooking instructions and times",
+              "Link the recipe to dishes for menu planning",
+              "Calculate recipe costs based on ingredient prices",
+            ],
+            manifestPlanHint: {
+              domainCommand: "create_recipe",
+              requiresApproval: false,
+              params: {
+                recipeId: data.result.id,
+              },
+            },
+          };
+        } catch (error) {
+          console.error("[AI Chat] Recipe creation failed:", error);
+          return {
+            success: false,
+            error: "Recipe creation failed",
+            message: `An error occurred while creating the recipe: ${error instanceof Error ? error.message : "Unknown error"}`,
           };
         }
       },

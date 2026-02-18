@@ -7,7 +7,7 @@ Enable full AI-driven command board operations: users can create events, prep li
 
 ## Current State (Verified 2026-02-18)
 
-### AI Tools Status (14 total)
+### AI Tools Status (15 total)
 | Tool | Status | Issue |
 |------|--------|-------|
 | suggest_board_action | FUNCTIONAL | - |
@@ -24,8 +24,9 @@ Enable full AI-driven command board operations: users can create events, prep li
 | **auto_generate_purchase** | FUNCTIONAL | Now queries event_dishes, RecipeIngredient, InventoryItem for real data |
 | **generate_payroll** | FUNCTIONAL | Calls /api/payroll/generate for real payroll calculations |
 | **create_shift** | FUNCTIONAL | Calls /api/staff/shifts via manifest runtime |
+| **create_recipe** | FUNCTIONAL | Calls /api/kitchen/recipes/commands/create via manifest runtime |
 
-### Domain Commands Status (10 implemented)
+### Domain Commands Status (11 implemented)
 | Command | Status | Location |
 |---------|--------|----------|
 | create_event | IMPLEMENTED | manifest-plans.ts:1229 |
@@ -38,6 +39,7 @@ Enable full AI-driven command board operations: users can create events, prep li
 | update_task | IMPLEMENTED | manifest-plans.ts:1276-1281 |
 | update_event | IMPLEMENTED | manifest-plans.ts:1283-1288 |
 | update_role_policy | IMPLEMENTED | manifest-plans.ts:1290-1295 |
+| create_recipe | IMPLEMENTED | manifest-plans.ts:1348-1349 |
 
 ### Backend APIs (All Verified Ready)
 - `/api/kitchen/ai/bulk-generate/prep-tasks` - Returns GeneratedPrepTask[] with estimatedMinutes, station
@@ -166,14 +168,18 @@ Enable full AI-driven command board operations: users can create events, prep li
 - Returns shift details with formatted times, duration, and manifest plan hint
 - Added tool guidance to SYSTEM_PROMPT for when to use create_shift
 
-### P2-3. [ ] Add AI Tool: `create_recipe`
-**File**: `apps/app/app/api/command-board/chat/route.ts` (new tool after line 1640)
+### P2-3. [x] Add AI Tool: `create_recipe`
+**File**: `apps/app/app/api/command-board/chat/route.ts:2415-2513`
 
-**Solution**:
-1. Add `create_recipe` AI tool with name, description, ingredients[], steps[]
-2. Call `POST /api/kitchen/recipes/commands/create` via manifest runtime
-3. Return recipe details for approval
-4. Create manifest plan with domain command
+**Completed**: 2026-02-18
+
+**Changes**:
+- Added `create_recipe` AI tool with name, category, cuisineType, description, tags parameters
+- Validates recipe name is required and non-empty
+- Calls `POST /api/kitchen/recipes/commands/create` via manifest runtime
+- Returns recipe details with ID and manifest plan hint
+- Added tool guidance to SYSTEM_PROMPT for when to use create_recipe
+- Added `create_recipe` domain command to manifest-plans.ts
 
 ### P2-4. [ ] Wire Simulation Conflicts to UI
 **File**: `apps/app/app/(authenticated)/command-board/components/conflict-warning-panel.tsx`
@@ -212,3 +218,5 @@ Enable full AI-driven command board operations: users can create events, prep li
 - [x] **auto_generate_purchase** AI Tool - Now queries event_dishes, dishes, recipes (RecipeVersion, RecipeIngredient), ingredients, and inventory items for real purchase calculations based on event guest counts
 - [x] **generate_payroll** AI Tool - Now calls `/api/payroll/generate` for real payroll calculations with period parameters, returns formatted summary with employee count and totals
 - [x] **create_shift** AI Tool - Now calls `/api/staff/shifts` via manifest runtime, finds or creates schedule for target date, validates date/time formats and shift duration
+- [x] **create_recipe** AI Tool - Now calls `/api/kitchen/recipes/commands/create` via manifest runtime with name, category, cuisineType, description, tags parameters
+- [x] **create_recipe** Domain Command - Added executeCreateRecipeStep function and routing in manifest-plans.ts
