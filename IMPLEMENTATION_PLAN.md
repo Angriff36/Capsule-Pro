@@ -43,10 +43,10 @@ Enable full AI-driven command board operations: users can create events, prep li
 - [x] Entity Browser: refresh button for categories
 
 ### P1 - Lower Priority
-- [ ] Card hover/selection smooth animations
+- [x] Card hover/selection smooth animations
 - [x] Entity Browser: drag-to-add functionality
 - [x] Entity Browser: keyboard navigation
-- [ ] Smooth edge routing
+- [x] Smooth edge routing
 
 ---
 
@@ -69,3 +69,5 @@ Enable full AI-driven command board operations: users can create events, prep li
 - Entity Browser: refresh button for categories with loading spinner
 - Entity Browser: keyboard navigation (Arrow keys, Enter, Escape, Tab)
 - Entity Browser: drag-to-add functionality with visual drop feedback
+- Card hover/selection smooth animations (scale transforms, fade-in action buttons)
+- Smooth edge routing using getSmoothStepPath with rounded corners
