@@ -16,8 +16,15 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
-import { LayoutGrid } from "lucide-react";
+import {
+  Calendar,
+  ClipboardList,
+  FolderSearch,
+  LayoutGrid,
+  Users,
+} from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
+import { Button } from "@repo/design-system/components/ui/button";
 import { toast } from "sonner";
 import type { BoardDelta } from "../actions/boards";
 import {
@@ -63,6 +70,8 @@ interface BoardFlowProps {
   onOpenDetail: (entityType: string, entityId: string) => void;
   onProjectionAdded?: (projection: BoardProjection) => void;
   onProjectionRemoved?: (projectionId: string) => void;
+  /** Callback to open the entity browser panel */
+  onOpenEntityBrowser?: () => void;
 }
 
 // ============================================================================
@@ -195,6 +204,7 @@ function BoardFlowInner({
   onOpenDetail,
   onProjectionAdded,
   onProjectionRemoved,
+  onOpenEntityBrowser,
 }: BoardFlowProps) {
   // Ref for the canvas wrapper — used by the edge-pan hook
   const containerRef = useRef<HTMLDivElement>(null);
@@ -788,7 +798,7 @@ function BoardFlowInner({
   if (projections.length === 0 && previewState.previewAddNodes.length === 0) {
     return (
       <div className="flex h-full w-full items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-3 text-center">
+        <div className="flex flex-col items-center gap-4 text-center">
           <div className="flex size-16 items-center justify-center rounded-2xl bg-muted">
             <LayoutGrid className="size-8 text-muted-foreground" />
           </div>
@@ -797,9 +807,51 @@ function BoardFlowInner({
               No entities on this board yet
             </p>
             <p className="max-w-[300px] text-xs text-muted-foreground">
-              Use the search to add events, clients, tasks, and more.
+              Add events, clients, tasks, and more to get started.
             </p>
           </div>
+
+          {/* Quick action buttons */}
+          {onOpenEntityBrowser && (
+            <div className="flex flex-wrap justify-center gap-2 pt-2">
+              <Button
+                onClick={onOpenEntityBrowser}
+                size="sm"
+                variant="outline"
+                className="gap-1.5"
+              >
+                <Calendar className="size-4" />
+                Events
+              </Button>
+              <Button
+                onClick={onOpenEntityBrowser}
+                size="sm"
+                variant="outline"
+                className="gap-1.5"
+              >
+                <Users className="size-4" />
+                Clients
+              </Button>
+              <Button
+                onClick={onOpenEntityBrowser}
+                size="sm"
+                variant="outline"
+                className="gap-1.5"
+              >
+                <ClipboardList className="size-4" />
+                Tasks
+              </Button>
+              <Button
+                onClick={onOpenEntityBrowser}
+                size="sm"
+                variant="default"
+                className="gap-1.5"
+              >
+                <FolderSearch className="size-4" />
+                Browse All
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     );
