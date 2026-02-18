@@ -3,6 +3,7 @@ import { log } from "@repo/observability/log";
 import { createPrismaJobStore } from "@repo/sentry-integration/prisma-store";
 import type { JobQueueConfig } from "@repo/sentry-integration/queue";
 import { SentryJobQueue } from "@repo/sentry-integration/queue";
+import type { SentryIssueAlertPayload } from "@repo/sentry-integration/webhook";
 import {
   extractSentryHeaders,
   isIssueAlertWebhook,
@@ -106,7 +107,7 @@ export const POST = async (request: Request): Promise<Response> => {
   }
 
   // Parse payload
-  let payload;
+  let payload: SentryIssueAlertPayload | undefined;
   try {
     payload = parseSentryWebhookPayload(JSON.parse(rawBody));
   } catch (error) {
@@ -191,7 +192,7 @@ export const POST = async (request: Request): Promise<Response> => {
 /**
  * GET endpoint for health check
  */
-export const GET = async (): Promise<Response> => {
+export const GET = (): Response => {
   const configured = !!process.env.SENTRY_WEBHOOK_SECRET;
   const enabled = process.env.SENTRY_FIXER_ENABLED === "true";
 
