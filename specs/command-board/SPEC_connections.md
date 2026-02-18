@@ -106,7 +106,9 @@ Manual connections created by users (stored in `BoardAnnotation` table). Types: 
 
 ## Acceptance Criteria (Phase 1)
 
-- [ ] Edge labels visible (at least on hover)
-- [ ] Edges thicken on hover
-- [ ] Tooltip shows relationship details on edge hover
-- [ ] Edges use smooth routing (not straight lines)
+- [x] Edge labels visible (at least on hover)
+- [x] Edges thicken on hover
+- [x] Tooltip shows relationship details on edge hover
+- [x] Edges use smooth routing (not straight lines)
+
+> **Status**: All Phase 1 criteria completed (2026-02-18). See `board-edge.tsx` for implementation.

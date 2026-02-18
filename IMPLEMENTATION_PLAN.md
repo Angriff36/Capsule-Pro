@@ -5,7 +5,7 @@ Enable full AI-driven command board operations: users can create events, prep li
 
 ---
 
-## Current State (Verified 2026-02-18, Tagged v0.6.23)
+## Current State (Verified 2026-02-18, Tagged v0.6.24)
 
 ### AI Tools Status (15 total) - ALL FUNCTIONAL
 - suggest_board_action, suggest_manifest_plan, query_board_context
@@ -84,3 +84,4 @@ Enable full AI-driven command board operations: users can create events, prep li
 - BUG-07: Card width constraint (280px fixed width in projection-node.tsx)
 - Lint fix: Added default switch clause and fixed Array<T> → T[] syntax
 - Spec acceptance criteria updated (SPEC_ui-polish.md, SPEC_entity-browser.md)
+- SPEC_connections.md Phase 1 acceptance criteria verified complete (edge labels, hover, tooltips, smooth routing)
