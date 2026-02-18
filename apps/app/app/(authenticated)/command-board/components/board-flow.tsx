@@ -40,7 +40,12 @@ import { useLiveblocksSync } from "../hooks/use-liveblocks-sync";
 import { edgeTypes, nodeTypes } from "../nodes/node-types";
 import { RELATIONSHIP_STYLES } from "../types/board";
 import { ENTITY_TYPE_LABELS, type EntityType } from "../types/entities";
-import type { BoardEdge, ProjectionNode } from "../types/flow";
+import type {
+  BoardEdge,
+  EventQuickAction,
+  ProjectionNode,
+  TaskQuickAction,
+} from "../types/flow";
 import {
   annotationToEdge,
   connectionToEdge,
@@ -265,6 +270,90 @@ function BoardFlowInner({
     }
   }, []);
 
+  // ---- Quick action handlers for tasks and events ----
+
+  const handleTaskAction = useCallback(
+    async (entityType: string, entityId: string, action: TaskQuickAction) => {
+      try {
+        const isPrepTask = entityType === "prep_task";
+        const baseUrl = isPrepTask
+          ? "/api/kitchen/prep-tasks/commands"
+          : "/api/kitchen/kitchen-tasks/commands";
+
+        const response = await fetch(`${baseUrl}/${action}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: entityId }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error ?? `Failed to ${action} task`);
+        }
+
+        const actionLabels: Record<TaskQuickAction, string> = {
+          complete: "completed",
+          start: "started",
+          cancel: "canceled",
+          claim: "claimed",
+          release: "released",
+        };
+        toast.success(`Task ${actionLabels[action]}`);
+
+        // Trigger a refresh to update the card data
+        onProjectionAdded?.(undefined as unknown as BoardProjection);
+      } catch (error) {
+        console.error("[BoardFlow] Task action failed:", action, error);
+        toast.error(
+          error instanceof Error ? error.message : `Failed to ${action} task`
+        );
+      }
+    },
+    [onProjectionAdded]
+  );
+
+  const handleEventAction = useCallback(
+    async (entityId: string, action: EventQuickAction) => {
+      try {
+        // Map quick actions to event status changes
+        const statusMap: Record<EventQuickAction, string> = {
+          confirm: "confirmed",
+          tentative: "tentative",
+          cancel: "cancelled",
+          complete: "completed",
+        };
+
+        const response = await fetch("/api/events/event/commands/update", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: entityId, status: statusMap[action] }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error ?? `Failed to ${action} event`);
+        }
+
+        const actionLabels: Record<EventQuickAction, string> = {
+          confirm: "confirmed",
+          tentative: "marked as tentative",
+          cancel: "cancelled",
+          complete: "marked as completed",
+        };
+        toast.success(`Event ${actionLabels[action]}`);
+
+        // Trigger a refresh to update the card data
+        onProjectionAdded?.(undefined as unknown as BoardProjection);
+      } catch (error) {
+        console.error("[BoardFlow] Event action failed:", action, error);
+        toast.error(
+          error instanceof Error ? error.message : `Failed to ${action} event`
+        );
+      }
+    },
+    [onProjectionAdded]
+  );
+
   // ---- Build initial nodes from projections + entities ----
 
   const initialNodes = useMemo(() => {
@@ -275,6 +364,8 @@ function BoardFlowInner({
         onOpenDetail,
         onRemove: handleRemoveProjection,
         onTogglePin: handleTogglePin,
+        onTaskAction: handleTaskAction,
+        onEventAction: handleEventAction,
       });
     });
   }, [
@@ -283,6 +374,8 @@ function BoardFlowInner({
     onOpenDetail,
     handleRemoveProjection,
     handleTogglePin,
+    handleTaskAction,
+    handleEventAction,
   ]);
 
   // ---- Build initial edges from derived connections + annotations ----
@@ -523,6 +616,12 @@ function BoardFlowInner({
           // preview nodes are read-only
         },
         onTogglePin: () => {
+          // preview nodes are read-only
+        },
+        onTaskAction: async () => {
+          // preview nodes are read-only
+        },
+        onEventAction: async () => {
           // preview nodes are read-only
         },
       });

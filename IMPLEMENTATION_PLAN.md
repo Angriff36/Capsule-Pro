@@ -56,10 +56,14 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
 - **Status:** Polling infrastructure exists, needs wiring
 - **Effort:** 2-3 hours
 
-### 6. Command Board: Quick Actions on Cards
+### 6. ~~Command Board: Quick Actions on Cards~~ ✅ COMPLETE (2026-02-18)
 - **Spec:** `specs/command-board/SPEC_product-direction.md`
-- **Missing:** Mark complete, change status, reassign - without opening detail panel
-- **Effort:** 3-4 hours
+- **Implemented:**
+  - Added quick action dropdown menu to projection cards
+  - Task actions: Start, Mark Complete, Release, Cancel (based on task status)
+  - Event actions: Confirm Event, Mark Completed, Cancel Event (based on event status)
+  - Wired up API calls to kitchen task and event command endpoints
+  - Auto-refresh after action execution
 
 ---
 
