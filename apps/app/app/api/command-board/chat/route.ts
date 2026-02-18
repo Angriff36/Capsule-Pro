@@ -2037,6 +2037,147 @@ function createBoardTools(params: {
         }
       },
     }),
+
+    // -------------------------------------------------------------------------
+    // generate_payroll - Generate payroll for a pay period
+    // -------------------------------------------------------------------------
+    generate_payroll: tool({
+      description:
+        "Generate payroll for a specific pay period. Use when users need to run payroll, calculate employee wages, or view payroll summaries for approval.",
+      inputSchema: z.object({
+        periodStart: z.string().describe("Start date of the pay period (ISO date string, e.g., '2026-02-01')"),
+        periodEnd: z.string().describe("End date of the pay period (ISO date string, e.g., '2026-02-15')"),
+        jurisdiction: z.string().optional().describe("Tax jurisdiction (e.g., 'US', 'CA'). Defaults to 'US'"),
+        previewOnly: z.boolean().optional().describe("If true, return preview without persisting. Default: false"),
+      }),
+      execute: async (input) => {
+        try {
+          const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
+
+          // Validate date range
+          const startDate = new Date(input.periodStart);
+          const endDate = new Date(input.periodEnd);
+
+          if (startDate >= endDate) {
+            return {
+              success: false,
+              error: "Invalid date range",
+              message: "periodStart must be before periodEnd",
+            };
+          }
+
+          // Check for reasonable date range (max 31 days)
+          const daysDiff = Math.ceil(
+            (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
+          );
+          if (daysDiff > 31) {
+            return {
+              success: false,
+              error: "Invalid date range",
+              message: "Payroll period cannot exceed 31 days",
+            };
+          }
+
+          // Call the payroll generate API
+          const response = await fetch(`${baseUrl}/api/payroll/generate`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              ...(authCookie ? { Cookie: authCookie } : {}),
+            },
+            body: JSON.stringify({
+              periodStart: input.periodStart,
+              periodEnd: input.periodEnd,
+              jurisdiction: input.jurisdiction || "US",
+              regenerateOnDataChange: false,
+            }),
+          });
+
+          if (!response.ok) {
+            const errorText = await response.text();
+            console.error("[AI Chat] Payroll generation API error:", errorText);
+            return {
+              success: false,
+              error: "Payroll API error",
+              message: `Failed to generate payroll: ${response.status} ${response.statusText}`,
+            };
+          }
+
+          interface PayrollResponse {
+            batchId: string;
+            status: "processing" | "completed" | "failed";
+            periodId: string;
+            estimatedTotals: {
+              totalGross: number;
+              totalNet: number;
+              totalTaxes: number;
+              totalDeductions: number;
+              employeeCount: number;
+            };
+          }
+
+          const data = (await response.json()) as PayrollResponse;
+
+          if (data.status === "failed") {
+            return {
+              success: false,
+              error: "Payroll generation failed",
+              message: "The payroll calculation encountered an error. Please check time entries and employee data.",
+            };
+          }
+
+          // Format currency values
+          const formatCurrency = (value: number) =>
+            new Intl.NumberFormat("en-US", {
+              style: "currency",
+              currency: "USD",
+            }).format(value);
+
+          const payrollSummary = {
+            period: {
+              start: input.periodStart,
+              end: input.periodEnd,
+              periodId: data.periodId,
+            },
+            employeeCount: data.estimatedTotals.employeeCount,
+            totals: {
+              grossPay: formatCurrency(data.estimatedTotals.totalGross),
+              netPay: formatCurrency(data.estimatedTotals.totalNet),
+              taxes: formatCurrency(data.estimatedTotals.totalTaxes),
+              deductions: formatCurrency(data.estimatedTotals.totalDeductions),
+            },
+            rawValues: data.estimatedTotals,
+          };
+
+          return {
+            success: true,
+            batchId: data.batchId,
+            payrollSummary,
+            message: `Generated payroll for ${data.estimatedTotals.employeeCount} employees. Total gross: ${formatCurrency(data.estimatedTotals.totalGross)}, Net: ${formatCurrency(data.estimatedTotals.totalNet)}`,
+            nextSteps: [
+              "Review the payroll summary above",
+              "Confirm with 'yes, approve this payroll' to finalize",
+              "Export to QuickBooks or download as CSV if needed",
+            ],
+            manifestPlanHint: {
+              domainCommand: "execute_payroll",
+              requiresApproval: true,
+              params: {
+                periodId: data.periodId,
+                batchId: data.batchId,
+              },
+            },
+          };
+        } catch (error) {
+          console.error("[AI Chat] Payroll generation failed:", error);
+          return {
+            success: false,
+            error: "Payroll generation failed",
+            message: `An error occurred while generating payroll: ${error instanceof Error ? error.message : "Unknown error"}`,
+          };
+        }
+      },
+    }),
   };
 }
 

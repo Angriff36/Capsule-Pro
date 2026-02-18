@@ -7,7 +7,7 @@ Enable full AI-driven command board operations: users can create events, prep li
 
 ## Current State (Verified 2026-02-18)
 
-### AI Tools Status (12 total)
+### AI Tools Status (13 total)
 | Tool | Status | Issue |
 |------|--------|-------|
 | suggest_board_action | FUNCTIONAL | - |
@@ -22,6 +22,7 @@ Enable full AI-driven command board operations: users can create events, prep li
 | optimize_schedule | FUNCTIONAL | Now calls /api/conflicts/detect for real data |
 | **auto_generate_prep** | FUNCTIONAL | Now calls /api/kitchen/ai/bulk-generate/prep-tasks for real data |
 | **auto_generate_purchase** | FUNCTIONAL | Now queries event_dishes, RecipeIngredient, InventoryItem for real data |
+| **generate_payroll** | FUNCTIONAL | Calls /api/payroll/generate for real payroll calculations |
 
 ### Domain Commands Status (10 implemented)
 | Command | Status | Location |
@@ -48,7 +49,7 @@ Enable full AI-driven command board operations: users can create events, prep li
 
 ---
 
-## Priority Tasks (4 remaining)
+## Priority Tasks (3 remaining)
 
 ### P0-1. [x] Fix `auto_generate_prep` AI Tool
 **File**: `apps/app/app/api/command-board/chat/route.ts:1497-1704`
@@ -135,14 +136,19 @@ Enable full AI-driven command board operations: users can create events, prep li
 - Uses Prisma `database.role.update()` with compound unique key
 - Validates role exists and belongs to tenant
 
-### P2-1. [ ] Add AI Tool: `generate_payroll`
-**File**: `apps/app/app/api/command-board/chat/route.ts` (new tool after line 1640)
+### P2-1. [x] Add AI Tool: `generate_payroll`
+**File**: `apps/app/app/api/command-board/chat/route.ts:2041-2180`
 
-**Solution**:
-1. Add `generate_payroll` AI tool with period parameters
-2. Call `POST /api/payroll/generate` with startDate, endDate
-3. Return payroll summary with employee breakdown for approval
-4. Create manifest plan hint for `execute_payroll` command
+**Completed**: 2026-02-18
+
+**Changes**:
+- Added `generate_payroll` AI tool with periodStart, periodEnd, jurisdiction, previewOnly parameters
+- Validates date range (max 31 days) before calling API
+- Calls `POST /api/payroll/generate` with period parameters
+- Returns payroll summary with formatted currency values (gross, net, taxes, deductions)
+- Includes employee count in response
+- Provides manifest plan hint for `execute_payroll` domain command
+- Returns actionable next steps for approval workflow
 
 ### P2-2. [ ] Add AI Tool: `create_shift`
 **File**: `apps/app/app/api/command-board/chat/route.ts` (new tool after line 1640)
@@ -197,3 +203,4 @@ Enable full AI-driven command board operations: users can create events, prep li
 - [x] **optimize_schedule** AI Tool - Now calls `/api/conflicts/detect` for real conflict data, maps affected entities to real event IDs, provides actionable recommendations with proper severity mapping
 - [x] **auto_generate_prep** AI Tool - Now calls `/api/kitchen/ai/bulk-generate/prep-tasks` for real data, calculates estimatedHours from task.estimatedMinutes, groups by station, saves via save endpoint
 - [x] **auto_generate_purchase** AI Tool - Now queries event_dishes, dishes, recipes (RecipeVersion, RecipeIngredient), ingredients, and inventory items for real purchase calculations based on event guest counts
+- [x] **generate_payroll** AI Tool - Now calls `/api/payroll/generate` for real payroll calculations with period parameters, returns formatted summary with employee count and totals
