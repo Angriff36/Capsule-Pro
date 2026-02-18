@@ -224,3 +224,6 @@ Enable full AI-driven command board operations: users can create events, prep li
 - [x] **create_recipe** Domain Command - Added executeCreateRecipeStep function and routing in manifest-plans.ts
 - [x] **Simulation Conflicts UI** - ConflictWarningPanel now shows simulation-specific conflicts with delta analysis (introduces/resolves), blue border for simulation mode, "New in simulation" badges
 - [x] **Biome Lint Fixes** - Fixed lint issues in kitchen routes: removed unused imports, fixed nested ternary expressions, reduced cognitive complexity in sync-claims/route.ts (2026-02-18)
+- [x] **Biome Lint Fixes (Round 2)** - Fixed lint issues in sentry-fixer/process/route.ts: removed unnecessary async from GET handler, reduced cognitive complexity in processJob by extracting helper functions (validateRunnerConfig, notifyPRCreated, notifyFixFailed). Fixed async without await in shipments/route.ts (2026-02-18)
+- [x] **Entity Browser Search** - Added search/filter input to Entity Browser with real-time filtering across title and subtitle fields. Updates empty state message when search has no matches. (2026-02-18)
+- [x] **Card Width Fix** - Verified ProjectionNode already has explicit `w-[280px]` width constraint (2026-02-18)
