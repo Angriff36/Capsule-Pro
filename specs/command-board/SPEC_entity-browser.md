@@ -82,6 +82,7 @@ Replace random offset with intelligent placement:
 - Enter to add to board
 - Escape to close browser
 - Tab to move between categories
+- **Status: DONE** (2026-02-18)
 
 ### Phase 3: Advanced
 

@@ -38,7 +38,7 @@ Work items ordered by impact and dependency. Each item references its spec.
 | 15  | Controls/MiniMap styling (remove !important) | `SPEC_ui-polish.md` §Canvas.2 | 30 min | NOT STARTED |
 | 16  | Empty state with quick actions               | `SPEC_ui-polish.md` §Canvas.3 | 1 hr   | NOT STARTED |
 | 17  | Entity Browser drag-to-add                   | `SPEC_entity-browser.md` §2.1 | 2 hr   | NOT STARTED |
-| 18  | Entity Browser keyboard navigation           | `SPEC_entity-browser.md` §2.3 | 1 hr   | NOT STARTED |
+| 18  | Entity Browser keyboard navigation           | `SPEC_entity-browser.md` §2.3 | 1 hr   | **DONE** |
 | 19  | Error boundary on board                      | `BUGS.md` BUG-05              | 30 min | **DONE** |
 
 ### P3 — Future
