@@ -13,8 +13,6 @@
  * @packageDocumentation
  */
 
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import type {
   CommandResult,
   EmittedEvent,
@@ -22,9 +20,7 @@ import type {
   RuntimeOptions,
 } from "@angriff36/manifest";
 import type { IR, IRCommand } from "@angriff36/manifest/ir";
-import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { database, type PrismaClient } from "@repo/database";
-import { enforceCommandOwnership } from "@repo/manifest-adapters/ir-contract";
 import { PrismaIdempotencyStore } from "@repo/manifest-adapters/prisma-idempotency-store";
 import { PrismaJsonStore } from "@repo/manifest-adapters/prisma-json-store";
 import type { PrismaStoreConfig } from "@repo/manifest-adapters/prisma-store";
@@ -32,6 +28,7 @@ import {
   createPrismaOutboxWriter,
   PrismaStore,
 } from "@repo/manifest-adapters/prisma-store";
+import { getCompiledManifestBundle } from "@repo/manifest-adapters/runtime/loadManifests";
 import { ManifestRuntimeEngine } from "@repo/manifest-adapters/runtime-engine";
 import { createSentryTelemetry } from "./manifest/telemetry";
 
@@ -74,9 +71,6 @@ interface GeneratedRuntimeContext {
 }
 
 type ManifestIR = IR;
-
-// IR cache for each manifest type
-const manifestIRCache = new Map<string, ManifestIR>();
 
 /** Mapping from entity names to their manifest files */
 const ENTITY_TO_MANIFEST: Record<string, string> = {
@@ -161,43 +155,17 @@ function getManifestForEntity(entityName: string): string {
  * Load and compile a manifest IR, with caching.
  */
 async function getManifestIR(manifestName: string): Promise<ManifestIR> {
-  const cached = manifestIRCache.get(manifestName);
-  if (cached) {
-    return cached;
-  }
+  const { ir, hash } = await getCompiledManifestBundle();
 
-  // Resolve from the monorepo packages directory
-  const manifestPath = join(
-    process.cwd(),
-    `../../packages/manifest-adapters/manifests/${manifestName}.manifest`
-  );
-
-  const source = readFileSync(manifestPath, "utf-8");
-  const { ir, diagnostics } = await compileToIR(source);
-
-  if (!ir) {
-    throw new Error(
-      `Failed to compile ${manifestName} manifest: ${diagnostics.map((d: { message: string }) => d.message).join(", ")}`
-    );
-  }
-
-  // Debug: Log IR structure before normalization
   if (process.env.DEBUG_MANIFEST_IR === "true") {
-    console.log(`[manifest-runtime] IR for ${manifestName}:`, {
-      entities: ir.entities.map((e: { name: string; commands: unknown }) => ({
-        name: e.name,
-        commands: e.commands,
-      })),
-      commands: ir.commands.map((c: { name: string; entity?: string }) => ({
-        name: c.name,
-        entity: c.entity,
-      })),
+    console.log(`[manifest-runtime] Loaded manifest bundle for ${manifestName}`, {
+      hash,
+      entities: ir.entities.length,
+      commands: ir.commands.length,
     });
   }
 
-  const normalized = enforceCommandOwnership(ir, manifestName);
-  manifestIRCache.set(manifestName, normalized);
-  return normalized;
+  return ir;
 }
 
 /**
@@ -251,6 +219,12 @@ function _createPrismaStoreProvider(
 export async function createManifestRuntime(
   ctx: GeneratedRuntimeContext
 ): Promise<RuntimeEngine> {
+  if (process.env.NEXT_RUNTIME === "edge") {
+    throw new Error(
+      "Manifest runtime requires Node.js runtime (Edge runtime is unsupported)."
+    );
+  }
+
   // Determine which manifest to load
   const manifestName =
     ctx.manifestName ??
