@@ -250,6 +250,7 @@ sketch
 
 storybook-static/
 docs/
+!**/packages/manifest-runtime/docs/
 ### Turbo ###
 # Turborepo task cache
 .turbo
