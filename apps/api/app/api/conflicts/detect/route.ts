@@ -531,6 +531,128 @@ async function detectFinancialConflicts(
 }
 
 /**
+ * Detect equipment conflicts (same equipment needed at overlapping events)
+ */
+async function detectEquipmentConflicts(
+  tenantId: string,
+  timeRange?: { start: Date; end: Date }
+): Promise<Conflict[]> {
+  const conflicts: Conflict[] = [];
+  const now = new Date();
+  const startDate = timeRange?.start || now;
+  const endDate =
+    timeRange?.end || new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+  // Find equipment being used at multiple events on the same date
+  // Equipment is tracked via stations (equipmentList) linked through prep lists to events
+  const equipmentConflicts = await database.$queryRaw<
+    Array<{
+      equipment_name: string;
+      event_date: Date;
+      event_count: number;
+      event_ids: string[];
+      event_titles: string[];
+      station_ids: string[];
+      station_names: string[];
+    }>
+  >`
+    WITH event_equipment AS (
+      SELECT DISTINCT
+        e.id as event_id,
+        e.title as event_title,
+        e.event_date,
+        s.id as station_id,
+        s.name as station_name,
+        unnest(s.equipment_list) as equipment_name
+      FROM tenant_events.events e
+      JOIN tenant_kitchen.prep_lists pl ON pl.event_id = e.id AND pl.tenant_id = e.tenant_id AND pl.deleted_at IS NULL
+      JOIN tenant_kitchen.prep_list_items pli ON pli.prep_list_id = pl.id AND pli.tenant_id = pl.tenant_id AND pli.deleted_at IS NULL
+      JOIN tenant_kitchen.stations s ON s.id = pli.station_id AND s.tenant_id = pli.tenant_id AND s.deleted_at IS NULL
+      WHERE e.tenant_id = ${tenantId}::uuid
+        AND e.deleted_at IS NULL
+        AND e.event_date BETWEEN ${startDate}::date AND ${endDate}::date
+        AND e.status NOT IN ('cancelled', 'completed')
+        AND cardinality(s.equipment_list) > 0
+    )
+    SELECT
+      equipment_name,
+      event_date,
+      COUNT(DISTINCT event_id) as event_count,
+      ARRAY_AGG(DISTINCT event_id ORDER BY event_id) as event_ids,
+      ARRAY_AGG(DISTINCT event_title ORDER BY event_id) as event_titles,
+      ARRAY_AGG(DISTINCT station_id) as station_ids,
+      ARRAY_AGG(DISTINCT station_name) as station_names
+    FROM event_equipment
+    GROUP BY equipment_name, event_date
+    HAVING COUNT(DISTINCT event_id) > 1
+    ORDER BY event_date, event_count DESC
+    LIMIT 20
+  `;
+
+  for (const conflict of equipmentConflicts) {
+    let severity: "critical" | "high" | "medium";
+    if (conflict.event_count > 2) {
+      severity = "critical";
+    } else if (conflict.event_count > 1) {
+      severity = "high";
+    } else {
+      severity = "medium";
+    }
+
+    conflicts.push({
+      id: `equipment-conflict-${conflict.equipment_name.replace(/\s+/g, "-").toLowerCase()}-${conflict.event_date.toISOString()}`,
+      type: "equipment",
+      severity,
+      title: `Equipment conflict: ${conflict.equipment_name}`,
+      description: `${conflict.equipment_name} is needed at ${conflict.event_count} event(s) on ${conflict.event_date.toLocaleDateString()}: ${conflict.event_titles.filter((t): t is string => t !== null).join(", ")}`,
+      affectedEntities: [
+        {
+          type: "equipment",
+          id: conflict.equipment_name,
+          name: conflict.equipment_name,
+        },
+        ...conflict.event_ids.map((eventId, index) => ({
+          type: "event" as const,
+          id: eventId,
+          name: conflict.event_titles[index] ?? "Unknown Event",
+        })),
+      ],
+      suggestedAction:
+        conflict.event_count > 2
+          ? `Critical: ${conflict.equipment_name} is required by multiple events - arrange additional equipment or adjust schedules`
+          : `Review if ${conflict.equipment_name} can be shared between events or arrange alternative equipment`,
+      resolutionOptions: [
+        {
+          type: "substitute",
+          description:
+            "Rent or source additional equipment for one or more events",
+          affectedEntities: conflict.event_ids.map((eventId, index) => ({
+            type: "event" as const,
+            id: eventId,
+            name: conflict.event_titles[index] ?? "Unknown Event",
+          })),
+          estimatedImpact: conflict.event_count > 2 ? "high" : "medium",
+        },
+        {
+          type: "reschedule",
+          description:
+            "Adjust event timing to allow equipment sharing with setup/breakdown buffer",
+          affectedEntities: conflict.event_ids.map((eventId, index) => ({
+            type: "event" as const,
+            id: eventId,
+            name: conflict.event_titles[index] ?? "Unknown Event",
+          })),
+          estimatedImpact: "medium",
+        },
+      ],
+      createdAt: new Date(),
+    });
+  }
+
+  return conflicts;
+}
+
+/**
  * Build conflict summary
  */
 function buildConflictSummary(conflicts: Conflict[]) {
@@ -547,6 +669,7 @@ function buildConflictSummary(conflicts: Conflict[]) {
       resource: 0,
       staff: 0,
       inventory: 0,
+      equipment: 0,
       timeline: 0,
       venue: 0,
       financial: 0,
@@ -596,6 +719,10 @@ export async function POST(request: Request) {
 
     if (!entityTypes || entityTypes.includes("inventory")) {
       conflicts.push(...(await detectInventoryConflicts(tenantId, timeRange)));
+    }
+
+    if (!entityTypes || entityTypes.includes("equipment")) {
+      conflicts.push(...(await detectEquipmentConflicts(tenantId, timeRange)));
     }
 
     if (!entityTypes || entityTypes.includes("timeline")) {
