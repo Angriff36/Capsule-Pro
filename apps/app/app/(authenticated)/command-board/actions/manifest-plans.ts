@@ -712,6 +712,502 @@ async function executeUpdateInventoryStep(
   };
 }
 
+async function executeCreatePrepTasksStep(
+  context: DomainExecutionContext,
+  step: DomainCommandStep
+): Promise<StepExecutionResult> {
+  const eventId = await resolveEventIdFromStep(context, step);
+  if (!eventId) {
+    return {
+      stepId: step.stepId,
+      success: false,
+      message: "Event ID is required to create prep tasks",
+      error: "No event available - specify an event to generate prep tasks for",
+    };
+  }
+
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
+
+  try {
+    // First generate prep tasks
+    const generateResponse = await fetch(
+      `${baseUrl}/api/kitchen/ai/bulk-generate/prep-tasks`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          eventId,
+          options: {
+            includeKitchenTasks: true,
+            priorityStrategy: "due_date" as const,
+          },
+        }),
+      }
+    );
+
+    if (!generateResponse.ok) {
+      const errorText = await generateResponse.text();
+      return {
+        stepId: step.stepId,
+        success: false,
+        message: "Failed to generate prep tasks",
+        error: `Generation API error: ${errorText}`,
+      };
+    }
+
+    const generateData = (await generateResponse.json()) as {
+      tasks: Array<{
+        name: string;
+        dishId: string | null;
+        recipeVersionId: string | null;
+        taskType: string;
+        quantityTotal: number;
+        quantityUnitId: number | null;
+        servingsTotal: number | null;
+        startByDate: string;
+        dueByDate: string;
+        dueByTime: string | null;
+        isEventFinish: boolean;
+        priority: number;
+        estimatedMinutes: number | null;
+        notes: string | null;
+        station: string | null;
+      }>;
+      generatedCount: number;
+    };
+
+    const tasks = generateData.tasks || [];
+    if (tasks.length === 0) {
+      return {
+        stepId: step.stepId,
+        success: true,
+        message: "No prep tasks generated (event may have no menu items)",
+      };
+    }
+
+    // Save tasks to database
+    const saveResponse = await fetch(
+      `${baseUrl}/api/kitchen/ai/bulk-generate/prep-tasks/save`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eventId, tasks }),
+      }
+    );
+
+    if (!saveResponse.ok) {
+      const errorText = await saveResponse.text();
+      return {
+        stepId: step.stepId,
+        success: false,
+        message: "Failed to save prep tasks",
+        error: `Save API error: ${errorText}`,
+      };
+    }
+
+    const saveData = (await saveResponse.json()) as {
+      created: number;
+      errors: string[];
+    };
+
+    // Add projections for created tasks
+    const createdTasks = await database.prepTask.findMany({
+      where: {
+        tenantId: context.tenantId,
+        eventId,
+        deletedAt: null,
+      },
+      orderBy: { createdAt: "desc" },
+      take: saveData.created,
+      select: { id: true },
+    });
+
+    let projectionCount = 0;
+    for (const task of createdTasks) {
+      const projectionResult = await addProjection(context.boardId, {
+        entityType: "prep_task",
+        entityId: task.id,
+        positionX: 200 + projectionCount * 20,
+        positionY: 300 + projectionCount * 20,
+      });
+      if (projectionResult.success) {
+        projectionCount++;
+      }
+    }
+
+    return {
+      stepId: step.stepId,
+      success: true,
+      message: `Created ${saveData.created} prep tasks for event ${eventId}. Added ${projectionCount} to board.`,
+    };
+  } catch (error) {
+    return {
+      stepId: step.stepId,
+      success: false,
+      message: "Failed to create prep tasks",
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+async function executeCreatePurchaseOrderStep(
+  _context: DomainExecutionContext,
+  step: DomainCommandStep
+): Promise<StepExecutionResult> {
+  const items = step.args.items as
+    | Array<{
+        ingredientId?: string;
+        inventoryItemId?: string;
+        name: string;
+        quantity: number;
+        unit?: string;
+        estimatedCost?: number;
+      }>
+    | undefined;
+
+  if (!(items && Array.isArray(items)) || items.length === 0) {
+    return {
+      stepId: step.stepId,
+      success: false,
+      message: "Items are required for purchase order",
+      error: "Missing required parameter: items array",
+    };
+  }
+
+  const vendorId = asString(step.args.vendorId);
+  const notes = asString(step.args.notes);
+  const status = asString(step.args.status) ?? "draft";
+
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
+
+  try {
+    const response = await fetch(
+      `${baseUrl}/api/inventory/purchase-orders/commands/create`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          vendorId,
+          status,
+          notes,
+          items: items.map((item) => ({
+            ingredientId: item.ingredientId,
+            inventoryItemId: item.inventoryItemId,
+            name: item.name,
+            quantity: item.quantity,
+            unit: item.unit,
+            estimatedCost: item.estimatedCost,
+          })),
+        }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      return {
+        stepId: step.stepId,
+        success: false,
+        message: "Failed to create purchase order",
+        error: `API error: ${errorText}`,
+      };
+    }
+
+    const responseData = (await response.json()) as {
+      result?: { id?: string };
+    };
+    const poId = responseData.result?.id;
+
+    // Note: purchase_order is not a valid board projection entity type,
+    // so we don't add it to the board. The PO can be viewed in the inventory UI.
+
+    return {
+      stepId: step.stepId,
+      success: true,
+      message: `Created purchase order ${poId ?? "(unknown ID)"} with ${items.length} items.`,
+    };
+  } catch (error) {
+    return {
+      stepId: step.stepId,
+      success: false,
+      message: "Failed to create purchase order",
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
+  }
+}
+
+async function executeUpdateTaskStep(
+  context: DomainExecutionContext,
+  step: DomainCommandStep
+): Promise<StepExecutionResult> {
+  const taskId = asString(step.args.taskId) ?? step.entityId;
+  if (!taskId) {
+    return {
+      stepId: step.stepId,
+      success: false,
+      message: "Task ID is required",
+      error: "Missing required parameter: taskId",
+    };
+  }
+
+  // Verify task exists and belongs to tenant
+  const existingTask = await database.$queryRaw<
+    Array<{ id: string; name: string; status: string }>
+  >(
+    Prisma.sql`
+      SELECT id, name, status
+      FROM tenant_kitchen.prep_tasks
+      WHERE id = ${taskId}::uuid
+        AND tenant_id = ${context.tenantId}::uuid
+        AND deleted_at IS NULL
+      LIMIT 1
+    `
+  );
+
+  if (existingTask.length === 0) {
+    return {
+      stepId: step.stepId,
+      success: false,
+      message: "Task not found",
+      error: `Task ${taskId} not found or does not belong to tenant`,
+    };
+  }
+
+  // Build update fields
+  const updates: string[] = [];
+  const values: unknown[] = [];
+  let paramIndex = 1;
+
+  const status = asString(step.args.status);
+  if (status) {
+    updates.push(`status = $${paramIndex++}`);
+    values.push(status);
+  }
+
+  const priority = asNumber(step.args.priority);
+  if (priority !== undefined) {
+    updates.push(`priority = $${paramIndex++}`);
+    values.push(Math.max(1, Math.min(10, priority)));
+  }
+
+  const dueByDate = asString(step.args.dueByDate);
+  if (dueByDate) {
+    updates.push(`due_by_date = $${paramIndex++}`);
+    values.push(new Date(dueByDate));
+  }
+
+  const assignedTo = asString(step.args.assignedTo);
+  if (assignedTo) {
+    updates.push(`assigned_to = $${paramIndex++}`);
+    values.push(assignedTo);
+  }
+
+  const notes = asString(step.args.notes);
+  if (notes !== undefined) {
+    updates.push(`notes = $${paramIndex++}`);
+    values.push(notes);
+  }
+
+  if (updates.length === 0) {
+    return {
+      stepId: step.stepId,
+      success: true,
+      message: `No updates provided for task "${existingTask[0].name}"`,
+    };
+  }
+
+  // Add updated_at
+  updates.push(`updated_at = $${paramIndex++}`);
+  values.push(new Date());
+
+  // Add WHERE clause parameters
+  values.push(taskId);
+  values.push(context.tenantId);
+
+  await database.$executeRaw(
+    Prisma.sql`
+      UPDATE tenant_kitchen.prep_tasks
+      SET ${Prisma.raw(updates.join(", "))}
+      WHERE id = ${taskId}::uuid
+        AND tenant_id = ${context.tenantId}::uuid
+    `
+  );
+
+  return {
+    stepId: step.stepId,
+    success: true,
+    message: `Updated task "${existingTask[0].name}" (${taskId})`,
+  };
+}
+
+async function executeUpdateEventStep(
+  context: DomainExecutionContext,
+  step: DomainCommandStep
+): Promise<StepExecutionResult> {
+  const eventId = asString(step.args.eventId) ?? step.entityId;
+  if (!eventId) {
+    return {
+      stepId: step.stepId,
+      success: false,
+      message: "Event ID is required",
+      error: "Missing required parameter: eventId",
+    };
+  }
+
+  // Verify event exists and belongs to tenant
+  const existingEvent = await database.$queryRaw<
+    Array<{ id: string; title: string }>
+  >(
+    Prisma.sql`
+      SELECT id, title
+      FROM tenant_events.events
+      WHERE id = ${eventId}::uuid
+        AND tenant_id = ${context.tenantId}::uuid
+        AND deleted_at IS NULL
+      LIMIT 1
+    `
+  );
+
+  if (existingEvent.length === 0) {
+    return {
+      stepId: step.stepId,
+      success: false,
+      message: "Event not found",
+      error: `Event ${eventId} not found or does not belong to tenant`,
+    };
+  }
+
+  // Build update object
+  const updateData: Record<string, unknown> = {};
+
+  const title = asString(step.args.title);
+  if (title) {
+    updateData.title = title;
+  }
+
+  const eventDate = asString(step.args.eventDate);
+  if (eventDate) {
+    const parsedDate = new Date(eventDate);
+    if (!Number.isNaN(parsedDate.getTime())) {
+      updateData.eventDate = parsedDate;
+    }
+  }
+
+  const guestCount = asNumber(step.args.guestCount);
+  if (guestCount !== undefined) {
+    updateData.guestCount = Math.max(1, Math.round(guestCount));
+  }
+
+  const status = asString(step.args.status);
+  if (status) {
+    updateData.status = status;
+  }
+
+  const venueName = asString(step.args.venueName);
+  if (venueName !== undefined) {
+    updateData.venueName = venueName;
+  }
+
+  const venueAddress = asString(step.args.venueAddress);
+  if (venueAddress !== undefined) {
+    updateData.venueAddress = venueAddress;
+  }
+
+  const notes = asString(step.args.notes);
+  if (notes !== undefined) {
+    updateData.notes = notes;
+  }
+
+  if (Object.keys(updateData).length === 0) {
+    return {
+      stepId: step.stepId,
+      success: true,
+      message: `No updates provided for event "${existingEvent[0].title}"`,
+    };
+  }
+
+  await database.event.update({
+    where: { id: eventId, tenantId: context.tenantId },
+    data: updateData,
+  });
+
+  return {
+    stepId: step.stepId,
+    success: true,
+    message: `Updated event "${existingEvent[0].title}" (${eventId})`,
+  };
+}
+
+async function executeUpdateRolePolicyStep(
+  context: DomainExecutionContext,
+  step: DomainCommandStep
+): Promise<StepExecutionResult> {
+  const roleId = asString(step.args.roleId) ?? step.entityId;
+  if (!roleId) {
+    return {
+      stepId: step.stepId,
+      success: false,
+      message: "Role ID is required",
+      error: "Missing required parameter: roleId",
+    };
+  }
+
+  // Verify role exists and belongs to tenant
+  const existingRole = await database.role.findFirst({
+    where: {
+      id: roleId,
+      tenantId: context.tenantId,
+      deletedAt: null,
+    },
+    select: { id: true, name: true },
+  });
+
+  if (!existingRole) {
+    return {
+      stepId: step.stepId,
+      success: false,
+      message: "Role not found",
+      error: `Role ${roleId} not found or does not belong to tenant`,
+    };
+  }
+
+  // Build update object
+  const updateData: Record<string, unknown> = {};
+
+  const overtimeThresholdHours = asNumber(step.args.overtimeThresholdHours);
+  if (overtimeThresholdHours !== undefined) {
+    updateData.overtimeThresholdHours = Math.max(0, overtimeThresholdHours);
+  }
+
+  const overtimeMultiplier = asNumber(step.args.overtimeMultiplier);
+  if (overtimeMultiplier !== undefined) {
+    updateData.overtimeMultiplier = Math.max(1, overtimeMultiplier);
+  }
+
+  const baseRate = asNumber(step.args.baseRate);
+  if (baseRate !== undefined) {
+    updateData.baseRate = Math.max(0, baseRate);
+  }
+
+  if (Object.keys(updateData).length === 0) {
+    return {
+      stepId: step.stepId,
+      success: true,
+      message: `No updates provided for role "${existingRole.name}"`,
+    };
+  }
+
+  await database.role.update({
+    where: { tenantId_id: { tenantId: context.tenantId, id: roleId } },
+    data: updateData,
+  });
+
+  return {
+    stepId: step.stepId,
+    success: true,
+    message: `Updated role "${existingRole.name}" (${roleId}) policy`,
+  };
+}
+
 async function executeDomainStep(
   context: DomainExecutionContext,
   boardId: string,
@@ -765,6 +1261,29 @@ async function executeDomainStep(
     normalized === "modify_inventory"
   ) {
     return executeUpdateInventoryStep(context, step);
+  }
+
+  if (normalized === "create_prep_tasks") {
+    return executeCreatePrepTasksStep(context, step);
+  }
+
+  if (normalized === "create_purchase_order" || normalized === "create_po") {
+    return executeCreatePurchaseOrderStep(context, step);
+  }
+
+  if (normalized === "update_task" || normalized === "modify_task") {
+    return executeUpdateTaskStep(context, step);
+  }
+
+  if (normalized === "update_event" || normalized === "modify_event") {
+    return executeUpdateEventStep(context, step);
+  }
+
+  if (
+    normalized === "update_role_policy" ||
+    normalized === "modify_role_policy"
+  ) {
+    return executeUpdateRolePolicyStep(context, step);
   }
 
   return {
@@ -985,7 +1504,7 @@ function validateExecutionStrategy(
   // Validate dependencies don't create cycles
   const dependencyGraph = new Map<string, string[]>();
   for (const dep of strategy.dependencies) {
-    if (!stepIds.has(dep.before) || !stepIds.has(dep.after)) {
+    if (!(stepIds.has(dep.before) && stepIds.has(dep.after))) {
       continue; // Already reported as missing step
     }
     const existing = dependencyGraph.get(dep.before) ?? [];
@@ -1004,7 +1523,9 @@ function validateExecutionStrategy(
     const neighbors = dependencyGraph.get(node) ?? [];
     for (const neighbor of neighbors) {
       if (!visited.has(neighbor)) {
-        if (hasCycle(neighbor)) return true;
+        if (hasCycle(neighbor)) {
+          return true;
+        }
       } else if (recursionStack.has(neighbor)) {
         return true;
       }
@@ -1015,15 +1536,13 @@ function validateExecutionStrategy(
   }
 
   for (const stepId of Array.from(stepIds)) {
-    if (!visited.has(stepId)) {
-      if (hasCycle(stepId)) {
-        errors.push({
-          field: "executionStrategy.dependencies",
-          message: "Circular dependency detected in execution strategy",
-          severity: "error",
-        });
-        break;
-      }
+    if (!visited.has(stepId) && hasCycle(stepId)) {
+      errors.push({
+        field: "executionStrategy.dependencies",
+        message: "Circular dependency detected in execution strategy",
+        severity: "error",
+      });
+      break;
     }
   }
 
@@ -1036,11 +1555,12 @@ function validateExecutionStrategy(
         severity: "warning",
       });
     }
-    if (strategy.timeout > 300000) {
+    if (strategy.timeout > 300_000) {
       // 5 minutes
       errors.push({
         field: "executionStrategy.timeout",
-        message: "Timeout exceeds 5 minutes - consider breaking into smaller steps",
+        message:
+          "Timeout exceeds 5 minutes - consider breaking into smaller steps",
         severity: "warning",
       });
     }
@@ -1093,28 +1613,31 @@ function validateRollbackStrategy(
   }
 
   // If rollback is enabled, validate steps are defined
-  if (strategy.enabled && strategy.steps.length === 0) {
-    if (strategy.strategy !== "manual") {
-      errors.push({
-        field: "rollbackStrategy.steps",
-        message:
-          "Rollback is enabled but no compensating steps are defined (except for manual strategy)",
-        severity: "warning",
-      });
-    }
+  if (
+    strategy.enabled &&
+    strategy.steps.length === 0 &&
+    strategy.strategy !== "manual"
+  ) {
+    errors.push({
+      field: "rollbackStrategy.steps",
+      message:
+        "Rollback is enabled but no compensating steps are defined (except for manual strategy)",
+      severity: "warning",
+    });
   }
 
   // Validate recovery time is reasonable
-  if (strategy.estimatedRecoveryTime !== undefined) {
-    if (strategy.estimatedRecoveryTime > 600000) {
-      // 10 minutes
-      errors.push({
-        field: "rollbackStrategy.estimatedRecoveryTime",
-        message:
-          "Estimated recovery time exceeds 10 minutes - consider simplifying the plan",
-        severity: "warning",
-      });
-    }
+  if (
+    strategy.estimatedRecoveryTime !== undefined &&
+    strategy.estimatedRecoveryTime > 600_000
+  ) {
+    // 10 minutes
+    errors.push({
+      field: "rollbackStrategy.estimatedRecoveryTime",
+      message:
+        "Estimated recovery time exceeds 10 minutes - consider simplifying the plan",
+      severity: "warning",
+    });
   }
 
   // Validate risks are documented
@@ -1168,7 +1691,9 @@ function validateRiskAssessment(
 /**
  * Validates cost impact configuration.
  */
-function validateCostImpact(impact: CostImpact | undefined): ConfigValidationError[] {
+function validateCostImpact(
+  impact: CostImpact | undefined
+): ConfigValidationError[] {
   const errors: ConfigValidationError[] = [];
 
   if (!impact) {
@@ -1234,7 +1759,9 @@ export async function validatePlanConfig(
   const warnings: ConfigValidationWarning[] = [];
 
   // Validate execution strategy
-  errors.push(...validateExecutionStrategy(plan.executionStrategy, plan.domainPlan));
+  errors.push(
+    ...validateExecutionStrategy(plan.executionStrategy, plan.domainPlan)
+  );
 
   // Validate rollback strategy
   errors.push(...validateRollbackStrategy(plan.rollbackStrategy));
@@ -1284,7 +1811,9 @@ export async function previewManifestPlan(
       riskSummary: "Plan not found",
       validation: {
         valid: false,
-        errors: [{ field: "planId", message: "Plan not found", severity: "error" }],
+        errors: [
+          { field: "planId", message: "Plan not found", severity: "error" },
+        ],
         warnings: [],
       },
     };
@@ -1389,7 +1918,9 @@ async function previewDomainStep(
       warnings.push("Task name is required");
     }
     if (!step.args.eventId) {
-      warnings.push("No event specified - will attempt to resolve from board context");
+      warnings.push(
+        "No event specified - will attempt to resolve from board context"
+      );
     }
   } else if (
     normalized === "assign_employee" ||
@@ -1398,7 +1929,9 @@ async function previewDomainStep(
   ) {
     estimatedImpact = "Will assign an employee to an event";
     if (!step.args.employeeId && step.entityType !== "employee") {
-      warnings.push("No employee specified - will attempt to resolve from board context");
+      warnings.push(
+        "No employee specified - will attempt to resolve from board context"
+      );
     }
   } else if (
     normalized === "update_inventory" ||
@@ -1412,6 +1945,44 @@ async function previewDomainStep(
     ) {
       wouldSucceed = false;
       warnings.push("Quantity change or adjustment is required");
+    }
+  } else if (normalized === "create_prep_tasks") {
+    estimatedImpact = "Will generate and save AI prep tasks for event";
+    if (!step.args.eventId && step.entityType !== "event") {
+      warnings.push(
+        "No event specified - will attempt to resolve from board context"
+      );
+    }
+  } else if (
+    normalized === "create_purchase_order" ||
+    normalized === "create_po"
+  ) {
+    estimatedImpact = "Will create a purchase order with specified items";
+    const items = step.args.items as unknown[];
+    if (!(items && Array.isArray(items)) || items.length === 0) {
+      wouldSucceed = false;
+      warnings.push("Items array is required for purchase order");
+    }
+  } else if (normalized === "update_task" || normalized === "modify_task") {
+    estimatedImpact = "Will update prep task properties";
+    if (!step.args.taskId && step.entityType !== "prep_task") {
+      wouldSucceed = false;
+      warnings.push("Task ID is required");
+    }
+  } else if (normalized === "update_event" || normalized === "modify_event") {
+    estimatedImpact = "Will update event properties";
+    if (!step.args.eventId && step.entityType !== "event") {
+      wouldSucceed = false;
+      warnings.push("Event ID is required");
+    }
+  } else if (
+    normalized === "update_role_policy" ||
+    normalized === "modify_role_policy"
+  ) {
+    estimatedImpact = "Will update role policy settings";
+    if (!step.args.roleId) {
+      wouldSucceed = false;
+      warnings.push("Role ID is required");
     }
   } else if (isBoardCommandId(step.commandName)) {
     estimatedImpact = `Will execute board command: ${step.commandName}`;
@@ -1437,11 +2008,41 @@ function estimateStepDuration(step: DomainCommandStep): number {
   const normalized = step.commandName.trim().toLowerCase();
 
   // Database operations are typically fast
-  if (normalized === "create_event") return 500;
-  if (normalized.includes("link") || normalized.includes("menu")) return 300;
-  if (normalized.includes("task")) return 400;
-  if (normalized.includes("employee") || normalized.includes("assign")) return 300;
-  if (normalized.includes("inventory")) return 350;
+  if (normalized === "create_event") {
+    return 500;
+  }
+  if (normalized.includes("link") || normalized.includes("menu")) {
+    return 300;
+  }
+  if (normalized.includes("task")) {
+    return 400;
+  }
+  if (normalized.includes("employee") || normalized.includes("assign")) {
+    return 300;
+  }
+  if (normalized.includes("inventory")) {
+    return 350;
+  }
+
+  // New commands
+  if (normalized === "create_prep_tasks") {
+    return 2000; // AI generation takes longer
+  }
+  if (normalized === "create_purchase_order" || normalized === "create_po") {
+    return 500;
+  }
+  if (normalized === "update_task" || normalized === "modify_task") {
+    return 300;
+  }
+  if (normalized === "update_event" || normalized === "modify_event") {
+    return 300;
+  }
+  if (
+    normalized === "update_role_policy" ||
+    normalized === "modify_role_policy"
+  ) {
+    return 300;
+  }
 
   // Default estimate
   return 500;
@@ -1592,7 +2193,9 @@ export async function approveManifestPlan(
     if (!options?.skipValidation) {
       const validation = await validatePlanConfig(payload.plan);
       if (!validation.valid) {
-        const errorMessages = validation.errors.map((e) => `${e.field}: ${e.message}`);
+        const errorMessages = validation.errors.map(
+          (e) => `${e.field}: ${e.message}`
+        );
         return {
           success: false,
           planId,
@@ -1607,26 +2210,32 @@ export async function approveManifestPlan(
     // Handle dry_run mode - return preview without executing
     if (payload.plan.execution.mode === "dry_run") {
       const preview = await previewManifestPlan(boardId, planId);
-      const previewStepResults: StepExecutionResult[] = preview.domainStepPreviews.map((p) => ({
-        stepId: p.stepId,
-        success: p.wouldSucceed,
-        message: p.estimatedImpact,
-        ...(p.warnings.length > 0 ? { error: p.warnings.join("; ") } : {}),
-      }));
-      const previewMutationResults: BoardMutationResult[] = preview.boardMutationPreviews.map((m) => ({
-        mutationType: m.mutationType,
-        success: m.wouldSucceed,
-        message: m.description,
-      }));
+      const previewStepResults: StepExecutionResult[] =
+        preview.domainStepPreviews.map((p) => ({
+          stepId: p.stepId,
+          success: p.wouldSucceed,
+          message: p.estimatedImpact,
+          ...(p.warnings.length > 0 ? { error: p.warnings.join("; ") } : {}),
+        }));
+      const previewMutationResults: BoardMutationResult[] =
+        preview.boardMutationPreviews.map((m) => ({
+          mutationType: m.mutationType,
+          success: m.wouldSucceed,
+          message: m.description,
+        }));
 
       return {
-        success: preview.validation.valid && previewStepResults.every((s) => s.success),
+        success:
+          preview.validation.valid &&
+          previewStepResults.every((s) => s.success),
         planId,
         summary: `Dry run preview: ${preview.riskSummary}`,
         stepResults: previewStepResults,
         boardMutationResults: previewMutationResults,
         ...(preview.validation.warnings.length > 0
-          ? { error: `Warnings: ${preview.validation.warnings.map((w) => w.message).join("; ")}` }
+          ? {
+              error: `Warnings: ${preview.validation.warnings.map((w) => w.message).join("; ")}`,
+            }
           : {}),
       };
     }
