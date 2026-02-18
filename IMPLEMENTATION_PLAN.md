@@ -23,19 +23,19 @@ Enable full AI-driven command board operations: users can create events, prep li
 | **auto_generate_prep** | FUNCTIONAL | Now calls /api/kitchen/ai/bulk-generate/prep-tasks for real data |
 | **auto_generate_purchase** | FUNCTIONAL | Now queries event_dishes, RecipeIngredient, InventoryItem for real data |
 
-### Domain Commands Status (5 implemented, 5 missing)
+### Domain Commands Status (10 implemented)
 | Command | Status | Location |
 |---------|--------|----------|
-| create_event | IMPLEMENTED | manifest-plans.ts:734 |
-| link_menu | IMPLEMENTED | manifest-plans.ts:738-743 |
-| create_task | IMPLEMENTED | manifest-plans.ts:746-751 |
-| assign_employee | IMPLEMENTED | manifest-plans.ts:754-759 |
-| update_inventory | IMPLEMENTED | manifest-plans.ts:762-767 |
-| **create_prep_tasks** | MISSING | Referenced in chat/route.ts:1498 |
-| **create_purchase_order** | MISSING | Referenced in chat/route.ts:1607 |
-| **update_task** | MISSING | Referenced in chat/route.ts:807 |
-| **update_event** | MISSING | Referenced in chat/route.ts:817 |
-| **update_role_policy** | MISSING | Referenced in chat/route.ts:1128 |
+| create_event | IMPLEMENTED | manifest-plans.ts:1229 |
+| link_menu | IMPLEMENTED | manifest-plans.ts:1233-1239 |
+| create_task | IMPLEMENTED | manifest-plans.ts:1241-1247 |
+| assign_employee | IMPLEMENTED | manifest-plans.ts:1249-1255 |
+| update_inventory | IMPLEMENTED | manifest-plans.ts:1257-1263 |
+| create_prep_tasks | IMPLEMENTED | manifest-plans.ts:1265 |
+| create_purchase_order | IMPLEMENTED | manifest-plans.ts:1269-1274 |
+| update_task | IMPLEMENTED | manifest-plans.ts:1276-1281 |
+| update_event | IMPLEMENTED | manifest-plans.ts:1283-1288 |
+| update_role_policy | IMPLEMENTED | manifest-plans.ts:1290-1295 |
 
 ### Backend APIs (All Verified Ready)
 - `/api/kitchen/ai/bulk-generate/prep-tasks` - Returns GeneratedPrepTask[] with estimatedMinutes, station
@@ -48,7 +48,7 @@ Enable full AI-driven command board operations: users can create events, prep li
 
 ---
 
-## Priority Tasks (9 remaining)
+## Priority Tasks (4 remaining)
 
 ### P0-1. [x] Fix `auto_generate_prep` AI Tool
 **File**: `apps/app/app/api/command-board/chat/route.ts:1497-1704`
@@ -80,50 +80,60 @@ Enable full AI-driven command board operations: users can create events, prep li
 - Returns real low-stock items from InventoryItem.parLevel checks
 - Groups items by vendor when `groupByVendor: true`
 
-### P1-1. [ ] Add `create_prep_tasks` Domain Command
-**File**: `apps/app/app/(authenticated)/command-board/actions/manifest-plans.ts:715-776`
+### P1-1. [x] Add `create_prep_tasks` Domain Command
+**File**: `apps/app/app/(authenticated)/command-board/actions/manifest-plans.ts:715-851`
 
-**Solution**:
-1. Add case in `executeDomainStep()` for `normalized === "create_prep_tasks"`
-2. Call `POST /api/kitchen/ai/bulk-generate/prep-tasks/save` with eventId from args
-3. Return created task count and task IDs
-4. Add projection to board for each created task
+**Completed**: 2026-02-18
 
-### P1-2. [ ] Add `create_purchase_order` Domain Command
-**File**: `apps/app/app/(authenticated)/command-board/actions/manifest-plans.ts:715-776`
+**Changes**:
+- Added `executeCreatePrepTasksStep()` function that calls `/api/kitchen/ai/bulk-generate/prep-tasks` to generate tasks
+- Calls `/api/kitchen/ai/bulk-generate/prep-tasks/save` to persist tasks to database
+- Adds board projections for each created task
+- Returns created task count and projection count
 
-**Solution**:
-1. Add case in `executeDomainStep()` for `normalized === "create_purchase_order"`
-2. Call `POST /api/inventory/purchase-orders/commands/create` with manifest runtime
-3. Set `status: "draft"` in args for approval workflow
-4. Return PO ID and item count
+### P1-2. [x] Add `create_purchase_order` Domain Command
+**File**: `apps/app/app/(authenticated)/command-board/actions/manifest-plans.ts:853-942`
 
-### P1-3. [ ] Add `update_task` Domain Command
-**File**: `apps/app/app/(authenticated)/command-board/actions/manifest-plans.ts:715-776`
+**Completed**: 2026-02-18
 
-**Solution**:
-1. Add case in `executeDomainStep()` for `normalized === "update_task"`
-2. Support modifying: status, priority, dueByDate, assignedTo, notes
-3. Use direct DB update via `database.prepTask.update()`
-4. Validate task exists and belongs to tenant
+**Changes**:
+- Added `executeCreatePurchaseOrderStep()` function
+- Calls `/api/inventory/purchase-orders/commands/create` via manifest runtime
+- Supports items array with ingredientId, inventoryItemId, name, quantity, unit, estimatedCost
+- Returns PO ID and item count
 
-### P1-4. [ ] Add `update_event` Domain Command
-**File**: `apps/app/app/(authenticated)/command-board/actions/manifest-plans.ts:715-776`
+### P1-3. [x] Add `update_task` Domain Command
+**File**: `apps/app/app/(authenticated)/command-board/actions/manifest-plans.ts:944-1046`
 
-**Solution**:
-1. Add case in `executeDomainStep()` for `normalized === "update_event"`
-2. Support updating: title, eventDate, guestCount, status, venueName, notes
-3. Use direct DB update via `database.event.update()`
-4. Validate event exists and belongs to tenant
+**Completed**: 2026-02-18
 
-### P1-5. [ ] Add `update_role_policy` Domain Command
-**File**: `apps/app/app/(authenticated)/command-board/actions/manifest-plans.ts:715-776`
+**Changes**:
+- Added `executeUpdateTaskStep()` function
+- Supports modifying: status, priority, dueByDate, assignedTo, notes
+- Uses raw SQL update via `database.$executeRaw`
+- Validates task exists and belongs to tenant
 
-**Solution**:
-1. Add case in `executeDomainStep()` for `normalized === "update_role_policy"`
-2. Update overtimeThresholdHours, overtimeMultiplier, or baseRate
-3. Use direct DB update via `database.role.update()`
-4. Validate role exists and belongs to tenant
+### P1-4. [x] Add `update_event` Domain Command
+**File**: `apps/app/app/(authenticated)/command-board/actions/manifest-plans.ts:1048-1134`
+
+**Completed**: 2026-02-18
+
+**Changes**:
+- Added `executeUpdateEventStep()` function
+- Supports updating: title, eventDate, guestCount, status, venueName, venueAddress, notes
+- Uses Prisma `database.event.update()`
+- Validates event exists and belongs to tenant
+
+### P1-5. [x] Add `update_role_policy` Domain Command
+**File**: `apps/app/app/(authenticated)/command-board/actions/manifest-plans.ts:1136-1205`
+
+**Completed**: 2026-02-18
+
+**Changes**:
+- Added `executeUpdateRolePolicyStep()` function
+- Supports updating: overtimeThresholdHours, overtimeMultiplier, baseRate
+- Uses Prisma `database.role.update()` with compound unique key
+- Validates role exists and belongs to tenant
 
 ### P2-1. [ ] Add AI Tool: `generate_payroll`
 **File**: `apps/app/app/api/command-board/chat/route.ts` (new tool after line 1640)
@@ -176,6 +186,7 @@ Enable full AI-driven command board operations: users can create events, prep li
 - [x] Manifest plan approval workflow
 - [x] AI tool entity resolution (labels display correctly)
 - [x] Domain commands: create_event, link_menu, create_task, assign_employee, update_inventory
+- [x] **Domain commands: create_prep_tasks, create_purchase_order, update_task, update_event, update_role_policy** (2026-02-18)
 - [x] 10 AI tools fully functional (auto_generate_prep now uses real API data)
 - [x] Prep task generation API with save endpoint
 - [x] Purchase order command API via manifest runtime
