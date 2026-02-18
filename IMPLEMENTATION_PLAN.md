@@ -50,4 +50,5 @@ No pending tasks. All P0, P1, and P2 items have been implemented.
 - Simulation Conflicts UI with delta analysis
 - Biome lint fixes across API routes
 - Entity Browser search/filter
-- Test fixes (675 tests passing)
+- Test fixes (1449 tests passing: 667 manifest-runtime + 675 API + 107 app)
+- Added missing IR schema for validate command
