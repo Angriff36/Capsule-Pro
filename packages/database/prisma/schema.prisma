@@ -105,6 +105,7 @@ model Account {
   adminChatMessages       AdminChatMessage[]
   chartOfAccounts         ChartOfAccount[]
   manifestEntities        ManifestEntity[]
+  venues                  Venue[]
 
   @@map("accounts")
   @@schema("platform")
@@ -134,6 +135,43 @@ model Location {
   @@id([tenantId, id])
   @@unique([tenantId, id])
   @@map("locations")
+  @@schema("tenant")
+}
+
+model Venue {
+  tenantId        String     @map("tenant_id") @db.Uuid
+  id              String     @unique @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
+  name            String
+  venueType       String     @default("other") @map("venue_type")
+  addressLine1    String?    @map("address_line1")
+  addressLine2    String?    @map("address_line2")
+  city            String?
+  stateProvince   String?    @map("state_province")
+  postalCode      String?    @map("postal_code")
+  countryCode     String?    @map("country_code") @db.Char(2)
+  capacity        Int?       @default(0)
+  contactName     String?    @map("contact_name")
+  contactPhone    String?    @map("contact_phone")
+  contactEmail    String?    @map("contact_email")
+  equipmentList   Json?      @map("equipment_list")
+  preferredVendors Json?    @map("preferred_vendors")
+  accessNotes     String?    @map("access_notes")
+  cateringNotes   String?    @map("catering_notes")
+  layoutImageUrl  String?    @map("layout_image_url")
+  isActive        Boolean    @default(true) @map("is_active")
+  tags            String[]
+  createdAt       DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt       DateTime?  @map("deleted_at") @db.Timestamptz(6)
+  tenant          Account    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  events          Event[]    @relation("EventVenue")
+
+  @@id([tenantId, id])
+  @@unique([tenantId, id])
+  @@index([tenantId, city])
+  @@index([tenantId, venueType])
+  @@index([tenantId, isActive])
+  @@map("venues")
   @@schema("tenant")
 }
 
@@ -374,6 +412,7 @@ model Event {
   clientId             String?         @map("client_id") @db.Uuid
   locationId           String?         @map("location_id") @db.Uuid
   venueId              String?         @map("venue_id") @db.Uuid
+  venueEntityId        String?         @map("venue_entity_id") @db.Uuid
   eventType            String          @map("event_type")
   eventDate            DateTime        @map("event_date") @db.Date
   guestCount           Int             @default(1) @map("guest_count")
@@ -396,6 +435,7 @@ model Event {
   client               Client?         @relation("EventClient", fields: [clientId], references: [id], onDelete: SetNull)
   location             Location?       @relation("EventLocation", fields: [locationId], references: [id], onDelete: SetNull)
   venue                Location?       @relation("LocationVenue", fields: [venueId], references: [id], onDelete: SetNull)
+  venueEntity          Venue?          @relation("EventVenue", fields: [venueEntityId], references: [id], onDelete: SetNull)
   budgets              EventBudget[]
   reports              EventReport[]
   wasteEntries         WasteEntry[]
@@ -406,6 +446,7 @@ model Event {
   @@id([tenantId, id])
   @@unique([tenantId, id])
   @@index([tenantId, venueId], map: "idx_events_venue_id")
+  @@index([tenantId, venueEntityId], map: "idx_events_venue_entity_id")
   @@index([clientId])
   @@index([locationId])
   @@map("events")

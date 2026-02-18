@@ -1,87 +1,249 @@
-# Command Board AI Integration - Implementation Plan
+# Convoy Implementation Plan
 
-## Goal
-Enable full AI-driven command board operations: users can create events, prep lists, recipes, workflows, payroll, and schedules through AI without touching traditional SaaS interfaces.
+> Last updated: 2026-02-18
+> Generated from comprehensive codebase analysis using 20+ parallel agents
 
----
+## Executive Summary
 
-## Current State (Verified 2026-02-18, Tagged v0.6.25)
+The Convoy platform is a catering/event management SaaS with strong foundations. The **Command Board** is feature-complete for core functionality and serves as the primary interface. Key gaps exist in integrations, mobile features, and some AI capabilities.
 
-### AI Tools Status (15 total) - ALL FUNCTIONAL
-- suggest_board_action, suggest_manifest_plan, query_board_context
-- detect_conflicts (calls `/api/conflicts/detect`)
-- explain_risk, resolve_risk, query_policies, update_policy
-- suggest_simulation_plan (uses forkCommandBoard)
-- optimize_schedule (calls /api/conflicts/detect for real data)
-- auto_generate_prep (calls /api/kitchen/ai/bulk-generate/prep-tasks)
-- auto_generate_purchase (queries event_dishes, RecipeIngredient, InventoryItem)
-- generate_payroll (calls /api/payroll/generate)
-- create_shift (calls /api/staff/shifts via manifest runtime)
-- create_recipe (calls /api/kitchen/recipes/commands/create)
-
-### Domain Commands (11 implemented)
-- create_event, link_menu, create_task, assign_employee, update_inventory
-- create_prep_tasks, create_purchase_order, update_task, update_event
-- update_role_policy, create_recipe
-
-### Backend APIs (All Ready)
-- `/api/kitchen/ai/bulk-generate/prep-tasks` and `/save`
-- `/api/inventory/purchase-orders/commands/create`
-- `/api/conflicts/detect` (7 conflict types)
-- `/api/payroll/generate`
-- `/api/staff/shifts`
-- `/api/kitchen/recipes/commands/create`
+**Overall Completion: ~75%**
 
 ---
 
-## Priority Tasks
+## P0 — Critical Blockers (Must Do First)
 
-### P1 - Completed
-- [x] Card hover action buttons (remove, detail, pin) - HIGH IMPACT
-- [x] Edge hover state (thicken on hover + tooltip)
-- [x] Empty state with quick action buttons
-- [x] Entity Browser: refresh button for categories
-- [x] Card hover/selection smooth animations
-- [x] Entity Browser: drag-to-add functionality
-- [x] Entity Browser: keyboard navigation
-- [x] Smooth edge routing
-- [x] Entity Browser: search within browser
-- [x] Entity Browser: pre-load category counts
-- [x] Browser text size fix (text-[10px] → text-xs)
+### 1. ~~Add Venue Database Model~~ ✅ COMPLETE (2026-02-18)
+- **Spec:** `specs/crm/crm-venue-management_TODO/crm-venue-management.md`
+- **Implemented:**
+  - Added `Venue` model to Prisma schema with all required fields
+  - Added `venueEntityId` to Event model for venue linking
+  - Implemented full CRUD server actions in `apps/app/app/(authenticated)/crm/venues/actions.ts`
+  - Updated all venue UI pages (list, new, detail, edit)
+  - Added venue filtering by type, city, capacity, status
+  - Implemented soft delete with active event check
 
-### P2 - Completed
-- [x] Canvas background brand colors
-- [x] BUG-06: Smart placement algorithm (grid-based instead of random)
-- [x] BUG-07: Consistent card width (280px constraint)
+### 2. Mobile Time Clock Interface
+- **Spec:** `specs/mobile/mobile-time-clock_TODO/mobile-time-clock.md`
+- **Status:** Backend clock-in/out APIs exist, frontend missing
+- **Missing:** Mobile clock-in UI, geolocation, photo verification
+- **Impact:** Staff can't clock in from mobile devices
+- **Effort:** 4-6 hours
 
 ---
 
-## Completed
+## P1 — High Priority (AI + Command Board Enhancement)
 
-- Command Board foundation, canvas, entity cards, AI chat with streaming
-- Real-time sync with Liveblocks, conflict detection API
-- Simulation mode with forkCommandBoard, manifest plan approval workflow
-- 15 AI tools fully functional with real API integrations
-- 11 domain commands implemented
-- Simulation Conflicts UI with delta analysis
-- Biome lint fixes across API routes
-- Entity Browser search/filter
-- Test fixes (1449 tests passing: 667 manifest-runtime + 675 API + 107 app)
-- Added missing IR schema for validate command
-- BUG-08: MiniMap/Controls styling - replaced !important with CSS classes
-- Card hover action buttons (Eye, Pin/Unpin, Remove) with toggle pin API
-- Edge hover state with thickening and tooltip for connection labels
-- Empty state with quick action buttons (Events, Clients, Tasks, Browse All)
-- Entity Browser: refresh button for categories with loading spinner
-- Entity Browser: keyboard navigation (Arrow keys, Enter, Escape, Tab)
-- Entity Browser: drag-to-add functionality with visual drop feedback
-- Card hover/selection smooth animations (scale transforms, fade-in action buttons)
-- Smooth edge routing using getSmoothStepPath with rounded corners
-- Entity Browser: pre-load category counts (parallel count queries on mount)
-- Entity Browser: text size fix (text-[10px] → text-xs for readability)
-- Canvas background brand colors (using CSS variable --border for themed dots)
-- BUG-06: Smart placement algorithm (grid-based, 3-column layout with 320x200 spacing)
-- BUG-07: Card width constraint (280px fixed width in projection-node.tsx)
-- Lint fix: Added default switch clause and fixed Array<T> → T[] syntax
-- Spec acceptance criteria updated (SPEC_ui-polish.md, SPEC_entity-browser.md)
-- SPEC_connections.md Phase 1 acceptance criteria verified complete (edge labels, hover, tooltips, smooth routing)
+### 3. AI Conflict Detection Completion
+- **Specs:** `specs/ai/ai-*-conflict-detection_TODO/`
+- **Status:** Employee conflict detection partially implemented
+- **Missing:** Equipment, Inventory, Venue conflict detection
+- **Effort:** 3-4 hours each
+
+### 4. AI Suggested Next Actions
+- **Spec:** `specs/ai/ai-suggested-next-actions_TODO/`
+- **Status:** Stub actions exist, full implementation needed
+- **Effort:** 2-3 hours
+
+### 5. Command Board: Live Card Updates
+- **Spec:** `specs/command-board/SPEC_product-direction.md`
+- **Status:** Polling infrastructure exists, needs wiring
+- **Effort:** 2-3 hours
+
+### 6. Command Board: Quick Actions on Cards
+- **Spec:** `specs/command-board/SPEC_product-direction.md`
+- **Missing:** Mark complete, change status, reassign - without opening detail panel
+- **Effort:** 3-4 hours
+
+---
+
+## P2 — Integrations (External System Connectivity)
+
+### 7. Nowsta Integration
+- **Spec:** `specs/nowsta-integration_TODO/`
+- **Status:** Spec only - no implementation
+- **Purpose:** Staff scheduling, time tracking sync
+- **Effort:** 8-12 hours
+
+### 8. Goodshuffle Integration (3 parts)
+- **Specs:** `specs/administrative/goodshuffle-*-sync_TODO/`
+- **Parts:** Event sync, Inventory sync, Invoicing sync
+- **Status:** Specs only - no implementation
+- **Effort:** 6-8 hours each
+
+### 9. QuickBooks Export Enhancements
+- **Specs:** `specs/staff/quickbooks-*-export_TODO/`
+- **Status:** Payroll export complete, need Invoice and Bill exports
+- **Effort:** 4-6 hours each
+
+---
+
+## P3 — Feature Gaps (Spec TODOs with Existing Foundations)
+
+### 10. Client Segmentation UI
+- **Spec:** `specs/crm/crm-client-segmentation_TODO/`
+- **Status:** Tags field exists in database, no dedicated UI
+- **Missing:** Tag management page, segment views
+- **Effort:** 3-4 hours
+
+### 11. Bulk Edit Operations (Command Board)
+- **Spec:** `specs/kitchen/bulk-edit-operations_TODO/`
+- **Status:** Batch APIs exist, no multi-select on command board
+- **Effort:** 4-6 hours
+
+### 12. Bulk Grouping Operations
+- **Spec:** `specs/kitchen/bulk-grouping-operations_TODO/`
+- **Status:** Groups model exists, grouping UI missing
+- **Effort:** 4-6 hours
+
+### 13. SMS Notification System
+- **Spec:** `specs/sms-notification-system_TODO/`
+- **Status:** Twilio package integrated, no notification workflows
+- **Effort:** 4-6 hours
+
+### 14. Email Template System
+- **Spec:** `specs/administrative/email-template-system_TODO/`
+- **Status:** 3 templates exist (contact, contract, proposal)
+- **Missing:** Template management UI, more templates
+- **Effort:** 4-6 hours
+
+### 15. Automated Email Workflows
+- **Spec:** `specs/administrative/automated-email-workflows_TODO/`
+- **Status:** Infrastructure exists, workflows not configured
+- **Effort:** 6-8 hours
+
+---
+
+## P4 — Polish & Future Features
+
+### 16. Event Budget Tracking Enhancement
+- **Spec:** `specs/kitchen/event-budget-tracking_TODO/`
+- **Status:** Basic budget model exists, tracking features partial
+- **Effort:** 3-4 hours
+
+### 17. Event Contract Management
+- **Spec:** `specs/kitchen/event-contract-management_TODO/`
+- **Status:** Contract model exists, workflow incomplete
+- **Effort:** 4-6 hours
+
+### 18. Event Proposal Generation
+- **Spec:** `specs/kitchen/event-proposal-generation_TODO/`
+- **Status:** Proposal model exists, AI generation missing
+- **Effort:** 4-6 hours
+
+### 19. Battle Board PDF Export
+- **Spec:** `specs/administrative/battle-board-pdf-export_TODO/`
+- **Status:** API route exists, PDF package is skeleton
+- **Effort:** 3-4 hours
+
+### 20. Inventory Recipe Costing
+- **Spec:** `specs/inventory/inventory-recipe-costing_TODO/`
+- **Status:** Models exist, costing calculations not wired
+- **Effort:** 4-6 hours
+
+### 21. Inventory Depletion Forecasting
+- **Spec:** `specs/inventory/inventory-depletion-forecasting_TODO/`
+- **Status:** Forecast model exists, prediction logic missing
+- **Effort:** 4-6 hours
+
+### 22. Warehouse Receiving Workflow
+- **Spec:** `specs/warehouse/warehouse-receiving-workflow_TODO/`
+- **Status:** Shipment model exists, receiving UI missing
+- **Effort:** 4-6 hours
+
+### 23. Warehouse Cycle Counting
+- **Spec:** `specs/warehouse/warehouse-cycle-counting_TODO/`
+- **Status:** Cycle count models exist, UI partial
+- **Effort:** 3-4 hours
+
+---
+
+## Already Complete (Specs Marked _TODO But Implemented)
+
+Several specs are marked `_TODO` but have substantial implementations:
+
+| Feature | Implementation Status | Notes |
+|---------|----------------------|-------|
+| Payroll Calculation Engine | **Complete** | Full calculator, tax engine, exports |
+| Payroll Timecard System | **Complete** | Clock in/out, approvals, exceptions |
+| Payroll Approval Workflow | **Complete** | Multi-step approval with history |
+| QuickBooks Payroll Export | **Complete** | QBXML and QBO CSV exports |
+| Scheduling Shift CRUD | **Complete** | Full API and UI |
+| Scheduling Availability | **Complete** | Full API and UI |
+| Scheduling Auto-Assignment | **Complete** | Sophisticated algorithm with tests |
+| Scheduling Labor Budget | **Complete** | Budget tracking with alerts |
+| Kitchen Prep List Generation | **Complete** | Auto-generation from events |
+| Kitchen Allergen Tracking | **Complete** | Per-event allergen warnings |
+| Kitchen Waste Tracking | **Complete** | Waste logging with mobile |
+| Mobile Task Claim Interface | **Complete** | Offline support, priority badges |
+| Mobile Recipe Viewer | **Complete** | Timer, scaling, offline cache |
+| CRM Client Detail View | **Complete** | Full tabbed interface |
+| CRM Client Communication Log | **Complete** | Timeline, interactions |
+| AI Bulk Task Generation | **Complete** | GPT-4o-mini integration |
+| Command Board Foundation | **Complete** | React Flow, Liveblocks, AI chat |
+| Command Board Entity Cards | **Complete** | 9 entity types |
+| Command Board Persistence | **Complete** | Full CRUD with undo/redo |
+| Command Board Realtime Sync | **Complete** | Liveblocks integration |
+| Command Board Relationships | **Complete** | Derived connections |
+
+---
+
+## Package Infrastructure Status
+
+| Package | Completeness | Notes |
+|---------|-------------|-------|
+| `@repo/database` | **Full** | 137 models, 10 schemas |
+| `@repo/design-system` | **Full** | 60+ UI components |
+| `@repo/ai` | **Full** | Agent/workflow SDK |
+| `@repo/payroll-engine` | **Full** | Calculator, tax, exports |
+| `@angriff36/manifest` | **Full** | Custom DSL runtime |
+| `@repo/manifest-adapters` | **Full** | Kitchen runtime |
+| `@repo/kitchen-state-transitions` | **Full** | State machine |
+| `@repo/collaboration` | **Full** | Liveblocks |
+| `@repo/realtime` | **Full** | Outbox + events |
+| `@repo/notifications` | **Full** | Knock + Twilio |
+| `@repo/email` | **Partial** | 3 templates only |
+| `@repo/pdf` | **Skeleton** | Needs implementation |
+
+---
+
+## Architecture Observations
+
+### Strong Points
+1. **Manifest DSL System** - Sophisticated custom language for business rules
+2. **Multi-tenant Architecture** - Clean isolation with composite PKs
+3. **Command Board** - Feature-complete as primary interface
+4. **Payroll Engine** - Full calculation with tax and exports
+5. **Kitchen Operations** - Complete workflow with state machines
+
+### Gaps
+1. **External Integrations** - Nowsta, Goodshuffle not implemented
+2. **Mobile Time Clock** - Frontend missing despite backend support
+3. **Venue Management** - Blocked on database model
+4. **PDF Generation** - Package is skeleton
+5. **Bulk Operations UI** - APIs exist, UI missing
+
+---
+
+## Recommended Execution Order
+
+1. **Week 1:** P0 blockers (Venue model, Mobile time clock)
+2. **Week 2:** P1 AI features (Conflict detection, Suggestions)
+3. **Week 3-4:** P2 Integrations (Nowsta, Goodshuffle)
+4. **Week 5-6:** P3 Feature gaps (Bulk ops, Notifications)
+5. **Week 7+:** P4 Polish items
+
+---
+
+## File References
+
+**Command Board:** `apps/app/app/(authenticated)/command-board/`
+**API Routes:** `apps/api/app/api/`
+**Database Schema:** `packages/database/prisma/schema.prisma`
+**Payroll Engine:** `packages/payroll-engine/src/`
+**Manifest System:** `packages/manifest-runtime/`, `packages/manifest-adapters/`
+**Specs:** `specs/**/*_TODO/`
+
+---
+
+*This plan was generated from analysis of 500+ files across apps, packages, and specs directories.*
