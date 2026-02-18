@@ -258,6 +258,47 @@ export async function removeProjection(projectionId: string): Promise<void> {
   revalidatePath(`/command-board/${projection.boardId}`);
 }
 
+// ============================================================================
+// Update — Pin
+// ============================================================================
+
+/** Toggle the pinned state of a projection */
+export async function toggleProjectionPin(
+  projectionId: string
+): Promise<BoardProjection> {
+  const tenantId = await requireTenantId();
+
+  const current = await database.boardProjection.findUnique({
+    where: {
+      tenantId_id: {
+        tenantId,
+        id: projectionId,
+      },
+    },
+    select: { pinned: true },
+  });
+
+  if (!current) {
+    throw new Error("Projection not found");
+  }
+
+  const updated = await database.boardProjection.update({
+    where: {
+      tenantId_id: {
+        tenantId,
+        id: projectionId,
+      },
+    },
+    data: {
+      pinned: !current.pinned,
+    },
+  });
+
+  revalidatePath(`/command-board/${updated.boardId}`);
+
+  return dbToProjection(updated);
+}
+
 /** Soft-delete multiple projections at once */
 export async function batchRemoveProjections(
   projectionIds: string[]

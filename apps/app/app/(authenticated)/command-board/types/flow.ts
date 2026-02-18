@@ -23,6 +23,7 @@ export interface ProjectionNodeData {
   stale: boolean;
   onOpenDetail: (entityType: string, entityId: string) => void;
   onRemove: (projectionId: string) => void;
+  onTogglePin: (projectionId: string) => void;
 }
 
 /** Custom node data for group nodes */
@@ -76,6 +77,7 @@ export function projectionToNode(
   callbacks: {
     onOpenDetail: (entityType: string, entityId: string) => void;
     onRemove: (projectionId: string) => void;
+    onTogglePin: (projectionId: string) => void;
   }
 ): ProjectionNode {
   return {
@@ -88,6 +90,7 @@ export function projectionToNode(
       stale: entity === null,
       onOpenDetail: callbacks.onOpenDetail,
       onRemove: callbacks.onRemove,
+      onTogglePin: callbacks.onTogglePin,
     },
     style: {
       width: projection.width,

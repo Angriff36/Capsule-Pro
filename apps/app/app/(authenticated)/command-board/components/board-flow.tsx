@@ -24,6 +24,7 @@ import {
   batchRemoveProjections,
   batchUpdatePositions,
   removeProjection,
+  toggleProjectionPin,
   updateProjectionPosition,
 } from "../actions/projections";
 import { useBoardSync } from "../hooks/use-board-sync";
@@ -235,6 +236,16 @@ function BoardFlowInner({
     [onProjectionRemoved]
   );
 
+  const handleTogglePin = useCallback(async (projectionId: string) => {
+    try {
+      const updated = await toggleProjectionPin(projectionId);
+      toast.success(updated.pinned ? "Entity pinned" : "Entity unpinned");
+    } catch (error) {
+      console.error("[BoardFlow] Failed to toggle pin:", projectionId, error);
+      toast.error("Failed to toggle pin");
+    }
+  }, []);
+
   // ---- Build initial nodes from projections + entities ----
 
   const initialNodes = useMemo(() => {
@@ -244,9 +255,16 @@ function BoardFlowInner({
       return projectionToNode(projection, entity, {
         onOpenDetail,
         onRemove: handleRemoveProjection,
+        onTogglePin: handleTogglePin,
       });
     });
-  }, [projections, entities, onOpenDetail, handleRemoveProjection]);
+  }, [
+    projections,
+    entities,
+    onOpenDetail,
+    handleRemoveProjection,
+    handleTogglePin,
+  ]);
 
   // ---- Build initial edges from derived connections + annotations ----
 
@@ -483,6 +501,9 @@ function BoardFlowInner({
           // preview nodes are read-only
         },
         onRemove: () => {
+          // preview nodes are read-only
+        },
+        onTogglePin: () => {
           // preview nodes are read-only
         },
       });
