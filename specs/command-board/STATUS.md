@@ -1,6 +1,6 @@
 # Command Board — Current State
 
-> Last updated: 2026-02-17
+> Last updated: 2026-02-18
 
 ## What Is the Command Board?
 
@@ -75,7 +75,7 @@ All previously documented bugs have been resolved:
 
 2. ~~**Entity Browser has no "already on board" indicator**~~ — **FIXED**: Entity Browser now shows "On board" badge for entities already projected and prevents duplicates with toast notification.
 
-3. **Entity Browser has no search/filter** — With many entities per category, there's no way to find a specific one without scrolling.
+3. ~~**Entity Browser has no search/filter**~~ — **FIXED**: Search input added to Entity Browser with real-time filtering across title and subtitle fields.
 
 4. ~~**Undo/Redo not connected**~~ — **FIXED**: useBoardHistory hook now properly implements canUndo/canRedo with keyboard shortcuts.
 

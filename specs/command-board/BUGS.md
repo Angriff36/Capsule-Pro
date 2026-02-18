@@ -55,11 +55,11 @@
 
 **Fix Applied**: Grid-based placement algorithm now used - entities are placed in a 3-column grid pattern based on existing projection count.
 
-### BUG-07: Card Width Not Constrained
+### BUG-07: Card Width Not Constrained ✅ FIXED
 
-**Status**: OPEN
+**Problem**: ~~`ProjectionNode` doesn't set explicit width on the React Flow node. Cards auto-size based on content, leading to inconsistent widths across entity types.~~
 
-**Problem**: `ProjectionNode` doesn't set explicit width on the React Flow node. Cards auto-size based on content, leading to inconsistent widths across entity types.
+**Fix Applied**: ProjectionNode already has explicit `w-[280px]` class set on line 134 of projection-node.tsx.
 
 ### BUG-08: MiniMap/Controls Styling
 
