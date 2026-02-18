@@ -34,9 +34,19 @@ Enable full AI-driven command board operations: users can create events, prep li
 
 ---
 
-## Priority Tasks (0 remaining - All complete!)
+## Priority Tasks (3 remaining - P1 UI Polish)
 
-No pending tasks. All P0, P1, and P2 items have been implemented.
+### P1 - In Progress
+- [x] Card hover action buttons (remove, detail, pin) - HIGH IMPACT
+- [ ] Edge hover state (thicken on hover + tooltip)
+- [ ] Empty state with quick action buttons
+- [ ] Entity Browser: refresh button for categories
+
+### P1 - Lower Priority
+- [ ] Card hover/selection smooth animations
+- [ ] Entity Browser: drag-to-add functionality
+- [ ] Entity Browser: keyboard navigation
+- [ ] Smooth edge routing
 
 ---
 
@@ -53,3 +63,4 @@ No pending tasks. All P0, P1, and P2 items have been implemented.
 - Test fixes (1449 tests passing: 667 manifest-runtime + 675 API + 107 app)
 - Added missing IR schema for validate command
 - BUG-08: MiniMap/Controls styling - replaced !important with CSS classes
+- Card hover action buttons (Eye, Pin/Unpin, Remove) with toggle pin API
