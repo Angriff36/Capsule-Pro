@@ -16,6 +16,7 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Calendar,
   ClipboardList,
@@ -23,11 +24,11 @@ import {
   LayoutGrid,
   Users,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import { Button } from "@repo/design-system/components/ui/button";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { BoardDelta } from "../actions/boards";
 import {
+  addProjection,
   batchRemoveProjections,
   batchUpdatePositions,
   removeProjection,
@@ -38,6 +39,7 @@ import { useBoardSync } from "../hooks/use-board-sync";
 import { useLiveblocksSync } from "../hooks/use-liveblocks-sync";
 import { edgeTypes, nodeTypes } from "../nodes/node-types";
 import { RELATIONSHIP_STYLES } from "../types/board";
+import { ENTITY_TYPE_LABELS, type EntityType } from "../types/entities";
 import type { BoardEdge, ProjectionNode } from "../types/flow";
 import {
   annotationToEdge,
@@ -208,12 +210,19 @@ function BoardFlowInner({
 }: BoardFlowProps) {
   // Ref for the canvas wrapper — used by the edge-pan hook
   const containerRef = useRef<HTMLDivElement>(null);
+  const { screenToFlowPosition } = useReactFlow();
 
   // RTS-style edge auto-pan
   useEdgePan(containerRef);
 
   // Track which nodes are currently being dragged to detect drag-end
   const draggingNodesRef = useRef<Set<string>>(new Set());
+
+  // Track external drag-over state for visual feedback
+  const [isDragOver, setIsDragOver] = useState(false);
+
+  // Track if we're currently processing a drop to prevent duplicates
+  const isDroppingRef = useRef(false);
 
   // Refs for broadcast functions — allows callbacks defined before useBoardSync
   // to access broadcast without circular dependency issues
@@ -793,6 +802,110 @@ function BoardFlowInner({
     return ENTITY_MINIMAP_COLORS[entityType] ?? DEFAULT_MINIMAP_COLOR;
   }, []);
 
+  // ---- External drag-and-drop handlers ----
+
+  const handleDragOver = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+    setIsDragOver(true);
+  }, []);
+
+  const handleDragLeave = useCallback((e: React.DragEvent) => {
+    // Only reset if we're leaving the container entirely
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (rect) {
+      const isOutside =
+        e.clientX < rect.left ||
+        e.clientX > rect.right ||
+        e.clientY < rect.top ||
+        e.clientY > rect.bottom;
+      if (isOutside) {
+        setIsDragOver(false);
+      }
+    }
+  }, []);
+
+  const handleDrop = useCallback(
+    async (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragOver(false);
+
+      // Prevent duplicate drops
+      if (isDroppingRef.current) {
+        return;
+      }
+
+      // Get the drag data
+      const jsonData = e.dataTransfer.getData("application/json");
+      if (!jsonData) {
+        return;
+      }
+
+      let dragData: {
+        entityType: EntityType;
+        entityId: string;
+        title: string;
+      };
+      try {
+        dragData = JSON.parse(jsonData);
+      } catch {
+        console.error("[BoardFlow] Failed to parse drag data");
+        return;
+      }
+
+      // Check if entity is already on board
+      const key = `${dragData.entityType}:${dragData.entityId}`;
+      if (entities.has(key)) {
+        const label =
+          ENTITY_TYPE_LABELS[dragData.entityType] ?? dragData.entityType;
+        toast.info(`This ${label.toLowerCase()} is already on the board`);
+        return;
+      }
+
+      isDroppingRef.current = true;
+
+      try {
+        // Convert screen position to flow position
+        const flowPosition = screenToFlowPosition({
+          x: e.clientX,
+          y: e.clientY,
+        });
+
+        const result = await addProjection(boardId, {
+          entityType: dragData.entityType,
+          entityId: dragData.entityId,
+          positionX: Math.round(flowPosition.x),
+          positionY: Math.round(flowPosition.y),
+        });
+
+        if (result.success && result.projection) {
+          onProjectionAdded?.(result.projection);
+          const label =
+            ENTITY_TYPE_LABELS[dragData.entityType] ?? dragData.entityType;
+          toast.success(`${label} added to board`);
+        } else {
+          const errorMsg = result.error ?? "Failed to add entity";
+          if (
+            errorMsg.includes("already exists") ||
+            errorMsg.includes("already on this board")
+          ) {
+            const label =
+              ENTITY_TYPE_LABELS[dragData.entityType] ?? dragData.entityType;
+            toast.info(`This ${label.toLowerCase()} is already on the board`);
+          } else {
+            toast.error(errorMsg);
+          }
+        }
+      } catch (error) {
+        console.error("[BoardFlow] Failed to add entity via drop:", error);
+        toast.error("Failed to add entity to board");
+      } finally {
+        isDroppingRef.current = false;
+      }
+    },
+    [boardId, entities, onProjectionAdded, screenToFlowPosition]
+  );
+
   // ---- Empty state ----
 
   if (projections.length === 0 && previewState.previewAddNodes.length === 0) {
@@ -815,37 +928,37 @@ function BoardFlowInner({
           {onOpenEntityBrowser && (
             <div className="flex flex-wrap justify-center gap-2 pt-2">
               <Button
+                className="gap-1.5"
                 onClick={onOpenEntityBrowser}
                 size="sm"
                 variant="outline"
-                className="gap-1.5"
               >
                 <Calendar className="size-4" />
                 Events
               </Button>
               <Button
+                className="gap-1.5"
                 onClick={onOpenEntityBrowser}
                 size="sm"
                 variant="outline"
-                className="gap-1.5"
               >
                 <Users className="size-4" />
                 Clients
               </Button>
               <Button
+                className="gap-1.5"
                 onClick={onOpenEntityBrowser}
                 size="sm"
                 variant="outline"
-                className="gap-1.5"
               >
                 <ClipboardList className="size-4" />
                 Tasks
               </Button>
               <Button
+                className="gap-1.5"
                 onClick={onOpenEntityBrowser}
                 size="sm"
                 variant="default"
-                className="gap-1.5"
               >
                 <FolderSearch className="size-4" />
                 Browse All
@@ -858,7 +971,15 @@ function BoardFlowInner({
   }
 
   return (
-    <div className="h-full w-full" ref={containerRef}>
+    <div
+      aria-label="Command board canvas - drag entities here to add them"
+      className={`h-full w-full ${isDragOver ? "ring-2 ring-primary/50 ring-inset bg-primary/5" : ""}`}
+      onDragLeave={handleDragLeave}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+      ref={containerRef}
+      role="application"
+    >
       {/* Simulation Mode Indicator */}
       {boardMode === "simulation" && simulationDelta && (
         <div className="absolute left-4 top-4 z-10 rounded-lg border border-amber-500/50 bg-amber-50 px-3 py-2 shadow-md dark:bg-amber-950/50">
@@ -896,6 +1017,7 @@ function BoardFlowInner({
         className="bg-background"
         deleteKeyCode={["Backspace", "Delete"]}
         edges={renderedEdges}
+        edgeTypes={edgeTypes}
         fitView
         fitViewOptions={{ padding: 0.2 }}
         maxZoom={2}
@@ -903,7 +1025,6 @@ function BoardFlowInner({
         multiSelectionKeyCode="Shift"
         nodes={renderedNodes}
         nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
         onEdgesChange={handleEdgesChange}
         onNodesChange={handleNodesChange}
         onNodesDelete={handleDelete}
