@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { ReactFlowProvider } from "@xyflow/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -27,6 +28,7 @@ import type {
   ResolvedEntity,
 } from "../types/index";
 import type { SuggestedManifestPlan } from "../types/manifest-plan";
+import type { SuggestedAction } from "../actions/suggestions-types";
 import { AiChatPanel } from "./ai-chat-panel";
 import { ErrorBoundary } from "./board-error-boundary";
 import { BoardFlow } from "./board-flow";
@@ -36,6 +38,7 @@ import { CommandPalette } from "./command-palette";
 import { ConflictWarningPanel } from "./conflict-warning-panel";
 import { EntityBrowser } from "./entity-browser";
 import { EntityDetailPanel } from "./entity-detail-panel";
+import { SuggestionsPanel } from "./suggestions-panel";
 
 // ============================================================================
 // Types
@@ -111,6 +114,11 @@ export function BoardShell({
   const [showConflicts, setShowConflicts] = useState(false);
   const [isLoadingConflicts, setIsLoadingConflicts] = useState(false);
   const [conflictsError, setConflictsError] = useState<string | null>(null);
+
+  // ---- AI Suggestions state ----
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  const [suggestions, setSuggestions] = useState<SuggestedAction[]>([]);
+  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false);
 
   // ---- Simulation mode state ----
   const [boardMode, setBoardMode] = useState<"live" | "simulation">("live");
@@ -273,6 +281,11 @@ export function BoardShell({
         e.preventDefault();
         setEntityBrowserOpen((prev) => !prev);
       }
+      // Cmd+S → AI Suggestions panel
+      if ((e.metaKey || e.ctrlKey) && e.key === "s") {
+        e.preventDefault();
+        setSuggestionsOpen((prev) => !prev);
+      }
       // Cmd+Z → Undo
       if ((e.metaKey || e.ctrlKey) && e.key === "z" && !e.shiftKey) {
         e.preventDefault();
@@ -320,6 +333,47 @@ export function BoardShell({
   useEffect(() => {
     fetchConflicts();
   }, [fetchConflicts]);
+
+  // ---- Fetch suggestions when panel opens ----
+  const fetchSuggestions = useCallback(async () => {
+    if (!tenantId) {
+      return;
+    }
+
+    setIsLoadingSuggestions(true);
+    try {
+      const params = new URLSearchParams();
+      params.append("maxSuggestions", "5");
+      params.append("boardId", boardId);
+
+      const response = await apiFetch(
+        `/api/ai/suggestions?${params.toString()}`
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch suggestions");
+      }
+
+      const data = await response.json();
+      setSuggestions(data.suggestions || []);
+    } catch (error) {
+      console.error("Failed to fetch suggestions:", error);
+      setSuggestions([]);
+    } finally {
+      setIsLoadingSuggestions(false);
+    }
+  }, [tenantId, boardId]);
+
+  // Fetch suggestions when panel opens
+  useEffect(() => {
+    if (suggestionsOpen && suggestions.length === 0) {
+      fetchSuggestions();
+    }
+  }, [suggestionsOpen, suggestions.length, fetchSuggestions]);
+
+  const handleDismissSuggestion = useCallback((suggestionId: string) => {
+    setSuggestions((prev) => prev.filter((s) => s.id !== suggestionId));
+  }, []);
 
   // ---- Simulation handlers ----
   const handleCreateSimulation = useCallback(async () => {
@@ -410,6 +464,7 @@ export function BoardShell({
             entityBrowserOpen={entityBrowserOpen}
             isCreatingSimulation={isCreatingSimulation}
             isLoadingConflicts={isLoadingConflicts}
+            isLoadingSuggestions={isLoadingSuggestions}
             onDiscardSimulation={handleDiscardSimulation}
             onExitFullscreen={handleExitFullscreen}
             onRedo={handleRedo}
@@ -426,8 +481,11 @@ export function BoardShell({
               }
             }}
             onToggleEntityBrowser={() => setEntityBrowserOpen((prev) => !prev)}
+            onToggleSuggestions={() => setSuggestionsOpen((prev) => !prev)}
             onUndo={handleUndo}
             simulationDelta={simulationDelta}
+            suggestionsCount={suggestions.length}
+            suggestionsOpen={suggestionsOpen}
           />
 
           {/* Canvas + Entity Browser side by side */}
@@ -480,6 +538,27 @@ export function BoardShell({
                 onProjectionAdded={handleProjectionAdded}
                 projections={projections}
               />
+            )}
+
+            {/* AI Suggestions Panel (right side) */}
+            {suggestionsOpen && (
+              <div className="w-80 border-l bg-background">
+                <SuggestionsPanel
+                  isLoading={isLoadingSuggestions}
+                  onAction={(suggestion) => {
+                    // Handle suggestion action based on type
+                    if (suggestion.action.type === "navigate") {
+                      router.push(suggestion.action.path);
+                    } else if (suggestion.action.type === "bulk_create_cards") {
+                      // Add cards to board - for now just dismiss
+                      handleDismissSuggestion(suggestion.id);
+                    }
+                  }}
+                  onDismiss={handleDismissSuggestion}
+                  onRefresh={fetchSuggestions}
+                  suggestions={suggestions}
+                />
+              </div>
             )}
           </div>
 

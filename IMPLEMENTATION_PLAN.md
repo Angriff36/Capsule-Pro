@@ -55,10 +55,15 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
 - **Missing:** Equipment, Inventory, Venue conflict detection
 - **Effort:** 3-4 hours each
 
-### 4. AI Suggested Next Actions
+### 4. ~~AI Suggested Next Actions~~ ✅ COMPLETE (2026-02-18)
 - **Spec:** `specs/ai/ai-suggested-next-actions_TODO/`
-- **Status:** Stub actions exist, full implementation needed
-- **Effort:** 2-3 hours
+- **Implemented:**
+  - Integrated existing SuggestionsPanel into Command Board BoardShell
+  - Added suggestions state and fetch logic to BoardShell
+  - Added suggestions toggle button to BoardHeader
+  - Added keyboard shortcut (Cmd+S) for suggestions panel
+  - Panel shows AI-generated suggestions with dismiss/refresh actions
+  - Suggestions render as side panel on right side of board
 
 ### 5. ~~Command Board: Live Card Updates~~ ✅ COMPLETE (2026-02-18)
 - **Spec:** `specs/command-board/SPEC_product-direction.md`
@@ -204,6 +209,7 @@ Several specs are marked `_TODO` but have substantial implementations:
 | CRM Client Detail View | **Complete** | Full tabbed interface |
 | CRM Client Communication Log | **Complete** | Timeline, interactions |
 | AI Bulk Task Generation | **Complete** | GPT-4o-mini integration |
+| AI Suggested Next Actions | **Complete** | Panel integrated into Command Board |
 | Command Board Foundation | **Complete** | React Flow, Liveblocks, AI chat |
 | Command Board Entity Cards | **Complete** | 9 entity types |
 | Command Board Persistence | **Complete** | Full CRUD with undo/redo |

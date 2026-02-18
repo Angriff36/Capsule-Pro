@@ -35,6 +35,7 @@ import {
   PlusIcon,
   RadioIcon,
   Redo2Icon,
+  SparklesIcon,
   TerminalSquareIcon,
   TrashIcon,
   Undo2Icon,
@@ -71,6 +72,11 @@ interface BoardHeaderProps {
   conflictCount?: number;
   onToggleConflicts?: () => void;
   isLoadingConflicts?: boolean;
+  // AI Suggestions
+  suggestionsOpen?: boolean;
+  onToggleSuggestions?: () => void;
+  suggestionsCount?: number;
+  isLoadingSuggestions?: boolean;
   // Fullscreen exit
   onExitFullscreen?: () => void;
   // Simulation mode
@@ -101,6 +107,11 @@ export function BoardHeader({
   conflictCount = 0,
   onToggleConflicts,
   isLoadingConflicts = false,
+  // AI Suggestions
+  suggestionsOpen = false,
+  onToggleSuggestions,
+  suggestionsCount = 0,
+  isLoadingSuggestions = false,
   onExitFullscreen,
   // Simulation mode
   boardMode = "live",
@@ -430,6 +441,25 @@ export function BoardHeader({
                 : "Check Risks"}
             </Button>
           )}
+          {onToggleSuggestions && (
+            <Button
+              className="hidden sm:flex"
+              disabled={isLoadingSuggestions}
+              onClick={onToggleSuggestions}
+              size="sm"
+              title="AI Suggestions (Ctrl+S)"
+              variant={suggestionsOpen ? "default" : "outline"}
+            >
+              {isLoadingSuggestions ? (
+                <Loader2Icon className="mr-1.5 h-4 w-4 animate-spin" />
+              ) : (
+                <SparklesIcon className="mr-1.5 h-4 w-4" />
+              )}
+              {suggestionsCount > 0
+                ? `${suggestionsCount} Suggestion${suggestionsCount === 1 ? "" : "s"}`
+                : "Suggestions"}
+            </Button>
+          )}
 
           <Button
             className="hidden sm:flex"
@@ -467,6 +497,12 @@ export function BoardHeader({
                 <DropdownMenuItem onClick={onToggleAiChat}>
                   <BotIcon className="mr-2 h-4 w-4" />
                   AI Assistant (Ctrl+J)
+                </DropdownMenuItem>
+              )}
+              {onToggleSuggestions && (
+                <DropdownMenuItem onClick={onToggleSuggestions}>
+                  <SparklesIcon className="mr-2 h-4 w-4" />
+                  Suggestions (Ctrl+S)
                 </DropdownMenuItem>
               )}
               <DropdownMenuItem disabled>
