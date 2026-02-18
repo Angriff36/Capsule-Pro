@@ -1208,6 +1208,61 @@ async function executeUpdateRolePolicyStep(
   };
 }
 
+async function executeCreateRecipeStep(
+  _context: DomainExecutionContext,
+  step: DomainCommandStep
+): Promise<StepExecutionResult> {
+  const name = asString(step.args.name);
+  if (!name || name.trim().length === 0) {
+    return {
+      stepId: step.stepId,
+      success: false,
+      message: "Recipe name is required",
+      error: "Missing required parameter: name",
+    };
+  }
+
+  // Create the recipe via manifest runtime API
+  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
+  const response = await fetch(`${baseUrl}/api/kitchen/recipes/commands/create`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      name: name.trim(),
+      category: asString(step.args.category) || null,
+      cuisineType: asString(step.args.cuisineType) || null,
+      description: asString(step.args.description) || null,
+      tags: Array.isArray(step.args.tags)
+        ? step.args.tags.filter((t: unknown) => typeof t === "string" && t.trim().length > 0)
+        : [],
+      isActive: true,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error("[CreateRecipe] API error:", errorText);
+    return {
+      stepId: step.stepId,
+      success: false,
+      message: "Failed to create recipe",
+      error: `Recipe creation failed: ${response.status}`,
+    };
+  }
+
+  const data = (await response.json()) as {
+    result: { id: string; name: string };
+  };
+
+  return {
+    stepId: step.stepId,
+    success: true,
+    message: `Created recipe "${data.result.name}" (${data.result.id})`,
+  };
+}
+
 async function executeDomainStep(
   context: DomainExecutionContext,
   boardId: string,
@@ -1284,6 +1339,10 @@ async function executeDomainStep(
     normalized === "modify_role_policy"
   ) {
     return executeUpdateRolePolicyStep(context, step);
+  }
+
+  if (normalized === "create_recipe" || normalized === "add_recipe") {
+    return executeCreateRecipeStep(context, step);
   }
 
   return {
