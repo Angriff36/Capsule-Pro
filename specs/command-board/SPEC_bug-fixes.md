@@ -37,12 +37,12 @@ Replace the inline Sheet in `BoardShell` (lines 247-268) with `<EntityDetailPane
 
 **Acceptance criteria**:
 
-- [ ] Clicking a card opens the Entity Detail Panel showing actual entity details
-- [ ] Panel shows loading state while fetching
-- [ ] Panel shows error state with retry if fetch fails
-- [ ] Panel routes to correct detail view based on entity type
-- [ ] "Open Full Page" link navigates to entity's full page
-- [ ] Closing panel returns to board without side effects
+- [x] Clicking a card opens the Entity Detail Panel showing actual entity details
+- [x] Panel shows loading state while fetching
+- [x] Panel shows error state with retry if fetch fails
+- [x] Panel routes to correct detail view based on entity type
+- [x] "Open Full Page" link navigates to entity's full page
+- [x] Closing panel returns to board without side effects
 
 ## Priority P1 — Degrades Experience
 
@@ -69,8 +69,8 @@ Either prevent duplicates OR show an "already on board" badge/indicator in the b
 
 **Acceptance criteria**:
 
-- [ ] User cannot add the same entity to the board twice
-- [ ] Visual feedback shows which entities are already on the board
+- [x] User cannot add the same entity to the board twice
+- [x] Visual feedback shows which entities are already on the board
 
 ### BUG-03: Undo/Redo Disconnected
 
@@ -94,10 +94,10 @@ Users cannot undo accidental moves or deletions
 
 **Acceptance criteria**:
 
-- [ ] Users can undo moves, adds, and deletes
-- [ ] Users can redo after undo
-- [ ] Undo/redo buttons enable/disable based on history state
-- [ ] Keyboard shortcuts work (Cmd+Z, Cmd+Shift+Z)
+- [x] Users can undo moves, adds, and deletes
+- [x] Users can redo after undo
+- [x] Undo/redo buttons enable/disable based on history state
+- [x] Keyboard shortcuts work (Cmd+Z, Cmd+Shift+Z)
 
 ### BUG-04: Entity Browser Stale After Board Changes
 
@@ -114,9 +114,9 @@ Users cannot undo accidental moves or deletions
 
 **Acceptance criteria**:
 
-- [ ] Entity Browser updates when entities are added to board
-- [ ] Entity Browser updates when entities are removed from board
-- [ ] Visual indicators stay accurate in real-time
+- [x] Entity Browser updates when entities are added to board
+- [x] Entity Browser updates when entities are removed from board
+- [x] Visual indicators stay accurate in real-time
 
 ### BUG-05: No Error Boundary on Board
 
@@ -135,10 +135,10 @@ If React Flow canvas throws an error (e.g., bad node data, missing entity), the 
 
 **Acceptance criteria**:
 
-- [ ] Board errors are caught by error boundary
-- [ ] Fallback UI displays with error message and retry button
-- [ ] User can recover from errors without page refresh
-- [ ] Errors are logged for debugging
+- [x] Board errors are caught by error boundary
+- [x] Fallback UI displays with error message and retry button
+- [x] User can recover from errors without page refresh
+- [x] Errors are logged for debugging
 
 ## Priority P2 — Cosmetic / Minor
 
@@ -154,8 +154,8 @@ Use a smarter placement algorithm — grid-based, spiral, or at least check for 
 
 **Acceptance criteria**:
 
-- [ ] New entities are placed in a predictable, non-overlapping pattern
-- [ ] Placement feels intentional and organized
+- [x] New entities are placed in a predictable, non-overlapping pattern
+- [x] Placement feels intentional and organized
 
 ### BUG-07: Card Width Not Constrained
 
@@ -167,7 +167,7 @@ Set consistent width in node data or card components
 
 **Acceptance criteria**:
 
-- [ ] All cards have consistent, predictable width
+- [x] All cards have consistent, predictable width
 
 ### BUG-08: MiniMap/Controls Styling
 
@@ -179,8 +179,8 @@ Replace `!important` overrides with proper CSS classes
 
 **Acceptance criteria**:
 
-- [ ] MiniMap and Controls styled without `!important`
-- [ ] Styling respects theme/brand colors
+- [x] MiniMap and Controls styled without `!important`
+- [x] Styling respects theme/brand colors
 
 ## Testing Strategy
 
@@ -202,7 +202,7 @@ Replace `!important` overrides with proper CSS classes
 
 ## Success Metrics
 
-- [ ] All P0 bugs fixed and tested
-- [ ] At least 3 P1 bugs fixed
-- [ ] No new bugs introduced
-- [ ] User can perform core board operations without errors
+- [x] All P0 bugs fixed and tested
+- [x] At least 3 P1 bugs fixed
+- [x] No new bugs introduced
+- [x] User can perform core board operations without errors
