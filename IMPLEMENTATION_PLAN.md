@@ -93,11 +93,22 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
 
 ## P2 — Integrations (External System Connectivity)
 
-### 7. Nowsta Integration
+### ~~7. Nowsta Integration~~ ✅ COMPLETE (2026-02-18)
 - **Spec:** `specs/nowsta-integration_TODO/`
-- **Status:** Spec only - no implementation
-- **Purpose:** Staff scheduling, time tracking sync
-- **Effort:** 8-12 hours
+- **Implemented:**
+  - Added `NowstaConfig`, `NowstaEmployeeMapping`, `NowstaShiftSync` models to Prisma schema
+  - Created Nowsta API client service (`apps/api/app/lib/nowsta-client.ts`)
+  - Created sync service with employee auto-mapping and shift sync (`apps/api/app/lib/nowsta-sync-service.ts`)
+  - API endpoints:
+    - `GET/POST/DELETE /api/integrations/nowsta/config` - Manage configuration
+    - `POST /api/integrations/nowsta/sync` - Trigger sync
+    - `GET /api/integrations/nowsta/status` - Get sync status
+    - `GET /api/integrations/nowsta/employees` - List employees for mapping
+    - `POST /api/integrations/nowsta/employees/map` - Create/update mapping
+    - `POST/GET /api/integrations/nowsta/test` - Test connection
+  - Employee auto-mapping by email match
+  - Shift sync with duplicate prevention via Nowsta shift IDs
+  - Full error handling and status tracking
 
 ### 8. Goodshuffle Integration (3 parts)
 - **Specs:** `specs/administrative/goodshuffle-*-sync_TODO/`
@@ -241,6 +252,7 @@ Several specs are marked `_TODO` but have substantial implementations:
 | Command Board Realtime Sync | **Complete** | Liveblocks integration |
 | Command Board Relationships | **Complete** | Derived connections |
 | Client Segmentation UI | **Complete** | Tag filter with multi-select, counts |
+| Nowsta Integration | **Complete** | Employee mapping, shift sync |
 
 ---
 
