@@ -130,11 +130,14 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
 
 ## P3 — Feature Gaps (Spec TODOs with Existing Foundations)
 
-### 10. Client Segmentation UI
+### 10. ~~Client Segmentation UI~~ ✅ COMPLETE (2026-02-18)
 - **Spec:** `specs/crm/crm-client-segmentation_TODO/`
-- **Status:** Tags field exists in database, no dedicated UI
-- **Missing:** Tag management page, segment views
-- **Effort:** 3-4 hours
+- **Implemented:**
+  - Added `getAvailableTags` server action to fetch unique tags with counts
+  - Added tag filter dropdown with multi-select capability
+  - Tag filter shows tag name and client count
+  - Filters persist in URL query parameters
+  - Tag selections clear with other filters
 
 ### 11. Bulk Edit Operations (Command Board)
 - **Spec:** `specs/kitchen/bulk-edit-operations_TODO/`
@@ -237,6 +240,7 @@ Several specs are marked `_TODO` but have substantial implementations:
 | Command Board Persistence | **Complete** | Full CRUD with undo/redo |
 | Command Board Realtime Sync | **Complete** | Liveblocks integration |
 | Command Board Relationships | **Complete** | Derived connections |
+| Client Segmentation UI | **Complete** | Tag filter with multi-select, counts |
 
 ---
 
