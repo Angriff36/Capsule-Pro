@@ -160,7 +160,7 @@ export const ProjectionNode = memo(function ProjectionNode({
       {/* Card container */}
       <div
         className={cn(
-          "h-full w-[280px] rounded-lg border bg-card p-3 transition-all duration-150 relative group",
+          "h-full w-[280px] rounded-lg border bg-card p-3 relative group",
           // 4px colored left border
           "border-l-4",
           borderColor,
@@ -168,11 +168,14 @@ export const ProjectionNode = memo(function ProjectionNode({
           colors.bg,
           // Default border
           "border-border",
-          // Selection state
+          // Smooth transitions for all properties
+          "transition-[transform,box-shadow,border-color,opacity] duration-200 ease-out",
+          // Selection state with ring and shadow
           selected &&
-            "ring-2 ring-primary/40 border-primary shadow-lg shadow-primary/10",
-          // Hover effect
-          !selected && "hover:shadow-md hover:border-border/80",
+            "ring-2 ring-primary/40 border-primary shadow-lg shadow-primary/10 scale-[1.02]",
+          // Hover effect with subtle lift and scale
+          !selected &&
+            "hover:shadow-lg hover:border-border/80 hover:scale-[1.01]",
           // Stale state
           stale && "opacity-60",
           // Clickable cursor
@@ -208,9 +211,16 @@ export const ProjectionNode = memo(function ProjectionNode({
           </div>
         )}
 
-        {/* Hover action buttons */}
-        {isHovered && entity && !stale && (
-          <div className="absolute top-1 right-1 flex gap-0.5 z-20">
+        {/* Hover action buttons with fade-in animation */}
+        {entity && !stale && (
+          <div
+            className={cn(
+              "absolute top-1 right-1 flex gap-0.5 z-20 transition-all duration-200 ease-out",
+              isHovered
+                ? "opacity-100 translate-x-0"
+                : "opacity-0 translate-x-2 pointer-events-none"
+            )}
+          >
             <button
               className="p-1 rounded hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
               onClick={handleOpenDetail}

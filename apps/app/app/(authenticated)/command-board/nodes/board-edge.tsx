@@ -1,10 +1,11 @@
 "use client";
 
-import { BaseEdge, type EdgeProps, getBezierPath } from "@xyflow/react";
+import { BaseEdge, type EdgeProps, getSmoothStepPath } from "@xyflow/react";
 import { memo, useCallback, useState } from "react";
 
 /**
  * Custom edge component with hover state and tooltip.
+ * Uses smoothstep routing for cleaner paths that avoid overlapping nodes.
  * Thickens on hover and shows relationship label in tooltip.
  */
 export const BoardEdge = memo(function BoardEdge({
@@ -26,14 +27,16 @@ export const BoardEdge = memo(function BoardEdge({
   const label = data?.label as string | undefined;
   const relationshipType = data?.relationshipType as string | undefined;
 
-  // Calculate the path
-  const [edgePath] = getBezierPath({
+  // Calculate the smoothstep path with rounded corners
+  // borderRadius creates smooth corners at the step points
+  const [edgePath] = getSmoothStepPath({
     sourceX,
     sourceY,
     sourcePosition,
     targetX,
     targetY,
     targetPosition,
+    borderRadius: 8,
   });
 
   // Handle mouse events for hover state
