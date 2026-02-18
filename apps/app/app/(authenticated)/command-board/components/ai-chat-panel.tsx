@@ -138,6 +138,21 @@ export function AiChatPanel({
     }
   }, [error]);
 
+  // ---- Synchronize preview plan to parent ----
+  useEffect(() => {
+    if (!onPreviewPlanChange) {
+      return;
+    }
+
+    if (!previewPlanToolCallId) {
+      onPreviewPlanChange(null);
+      return;
+    }
+
+    const pending = pendingPlans.get(previewPlanToolCallId);
+    onPreviewPlanChange(pending ? pending.plan : null);
+  }, [onPreviewPlanChange, pendingPlans, previewPlanToolCallId]);
+
   // ---- Detect tool call parts in messages and track pending actions ----
   useEffect(() => {
     for (const message of messages) {
@@ -302,26 +317,11 @@ export function AiChatPanel({
     []
   );
 
-  const handleTogglePlanPreview = useCallback(
-    (toolCallId: string) => {
-      const nextPreviewId =
-        previewPlanToolCallId === toolCallId ? null : toolCallId;
-      setPreviewPlanToolCallId(nextPreviewId);
-
-      if (!onPreviewPlanChange) {
-        return;
-      }
-
-      if (nextPreviewId === null) {
-        onPreviewPlanChange(null);
-        return;
-      }
-
-      const pending = pendingPlans.get(toolCallId);
-      onPreviewPlanChange(pending ? pending.plan : null);
-    },
-    [onPreviewPlanChange, pendingPlans, previewPlanToolCallId]
-  );
+  const handleTogglePlanPreview = useCallback((toolCallId: string) => {
+    setPreviewPlanToolCallId((previous) =>
+      previous === toolCallId ? null : toolCallId
+    );
+  }, []);
 
   const handleApprovePlan = useCallback(
     async (toolCallId: string) => {
@@ -358,7 +358,6 @@ export function AiChatPanel({
             return next;
           });
           if (previewPlanToolCallId === toolCallId) {
-            onPreviewPlanChange?.(null);
             setPreviewPlanToolCallId(null);
           }
         } else {
@@ -389,7 +388,7 @@ export function AiChatPanel({
         });
       }
     },
-    [boardId, onPreviewPlanChange, pendingPlans, previewPlanToolCallId]
+    [boardId, pendingPlans, previewPlanToolCallId]
   );
 
   const handleRejectPlan = useCallback(
@@ -408,11 +407,10 @@ export function AiChatPanel({
       });
 
       if (previewPlanToolCallId === toolCallId) {
-        onPreviewPlanChange?.(null);
         setPreviewPlanToolCallId(null);
       }
     },
-    [onPreviewPlanChange, previewPlanToolCallId]
+    [previewPlanToolCallId]
   );
 
   return (

@@ -17,6 +17,7 @@ import type {
 
 interface ConflictWarningPanelProps {
   conflicts: Conflict[];
+  errorMessage?: string | null;
   onClose?: () => void;
 }
 
@@ -68,6 +69,7 @@ const typeConfig = {
 
 export function ConflictWarningPanel({
   conflicts,
+  errorMessage,
   onClose,
 }: ConflictWarningPanelProps) {
   const [expandedConflicts, setExpandedConflicts] = useState<Set<string>>(
@@ -84,7 +86,7 @@ export function ConflictWarningPanel({
     setExpandedConflicts(newExpanded);
   };
 
-  if (conflicts.length === 0) {
+  if (conflicts.length === 0 && !errorMessage) {
     return null;
   }
 
@@ -108,8 +110,9 @@ export function ConflictWarningPanel({
           <div className="flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-amber-600" />
             <span className="font-semibold">
-              {conflicts.length} conflict{conflicts.length === 1 ? "" : "s"}{" "}
-              detected
+              {errorMessage
+                ? "Conflict check failed"
+                : `${conflicts.length} conflict${conflicts.length === 1 ? "" : "s"} detected`}
             </span>
           </div>
           {onClose && (
@@ -124,6 +127,17 @@ export function ConflictWarningPanel({
           )}
         </div>
         <div className="flex flex-col gap-2 p-3">
+          {errorMessage && (
+            <Alert variant="destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>
+                {errorMessage === "Unauthorized"
+                  ? "Unauthorized"
+                  : "Unable to fetch conflicts"}
+              </AlertTitle>
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
+          )}
           {conflicts.map((conflict) => {
             const severity = severityConfig[conflict.severity] as {
               label: string;
