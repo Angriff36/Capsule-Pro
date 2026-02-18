@@ -1,14 +1,13 @@
 "use client";
 
 import { Badge } from "@repo/design-system/components/ui/badge";
-import { Progress } from "@repo/design-system/components/ui/progress";
 import { cn } from "@repo/design-system/lib/utils";
 import {
+  Calendar,
   DollarSign,
   TrendingDown,
   TrendingUp,
   Users,
-  Calendar,
 } from "lucide-react";
 import { memo } from "react";
 import type {
@@ -140,7 +139,9 @@ export const FinancialNodeCard = memo(function FinancialNodeCard({
       <div className="space-y-1">
         <div className="flex items-center justify-between text-xs">
           <span className="text-muted-foreground">Margin</span>
-          <span className="font-medium">{data.grossProfitMargin.toFixed(1)}%</span>
+          <span className="font-medium">
+            {data.grossProfitMargin.toFixed(1)}%
+          </span>
         </div>
         <div className="relative h-2 rounded-full bg-muted overflow-hidden">
           <div

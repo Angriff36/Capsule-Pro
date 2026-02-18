@@ -19,6 +19,7 @@ import "@xyflow/react/dist/style.css";
 import { LayoutGrid } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 import { toast } from "sonner";
+import type { BoardDelta } from "../actions/boards";
 import {
   batchRemoveProjections,
   batchUpdatePositions,
@@ -42,7 +43,6 @@ import type {
   ResolvedEntity,
 } from "../types/index";
 import type { BoardMutation } from "../types/manifest-plan";
-import type { BoardDelta } from "../actions/boards";
 
 // ============================================================================
 // Types
@@ -304,7 +304,10 @@ function BoardFlowInner({
         addedEntityIds: new Set<string>(),
         removedProjectionIds: new Set<string>(),
         modifiedProjectionIds: new Set<string>(),
-        modifications: new Map<string, Array<{ field: string; original: unknown; simulated: unknown }>>(),
+        modifications: new Map<
+          string,
+          Array<{ field: string; original: unknown; simulated: unknown }>
+        >(),
       };
     }
 
@@ -317,11 +320,18 @@ function BoardFlowInner({
     const modifiedProjectionIds = new Set<string>(
       simulationDelta.modifiedProjections.map((m) => m.id)
     );
-    const modifications = new Map<string, Array<{ field: string; original: unknown; simulated: unknown }>>();
+    const modifications = new Map<
+      string,
+      Array<{ field: string; original: unknown; simulated: unknown }>
+    >();
 
     for (const mod of simulationDelta.modifiedProjections) {
       const existing = modifications.get(mod.id) ?? [];
-      existing.push({ field: mod.field, original: mod.original, simulated: mod.simulated });
+      existing.push({
+        field: mod.field,
+        original: mod.original,
+        simulated: mod.simulated,
+      });
       modifications.set(mod.id, existing);
     }
 
@@ -390,7 +400,9 @@ function BoardFlowInner({
         const highlightColor = previewState.highlightedNodeColors.get(node.id);
 
         // Check simulation state for this node
-        const nodeData = node.data as { projection?: BoardProjection } | undefined;
+        const nodeData = node.data as
+          | { projection?: BoardProjection }
+          | undefined;
         const projection = nodeData?.projection;
         const entityId = projection?.entityId ?? "";
         const projectionId = node.id;
@@ -422,7 +434,10 @@ function BoardFlowInner({
           }
         }
 
-        if (!(moved || highlightColor) && Object.keys(simulationStyle).length === 0) {
+        if (
+          !(moved || highlightColor) &&
+          Object.keys(simulationStyle).length === 0
+        ) {
           return node;
         }
 
@@ -485,7 +500,15 @@ function BoardFlowInner({
     });
 
     return [...persistedNodes, ...ghostNodes];
-  }, [boardId, entities, nodes, previewState, boardMode, simulationDelta, simulationState]);
+  }, [
+    boardId,
+    entities,
+    nodes,
+    previewState,
+    boardMode,
+    simulationDelta,
+    simulationState,
+  ]);
 
   const renderedEdges = useMemo(() => {
     const persistedEdges = edges.filter(
@@ -776,20 +799,20 @@ function BoardFlowInner({
             <div className="mt-1 flex gap-3 text-xs text-amber-600 dark:text-amber-400">
               {simulationDelta.summary.additions > 0 && (
                 <span className="flex items-center gap-1">
-                  <span className="h-2 w-2 rounded-full bg-green-500" />
-                  +{simulationDelta.summary.additions}
+                  <span className="h-2 w-2 rounded-full bg-green-500" />+
+                  {simulationDelta.summary.additions}
                 </span>
               )}
               {simulationDelta.summary.removals > 0 && (
                 <span className="flex items-center gap-1">
-                  <span className="h-2 w-2 rounded-full bg-red-500" />
-                  -{simulationDelta.summary.removals}
+                  <span className="h-2 w-2 rounded-full bg-red-500" />-
+                  {simulationDelta.summary.removals}
                 </span>
               )}
               {simulationDelta.summary.modifications > 0 && (
                 <span className="flex items-center gap-1">
-                  <span className="h-2 w-2 rounded-full bg-amber-500" />
-                  ~{simulationDelta.summary.modifications}
+                  <span className="h-2 w-2 rounded-full bg-amber-500" />~
+                  {simulationDelta.summary.modifications}
                 </span>
               )}
             </div>

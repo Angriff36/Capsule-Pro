@@ -2,7 +2,11 @@
 
 import { database } from "@repo/database";
 import { requireTenantId } from "../../../lib/tenant";
-import type { BoardProjection, BoardGroup, BoardAnnotation } from "../types/board";
+import type {
+  BoardAnnotation,
+  BoardGroup,
+  BoardProjection,
+} from "../types/board";
 
 // ---------------------------------------------------------------------------
 // Legacy board types — these match the current Prisma CommandBoard model.
@@ -530,7 +534,7 @@ export async function getSimulationContext(
     },
   });
 
-  if (!board || !board.tags.includes("simulation")) {
+  if (!(board && board.tags.includes("simulation"))) {
     return null;
   }
 
@@ -613,7 +617,8 @@ export async function discardSimulation(
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to discard simulation",
+      error:
+        error instanceof Error ? error.message : "Failed to discard simulation",
     };
   }
 }
@@ -623,7 +628,9 @@ export async function discardSimulation(
  * Used to display a diff overlay showing what would change.
  * Note: Must be async as it's exported from a 'use server' file.
  */
-export async function computeBoardDelta(input: ComputeDeltaInput): Promise<BoardDelta> {
+export async function computeBoardDelta(
+  input: ComputeDeltaInput
+): Promise<BoardDelta> {
   const addedProjections: BoardProjection[] = [];
   const removedProjectionIds: string[] = [];
   const modifiedProjections: BoardDelta["modifiedProjections"] = [];
@@ -643,17 +650,21 @@ export async function computeBoardDelta(input: ComputeDeltaInput): Promise<Board
   );
 
   const originalGroupMap = new Map(input.originalGroups.map((g) => [g.id, g]));
-  const simulatedGroupMap = new Map(input.simulatedGroups.map((g) => [g.id, g]));
+  const simulatedGroupMap = new Map(
+    input.simulatedGroups.map((g) => [g.id, g])
+  );
 
-  const originalAnnMap = new Map(input.originalAnnotations.map((a) => [a.id, a]));
-  const simulatedAnnMap = new Map(input.simulatedAnnotations.map((a) => [a.id, a]));
+  const originalAnnMap = new Map(
+    input.originalAnnotations.map((a) => [a.id, a])
+  );
+  const simulatedAnnMap = new Map(
+    input.simulatedAnnotations.map((a) => [a.id, a])
+  );
 
   // Find added and modified projections
   for (const simProj of input.simulatedProjections) {
     const origProj = originalProjMap.get(simProj.entityId);
-    if (!origProj) {
-      addedProjections.push(simProj);
-    } else {
+    if (origProj) {
       // Check for modifications
       const fieldsToCheck: Array<keyof BoardProjection> = [
         "positionX",
@@ -676,6 +687,8 @@ export async function computeBoardDelta(input: ComputeDeltaInput): Promise<Board
           });
         }
       }
+    } else {
+      addedProjections.push(simProj);
     }
   }
 
