@@ -23,7 +23,7 @@ async function collectRouteFiles(root: string): Promise<string[]> {
 }
 
 describe("manifest routes runtime", () => {
-  it("does not use Edge runtime for routes that create manifest runtimes", async () => {
+  it("enforces nodejs runtime for routes that create manifest runtimes", async () => {
     const routeFiles = await collectRouteFiles(ROUTES_ROOT);
 
     const manifestRouteFiles: string[] = [];
@@ -31,6 +31,9 @@ describe("manifest routes runtime", () => {
       const content = await readFile(routeFile, "utf8");
       if (content.includes("createManifestRuntime")) {
         manifestRouteFiles.push(routeFile);
+        expect(content).toMatch(
+          /export const runtime\s*=\s*['"]nodejs['"]/
+        );
         expect(content).not.toContain('export const runtime = "edge"');
         expect(content).not.toContain("export const runtime = 'edge'");
       }

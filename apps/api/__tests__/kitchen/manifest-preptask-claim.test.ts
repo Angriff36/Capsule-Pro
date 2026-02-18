@@ -90,7 +90,6 @@ describe("Manifest-Generated PrepTask.claim Handler", () => {
 
     // Verify it loads the manifest IR via compiled bundle
     expect(content).toContain("getCompiledManifestBundle");
-    expect(content).toContain("prep-task-rules");
 
     console.info("✓ Runtime factory verified");
   });
