@@ -5,7 +5,7 @@ Enable full AI-driven command board operations: users can create events, prep li
 
 ---
 
-## Current State (Verified 2026-02-18)
+## Current State (Verified 2026-02-18, Tagged v0.6.22)
 
 ### AI Tools Status (15 total) - ALL FUNCTIONAL
 - suggest_board_action, suggest_manifest_plan, query_board_context
