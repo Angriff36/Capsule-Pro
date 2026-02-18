@@ -534,7 +534,7 @@ export async function getSimulationContext(
     },
   });
 
-  if (!(board && board.tags.includes("simulation"))) {
+  if (!board?.tags.includes("simulation")) {
     return null;
   }
 

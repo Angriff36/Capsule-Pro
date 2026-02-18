@@ -1,6 +1,6 @@
 # Command Board — Implementation Plan
 
-> Last updated: 2026-02-16
+> Last updated: 2026-02-18
 > See `STATUS.md` for current state, `BUGS.md` for known issues
 
 ## Priority Order
@@ -11,8 +11,8 @@ Work items ordered by impact and dependency. Each item references its spec.
 
 | #   | Item                                       | Spec                          | Effort | Status      |
 | --- | ------------------------------------------ | ----------------------------- | ------ | ----------- |
-| 1   | Wire up EntityDetailPanel in BoardShell    | `SPEC_entity-detail-panel.md` | 15 min | NOT STARTED |
-| 2   | Entity Browser: already-on-board indicator | `SPEC_entity-browser.md` §1.1 | 30 min | NOT STARTED |
+| 1   | Wire up EntityDetailPanel in BoardShell    | `SPEC_entity-detail-panel.md` | 15 min | **DONE** |
+| 2   | Entity Browser: already-on-board indicator | `SPEC_entity-browser.md` §1.1 | 30 min | **DONE** |
 | 3   | Entity Browser: search within browser      | `SPEC_entity-browser.md` §1.2 | 1 hr   | NOT STARTED |
 
 ### P1 — Do Next
@@ -25,7 +25,7 @@ Work items ordered by impact and dependency. Each item references its spec.
 | 7   | Card hover action buttons (remove, detail, pin) | `SPEC_ui-polish.md` §Cards.5    | 1 hr   | NOT STARTED |
 | 8   | Connection edge labels                          | `SPEC_connections.md` §1.1      | 1 hr   | NOT STARTED |
 | 9   | Browser text size fix (text-[10px] → text-xs)   | `SPEC_ui-polish.md` §Typography | 10 min | NOT STARTED |
-| 10  | Smart placement algorithm                       | `SPEC_entity-browser.md` §2.2   | 1 hr   | NOT STARTED |
+| 10  | Smart placement algorithm                       | `SPEC_entity-browser.md` §2.2   | 1 hr   | **DONE** |
 
 ### P2 — Polish
 
@@ -39,7 +39,7 @@ Work items ordered by impact and dependency. Each item references its spec.
 | 16  | Empty state with quick actions               | `SPEC_ui-polish.md` §Canvas.3 | 1 hr   | NOT STARTED |
 | 17  | Entity Browser drag-to-add                   | `SPEC_entity-browser.md` §2.1 | 2 hr   | NOT STARTED |
 | 18  | Entity Browser keyboard navigation           | `SPEC_entity-browser.md` §2.3 | 1 hr   | NOT STARTED |
-| 19  | Error boundary on board                      | `BUGS.md` BUG-05              | 30 min | NOT STARTED |
+| 19  | Error boundary on board                      | `BUGS.md` BUG-05              | 30 min | **DONE** |
 
 ### P3 — Future
 
@@ -50,7 +50,7 @@ Work items ordered by impact and dependency. Each item references its spec.
 | 22  | Manual connection creation               | `SPEC_connections.md` §2.2       | 2 hr   | NOT STARTED |
 | 23  | Connection filtering                     | `SPEC_connections.md` §2.3       | 2 hr   | NOT STARTED |
 | 24  | Path highlighting                        | `SPEC_connections.md` §3.2       | 2 hr   | NOT STARTED |
-| 25  | Undo/Redo system (React Flow compatible) | `BUGS.md` BUG-03                 | 4-6 hr | NOT STARTED |
+| 25  | Undo/Redo system (React Flow compatible) | `BUGS.md` BUG-03                 | 4-6 hr | **DONE** |
 | 26  | Live card updates (polling/realtime)     | `SPEC_product-direction.md`      | 4-6 hr | NOT STARTED |
 | 27  | Edit-in-place in detail panel            | `SPEC_entity-detail-panel.md` §3 | 4-6 hr | NOT STARTED |
 
