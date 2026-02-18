@@ -425,7 +425,7 @@ export async function deriveConnections(
           for (const finProj of financialProjs) {
             // Get the financial projection data
             const finData = financialDataMap.get(finProj.entityId);
-            if (!(finData && finData.sourceEventIds)) {
+            if (!finData?.sourceEventIds) {
               continue;
             }
 

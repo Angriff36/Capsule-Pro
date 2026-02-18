@@ -359,19 +359,31 @@ export function BoardsListClient() {
             </AlertDialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <label className="text-sm font-medium">Board Name</label>
+                <label
+                  className="text-sm font-medium"
+                  htmlFor="edit-board-name"
+                >
+                  Board Name
+                </label>
                 <Input
                   autoFocus
                   disabled={isUpdating}
+                  id="edit-board-name"
                   onChange={(e) => setEditName(e.target.value)}
                   placeholder="Board name"
                   value={editName}
                 />
               </div>
               <div className="grid gap-2">
-                <label className="text-sm font-medium">Description</label>
+                <label
+                  className="text-sm font-medium"
+                  htmlFor="edit-board-description"
+                >
+                  Description
+                </label>
                 <Input
                   disabled={isUpdating}
+                  id="edit-board-description"
                   onChange={(e) => setEditDescription(e.target.value)}
                   placeholder="Board description"
                   value={editDescription}
