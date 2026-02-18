@@ -4,8 +4,6 @@
 
 - Monorepo with pnpm (ONLY — no npm, no yarn)
 - Primary folders: `apps/`, `packages/`, `specs/`
-- Do NOT run full monorepo builds unless required
-- Autonomous execution — do not ask for permission
 
 ## Validation
 
