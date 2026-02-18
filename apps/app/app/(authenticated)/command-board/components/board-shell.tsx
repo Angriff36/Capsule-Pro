@@ -109,6 +109,7 @@ export function BoardShell({
   const [conflicts, setConflicts] = useState<Conflict[]>([]);
   const [showConflicts, setShowConflicts] = useState(false);
   const [isLoadingConflicts, setIsLoadingConflicts] = useState(false);
+  const [conflictsError, setConflictsError] = useState<string | null>(null);
 
   // ---- Simulation mode state ----
   const [boardMode, setBoardMode] = useState<"live" | "simulation">("live");
@@ -257,15 +258,22 @@ export function BoardShell({
   // ---- Fetch conflicts on mount ----
   const fetchConflicts = useCallback(async () => {
     setIsLoadingConflicts(true);
+    setConflictsError(null);
     try {
       const result = await detectConflicts({ boardId });
       setConflicts(result.conflicts);
+      setConflictsError(null);
       // Auto-show panel if there are conflicts
       if (result.conflicts.length > 0) {
         setShowConflicts(true);
       }
     } catch (error) {
       console.error("Failed to detect conflicts:", error);
+      setConflicts([]);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unable to fetch conflicts";
+      setConflictsError(errorMessage);
+      setShowConflicts(true);
     } finally {
       setIsLoadingConflicts(false);
     }
@@ -373,7 +381,7 @@ export function BoardShell({
               setCommandPaletteOpen((prev) => !prev)
             }
             onToggleConflicts={() => {
-              if (conflicts.length > 0) {
+              if (conflicts.length > 0 || conflictsError) {
                 setShowConflicts((prev) => !prev);
               } else {
                 fetchConflicts();
@@ -411,9 +419,10 @@ export function BoardShell({
               </ErrorBoundary>
 
               {/* Conflict Warning Panel Overlay */}
-              {showConflicts && conflicts.length > 0 && (
+              {showConflicts && (conflicts.length > 0 || conflictsError) && (
                 <ConflictWarningPanel
                   conflicts={conflicts}
+                  errorMessage={conflictsError}
                   onClose={() => setShowConflicts(false)}
                 />
               )}
