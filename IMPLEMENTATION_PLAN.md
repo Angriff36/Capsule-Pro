@@ -20,7 +20,7 @@ Enable full AI-driven command board operations: users can create events, prep li
 | update_policy | FUNCTIONAL | - |
 | suggest_simulation_plan | FUNCTIONAL | Uses forkCommandBoard correctly |
 | optimize_schedule | FUNCTIONAL | Now calls /api/conflicts/detect for real data |
-| **auto_generate_prep** | PLACEHOLDER | `estimatedHours: 40` placeholder (line 1478), static templates |
+| **auto_generate_prep** | FUNCTIONAL | Now calls /api/kitchen/ai/bulk-generate/prep-tasks for real data |
 | **auto_generate_purchase** | PLACEHOLDER | `estimatedGuests: 100` (line 1561), `currentQuantity: 0` (line 1583), hardcoded items |
 
 ### Domain Commands Status (5 implemented, 5 missing)
@@ -48,19 +48,19 @@ Enable full AI-driven command board operations: users can create events, prep li
 
 ---
 
-## Priority Tasks (11 remaining)
+## Priority Tasks (10 remaining)
 
-### P0-1. [ ] Fix `auto_generate_prep` AI Tool
-**File**: `apps/app/app/api/command-board/chat/route.ts:1478-1588`
+### P0-1. [x] Fix `auto_generate_prep` AI Tool
+**File**: `apps/app/app/api/command-board/chat/route.ts:1497-1704`
 
-**Problem**: Uses static prep templates and hardcoded `estimatedHours: 40`.
+**Completed**: 2026-02-18
 
-**Solution**:
-1. For each target event, call `POST /api/kitchen/ai/bulk-generate/prep-tasks` with `eventId`
-2. Map response `tasks[]` to prep timeline format using `task.startByDate`, `task.dueByDate`
-3. Calculate `estimatedHours` from `sum(task.estimatedMinutes) / 60`
-4. Use `task.station` for station breakdown grouping
-5. When `createTasks: true`, call `/api/kitchen/ai/bulk-generate/prep-tasks/save`
+**Changes**:
+- Replaced static prep templates with real API calls to `/api/kitchen/ai/bulk-generate/prep-tasks`
+- Calculates `estimatedHours` from `sum(task.estimatedMinutes) / 60` instead of hardcoded `40`
+- Groups tasks by station when `groupByStation: true`
+- Calls `/api/kitchen/ai/bulk-generate/prep-tasks/save` when `createTasks: true`
+- Returns actual generated task data with proper type definitions
 
 ### P0-2. [ ] Fix `auto_generate_purchase` AI Tool
 **File**: `apps/app/app/api/command-board/chat/route.ts:1534-1640`
@@ -171,7 +171,7 @@ Enable full AI-driven command board operations: users can create events, prep li
 - [x] Manifest plan approval workflow
 - [x] AI tool entity resolution (labels display correctly)
 - [x] Domain commands: create_event, link_menu, create_task, assign_employee, update_inventory
-- [x] 9 AI tools fully functional
+- [x] 10 AI tools fully functional (auto_generate_prep now uses real API data)
 - [x] Prep task generation API with save endpoint
 - [x] Purchase order command API via manifest runtime
 - [x] Payroll calculation engine and UI (standalone)
@@ -179,3 +179,4 @@ Enable full AI-driven command board operations: users can create events, prep li
 - [x] Full scheduling/shifts UI and APIs
 - [x] Full payroll UI and APIs
 - [x] **optimize_schedule** AI Tool - Now calls `/api/conflicts/detect` for real conflict data, maps affected entities to real event IDs, provides actionable recommendations with proper severity mapping
+- [x] **auto_generate_prep** AI Tool - Now calls `/api/kitchen/ai/bulk-generate/prep-tasks` for real data, calculates estimatedHours from task.estimatedMinutes, groups by station, saves via save endpoint

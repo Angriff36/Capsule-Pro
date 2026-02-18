@@ -1506,6 +1506,8 @@ function createBoardTools(params: {
       }),
       execute: async (input) => {
         try {
+          const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
+
           // Get events from board
           const projections = boardId ? await getBoardProjections(boardId) : [];
           const eventProjections = projections.filter(p => p.entityType === "event");
@@ -1522,60 +1524,151 @@ function createBoardTools(params: {
             };
           }
 
-          // Generate prep timeline structure
-          const prepTimeline = targetEvents.map(projection => ({
-            eventId: projection.entityId,
-            eventName: projection.label ?? `Event ${projection.entityId.substring(0, 8)}`,
-            prepTasks: [
-              {
-                day: -7,
-                category: "ordering",
-                tasks: ["Confirm ingredient orders", "Verify supplier availability"],
-              },
-              {
-                day: -3,
-                category: "prep_start",
-                tasks: ["Begin advance prep items", "Marinate proteins", "Prep aromatics"],
-              },
-              {
-                day: -2,
-                category: "prep_heavy",
-                tasks: ["Complete bulk prep", "Assemble components", "Quality check ingredients"],
-              },
-              {
-                day: -1,
-                category: "final_prep",
-                tasks: ["Finish all prep items", "Set up stations", "Final inventory check"],
-              },
-              {
-                day: 0,
-                category: "day_of",
-                tasks: ["Final assembly", "Cooking", "Plating", "Service"],
-              },
-            ],
-            estimatedHours: 40, // Placeholder
-            stationBreakdown: input.groupByStation ? {
-              hot_line: ["Protein cooking", "Sauce finishing"],
-              cold_line: ["Salads", "Cold apps"],
-              pastry: ["Desserts", "Bread service"],
-            } : undefined,
-          }));
+          // Call bulk-generate/prep-tasks API for each event
+          interface GeneratedPrepTask {
+            name: string;
+            dishId: string | null;
+            recipeVersionId: string | null;
+            taskType: string;
+            quantityTotal: number;
+            quantityUnitId: number | null;
+            servingsTotal: number | null;
+            startByDate: string;
+            dueByDate: string;
+            dueByTime: string | null;
+            isEventFinish: boolean;
+            priority: number;
+            estimatedMinutes: number | null;
+            notes: string | null;
+            station: string | null;
+          }
 
-          if (input.createTasks) {
-            // Would create actual prep tasks via manifest plan
+          interface BulkGenerateResponse {
+            batchId: string;
+            status: string;
+            generatedCount: number;
+            tasks: GeneratedPrepTask[];
+            errors: string[];
+            summary: string;
+          }
+
+          const prepTimeline = [];
+          const allGeneratedTasks: Array<{ eventId: string; tasks: GeneratedPrepTask[] }> = [];
+
+          for (const projection of targetEvents) {
+            const generateResponse = await fetch(`${baseUrl}/api/kitchen/ai/bulk-generate/prep-tasks`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                ...(authCookie ? { Cookie: authCookie } : {}),
+              },
+              body: JSON.stringify({
+                eventId: projection.entityId,
+                options: {
+                  includeKitchenTasks: input.includeRecipeBreakdown ?? true,
+                  priorityStrategy: "due_date" as const,
+                },
+              }),
+            });
+
+            if (!generateResponse.ok) {
+              const errorText = await generateResponse.text();
+              console.error(`[AI Chat] Prep generation API error for event ${projection.entityId}:`, errorText);
+              // Continue with other events even if one fails
+              continue;
+            }
+
+            const generateData = (await generateResponse.json()) as BulkGenerateResponse;
+            const tasks = generateData.tasks || [];
+
+            allGeneratedTasks.push({ eventId: projection.entityId, tasks });
+
+            // Calculate estimated hours from task minutes
+            const estimatedMinutes = tasks.reduce((sum, t) => sum + (t.estimatedMinutes || 0), 0);
+            const estimatedHours = Math.ceil(estimatedMinutes / 60) || 0;
+
+            // Group tasks by day offset (relative to event date)
+            const tasksByDay: Record<number, GeneratedPrepTask[]> = {};
+            for (const task of tasks) {
+              const dueDate = new Date(task.dueByDate);
+              // Calculate day offset - this is approximate without the actual event date
+              const dayKey = Math.floor(dueDate.getTime() / (1000 * 60 * 60 * 24));
+              if (!tasksByDay[dayKey]) tasksByDay[dayKey] = [];
+              tasksByDay[dayKey].push(task);
+            }
+
+            // Group tasks by station if requested
+            let stationBreakdown: Record<string, string[]> | undefined;
+            if (input.groupByStation) {
+              stationBreakdown = {};
+              for (const task of tasks) {
+                if (task.station) {
+                  if (!stationBreakdown[task.station]) {
+                    stationBreakdown[task.station] = [];
+                  }
+                  stationBreakdown[task.station].push(task.name);
+                }
+              }
+            }
+
+            prepTimeline.push({
+              eventId: projection.entityId,
+              eventName: projection.label ?? `Event ${projection.entityId.substring(0, 8)}`,
+              batchId: generateData.batchId,
+              prepTasks: tasks.map(t => ({
+                name: t.name,
+                taskType: t.taskType,
+                station: t.station,
+                priority: t.priority,
+                estimatedMinutes: t.estimatedMinutes,
+                startByDate: t.startByDate,
+                dueByDate: t.dueByDate,
+                isEventFinish: t.isEventFinish,
+              })),
+              estimatedHours,
+              stationBreakdown,
+              generatedCount: generateData.generatedCount,
+            });
+          }
+
+          if (input.createTasks && allGeneratedTasks.length > 0) {
+            // Save tasks to database via the save endpoint
+            const saveResults = [];
+            for (const { eventId, tasks } of allGeneratedTasks) {
+              if (tasks.length === 0) continue;
+
+              const saveResponse = await fetch(`${baseUrl}/api/kitchen/ai/bulk-generate/prep-tasks/save`, {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  ...(authCookie ? { Cookie: authCookie } : {}),
+                },
+                body: JSON.stringify({ eventId, tasks }),
+              });
+
+              if (saveResponse.ok) {
+                const saveData = await saveResponse.json();
+                saveResults.push({ eventId, ...saveData });
+              }
+            }
+
+            const totalCreated = saveResults.reduce((sum, r) => sum + (r.created || 0), 0);
+
             return {
               success: true,
               prepTimeline,
-              message: `Generated prep timeline for ${targetEvents.length} events. Ready to create ${prepTimeline.reduce((acc, e) => acc + e.prepTasks.length, 0)} prep tasks.`,
-              nextSteps: [
-                "Review the prep timeline above",
-                "Confirm task creation with 'yes, create these tasks'",
-                "Tasks will be linked to their respective events",
-              ],
-              manifestPlanHint: {
-                domainCommand: "create_prep_tasks",
-                requiresApproval: true,
+              savedTasks: saveResults,
+              message: `Generated and saved prep tasks for ${targetEvents.length} events. Created ${totalCreated} tasks.`,
+              summary: {
+                totalEvents: targetEvents.length,
+                totalTasksCreated: totalCreated,
+                estimatedTotalHours: prepTimeline.reduce((acc, e) => acc + e.estimatedHours, 0),
               },
+              nextSteps: [
+                "Review the created prep tasks on the command board",
+                "Assign tasks to team members as needed",
+                "Track progress through the prep timeline",
+              ],
             };
           }
 
@@ -1586,7 +1679,7 @@ function createBoardTools(params: {
             message: `Generated prep timeline preview for ${targetEvents.length} events.`,
             summary: {
               totalEvents: targetEvents.length,
-              totalTasks: prepTimeline.reduce((acc, e) => acc + e.prepTasks.flatMap(p => p.tasks).length, 0),
+              totalTasks: prepTimeline.reduce((acc, e) => acc + e.prepTasks.length, 0),
               estimatedTotalHours: prepTimeline.reduce((acc, e) => acc + e.estimatedHours, 0),
             },
             nextSteps: [
@@ -1594,6 +1687,10 @@ function createBoardTools(params: {
               "Say 'create these prep tasks' to add them to the system",
               "Tasks will appear on the command board linked to events",
             ],
+            manifestPlanHint: input.createTasks ? undefined : {
+              domainCommand: "create_prep_tasks",
+              requiresApproval: true,
+            },
           };
         } catch (error) {
           console.error("[AI Chat] Prep generation failed:", error);
