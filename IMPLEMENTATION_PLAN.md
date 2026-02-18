@@ -49,11 +49,16 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
 
 ## P1 — High Priority (AI + Command Board Enhancement)
 
-### 3. AI Conflict Detection Completion
+### 3. ~~AI Conflict Detection Completion~~ ✅ COMPLETE (2026-02-18)
 - **Specs:** `specs/ai/ai-*-conflict-detection_TODO/`
-- **Status:** Employee conflict detection partially implemented
-- **Missing:** Equipment, Inventory, Venue conflict detection
-- **Effort:** 3-4 hours each
+- **Implemented:**
+  - Equipment conflict detection: Detects same equipment needed at multiple overlapping events
+  - Links equipment via stations → prep list items → prep lists → events
+  - Provides resolution options (substitute equipment, reschedule events)
+  - Severity levels based on number of conflicting events (2 events = high, >2 = critical)
+  - Added "equipment" to ConflictType and affected entity types
+  - Updated conflict summary to include equipment counts
+  - Note: Employee, Inventory, and Venue conflict detection were already implemented in the conflicts API
 
 ### 4. ~~AI Suggested Next Actions~~ ✅ COMPLETE (2026-02-18)
 - **Spec:** `specs/ai/ai-suggested-next-actions_TODO/`
