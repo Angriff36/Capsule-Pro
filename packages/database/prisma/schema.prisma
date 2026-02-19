@@ -853,6 +853,12 @@ model ProposalTemplate {
   defaultLineItems   Json               @default("[]") @map("default_line_items")
   isActive           Boolean            @default(true) @map("is_active")
   isDefault          Boolean            @default(false) @map("is_default")
+  // Branding fields
+  logoUrl            String?            @map("logo_url")
+  primaryColor       String?            @map("primary_color")
+  secondaryColor     String?            @map("secondary_color")
+  accentColor        String?            @map("accent_color")
+  fontFamily         String?            @map("font_family")
   createdAt          DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt          DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt          DateTime?          @map("deleted_at") @db.Timestamptz(6)

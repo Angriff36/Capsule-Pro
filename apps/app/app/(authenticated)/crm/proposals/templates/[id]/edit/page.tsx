@@ -34,6 +34,14 @@ import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { getProposalTemplateById, updateProposalTemplate } from "../../actions";
 
+interface BrandingState {
+  logoUrl: string;
+  primaryColor: string;
+  secondaryColor: string;
+  accentColor: string;
+  fontFamily: string;
+}
+
 interface LineItem {
   sortOrder: number;
   itemType: string;
@@ -44,6 +52,19 @@ interface LineItem {
   unitPrice: number;
   notes?: string;
 }
+
+const fontFamilies = [
+  { value: "", label: "Default (Helvetica)" },
+  { value: "Helvetica", label: "Helvetica" },
+  { value: "Times-Roman", label: "Times Roman" },
+  { value: "Courier", label: "Courier" },
+];
+
+const defaultColors = {
+  primary: "#1e3a5f",
+  secondary: "#4b5563",
+  accent: "#3b82f6",
+};
 
 const itemTypes = [
   { value: "menu", label: "Menu Item" },
@@ -69,7 +90,7 @@ const eventTypes = [
 export default function EditProposalTemplatePage() {
   const router = useRouter();
   const params = useParams();
-  const templateId = params.id as string;
+  const templateId = params?.id as string;
   const [isPending, startTransition] = useTransition();
   const [isLoading, setIsLoading] = useState(true);
 
@@ -81,6 +102,14 @@ export default function EditProposalTemplatePage() {
   const [defaultNotes, setDefaultNotes] = useState("");
   const [isActive, setIsActive] = useState(true);
   const [isDefault, setIsDefault] = useState(false);
+
+  const [branding, setBranding] = useState<BrandingState>({
+    logoUrl: "",
+    primaryColor: "",
+    secondaryColor: "",
+    accentColor: "",
+    fontFamily: "",
+  });
 
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
   const [newItem, setNewItem] = useState<Partial<LineItem>>({
@@ -111,7 +140,16 @@ export default function EditProposalTemplatePage() {
         setIsActive(template.isActive);
         setIsDefault(template.isDefault);
 
-        const items = template.defaultLineItems as LineItem[];
+        // Load branding data
+        setBranding({
+          logoUrl: template.logoUrl || "",
+          primaryColor: template.primaryColor || "",
+          secondaryColor: template.secondaryColor || "",
+          accentColor: template.accentColor || "",
+          fontFamily: template.fontFamily || "",
+        });
+
+        const items = template.defaultLineItems as unknown as LineItem[];
         setLineItems(Array.isArray(items) ? items : []);
       } catch (_error) {
         toast.error("Failed to load template");
@@ -153,8 +191,8 @@ export default function EditProposalTemplatePage() {
     });
   };
 
-  const removeLineItem = (index: number) => {
-    setLineItems(lineItems.filter((_, i) => i !== index));
+  const removeLineItem = (sortOrder: number) => {
+    setLineItems(lineItems.filter((item) => item.sortOrder !== sortOrder));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -177,6 +215,13 @@ export default function EditProposalTemplatePage() {
           defaultLineItems: lineItems,
           isActive,
           isDefault,
+          branding: {
+            logoUrl: branding.logoUrl.trim() || null,
+            primaryColor: branding.primaryColor.trim() || null,
+            secondaryColor: branding.secondaryColor.trim() || null,
+            accentColor: branding.accentColor.trim() || null,
+            fontFamily: branding.fontFamily.trim() || null,
+          },
         });
 
         toast.success("Template updated successfully");
@@ -398,8 +443,10 @@ export default function EditProposalTemplatePage() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {lineItems.map((item, index) => (
-                          <TableRow key={index}>
+                        {lineItems.map((item) => (
+                          <TableRow
+                            key={`item-${item.sortOrder}-${item.description}`}
+                          >
                             <TableCell>
                               <Badge className="text-xs" variant="outline">
                                 {itemTypes.find(
@@ -416,7 +463,7 @@ export default function EditProposalTemplatePage() {
                             </TableCell>
                             <TableCell className="text-right">
                               <Button
-                                onClick={() => removeLineItem(index)}
+                                onClick={() => removeLineItem(item.sortOrder)}
                                 size="icon"
                                 type="button"
                                 variant="ghost"
@@ -481,6 +528,140 @@ export default function EditProposalTemplatePage() {
                     </p>
                   </div>
                   <Switch checked={isDefault} onCheckedChange={setIsDefault} />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Branding */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Branding</CardTitle>
+                <CardDescription>
+                  Customize the appearance of proposals
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="logoUrl">Logo URL</Label>
+                  <Input
+                    id="logoUrl"
+                    onChange={(e) =>
+                      setBranding({ ...branding, logoUrl: e.target.value })
+                    }
+                    placeholder="https://example.com/logo.png"
+                    value={branding.logoUrl}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    URL to your company logo for PDF proposals
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="primaryColor">Primary Color</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="primaryColor"
+                      onChange={(e) =>
+                        setBranding({
+                          ...branding,
+                          primaryColor: e.target.value,
+                        })
+                      }
+                      placeholder={defaultColors.primary}
+                      type="text"
+                      value={branding.primaryColor}
+                    />
+                    <Input
+                      className="w-12 h-9 p-1 cursor-pointer"
+                      onChange={(e) =>
+                        setBranding({
+                          ...branding,
+                          primaryColor: e.target.value,
+                        })
+                      }
+                      type="color"
+                      value={branding.primaryColor || defaultColors.primary}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="secondaryColor">Secondary Color</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="secondaryColor"
+                      onChange={(e) =>
+                        setBranding({
+                          ...branding,
+                          secondaryColor: e.target.value,
+                        })
+                      }
+                      placeholder={defaultColors.secondary}
+                      type="text"
+                      value={branding.secondaryColor}
+                    />
+                    <Input
+                      className="w-12 h-9 p-1 cursor-pointer"
+                      onChange={(e) =>
+                        setBranding({
+                          ...branding,
+                          secondaryColor: e.target.value,
+                        })
+                      }
+                      type="color"
+                      value={branding.secondaryColor || defaultColors.secondary}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="accentColor">Accent Color</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      id="accentColor"
+                      onChange={(e) =>
+                        setBranding({
+                          ...branding,
+                          accentColor: e.target.value,
+                        })
+                      }
+                      placeholder={defaultColors.accent}
+                      type="text"
+                      value={branding.accentColor}
+                    />
+                    <Input
+                      className="w-12 h-9 p-1 cursor-pointer"
+                      onChange={(e) =>
+                        setBranding({
+                          ...branding,
+                          accentColor: e.target.value,
+                        })
+                      }
+                      type="color"
+                      value={branding.accentColor || defaultColors.accent}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="fontFamily">Font Family</Label>
+                  <Select
+                    onValueChange={(value) =>
+                      setBranding({ ...branding, fontFamily: value })
+                    }
+                    value={branding.fontFamily}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select font" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {fontFamilies.map((font) => (
+                        <SelectItem key={font.value} value={font.value}>
+                          {font.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </CardContent>
             </Card>
