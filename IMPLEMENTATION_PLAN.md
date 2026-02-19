@@ -12,9 +12,9 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
 **All specs implemented.**
 
 **Verification (2026-02-19):**
-- Build: ✅ Passed (app + api packages)
-- Tests: ✅ 830 tests passed (110 app + 720 api)
-- Tags: v0.6.39 (latest)
+- Build: ✅ Passed (all packages)
+- Tests: ✅ 720 tests passed (api package)
+- Tags: v0.6.40 (latest)
 
 ---
 
