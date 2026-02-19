@@ -291,10 +291,14 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
 - **Status:** Proposal model exists, AI generation missing
 - **Effort:** 4-6 hours
 
-### 19. Battle Board PDF Export
+### ~~19. Battle Board PDF Export~~ ✅ COMPLETE (2026-02-18)
 - **Spec:** `specs/administrative/battle-board-pdf-export_TODO/`
-- **Status:** API route exists, PDF package is skeleton
-- **Effort:** 3-4 hours
+- **Implemented:**
+  - API route at `/api/events/[eventId]/battle-board/pdf` for PDF generation
+  - BattleBoardPDF template with event, tasks, summary, and staff sections
+  - Added BattleBoardExportButton component with download and copy-link options
+  - Export button integrated into Battle Board page header
+  - Supports direct download or base64 data URL for sharing
 
 ### 20. Inventory Recipe Costing
 - **Spec:** `specs/inventory/inventory-recipe-costing_TODO/`
@@ -356,6 +360,7 @@ Several specs are marked `_TODO` but have substantial implementations:
 | SMS Notification System | **Complete** | Templates, delivery tracking, opt-in/opt-out |
 | Email Template System | **Complete** | User-defined templates, merge fields, preview |
 | Automated Email Workflows | **Complete** | Workflow triggers, email service, scheduled reminders |
+| Battle Board PDF Export | **Complete** | PDF generation API, export button, download/share options |
 
 ---
 
@@ -374,7 +379,7 @@ Several specs are marked `_TODO` but have substantial implementations:
 | `@repo/realtime` | **Full** | Outbox + events |
 | `@repo/notifications` | **Full** | Knock + Twilio + SMS + Email workflows + delivery tracking |
 | `@repo/email` | **Full** | User-defined templates with merge fields |
-| `@repo/pdf` | **Skeleton** | Needs implementation |
+| `@repo/pdf` | **Full** | Battle Board, Event Detail, Proposal, Contract, Packing List templates |
 
 ---
 
