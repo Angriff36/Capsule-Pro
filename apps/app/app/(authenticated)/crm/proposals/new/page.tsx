@@ -23,7 +23,11 @@ async function handleCreate(
   "use server";
 
   const lineItemsJson = formData.get("lineItems") as string;
-  let lineItems = [];
+  let lineItems: Array<{
+    description: string;
+    quantity: number;
+    unitPrice: number;
+  }> = [];
   if (lineItemsJson) {
     try {
       lineItems = JSON.parse(lineItemsJson);
