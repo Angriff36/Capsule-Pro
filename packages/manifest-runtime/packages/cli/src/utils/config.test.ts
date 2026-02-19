@@ -4,9 +4,9 @@
  * Tests YAML, JavaScript, and TypeScript config loading with proper precedence.
  */
 
-import fs from "fs/promises";
-import { tmpdir } from "os";
-import path from "path";
+import fs from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   clearStoreCache,

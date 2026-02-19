@@ -240,8 +240,8 @@ export interface EvaluationLimits {
 }
 
 class MemoryStore<T extends EntityInstance> implements Store<T> {
-  private items: Map<string, T> = new Map();
-  private generateId: () => string;
+  private readonly items: Map<string, T> = new Map();
+  private readonly generateId: () => string;
 
   constructor(generateId?: () => string) {
     this.generateId = generateId || (() => crypto.randomUUID());
@@ -264,7 +264,9 @@ class MemoryStore<T extends EntityInstance> implements Store<T> {
 
   async update(id: string, data: Partial<T>): Promise<T | undefined> {
     const existing = this.items.get(id);
-    if (!existing) return undefined;
+    if (!existing) {
+      return undefined;
+    }
     const updated = { ...existing, ...data, id };
     this.items.set(id, updated);
     return updated;
@@ -280,7 +282,7 @@ class MemoryStore<T extends EntityInstance> implements Store<T> {
 }
 
 class LocalStorageStore<T extends EntityInstance> implements Store<T> {
-  private key: string;
+  private readonly key: string;
 
   constructor(key: string) {
     this.key = key;
@@ -319,7 +321,9 @@ class LocalStorageStore<T extends EntityInstance> implements Store<T> {
   async update(id: string, data: Partial<T>): Promise<T | undefined> {
     const items = this.load();
     const idx = items.findIndex((item) => item.id === id);
-    if (idx === -1) return undefined;
+    if (idx === -1) {
+      return undefined;
+    }
     const updated = { ...items[idx], ...data, id };
     items[idx] = updated;
     this.save(items);
@@ -329,7 +333,9 @@ class LocalStorageStore<T extends EntityInstance> implements Store<T> {
   async delete(id: string): Promise<boolean> {
     const items = this.load();
     const idx = items.findIndex((item) => item.id === id);
-    if (idx === -1) return false;
+    if (idx === -1) {
+      return false;
+    }
     items.splice(idx, 1);
     this.save(items);
     return true;
@@ -350,14 +356,14 @@ export interface ProvenanceVerificationResult {
 }
 
 export class RuntimeEngine {
-  private ir: IR;
+  private readonly ir: IR;
   private context: RuntimeContext;
-  private options: RuntimeOptions;
-  private stores: Map<string, Store> = new Map();
-  private eventListeners: EventListener[] = [];
+  private readonly options: RuntimeOptions;
+  private readonly stores: Map<string, Store> = new Map();
+  private readonly eventListeners: EventListener[] = [];
   private eventLog: EmittedEvent[] = [];
   /** Index of relationships for efficient lookup during expression evaluation */
-  private relationshipIndex: Map<
+  private readonly relationshipIndex: Map<
     string,
     {
       entityName: string;
@@ -369,7 +375,7 @@ export class RuntimeEngine {
   > = new Map();
 
   /** Memoization cache for resolved relationships to avoid repeated store queries */
-  private relationshipMemoCache: Map<
+  private readonly relationshipMemoCache: Map<
     string,
     {
       result: EntityInstance | EntityInstance[] | null;
@@ -381,7 +387,7 @@ export class RuntimeEngine {
   private versionIncrementedForCommand = false;
 
   /** Track instances that were just created (to prevent version increment on subsequent mutate actions) */
-  private justCreatedInstanceIds: Set<string> = new Set();
+  private readonly justCreatedInstanceIds: Set<string> = new Set();
 
   /** Last transition validation error (set by updateInstance, checked by _executeCommandInternal) */
   private lastTransitionError: string | null = null;
@@ -403,7 +409,9 @@ export class RuntimeEngine {
    * Returns false if budget was already active (caller should NOT clear it).
    */
   private initEvalBudget(): boolean {
-    if (this.evalBudget) return false; // Already active — re-entrant call
+    if (this.evalBudget) {
+      return false; // Already active — re-entrant call
+    }
     this.evalBudget = {
       depth: 0,
       steps: 0,
@@ -794,7 +802,9 @@ export class RuntimeEngine {
   getCommand(name: string, entityName?: string): IRCommand | undefined {
     if (entityName) {
       const entity = this.getEntity(entityName);
-      if (!(entity && entity.commands.includes(name))) return undefined;
+      if (!entity?.commands.includes(name)) {
+        return undefined;
+      }
       return this.ir.commands.find(
         (c) => c.name === name && c.entity === entityName
       );
@@ -833,7 +843,9 @@ export class RuntimeEngine {
     data: Record<string, unknown>
   ): Promise<ConstraintOutcome[]> {
     const entity = this.getEntity(entityName);
-    if (!entity) return [];
+    if (!entity) {
+      return [];
+    }
     const ownsEvalBudget = this.initEvalBudget();
     try {
       const outcomes = await this.validateConstraints(entity, data);
@@ -841,7 +853,9 @@ export class RuntimeEngine {
       // (Callers can still see all outcomes by using validateConstraints directly)
       return outcomes.filter((o) => !o.passed);
     } finally {
-      if (ownsEvalBudget) this.clearEvalBudget();
+      if (ownsEvalBudget) {
+        this.clearEvalBudget();
+      }
     }
   }
 
@@ -850,7 +864,9 @@ export class RuntimeEngine {
     data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     const entity = this.getEntity(entityName);
-    if (!entity) return undefined;
+    if (!entity) {
+      return undefined;
+    }
 
     const ownsEvalBudget = this.initEvalBudget();
     try {
@@ -905,18 +921,22 @@ export class RuntimeEngine {
       }
 
       const store = this.stores.get(entityName);
-      if (!store) return undefined;
+      if (!store) {
+        return undefined;
+      }
 
       const result = await store.create(mergedData);
 
       // Track newly created instance to prevent version increment on subsequent mutate actions
-      if (result && result.id) {
+      if (result?.id) {
         this.justCreatedInstanceIds.add(result.id);
       }
 
       return result;
     } finally {
-      if (ownsEvalBudget) this.clearEvalBudget();
+      if (ownsEvalBudget) {
+        this.clearEvalBudget();
+      }
     }
   }
 
@@ -927,10 +947,14 @@ export class RuntimeEngine {
   ): Promise<EntityInstance | undefined> {
     const entity = this.getEntity(entityName);
     const store = this.stores.get(entityName);
-    if (!(store && entity)) return undefined;
+    if (!(store && entity)) {
+      return undefined;
+    }
 
     const existing = await store.getById(id);
-    if (!existing) return undefined;
+    if (!existing) {
+      return undefined;
+    }
 
     const ownsEvalBudget = this.initEvalBudget();
     try {
@@ -991,9 +1015,13 @@ export class RuntimeEngine {
       if (entity.transitions && entity.transitions.length > 0) {
         for (const [prop, newValue] of Object.entries(data)) {
           const rules = entity.transitions.filter((t) => t.property === prop);
-          if (rules.length === 0) continue;
+          if (rules.length === 0) {
+            continue;
+          }
           const currentValue = existing[prop];
-          if (currentValue === undefined) continue;
+          if (currentValue === undefined) {
+            continue;
+          }
           const matchingRule = rules.find(
             (t) => t.from === String(currentValue)
           );
@@ -1038,7 +1066,9 @@ export class RuntimeEngine {
 
       return await store.update(id, data);
     } finally {
-      if (ownsEvalBudget) this.clearEvalBudget();
+      if (ownsEvalBudget) {
+        this.clearEvalBudget();
+      }
     }
   }
 
@@ -1372,7 +1402,9 @@ export class RuntimeEngine {
       }
       throw e; // re-throw other errors (ManifestEffectBoundaryError, etc.)
     } finally {
-      if (ownsEvalBudget) this.clearEvalBudget();
+      if (ownsEvalBudget) {
+        this.clearEvalBudget();
+      }
     }
   }
 
@@ -1413,9 +1445,12 @@ export class RuntimeEngine {
     } else {
       // Fallback: filter by entity match and action type (legacy behavior)
       relevantPolicies = this.ir.policies.filter((p) => {
-        if (p.entity && command.entity && p.entity !== command.entity)
+        if (p.entity && command.entity && p.entity !== command.entity) {
           return false;
-        if (p.action !== "all" && p.action !== "execute") return false;
+        }
+        if (p.action !== "all" && p.action !== "execute") {
+          return false;
+        }
         return true;
       });
     }
@@ -1613,7 +1648,9 @@ export class RuntimeEngine {
 
     const addEntry = async (node: IRExpression) => {
       const formatted = this.formatExpression(node);
-      if (seen.has(formatted)) return;
+      if (seen.has(formatted)) {
+        return;
+      }
       seen.add(formatted);
       let value: unknown;
       try {
@@ -1738,8 +1775,6 @@ export class RuntimeEngine {
           });
         }
         return value;
-
-      case "effect":
       default:
         return value;
     }
@@ -1773,10 +1808,18 @@ export class RuntimeEngine {
 
         case "identifier": {
           const name = expr.name;
-          if (name in context) return context[name];
-          if (name === "true") return true;
-          if (name === "false") return false;
-          if (name === "null") return null;
+          if (name in context) {
+            return context[name];
+          }
+          if (name === "true") {
+            return true;
+          }
+          if (name === "false") {
+            return false;
+          }
+          if (name === "null") {
+            return null;
+          }
           return undefined;
         }
 
@@ -1913,9 +1956,9 @@ export class RuntimeEngine {
         return (left as number) % (right as number);
       case "==":
       case "is":
-        return left == right; // Loose equality: undefined == null is true
+        return left === right; // Loose equality: undefined == null is true
       case "!=":
-        return left != right; // Loose inequality: undefined != null is false
+        return left !== right; // Loose inequality: undefined != null is false
       case "<":
         return (left as number) < (right as number);
       case ">":
@@ -1931,13 +1974,20 @@ export class RuntimeEngine {
       case "or":
         return Boolean(left) || Boolean(right);
       case "in":
-        if (Array.isArray(right)) return right.includes(left);
-        if (typeof right === "string")
+        if (Array.isArray(right)) {
+          return right.includes(left);
+        }
+        if (typeof right === "string") {
           return (right as string).includes(String(left));
+        }
         return false;
       case "contains":
-        if (Array.isArray(left)) return left.includes(right);
-        if (typeof left === "string") return left.includes(String(right));
+        if (Array.isArray(left)) {
+          return left.includes(right);
+        }
+        if (typeof left === "string") {
+          return left.includes(String(right));
+        }
         return false;
       default:
         return undefined;
@@ -1979,7 +2029,9 @@ export class RuntimeEngine {
   }
 
   private getDefaultForType(type: IRType): unknown {
-    if (type.nullable) return null;
+    if (type.nullable) {
+      return null;
+    }
     switch (type.name) {
       case "string":
         return "";
@@ -2002,15 +2054,21 @@ export class RuntimeEngine {
     propertyName: string
   ): Promise<unknown> {
     const entity = this.getEntity(entityName);
-    if (!entity) return undefined;
+    if (!entity) {
+      return undefined;
+    }
 
     const computed = entity.computedProperties.find(
       (c) => c.name === propertyName
     );
-    if (!computed) return undefined;
+    if (!computed) {
+      return undefined;
+    }
 
     const instance = await this.getInstance(entityName, instanceId);
-    if (!instance) return undefined;
+    if (!instance) {
+      return undefined;
+    }
 
     const ownsEvalBudget = this.initEvalBudget();
     try {
@@ -2021,7 +2079,9 @@ export class RuntimeEngine {
         new Set()
       );
     } finally {
-      if (ownsEvalBudget) this.clearEvalBudget();
+      if (ownsEvalBudget) {
+        this.clearEvalBudget();
+      }
     }
   }
 
@@ -2031,13 +2091,17 @@ export class RuntimeEngine {
     propertyName: string,
     visited: Set<string>
   ): Promise<unknown> {
-    if (visited.has(propertyName)) return undefined;
+    if (visited.has(propertyName)) {
+      return undefined;
+    }
     visited.add(propertyName);
 
     const computed = entity.computedProperties.find(
       (c) => c.name === propertyName
     );
-    if (!computed) return undefined;
+    if (!computed) {
+      return undefined;
+    }
 
     const computedValues: Record<string, unknown> = {};
     if (computed.dependencies) {
@@ -2242,7 +2306,7 @@ export class RuntimeEngine {
             const authorized = Boolean(policyResult);
             if (authorized) {
               outcome.overridden = true;
-              outcome.overriddenBy = "policy:" + policy.name;
+              outcome.overriddenBy = `policy:${policy.name}`;
             }
           }
         }
@@ -2373,7 +2437,9 @@ export class RuntimeEngine {
     | { contentHash: string; compilerVersion: string; schemaVersion: string }
     | undefined {
     const prov = this.ir.provenance;
-    if (!prov) return undefined;
+    if (!prov) {
+      return undefined;
+    }
     return {
       contentHash: prov.contentHash,
       compilerVersion: prov.compilerVersion,
@@ -2385,7 +2451,9 @@ export class RuntimeEngine {
     this.eventListeners.push(listener);
     return () => {
       const idx = this.eventListeners.indexOf(listener);
-      if (idx !== -1) this.eventListeners.splice(idx, 1);
+      if (idx !== -1) {
+        this.eventListeners.splice(idx, 1);
+      }
     };
   }
 

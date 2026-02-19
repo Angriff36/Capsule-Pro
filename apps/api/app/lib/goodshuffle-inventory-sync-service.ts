@@ -87,6 +87,7 @@ function _detectInventoryConflicts(
 /**
  * Sync inventory items from Goodshuffle to Convoy
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex sync logic with multiple branches
 export async function syncInventoryFromGoodshuffle(
   client: GoodshuffleClient,
   tenantId: string,

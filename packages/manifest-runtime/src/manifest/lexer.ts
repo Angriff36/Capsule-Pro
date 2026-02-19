@@ -140,11 +140,11 @@ const OPERATORS = new Set([
 const PUNCTUATION = new Set(["(", ")", "{", "}", "[", "]", ",", ";", "@"]);
 
 export class Lexer {
-  private source: string;
+  private readonly source: string;
   private pos = 0;
   private line = 1;
   private col = 1;
-  private tokens: Token[] = [];
+  private readonly tokens: Token[] = [];
 
   constructor(source: string) {
     this.source = source;
@@ -153,7 +153,9 @@ export class Lexer {
   tokenize(): Token[] {
     while (this.pos < this.source.length) {
       this.skipWhitespace();
-      if (this.pos >= this.source.length) break;
+      if (this.pos >= this.source.length) {
+        break;
+      }
 
       const char = this.source[this.pos];
 
@@ -213,8 +215,12 @@ export class Lexer {
         continue;
       }
       if (c === "/" && this.source[this.pos + 1] === "/") {
-        while (this.pos < this.source.length && this.source[this.pos] !== "\n")
+        while (
+          this.pos < this.source.length &&
+          this.source[this.pos] !== "\n"
+        ) {
           this.advance();
+        }
         continue;
       }
       if (c === "/" && this.source[this.pos + 1] === "*") {

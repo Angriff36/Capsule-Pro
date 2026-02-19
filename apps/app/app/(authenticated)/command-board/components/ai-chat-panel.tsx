@@ -709,9 +709,12 @@ export function AiChatPanel({
                                       variant={(() => {
                                         const level =
                                           pendingPlan.plan.riskAssessment.level;
-                                        if (level === "critical")
+                                        if (level === "critical") {
                                           return "destructive";
-                                        if (level === "high") return "outline";
+                                        }
+                                        if (level === "high") {
+                                          return "outline";
+                                        }
                                         return "secondary";
                                       })()}
                                     >

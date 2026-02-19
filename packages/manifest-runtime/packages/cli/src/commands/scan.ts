@@ -11,11 +11,11 @@
  * - Property alignment: Manifest properties match Prisma schema (when configured)
  */
 
+import fs from "node:fs/promises";
+import path from "node:path";
 import chalk from "chalk";
-import fs from "fs/promises";
 import { glob } from "glob";
 import ora, { type Ora } from "ora";
-import path from "path";
 import {
   findPrismaSchemaPath,
   getPrismaFieldNames,
@@ -123,7 +123,7 @@ async function scanRouteFile(
   // Extract entity and command from the route file path or content
   // Routes typically follow: app/api/{entity}/{command}/route.ts pattern
   const pathParts = filePath.split(/[/\\]/);
-  const apiIndex = pathParts.findIndex((p) => p === "api");
+  const apiIndex = pathParts.indexOf("api");
   let entityName: string | null = null;
   let commandName: string | null = null;
 
@@ -140,8 +140,12 @@ async function scanRouteFile(
   const entityMatch = content.match(/entityName:\s*["']([^"']+)["']/);
   const commandMatch = content.match(/runCommand\(\s*["']([^"']+)["']/);
 
-  if (entityMatch) entityName = entityMatch[1];
-  if (commandMatch) commandName = commandMatch[1];
+  if (entityMatch) {
+    entityName = entityMatch[1];
+  }
+  if (commandMatch) {
+    commandName = commandMatch[1];
+  }
 
   if (!(entityName && commandName)) {
     return { warnings, routesScanned };
@@ -185,7 +189,9 @@ async function scanRoutes(
   const commandsRequiringUserContext = new Set<string>();
 
   for (const command of ir.commands || []) {
-    if (!(command.entity && command.name)) continue;
+    if (!(command.entity && command.name)) {
+      continue;
+    }
 
     if (commandRequiresUserContext(command, ir.policies || [])) {
       commandsRequiringUserContext.add(`${command.entity}.${command.name}`);
@@ -480,8 +486,12 @@ function capitalize(str: string): string {
  * Used for "Did you mean X?" suggestions
  */
 function levenshteinDistance(a: string, b: string): number {
-  if (a.length === 0) return b.length;
-  if (b.length === 0) return a.length;
+  if (a.length === 0) {
+    return b.length;
+  }
+  if (b.length === 0) {
+    return a.length;
+  }
 
   const matrix: number[][] = [];
 
@@ -634,7 +644,9 @@ async function scanPropertyAlignmentForIR(
 
   // Check each entity
   for (const entity of ir.entities || []) {
-    if (!(entity.name && entity.properties)) continue;
+    if (!(entity.name && entity.properties)) {
+      continue;
+    }
 
     // Get the Prisma model name from config binding
     const prismaModelName = storeBindingsInfo.getPrismaModel(entity.name);

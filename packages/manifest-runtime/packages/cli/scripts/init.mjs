@@ -5,9 +5,9 @@
  * Run this directly without building the CLI: node packages/cli/scripts/init.mjs
  */
 
-import fs from "fs/promises";
+import fs from "node:fs/promises";
+import path from "node:path";
 import yaml from "js-yaml";
-import path from "path";
 
 const CONFIG_FILE = "manifest.config.yaml";
 

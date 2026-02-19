@@ -67,7 +67,9 @@ export function EventBriefingCard({
   }, [eventId]);
 
   const copyToClipboard = useCallback(async () => {
-    if (!briefing) return;
+    if (!briefing) {
+      return;
+    }
 
     const text = `EVENT BRIEFING: ${briefing.eventTitle}
 Generated: ${new Date(briefing.generatedAt).toLocaleString()}

@@ -106,7 +106,9 @@ export default function EditEmailTemplatePage({
   }, [params]);
 
   useEffect(() => {
-    if (!templateId) return;
+    if (!templateId) {
+      return;
+    }
 
     const loadTemplate = async () => {
       setLoading(true);
@@ -168,7 +170,9 @@ export default function EditEmailTemplatePage({
   );
 
   const onSubmit = async (data: FormValues) => {
-    if (!templateId) return;
+    if (!templateId) {
+      return;
+    }
 
     setSaving(true);
     try {
@@ -194,7 +198,9 @@ export default function EditEmailTemplatePage({
   };
 
   const handleDelete = async () => {
-    if (!templateId) return;
+    if (!templateId) {
+      return;
+    }
 
     if (!confirm("Are you sure you want to delete this template?")) {
       return;

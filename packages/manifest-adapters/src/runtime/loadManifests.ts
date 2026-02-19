@@ -83,7 +83,9 @@ function validateNoDuplicates(compiledIRs: IR[], manifestFiles: string[]) {
 
   const entityNames = new Map<string, string[]>();
   for (const { name, source } of entities) {
-    if (!entityNames.has(name)) entityNames.set(name, []);
+    if (!entityNames.has(name)) {
+      entityNames.set(name, []);
+    }
     entityNames.get(name)?.push(source);
   }
   for (const [name, sources] of entityNames) {
@@ -95,7 +97,9 @@ function validateNoDuplicates(compiledIRs: IR[], manifestFiles: string[]) {
   const commandKeys = new Map<string, string[]>();
   for (const { name, entity, source } of commands) {
     const key = `${entity}.${name}`;
-    if (!commandKeys.has(key)) commandKeys.set(key, []);
+    if (!commandKeys.has(key)) {
+      commandKeys.set(key, []);
+    }
     commandKeys.get(key)?.push(source);
   }
   for (const [key, sources] of commandKeys) {
@@ -106,7 +110,9 @@ function validateNoDuplicates(compiledIRs: IR[], manifestFiles: string[]) {
 
   const eventChannels = new Map<string, string[]>();
   for (const { channel, source } of events) {
-    if (!eventChannels.has(channel)) eventChannels.set(channel, []);
+    if (!eventChannels.has(channel)) {
+      eventChannels.set(channel, []);
+    }
     eventChannels.get(channel)?.push(source);
   }
   for (const [channel, sources] of eventChannels) {
@@ -119,7 +125,9 @@ function validateNoDuplicates(compiledIRs: IR[], manifestFiles: string[]) {
 
   const policyNames = new Map<string, string[]>();
   for (const { name, source } of policies) {
-    if (!policyNames.has(name)) policyNames.set(name, []);
+    if (!policyNames.has(name)) {
+      policyNames.set(name, []);
+    }
     policyNames.get(name)?.push(source);
   }
   for (const [name, sources] of policyNames) {

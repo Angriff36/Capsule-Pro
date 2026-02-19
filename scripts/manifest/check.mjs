@@ -99,6 +99,7 @@ if (ok) {
 
 process.exit(ok ? 0 : 1);
 
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Validation function checking multiple collection types
 function checkForDuplicates(ir) {
   const duplicates = [];
 
