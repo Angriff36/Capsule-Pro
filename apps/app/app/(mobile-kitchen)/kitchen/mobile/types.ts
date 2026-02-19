@@ -93,3 +93,37 @@ export const priorityConfig: Record<number, { label: string; color: string }> =
     9: { label: "MINIMAL", color: "bg-teal-500" },
     10: { label: "NONE", color: "bg-slate-400" },
   };
+
+// Bundle claim types
+export interface BundleClaimRequest {
+  taskIds: string[];
+}
+
+export interface BundleClaimResponse {
+  success: boolean;
+  data?: {
+    claimed: Array<{
+      taskId: string;
+      claimId: string;
+      status: string;
+    }>;
+    totalClaimed: number;
+  };
+  message?: string;
+  errorCode?: string;
+  alreadyClaimedTaskIds?: string[];
+  notFoundTaskIds?: string[];
+}
+
+export interface TaskFilter {
+  station?: string;
+  priority?: number;
+  eventId?: string;
+}
+
+export interface FilterState {
+  station: string | null;
+  minPriority: number | null;
+  eventId: string | null;
+  myStation: string | null; // localStorage-backed quick filter
+}
