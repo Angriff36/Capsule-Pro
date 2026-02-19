@@ -113,6 +113,7 @@ model Account {
   goodshuffleEventSyncs     GoodshuffleEventSync[]
   goodshuffleInventorySyncs GoodshuffleInventorySync[]
   goodshuffleInvoiceSyncs   GoodshuffleInvoiceSync[]
+  emailTemplates            email_templates[]
 
   @@map("accounts")
   @@schema("platform")
@@ -2587,6 +2588,44 @@ enum sms_status {
   delivered
   failed
 
+  @@schema("tenant_admin")
+}
+
+/// Email template for user-defined email content with merge fields
+model email_templates {
+  tenant_id    String            @db.Uuid
+  id           String            @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String
+  template_type email_template_type
+  subject      String
+  body         String            @db.Text
+  merge_fields Json              @default("[]")
+  is_active    Boolean           @default(true) @map("is_active")
+  is_default   Boolean           @default(false) @map("is_default")
+  created_at   DateTime          @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime          @default(now()) @updatedAt @db.Timestamptz(6)
+  deleted_at   DateTime?         @db.Timestamptz(6)
+
+  tenant       Account           @relation(fields: [tenant_id], references: [id], onDelete: Restrict)
+
+  @@id([tenant_id, id])
+  @@index([tenant_id, template_type])
+  @@index([tenant_id, is_active])
+  @@index([tenant_id, is_default])
+  @@map("email_templates")
+  @@schema("tenant_admin")
+}
+
+enum email_template_type {
+  proposal
+  confirmation
+  reminder
+  follow_up
+  contract
+  contact
+  custom
+
+  @@map("email_template_type")
   @@schema("tenant_admin")
 }
 

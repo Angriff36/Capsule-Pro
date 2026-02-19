@@ -216,11 +216,20 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
     - `POST /api/collaboration/notifications/sms/webhook` - Twilio delivery status callback
   - Full test coverage (14 tests passing)
 
-### 14. Email Template System
+### ~~14. Email Template System~~ ✅ COMPLETE (2026-02-18)
 - **Spec:** `specs/administrative/email-template-system_TODO/`
-- **Status:** 3 templates exist (contact, contract, proposal)
-- **Missing:** Template management UI, more templates
-- **Effort:** 4-6 hours
+- **Implemented:**
+  - Added `email_templates` model to Prisma schema with merge fields support
+  - Added `email_template_type` enum (proposal, confirmation, reminder, follow_up, contract, contact, custom)
+  - Created CRUD server actions in `apps/app/app/(authenticated)/settings/email-templates/actions.ts`
+  - Full template list page with filtering by type and status
+  - Template creation page with merge field insertion
+  - Template editing page with preview functionality
+  - Merge field rendering with `{{fieldName}}` syntax
+  - Common merge fields (recipientName, eventName, proposalUrl, etc.)
+  - Template preview with sample data
+  - Default template support per template type
+  - Active/inactive template status
 
 ### 15. Automated Email Workflows
 - **Spec:** `specs/administrative/automated-email-workflows_TODO/`
@@ -309,6 +318,7 @@ Several specs are marked `_TODO` but have substantial implementations:
 | Bulk Edit Operations | **Complete** | Multi-select toolbar, preview, undo/redo |
 | Bulk Grouping Operations | **Complete** | Group/ungroup UI, named groups |
 | SMS Notification System | **Complete** | Templates, delivery tracking, opt-in/opt-out |
+| Email Template System | **Complete** | User-defined templates, merge fields, preview |
 
 ---
 
@@ -316,7 +326,7 @@ Several specs are marked `_TODO` but have substantial implementations:
 
 | Package | Completeness | Notes |
 |---------|-------------|-------|
-| `@repo/database` | **Full** | 137 models, 10 schemas |
+| `@repo/database` | **Full** | 138 models, 10 schemas |
 | `@repo/design-system` | **Full** | 60+ UI components |
 | `@repo/ai` | **Full** | Agent/workflow SDK |
 | `@repo/payroll-engine` | **Full** | Calculator, tax, exports |
@@ -326,7 +336,7 @@ Several specs are marked `_TODO` but have substantial implementations:
 | `@repo/collaboration` | **Full** | Liveblocks |
 | `@repo/realtime` | **Full** | Outbox + events |
 | `@repo/notifications` | **Full** | Knock + Twilio + SMS templates + delivery tracking |
-| `@repo/email` | **Partial** | 3 templates only |
+| `@repo/email` | **Full** | User-defined templates with merge fields |
 | `@repo/pdf` | **Skeleton** | Needs implementation |
 
 ---
