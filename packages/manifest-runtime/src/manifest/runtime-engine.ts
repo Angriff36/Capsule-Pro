@@ -1182,7 +1182,11 @@ export class RuntimeEngine {
         options.entityName
       );
 
-      const policyResult = await this.checkPolicies(command, evalContext);
+      const policyResult = await this.checkPolicies(
+        command,
+        evalContext,
+        options.entityName
+      );
       if (!policyResult.allowed) {
         return {
           success: false,
@@ -1431,8 +1435,46 @@ export class RuntimeEngine {
 
   private async checkPolicies(
     command: IRCommand,
-    evalContext: Record<string, unknown>
+    evalContext: Record<string, unknown>,
+    entityName?: string
   ): Promise<{ allowed: boolean; denial?: PolicyDenial }> {
+    // vNext: First evaluate entity's default policies (if any)
+    // Default policies are evaluated BEFORE command-level policies
+    if (entityName) {
+      const entity = this.ir.entities.find((e) => e.name === entityName);
+      if (entity?.defaultPolicies && entity.defaultPolicies.length > 0) {
+        const defaultPolicyNames = new Set(entity.defaultPolicies);
+        const defaultPolicies = this.ir.policies.filter((p) =>
+          defaultPolicyNames.has(p.name)
+        );
+
+        for (const policy of defaultPolicies) {
+          const result = await this.evaluateExpression(
+            policy.expression,
+            evalContext
+          );
+          if (!result) {
+            const contextKeys = this.extractContextKeys(policy.expression);
+            const resolved = await this.resolveExpressionValues(
+              policy.expression,
+              evalContext
+            );
+            return {
+              allowed: false,
+              denial: {
+                policyName: policy.name,
+                expression: policy.expression,
+                formatted: this.formatExpression(policy.expression),
+                message: policy.message || `Denied by policy '${policy.name}'`,
+                contextKeys,
+                resolved,
+              },
+            };
+          }
+        }
+      }
+    }
+
     // If command has explicit policies (expanded from entity defaults or declared),
     // evaluate only those policies by name
     let relevantPolicies: IRPolicy[];
@@ -1956,9 +1998,9 @@ export class RuntimeEngine {
         return (left as number) % (right as number);
       case "==":
       case "is":
-        return left === right; // Loose equality: undefined == null is true
+        return left == right; // Loose equality: undefined == null is true
       case "!=":
-        return left !== right; // Loose inequality: undefined != null is false
+        return left != right; // Loose inequality: undefined != null is false
       case "<":
         return (left as number) < (right as number);
       case ">":
