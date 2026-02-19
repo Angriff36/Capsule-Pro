@@ -44,6 +44,7 @@ import {
   ClockIcon,
   DownloadIcon,
   FileTextIcon,
+  HistoryIcon,
   MoreVerticalIcon,
   PenIcon,
   SendIcon,
@@ -54,7 +55,7 @@ import {
   XCircleIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import { SignaturePad } from "../components/signature-pad";
@@ -80,6 +81,21 @@ interface ContractDetailClientProps {
 }
 
 type ContractStatus = "draft" | "pending" | "signed" | "expired" | "cancelled";
+
+interface HistoryEntry {
+  id: string;
+  type: "audit" | "signature";
+  action?: string;
+  performedBy?: string | null;
+  performerFirstName?: string | null;
+  performerLastName?: string | null;
+  oldValues?: Record<string, unknown> | null;
+  newValues?: Record<string, unknown> | null;
+  createdAt?: Date;
+  signerName?: string;
+  signerEmail?: string | null;
+  signedAt?: Date;
+}
 
 const statusConfig: Record<
   ContractStatus,
@@ -130,6 +146,28 @@ export function ContractDetailClient({
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showSendDialog, setShowSendDialog] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+
+  // Fetch contract history
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const response = await apiFetch(
+          `/api/events/contracts/${contract.id}/history`
+        );
+        if (response.ok) {
+          const data = await response.json();
+          setHistory(data.history || []);
+        }
+      } catch (error) {
+        console.error("Error fetching contract history:", error);
+      } finally {
+        setIsLoadingHistory(false);
+      }
+    };
+    fetchHistory();
+  }, [contract.id]);
 
   const clientName =
     client?.company_name ||
@@ -709,6 +747,111 @@ export function ContractDetailClient({
             </CardContent>
           </Card>
         )}
+
+        {/* Contract History Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <HistoryIcon className="size-5 text-primary" />
+              Contract History
+            </CardTitle>
+            <CardDescription>
+              Status changes and activity timeline
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {isLoadingHistory ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="size-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+              </div>
+            ) : history.length === 0 ? (
+              <div className="flex flex-col items-center justify-center rounded-lg border border-dashed py-8 text-center">
+                <HistoryIcon className="mb-2 size-8 text-muted-foreground/50" />
+                <p className="text-muted-foreground text-sm">
+                  No history recorded yet
+                </p>
+              </div>
+            ) : (
+              <div className="relative">
+                <div className="absolute left-4 top-0 bottom-0 w-px bg-border" />
+                <div className="space-y-4">
+                  {history.map((entry) => (
+                    <div
+                      className="relative flex gap-4 pl-10"
+                      key={`${entry.type}-${entry.id}`}
+                    >
+                      <div className="absolute left-2 flex size-5 items-center justify-center rounded-full bg-background">
+                        {entry.type === "signature" ? (
+                          <PenIcon className="size-3 text-primary" />
+                        ) : (
+                          <HistoryIcon className="size-3 text-primary" />
+                        )}
+                      </div>
+                      <div className="flex-1 rounded-lg border p-3">
+                        {entry.type === "signature" ? (
+                          <>
+                            <div className="flex items-center justify-between">
+                              <p className="font-medium text-sm">
+                                Signature Captured
+                              </p>
+                              <p className="text-muted-foreground text-xs">
+                                {entry.signedAt &&
+                                  dateFormatter.format(new Date(entry.signedAt))}
+                              </p>
+                            </div>
+                            <p className="text-muted-foreground text-xs">
+                              Signed by {entry.signerName}
+                              {entry.signerEmail && ` (${entry.signerEmail})`}
+                            </p>
+                          </>
+                        ) : (
+                          <>
+                            <div className="flex items-center justify-between">
+                              <p className="font-medium text-sm">
+                                {entry.action === "update"
+                                  ? "Status Changed"
+                                  : entry.action === "insert"
+                                    ? "Contract Created"
+                                    : "Updated"}
+                              </p>
+                              <p className="text-muted-foreground text-xs">
+                                {entry.createdAt &&
+                                  dateFormatter.format(new Date(entry.createdAt))}
+                              </p>
+                            </div>
+                            {entry.oldValues && entry.newValues && (
+                              <div className="mt-1">
+                                {"status" in entry.oldValues &&
+                                  "status" in entry.newValues && (
+                                    <p className="text-muted-foreground text-xs">
+                                      Status:{" "}
+                                      <span className="capitalize">
+                                        {String(entry.oldValues.status)}
+                                      </span>{" "}
+                                      →{" "}
+                                      <span className="capitalize font-medium">
+                                        {String(entry.newValues.status)}
+                                      </span>
+                                    </p>
+                                  )}
+                              </div>
+                            )}
+                            {entry.performerFirstName && (
+                              <p className="mt-1 text-muted-foreground text-xs">
+                                by {entry.performerFirstName}{" "}
+                                {entry.performerLastName}
+                              </p>
+                            )}
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Signature Dialog */}

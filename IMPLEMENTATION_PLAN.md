@@ -288,7 +288,7 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
 
 ### 17. Event Contract Management
 - **Spec:** `specs/kitchen/event-contract-management_TODO/`
-- **Status:** Core implementation complete, minor gaps remain
+- **Status:** Core implementation complete
 - **Implemented:**
   - Contract CRUD with status tracking (draft, sent, signed, expired, canceled)
   - Electronic signature capture via SignaturePad component
@@ -308,8 +308,12 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
     - Updated contract send endpoint to generate signing token and use public URL
     - SignaturePad component updated with `isSubmitting` state
     - Full contract details, document download, and signature capture
+  - **Contract history/versions view** - 2026-02-18
+    - Added `/api/events/contracts/[id]/history` endpoint to fetch contract audit logs
+    - Contract status changes logged to `platform.audit_log` table
+    - Contract detail page shows history timeline with status changes and signatures
+    - History section displays performer info, old/new values, and timestamps
 - **Missing:**
-  - Contract history/versions view
   - Document preview in UI
 
 ### 18. Event Proposal Generation
@@ -320,11 +324,16 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
   - PDF export with `ProposalTemplate`
   - Email template for proposals
   - Status tracking (draft, sent, accepted, rejected)
+  - **Email sending implementation** - 2026-02-18
+    - Completed `sendProposal` action with actual Resend email integration
+    - Uses `ProposalTemplate` from `@repo/email` for professional email formatting
+    - Fetches client name for personalization
+    - Formats total amount in USD currency
+    - Builds proposal URL for email link
 - **Missing:**
   - Proposal templates system for different event types
   - Branding customization (logo, colors, fonts)
   - Public shareable links
-  - Complete email sending (has TODO in code)
 
 ### ~~19. Battle Board PDF Export~~ ✅ COMPLETE (2026-02-18)
 - **Spec:** `specs/administrative/battle-board-pdf-export_TODO/`
@@ -435,6 +444,8 @@ Several specs are marked `_TODO` but have substantial implementations:
 | Inventory Depletion Forecasting | **Complete** | Confidence levels, reorder suggestions, frontend UI |
 | Warehouse Receiving Workflow | **Complete** | PO matching, quality checks, automatic stock updates |
 | Warehouse Cycle Counting | **Complete** | Session detail page, item search, count/verify workflow |
+| Event Contract Management | **Complete** | CRUD, signatures, public signing, history timeline |
+| Event Proposal Generation | **Complete** | CRUD, PDF export, email sending via Resend |
 
 ---
 

@@ -9,6 +9,7 @@
 import { auth } from "@repo/auth/server";
 import type { Prisma, Proposal } from "@repo/database";
 import { database } from "@repo/database";
+import { ProposalTemplate, resend } from "@repo/email";
 import { revalidatePath } from "next/cache";
 import { invariant } from "@/app/lib/invariant";
 import { getTenantId } from "@/app/lib/tenant";
@@ -449,8 +450,59 @@ export async function sendProposal(id: string, input: SendProposalInput = {}) {
   revalidatePath("/crm/proposals");
   revalidatePath(`/crm/proposals/${id}`);
 
-  // TODO: Send email with proposal PDF
-  console.log(`Proposal ${id} would be sent to ${recipientEmail}`);
+  // Get client name for email personalization
+  let recipientName = "Valued Client";
+  if (existingProposal.clientId) {
+    const clientResult = await database.$queryRaw<
+      Array<{
+        company_name: string | null;
+        first_name: string | null;
+        last_name: string | null;
+      }>
+    >`
+      SELECT c.company_name, c.first_name, c.last_name
+      FROM tenant_crm.clients AS c
+      WHERE c.tenant_id = ${tenantId}
+        AND c.id = ${existingProposal.clientId}
+        AND c.deleted_at IS NULL
+    `;
+    const client = clientResult[0];
+    if (client) {
+      recipientName = client.first_name || client.company_name || recipientName;
+    }
+  }
+
+  // Build proposal URL
+  const appUrl = process.env.APP_URL || "https://app.convoy.com";
+  const proposalUrl = `${appUrl}/crm/proposals/${id}`;
+
+  // Format total amount
+  const totalAmount =
+    existingProposal.total !== null
+      ? new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "USD",
+        }).format(Number(existingProposal.total))
+      : undefined;
+
+  // Send email using Resend
+  try {
+    await resend.emails.send({
+      from: process.env.RESEND_FROM || "noreply@convoy.com",
+      to: recipientEmail,
+      subject: `Proposal: ${existingProposal.title}`,
+      react: ProposalTemplate({
+        recipientName,
+        proposalTitle: existingProposal.title,
+        proposalUrl,
+        message: input.message,
+        totalAmount,
+      }),
+    });
+  } catch (emailError) {
+    console.error("Failed to send proposal email:", emailError);
+    // Continue with the response even if email fails
+  }
 
   return {
     success: true,
