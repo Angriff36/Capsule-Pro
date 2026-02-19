@@ -3268,6 +3268,7 @@ model EventContract {
   documentUrl    String?             @map("document_url")
   documentType   String?             @map("document_type")
   notes          String?
+  signingToken   String?             @unique @map("signing_token") @db.Uuid
   expiresAt      DateTime?           @map("expires_at") @db.Timestamptz(6)
   createdAt      DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt      DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -3284,6 +3285,7 @@ model EventContract {
   @@index([tenantId, expiresAt])
   @@index([tenantId, contractNumber])
   @@index([tenantId, documentType])
+  @@index([signingToken])
   @@map("event_contracts")
   @@schema("tenant_events")
 }
