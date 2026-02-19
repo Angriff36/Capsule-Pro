@@ -28,6 +28,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { AddToBoardDialog } from "../../../command-board/components/add-to-board-dialog";
+import { EventBriefingCard } from "../../components/event-briefing-card";
 import type { PrepTaskSummaryClient } from "../prep-task-contract";
 import { buildCalendarUrl, formatEventFormat } from "./utils";
 
@@ -522,6 +523,11 @@ export function EventOverviewCard({
                 </div>
               </CardContent>
             </Card>
+
+            <EventBriefingCard
+              eventId={event.id}
+              eventTitle={event.title}
+            />
           </div>
         </div>
       </section>

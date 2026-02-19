@@ -317,9 +317,8 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
     - Added image preview support for image uploads
     - Fallback message with download button for unsupported types
 
-### 18. Event Proposal Generation
+### ~~18. Event Proposal Generation~~ ✅ COMPLETE (2026-02-18)
 - **Spec:** `specs/kitchen/event-proposal-generation_TODO/`
-- **Status:** Core implementation and templates complete
 - **Implemented:**
   - Proposal CRUD with line items
   - PDF export with `ProposalTemplate`
@@ -339,9 +338,19 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
     - Template management UI: list page (/crm/proposals/templates), create page (/crm/proposals/templates/new), edit page (/crm/proposals/templates/[id]/edit)
     - Updated proposal form with template selection dropdown
     - API endpoint GET /api/crm/proposals/templates
+  - **Public Shareable Links** - 2026-02-18
+    - Added `publicToken` field to Proposal model for secure public access
+    - Public API endpoint GET `/api/public/proposals/[token]` - View proposal without auth
+    - Public API endpoint POST `/api/public/proposals/[token]/respond` - Accept/reject without auth
+    - Public viewing page at `/view/proposal/[token]` with:
+      - Full proposal details display (line items, pricing, terms)
+      - Accept/reject functionality with responder info capture
+      - Automatic viewedAt tracking and status updates
+      - Mobile-responsive design
+    - Updated `sendProposal` action to generate public token and use public URL in emails
+    - Added `getProposalPublicLink` action to get/regenerate public links
 - **Missing:**
   - Branding customization (logo, colors, fonts)
-  - Public shareable links
 
 ### ~~19. Battle Board PDF Export~~ ✅ COMPLETE (2026-02-18)
 - **Spec:** `specs/administrative/battle-board-pdf-export_TODO/`
@@ -453,7 +462,8 @@ Several specs are marked `_TODO` but have substantial implementations:
 | Warehouse Receiving Workflow | **Complete** | PO matching, quality checks, automatic stock updates |
 | Warehouse Cycle Counting | **Complete** | Session detail page, item search, count/verify workflow |
 | Event Contract Management | **Complete** | CRUD, signatures, public signing, history timeline |
-| Event Proposal Generation | **Complete** | CRUD, PDF export, email sending via Resend, template system with defaults |
+| Event Proposal Generation | **Complete** | CRUD, PDF export, email sending via Resend, template system, public shareable links |
+| AI Event Summaries | **Complete** | API endpoint, EventBriefingCard UI, allergen/dietary info, team handoff summaries |
 
 ---
 
@@ -494,10 +504,18 @@ Several specs are marked `_TODO` but have substantial implementations:
 
 ## P5 — Unaddressed Specs (Previously Undocumented)
 
-### 24. AI Event Summaries
+### ~~24. AI Event Summaries~~ ✅ COMPLETE (2026-02-18)
 - **Spec:** `specs/ai/ai-event-summaries_TODO/`
-- **Status:** Not implemented, not previously tracked
-- **Description:** AI-powered event summarization feature
+- **Implemented:**
+  - API endpoint at `/api/ai/summaries/[eventId]` for AI-powered event briefings
+  - Generates concise summaries (200-400 words) for team handoffs
+  - Includes client info, menu items, allergens, dietary restrictions, staff assignments
+  - Critical safety info (allergens, dietary restrictions) never omitted
+  - Fallback generator for AI failures
+  - **EventBriefingCard component** for displaying quick briefings in event overview
+  - Integrated into EventOverviewCard sidebar for easy access
+  - Copy to clipboard and regenerate functionality
+  - Highlights and critical info sections with visual indicators
 
 ### 25. Inventory Item Management
 - **Spec:** `specs/inventory/inventory-item-management_TODO/`
