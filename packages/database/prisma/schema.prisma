@@ -2553,6 +2553,39 @@ model notification_preferences {
   @@schema("tenant_admin")
 }
 
+/// SMS delivery log for tracking message status
+model sms_logs {
+  tenant_id          String            @db.Uuid
+  id                 String            @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employee_id        String?           @db.Uuid
+  phone_number       String
+  message            String
+  notification_type  String
+  status             sms_status        @default(pending)
+  twilio_sid         String?
+  error_message      String?
+  sent_at            DateTime?         @db.Timestamptz(6)
+  delivered_at       DateTime?         @db.Timestamptz(6)
+  failed_at          DateTime?         @db.Timestamptz(6)
+  created_at         DateTime          @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime          @default(now()) @db.Timestamptz(6)
+
+  @@id([tenant_id, id])
+  @@index([tenant_id, status])
+  @@index([tenant_id, employee_id])
+  @@index([tenant_id, created_at(sort: Desc)])
+  @@schema("tenant_admin")
+}
+
+enum sms_status {
+  pending
+  sent
+  delivered
+  failed
+
+  @@schema("tenant_admin")
+}
+
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model report_history {

@@ -186,10 +186,23 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
   - Toast notifications for success/errors
   - Note: Visual group rendering on canvas uses existing ReactFlow parentId mechanism
 
-### 13. SMS Notification System
+### ~~13. SMS Notification System~~ ✅ COMPLETE (2026-02-18)
 - **Spec:** `specs/sms-notification-system_TODO/`
-- **Status:** Twilio package integrated, no notification workflows
-- **Effort:** 4-6 hours
+- **Implemented:**
+  - Added `sms_logs` model to Prisma schema with delivery status tracking
+  - Added `sms_status` enum (pending, sent, delivered, failed)
+  - Created SMS template utility with merge field support (`packages/notifications/sms-templates.ts`)
+  - Pre-defined templates for: urgent_update, shift_reminder, shift_assignment, task_assignment, task_reminder, clock_in_reminder, schedule_change
+  - Created SMS notification service (`packages/notifications/sms-notification-service.ts`)
+  - Opt-in/opt-out checking via notification_preferences
+  - E.164 phone number normalization and validation
+  - Delivery status tracking via sms_logs table
+  - API endpoints:
+    - `POST /api/collaboration/notifications/sms/send` - Send SMS notifications
+    - `GET /api/collaboration/notifications/sms/logs` - Get SMS delivery logs
+    - `GET/POST /api/collaboration/notifications/sms/preferences` - Manage SMS preferences
+    - `POST /api/collaboration/notifications/sms/webhook` - Twilio delivery status callback
+  - Full test coverage (14 tests passing)
 
 ### 14. Email Template System
 - **Spec:** `specs/administrative/email-template-system_TODO/`
@@ -282,6 +295,7 @@ Several specs are marked `_TODO` but have substantial implementations:
 | Nowsta Integration | **Complete** | Employee mapping, shift sync |
 | Bulk Edit Operations | **Complete** | Multi-select toolbar, preview, undo/redo |
 | Bulk Grouping Operations | **Complete** | Group/ungroup UI, named groups |
+| SMS Notification System | **Complete** | Templates, delivery tracking, opt-in/opt-out |
 
 ---
 
@@ -298,7 +312,7 @@ Several specs are marked `_TODO` but have substantial implementations:
 | `@repo/kitchen-state-transitions` | **Full** | State machine |
 | `@repo/collaboration` | **Full** | Liveblocks |
 | `@repo/realtime` | **Full** | Outbox + events |
-| `@repo/notifications` | **Full** | Knock + Twilio |
+| `@repo/notifications` | **Full** | Knock + Twilio + SMS templates + delivery tracking |
 | `@repo/email` | **Partial** | 3 templates only |
 | `@repo/pdf` | **Skeleton** | Needs implementation |
 
