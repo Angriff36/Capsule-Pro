@@ -25,6 +25,7 @@ import {
   UsersIcon,
   WalletIcon,
 } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { AddToBoardDialog } from "../../../command-board/components/add-to-board-dialog";
 import type { PrepTaskSummaryClient } from "../prep-task-contract";
@@ -415,12 +416,12 @@ export function EventOverviewCard({
           </Card>
 
           <div className="space-y-6">
-            <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-card via-muted to-card">
+            <div className="relative h-72 overflow-hidden rounded-3xl border border-border/60 bg-gradient-to-br from-card via-muted to-card">
               {featuredMediaUrl ? (
-                <img
+                <Image
                   alt={event.title}
-                  className="h-72 w-full object-cover"
-                  loading="lazy"
+                  className="object-cover"
+                  fill
                   src={featuredMediaUrl}
                 />
               ) : (

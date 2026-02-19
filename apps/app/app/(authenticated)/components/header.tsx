@@ -10,25 +10,25 @@ import { Separator } from "@repo/design-system/components/ui/separator";
 import { SidebarTrigger } from "@repo/design-system/components/ui/sidebar";
 import { Fragment, type ReactNode } from "react";
 
-interface BreadcrumbItem {
+interface HeaderBreadcrumbItem {
   label: string;
   href?: string;
 }
 
 interface HeaderProps {
-  pages: string[] | BreadcrumbItem[];
+  pages: string[] | HeaderBreadcrumbItem[];
   page: string;
   children?: ReactNode;
 }
 
 function isBreadcrumbItem(
-  item: string | BreadcrumbItem
-): item is BreadcrumbItem {
+  item: string | HeaderBreadcrumbItem
+): item is HeaderBreadcrumbItem {
   return typeof item === "object" && "label" in item;
 }
 
 export const Header = ({ pages, page, children }: HeaderProps) => {
-  const breadcrumbItems: BreadcrumbItem[] = pages.map((item) =>
+  const breadcrumbItems: HeaderBreadcrumbItem[] = pages.map((item) =>
     isBreadcrumbItem(item) ? item : { label: item, href: undefined }
   );
 

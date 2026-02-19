@@ -33,11 +33,6 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
-  BULK_EDITABLE_PROPERTIES,
-  ENTITY_STATUS_OPTIONS,
-  PRIORITY_OPTIONS,
-} from "../actions/bulk-edit-utils";
-import {
   type BulkEditChanges,
   type BulkEditItem,
   type BulkEditPreview,
@@ -45,6 +40,11 @@ import {
   executeBulkEdit,
   getBulkEditPreview,
 } from "../actions/bulk-edit";
+import {
+  BULK_EDITABLE_PROPERTIES,
+  ENTITY_STATUS_OPTIONS,
+  PRIORITY_OPTIONS,
+} from "../actions/bulk-edit-utils";
 import {
   createGroup,
   getSharedGroupForProjections,
@@ -323,6 +323,53 @@ export function BulkActionToolbar({
     }
   }, [sharedGroupId, selectedProjections, onGroupChange, onClearSelection]);
 
+  // Render preview content based on loading state
+  const renderPreviewContent = () => {
+    if (isLoadingPreview) {
+      return (
+        <div className="flex items-center justify-center py-2">
+          <Loader2 className="size-4 animate-spin" />
+        </div>
+      );
+    }
+
+    if (preview) {
+      return (
+        <div className="space-y-1 max-h-40 overflow-y-auto">
+          {preview.warnings.length > 0 && (
+            <div className="text-xs text-amber-600">
+              {preview.warnings.join(", ")}
+            </div>
+          )}
+          {preview.items.map((item, i) => (
+            <div
+              className="text-xs"
+              key={`${item.entityId}-${item.fieldName}-${i}`}
+            >
+              <span className="font-medium">{item.entityTitle}</span>
+              <span className="text-muted-foreground">
+                {" "}
+                ({item.fieldName}):{" "}
+              </span>
+              <span className="text-red-600 line-through">
+                {item.currentValue}
+              </span>
+              <span className="text-muted-foreground"> → </span>
+              <span className="text-green-600">{item.newValue}</span>
+            </div>
+          ))}
+          {preview.items.length === 0 && preview.warnings.length === 0 && (
+            <div className="text-xs text-muted-foreground">
+              No changes to apply
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    return null;
+  };
+
   // If no items selected, don't render
   if (selectedProjections.length === 0) {
     return null;
@@ -380,7 +427,10 @@ export function BulkActionToolbar({
               {/* Status selector */}
               {canEditStatus && (
                 <div className="space-y-2">
-                  <label className="text-xs text-muted-foreground">
+                  <label
+                    className="text-xs text-muted-foreground"
+                    htmlFor="bulk-status-select"
+                  >
                     Status
                   </label>
                   <Select
@@ -392,7 +442,7 @@ export function BulkActionToolbar({
                     }
                     value={pendingChanges.status ?? ""}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger id="bulk-status-select">
                       <SelectValue placeholder="Select status..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -410,7 +460,10 @@ export function BulkActionToolbar({
               {/* Priority selector */}
               {canEditPriority && (
                 <div className="space-y-2">
-                  <label className="text-xs text-muted-foreground">
+                  <label
+                    className="text-xs text-muted-foreground"
+                    htmlFor="bulk-priority-select"
+                  >
                     Priority
                   </label>
                   <Select
@@ -422,7 +475,7 @@ export function BulkActionToolbar({
                     }
                     value={pendingChanges.priority ?? ""}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger id="bulk-priority-select">
                       <SelectValue placeholder="Select priority..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -443,46 +496,7 @@ export function BulkActionToolbar({
                   <div className="text-xs font-medium text-muted-foreground mb-2">
                     Preview Changes
                   </div>
-                  {isLoadingPreview ? (
-                    <div className="flex items-center justify-center py-2">
-                      <Loader2 className="size-4 animate-spin" />
-                    </div>
-                  ) : preview ? (
-                    <div className="space-y-1 max-h-40 overflow-y-auto">
-                      {preview.warnings.length > 0 && (
-                        <div className="text-xs text-amber-600">
-                          {preview.warnings.join(", ")}
-                        </div>
-                      )}
-                      {preview.items.map((item, i) => (
-                        <div
-                          className="text-xs"
-                          key={`${item.entityId}-${item.fieldName}-${i}`}
-                        >
-                          <span className="font-medium">
-                            {item.entityTitle}
-                          </span>
-                          <span className="text-muted-foreground">
-                            {" "}
-                            ({item.fieldName}):{" "}
-                          </span>
-                          <span className="text-red-600 line-through">
-                            {item.currentValue}
-                          </span>
-                          <span className="text-muted-foreground"> → </span>
-                          <span className="text-green-600">
-                            {item.newValue}
-                          </span>
-                        </div>
-                      ))}
-                      {preview.items.length === 0 &&
-                        preview.warnings.length === 0 && (
-                          <div className="text-xs text-muted-foreground">
-                            No changes to apply
-                          </div>
-                        )}
-                    </div>
-                  ) : null}
+                  {renderPreviewContent()}
                 </div>
               )}
 
@@ -566,8 +580,11 @@ export function BulkActionToolbar({
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Group Name</label>
+              <label className="text-sm font-medium" htmlFor="group-name-input">
+                Group Name
+              </label>
               <Input
+                id="group-name-input"
                 onChange={(e) => setGroupName(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" && !isCreatingGroup) {

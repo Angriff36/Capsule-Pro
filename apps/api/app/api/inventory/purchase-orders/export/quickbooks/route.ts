@@ -50,14 +50,17 @@ const QuickBooksBillExportRequestSchema = z.object({
     .optional(),
 });
 
+/** Regex to extract payment terms days from strings like "NET_30", "Net 30", "30" */
+const PAYMENT_TERMS_REGEX = /(\d+)/;
+
 /**
  * Parse payment terms string to days
  */
 function parsePaymentTerms(terms: string | null): number {
-  if (!terms) return 30;
-
-  // Handle formats like "NET_30", "Net 30", "30", etc.
-  const match = terms.match(/(\d+)/);
+  if (!terms) {
+    return 30;
+  }
+  const match = terms.match(PAYMENT_TERMS_REGEX);
   return match ? Number.parseInt(match[1], 10) : 30;
 }
 
