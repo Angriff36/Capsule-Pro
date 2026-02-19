@@ -114,6 +114,8 @@ model Account {
   goodshuffleInventorySyncs GoodshuffleInventorySync[]
   goodshuffleInvoiceSyncs   GoodshuffleInvoiceSync[]
   emailTemplates            email_templates[]
+  emailWorkflows            EmailWorkflow[]
+  emailLogs                 EmailLog[]
 
   @@map("accounts")
   @@schema("platform")
@@ -2606,7 +2608,8 @@ model email_templates {
   updated_at   DateTime          @default(now()) @updatedAt @db.Timestamptz(6)
   deleted_at   DateTime?         @db.Timestamptz(6)
 
-  tenant       Account           @relation(fields: [tenant_id], references: [id], onDelete: Restrict)
+  tenant        Account          @relation(fields: [tenant_id], references: [id], onDelete: Restrict)
+  emailWorkflows EmailWorkflow[]
 
   @@id([tenant_id, id])
   @@index([tenant_id, template_type])
@@ -3721,5 +3724,90 @@ model GoodshuffleInvoiceSync {
   @@index([tenantId, status])
   @@index([tenantId, convoyInvoiceId])
   @@map("goodshuffle_invoice_syncs")
+  @@schema("tenant_admin")
+}
+
+/// Email workflow trigger configuration for automated emails
+model EmailWorkflow {
+  tenantId              String             @map("tenant_id") @db.Uuid
+  id                    String             @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                  String
+  triggerType           email_trigger_type @map("trigger_type")
+  triggerConfig         Json               @default("{}") @map("trigger_config")
+  emailTemplateId       String?            @map("email_template_id") @db.Uuid
+  emailTemplateTenantId String?            @map("email_template_tenant_id") @db.Uuid
+  recipientConfig       Json               @default("{}") @map("recipient_config")
+  isActive              Boolean            @default(true) @map("is_active")
+  lastTriggeredAt       DateTime?          @map("last_triggered_at") @db.Timestamptz(6)
+  createdAt             DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt             DateTime?          @map("deleted_at") @db.Timestamptz(6)
+  tenant                Account            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  emailTemplate         email_templates?   @relation(fields: [emailTemplateTenantId, emailTemplateId], references: [tenant_id, id], onDelete: SetNull)
+
+  @@id([tenantId, id])
+  @@index([tenantId, triggerType])
+  @@index([tenantId, isActive])
+  @@map("email_workflows")
+  @@schema("tenant_admin")
+}
+
+/// Email delivery log for tracking automated email status
+model EmailLog {
+  tenantId         String      @map("tenant_id") @db.Uuid
+  id               String      @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workflowId       String?     @map("workflow_id") @db.Uuid
+  recipientEmail   String      @map("recipient_email")
+  recipientId      String?     @map("recipient_id") @db.Uuid
+  recipientType    String?     @map("recipient_type") // employee, client, vendor
+  subject          String
+  notificationType String      @map("notification_type")
+  status           email_status @default(pending)
+  resendId         String?     @map("resend_id")
+  errorMessage     String?     @map("error_message") @db.Text
+  sentAt           DateTime?   @map("sent_at") @db.Timestamptz(6)
+  deliveredAt      DateTime?   @map("delivered_at") @db.Timestamptz(6)
+  openedAt         DateTime?   @map("opened_at") @db.Timestamptz(6)
+  failedAt         DateTime?   @map("failed_at") @db.Timestamptz(6)
+  createdAt        DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  tenant           Account     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@index([tenantId, workflowId])
+  @@index([tenantId, recipientEmail])
+  @@index([tenantId, status])
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@map("email_logs")
+  @@schema("tenant_admin")
+}
+
+/// Types of triggers that can initiate automated emails
+enum email_trigger_type {
+  event_confirmed
+  event_canceled
+  event_completed
+  task_assigned
+  task_completed
+  task_reminder
+  shift_reminder
+  proposal_sent
+  contract_signed
+  custom
+
+  @@map("email_trigger_type")
+  @@schema("tenant_admin")
+}
+
+/// Status of email delivery
+enum email_status {
+  pending
+  sent
+  delivered
+  opened
+  failed
+  bounced
+
+  @@map("email_status")
   @@schema("tenant_admin")
 }

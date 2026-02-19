@@ -251,10 +251,26 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
   - Default template support per template type
   - Active/inactive template status
 
-### 15. Automated Email Workflows
+### ~~15. Automated Email Workflows~~ ✅ COMPLETE (2026-02-18)
 - **Spec:** `specs/administrative/automated-email-workflows_TODO/`
-- **Status:** Infrastructure exists, workflows not configured
-- **Effort:** 6-8 hours
+- **Implemented:**
+  - Added `EmailWorkflow` and `EmailLog` models to Prisma schema
+  - Added `email_trigger_type` and `email_status` enums
+  - Created email notification service (`packages/notifications/email-notification-service.ts`)
+  - Created email template rendering utility (`packages/notifications/email-templates.ts`)
+  - Created email workflow trigger service (`packages/notifications/email-workflow-triggers.ts`)
+  - API endpoints:
+    - `GET/POST /api/collaboration/notifications/email/preferences` - Manage email preferences
+    - `GET /api/collaboration/notifications/email/history` - Get email delivery history
+    - `POST /api/collaboration/notifications/email/send` - Send email notifications
+    - `POST /api/collaboration/notifications/email/webhook` - Resend delivery status callback
+    - `GET/POST /api/collaboration/notifications/email/workflows` - List/create workflows
+    - `GET/PUT/DELETE /api/collaboration/notifications/email/workflows/[id]` - Workflow CRUD
+    - `POST /api/cron/email-reminders` - Scheduled task/shift reminder processing
+  - Trigger types: event_confirmed, event_canceled, event_completed, task_assigned, task_completed, task_reminder, shift_reminder, proposal_sent, contract_signed
+  - Opt-in/opt-out support via notification_preferences
+  - Template-based emails with merge field support
+  - Delivery status tracking via email_logs
 
 ---
 
@@ -339,6 +355,7 @@ Several specs are marked `_TODO` but have substantial implementations:
 | Bulk Grouping Operations | **Complete** | Group/ungroup UI, named groups |
 | SMS Notification System | **Complete** | Templates, delivery tracking, opt-in/opt-out |
 | Email Template System | **Complete** | User-defined templates, merge fields, preview |
+| Automated Email Workflows | **Complete** | Workflow triggers, email service, scheduled reminders |
 
 ---
 
@@ -346,7 +363,7 @@ Several specs are marked `_TODO` but have substantial implementations:
 
 | Package | Completeness | Notes |
 |---------|-------------|-------|
-| `@repo/database` | **Full** | 138 models, 10 schemas |
+| `@repo/database` | **Full** | 140+ models, 10 schemas |
 | `@repo/design-system` | **Full** | 60+ UI components |
 | `@repo/ai` | **Full** | Agent/workflow SDK |
 | `@repo/payroll-engine` | **Full** | Calculator, tax, exports |
@@ -355,7 +372,7 @@ Several specs are marked `_TODO` but have substantial implementations:
 | `@repo/kitchen-state-transitions` | **Full** | State machine |
 | `@repo/collaboration` | **Full** | Liveblocks |
 | `@repo/realtime` | **Full** | Outbox + events |
-| `@repo/notifications` | **Full** | Knock + Twilio + SMS templates + delivery tracking |
+| `@repo/notifications` | **Full** | Knock + Twilio + SMS + Email workflows + delivery tracking |
 | `@repo/email` | **Full** | User-defined templates with merge fields |
 | `@repo/pdf` | **Skeleton** | Needs implementation |
 
