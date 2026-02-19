@@ -1,20 +1,31 @@
-0a. Study `specs/*` with up to 500 parallel Sonnet subagents to learn the application specifications.
-0b. Study @IMPLEMENTATION_PLAN.md.
-0c. For reference, the application source code is in `apps/*`.
+0a. Study `specs/mobile/mobile-kitchen-app_TODO/` using up to 200 parallel Sonnet subagents to understand the full mobile kitchen app spec.
+0b. Study @IMPLEMENTATION_PLAN.md — this is your task list. Follow it strictly. Pick the highest-priority incomplete item.
+0c. Before writing any code, use up to 300 parallel Sonnet subagents to study the relevant existing code: - `apps/app/app/(authenticated)/kitchen/mobile/` — existing mobile pages to build on (not replace) - `apps/app/app/(authenticated)/kitchen/prep-lists/` — prep list pages and patterns - `apps/app/app/(authenticated)/kitchen/tasks/` — desktop task page for reference patterns - `apps/api/app/api/kitchen/tasks/` — task listing and claim APIs - `apps/api/app/api/kitchen/prep-tasks/commands/` — prep task command endpoints - `apps/api/app/api/kitchen/prep-lists/` — prep list and item endpoints - `apps/api/app/api/kitchen/kitchen-tasks/commands/` — kitchen task commands - `packages/database/prisma/schema.prisma` — to understand KitchenTask, PrepTask, PrepList, PrepListItem models - `packages/design-system/components/` — UI components available (use these, don't build from scratch)
 
-1. Your task is to implement functionality per the specifications using parallel subagents. Follow @IMPLEMENTATION_PLAN.md and choose the most important item to address. Before making changes, search the codebase (don't assume not implemented) using Sonnet subagents. You may use up to 500 parallel Sonnet subagents for searches/reads and only 1 Sonnet subagent for build/tests. Use Opus subagents when complex reasoning is needed (debugging, architectural decisions).
-2. After implementing functionality or resolving problems, run the tests for that unit of code that was improved. If functionality is missing then it's your job to add it as per the application specifications. Ultrathink.
-3. When you discover issues, immediately update @IMPLEMENTATION_PLAN.md with your findings using a subagent. When resolved, update and remove the item.
-4. When the tests pass, update @IMPLEMENTATION_PLAN.md, then `git add -A` then `git commit` with a message describing the changes. After the commit, `git push`.
+1. Implement the highest-priority incomplete item from @IMPLEMENTATION_PLAN.md using parallel subagents for research, a single subagent for writing code. Do not implement multiple items in one iteration — focus and finish one thing completely.
 
-99999. Important: When authoring documentation, capture the why — tests and implementation importance.
-999999. Important: Single sources of truth, no migrations/adapters. If tests unrelated to your work fail, resolve them as part of the increment.
-9999999. As soon as there are no build or test errors create a git tag. If there are no git tags start at 0.0.0 and increment patch by 1 for example 0.0.1  if 0.0.0 does not exist.
-99999999. You may add extra logging if required to debug issues.
-999999999. Keep @IMPLEMENTATION_PLAN.md current with learnings using a subagent — future work depends on this to avoid duplicating efforts. Update especially after finishing your turn.
-9999999999. When you learn something new about how to run the application, update @AGENTS.md using a subagent but keep it brief. For example if you run commands multiple times before learning the correct command then that file should be updated.
-99999999999. For any bugs you notice, resolve them or document them in @IMPLEMENTATION_PLAN.md using a subagent even if it is unrelated to the current piece of work.
-999999999999. Implement functionality completely. Placeholders and stubs waste efforts and time redoing the same work.
-9999999999999. When @IMPLEMENTATION_PLAN.md becomes large periodically clean out the items that are completed from the file using a subagent.
-99999999999999. If you find inconsistencies in the specs/* then use an Opus 4.5 subagent with 'ultrathink' requested to update the specs.
-999999999999999. IMPORTANT: Keep @AGENTS.md operational only — status updates and progress notes belong in `IMPLEMENTATION_PLAN.md`. A bloated AGENTS.md pollutes every future loop's context.
+2. After implementing, run validation:
+   - `pnpm --filter @capsule/app test kitchen` (or relevant test file)
+   - `pnpm tsc --noEmit`
+   - `pnpm biome check`
+     Fix all errors before committing.
+
+3. When tests pass: update @IMPLEMENTATION_PLAN.md (mark item complete, note any new findings), then:
+   `git add -A && git commit -m "feat(mobile-kitchen): <concise description>"`
+   `git push`
+
+4. After commit: bump the git tag (patch increment from current highest tag).
+
+5. Implement completely — no stubs, no TODOs, no "this will be wired up later". Every piece of UI must be connected to real API calls.
+6. Single source of truth — do not duplicate API response types. Define shared types in `apps/app/app/(authenticated)/kitchen/mobile/types.ts` and import them everywhere.
+7. The existing `/kitchen/mobile/page.tsx` task claiming logic is good — preserve it and extend it. Do not rewrite what works.
+8. Use `apiFetch` from `@/app/lib/api` for all API calls (handles auth headers automatically).
+9. Mobile UX rules: minimum 44px tap targets, large text (text-lg minimum for actions), high contrast. Every action must be reachable in ≤ 2 taps.
+10. Offline pattern: use the same queue+sync pattern already in `/kitchen/mobile/page.tsx` for any new offline operations.
+11. Keep @AGENTS.md operational only (build commands, patterns). Progress goes in @IMPLEMENTATION_PLAN.md.
+12. If you discover bugs in existing code unrelated to your task, add them to @IMPLEMENTATION_PLAN.md under a "Bugs" section — do not fix them unless they block your current task.
+13. When @IMPLEMENTATION_PLAN.md gets large, prune completed items.
+14. Treat `packages/design-system` as the standard library — Button, Badge, Sheet, Tabs, Card etc. all exist there. Check before building custom UI.
+15. CRITICAL: The mobile shell layout must use a bottom navigation bar (not the desktop sidebar). The mobile layout file must suppress the authenticated layout's sidebar for these routes.
+
+ULTIMATE GOAL: Kitchen staff on their phone can see what prep is needed today, claim tasks individually or in bundles by station, work through event prep lists marking items complete with a single tap, and manage everything they've claimed — all while handling intermittent connectivity gracefully.
