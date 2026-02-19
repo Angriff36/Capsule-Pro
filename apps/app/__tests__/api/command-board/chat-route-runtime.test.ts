@@ -11,7 +11,7 @@ describe("command board chat route runtime", () => {
   it("enforces Node.js runtime and does not allow Edge", async () => {
     const content = await readFile(ROUTE_PATH, "utf8");
 
-    expect(content).toMatch(/export const runtime\s*=\s*['\"]nodejs['\"]/);
-    expect(content).not.toMatch(/export const runtime\s*=\s*['\"]edge['\"]/);
+    expect(content).toMatch(/export const runtime\s*=\s*['"]nodejs['"]/);
+    expect(content).not.toMatch(/export const runtime\s*=\s*['"]edge['"]/);
   });
 });

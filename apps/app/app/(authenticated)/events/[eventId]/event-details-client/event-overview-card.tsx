@@ -524,10 +524,7 @@ export function EventOverviewCard({
               </CardContent>
             </Card>
 
-            <EventBriefingCard
-              eventId={event.id}
-              eventTitle={event.title}
-            />
+            <EventBriefingCard eventId={event.id} eventTitle={event.title} />
           </div>
         </div>
       </section>

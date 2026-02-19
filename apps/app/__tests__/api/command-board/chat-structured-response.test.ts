@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
-  normalizeStructuredAgentResponse,
   type AgentToolExecution,
+  normalizeStructuredAgentResponse,
 } from "@/app/api/command-board/chat/agent-loop";
 
 describe("normalizeStructuredAgentResponse", () => {

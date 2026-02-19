@@ -855,7 +855,9 @@ export function ContractDetailClient({
                               </p>
                               <p className="text-muted-foreground text-xs">
                                 {entry.signedAt &&
-                                  dateFormatter.format(new Date(entry.signedAt))}
+                                  dateFormatter.format(
+                                    new Date(entry.signedAt)
+                                  )}
                               </p>
                             </div>
                             <p className="text-muted-foreground text-xs">
@@ -875,7 +877,9 @@ export function ContractDetailClient({
                               </p>
                               <p className="text-muted-foreground text-xs">
                                 {entry.createdAt &&
-                                  dateFormatter.format(new Date(entry.createdAt))}
+                                  dateFormatter.format(
+                                    new Date(entry.createdAt)
+                                  )}
                               </p>
                             </div>
                             {entry.oldValues && entry.newValues && (

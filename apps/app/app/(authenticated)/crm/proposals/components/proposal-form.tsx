@@ -121,7 +121,9 @@ export function ProposalForm({
 
   const [templates, setTemplates] = useState<TemplateOption[]>([]);
   const [isLoadingTemplates, setIsLoadingTemplates] = useState(true);
-  const [selectedTemplateId, setSelectedTemplateId] = useState<string>(proposal?.templateId || "");
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>(
+    proposal?.templateId || ""
+  );
 
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
 
@@ -261,9 +263,9 @@ export function ProposalForm({
                 <div className="space-y-2">
                   <Label htmlFor="templateId">Template</Label>
                   <Select
-                    value={selectedTemplateId}
-                    onValueChange={setSelectedTemplateId}
                     name="templateIdDisplay"
+                    onValueChange={setSelectedTemplateId}
+                    value={selectedTemplateId}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select a template (optional)" />

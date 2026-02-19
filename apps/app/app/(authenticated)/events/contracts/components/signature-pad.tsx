@@ -290,11 +290,20 @@ export function SignaturePad({
         </div>
 
         <div className="flex items-center gap-2">
-          <Button disabled={isSubmitting} onClick={handleCancel} size="sm" variant="outline">
+          <Button
+            disabled={isSubmitting}
+            onClick={handleCancel}
+            size="sm"
+            variant="outline"
+          >
             <XIcon className="mr-2 size-4" />
             Cancel
           </Button>
-          <Button disabled={!hasSignature || isSubmitting} onClick={handleSave} size="sm">
+          <Button
+            disabled={!hasSignature || isSubmitting}
+            onClick={handleSave}
+            size="sm"
+          >
             <CheckIcon className="mr-2 size-4" />
             {isSubmitting ? "Saving..." : "Save Signature"}
           </Button>
