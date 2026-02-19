@@ -43,6 +43,9 @@ export const PRIORITY_LEVELS: Record<string, number> = {
   urgent: 7,
 };
 
+/** Available priority options for UI */
+export const PRIORITY_OPTIONS = Object.keys(PRIORITY_LEVELS);
+
 /** Get priority label from numeric value */
 export function getPriorityLabel(value: number | null): string {
   if (value === null) {

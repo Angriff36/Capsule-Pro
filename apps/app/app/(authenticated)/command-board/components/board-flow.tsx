@@ -1200,11 +1200,12 @@ function BoardFlowInner({
 
       {/* Bulk action toolbar for multi-select */}
       <BulkActionToolbar
-        selectedProjections={selectedProjections}
-        entities={entities}
+        boardId={boardId}
         onBulkEditComplete={handleBulkEditComplete}
         onClearSelection={handleClearSelection}
+        onGroupChange={() => onProjectionAdded?.(undefined as unknown as BoardProjection)}
         onUndo={handleBulkEditUndo}
+        selectedProjections={selectedProjections}
       />
     </div>
   );

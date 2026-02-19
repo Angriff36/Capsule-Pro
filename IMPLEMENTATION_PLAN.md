@@ -173,10 +173,18 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
   - Visual feedback with toast notifications for success/errors
   - Undo toast after successful bulk edit
 
-### 12. Bulk Grouping Operations
+### ~~12. Bulk Grouping Operations~~ ✅ COMPLETE (2026-02-18)
 - **Spec:** `specs/kitchen/bulk-grouping-operations_TODO/`
-- **Status:** Groups model exists, grouping UI missing
-- **Effort:** 4-6 hours
+- **Implemented:**
+  - Created group server actions (`apps/app/app/(authenticated)/command-board/actions/groups.ts`)
+  - Supports creating named groups from selected entities
+  - Automatic bounding box calculation for group positioning
+  - Ungroup functionality to return entities to individual items
+  - Added "Group" button to BulkActionToolbar (appears when 2+ items selected)
+  - Added "Ungroup" button (appears when all selected items share same group)
+  - Group dialog for naming the group
+  - Toast notifications for success/errors
+  - Note: Visual group rendering on canvas uses existing ReactFlow parentId mechanism
 
 ### 13. SMS Notification System
 - **Spec:** `specs/sms-notification-system_TODO/`
@@ -273,6 +281,7 @@ Several specs are marked `_TODO` but have substantial implementations:
 | Client Segmentation UI | **Complete** | Tag filter with multi-select, counts |
 | Nowsta Integration | **Complete** | Employee mapping, shift sync |
 | Bulk Edit Operations | **Complete** | Multi-select toolbar, preview, undo/redo |
+| Bulk Grouping Operations | **Complete** | Group/ungroup UI, named groups |
 
 ---
 

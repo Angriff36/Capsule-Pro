@@ -2,6 +2,14 @@
 
 import { Button } from "@repo/design-system/components/ui/button";
 import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/design-system/components/ui/dialog";
+import { Input } from "@repo/design-system/components/ui/input";
+import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -13,8 +21,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Check, ChevronDown, Edit3, Loader2, X } from "lucide-react";
-import { useCallback, useMemo, useState } from "react";
+import {
+  Check,
+  ChevronDown,
+  Edit3,
+  FolderPlus,
+  Loader2,
+  Ungroup,
+  X,
+} from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   BULK_EDITABLE_PROPERTIES,
@@ -27,7 +43,12 @@ import {
   getBulkEditPreview,
   PRIORITY_OPTIONS,
 } from "../actions/bulk-edit";
-import type { BoardProjection, ResolvedEntity } from "../types/index";
+import {
+  createGroup,
+  getSharedGroupForProjections,
+  removeProjectionsFromGroup,
+} from "../actions/groups";
+import type { BoardProjection } from "../types/index";
 
 // ============================================================================
 // Types
@@ -36,14 +57,16 @@ import type { BoardProjection, ResolvedEntity } from "../types/index";
 interface BulkActionToolbarProps {
   /** Currently selected projections */
   selectedProjections: BoardProjection[];
-  /** Resolved entities map for displaying entity info */
-  entities: Map<string, ResolvedEntity>;
+  /** Board ID for group operations */
+  boardId: string;
   /** Callback when bulk edit is completed */
   onBulkEditComplete?: () => void;
   /** Callback to clear selection */
   onClearSelection?: () => void;
   /** Callback to perform undo */
   onUndo?: (snapshot: BulkEditResult["undoSnapshot"]) => void;
+  /** Callback when group is created/modified */
+  onGroupChange?: () => void;
 }
 
 // ============================================================================
@@ -52,16 +75,44 @@ interface BulkActionToolbarProps {
 
 export function BulkActionToolbar({
   selectedProjections,
-  entities,
+  boardId,
   onBulkEditComplete,
   onClearSelection,
   onUndo,
+  onGroupChange,
 }: BulkActionToolbarProps) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [preview, setPreview] = useState<BulkEditPreview | null>(null);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
   const [isExecuting, setIsExecuting] = useState(false);
   const [pendingChanges, setPendingChanges] = useState<BulkEditChanges>({});
+
+  // Group-related state
+  const [isGroupDialogOpen, setIsGroupDialogOpen] = useState(false);
+  const [groupName, setGroupName] = useState("");
+  const [isCreatingGroup, setIsCreatingGroup] = useState(false);
+  const [isUngrouping, setIsUngrouping] = useState(false);
+  const [sharedGroupId, setSharedGroupId] = useState<string | null>(null);
+
+  // Check if all selected projections share the same group
+  useEffect(() => {
+    async function checkSharedGroup() {
+      if (selectedProjections.length < 2) {
+        setSharedGroupId(null);
+        return;
+      }
+      const projectionIds = selectedProjections.map((p) => p.id);
+      const groupId = await getSharedGroupForProjections(projectionIds);
+      setSharedGroupId(groupId);
+    }
+    checkSharedGroup();
+  }, [selectedProjections]);
+
+  // Can create group if 2+ items selected
+  const canCreateGroup = selectedProjections.length >= 2;
+
+  // Can ungroup if all selected items are in the same group
+  const canUngroup = sharedGroupId !== null;
 
   // Determine what properties can be bulk edited based on selected entity types
   const editableProperties = useMemo(() => {
@@ -208,18 +259,85 @@ export function BulkActionToolbar({
     setPreview(null);
   }, []);
 
+  // Create group handler
+  const handleCreateGroup = useCallback(async () => {
+    if (!groupName.trim()) {
+      toast.error("Please enter a group name");
+      return;
+    }
+
+    setIsCreatingGroup(true);
+    try {
+      const projectionIds = selectedProjections.map((p) => p.id);
+      const result = await createGroup(boardId, {
+        name: groupName.trim(),
+        projectionIds,
+      });
+
+      if (result.success) {
+        toast.success(
+          `Group "${groupName.trim()}" created with ${selectedProjections.length} items`
+        );
+        setIsGroupDialogOpen(false);
+        setGroupName("");
+        onGroupChange?.();
+        onClearSelection?.();
+      } else {
+        toast.error(result.error ?? "Failed to create group");
+      }
+    } catch (error) {
+      console.error("[BulkActionToolbar] Failed to create group:", error);
+      toast.error("Failed to create group");
+    } finally {
+      setIsCreatingGroup(false);
+    }
+  }, [
+    boardId,
+    groupName,
+    selectedProjections,
+    onGroupChange,
+    onClearSelection,
+  ]);
+
+  // Ungroup handler
+  const handleUngroup = useCallback(async () => {
+    if (!sharedGroupId) {
+      return;
+    }
+
+    setIsUngrouping(true);
+    try {
+      const projectionIds = selectedProjections.map((p) => p.id);
+      const result = await removeProjectionsFromGroup(projectionIds);
+
+      toast.success(`${result.count} items removed from group`);
+      onGroupChange?.();
+      onClearSelection?.();
+    } catch (error) {
+      console.error("[BulkActionToolbar] Failed to ungroup:", error);
+      toast.error("Failed to ungroup items");
+    } finally {
+      setIsUngrouping(false);
+    }
+  }, [sharedGroupId, selectedProjections, onGroupChange, onClearSelection]);
+
   // If no items selected, don't render
   if (selectedProjections.length === 0) {
     return null;
   }
 
   // Check if any properties can be edited
-  if (editableProperties.length === 0 && !canEditStatus && !canEditPriority) {
+  if (
+    editableProperties.length === 0 &&
+    !canEditStatus &&
+    !canEditPriority &&
+    !canCreateGroup
+  ) {
     return (
       <div className="fixed bottom-6 left-1/2 z-50 -translate-x-1/2 animate-in fade-in slide-in-from-bottom-4">
         <div className="flex items-center gap-3 rounded-lg border bg-background px-4 py-2 shadow-lg">
           <span className="text-sm text-muted-foreground">
-            {selectedProjections.length} items selected (no editable properties)
+            {selectedProjections.length} items selected (no actions available)
           </span>
           <Button onClick={onClearSelection} size="sm" variant="ghost">
             <X className="size-4" />
@@ -382,7 +500,7 @@ export function BulkActionToolbar({
                     Object.values(pendingChanges).every(
                       (v) => v === undefined
                     ) ||
-                    (preview && preview.items.length === 0)
+                    (preview !== null && preview.items.length === 0)
                   }
                   onClick={handleExecute}
                   size="sm"
@@ -403,7 +521,86 @@ export function BulkActionToolbar({
             </div>
           </PopoverContent>
         </Popover>
+
+        {/* Group actions */}
+        {canCreateGroup && (
+          <>
+            <div className="h-6 w-px bg-border" />
+            <Button
+              className="gap-1.5"
+              onClick={() => setIsGroupDialogOpen(true)}
+              size="sm"
+              variant="outline"
+            >
+              <FolderPlus className="size-4" />
+              Group
+            </Button>
+          </>
+        )}
+
+        {canUngroup && (
+          <Button
+            className="gap-1.5"
+            disabled={isUngrouping}
+            onClick={handleUngroup}
+            size="sm"
+            variant="outline"
+          >
+            {isUngrouping ? (
+              <Loader2 className="size-4 animate-spin" />
+            ) : (
+              <Ungroup className="size-4" />
+            )}
+            Ungroup
+          </Button>
+        )}
       </div>
+
+      {/* Group name dialog */}
+      <Dialog onOpenChange={setIsGroupDialogOpen} open={isGroupDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create Group</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Group Name</label>
+              <Input
+                onChange={(e) => setGroupName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !isCreatingGroup) {
+                    handleCreateGroup();
+                  }
+                }}
+                placeholder="e.g., Weekend Events, Team Alpha..."
+                value={groupName}
+              />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {selectedProjections.length} items will be grouped together. You
+              can expand/collapse the group or move it as a unit.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button onClick={() => setIsGroupDialogOpen(false)} variant="ghost">
+              Cancel
+            </Button>
+            <Button
+              disabled={isCreatingGroup || !groupName.trim()}
+              onClick={handleCreateGroup}
+            >
+              {isCreatingGroup ? (
+                <>
+                  <Loader2 className="size-4 animate-spin mr-1" />
+                  Creating...
+                </>
+              ) : (
+                "Create Group"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
