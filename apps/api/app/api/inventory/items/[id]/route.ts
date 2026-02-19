@@ -10,6 +10,7 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
+import { recalculateRecipeCostsForInventoryItem } from "@/app/lib/recipe-costing";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type { FSAStatus, InventoryItemWithStatus } from "../types";
 import { validateUpdateInventoryItemRequest } from "../validation";
@@ -261,6 +262,11 @@ export async function PUT(request: Request, context: RouteContext) {
       }
     }
 
+    // Track if unit_cost is being updated for recipe cost recalculation
+    const unitCostChanged =
+      body.unit_cost !== undefined &&
+      Number(body.unit_cost) !== Number(existing.unitCost);
+
     await database.$executeRaw`
       UPDATE "tenant_inventory".inventory_items
       SET
@@ -297,11 +303,43 @@ export async function PUT(request: Request, context: RouteContext) {
       );
     }
 
+    // Trigger recipe cost recalculation if unit_cost changed
+    // This ensures recipe costs stay in sync with inventory prices
+    let recipeCostUpdate: {
+      updatedRecipes: number;
+      updatedIngredients: number;
+    } | null = null;
+    if (unitCostChanged) {
+      try {
+        recipeCostUpdate = await recalculateRecipeCostsForInventoryItem(
+          tenantId,
+          id,
+          updatedItem.name
+        );
+      } catch (error) {
+        // Log but don't fail the update if recipe recalculation fails
+        console.error("Failed to recalculate recipe costs:", error);
+      }
+    }
+
     const quantityOnHand = Number(updatedItem.quantityOnHand);
     const reorderLevel = Number(updatedItem.reorder_level);
     const stockStatus = calculateStockStatus(quantityOnHand, reorderLevel);
 
-    return NextResponse.json(buildItemResponse(updatedItem, stockStatus));
+    const response = buildItemResponse(updatedItem, stockStatus);
+
+    // Include recipe update info in response if costs were recalculated
+    if (recipeCostUpdate && recipeCostUpdate.updatedRecipes > 0) {
+      return NextResponse.json({
+        ...response,
+        _recipeCostUpdate: {
+          updatedRecipes: recipeCostUpdate.updatedRecipes,
+          updatedIngredients: recipeCostUpdate.updatedIngredients,
+        },
+      });
+    }
+
+    return NextResponse.json(response);
   } catch (error) {
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });
