@@ -13,17 +13,18 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
-import type { OfflineQueueItem, PrepList, PrepListItem } from "../../types";
+import type { PrepList, PrepListItem } from "../../types";
 
-interface CompletionQueueItem extends OfflineQueueItem {
+interface CompletionQueueItem {
   itemId: string;
   completed: boolean;
+  timestamp: string;
 }
 
 export default function MobilePrepListDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const prepListId = params.id as string;
+  const prepListId = params?.id as string;
 
   const [prepList, setPrepList] = useState<PrepList | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -142,9 +143,7 @@ export default function MobilePrepListDetailPage() {
         setCompletionQueue((prev) => [
           ...prev,
           {
-            taskId: item.id,
             itemId: item.id,
-            action: "complete",
             completed: newCompleted,
             timestamp: new Date().toISOString(),
           },
