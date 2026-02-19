@@ -14,7 +14,7 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
 **Verification (2026-02-19 15:29 UTC):**
 - Build: ✅ Passed (api package)
 - Tests: ✅ 720 tests passed (api package)
-- Tags: v0.6.71 (latest)
+- Tags: v0.6.73 (latest)
 
 ---
 
@@ -68,20 +68,20 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
   - Shows: event name, time, headcount, "X tasks unclaimed", "Y items incomplete"
   - Empty state: "No events today"
 
-### P2 — Task Bundle Claiming
+### ~~P2 — Task Bundle Claiming~~ ✅ COMPLETE (2026-02-19)
 
-- [ ] **Create API endpoint:** `POST /api/kitchen/tasks/bundle-claim`
+- [x] **Create API endpoint:** `POST /api/kitchen/tasks/bundle-claim`
   - Accepts `{ taskIds: string[] }`
   - Atomic: all succeed or none claimed (transaction)
   - Returns claimed tasks and any failures
 
-- [ ] **Add multi-select to Tasks tab:**
+- [x] **Add multi-select to Tasks tab:**
   - Long-press → multi-select mode
   - Checkboxes on all cards
   - "Select All [Station]" shortcut
   - Floating "Claim X Tasks" button
 
-- [ ] **Add station filter bottom sheet:**
+- [x] **Add station filter bottom sheet:**
   - Filter by: station, priority, event
   - "My Station" quick button (localStorage)
   - Filter chips above task list
