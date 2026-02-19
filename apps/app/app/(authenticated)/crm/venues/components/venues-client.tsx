@@ -25,21 +25,12 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import {
-  Loader2Icon,
-  MapPinIcon,
-  PlusIcon,
-  XIcon,
-} from "lucide-react";
+import { Loader2Icon, MapPinIcon, PlusIcon, XIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import {
-  getVenues,
-  type VenueFilters,
-  type VenueType,
-} from "../actions";
+import { getVenues, type VenueFilters, type VenueType } from "../actions";
 
 interface Venue {
   id: string;
@@ -176,7 +167,10 @@ export function VenuesClient() {
   };
 
   const hasActiveFilters =
-    filters.search || filters.venueType || filters.city || filters.isActive !== undefined;
+    filters.search ||
+    filters.venueType ||
+    filters.city ||
+    filters.isActive !== undefined;
 
   // Table columns
   const columns: ColumnDef<Venue>[] = [
@@ -187,8 +181,8 @@ export function VenuesClient() {
         const venue = row.original;
         return (
           <Link
-            href={`/crm/venues/${venue.id}`}
             className="font-medium hover:underline"
+            href={`/crm/venues/${venue.id}`}
           >
             {venue.name}
           </Link>
@@ -199,7 +193,9 @@ export function VenuesClient() {
       accessorKey: "venueType",
       header: "Type",
       cell: ({ row }) => {
-        const type = VENUE_TYPES.find((t) => t.value === row.getValue("venueType"));
+        const type = VENUE_TYPES.find(
+          (t) => t.value === row.getValue("venueType")
+        );
         return type?.label || row.getValue("venueType");
       },
     },
@@ -209,7 +205,7 @@ export function VenuesClient() {
       cell: ({ row }) => {
         const city = row.getValue("city") as string | null;
         const state = row.original.stateProvince;
-        if (!city && !state) return "-";
+        if (!(city || state)) return "-";
         return [city, state].filter(Boolean).join(", ");
       },
     },
@@ -242,12 +238,12 @@ export function VenuesClient() {
         return (
           <div className="flex flex-wrap gap-1">
             {tags.slice(0, 3).map((tag) => (
-              <Badge key={tag} variant="outline" className="text-xs">
+              <Badge className="text-xs" key={tag} variant="outline">
                 {tag}
               </Badge>
             ))}
             {tags.length > 3 && (
-              <Badge variant="outline" className="text-xs">
+              <Badge className="text-xs" variant="outline">
                 +{tags.length - 3}
               </Badge>
             )}
@@ -268,7 +264,9 @@ export function VenuesClient() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Venue Management</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Venue Management
+          </h1>
           <p className="text-muted-foreground">
             Manage venues, capacity, and coordination notes for every site.
           </p>
@@ -285,20 +283,20 @@ export function VenuesClient() {
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-4">
-        <form onSubmit={handleSearchSubmit} className="flex-1 min-w-[200px]">
+        <form className="flex-1 min-w-[200px]" onSubmit={handleSearchSubmit}>
           <div className="relative">
             <Input
+              className="pr-10"
+              onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Search venues..."
               value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              className="pr-10"
             />
           </div>
         </form>
 
         <Select
-          value={filters.venueType || ""}
           onValueChange={(value) => handleFilterChange("venueType", value)}
+          value={filters.venueType || ""}
         >
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="Venue Type" />
@@ -313,8 +311,8 @@ export function VenuesClient() {
         </Select>
 
         <Select
-          value={filters.isActive === undefined ? "" : String(filters.isActive)}
           onValueChange={(value) => handleFilterChange("isActive", value)}
+          value={filters.isActive === undefined ? "" : String(filters.isActive)}
         >
           <SelectTrigger className="w-[120px]">
             <SelectValue placeholder="Status" />
@@ -326,7 +324,7 @@ export function VenuesClient() {
         </Select>
 
         {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={clearFilters}>
+          <Button onClick={clearFilters} size="sm" variant="ghost">
             <XIcon className="mr-2 h-4 w-4" />
             Clear
           </Button>
@@ -356,8 +354,8 @@ export function VenuesClient() {
             {loading ? (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
                   className="h-24 text-center"
+                  colSpan={columns.length}
                 >
                   <Loader2Icon className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
                 </TableCell>
@@ -365,9 +363,9 @@ export function VenuesClient() {
             ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
                   className="cursor-pointer"
+                  data-state={row.getIsSelected() && "selected"}
+                  key={row.id}
                   onClick={() => router.push(`/crm/venues/${row.original.id}`)}
                 >
                   {row.getVisibleCells().map((cell) => (
@@ -383,14 +381,14 @@ export function VenuesClient() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
                   className="h-24 text-center"
+                  colSpan={columns.length}
                 >
                   <div className="flex flex-col items-center gap-2 text-muted-foreground">
                     <MapPinIcon className="h-8 w-8" />
                     <p>No venues found</p>
                     {hasActiveFilters && (
-                      <Button variant="link" size="sm" onClick={clearFilters}>
+                      <Button onClick={clearFilters} size="sm" variant="link">
                         Clear filters
                       </Button>
                     )}
@@ -412,22 +410,22 @@ export function VenuesClient() {
           </p>
           <div className="flex gap-2">
             <Button
-              variant="outline"
-              size="sm"
               disabled={pagination.page === 1}
               onClick={() =>
                 setPagination((prev) => ({ ...prev, page: prev.page - 1 }))
               }
+              size="sm"
+              variant="outline"
             >
               Previous
             </Button>
             <Button
-              variant="outline"
-              size="sm"
               disabled={pagination.page === pagination.totalPages}
               onClick={() =>
                 setPagination((prev) => ({ ...prev, page: prev.page + 1 }))
               }
+              size="sm"
+              variant="outline"
             >
               Next
             </Button>

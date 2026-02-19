@@ -6,5 +6,6 @@ export default function CrmVenuesPage() {
 
 export const metadata = {
   title: "Venues",
-  description: "Manage venues, capacity, and coordination notes for every site.",
+  description:
+    "Manage venues, capacity, and coordination notes for every site.",
 };

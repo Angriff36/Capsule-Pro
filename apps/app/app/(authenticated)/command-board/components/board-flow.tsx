@@ -27,8 +27,8 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { BoardDelta } from "../actions/boards";
-import { undoBulkEdit } from "../actions/bulk-edit";
 import type { BulkEditResult } from "../actions/bulk-edit";
+import { undoBulkEdit } from "../actions/bulk-edit";
 import {
   addProjection,
   batchRemoveProjections,
@@ -246,7 +246,9 @@ function BoardFlowInner({
   // ---- Bulk edit selection state ----
 
   // Track selected projections for bulk operations
-  const [selectedProjections, setSelectedProjections] = useState<BoardProjection[]>([]);
+  const [selectedProjections, setSelectedProjections] = useState<
+    BoardProjection[]
+  >([]);
 
   // Handle selection changes from ReactFlow
   const handleSelectionChange = useCallback(
@@ -1203,7 +1205,9 @@ function BoardFlowInner({
         boardId={boardId}
         onBulkEditComplete={handleBulkEditComplete}
         onClearSelection={handleClearSelection}
-        onGroupChange={() => onProjectionAdded?.(undefined as unknown as BoardProjection)}
+        onGroupChange={() =>
+          onProjectionAdded?.(undefined as unknown as BoardProjection)
+        }
         onUndo={handleBulkEditUndo}
         selectedProjections={selectedProjections}
       />

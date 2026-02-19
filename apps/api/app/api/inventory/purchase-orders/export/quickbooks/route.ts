@@ -12,9 +12,9 @@ import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import {
-  exportBills,
   type BillLineItem,
   type BillRecord,
+  exportBills,
   type QBBillExportOptions,
 } from "@/app/lib/quickbooks-bill-export";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -58,7 +58,7 @@ function parsePaymentTerms(terms: string | null): number {
 
   // Handle formats like "NET_30", "Net 30", "30", etc.
   const match = terms.match(/(\d+)/);
-  return match ? parseInt(match[1], 10) : 30;
+  return match ? Number.parseInt(match[1], 10) : 30;
 }
 
 /**
@@ -92,7 +92,8 @@ function purchaseOrderToBill(
   },
   defaultPaymentTerms: number
 ): BillRecord {
-  const vendorName = po.vendor?.name || `Vendor-${po.vendor?.id?.slice(0, 8) || "Unknown"}`;
+  const vendorName =
+    po.vendor?.name || `Vendor-${po.vendor?.id?.slice(0, 8) || "Unknown"}`;
   const billNumber = `BILL-${po.poNumber}`;
   const billDate = new Date(po.orderDate);
   const dueDate = new Date(billDate);
@@ -214,10 +215,7 @@ export async function POST(request: NextRequest) {
     } = parseResult.data;
 
     // Build where conditions
-    const conditions: string[] = [
-      "po.tenant_id = $1",
-      "po.deleted_at IS NULL",
-    ];
+    const conditions: string[] = ["po.tenant_id = $1", "po.deleted_at IS NULL"];
     const queryParams: (string | Date)[] = [tenantId];
     let paramIndex = 2;
 

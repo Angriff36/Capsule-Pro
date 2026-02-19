@@ -41,7 +41,9 @@ export async function GET(request: NextRequest) {
     const validStatuses = ["pending", "sent", "delivered", "failed"];
     if (status && !validStatuses.includes(status)) {
       return NextResponse.json(
-        { error: `Invalid status. Must be one of: ${validStatuses.join(", ")}` },
+        {
+          error: `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
+        },
         { status: 400 }
       );
     }

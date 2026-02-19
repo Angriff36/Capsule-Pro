@@ -13,8 +13,8 @@ import { keys } from "./keys";
 import {
   renderSmsTemplate,
   renderSmsTemplateByType,
-  type SmsTemplateData,
   SMS_TEMPLATES,
+  type SmsTemplateData,
 } from "./sms-templates";
 
 // E.164 phone validation: must start with + and contain 1-15 digits
@@ -211,8 +211,13 @@ export async function sendSmsNotification(
   database: PrismaClient,
   options: SendSmsOptions
 ): Promise<SendSmsResult[]> {
-  const { tenantId, notificationType, recipients, templateData, customMessage } =
-    options;
+  const {
+    tenantId,
+    notificationType,
+    recipients,
+    templateData,
+    customMessage,
+  } = options;
 
   // Determine the message content
   let message: string;

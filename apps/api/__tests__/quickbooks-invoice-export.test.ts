@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
-  type InvoiceRecord,
-  QBInvoiceBuilder,
   exportInvoices,
   exportInvoicesToIIF,
   exportInvoicesToQBOnlineCSV,
+  type InvoiceRecord,
+  QBInvoiceBuilder,
 } from "../app/lib/quickbooks-invoice-export";
 
 describe("QuickBooks Invoice Export", () => {
@@ -165,7 +165,7 @@ describe("QuickBooks Invoice Export", () => {
 
     it("should generate unique filenames with timestamp", () => {
       const result1 = exportInvoices([sampleInvoice], "qbOnlineCsv");
-      const result2 = exportInvoices([sampleInvoice], "qbOnlineCsv");
+      const _result2 = exportInvoices([sampleInvoice], "qbOnlineCsv");
 
       // Filenames should contain the date
       expect(result1.filename).toMatch(/invoices-\d{4}-\d{2}-\d{2}\.csv/);

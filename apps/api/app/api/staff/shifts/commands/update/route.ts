@@ -13,8 +13,7 @@ import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
-export const runtime = 'nodejs';
-
+export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
   try {

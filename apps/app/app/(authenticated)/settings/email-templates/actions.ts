@@ -7,7 +7,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import type { email_templates, email_template_type } from "@repo/database";
+import type { email_template_type, email_templates } from "@repo/database";
 import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { invariant } from "@/app/lib/invariant";
@@ -149,9 +149,7 @@ export async function getEmailTemplateById(id: string) {
 /**
  * Get default template for a type
  */
-export async function getDefaultTemplate(
-  templateType: EmailTemplateType
-) {
+export async function getDefaultTemplate(templateType: EmailTemplateType) {
   const { orgId } = await auth();
   invariant(orgId, "Unauthorized");
 
@@ -257,10 +255,14 @@ export async function updateEmailTemplate(
     },
     data: {
       ...(input.name !== undefined && { name: input.name }),
-      ...(input.templateType !== undefined && { template_type: input.templateType }),
+      ...(input.templateType !== undefined && {
+        template_type: input.templateType,
+      }),
       ...(input.subject !== undefined && { subject: input.subject }),
       ...(input.body !== undefined && { body: input.body }),
-      ...(input.mergeFields !== undefined && { merge_fields: input.mergeFields }),
+      ...(input.mergeFields !== undefined && {
+        merge_fields: input.mergeFields,
+      }),
       ...(input.isActive !== undefined && { is_active: input.isActive }),
       ...(input.isDefault !== undefined && { is_default: input.isDefault }),
     },

@@ -76,7 +76,9 @@ export default function NewVenuePage() {
         stateProvince: formData.stateProvince || undefined,
         postalCode: formData.postalCode || undefined,
         countryCode: formData.countryCode || undefined,
-        capacity: formData.capacity ? parseInt(formData.capacity, 10) : undefined,
+        capacity: formData.capacity
+          ? Number.parseInt(formData.capacity, 10)
+          : undefined,
         contactName: formData.contactName || undefined,
         contactPhone: formData.contactPhone || undefined,
         contactEmail: formData.contactEmail || undefined,
@@ -84,7 +86,10 @@ export default function NewVenuePage() {
         cateringNotes: formData.cateringNotes || undefined,
         layoutImageUrl: formData.layoutImageUrl || undefined,
         tags: formData.tags
-          ? formData.tags.split(",").map((t) => t.trim()).filter(Boolean)
+          ? formData.tags
+              .split(",")
+              .map((t) => t.trim())
+              .filter(Boolean)
           : undefined,
         isActive: true,
       });
@@ -103,7 +108,7 @@ export default function NewVenuePage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild>
+        <Button asChild size="icon" variant="ghost">
           <Link href="/crm/venues">
             <ArrowLeftIcon className="h-4 w-4" />
           </Link>
@@ -131,22 +136,22 @@ export default function NewVenuePage() {
                 <Label htmlFor="name">Name *</Label>
                 <Input
                   id="name"
-                  value={formData.name}
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
                   placeholder="e.g., Harbor Loft"
                   required
+                  value={formData.name}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="venueType">Venue Type</Label>
                 <Select
-                  value={formData.venueType}
                   onValueChange={(value: VenueType) =>
                     setFormData({ ...formData, venueType: value })
                   }
+                  value={formData.venueType}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select type" />
@@ -165,12 +170,12 @@ export default function NewVenuePage() {
                 <Label htmlFor="capacity">Capacity (guests)</Label>
                 <Input
                   id="capacity"
-                  type="number"
-                  value={formData.capacity}
                   onChange={(e) =>
                     setFormData({ ...formData, capacity: e.target.value })
                   }
                   placeholder="e.g., 200"
+                  type="number"
+                  value={formData.capacity}
                 />
               </div>
 
@@ -178,11 +183,11 @@ export default function NewVenuePage() {
                 <Label htmlFor="tags">Tags</Label>
                 <Input
                   id="tags"
-                  value={formData.tags}
                   onChange={(e) =>
                     setFormData({ ...formData, tags: e.target.value })
                   }
                   placeholder="e.g., Rooftop, A/V ready (comma-separated)"
+                  value={formData.tags}
                 />
               </div>
             </div>
@@ -195,11 +200,11 @@ export default function NewVenuePage() {
                   <Label htmlFor="addressLine1">Address Line 1</Label>
                   <Input
                     id="addressLine1"
-                    value={formData.addressLine1}
                     onChange={(e) =>
                       setFormData({ ...formData, addressLine1: e.target.value })
                     }
                     placeholder="Street address"
+                    value={formData.addressLine1}
                   />
                 </div>
 
@@ -207,11 +212,11 @@ export default function NewVenuePage() {
                   <Label htmlFor="addressLine2">Address Line 2</Label>
                   <Input
                     id="addressLine2"
-                    value={formData.addressLine2}
                     onChange={(e) =>
                       setFormData({ ...formData, addressLine2: e.target.value })
                     }
                     placeholder="Apartment, suite, etc."
+                    value={formData.addressLine2}
                   />
                 </div>
 
@@ -219,10 +224,10 @@ export default function NewVenuePage() {
                   <Label htmlFor="city">City</Label>
                   <Input
                     id="city"
-                    value={formData.city}
                     onChange={(e) =>
                       setFormData({ ...formData, city: e.target.value })
                     }
+                    value={formData.city}
                   />
                 </div>
 
@@ -230,10 +235,13 @@ export default function NewVenuePage() {
                   <Label htmlFor="stateProvince">State/Province</Label>
                   <Input
                     id="stateProvince"
-                    value={formData.stateProvince}
                     onChange={(e) =>
-                      setFormData({ ...formData, stateProvince: e.target.value })
+                      setFormData({
+                        ...formData,
+                        stateProvince: e.target.value,
+                      })
                     }
+                    value={formData.stateProvince}
                   />
                 </div>
 
@@ -241,10 +249,10 @@ export default function NewVenuePage() {
                   <Label htmlFor="postalCode">Postal Code</Label>
                   <Input
                     id="postalCode"
-                    value={formData.postalCode}
                     onChange={(e) =>
                       setFormData({ ...formData, postalCode: e.target.value })
                     }
+                    value={formData.postalCode}
                   />
                 </div>
 
@@ -252,12 +260,12 @@ export default function NewVenuePage() {
                   <Label htmlFor="countryCode">Country Code</Label>
                   <Input
                     id="countryCode"
-                    value={formData.countryCode}
+                    maxLength={2}
                     onChange={(e) =>
                       setFormData({ ...formData, countryCode: e.target.value })
                     }
                     placeholder="e.g., US"
-                    maxLength={2}
+                    value={formData.countryCode}
                   />
                 </div>
               </div>
@@ -271,10 +279,10 @@ export default function NewVenuePage() {
                   <Label htmlFor="contactName">Contact Name</Label>
                   <Input
                     id="contactName"
-                    value={formData.contactName}
                     onChange={(e) =>
                       setFormData({ ...formData, contactName: e.target.value })
                     }
+                    value={formData.contactName}
                   />
                 </div>
 
@@ -282,11 +290,11 @@ export default function NewVenuePage() {
                   <Label htmlFor="contactPhone">Phone</Label>
                   <Input
                     id="contactPhone"
-                    type="tel"
-                    value={formData.contactPhone}
                     onChange={(e) =>
                       setFormData({ ...formData, contactPhone: e.target.value })
                     }
+                    type="tel"
+                    value={formData.contactPhone}
                   />
                 </div>
 
@@ -294,11 +302,11 @@ export default function NewVenuePage() {
                   <Label htmlFor="contactEmail">Email</Label>
                   <Input
                     id="contactEmail"
-                    type="email"
-                    value={formData.contactEmail}
                     onChange={(e) =>
                       setFormData({ ...formData, contactEmail: e.target.value })
                     }
+                    type="email"
+                    value={formData.contactEmail}
                   />
                 </div>
               </div>
@@ -312,12 +320,12 @@ export default function NewVenuePage() {
                   <Label htmlFor="accessNotes">Access Notes</Label>
                   <Textarea
                     id="accessNotes"
-                    value={formData.accessNotes}
                     onChange={(e) =>
                       setFormData({ ...formData, accessNotes: e.target.value })
                     }
                     placeholder="Loading dock info, parking instructions, etc."
                     rows={3}
+                    value={formData.accessNotes}
                   />
                 </div>
 
@@ -325,12 +333,15 @@ export default function NewVenuePage() {
                   <Label htmlFor="cateringNotes">Catering Notes</Label>
                   <Textarea
                     id="cateringNotes"
-                    value={formData.cateringNotes}
                     onChange={(e) =>
-                      setFormData({ ...formData, cateringNotes: e.target.value })
+                      setFormData({
+                        ...formData,
+                        cateringNotes: e.target.value,
+                      })
                     }
                     placeholder="Kitchen access, equipment available, restrictions, etc."
                     rows={3}
+                    value={formData.cateringNotes}
                   />
                 </div>
 
@@ -338,12 +349,15 @@ export default function NewVenuePage() {
                   <Label htmlFor="layoutImageUrl">Floor Plan URL</Label>
                   <Input
                     id="layoutImageUrl"
-                    type="url"
-                    value={formData.layoutImageUrl}
                     onChange={(e) =>
-                      setFormData({ ...formData, layoutImageUrl: e.target.value })
+                      setFormData({
+                        ...formData,
+                        layoutImageUrl: e.target.value,
+                      })
                     }
                     placeholder="https://..."
+                    type="url"
+                    value={formData.layoutImageUrl}
                   />
                 </div>
               </div>
@@ -351,11 +365,13 @@ export default function NewVenuePage() {
 
             {/* Actions */}
             <div className="flex justify-end gap-4">
-              <Button type="button" variant="outline" asChild>
+              <Button asChild type="button" variant="outline">
                 <Link href="/crm/venues">Cancel</Link>
               </Button>
-              <Button type="submit" disabled={loading}>
-                {loading && <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />}
+              <Button disabled={loading} type="submit">
+                {loading && (
+                  <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 Create Venue
               </Button>
             </div>

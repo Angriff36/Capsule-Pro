@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
   type BillRecord,
-  QBBillBuilder,
   exportBills,
   exportBillsToIIF,
   exportBillsToQBOnlineCSV,
+  QBBillBuilder,
 } from "../app/lib/quickbooks-bill-export";
 
 describe("QuickBooks Bill Export", () => {
@@ -212,7 +212,7 @@ describe("QuickBooks Bill Export", () => {
 
     it("should generate unique filenames with timestamp", () => {
       const result1 = exportBills([sampleBill], "qbOnlineCsv");
-      const result2 = exportBills([sampleBill], "qbOnlineCsv");
+      const _result2 = exportBills([sampleBill], "qbOnlineCsv");
 
       // Filenames should contain the date
       expect(result1.filename).toMatch(/bills-\d{4}-\d{2}-\d{2}\.csv/);
