@@ -11,7 +11,7 @@ interface RouteParams {
  * GET /api/staff/certifications/[id]
  * Get a single certification by ID
  */
-export async function GET(request: Request, { params }: RouteParams) {
+export async function GET(_request: Request, { params }: RouteParams) {
   const { orgId } = await auth();
   if (!orgId) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -131,7 +131,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
  * DELETE /api/staff/certifications/[id]
  * Soft delete a certification
  */
-export async function DELETE(request: Request, { params }: RouteParams) {
+export async function DELETE(_request: Request, { params }: RouteParams) {
   const { orgId } = await auth();
   if (!orgId) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });

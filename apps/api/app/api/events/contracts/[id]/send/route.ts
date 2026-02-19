@@ -7,11 +7,13 @@
  * @canonical true
  */
 
+import { randomUUID } from "node:crypto";
+
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { ContractTemplate, resend } from "@repo/email";
-import { randomUUID } from "crypto";
 import { type NextRequest, NextResponse } from "next/server";
+
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface ContractSendAPIContext {
