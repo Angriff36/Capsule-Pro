@@ -11,10 +11,10 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
 
 **Active Feature: Mobile Kitchen App** — `specs/mobile/mobile-kitchen-app_TODO/`
 
-**Verification (2026-02-19 15:29 UTC):**
+**Verification (2026-02-19 16:45 UTC):**
 - Build: ✅ Passed (api package)
 - Tests: ✅ 720 tests passed (api package)
-- Tags: v0.6.73 (latest)
+- Tags: v0.6.74 (latest)
 
 ---
 
