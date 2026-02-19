@@ -208,7 +208,9 @@ ${briefing.criticalInfo.map((c) => `- ${c}`).join("\n")}
       <CardContent className="space-y-4">
         {/* Summary text */}
         <div className="prose prose-sm max-w-none dark:prose-invert">
-          <p className="text-foreground/90 leading-relaxed">{briefing.summary}</p>
+          <p className="text-foreground/90 leading-relaxed">
+            {briefing.summary}
+          </p>
         </div>
 
         {/* Highlights */}
@@ -242,7 +244,10 @@ ${briefing.criticalInfo.map((c) => `- ${c}`).join("\n")}
             <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/30">
               <ul className="space-y-1">
                 {briefing.criticalInfo.map((info, index) => (
-                  <li className="text-amber-900 text-sm dark:text-amber-200" key={index}>
+                  <li
+                    className="text-amber-900 text-sm dark:text-amber-200"
+                    key={index}
+                  >
                     - {info}
                   </li>
                 ))}

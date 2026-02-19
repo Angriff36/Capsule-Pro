@@ -318,9 +318,7 @@ export function ProposalViewClient({
             <CardContent className="flex items-center gap-3 p-4">
               <CheckCircle2Icon className="size-5 text-green-500" />
               <div>
-                <p className="font-medium text-green-600">
-                  Proposal Accepted
-                </p>
+                <p className="font-medium text-green-600">Proposal Accepted</p>
                 <p className="text-muted-foreground text-sm">
                   Thank you for accepting this proposal. We will be in touch
                   shortly to proceed.
@@ -336,9 +334,7 @@ export function ProposalViewClient({
             <CardContent className="flex items-center gap-3 p-4">
               <XCircleIcon className="size-5 text-orange-500" />
               <div>
-                <p className="font-medium text-orange-600">
-                  Proposal Declined
-                </p>
+                <p className="font-medium text-orange-600">Proposal Declined</p>
                 <p className="text-muted-foreground text-sm">
                   This proposal has been declined. Please contact us if you have
                   any questions or would like to discuss alternatives.
@@ -483,7 +479,9 @@ export function ProposalViewClient({
                   <table className="w-full">
                     <thead>
                       <tr className="border-b text-left">
-                        <th className="pb-3 font-medium text-sm">Description</th>
+                        <th className="pb-3 font-medium text-sm">
+                          Description
+                        </th>
                         <th className="pb-3 text-right font-medium text-sm">
                           Qty
                         </th>
@@ -533,7 +531,9 @@ export function ProposalViewClient({
                   {proposal.discountAmount > 0 && (
                     <div className="flex justify-between text-sm text-green-600">
                       <span>Discount</span>
-                      <span>-{currencyFormatter.format(proposal.discountAmount)}</span>
+                      <span>
+                        -{currencyFormatter.format(proposal.discountAmount)}
+                      </span>
                     </div>
                   )}
                   {proposal.taxAmount > 0 && (
@@ -541,7 +541,9 @@ export function ProposalViewClient({
                       <span className="text-muted-foreground">
                         Tax ({(proposal.taxRate * 100).toFixed(2)}%)
                       </span>
-                      <span>{currencyFormatter.format(proposal.taxAmount)}</span>
+                      <span>
+                        {currencyFormatter.format(proposal.taxAmount)}
+                      </span>
                     </div>
                   )}
                   <Separator />
@@ -585,18 +587,18 @@ export function ProposalViewClient({
             {canRespond && (
               <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:justify-end">
                 <Button
+                  className="w-full sm:w-auto"
                   onClick={() => openRespondDialog("reject")}
                   size="lg"
                   variant="outline"
-                  className="w-full sm:w-auto"
                 >
                   <XCircleIcon className="mr-2 size-4" />
                   Decline Proposal
                 </Button>
                 <Button
+                  className="w-full sm:w-auto"
                   onClick={() => openRespondDialog("accept")}
                   size="lg"
-                  className="w-full sm:w-auto"
                 >
                   <CheckCircle2Icon className="mr-2 size-4" />
                   Accept Proposal

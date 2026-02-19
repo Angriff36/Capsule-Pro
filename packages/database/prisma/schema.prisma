@@ -3176,6 +3176,269 @@ model EmployeeDeduction {
   @@schema("tenant_staff")
 }
 
+// ============================================
+// TRAINING & HRMS MODELS
+// ============================================
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model TrainingModule {
+  tenant_id        String                   @db.Uuid
+  id               String                   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title            String
+  description      String?
+  content_url      String?                  @map("content_url")
+  content_type     String                   @default("document") // document, video, quiz, interactive
+  duration_minutes Int?                     @map("duration_minutes") @db.SmallInt
+  category         String?
+  is_required      Boolean                  @default(false) @map("is_required")
+  is_active        Boolean                  @default(true) @map("is_active")
+  created_by       String?                  @map("created_by") @db.Uuid
+  created_at       DateTime                 @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime                 @default(now()) @db.Timestamptz(6)
+  deleted_at       DateTime?                @db.Timestamptz(6)
+  assignments      TrainingAssignment[]
+  completions      TrainingCompletion[]
+
+  @@id([tenant_id, id])
+  @@index([category], map: "training_modules_category_idx")
+  @@index([is_required], map: "training_modules_required_idx")
+  @@map("training_modules")
+  @@schema("tenant_staff")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model TrainingAssignment {
+  tenant_id         String              @db.Uuid
+  id                String              @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  module_id         String              @map("module_id") @db.Uuid
+  employee_id       String?             @map("employee_id") @db.Uuid
+  assigned_to_all   Boolean             @default(false) @map("assigned_to_all")
+  assigned_by       String              @map("assigned_by") @db.Uuid
+  due_date          DateTime?           @map("due_date") @db.Timestamptz(6)
+  status            String              @default("assigned") // assigned, in_progress, completed, overdue
+  assigned_at       DateTime            @default(now()) @map("assigned_at") @db.Timestamptz(6)
+  created_at        DateTime            @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime            @default(now()) @db.Timestamptz(6)
+  deleted_at        DateTime?           @db.Timestamptz(6)
+  module            TrainingModule      @relation(fields: [tenant_id, module_id], references: [tenant_id, id])
+  completions       TrainingCompletion[]
+
+  @@id([tenant_id, id])
+  @@index([module_id], map: "training_assignments_module_idx")
+  @@index([employee_id], map: "training_assignments_employee_idx")
+  @@index([status], map: "training_assignments_status_idx")
+  @@map("training_assignments")
+  @@schema("tenant_staff")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model TrainingCompletion {
+  tenant_id     String             @db.Uuid
+  id            String             @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  assignment_id String             @map("assignment_id") @db.Uuid
+  employee_id   String             @map("employee_id") @db.Uuid
+  module_id     String             @map("module_id") @db.Uuid
+  started_at    DateTime?          @map("started_at") @db.Timestamptz(6)
+  completed_at  DateTime?          @map("completed_at") @db.Timestamptz(6)
+  score         Decimal?           @db.Decimal(5, 2)
+  passed        Boolean            @default(false)
+  notes         String?
+  created_at    DateTime           @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime           @default(now()) @db.Timestamptz(6)
+  assignment    TrainingAssignment @relation(fields: [tenant_id, assignment_id], references: [tenant_id, id])
+  module        TrainingModule     @relation(fields: [tenant_id, module_id], references: [tenant_id, id])
+
+  @@id([tenant_id, id])
+  @@unique([tenant_id, employee_id, module_id], map: "training_completions_unique")
+  @@index([employee_id], map: "training_completions_employee_idx")
+  @@index([module_id], map: "training_completions_module_idx")
+  @@map("training_completions")
+  @@schema("tenant_staff")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model EmployeeTimeOffRequest {
+  tenant_id     String    @db.Uuid
+  id            String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employee_id   String    @map("employee_id") @db.Uuid
+  request_type  String    @map("request_type") // VACATION, SICK_LEAVE, PERSONAL_DAY, BEREAVEMENT, MATERNITY_LEAVE, PATERNITY_LEAVE, OTHER
+  start_date    DateTime  @map("start_date") @db.Date
+  end_date      DateTime  @map("end_date") @db.Date
+  hours         Decimal   @db.Decimal(6, 2)
+  reason        String?
+  status        String    @default("PENDING") // PENDING, APPROVED, REJECTED, CANCELLED
+  submitted_at  DateTime  @default(now()) @map("submitted_at") @db.Timestamptz(6)
+  reviewed_by   String?   @map("reviewed_by") @db.Uuid
+  reviewed_at   DateTime? @map("reviewed_at") @db.Timestamptz(6)
+  rejection_reason String? @map("rejection_reason")
+  created_at    DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at    DateTime  @default(now()) @db.Timestamptz(6)
+  deleted_at    DateTime? @db.Timestamptz(6)
+
+  @@id([tenant_id, id])
+  @@index([employee_id], map: "employee_time_off_requests_employee_idx")
+  @@index([status], map: "employee_time_off_requests_status_idx")
+  @@index([start_date], map: "employee_time_off_requests_start_date_idx")
+  @@map("employee_time_off_requests")
+  @@schema("tenant_staff")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model PerformanceReview {
+  tenant_id        String    @db.Uuid
+  id               String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employee_id      String    @map("employee_id") @db.Uuid
+  reviewer_id      String    @map("reviewer_id") @db.Uuid
+  review_type      String    @map("review_type") // ANNUAL, SIX_MONTH, COACHING, PROBATION
+  scheduled_date   DateTime  @map("scheduled_date") @db.Timestamptz(6)
+  completed_date   DateTime? @map("completed_date") @db.Timestamptz(6)
+  status           String    @default("scheduled") // scheduled, completed, cancelled
+  rating           Decimal?  @db.Decimal(3, 2)
+  strengths        String?
+  areas_for_improvement String? @map("areas_for_improvement")
+  goals_next_period String? @map("goals_next_period")
+  manager_comments String? @map("manager_comments")
+  employee_comments String? @map("employee_comments")
+  employee_acknowledged_at DateTime? @map("employee_acknowledged_at") @db.Timestamptz(6)
+  created_at       DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime  @default(now()) @db.Timestamptz(6)
+  deleted_at       DateTime? @db.Timestamptz(6)
+
+  @@id([tenant_id, id])
+  @@index([employee_id], map: "performance_reviews_employee_idx")
+  @@index([reviewer_id], map: "performance_reviews_reviewer_idx")
+  @@index([scheduled_date], map: "performance_reviews_scheduled_idx")
+  @@map("performance_reviews")
+  @@schema("tenant_staff")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model DisciplinaryAction {
+  tenant_id       String    @db.Uuid
+  id              String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employee_id     String    @map("employee_id") @db.Uuid
+  action_type     String    @map("action_type") // CA (Corrective Action), PIP (Performance Improvement Plan)
+  issued_date     DateTime  @map("issued_date") @db.Timestamptz(6)
+  issued_by       String    @map("issued_by") @db.Uuid
+  reason          String
+  description     String?
+  improvement_plan String? @map("improvement_plan")
+  end_date        DateTime? @map("end_date") @db.Timestamptz(6)
+  status          String    @default("active") // active, completed, cancelled
+  outcome         String?
+  closed_at       DateTime? @map("closed_at") @db.Timestamptz(6)
+  closed_by       String?   @map("closed_by") @db.Uuid
+  created_at      DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime  @default(now()) @db.Timestamptz(6)
+  deleted_at      DateTime? @db.Timestamptz(6)
+  milestones      ActionMilestone[]
+
+  @@id([tenant_id, id])
+  @@index([employee_id], map: "disciplinary_actions_employee_idx")
+  @@index([status], map: "disciplinary_actions_status_idx")
+  @@map("disciplinary_actions")
+  @@schema("tenant_staff")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model ActionMilestone {
+  tenant_id            String             @db.Uuid
+  id                   String             @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  disciplinary_action_id String           @map("disciplinary_action_id") @db.Uuid
+  title                String
+  description          String?
+  due_date             DateTime           @map("due_date") @db.Timestamptz(6)
+  completed_date       DateTime?          @map("completed_date") @db.Timestamptz(6)
+  status               String             @default("pending") // pending, completed, missed
+  notes                String?
+  created_at           DateTime           @default(now()) @db.Timestamptz(6)
+  updated_at           DateTime           @default(now()) @db.Timestamptz(6)
+  disciplinaryAction   DisciplinaryAction @relation(fields: [tenant_id, disciplinary_action_id], references: [tenant_id, id])
+
+  @@id([tenant_id, id])
+  @@index([disciplinary_action_id], map: "action_milestones_action_idx")
+  @@map("action_milestones")
+  @@schema("tenant_staff")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model OnboardingTask {
+  tenant_id          String    @db.Uuid
+  id                 String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title              String
+  description        String?
+  task_type          String    @map("task_type") // DOCUMENT, TRAINING, SIGNATURE, OTHER
+  is_required        Boolean   @default(true) @map("is_required")
+  sort_order         Int       @default(0) @map("sort_order") @db.SmallInt
+  is_active          Boolean   @default(true) @map("is_active")
+  created_at         DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime  @default(now()) @db.Timestamptz(6)
+  deleted_at         DateTime? @db.Timestamptz(6)
+  completions        OnboardingCompletion[]
+
+  @@id([tenant_id, id])
+  @@index([task_type], map: "onboarding_tasks_type_idx")
+  @@map("onboarding_tasks")
+  @@schema("tenant_staff")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model OnboardingCompletion {
+  tenant_id        String         @db.Uuid
+  id               String         @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employee_id      String         @map("employee_id") @db.Uuid
+  task_id          String         @map("task_id") @db.Uuid
+  completed_at     DateTime       @map("completed_at") @db.Timestamptz(6)
+  signature_data   String?        @map("signature_data")
+  document_url     String?        @map("document_url")
+  notes            String?
+  created_at       DateTime       @default(now()) @db.Timestamptz(6)
+  updated_at       DateTime       @default(now()) @db.Timestamptz(6)
+  task             OnboardingTask @relation(fields: [tenant_id, task_id], references: [tenant_id, id])
+
+  @@id([tenant_id, id])
+  @@unique([tenant_id, employee_id, task_id], map: "onboarding_completions_unique")
+  @@index([employee_id], map: "onboarding_completions_employee_idx")
+  @@map("onboarding_completions")
+  @@schema("tenant_staff")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model EmployeePin {
+  tenant_id       String    @db.Uuid
+  id              String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employee_id     String    @unique @map("employee_id") @db.Uuid
+  pin_encrypted   String    @map("pin_encrypted")
+  pin_hint        String?   @map("pin_hint")
+  created_at      DateTime  @default(now()) @db.Timestamptz(6)
+  updated_at      DateTime  @default(now()) @db.Timestamptz(6)
+  deleted_at      DateTime? @db.Timestamptz(6)
+
+  @@id([tenant_id, id])
+  @@map("employee_pins")
+  @@schema("tenant_staff")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model EmployeePinAccessLog {
+  tenant_id       String    @db.Uuid
+  id              String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employee_id     String    @map("employee_id") @db.Uuid
+  accessed_by_id  String    @map("accessed_by_id") @db.Uuid
+  access_type     String    @map("access_type") // VIEW, UPDATE, DELETE, UNAUTHORIZED_ATTEMPT
+  ip_address      String?   @map("ip_address")
+  user_agent      String?   @map("user_agent")
+  success         Boolean   @default(true)
+  created_at      DateTime  @default(now()) @db.Timestamptz(6)
+
+  @@id([tenant_id, id])
+  @@index([employee_id], map: "employee_pin_access_logs_employee_idx")
+  @@index([accessed_by_id], map: "employee_pin_access_logs_accessor_idx")
+  @@index([created_at], map: "employee_pin_access_logs_created_idx")
+  @@map("employee_pin_access_logs")
+  @@schema("tenant_staff")
+}
+
 /// This table contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model WasteReason {
   id           Int          @id @default(autoincrement()) @db.SmallInt

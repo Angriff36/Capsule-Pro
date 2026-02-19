@@ -37,16 +37,16 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import {
-  COMMON_MERGE_FIELDS,
-  extractMergeFields,
-  renderTemplate,
-} from "../utils";
-import {
   deleteEmailTemplate,
   type EmailTemplateType,
   getEmailTemplateById,
   updateEmailTemplate,
 } from "../actions";
+import {
+  COMMON_MERGE_FIELDS,
+  extractMergeFields,
+  renderTemplate,
+} from "../utils";
 
 const TEMPLATE_TYPES: { value: EmailTemplateType; label: string }[] = [
   { value: "proposal", label: "Proposal" },
