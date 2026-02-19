@@ -3793,6 +3793,7 @@ enum email_trigger_type {
   shift_reminder
   proposal_sent
   contract_signed
+  contract_expiration
   custom
 
   @@map("email_trigger_type")
