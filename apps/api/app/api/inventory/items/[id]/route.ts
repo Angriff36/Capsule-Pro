@@ -93,57 +93,46 @@ function buildItemResponse(
 }
 
 /**
- * Build update data object from request body
+ * Check if item number already exists for a different item
  */
-function _buildUpdateData(
-  body: Record<string, unknown>
-): Record<string, unknown> {
-  const updateData: Record<string, unknown> = {};
+async function checkDuplicateItemNumber(
+  tenantId: string,
+  itemId: string,
+  itemNumber: string
+): Promise<boolean> {
+  const duplicate = await database.inventoryItem.findFirst({
+    where: {
+      tenantId,
+      item_number: itemNumber,
+      deletedAt: null,
+    },
+  });
+  return duplicate !== null && duplicate.id !== itemId;
+}
 
-  if (body.name !== undefined) {
-    updateData.name = body.name;
-  }
-  if (body.description !== undefined) {
-    updateData.description = body.description;
-  }
-  if (body.category !== undefined) {
-    updateData.category = body.category;
-  }
-  if (body.unit_of_measure !== undefined) {
-    updateData.unitOfMeasure = body.unit_of_measure;
-  }
-  if (body.unit_cost !== undefined) {
-    updateData.unitCost = body.unit_cost;
-  }
-  if (body.quantity_on_hand !== undefined) {
-    updateData.quantityOnHand = body.quantity_on_hand;
-  }
-  if (body.par_level !== undefined) {
-    updateData.parLevel = body.par_level;
-  }
-  if (body.reorder_level !== undefined) {
-    updateData.reorder_level = body.reorder_level;
-  }
-  if (body.supplier_id !== undefined) {
-    updateData.supplierId = body.supplier_id;
-  }
-  if (body.tags !== undefined) {
-    updateData.tags = body.tags;
-  }
-  if (body.fsa_status !== undefined) {
-    updateData.fsa_status = body.fsa_status;
-  }
-  if (body.fsa_temp_logged !== undefined) {
-    updateData.fsa_temp_logged = body.fsa_temp_logged;
-  }
-  if (body.fsa_allergen_info !== undefined) {
-    updateData.fsa_allergen_info = body.fsa_allergen_info;
-  }
-  if (body.fsa_traceable !== undefined) {
-    updateData.fsa_traceable = body.fsa_traceable;
+/**
+ * Handle recipe cost recalculation if unit cost changed
+ */
+async function handleRecipeCostRecalculation(
+  tenantId: string,
+  itemId: string,
+  itemName: string,
+  unitCostChanged: boolean
+): Promise<{ updatedRecipes: number; updatedIngredients: number } | null> {
+  if (!unitCostChanged) {
+    return null;
   }
 
-  return updateData;
+  try {
+    return await recalculateRecipeCostsForInventoryItem(
+      tenantId,
+      itemId,
+      itemName
+    );
+  } catch (error) {
+    console.error("Failed to recalculate recipe costs:", error);
+    return null;
+  }
 }
 
 /**
@@ -245,21 +234,15 @@ export async function PUT(request: Request, context: RouteContext) {
     const body = await request.json();
     validateUpdateInventoryItemRequest(body);
 
-    if (body.item_number && body.item_number !== existing.item_number) {
-      const duplicate = await database.inventoryItem.findFirst({
-        where: {
-          tenantId,
-          item_number: body.item_number,
-          deletedAt: null,
-        },
-      });
-
-      if (duplicate) {
-        return NextResponse.json(
-          { message: "Item number already exists" },
-          { status: 409 }
-        );
-      }
+    if (
+      body.item_number &&
+      body.item_number !== existing.item_number &&
+      (await checkDuplicateItemNumber(tenantId, id, body.item_number))
+    ) {
+      return NextResponse.json(
+        { message: "Item number already exists" },
+        { status: 409 }
+      );
     }
 
     // Track if unit_cost is being updated for recipe cost recalculation
@@ -304,23 +287,12 @@ export async function PUT(request: Request, context: RouteContext) {
     }
 
     // Trigger recipe cost recalculation if unit_cost changed
-    // This ensures recipe costs stay in sync with inventory prices
-    let recipeCostUpdate: {
-      updatedRecipes: number;
-      updatedIngredients: number;
-    } | null = null;
-    if (unitCostChanged) {
-      try {
-        recipeCostUpdate = await recalculateRecipeCostsForInventoryItem(
-          tenantId,
-          id,
-          updatedItem.name
-        );
-      } catch (error) {
-        // Log but don't fail the update if recipe recalculation fails
-        console.error("Failed to recalculate recipe costs:", error);
-      }
-    }
+    const recipeCostUpdate = await handleRecipeCostRecalculation(
+      tenantId,
+      id,
+      updatedItem.name,
+      unitCostChanged
+    );
 
     const quantityOnHand = Number(updatedItem.quantityOnHand);
     const reorderLevel = Number(updatedItem.reorder_level);
