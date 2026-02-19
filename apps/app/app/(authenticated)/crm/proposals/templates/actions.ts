@@ -31,6 +31,14 @@ export interface DefaultLineItem {
   notes?: string;
 }
 
+export interface ProposalBrandingInput {
+  logoUrl?: string | null;
+  primaryColor?: string | null;
+  secondaryColor?: string | null;
+  accentColor?: string | null;
+  fontFamily?: string | null;
+}
+
 export interface CreateProposalTemplateInput {
   name: string;
   description?: string | null;
@@ -41,6 +49,7 @@ export interface CreateProposalTemplateInput {
   defaultLineItems?: DefaultLineItem[];
   isActive?: boolean;
   isDefault?: boolean;
+  branding?: ProposalBrandingInput;
 }
 
 export interface UpdateProposalTemplateInput {
@@ -53,6 +62,7 @@ export interface UpdateProposalTemplateInput {
   defaultLineItems?: DefaultLineItem[];
   isActive?: boolean;
   isDefault?: boolean;
+  branding?: ProposalBrandingInput;
 }
 
 /**
@@ -198,12 +208,17 @@ export async function createProposalTemplate(
       defaultTerms: input.defaultTerms?.trim() || null,
       defaultTaxRate: input.defaultTaxRate ?? 0,
       defaultNotes: input.defaultNotes?.trim() || null,
-      defaultLineItems: (input.defaultLineItems ?? []) as unknown as Record<
-        string,
-        unknown
-      >[],
+      defaultLineItems: JSON.parse(
+        JSON.stringify(input.defaultLineItems ?? [])
+      ),
       isActive: input.isActive ?? true,
       isDefault: input.isDefault ?? false,
+      // Branding fields
+      logoUrl: input.branding?.logoUrl?.trim() || null,
+      primaryColor: input.branding?.primaryColor?.trim() || null,
+      secondaryColor: input.branding?.secondaryColor?.trim() || null,
+      accentColor: input.branding?.accentColor?.trim() || null,
+      fontFamily: input.branding?.fontFamily?.trim() || null,
     },
   });
 
@@ -214,39 +229,11 @@ export async function createProposalTemplate(
 }
 
 /**
- * Update a proposal template
+ * Build update data object from input
  */
-export async function updateProposalTemplate(
-  id: string,
+function buildUpdateData(
   input: UpdateProposalTemplateInput
-) {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-
-  const tenantId = await getTenantId();
-  invariant(id, "Template ID is required");
-
-  // Check if template exists
-  const existingTemplate = await database.proposalTemplate.findFirst({
-    where: {
-      AND: [{ tenantId }, { id }, { deletedAt: null }],
-    },
-  });
-
-  invariant(existingTemplate, "Template not found");
-
-  // If setting as default, unset any existing default
-  if (input.isDefault) {
-    await database.proposalTemplate.updateMany({
-      where: {
-        tenantId,
-        isDefault: true,
-        id: { not: id },
-      },
-      data: { isDefault: false },
-    });
-  }
-
+): Record<string, unknown> {
   const data: Record<string, unknown> = {};
 
   if (input.name !== undefined) {
@@ -268,7 +255,7 @@ export async function updateProposalTemplate(
     data.defaultNotes = input.defaultNotes?.trim() || null;
   }
   if (input.defaultLineItems !== undefined) {
-    data.defaultLineItems = input.defaultLineItems;
+    data.defaultLineItems = JSON.parse(JSON.stringify(input.defaultLineItems));
   }
   if (input.isActive !== undefined) {
     data.isActive = input.isActive;
@@ -277,9 +264,45 @@ export async function updateProposalTemplate(
     data.isDefault = input.isDefault;
   }
 
+  if (input.branding !== undefined) {
+    data.logoUrl = input.branding.logoUrl?.trim() || null;
+    data.primaryColor = input.branding.primaryColor?.trim() || null;
+    data.secondaryColor = input.branding.secondaryColor?.trim() || null;
+    data.accentColor = input.branding.accentColor?.trim() || null;
+    data.fontFamily = input.branding.fontFamily?.trim() || null;
+  }
+
+  return data;
+}
+
+/**
+ * Update a proposal template
+ */
+export async function updateProposalTemplate(
+  id: string,
+  input: UpdateProposalTemplateInput
+) {
+  const { orgId } = await auth();
+  invariant(orgId, "Unauthorized");
+
+  const tenantId = await getTenantId();
+  invariant(id, "Template ID is required");
+
+  const existingTemplate = await database.proposalTemplate.findFirst({
+    where: { AND: [{ tenantId }, { id }, { deletedAt: null }] },
+  });
+  invariant(existingTemplate, "Template not found");
+
+  if (input.isDefault) {
+    await database.proposalTemplate.updateMany({
+      where: { tenantId, isDefault: true, id: { not: id } },
+      data: { isDefault: false },
+    });
+  }
+
   const template = await database.proposalTemplate.update({
     where: { id },
-    data,
+    data: buildUpdateData(input),
   });
 
   revalidatePath("/crm/proposals/templates");
@@ -346,10 +369,17 @@ export async function duplicateProposalTemplate(id: string) {
       defaultTerms: existingTemplate.defaultTerms,
       defaultTaxRate: existingTemplate.defaultTaxRate,
       defaultNotes: existingTemplate.defaultNotes,
-      defaultLineItems:
-        existingTemplate.defaultLineItems as unknown as DefaultLineItem[],
+      defaultLineItems: JSON.parse(
+        JSON.stringify(existingTemplate.defaultLineItems)
+      ),
       isActive: true,
       isDefault: false,
+      // Copy branding fields
+      logoUrl: existingTemplate.logoUrl,
+      primaryColor: existingTemplate.primaryColor,
+      secondaryColor: existingTemplate.secondaryColor,
+      accentColor: existingTemplate.accentColor,
+      fontFamily: existingTemplate.fontFamily,
     },
   });
 
