@@ -26,6 +26,7 @@ export interface ProposalFilters {
 }
 
 export interface CreateProposalInput {
+  templateId?: string | null;
   clientId?: string | null;
   leadId?: string | null;
   eventId?: string | null;
@@ -203,6 +204,55 @@ export async function createProposal(input: CreateProposalInput) {
     "At least one of clientId, leadId, or eventId must be provided"
   );
 
+  // Fetch template if provided and apply defaults
+  let templateDefaults: {
+    taxRate?: number;
+    termsAndConditions?: string;
+    notes?: string;
+    lineItems?: CreateLineItemInput[];
+  } = {};
+
+  if (input.templateId) {
+    const template = await database.proposalTemplate.findFirst({
+      where: {
+        AND: [{ tenantId }, { id: input.templateId }, { deletedAt: null }],
+      },
+    });
+
+    if (template) {
+      const templateLineItems = template.defaultLineItems as Array<{
+        sortOrder?: number;
+        itemType: string;
+        category: string;
+        description: string;
+        quantity: number;
+        unitOfMeasure?: string;
+        unitPrice: number;
+        notes?: string;
+      }>;
+
+      templateDefaults = {
+        taxRate: template.defaultTaxRate?.toNumber() ?? undefined,
+        termsAndConditions: template.defaultTerms ?? undefined,
+        notes: template.defaultNotes ?? undefined,
+        lineItems: templateLineItems.map((item) => ({
+          sortOrder: item.sortOrder ?? 0,
+          itemType: item.itemType,
+          description: item.description,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          notes: item.notes,
+        })),
+      };
+    }
+  }
+
+  // Apply template defaults where input values are not provided
+  const effectiveTaxRate = input.taxRate ?? templateDefaults.taxRate ?? 0;
+  const effectiveTerms = input.termsAndConditions ?? templateDefaults.termsAndConditions;
+  const effectiveNotes = input.notes ?? templateDefaults.notes;
+  const effectiveLineItems = input.lineItems ?? templateDefaults.lineItems ?? [];
+
   // Generate proposal number
   const year = new Date().getFullYear();
   const count = await database.proposal.count({
@@ -221,13 +271,12 @@ export async function createProposal(input: CreateProposalInput) {
   let calculatedTax = input.taxAmount ?? 0;
   let calculatedTotal = input.total ?? 0;
 
-  if (input.lineItems && input.lineItems.length > 0) {
-    calculatedSubtotal = input.lineItems.reduce(
+  if (effectiveLineItems && effectiveLineItems.length > 0) {
+    calculatedSubtotal = effectiveLineItems.reduce(
       (sum, item) => sum + item.quantity * item.unitPrice,
       0
     );
-    const taxRate = input.taxRate ?? 0;
-    calculatedTax = calculatedSubtotal * (taxRate / 100);
+    calculatedTax = calculatedSubtotal * (effectiveTaxRate / 100);
     const discount = input.discountAmount ?? 0;
     calculatedTotal = calculatedSubtotal + calculatedTax - discount;
   }
@@ -236,6 +285,7 @@ export async function createProposal(input: CreateProposalInput) {
     data: {
       tenantId,
       proposalNumber,
+      templateId: input.templateId,
       clientId: input.clientId,
       leadId: input.leadId,
       eventId: input.eventId,
@@ -246,16 +296,35 @@ export async function createProposal(input: CreateProposalInput) {
       venueName: input.venueName?.trim() || null,
       venueAddress: input.venueAddress?.trim() || null,
       subtotal: calculatedSubtotal,
-      taxRate: input.taxRate ?? 0,
+      taxRate: effectiveTaxRate,
       taxAmount: calculatedTax,
       discountAmount: input.discountAmount ?? 0,
       total: calculatedTotal,
       status: input.status ?? "draft",
       validUntil: input.validUntil ? new Date(input.validUntil) : null,
-      notes: input.notes?.trim() || null,
-      termsAndConditions: input.termsAndConditions?.trim() || null,
+      notes: effectiveNotes?.trim() || null,
+      termsAndConditions: effectiveTerms?.trim() || null,
     },
   });
+
+  // Create line items if provided
+  if (effectiveLineItems && effectiveLineItems.length > 0) {
+    await database.proposalLineItem.createMany({
+      data: effectiveLineItems.map((item, index) => ({
+        tenantId,
+        proposalId: proposal.id,
+        itemType: item.itemType,
+        category: "general",
+        description: item.description,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        total: item.quantity * item.unitPrice,
+        totalPrice: item.quantity * item.unitPrice,
+        sortOrder: item.sortOrder ?? index,
+        notes: item.notes,
+      })),
+    });
+  }
 
   revalidatePath("/crm/proposals");
 

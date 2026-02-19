@@ -59,6 +59,13 @@ interface ClientOption {
   email: string | null;
 }
 
+interface TemplateOption {
+  id: string;
+  name: string;
+  eventType: string | null;
+  isDefault: boolean;
+}
+
 interface ProposalFormProps {
   proposal: Proposal | null;
   action: (
@@ -112,6 +119,10 @@ export function ProposalForm({
   const [clients, setClients] = useState<ClientOption[]>([]);
   const [isLoadingClients, setIsLoadingClients] = useState(true);
 
+  const [templates, setTemplates] = useState<TemplateOption[]>([]);
+  const [isLoadingTemplates, setIsLoadingTemplates] = useState(true);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>(proposal?.templateId || "");
+
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
 
   const [newItem, setNewItem] = useState<Partial<LineItem>>({
@@ -159,6 +170,26 @@ export function ProposalForm({
       }
     }
     fetchClients();
+  }, []);
+
+  // Fetch templates on mount
+  useEffect(() => {
+    async function fetchTemplates() {
+      try {
+        const response = await apiFetch("/api/crm/proposals/templates");
+        if (!response.ok) {
+          throw new Error("Failed to fetch templates");
+        }
+        const data = await response.json();
+        setTemplates(data || []);
+      } catch (error) {
+        console.error("Error fetching templates:", error);
+        // Non-critical, don't show toast
+      } finally {
+        setIsLoadingTemplates(false);
+      }
+    }
+    fetchTemplates();
   }, []);
 
   // Handle redirect after successful submission
@@ -214,6 +245,7 @@ export function ProposalForm({
         <input name="proposalId" type="hidden" value={proposal.id} />
       )}
       <input name="lineItems" type="hidden" value={JSON.stringify(lineItems)} />
+      <input name="templateId" type="hidden" value={selectedTemplateId} />
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main Form */}
@@ -226,6 +258,35 @@ export function ProposalForm({
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label htmlFor="templateId">Template</Label>
+                  <Select
+                    value={selectedTemplateId}
+                    onValueChange={setSelectedTemplateId}
+                    name="templateIdDisplay"
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a template (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">No template</SelectItem>
+                      {isLoadingTemplates ? (
+                        <SelectItem disabled value="loading">
+                          Loading templates...
+                        </SelectItem>
+                      ) : (
+                        templates.map((template) => (
+                          <SelectItem key={template.id} value={template.id}>
+                            {template.name}
+                            {template.isDefault && " (Default)"}
+                            {template.eventType && ` - ${template.eventType}`}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="title">Proposal Title *</Label>
                   <Input

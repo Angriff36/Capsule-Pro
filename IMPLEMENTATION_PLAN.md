@@ -319,7 +319,7 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
 
 ### 18. Event Proposal Generation
 - **Spec:** `specs/kitchen/event-proposal-generation_TODO/`
-- **Status:** Core implementation complete, templates missing
+- **Status:** Core implementation and templates complete
 - **Implemented:**
   - Proposal CRUD with line items
   - PDF export with `ProposalTemplate`
@@ -331,8 +331,15 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
     - Fetches client name for personalization
     - Formats total amount in USD currency
     - Builds proposal URL for email link
+  - **Proposal Templates System** - 2026-02-18
+    - Added `ProposalTemplate` model to Prisma schema with: name, description, eventType, defaultTerms, defaultTaxRate, defaultNotes, defaultLineItems (JSON), isActive, isDefault flags, tenantId relation
+    - Added `templateId` field to Proposal model to link proposals to templates
+    - Template CRUD server actions: getProposalTemplates, getProposalTemplateById, getDefaultTemplateForEventType, createProposalTemplate, updateProposalTemplate, deleteProposalTemplate (soft delete), duplicateProposalTemplate
+    - Updated createProposal action to accept templateId parameter and apply template defaults for tax rate, terms, notes, and line items
+    - Template management UI: list page (/crm/proposals/templates), create page (/crm/proposals/templates/new), edit page (/crm/proposals/templates/[id]/edit)
+    - Updated proposal form with template selection dropdown
+    - API endpoint GET /api/crm/proposals/templates
 - **Missing:**
-  - Proposal templates system for different event types
   - Branding customization (logo, colors, fonts)
   - Public shareable links
 
@@ -446,7 +453,7 @@ Several specs are marked `_TODO` but have substantial implementations:
 | Warehouse Receiving Workflow | **Complete** | PO matching, quality checks, automatic stock updates |
 | Warehouse Cycle Counting | **Complete** | Session detail page, item search, count/verify workflow |
 | Event Contract Management | **Complete** | CRUD, signatures, public signing, history timeline |
-| Event Proposal Generation | **Complete** | CRUD, PDF export, email sending via Resend |
+| Event Proposal Generation | **Complete** | CRUD, PDF export, email sending via Resend, template system with defaults |
 
 ---
 
@@ -480,9 +487,8 @@ Several specs are marked `_TODO` but have substantial implementations:
 6. **External Integrations** - Nowsta and Goodshuffle fully implemented
 
 ### Gaps
-1. **Proposal Templates** - Missing template system for different event types
-2. **Proposal Branding** - No logo/colors/fonts customization
-3. **Proposal Public Links** - No shareable public proposal URLs
+1. **Proposal Branding** - No logo/colors/fonts customization
+2. **Proposal Public Links** - No shareable public proposal URLs
 
 ---
 
