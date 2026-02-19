@@ -5,8 +5,8 @@
  * across different input sizes and complexity.
  */
 
-import { describe, bench } from 'vitest';
-import { Parser } from './parser';
+import { bench, describe } from "vitest";
+import { Parser } from "./parser";
 
 // Small source (~100 tokens)
 const smallSource = `
@@ -220,18 +220,18 @@ entity Shipment {
 }
 `;
 
-describe('Parser Benchmarks', () => {
+describe("Parser Benchmarks", () => {
   const parser = new Parser();
 
-  bench('parse small source (~100 tokens)', () => {
+  bench("parse small source (~100 tokens)", () => {
     parser.parse(smallSource);
   });
 
-  bench('parse medium source (~500 tokens)', () => {
+  bench("parse medium source (~500 tokens)", () => {
     parser.parse(mediumSource);
   });
 
-  bench('parse large source (~2000 tokens)', () => {
+  bench("parse large source (~2000 tokens)", () => {
     parser.parse(largeSource);
   });
 });

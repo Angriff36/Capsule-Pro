@@ -14,7 +14,9 @@ export type EntityType =
   | "dish"
   | "proposal"
   | "shipment"
-  | "note";
+  | "note"
+  | "risk"
+  | "financial_projection";
 
 // ============================================================================
 // Resolved Entity Interfaces
@@ -77,6 +79,21 @@ export interface ResolvedEmployee {
   isActive: boolean;
 }
 
+/** Inventory stock level thresholds */
+export const InventoryThreshold = {
+  /** Good stock level - above par level */
+  good: "good",
+  /** Low stock - at or below par level but above reorder level */
+  low: "low",
+  /** Critical stock - at or below reorder level */
+  critical: "critical",
+  /** Out of stock - zero quantity */
+  out_of_stock: "out_of_stock",
+} as const;
+
+export type InventoryThreshold =
+  (typeof InventoryThreshold)[keyof typeof InventoryThreshold];
+
 /** Resolved inventory item data for display on the board */
 export interface ResolvedInventoryItem {
   id: string;
@@ -84,7 +101,71 @@ export interface ResolvedInventoryItem {
   category: string | null;
   quantityOnHand: number;
   parLevel: number | null;
+  reorderLevel: number | null;
   unit: string | null;
+}
+
+/**
+ * Calculate inventory threshold status based on quantity and thresholds.
+ *
+ * Threshold hierarchy (from lowest to highest urgency):
+ * - good: quantity > parLevel (healthy stock)
+ * - low: quantity <= parLevel but > reorderLevel (needs attention)
+ * - critical: quantity <= reorderLevel but > 0 (urgent reorder)
+ * - out_of_stock: quantity <= 0 (no stock available)
+ *
+ * If only one threshold is set, it's used as the primary indicator.
+ * If neither threshold is set, returns "good" (no thresholds to evaluate against).
+ */
+export function calculateInventoryThreshold(
+  quantityOnHand: number,
+  parLevel: number | null,
+  reorderLevel: number | null
+): InventoryThreshold {
+  // Out of stock - highest urgency
+  if (quantityOnHand <= 0) {
+    return "out_of_stock";
+  }
+
+  // If no thresholds configured, consider stock as good
+  if (parLevel == null && reorderLevel == null) {
+    return "good";
+  }
+
+  // If only parLevel is set, use it as the single threshold
+  if (reorderLevel == null) {
+    return quantityOnHand > (parLevel ?? 0) ? "good" : "low";
+  }
+
+  // If only reorderLevel is set, use it as the single threshold
+  if (parLevel == null) {
+    return quantityOnHand > reorderLevel ? "good" : "critical";
+  }
+
+  // Both thresholds set - use full hierarchy
+  // parLevel is the minimum acceptable (low warning)
+  // reorderLevel is the urgent reorder point (critical)
+  if (quantityOnHand <= reorderLevel) {
+    return "critical";
+  }
+  if (quantityOnHand <= parLevel) {
+    return "low";
+  }
+  return "good";
+}
+
+/** Get display label for inventory threshold status */
+export function getInventoryThresholdLabel(status: InventoryThreshold): string {
+  switch (status) {
+    case "good":
+      return "In Stock";
+    case "low":
+      return "Low Stock";
+    case "critical":
+      return "Critical";
+    case "out_of_stock":
+      return "Out of Stock";
+  }
 }
 
 /** Resolved recipe data for display on the board */
@@ -140,6 +221,88 @@ export interface ResolvedNote {
   tags: string[];
 }
 
+/** Risk severity levels */
+export const RiskSeverity = {
+  low: "low",
+  medium: "medium",
+  high: "high",
+  critical: "critical",
+} as const;
+
+export type RiskSeverity = (typeof RiskSeverity)[keyof typeof RiskSeverity];
+
+/** Risk categories */
+export const RiskCategory = {
+  scheduling: "scheduling",
+  resource: "resource",
+  staff: "staff",
+  inventory: "inventory",
+  timeline: "timeline",
+  financial: "financial",
+  compliance: "compliance",
+} as const;
+
+export type RiskCategory = (typeof RiskCategory)[keyof typeof RiskCategory];
+
+/** Resolved risk data for display on the board */
+export interface ResolvedRisk {
+  id: string;
+  title: string;
+  description: string;
+  severity: RiskSeverity;
+  category: RiskCategory;
+  status: "identified" | "monitoring" | "mitigating" | "resolved";
+  affectedEntityType: EntityType;
+  affectedEntityId: string;
+  affectedEntityName: string;
+  probability: number | null;
+  impact: number | null;
+  mitigationSteps: string[];
+  createdAt: Date | null;
+  resolvedAt: Date | null;
+}
+
+/** Financial exposure health status */
+export const FinancialHealthStatus = {
+  healthy: "healthy",
+  warning: "warning",
+  critical: "critical",
+  unknown: "unknown",
+} as const;
+
+export type FinancialHealthStatus =
+  (typeof FinancialHealthStatus)[keyof typeof FinancialHealthStatus];
+
+/** Resolved financial projection data for display on the board */
+export interface ResolvedFinancialProjection {
+  id: string;
+  title: string;
+  /** Time period this projection covers */
+  period: string;
+  /** Total projected revenue from events */
+  projectedRevenue: number;
+  /** Total projected costs (food, labor, other) */
+  projectedCosts: number;
+  /** Gross profit = revenue - costs */
+  grossProfit: number;
+  /** Gross profit margin as percentage (0-100) */
+  grossProfitMargin: number;
+  /** Number of events included in this projection */
+  eventCount: number;
+  /** Total guest count across all events */
+  totalGuests: number | null;
+  /** Health status based on margin thresholds */
+  healthStatus: FinancialHealthStatus;
+  /** Optional breakdown by category */
+  breakdown?: {
+    foodCost: number;
+    laborCost: number;
+    otherCost: number;
+  };
+  /** Event IDs that contribute to this projection */
+  sourceEventIds: string[];
+}
+
 // ============================================================================
 // Discriminated Union
 // ============================================================================
@@ -156,7 +319,9 @@ export type ResolvedEntity =
   | { type: "dish"; data: ResolvedDish }
   | { type: "proposal"; data: ResolvedProposal }
   | { type: "shipment"; data: ResolvedShipment }
-  | { type: "note"; data: ResolvedNote };
+  | { type: "note"; data: ResolvedNote }
+  | { type: "risk"; data: ResolvedRisk }
+  | { type: "financial_projection"; data: ResolvedFinancialProjection };
 
 // ============================================================================
 // Utility Functions
@@ -171,7 +336,7 @@ export function getEntityTitle(entity: ResolvedEntity): string {
       return (
         entity.data.companyName ??
         (`${entity.data.firstName ?? ""} ${entity.data.lastName ?? ""}`.trim() ||
-        "Unknown Client")
+          "Unknown Client")
       );
     case "prep_task":
       return entity.data.name;
@@ -189,10 +354,13 @@ export function getEntityTitle(entity: ResolvedEntity): string {
       return entity.data.title;
     case "shipment":
       return (
-        entity.data.shipmentNumber ??
-        `Shipment ${entity.data.id.slice(0, 8)}`
+        entity.data.shipmentNumber ?? `Shipment ${entity.data.id.slice(0, 8)}`
       );
     case "note":
+      return entity.data.title;
+    case "risk":
+      return entity.data.title;
+    case "financial_projection":
       return entity.data.title;
   }
 }
@@ -210,6 +378,10 @@ export function getEntityStatus(entity: ResolvedEntity): string | null {
       return entity.data.status;
     case "shipment":
       return entity.data.status;
+    case "risk":
+      return entity.data.status;
+    case "financial_projection":
+      return entity.data.healthStatus;
     default:
       return null;
   }
@@ -287,6 +459,18 @@ export const ENTITY_TYPE_COLORS = {
     text: "text-stone-900 dark:text-stone-100",
     icon: "text-stone-600 dark:text-stone-400",
   },
+  risk: {
+    bg: "bg-red-50 dark:bg-red-950/30",
+    border: "border-red-200 dark:border-red-800",
+    text: "text-red-900 dark:text-red-100",
+    icon: "text-red-600 dark:text-red-400",
+  },
+  financial_projection: {
+    bg: "bg-yellow-50 dark:bg-yellow-950/30",
+    border: "border-yellow-200 dark:border-yellow-800",
+    text: "text-yellow-900 dark:text-yellow-100",
+    icon: "text-yellow-600 dark:text-yellow-400",
+  },
 } as const satisfies Record<
   EntityType,
   { bg: string; border: string; text: string; icon: string }
@@ -305,4 +489,6 @@ export const ENTITY_TYPE_LABELS = {
   proposal: "Proposal",
   shipment: "Shipment",
   note: "Note",
+  risk: "Risk",
+  financial_projection: "Financial",
 } as const satisfies Record<EntityType, string>;

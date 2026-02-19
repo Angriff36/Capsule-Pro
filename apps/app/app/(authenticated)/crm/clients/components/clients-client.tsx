@@ -2,7 +2,21 @@
 
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
+import { Checkbox } from "@repo/design-system/components/ui/checkbox";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@repo/design-system/components/ui/command";
 import { Input } from "@repo/design-system/components/ui/input";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@repo/design-system/components/ui/popover";
 import {
   Select,
   SelectContent,
@@ -30,13 +44,14 @@ import {
   FilterIcon,
   Loader2Icon,
   PlusIcon,
+  TagIcon,
   UserIcon,
   XIcon,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { getClients } from "../actions";
+import { getAvailableTags, getClients } from "../actions";
 
 interface Client {
   id: string;
@@ -75,6 +90,11 @@ export function ClientsClient() {
     totalPages: 0,
   });
 
+  // Available tags for filtering
+  const [availableTags, setAvailableTags] = useState<
+    { tag: string; count: number }[]
+  >([]);
+
   // Filters
   const [filters, setFilters] = useState<ClientFilters>({
     search: searchParams.get("search") || "",
@@ -84,9 +104,23 @@ export function ClientsClient() {
         | "individual"
         | undefined) || undefined,
     source: searchParams.get("source") || "",
+    tags: searchParams.get("tags")?.split(",").filter(Boolean) || undefined,
   });
 
   const [searchInput, setSearchInput] = useState(filters.search || "");
+
+  // Fetch available tags on mount
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const tags = await getAvailableTags();
+        setAvailableTags(tags);
+      } catch (error) {
+        console.error("Failed to fetch tags:", error);
+      }
+    };
+    fetchTags();
+  }, []);
 
   // Fetch clients
   const fetchClients = useCallback(async () => {
@@ -98,6 +132,8 @@ export function ClientsClient() {
           search: filters.search || undefined,
           clientType: filters.clientType,
           source: filters.source || undefined,
+          tags:
+            filters.tags && filters.tags.length > 0 ? filters.tags : undefined,
         },
         pagination.page,
         pagination.limit
@@ -130,12 +166,26 @@ export function ClientsClient() {
     if (filters.source) {
       params.set("source", filters.source);
     }
+    if (filters.tags && filters.tags.length > 0) {
+      params.set("tags", filters.tags.join(","));
+    }
     const queryString = params.toString();
     router.push(`/crm/clients${queryString ? `?${queryString}` : ""}`);
   }, [filters, router]);
 
   const handleFilterChange = (key: keyof ClientFilters, value: string) => {
     setFilters((prev) => ({ ...prev, [key]: value || undefined }));
+    setPagination((prev) => ({ ...prev, page: 1 }));
+  };
+
+  const handleTagToggle = (tag: string) => {
+    setFilters((prev) => {
+      const currentTags = prev.tags || [];
+      const newTags = currentTags.includes(tag)
+        ? currentTags.filter((t) => t !== tag)
+        : [...currentTags, tag];
+      return { ...prev, tags: newTags.length > 0 ? newTags : undefined };
+    });
     setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
@@ -148,7 +198,10 @@ export function ClientsClient() {
   const clearFilters = () => {
     setSearchInput("");
     setFilters({});
+    setAvailableTags([]); // Clear cached tags
     setPagination((prev) => ({ ...prev, page: 1 }));
+    // Re-fetch tags after clear
+    getAvailableTags().then(setAvailableTags).catch(console.error);
   };
 
   const handleRowClick = (client: Client) => {
@@ -266,7 +319,13 @@ export function ClientsClient() {
     getCoreRowModel: getCoreRowModel(),
   });
 
-  const hasFilters = filters.search || filters.clientType || filters.source;
+  const hasFilters =
+    filters.search ||
+    filters.clientType ||
+    filters.source ||
+    (filters.tags && filters.tags.length > 0);
+
+  const selectedTagsCount = filters.tags?.length || 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -331,6 +390,51 @@ export function ClientsClient() {
           type="text"
           value={filters.source || ""}
         />
+
+        {/* Tag Filter */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button
+              className="w-[160px] justify-between"
+              size="sm"
+              variant={selectedTagsCount > 0 ? "default" : "outline"}
+            >
+              <span className="flex items-center gap-2 truncate">
+                <TagIcon className="h-4 w-4 shrink-0" />
+                {selectedTagsCount > 0
+                  ? `${selectedTagsCount} tag${selectedTagsCount > 1 ? "s" : ""}`
+                  : "Tags"}
+              </span>
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent align="start" className="w-[220px] p-0">
+            <Command>
+              <CommandInput placeholder="Search tags..." />
+              <CommandList>
+                <CommandEmpty>No tags found.</CommandEmpty>
+                <CommandGroup>
+                  {availableTags.map(({ tag, count }) => (
+                    <CommandItem
+                      key={tag}
+                      onSelect={() => handleTagToggle(tag)}
+                    >
+                      <div className="flex items-center gap-2 w-full">
+                        <Checkbox
+                          checked={filters.tags?.includes(tag) ?? false}
+                          className="pointer-events-none"
+                        />
+                        <span className="flex-1 truncate">{tag}</span>
+                        <span className="text-muted-foreground text-xs">
+                          {count}
+                        </span>
+                      </div>
+                    </CommandItem>
+                  ))}
+                </CommandGroup>
+              </CommandList>
+            </Command>
+          </PopoverContent>
+        </Popover>
 
         {hasFilters && (
           <>

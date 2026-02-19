@@ -1,6 +1,6 @@
-import { Parser } from './parser.js';
-import { CodeGenerator } from './generator.js';
-import { CompilationResult, ManifestProgram } from './types.js';
+import { CodeGenerator } from "./generator.js";
+import { Parser } from "./parser.js";
+import type { CompilationResult, ManifestProgram } from "./types.js";
 
 export class ManifestCompiler {
   private parser = new Parser();
@@ -11,9 +11,25 @@ export class ManifestCompiler {
     if (errors.length > 0) return { success: false, errors, ast: program };
     try {
       const { code, serverCode, testCode } = this.generator.generate(program);
-      return { success: true, code, serverCode, testCode, ast: program, errors: [] };
+      return {
+        success: true,
+        code,
+        serverCode,
+        testCode,
+        ast: program,
+        errors: [],
+      };
     } catch (e) {
-      return { success: false, errors: [{ message: e instanceof Error ? e.message : 'Generation failed', severity: 'error' }], ast: program };
+      return {
+        success: false,
+        errors: [
+          {
+            message: e instanceof Error ? e.message : "Generation failed",
+            severity: "error",
+          },
+        ],
+        ast: program,
+      };
     }
   }
 
@@ -22,4 +38,4 @@ export class ManifestCompiler {
   }
 }
 
-export * from './types.js';
+export * from "./types.js";

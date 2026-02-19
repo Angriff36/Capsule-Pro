@@ -355,7 +355,9 @@ export default function KitchenMobilePage() {
           const errData = await response.json();
           const message = errData.message || "Failed to claim task";
           setError(message);
-          captureException(new Error(`[KitchenMobile] Claim failed: ${message}`));
+          captureException(
+            new Error(`[KitchenMobile] Claim failed: ${message}`)
+          );
         }
       } catch (err) {
         captureException(err);

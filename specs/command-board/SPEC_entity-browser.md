@@ -82,6 +82,7 @@ Replace random offset with intelligent placement:
 - Enter to add to board
 - Escape to close browser
 - Tab to move between categories
+- **Status: DONE** (2026-02-18)
 
 ### Phase 3: Advanced
 
@@ -104,8 +105,16 @@ Replace random offset with intelligent placement:
 
 ## Acceptance Criteria (Phase 1)
 
-- [ ] Items already on the board show a visual indicator
-- [ ] Search input filters across all categories
-- [ ] Category counts show before expanding
-- [ ] Refresh button re-fetches category data
-- [ ] No regression in existing add-to-board flow
+- [x] Items already on the board show a visual indicator
+- [x] Search input filters across all categories
+- [x] Category counts show before expanding
+- [x] Refresh button re-fetches category data
+- [x] No regression in existing add-to-board flow
+
+### Phase 2 Acceptance Criteria
+
+- [x] Drag-to-add from browser to canvas
+- [x] Smart placement algorithm (grid-based)
+- [x] Keyboard navigation (Arrow keys, Enter, Escape, Tab)
+
+> All Phase 1 and Phase 2 criteria verified and completed 2026-02-18 (v0.6.22)

@@ -250,6 +250,7 @@ sketch
 
 storybook-static/
 docs/
+!**/packages/manifest-runtime/docs/
 ### Turbo ###
 # Turborepo task cache
 .turbo
@@ -319,7 +320,11 @@ tools/
 # scripts/ directory is ignored, except for manifest validation and build scripts
 scripts/*
 !scripts/validate-manifests.mjs
+!scripts/manifest/
 !scripts/manifest/*.mjs
+!scripts/check-hardcoded-routes.mjs
+!scripts/test-route-conformance.mjs
+!scripts/sync-manifest-runtime.mjs
 
 # Local Netlify folder
 .netlify
@@ -385,6 +390,10 @@ spec-prompt-template-generator.md
 # Vendored manifest-runtime has no build step; its dist must be committed
 !packages/manifest-runtime/dist/
 !packages/manifest-runtime/dist/**
+# Route manifest artifacts must be committed for CI and dev-time validation
+!packages/manifest-ir/dist/
+!packages/manifest-ir/dist/routes.manifest.json
+!packages/manifest-ir/dist/routes.ts
 **/build/
 **/.output/
 **/.vite/

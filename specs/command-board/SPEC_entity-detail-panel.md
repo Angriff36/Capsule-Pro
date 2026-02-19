@@ -55,8 +55,10 @@ Show recent changes to the entity (audit log) at the bottom of the detail panel.
 
 ## Acceptance Criteria
 
-- [ ] Clicking a card opens the detail panel with real entity data
-- [ ] Loading skeleton shows while fetching
-- [ ] Error state shows with retry button on failure
-- [ ] "Open Full Page" link navigates to the correct module page
-- [ ] Panel closes cleanly (no stale state on reopen)
+- [x] Clicking a card opens the detail panel with real entity data
+- [x] Loading skeleton shows while fetching
+- [x] Error state shows with retry button on failure
+- [x] "Open Full Page" link navigates to the correct module page
+- [x] Panel closes cleanly (no stale state on reopen)
+
+> All criteria verified and completed (2026-02-18). See `entity-detail-panel.tsx` for implementation.

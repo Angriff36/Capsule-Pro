@@ -30,6 +30,9 @@ let nextConfig: NextConfig = withLogging({
   experimental: {
     optimizePackageImports: ["date-fns"],
   },
+  outputFileTracingIncludes: {
+    "/*": ["../../packages/manifest-adapters/manifests/**/*.manifest"],
+  },
   // Externalize pdfjs-dist to avoid bundling issues in API routes
   serverExternalPackages: [
     "pdfjs-dist",

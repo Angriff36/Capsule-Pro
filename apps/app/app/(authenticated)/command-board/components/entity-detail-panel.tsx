@@ -18,6 +18,7 @@ import {
   Calendar,
   CheckSquare,
   ClipboardList,
+  DollarSign,
   ExternalLink,
   Package,
   StickyNote,
@@ -68,10 +69,15 @@ const ENTITY_TYPE_ICONS: Record<EntityType, typeof Calendar> = {
   proposal: ClipboardList,
   shipment: Box,
   note: StickyNote,
+  risk: AlertTriangle,
+  financial_projection: DollarSign,
 };
 
 /** Map entity types to their full-page link paths */
-function getEntityLink(entityType: EntityType, entityId: string): string | null {
+function getEntityLink(
+  entityType: EntityType,
+  entityId: string
+): string | null {
   switch (entityType) {
     case "event":
       return `/events/${entityId}`;
@@ -94,8 +100,16 @@ function getEntityLink(entityType: EntityType, entityId: string): string | null 
       return "/shipments";
     case "note":
       return "/notes";
-    default:
+    case "risk":
+      // Risks are derived entities - no direct link
       return null;
+    case "financial_projection":
+      // Financial projections are derived entities - no direct link
+      return null;
+    default: {
+      const _exhaustive: never = entityType;
+      return null;
+    }
   }
 }
 
@@ -206,9 +220,9 @@ export function EntityDetailPanel({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const Icon = ENTITY_TYPE_ICONS[entityType];
-  const colors = ENTITY_TYPE_COLORS[entityType];
-  const typeLabel = ENTITY_TYPE_LABELS[entityType];
+  const Icon = ENTITY_TYPE_ICONS[entityType] ?? StickyNote;
+  const colors = ENTITY_TYPE_COLORS[entityType] ?? ENTITY_TYPE_COLORS.note;
+  const typeLabel = ENTITY_TYPE_LABELS[entityType] ?? "Unknown";
   const fullPageLink = getEntityLink(entityType, entityId);
 
   /** Fetch entity data via the resolveEntities server action */
@@ -220,7 +234,12 @@ export function EntityDetailPanel({
       // The entities.ts EntityType is broader than the types.ts EntityType used by resolveEntities.
       // Both define the same union at runtime; the cast bridges the two type definitions.
       const result = await resolveEntities([
-        { entityType: entityType as Parameters<typeof resolveEntities>[0][0]["entityType"], entityId },
+        {
+          entityType: entityType as Parameters<
+            typeof resolveEntities
+          >[0][0]["entityType"],
+          entityId,
+        },
       ]);
 
       if (!result.success) {

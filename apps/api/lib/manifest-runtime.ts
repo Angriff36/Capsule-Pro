@@ -13,18 +13,14 @@
  * @packageDocumentation
  */
 
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
 import type {
   CommandResult,
   EmittedEvent,
   RuntimeEngine,
   RuntimeOptions,
-} from "@manifest/runtime";
-import type { IR, IRCommand } from "@manifest/runtime/ir";
-import { compileToIR } from "@manifest/runtime/ir-compiler";
+} from "@angriff36/manifest";
+import type { IR, IRCommand } from "@angriff36/manifest/ir";
 import { database, type PrismaClient } from "@repo/database";
-import { enforceCommandOwnership } from "@repo/manifest-adapters/ir-contract";
 import { PrismaIdempotencyStore } from "@repo/manifest-adapters/prisma-idempotency-store";
 import { PrismaJsonStore } from "@repo/manifest-adapters/prisma-json-store";
 import type { PrismaStoreConfig } from "@repo/manifest-adapters/prisma-store";
@@ -32,7 +28,10 @@ import {
   createPrismaOutboxWriter,
   PrismaStore,
 } from "@repo/manifest-adapters/prisma-store";
+import { getCompiledManifestBundle } from "@repo/manifest-adapters/runtime/loadManifests";
 import { ManifestRuntimeEngine } from "@repo/manifest-adapters/runtime-engine";
+import { log } from "@repo/observability/log";
+import { captureException } from "@sentry/nextjs";
 import { createSentryTelemetry } from "./manifest/telemetry";
 
 /**
@@ -67,137 +66,25 @@ interface GeneratedRuntimeContext {
     tenantId: string;
     role?: string;
   };
-  /** Optional entity name to auto-detect which manifest to load */
-  entityName?: string;
-  /** Optional explicit manifest file name (without .manifest extension) */
-  manifestName?: string;
 }
 
 type ManifestIR = IR;
 
-// IR cache for each manifest type
-const manifestIRCache = new Map<string, ManifestIR>();
-
-/** Mapping from entity names to their manifest files */
-const ENTITY_TO_MANIFEST: Record<string, string> = {
-  // Phase 0: Original manifests
-  PrepTask: "prep-task-rules",
-  Menu: "menu-rules",
-  MenuDish: "menu-rules",
-  Recipe: "recipe-rules",
-  RecipeVersion: "recipe-rules",
-  RecipeIngredient: "recipe-rules",
-  RecipeStep: "recipe-rules",
-  PrepList: "prep-list-rules",
-  PrepListItem: "prep-list-rules",
-  InventoryItem: "inventory-rules",
-  Station: "station-rules",
-  KitchenTask: "kitchen-task-rules",
-
-  // Phase 1: Kitchen Operations
-  PrepComment: "prep-comment-rules",
-  Ingredient: "ingredient-rules",
-  Dish: "dish-rules",
-  Container: "container-rules",
-  PrepMethod: "prep-method-rules",
-
-  // Phase 2: Events & Catering
-  Event: "event-rules",
-  EventProfitability: "event-rules",
-  EventSummary: "event-rules",
-  EventReport: "event-report-rules",
-  EventBudget: "event-budget-rules",
-  BudgetLineItem: "event-budget-rules",
-  CateringOrder: "catering-order-rules",
-  BattleBoard: "battle-board-rules",
-
-  // Phase 3: CRM & Sales
-  Client: "client-rules",
-  ClientContact: "client-rules",
-  ClientPreference: "client-rules",
-  Lead: "lead-rules",
-  Proposal: "proposal-rules",
-  ProposalLineItem: "proposal-rules",
-  ClientInteraction: "client-interaction-rules",
-
-  // Phase 4: Purchasing & Inventory
-  PurchaseOrder: "purchase-order-rules",
-  PurchaseOrderItem: "purchase-order-rules",
-  Shipment: "shipment-rules",
-  ShipmentItem: "shipment-rules",
-  InventoryTransaction: "inventory-transaction-rules",
-  InventorySupplier: "inventory-supplier-rules",
-  CycleCountSession: "cycle-count-rules",
-  CycleCountRecord: "cycle-count-rules",
-  VarianceReport: "cycle-count-rules",
-
-  // Phase 5: Staff & Scheduling
-  User: "user-rules",
-  Schedule: "schedule-rules",
-  ScheduleShift: "schedule-rules",
-  TimeEntry: "time-entry-rules",
-  TimecardEditRequest: "time-entry-rules",
-
-  // Phase 6: Command Board
-  CommandBoard: "command-board-rules",
-  CommandBoardCard: "command-board-rules",
-  CommandBoardLayout: "command-board-rules",
-  CommandBoardGroup: "command-board-rules",
-  CommandBoardConnection: "command-board-rules",
-
-  // Phase 7: Workflows & Notifications
-  Workflow: "workflow-rules",
-  Notification: "notification-rules",
-};
-
-/**
- * Get the manifest name for a given entity.
- */
-function getManifestForEntity(entityName: string): string {
-  return ENTITY_TO_MANIFEST[entityName] ?? "prep-task-rules";
-}
-
 /**
  * Load and compile a manifest IR, with caching.
  */
-async function getManifestIR(manifestName: string): Promise<ManifestIR> {
-  const cached = manifestIRCache.get(manifestName);
-  if (cached) {
-    return cached;
-  }
+async function getManifestIR(): Promise<ManifestIR> {
+  const { ir, hash } = await getCompiledManifestBundle();
 
-  // Resolve from the monorepo packages directory
-  const manifestPath = join(
-    process.cwd(),
-    `../../packages/manifest-adapters/manifests/${manifestName}.manifest`
-  );
-
-  const source = readFileSync(manifestPath, "utf-8");
-  const { ir, diagnostics } = await compileToIR(source);
-
-  if (!ir) {
-    throw new Error(
-      `Failed to compile ${manifestName} manifest: ${diagnostics.map((d: { message: string }) => d.message).join(", ")}`
-    );
-  }
-
-  // Debug: Log IR structure before normalization
   if (process.env.DEBUG_MANIFEST_IR === "true") {
-    console.log(`[manifest-runtime] IR for ${manifestName}:`, {
-      entities: ir.entities.map((e: { name: string; commands: unknown }) => ({
-        name: e.name,
-        commands: e.commands,
-      })),
-      commands: ir.commands.map((c: { name: string; entity?: string }) => ({
-        name: c.name,
-        entity: c.entity,
-      })),
+    log.info("[manifest-runtime] Loaded manifest bundle", {
+      hash,
+      entities: ir.entities.length,
+      commands: ir.commands.length,
     });
   }
 
-  const normalized = enforceCommandOwnership(ir, manifestName);
-  manifestIRCache.set(manifestName, normalized);
-  return normalized;
+  return ir;
 }
 
 /**
@@ -251,12 +138,13 @@ function _createPrismaStoreProvider(
 export async function createManifestRuntime(
   ctx: GeneratedRuntimeContext
 ): Promise<RuntimeEngine> {
-  // Determine which manifest to load
-  const manifestName =
-    ctx.manifestName ??
-    (ctx.entityName ? getManifestForEntity(ctx.entityName) : "prep-task-rules");
+  if (process.env.NEXT_RUNTIME === "edge") {
+    throw new Error(
+      "Manifest runtime requires Node.js runtime (Edge runtime is unsupported)."
+    );
+  }
 
-  const ir = await getManifestIR(manifestName);
+  const ir = await getManifestIR();
 
   // Create a shared event collector for transactional outbox pattern
   // This array will be populated with events during command execution
@@ -288,7 +176,7 @@ export async function createManifestRuntime(
 
     // Fall back to generic JSON store for all Phase 1-7 entities
     // that don't have dedicated Prisma models yet
-    console.log(
+    log.info(
       `[manifest-runtime] Using PrismaJsonStore for entity: ${entityName}`
     );
     return new PrismaJsonStore({
@@ -336,10 +224,10 @@ export async function createManifestRuntime(
             await outboxWriter(tx as PrismaClient, eventsToWrite);
           });
         } catch (error) {
-          console.error(
-            "[manifest-runtime] Failed to write events to outbox:",
-            error
-          );
+          log.error("[manifest-runtime] Failed to write events to outbox", {
+            error,
+          });
+          captureException(error);
           throw error;
         }
       }
@@ -366,7 +254,7 @@ export function createMenuRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({ user, manifestName: "menu-rules" });
+  return createManifestRuntime({ user });
 }
 
 /** Helper to create a runtime specifically for PrepTask operations */
@@ -374,7 +262,7 @@ export function createPrepTaskRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({ user, manifestName: "prep-task-rules" });
+  return createManifestRuntime({ user });
 }
 
 /** Helper to create a runtime specifically for Recipe operations */
@@ -382,7 +270,7 @@ export function createRecipeRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({ user, manifestName: "recipe-rules" });
+  return createManifestRuntime({ user });
 }
 
 /** Helper to create a runtime specifically for PrepList operations */
@@ -390,7 +278,7 @@ export function createPrepListRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({ user, manifestName: "prep-list-rules" });
+  return createManifestRuntime({ user });
 }
 
 /** Helper to create a runtime specifically for Inventory operations */
@@ -398,7 +286,7 @@ export function createInventoryRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({ user, manifestName: "inventory-rules" });
+  return createManifestRuntime({ user });
 }
 
 /** Helper to create a runtime specifically for Station operations */
@@ -406,7 +294,7 @@ export function createStationRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({ user, manifestName: "station-rules" });
+  return createManifestRuntime({ user });
 }
 
 /** Helper to create a runtime specifically for KitchenTask operations */
@@ -414,7 +302,7 @@ export function createKitchenTaskRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({ user, manifestName: "kitchen-task-rules" });
+  return createManifestRuntime({ user });
 }
 
 // --- Phase 1: Kitchen Operations ---
@@ -424,7 +312,7 @@ export function createPrepCommentRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({ user, manifestName: "prep-comment-rules" });
+  return createManifestRuntime({ user });
 }
 
 /** Helper to create a runtime specifically for Ingredient operations */
@@ -432,7 +320,7 @@ export function createIngredientRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({ user, manifestName: "ingredient-rules" });
+  return createManifestRuntime({ user });
 }
 
 /** Helper to create a runtime specifically for Dish operations */
@@ -440,7 +328,7 @@ export function createDishRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({ user, manifestName: "dish-rules" });
+  return createManifestRuntime({ user });
 }
 
 /** Helper to create a runtime specifically for Container operations */
@@ -448,7 +336,7 @@ export function createContainerRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({ user, manifestName: "container-rules" });
+  return createManifestRuntime({ user });
 }
 
 /** Helper to create a runtime specifically for PrepMethod operations */
@@ -456,7 +344,7 @@ export function createPrepMethodRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({ user, manifestName: "prep-method-rules" });
+  return createManifestRuntime({ user });
 }
 
 // --- Phase 2: Events & Catering ---
@@ -466,7 +354,7 @@ export function createEventRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({ user, manifestName: "event-rules" });
+  return createManifestRuntime({ user });
 }
 
 /** Helper to create a runtime specifically for EventReport operations */
@@ -474,7 +362,7 @@ export function createEventReportRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({ user, manifestName: "event-report-rules" });
+  return createManifestRuntime({ user });
 }
 
 /** Helper to create a runtime specifically for EventBudget operations */
@@ -482,7 +370,7 @@ export function createEventBudgetRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({ user, manifestName: "event-budget-rules" });
+  return createManifestRuntime({ user });
 }
 
 /** Helper to create a runtime specifically for CateringOrder operations */
@@ -490,7 +378,7 @@ export function createCateringOrderRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({ user, manifestName: "catering-order-rules" });
+  return createManifestRuntime({ user });
 }
 
 /** Helper to create a runtime specifically for BattleBoard operations */
@@ -498,7 +386,7 @@ export function createBattleBoardRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({ user, manifestName: "battle-board-rules" });
+  return createManifestRuntime({ user });
 }
 
 // --- Phase 3: CRM & Sales ---
@@ -508,7 +396,7 @@ export function createClientRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({ user, manifestName: "client-rules" });
+  return createManifestRuntime({ user });
 }
 
 /** Helper to create a runtime specifically for Lead operations */
@@ -516,7 +404,7 @@ export function createLeadRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({ user, manifestName: "lead-rules" });
+  return createManifestRuntime({ user });
 }
 
 /** Helper to create a runtime specifically for Proposal operations */
@@ -524,7 +412,7 @@ export function createProposalRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({ user, manifestName: "proposal-rules" });
+  return createManifestRuntime({ user });
 }
 
 /** Helper to create a runtime specifically for ClientInteraction operations */
@@ -534,7 +422,6 @@ export function createClientInteractionRuntime(user: {
 }): Promise<RuntimeEngine> {
   return createManifestRuntime({
     user,
-    manifestName: "client-interaction-rules",
   });
 }
 
@@ -545,7 +432,7 @@ export function createPurchaseOrderRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({ user, manifestName: "purchase-order-rules" });
+  return createManifestRuntime({ user });
 }
 
 /** Helper to create a runtime specifically for Shipment operations */
@@ -553,7 +440,7 @@ export function createShipmentRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({ user, manifestName: "shipment-rules" });
+  return createManifestRuntime({ user });
 }
 
 /** Helper to create a runtime specifically for InventoryTransaction operations */
@@ -563,7 +450,6 @@ export function createInventoryTransactionRuntime(user: {
 }): Promise<RuntimeEngine> {
   return createManifestRuntime({
     user,
-    manifestName: "inventory-transaction-rules",
   });
 }
 
@@ -574,7 +460,6 @@ export function createInventorySupplierRuntime(user: {
 }): Promise<RuntimeEngine> {
   return createManifestRuntime({
     user,
-    manifestName: "inventory-supplier-rules",
   });
 }
 
@@ -583,7 +468,7 @@ export function createCycleCountRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({ user, manifestName: "cycle-count-rules" });
+  return createManifestRuntime({ user });
 }
 
 // --- Phase 5: Staff & Scheduling ---
@@ -593,7 +478,7 @@ export function createUserRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({ user, manifestName: "user-rules" });
+  return createManifestRuntime({ user });
 }
 
 /** Helper to create a runtime specifically for Schedule operations */
@@ -601,7 +486,7 @@ export function createScheduleRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({ user, manifestName: "schedule-rules" });
+  return createManifestRuntime({ user });
 }
 
 /** Helper to create a runtime specifically for TimeEntry operations */
@@ -609,7 +494,7 @@ export function createTimeEntryRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({ user, manifestName: "time-entry-rules" });
+  return createManifestRuntime({ user });
 }
 
 // --- Phase 6: Command Board ---
@@ -619,7 +504,7 @@ export function createCommandBoardRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({ user, manifestName: "command-board-rules" });
+  return createManifestRuntime({ user });
 }
 
 // --- Phase 7: Workflows & Notifications ---
@@ -629,7 +514,7 @@ export function createWorkflowRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({ user, manifestName: "workflow-rules" });
+  return createManifestRuntime({ user });
 }
 
 /** Helper to create a runtime specifically for Notification operations */
@@ -637,7 +522,7 @@ export function createNotificationRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({ user, manifestName: "notification-rules" });
+  return createManifestRuntime({ user });
 }
 
 /**
@@ -649,4 +534,4 @@ export type {
   RuntimeContext,
   RuntimeEngine,
   RuntimeOptions,
-} from "@manifest/runtime";
+} from "@angriff36/manifest";
