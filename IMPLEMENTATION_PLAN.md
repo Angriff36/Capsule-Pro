@@ -286,9 +286,8 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
   - Variance calculation and real-time status updates
   - Multiple budget version support
 
-### 17. Event Contract Management
+### ~~17. Event Contract Management~~ ✅ COMPLETE (2026-02-18)
 - **Spec:** `specs/kitchen/event-contract-management_TODO/`
-- **Status:** Core implementation complete
 - **Implemented:**
   - Contract CRUD with status tracking (draft, sent, signed, expired, canceled)
   - Electronic signature capture via SignaturePad component
@@ -313,8 +312,10 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
     - Contract status changes logged to `platform.audit_log` table
     - Contract detail page shows history timeline with status changes and signatures
     - History section displays performer info, old/new values, and timestamps
-- **Missing:**
-  - Document preview in UI
+  - **Document preview in UI** - 2026-02-18
+    - Added iframe-based PDF preview for contract documents
+    - Added image preview support for image uploads
+    - Fallback message with download button for unsupported types
 
 ### 18. Event Proposal Generation
 - **Spec:** `specs/kitchen/event-proposal-generation_TODO/`
@@ -479,9 +480,53 @@ Several specs are marked `_TODO` but have substantial implementations:
 6. **External Integrations** - Nowsta and Goodshuffle fully implemented
 
 ### Gaps
-1. **Mobile Time Clock** - Frontend missing despite backend support
-2. **PDF Generation** - Package is skeleton
-3. **Email Templates** - Limited template coverage
+1. **Proposal Templates** - Missing template system for different event types
+2. **Proposal Branding** - No logo/colors/fonts customization
+3. **Proposal Public Links** - No shareable public proposal URLs
+
+---
+
+## P5 — Unaddressed Specs (Previously Undocumented)
+
+### 24. AI Event Summaries
+- **Spec:** `specs/ai/ai-event-summaries_TODO/`
+- **Status:** Not implemented, not previously tracked
+- **Description:** AI-powered event summarization feature
+
+### 25. Inventory Item Management
+- **Spec:** `specs/inventory/inventory-item-management_TODO/`
+- **Status:** Not implemented, not previously tracked
+- **Description:** Basic inventory CRUD operations
+
+### 26. Inventory Stock Levels
+- **Spec:** `specs/inventory/inventory-stock-levels_TODO/`
+- **Status:** Not implemented, not previously tracked
+- **Description:** Stock level tracking and management
+
+### 27. Event Import/Export
+- **Spec:** `specs/kitchen/event-import-export_TODO/`
+- **Status:** Not implemented, not previously tracked
+- **Description:** Event data import/export functionality
+
+### 28. Event Timeline Builder
+- **Spec:** `specs/kitchen/event-timeline-builder_TODO/`
+- **Status:** Not implemented, not previously tracked
+- **Description:** Timeline/itinerary construction for events
+
+### 29. Manifest Kitchen Ops Rules Overrides
+- **Spec:** `specs/manifest/manifest-kitchen-ops-rules-overrides_TODO/`
+- **Status:** Not implemented, not previously tracked
+- **Description:** Overrides for kitchen operations manifest rules
+
+### 30. Training/HRMS
+- **Spec:** `specs/training-hrms_TODO/`
+- **Status:** Not implemented, not previously tracked
+- **Description:** Training/HRMS functionality
+
+### 31. Warehouse Shipment Tracking
+- **Spec:** `specs/warehouse/warehouse-shipment-tracking_TODO/`
+- **Status:** Not implemented, not previously tracked
+- **Description:** Outbound shipment tracking functionality
 
 ---
 
