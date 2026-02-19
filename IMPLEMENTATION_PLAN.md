@@ -360,19 +360,23 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
   - Explicit override mechanism for over-receiving
   - Dedicated receiving history view
 
-### 23. Warehouse Cycle Counting
+### ~~23. Warehouse Cycle Counting~~ ✅ COMPLETE (2026-02-18)
 - **Spec:** `specs/warehouse/warehouse-cycle-counting_TODO/`
-- **Status:** API complete, UI partial
 - **Implemented:**
   - Full database schema (CycleCountSession, CycleCountRecord, VarianceReport, AuditLog)
   - Complete API endpoints for sessions, records, finalization
   - Manifest rules with state transitions and role-based policies
   - Server actions for sessions, records, finalization
   - Cycle counting list page
-- **Missing:**
-  - Warehouse audits session detail page (`/warehouse/audits/[sessionId]`)
-  - Item selection integration
-  - Count reports & variance analysis UI
+  - **Session detail page** (`/warehouse/audits/[sessionId]`) with:
+    - Session summary cards (progress, variance, verified count)
+    - Count records table with variance display
+    - Add item to count dialog with inventory search
+    - Edit count functionality
+    - Verify record functionality
+    - Complete and finalize session actions
+  - Item selection integration with inventory search
+  - Variance calculation and display in real-time
 
 ---
 
@@ -419,6 +423,7 @@ Several specs are marked `_TODO` but have substantial implementations:
 | Inventory Recipe Costing | **Complete** | Cost calculation, auto-update on price change |
 | Inventory Depletion Forecasting | **Complete** | Confidence levels, reorder suggestions, frontend UI |
 | Warehouse Receiving Workflow | **Complete** | PO matching, quality checks, automatic stock updates |
+| Warehouse Cycle Counting | **Complete** | Session detail page, item search, count/verify workflow |
 
 ---
 
