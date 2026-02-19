@@ -132,10 +132,21 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
   - Returns base64-encoded file for download
   - Full test coverage (14 tests passing)
 
-### 9b. QuickBooks Bill Export
+### ~~9b. QuickBooks Bill Export~~ ✅ COMPLETE (2026-02-18)
 - **Spec:** `specs/staff/quickbooks-bill-export_TODO/`
-- **Status:** Spec only - no implementation
-- **Effort:** 4-6 hours
+- **Implemented:**
+  - Created bill export utility at `apps/api/app/lib/quickbooks-bill-export.ts`
+  - Supports QuickBooks Online CSV format with proper column structure
+  - Supports QuickBooks Desktop IIF format for import
+  - Builder pattern for fluent bill construction
+  - CSV escaping for special characters (commas, quotes, newlines)
+  - Configurable date formats (US MM/DD/YYYY or ISO YYYY-MM-DD)
+  - Account mappings for expense accounts, AP accounts, items
+  - Created API endpoint at `/api/inventory/purchase-orders/export/quickbooks`
+  - Filters purchase orders by date range, status, vendor
+  - Maps PurchaseOrder + PurchaseOrderItems to bill line items
+  - Returns base64-encoded file for download
+  - Full test coverage (25 tests passing)
 
 ---
 
@@ -233,6 +244,7 @@ Several specs are marked `_TODO` but have substantial implementations:
 | Payroll Approval Workflow | **Complete** | Multi-step approval with history |
 | QuickBooks Payroll Export | **Complete** | QBXML and QBO CSV exports |
 | QuickBooks Invoice Export | **Complete** | QBO CSV and IIF formats for events |
+| QuickBooks Bill Export | **Complete** | QBO CSV and IIF formats for purchase orders |
 | Scheduling Shift CRUD | **Complete** | Full API and UI |
 | Scheduling Availability | **Complete** | Full API and UI |
 | Scheduling Auto-Assignment | **Complete** | Sophisticated algorithm with tests |
