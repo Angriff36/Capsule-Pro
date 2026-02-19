@@ -117,6 +117,8 @@ model Account {
   emailTemplates            email_templates[]
   emailWorkflows            EmailWorkflow[]
   emailLogs                 EmailLog[]
+  outboundWebhooks          OutboundWebhook[]
+  webhookDeliveryLogs       WebhookDeliveryLog[]
 
   @@map("accounts")
   @@schema("platform")
@@ -4114,5 +4116,102 @@ enum email_status {
   bounced
 
   @@map("email_status")
+  @@schema("tenant_admin")
+}
+
+// Outbound Webhook Integration Models
+
+/// Outbound webhook configuration for pushing events to external systems
+model OutboundWebhook {
+  tenantId           String             @map("tenant_id") @db.Uuid
+  id                 String             @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name               String
+  url                String             @db.VarChar(2048)
+  secret             String?            @map("secret") // For signing payloads
+  apiKey             String?            @map("api_key") // For authentication header
+  eventTypeFilters   webhook_event_type[] @default([]) @map("event_type_filters")
+  entityFilters      String[]           @default([]) @map("entity_filters") // e.g., ["event", "task", "employee"]
+  status             webhook_status     @default(active)
+  retryCount         Int                @default(3) @map("retry_count")
+  retryDelayMs       Int                @default(1000) @map("retry_delay_ms") // Initial delay, exponential backoff
+  timeoutMs          Int                @default(30000) @map("timeout_ms")
+  customHeaders      Json?              @map("custom_headers") // Additional headers to send
+  lastTriggeredAt    DateTime?          @map("last_triggered_at") @db.Timestamptz(6)
+  lastSuccessAt      DateTime?          @map("last_success_at") @db.Timestamptz(6)
+  lastFailureAt      DateTime?          @map("last_failure_at") @db.Timestamptz(6)
+  consecutiveFailures Int               @default(0) @map("consecutive_failures")
+  createdAt          DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt          DateTime?          @map("deleted_at") @db.Timestamptz(6)
+  tenant             Account            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  deliveryLogs       WebhookDeliveryLog[]
+
+  @@id([tenantId, id])
+  @@index([tenantId, status])
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@map("outbound_webhooks")
+  @@schema("tenant_admin")
+}
+
+/// Webhook delivery log for tracking outbound webhook attempts
+model WebhookDeliveryLog {
+  tenantId           String                 @map("tenant_id") @db.Uuid
+  id                 String                 @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  webhookId          String                 @map("webhook_id") @db.Uuid
+  eventType          webhook_event_type
+  entityType         String                 @map("entity_type") // event, task, employee, etc.
+  entityId           String                 @map("entity_id") @db.Uuid
+  payload            Json                   @map("payload")
+  status             webhook_delivery_status @default(pending)
+  attemptNumber      Int                    @default(1) @map("attempt_number")
+  httpResponseStatus Int?                   @map("http_response_status")
+  responseBody       String?                @map("response_body") @db.Text
+  errorMessage       String?                @map("error_message") @db.Text
+  nextRetryAt        DateTime?              @map("next_retry_at") @db.Timestamptz(6)
+  deliveredAt        DateTime?              @map("delivered_at") @db.Timestamptz(6)
+  failedAt           DateTime?              @map("failed_at") @db.Timestamptz(6)
+  createdAt          DateTime               @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime               @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  tenant             Account                @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  webhook            OutboundWebhook        @relation(fields: [tenantId, webhookId], references: [tenantId, id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@index([tenantId, webhookId])
+  @@index([tenantId, status])
+  @@index([tenantId, entityType, entityId])
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@index([tenantId, nextRetryAt])
+  @@map("webhook_delivery_logs")
+  @@schema("tenant_admin")
+}
+
+/// Types of events that can trigger outbound webhooks
+enum webhook_event_type {
+  created
+  updated
+  deleted
+
+  @@map("webhook_event_type")
+  @@schema("tenant_admin")
+}
+
+/// Status of an outbound webhook configuration
+enum webhook_status {
+  active
+  inactive
+  disabled // Auto-disabled after too many failures
+
+  @@map("webhook_status")
+  @@schema("tenant_admin")
+}
+
+/// Status of a webhook delivery attempt
+enum webhook_delivery_status {
+  pending
+  success
+  failed
+  retrying
+
+  @@map("webhook_delivery_status")
   @@schema("tenant_admin")
 }
