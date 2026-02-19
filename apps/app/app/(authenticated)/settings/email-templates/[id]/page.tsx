@@ -1,6 +1,5 @@
 "use client";
 
-import { Alert, AlertDescription } from "@repo/design-system/components/ui/alert";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Checkbox } from "@repo/design-system/components/ui/checkbox";
@@ -23,15 +22,14 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Separator } from "@repo/design-system/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/design-system/components/ui/tabs";
-import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
-  AlertTriangleIcon,
-  ArrowLeftIcon,
-  Loader2Icon,
-  SaveIcon,
-  TrashIcon,
-} from "lucide-react";
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs";
+import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { ArrowLeftIcon, Loader2Icon, SaveIcon, TrashIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -41,11 +39,11 @@ import { z } from "zod";
 import {
   COMMON_MERGE_FIELDS,
   deleteEmailTemplate,
+  type EmailTemplateType,
   extractMergeFields,
   getEmailTemplateById,
   renderTemplate,
   updateEmailTemplate,
-  type EmailTemplateType,
 } from "../actions";
 
 const TEMPLATE_TYPES: { value: EmailTemplateType; label: string }[] = [
@@ -234,7 +232,7 @@ export default function EditEmailTemplatePage({
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild>
+        <Button asChild size="icon" variant="ghost">
           <Link href="/settings/email-templates">
             <ArrowLeftIcon className="h-4 w-4" />
           </Link>
@@ -249,9 +247,9 @@ export default function EditEmailTemplatePage({
         </div>
         <div className="flex items-center gap-2">
           <Button
-            variant="destructive"
-            onClick={handleDelete}
             disabled={deleting}
+            onClick={handleDelete}
+            variant="destructive"
           >
             {deleting ? (
               <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
@@ -260,7 +258,7 @@ export default function EditEmailTemplatePage({
             )}
             Delete
           </Button>
-          <Button onClick={form.handleSubmit(onSubmit)} disabled={saving}>
+          <Button disabled={saving} onClick={form.handleSubmit(onSubmit)}>
             {saving ? (
               <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
             ) : (
@@ -277,7 +275,7 @@ export default function EditEmailTemplatePage({
         {/* Form */}
         <div className="lg:col-span-2 space-y-6">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
@@ -338,7 +336,7 @@ export default function EditEmailTemplatePage({
                       />
                     </FormControl>
                     <FormDescription>
-                      Use merge fields like {`{{recipientName}}`} for
+                      Use merge fields like {"{{recipientName}}"} for
                       personalization
                     </FormDescription>
                     <FormMessage />
@@ -354,8 +352,8 @@ export default function EditEmailTemplatePage({
                     <FormLabel>Email Body</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Dear {{recipientName}},&#10;&#10;We are pleased to present our proposal for {{eventName}}..."
                         className="min-h-[300px] font-mono text-sm"
+                        placeholder="Dear {{recipientName}},&#10;&#10;We are pleased to present our proposal for {{eventName}}..."
                         {...field}
                       />
                     </FormControl>
@@ -423,10 +421,10 @@ export default function EditEmailTemplatePage({
             <div className="space-y-2 max-h-[300px] overflow-y-auto">
               {COMMON_MERGE_FIELDS.map((field) => (
                 <button
-                  key={field.name}
-                  type="button"
-                  onClick={() => insertMergeField(field.name)}
                   className="w-full text-left p-2 rounded hover:bg-muted text-sm"
+                  key={field.name}
+                  onClick={() => insertMergeField(field.name)}
+                  type="button"
                 >
                   <code className="text-xs bg-muted px-1 rounded">
                     {`{{${field.name}}}`}
@@ -448,7 +446,7 @@ export default function EditEmailTemplatePage({
               </p>
               <div className="flex flex-wrap gap-1">
                 {detectedFields.map((field) => (
-                  <Badge key={field} variant="secondary" className="text-xs">
+                  <Badge className="text-xs" key={field} variant="secondary">
                     {`{{${field}}}`}
                   </Badge>
                 ))}

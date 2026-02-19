@@ -1,9 +1,9 @@
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
 import { ReactFlowProvider } from "@xyflow/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 import type {
   BoardDelta,
   CommandBoardWithCards,
@@ -16,6 +16,7 @@ import {
   listSimulationsForBoard,
 } from "../actions/boards";
 import { detectConflicts } from "../actions/conflicts";
+import type { SuggestedAction } from "../actions/suggestions-types";
 import type { Conflict } from "../conflict-types";
 import { useBoardHistory } from "../hooks/use-board-history";
 import { useEntityPolling } from "../hooks/use-entity-polling";
@@ -28,7 +29,6 @@ import type {
   ResolvedEntity,
 } from "../types/index";
 import type { SuggestedManifestPlan } from "../types/manifest-plan";
-import type { SuggestedAction } from "../actions/suggestions-types";
 import { AiChatPanel } from "./ai-chat-panel";
 import { ErrorBoundary } from "./board-error-boundary";
 import { BoardFlow } from "./board-flow";

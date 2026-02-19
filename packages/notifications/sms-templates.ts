@@ -44,8 +44,7 @@ export const SMS_TEMPLATES: Record<string, SmsTemplate> = {
   },
   task_reminder: {
     type: "task_reminder",
-    template:
-      "Task Reminder: {{taskName}} is due {{dueDate}}. {{companyName}}",
+    template: "Task Reminder: {{taskName}} is due {{dueDate}}. {{companyName}}",
     description: "Reminder for upcoming task deadlines",
   },
   clock_in_reminder: {

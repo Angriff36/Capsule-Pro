@@ -6,5 +6,6 @@ export default function EmailTemplatesPage() {
 
 export const metadata = {
   title: "Email Templates",
-  description: "Create and manage branded email templates for proposals, confirmations, reminders, and follow-ups.",
+  description:
+    "Create and manage branded email templates for proposals, confirmations, reminders, and follow-ups.",
 };

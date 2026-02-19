@@ -23,7 +23,7 @@ import {
   updateTaskStatus,
 } from "../../shared-task-helpers";
 
-export const runtime = 'nodejs';
+export const runtime = "nodejs";
 
 interface RouteContext {
   params: Promise<{ id: string }>;

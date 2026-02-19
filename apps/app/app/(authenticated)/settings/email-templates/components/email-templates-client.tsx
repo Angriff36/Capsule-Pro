@@ -1,5 +1,6 @@
 "use client";
 
+import type { email_templates } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
@@ -25,23 +26,16 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import {
-  FileTextIcon,
-  Loader2Icon,
-  MailIcon,
-  PlusIcon,
-  XIcon,
-} from "lucide-react";
+import { Loader2Icon, MailIcon, PlusIcon, XIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import {
-  getEmailTemplates,
   type EmailTemplateFilters,
   type EmailTemplateType,
+  getEmailTemplates,
 } from "../actions";
-import type { email_templates } from "@repo/database";
 
 type EmailTemplate = email_templates;
 
@@ -128,7 +122,9 @@ export function EmailTemplatesClient() {
       params.set("isActive", String(filters.isActive));
     }
     const queryString = params.toString();
-    router.push(`/settings/email-templates${queryString ? `?${queryString}` : ""}`);
+    router.push(
+      `/settings/email-templates${queryString ? `?${queryString}` : ""}`
+    );
   }, [filters, router]);
 
   const handleFilterChange = (
@@ -175,8 +171,8 @@ export function EmailTemplatesClient() {
         const template = row.original;
         return (
           <Link
-            href={`/settings/email-templates/${template.id}`}
             className="font-medium hover:underline"
+            href={`/settings/email-templates/${template.id}`}
           >
             {template.name}
           </Link>
@@ -215,7 +211,7 @@ export function EmailTemplatesClient() {
       cell: ({ row }) => {
         const isDefault = row.getValue("is_default") as boolean;
         return isDefault ? (
-          <Badge variant="default" className="bg-primary">
+          <Badge className="bg-primary" variant="default">
             Default
           </Badge>
         ) : null;
@@ -264,20 +260,20 @@ export function EmailTemplatesClient() {
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-4">
-        <form onSubmit={handleSearchSubmit} className="flex-1 min-w-[200px]">
+        <form className="flex-1 min-w-[200px]" onSubmit={handleSearchSubmit}>
           <div className="relative">
             <Input
+              className="pr-10"
+              onChange={(e) => setSearchInput(e.target.value)}
               placeholder="Search templates..."
               value={searchInput}
-              onChange={(e) => setSearchInput(e.target.value)}
-              className="pr-10"
             />
           </div>
         </form>
 
         <Select
-          value={filters.templateType || ""}
           onValueChange={(value) => handleFilterChange("templateType", value)}
+          value={filters.templateType || ""}
         >
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="Template Type" />
@@ -292,8 +288,8 @@ export function EmailTemplatesClient() {
         </Select>
 
         <Select
-          value={filters.isActive === undefined ? "" : String(filters.isActive)}
           onValueChange={(value) => handleFilterChange("isActive", value)}
+          value={filters.isActive === undefined ? "" : String(filters.isActive)}
         >
           <SelectTrigger className="w-[120px]">
             <SelectValue placeholder="Status" />
@@ -305,7 +301,7 @@ export function EmailTemplatesClient() {
         </Select>
 
         {hasActiveFilters && (
-          <Button variant="ghost" size="sm" onClick={clearFilters}>
+          <Button onClick={clearFilters} size="sm" variant="ghost">
             <XIcon className="mr-2 h-4 w-4" />
             Clear
           </Button>
@@ -335,8 +331,8 @@ export function EmailTemplatesClient() {
             {loading ? (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
                   className="h-24 text-center"
+                  colSpan={columns.length}
                 >
                   <Loader2Icon className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
                 </TableCell>
@@ -344,9 +340,9 @@ export function EmailTemplatesClient() {
             ) : table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
                   className="cursor-pointer"
+                  data-state={row.getIsSelected() && "selected"}
+                  key={row.id}
                   onClick={() =>
                     router.push(`/settings/email-templates/${row.original.id}`)
                   }
@@ -364,18 +360,18 @@ export function EmailTemplatesClient() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
                   className="h-24 text-center"
+                  colSpan={columns.length}
                 >
                   <div className="flex flex-col items-center gap-2 text-muted-foreground">
                     <MailIcon className="h-8 w-8" />
                     <p>No email templates found</p>
                     {hasActiveFilters && (
-                      <Button variant="link" size="sm" onClick={clearFilters}>
+                      <Button onClick={clearFilters} size="sm" variant="link">
                         Clear filters
                       </Button>
                     )}
-                    <Button asChild variant="outline" size="sm">
+                    <Button asChild size="sm" variant="outline">
                       <Link href="/settings/email-templates/new">
                         <PlusIcon className="mr-2 h-4 w-4" />
                         Create your first template
@@ -399,22 +395,22 @@ export function EmailTemplatesClient() {
           </p>
           <div className="flex gap-2">
             <Button
-              variant="outline"
-              size="sm"
               disabled={pagination.page === 1}
               onClick={() =>
                 setPagination((prev) => ({ ...prev, page: prev.page - 1 }))
               }
+              size="sm"
+              variant="outline"
             >
               Previous
             </Button>
             <Button
-              variant="outline"
-              size="sm"
               disabled={pagination.page === pagination.totalPages}
               onClick={() =>
                 setPagination((prev) => ({ ...prev, page: prev.page + 1 }))
               }
+              size="sm"
+              variant="outline"
             >
               Next
             </Button>

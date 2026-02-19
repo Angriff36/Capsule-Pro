@@ -5,8 +5,7 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
-export const runtime = 'nodejs';
-
+export const runtime = "nodejs";
 
 interface ClaimAction {
   taskId: string;

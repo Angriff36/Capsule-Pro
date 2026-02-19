@@ -34,8 +34,8 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
 import { Header } from "@/app/(authenticated)/components/header";
+import { apiFetch } from "@/app/lib/api";
 
 // Types
 interface Employee {
@@ -194,7 +194,7 @@ export default function MobileTimeClockPage() {
         setClockedInDuration(formatDuration(activeTimeEntry.clock_in));
       };
       updateDuration();
-      durationIntervalRef.current = setInterval(updateDuration, 60000);
+      durationIntervalRef.current = setInterval(updateDuration, 60_000);
     } else {
       setClockedInDuration("0h 0m");
     }
@@ -263,24 +263,25 @@ export default function MobileTimeClockPage() {
   }, [isOnline, offlineQueue, activeTimeEntry, fetchStatus]);
 
   // Get current geolocation
-  const getCurrentLocation = useCallback((): Promise<GeolocationCoordinates | null> => {
-    return new Promise((resolve) => {
-      if (!navigator.geolocation) {
-        resolve(null);
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          resolve(position.coords);
-        },
-        () => {
+  const getCurrentLocation =
+    useCallback((): Promise<GeolocationCoordinates | null> => {
+      return new Promise((resolve) => {
+        if (!navigator.geolocation) {
           resolve(null);
-        },
-        { enableHighAccuracy: true, timeout: 10000 }
-      );
-    });
-  }, []);
+          return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            resolve(position.coords);
+          },
+          () => {
+            resolve(null);
+          },
+          { enableHighAccuracy: true, timeout: 10_000 }
+        );
+      });
+    }, []);
 
   // Handle photo capture
   const handlePhotoCapture = useCallback(
@@ -459,13 +460,16 @@ export default function MobileTimeClockPage() {
       const newBreakMinutes = activeTimeEntry.break_minutes + breakDuration;
 
       try {
-        const response = await apiFetch(`/api/timecards/${activeTimeEntry.id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            breakMinutes: newBreakMinutes,
-          }),
-        });
+        const response = await apiFetch(
+          `/api/timecards/${activeTimeEntry.id}`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              breakMinutes: newBreakMinutes,
+            }),
+          }
+        );
 
         if (response.ok) {
           setIsOnBreak(false);
@@ -514,7 +518,10 @@ export default function MobileTimeClockPage() {
 
   const getEmployeeName = () => {
     if (!employee) return "Unknown";
-    return [employee.first_name, employee.last_name].filter(Boolean).join(" ") || employee.email;
+    return (
+      [employee.first_name, employee.last_name].filter(Boolean).join(" ") ||
+      employee.email
+    );
   };
 
   return (

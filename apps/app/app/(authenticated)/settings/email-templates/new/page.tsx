@@ -21,9 +21,14 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { Separator } from "@repo/design-system/components/ui/separator";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/design-system/components/ui/tabs";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { ArrowLeftIcon, Loader2Icon, MailIcon, SaveIcon } from "lucide-react";
+import { ArrowLeftIcon, Loader2Icon, SaveIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -33,9 +38,9 @@ import { z } from "zod";
 import {
   COMMON_MERGE_FIELDS,
   createEmailTemplate,
+  type EmailTemplateType,
   extractMergeFields,
   renderTemplate,
-  type EmailTemplateType,
 } from "../actions";
 
 const TEMPLATE_TYPES: { value: EmailTemplateType; label: string }[] = [
@@ -148,7 +153,7 @@ export default function NewEmailTemplatePage() {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild>
+        <Button asChild size="icon" variant="ghost">
           <Link href="/settings/email-templates">
             <ArrowLeftIcon className="h-4 w-4" />
           </Link>
@@ -161,7 +166,7 @@ export default function NewEmailTemplatePage() {
             Create a new reusable email template with merge fields.
           </p>
         </div>
-        <Button onClick={form.handleSubmit(onSubmit)} disabled={saving}>
+        <Button disabled={saving} onClick={form.handleSubmit(onSubmit)}>
           {saving ? (
             <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
           ) : (
@@ -177,7 +182,7 @@ export default function NewEmailTemplatePage() {
         {/* Form */}
         <div className="lg:col-span-2">
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <form className="space-y-6" onSubmit={form.handleSubmit(onSubmit)}>
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
@@ -203,8 +208,8 @@ export default function NewEmailTemplatePage() {
                     <FormItem>
                       <FormLabel>Template Type</FormLabel>
                       <Select
-                        onValueChange={field.onChange}
                         defaultValue={field.value}
+                        onValueChange={field.onChange}
                       >
                         <FormControl>
                           <SelectTrigger>
@@ -238,7 +243,7 @@ export default function NewEmailTemplatePage() {
                       />
                     </FormControl>
                     <FormDescription>
-                      Use merge fields like {`{{recipientName}}`} for
+                      Use merge fields like {"{{recipientName}}"} for
                       personalization
                     </FormDescription>
                     <FormMessage />
@@ -254,8 +259,8 @@ export default function NewEmailTemplatePage() {
                     <FormLabel>Email Body</FormLabel>
                     <FormControl>
                       <Textarea
-                        placeholder="Dear {{recipientName}},&#10;&#10;We are pleased to present our proposal for {{eventName}}..."
                         className="min-h-[300px] font-mono text-sm"
+                        placeholder="Dear {{recipientName}},&#10;&#10;We are pleased to present our proposal for {{eventName}}..."
                         {...field}
                       />
                     </FormControl>
@@ -300,10 +305,10 @@ export default function NewEmailTemplatePage() {
             <div className="space-y-2 max-h-[300px] overflow-y-auto">
               {COMMON_MERGE_FIELDS.map((field) => (
                 <button
-                  key={field.name}
-                  type="button"
-                  onClick={() => insertMergeField(field.name)}
                   className="w-full text-left p-2 rounded hover:bg-muted text-sm"
+                  key={field.name}
+                  onClick={() => insertMergeField(field.name)}
+                  type="button"
                 >
                   <code className="text-xs bg-muted px-1 rounded">
                     {`{{${field.name}}}`}
@@ -326,8 +331,8 @@ export default function NewEmailTemplatePage() {
               <div className="flex flex-wrap gap-1">
                 {detectedFields.map((field) => (
                   <code
-                    key={field}
                     className="text-xs bg-primary/10 text-primary px-2 py-1 rounded"
+                    key={field}
                   >
                     {`{{${field}}}`}
                   </code>

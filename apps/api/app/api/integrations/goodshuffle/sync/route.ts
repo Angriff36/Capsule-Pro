@@ -65,9 +65,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result);
   } catch (error) {
     console.error("Failed to run Goodshuffle sync:", error);
-    return NextResponse.json(
-      { error: "Failed to run sync" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to run sync" }, { status: 500 });
   }
 }

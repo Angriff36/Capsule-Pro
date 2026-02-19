@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     const errorCode = formData.get("ErrorCode") as string | null;
     const errorMessage = formData.get("ErrorMessage") as string | null;
 
-    if (!messageSid || !messageStatus) {
+    if (!(messageSid && messageStatus)) {
       return NextResponse.json(
         { error: "Missing required fields: MessageSid or MessageStatus" },
         { status: 400 }
@@ -63,6 +63,10 @@ export async function POST(request: NextRequest) {
       case "sent":
       case "queued":
         // Don't update for these intermediate statuses
+        break;
+      default:
+        // Unknown status - log but don't fail
+        console.warn(`Unknown Twilio message status: ${messageStatus}`);
         break;
     }
 

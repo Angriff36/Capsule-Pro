@@ -277,9 +277,7 @@ export function exportBillsToQBOnlineCSV(
 
   // Generate lines for each bill
   for (const bill of bills) {
-    const builder = new QBBillBuilder()
-      .setBill(bill)
-      .setOptions(options);
+    const builder = new QBBillBuilder().setBill(bill).setOptions(options);
     allLines.push(...builder.buildLines());
   }
 

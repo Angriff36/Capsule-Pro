@@ -10,7 +10,7 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 export async function GET() {
   try {
     const { orgId, userId: clerkId } = await auth();
-    if (!orgId || !clerkId) {
+    if (!(orgId && clerkId)) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
@@ -52,7 +52,10 @@ export async function GET() {
     );
 
     if (!employee || employee.length === 0) {
-      return NextResponse.json({ error: "Employee not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Employee not found" },
+        { status: 404 }
+      );
     }
 
     const currentEmployee = employee[0];

@@ -20,20 +20,23 @@ import {
 } from "@repo/design-system/components/ui/table";
 import {
   ArrowLeftIcon,
-  Building2Icon,
   CalendarIcon,
   Loader2Icon,
   MapPinIcon,
   PencilIcon,
-  PhoneIcon,
   TrashIcon,
   UserIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { deleteVenue, getVenueById, getVenueEvents, type VenueType } from "../actions";
+import {
+  deleteVenue,
+  getVenueById,
+  getVenueEvents,
+  type VenueType,
+} from "../actions";
 
 const VENUE_TYPE_LABELS: Record<VenueType, string> = {
   banquet_hall: "Banquet Hall",
@@ -50,8 +53,12 @@ export default function VenuePage() {
   const router = useRouter();
   const venueId = params.id as string;
 
-  const [venue, setVenue] = useState<Awaited<ReturnType<typeof getVenueById>> | null>(null);
-  const [events, setEvents] = useState<Awaited<ReturnType<typeof getVenueEvents>>>([]);
+  const [venue, setVenue] = useState<Awaited<
+    ReturnType<typeof getVenueById>
+  > | null>(null);
+  const [events, setEvents] = useState<
+    Awaited<ReturnType<typeof getVenueEvents>>
+  >([]);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
 
@@ -76,7 +83,11 @@ export default function VenuePage() {
   }, [venueId]);
 
   const handleDelete = async () => {
-    if (!confirm("Are you sure you want to delete this venue? This action cannot be undone.")) {
+    if (
+      !confirm(
+        "Are you sure you want to delete this venue? This action cannot be undone."
+      )
+    ) {
       return;
     }
 
@@ -106,13 +117,15 @@ export default function VenuePage() {
     return (
       <div className="space-y-6">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild>
+          <Button asChild size="icon" variant="ghost">
             <Link href="/crm/venues">
               <ArrowLeftIcon className="h-4 w-4" />
             </Link>
           </Button>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Venue Not Found</h1>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Venue Not Found
+            </h1>
           </div>
         </div>
       </div>
@@ -135,31 +148,38 @@ export default function VenuePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" asChild>
+          <Button asChild size="icon" variant="ghost">
             <Link href="/crm/venues">
               <ArrowLeftIcon className="h-4 w-4" />
             </Link>
           </Button>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-3xl font-bold tracking-tight">{venue.name}</h1>
+              <h1 className="text-3xl font-bold tracking-tight">
+                {venue.name}
+              </h1>
               <Badge variant={venue.isActive ? "default" : "secondary"}>
                 {venue.isActive ? "Active" : "Inactive"}
               </Badge>
             </div>
             <p className="text-muted-foreground">
-              {VENUE_TYPE_LABELS[venue.venueType as VenueType] || venue.venueType}
+              {VENUE_TYPE_LABELS[venue.venueType as VenueType] ||
+                venue.venueType}
             </p>
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" asChild>
+          <Button asChild variant="outline">
             <Link href={`/crm/venues/${venueId}/edit`}>
               <PencilIcon className="mr-2 h-4 w-4" />
               Edit
             </Link>
           </Button>
-          <Button variant="destructive" onClick={handleDelete} disabled={deleting}>
+          <Button
+            disabled={deleting}
+            onClick={handleDelete}
+            variant="destructive"
+          >
             {deleting && <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />}
             <TrashIcon className="mr-2 h-4 w-4" />
             Delete
@@ -233,8 +253,14 @@ export default function VenuePage() {
                 <p className="font-medium">{venue.contactEmail}</p>
               </div>
             )}
-            {!venue.contactName && !venue.contactPhone && !venue.contactEmail && (
-              <p className="text-muted-foreground">No contact information available</p>
+            {!(
+              venue.contactName ||
+              venue.contactPhone ||
+              venue.contactEmail
+            ) && (
+              <p className="text-muted-foreground">
+                No contact information available
+              </p>
             )}
           </CardContent>
         </Card>
@@ -254,7 +280,9 @@ export default function VenuePage() {
               )}
               {venue.cateringNotes && (
                 <div>
-                  <p className="text-sm text-muted-foreground">Catering Notes</p>
+                  <p className="text-sm text-muted-foreground">
+                    Catering Notes
+                  </p>
                   <p className="whitespace-pre-wrap">{venue.cateringNotes}</p>
                 </div>
               )}
@@ -284,9 +312,17 @@ export default function VenuePage() {
                 </TableHeader>
                 <TableBody>
                   {events.map((event) => (
-                    <TableRow key={event.id} className="cursor-pointer" onClick={() => router.push(`/events/${event.id}`)}>
-                      <TableCell className="font-medium">{event.title}</TableCell>
-                      <TableCell>{new Date(event.eventDate).toLocaleDateString()}</TableCell>
+                    <TableRow
+                      className="cursor-pointer"
+                      key={event.id}
+                      onClick={() => router.push(`/events/${event.id}`)}
+                    >
+                      <TableCell className="font-medium">
+                        {event.title}
+                      </TableCell>
+                      <TableCell>
+                        {new Date(event.eventDate).toLocaleDateString()}
+                      </TableCell>
                       <TableCell>
                         <Badge variant="secondary">{event.status}</Badge>
                       </TableCell>

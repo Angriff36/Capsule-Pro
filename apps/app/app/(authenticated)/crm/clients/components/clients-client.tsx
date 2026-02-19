@@ -41,7 +41,6 @@ import {
 } from "@tanstack/react-table";
 import {
   Building2Icon,
-  CheckIcon,
   FilterIcon,
   Loader2Icon,
   PlusIcon,
@@ -133,7 +132,8 @@ export function ClientsClient() {
           search: filters.search || undefined,
           clientType: filters.clientType,
           source: filters.source || undefined,
-          tags: filters.tags && filters.tags.length > 0 ? filters.tags : undefined,
+          tags:
+            filters.tags && filters.tags.length > 0 ? filters.tags : undefined,
         },
         pagination.page,
         pagination.limit
@@ -319,7 +319,11 @@ export function ClientsClient() {
     getCoreRowModel: getCoreRowModel(),
   });
 
-  const hasFilters = filters.search || filters.clientType || filters.source || (filters.tags && filters.tags.length > 0);
+  const hasFilters =
+    filters.search ||
+    filters.clientType ||
+    filters.source ||
+    (filters.tags && filters.tags.length > 0);
 
   const selectedTagsCount = filters.tags?.length || 0;
 

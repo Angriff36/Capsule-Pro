@@ -7,7 +7,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import type { Venue, Event } from "@repo/database";
+import type { Event, Venue } from "@repo/database";
 import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { invariant } from "@/app/lib/invariant";
@@ -294,9 +294,13 @@ export async function updateVenue(
         stateProvince: input.stateProvince,
       }),
       ...(input.postalCode !== undefined && { postalCode: input.postalCode }),
-      ...(input.countryCode !== undefined && { countryCode: input.countryCode }),
+      ...(input.countryCode !== undefined && {
+        countryCode: input.countryCode,
+      }),
       ...(input.capacity !== undefined && { capacity: input.capacity }),
-      ...(input.contactName !== undefined && { contactName: input.contactName }),
+      ...(input.contactName !== undefined && {
+        contactName: input.contactName,
+      }),
       ...(input.contactPhone !== undefined && {
         contactPhone: input.contactPhone,
       }),
@@ -309,7 +313,9 @@ export async function updateVenue(
       ...(input.preferredVendors !== undefined && {
         preferredVendors: input.preferredVendors,
       }),
-      ...(input.accessNotes !== undefined && { accessNotes: input.accessNotes }),
+      ...(input.accessNotes !== undefined && {
+        accessNotes: input.accessNotes,
+      }),
       ...(input.cateringNotes !== undefined && {
         cateringNotes: input.cateringNotes,
       }),

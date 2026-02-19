@@ -31,9 +31,7 @@ describe("manifest routes runtime", () => {
       const content = await readFile(routeFile, "utf8");
       if (content.includes("createManifestRuntime")) {
         manifestRouteFiles.push(routeFile);
-        expect(content).toMatch(
-          /export const runtime\s*=\s*['"]nodejs['"]/
-        );
+        expect(content).toMatch(/export const runtime\s*=\s*['"]nodejs['"]/);
         expect(content).not.toContain('export const runtime = "edge"');
         expect(content).not.toContain("export const runtime = 'edge'");
       }

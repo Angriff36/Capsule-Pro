@@ -21,7 +21,6 @@ import type {
 } from "@angriff36/manifest";
 import type { IR, IRCommand } from "@angriff36/manifest/ir";
 import { database, type PrismaClient } from "@repo/database";
-import { log } from "@repo/observability/log";
 import { PrismaIdempotencyStore } from "@repo/manifest-adapters/prisma-idempotency-store";
 import { PrismaJsonStore } from "@repo/manifest-adapters/prisma-json-store";
 import type { PrismaStoreConfig } from "@repo/manifest-adapters/prisma-store";
@@ -29,9 +28,10 @@ import {
   createPrismaOutboxWriter,
   PrismaStore,
 } from "@repo/manifest-adapters/prisma-store";
-import { captureException } from "@sentry/nextjs";
 import { getCompiledManifestBundle } from "@repo/manifest-adapters/runtime/loadManifests";
 import { ManifestRuntimeEngine } from "@repo/manifest-adapters/runtime-engine";
+import { log } from "@repo/observability/log";
+import { captureException } from "@sentry/nextjs";
 import { createSentryTelemetry } from "./manifest/telemetry";
 
 /**
@@ -176,7 +176,9 @@ export async function createManifestRuntime(
 
     // Fall back to generic JSON store for all Phase 1-7 entities
     // that don't have dedicated Prisma models yet
-    log.info(`[manifest-runtime] Using PrismaJsonStore for entity: ${entityName}`);
+    log.info(
+      `[manifest-runtime] Using PrismaJsonStore for entity: ${entityName}`
+    );
     return new PrismaJsonStore({
       prisma: database,
       tenantId: ctx.user.tenantId,

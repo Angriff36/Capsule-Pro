@@ -21,7 +21,7 @@ import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { ArrowLeftIcon, Loader2Icon, SaveIcon } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { getVenueById, updateVenue, type VenueType } from "../../actions";
 
@@ -116,7 +116,9 @@ export default function EditVenuePage() {
         stateProvince: formData.stateProvince || undefined,
         postalCode: formData.postalCode || undefined,
         countryCode: formData.countryCode || undefined,
-        capacity: formData.capacity ? parseInt(formData.capacity, 10) : undefined,
+        capacity: formData.capacity
+          ? Number.parseInt(formData.capacity, 10)
+          : undefined,
         contactName: formData.contactName || undefined,
         contactPhone: formData.contactPhone || undefined,
         contactEmail: formData.contactEmail || undefined,
@@ -124,7 +126,10 @@ export default function EditVenuePage() {
         cateringNotes: formData.cateringNotes || undefined,
         layoutImageUrl: formData.layoutImageUrl || undefined,
         tags: formData.tags
-          ? formData.tags.split(",").map((t) => t.trim()).filter(Boolean)
+          ? formData.tags
+              .split(",")
+              .map((t) => t.trim())
+              .filter(Boolean)
           : undefined,
         isActive: formData.isActive,
       });
@@ -151,7 +156,7 @@ export default function EditVenuePage() {
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild>
+        <Button asChild size="icon" variant="ghost">
           <Link href={`/crm/venues/${venueId}`}>
             <ArrowLeftIcon className="h-4 w-4" />
           </Link>
@@ -166,7 +171,9 @@ export default function EditVenuePage() {
         <Card>
           <CardHeader>
             <CardTitle>Venue Details</CardTitle>
-            <CardDescription>Update the information about this venue.</CardDescription>
+            <CardDescription>
+              Update the information about this venue.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Basic Info */}
@@ -175,20 +182,22 @@ export default function EditVenuePage() {
                 <Label htmlFor="name">Name *</Label>
                 <Input
                   id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, name: e.target.value })
+                  }
                   placeholder="e.g., Harbor Loft"
                   required
+                  value={formData.name}
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="venueType">Venue Type</Label>
                 <Select
-                  value={formData.venueType}
                   onValueChange={(value: VenueType) =>
                     setFormData({ ...formData, venueType: value })
                   }
+                  value={formData.venueType}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select type" />
@@ -207,20 +216,22 @@ export default function EditVenuePage() {
                 <Label htmlFor="capacity">Capacity (guests)</Label>
                 <Input
                   id="capacity"
+                  onChange={(e) =>
+                    setFormData({ ...formData, capacity: e.target.value })
+                  }
+                  placeholder="e.g., 200"
                   type="number"
                   value={formData.capacity}
-                  onChange={(e) => setFormData({ ...formData, capacity: e.target.value })}
-                  placeholder="e.g., 200"
                 />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="isActive">Status</Label>
                 <Select
-                  value={formData.isActive ? "true" : "false"}
                   onValueChange={(value) =>
                     setFormData({ ...formData, isActive: value === "true" })
                   }
+                  value={formData.isActive ? "true" : "false"}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -236,9 +247,11 @@ export default function EditVenuePage() {
                 <Label htmlFor="tags">Tags</Label>
                 <Input
                   id="tags"
-                  value={formData.tags}
-                  onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, tags: e.target.value })
+                  }
                   placeholder="e.g., Rooftop, A/V ready (comma-separated)"
+                  value={formData.tags}
                 />
               </div>
             </div>
@@ -251,9 +264,11 @@ export default function EditVenuePage() {
                   <Label htmlFor="addressLine1">Address Line 1</Label>
                   <Input
                     id="addressLine1"
-                    value={formData.addressLine1}
-                    onChange={(e) => setFormData({ ...formData, addressLine1: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, addressLine1: e.target.value })
+                    }
                     placeholder="Street address"
+                    value={formData.addressLine1}
                   />
                 </div>
 
@@ -261,9 +276,11 @@ export default function EditVenuePage() {
                   <Label htmlFor="addressLine2">Address Line 2</Label>
                   <Input
                     id="addressLine2"
-                    value={formData.addressLine2}
-                    onChange={(e) => setFormData({ ...formData, addressLine2: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, addressLine2: e.target.value })
+                    }
                     placeholder="Apartment, suite, etc."
+                    value={formData.addressLine2}
                   />
                 </div>
 
@@ -271,8 +288,10 @@ export default function EditVenuePage() {
                   <Label htmlFor="city">City</Label>
                   <Input
                     id="city"
+                    onChange={(e) =>
+                      setFormData({ ...formData, city: e.target.value })
+                    }
                     value={formData.city}
-                    onChange={(e) => setFormData({ ...formData, city: e.target.value })}
                   />
                 </div>
 
@@ -280,8 +299,13 @@ export default function EditVenuePage() {
                   <Label htmlFor="stateProvince">State/Province</Label>
                   <Input
                     id="stateProvince"
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        stateProvince: e.target.value,
+                      })
+                    }
                     value={formData.stateProvince}
-                    onChange={(e) => setFormData({ ...formData, stateProvince: e.target.value })}
                   />
                 </div>
 
@@ -289,8 +313,10 @@ export default function EditVenuePage() {
                   <Label htmlFor="postalCode">Postal Code</Label>
                   <Input
                     id="postalCode"
+                    onChange={(e) =>
+                      setFormData({ ...formData, postalCode: e.target.value })
+                    }
                     value={formData.postalCode}
-                    onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
                   />
                 </div>
 
@@ -298,10 +324,12 @@ export default function EditVenuePage() {
                   <Label htmlFor="countryCode">Country Code</Label>
                   <Input
                     id="countryCode"
-                    value={formData.countryCode}
-                    onChange={(e) => setFormData({ ...formData, countryCode: e.target.value })}
-                    placeholder="e.g., US"
                     maxLength={2}
+                    onChange={(e) =>
+                      setFormData({ ...formData, countryCode: e.target.value })
+                    }
+                    placeholder="e.g., US"
+                    value={formData.countryCode}
                   />
                 </div>
               </div>
@@ -315,8 +343,10 @@ export default function EditVenuePage() {
                   <Label htmlFor="contactName">Contact Name</Label>
                   <Input
                     id="contactName"
+                    onChange={(e) =>
+                      setFormData({ ...formData, contactName: e.target.value })
+                    }
                     value={formData.contactName}
-                    onChange={(e) => setFormData({ ...formData, contactName: e.target.value })}
                   />
                 </div>
 
@@ -324,9 +354,11 @@ export default function EditVenuePage() {
                   <Label htmlFor="contactPhone">Phone</Label>
                   <Input
                     id="contactPhone"
+                    onChange={(e) =>
+                      setFormData({ ...formData, contactPhone: e.target.value })
+                    }
                     type="tel"
                     value={formData.contactPhone}
-                    onChange={(e) => setFormData({ ...formData, contactPhone: e.target.value })}
                   />
                 </div>
 
@@ -334,9 +366,11 @@ export default function EditVenuePage() {
                   <Label htmlFor="contactEmail">Email</Label>
                   <Input
                     id="contactEmail"
+                    onChange={(e) =>
+                      setFormData({ ...formData, contactEmail: e.target.value })
+                    }
                     type="email"
                     value={formData.contactEmail}
-                    onChange={(e) => setFormData({ ...formData, contactEmail: e.target.value })}
                   />
                 </div>
               </div>
@@ -350,10 +384,12 @@ export default function EditVenuePage() {
                   <Label htmlFor="accessNotes">Access Notes</Label>
                   <Textarea
                     id="accessNotes"
-                    value={formData.accessNotes}
-                    onChange={(e) => setFormData({ ...formData, accessNotes: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, accessNotes: e.target.value })
+                    }
                     placeholder="Loading dock info, parking instructions, etc."
                     rows={3}
+                    value={formData.accessNotes}
                   />
                 </div>
 
@@ -361,10 +397,15 @@ export default function EditVenuePage() {
                   <Label htmlFor="cateringNotes">Catering Notes</Label>
                   <Textarea
                     id="cateringNotes"
-                    value={formData.cateringNotes}
-                    onChange={(e) => setFormData({ ...formData, cateringNotes: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        cateringNotes: e.target.value,
+                      })
+                    }
                     placeholder="Kitchen access, equipment available, restrictions, etc."
                     rows={3}
+                    value={formData.cateringNotes}
                   />
                 </div>
 
@@ -372,10 +413,15 @@ export default function EditVenuePage() {
                   <Label htmlFor="layoutImageUrl">Floor Plan URL</Label>
                   <Input
                     id="layoutImageUrl"
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        layoutImageUrl: e.target.value,
+                      })
+                    }
+                    placeholder="https://..."
                     type="url"
                     value={formData.layoutImageUrl}
-                    onChange={(e) => setFormData({ ...formData, layoutImageUrl: e.target.value })}
-                    placeholder="https://..."
                   />
                 </div>
               </div>
@@ -383,11 +429,13 @@ export default function EditVenuePage() {
 
             {/* Actions */}
             <div className="flex justify-end gap-4">
-              <Button type="button" variant="outline" asChild>
+              <Button asChild type="button" variant="outline">
                 <Link href={`/crm/venues/${venueId}`}>Cancel</Link>
               </Button>
-              <Button type="submit" disabled={saving}>
-                {saving && <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />}
+              <Button disabled={saving} type="submit">
+                {saving && (
+                  <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 <SaveIcon className="mr-2 h-4 w-4" />
                 Save Changes
               </Button>

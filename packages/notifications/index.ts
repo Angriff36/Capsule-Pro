@@ -8,24 +8,24 @@ export const notifications = new Knock(key ? { apiKey: key } : undefined);
 // Re-export SMS utilities
 export { sendSms } from "./sms";
 export {
-  sendSmsNotification,
-  updateDeliveryStatus,
   getSmsLogs,
-  setSmsPreference,
   getSmsPreferences,
   type SendSmsOptions,
   type SendSmsResult,
   type SmsLogEntry,
   type SmsRecipient,
   type SmsStatus,
+  sendSmsNotification,
+  setSmsPreference,
+  updateDeliveryStatus,
 } from "./sms-notification-service";
 export {
-  renderSmsTemplate,
-  renderSmsTemplateByType,
-  validateTemplateData,
   getAvailableTemplateTypes,
   getTemplateMetadata,
+  renderSmsTemplate,
+  renderSmsTemplateByType,
   SMS_TEMPLATES,
-  type SmsTemplateData,
   type SmsTemplate,
+  type SmsTemplateData,
+  validateTemplateData,
 } from "./sms-templates";
