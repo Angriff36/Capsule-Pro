@@ -132,6 +132,79 @@ const statusConfig: Record<
   },
 };
 
+/**
+ * Renders the appropriate document preview based on document type
+ */
+function DocumentPreview({
+  documentUrl,
+  onDownload,
+}: {
+  documentUrl: string;
+  onDownload: () => void;
+}) {
+  // PDF preview using iframe
+  if (documentUrl.startsWith("data:application/pdf")) {
+    return (
+      <div className="overflow-hidden rounded-lg border">
+        <iframe
+          className="h-[600px] w-full"
+          src={documentUrl}
+          title="Contract Document Preview"
+        />
+        <div className="flex justify-end border-t p-3">
+          <Button onClick={onDownload} size="sm" variant="outline">
+            <DownloadIcon className="mr-2 size-4" />
+            Download Document
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Image preview - use img for data URLs since Next Image requires dimensions
+  if (documentUrl.startsWith("data:image/")) {
+    return (
+      <div className="overflow-hidden rounded-lg border">
+        {/* biome-ignore lint/performance/noImgElement: Data URL images need img element for dynamic sizing */}
+        {/* biome-ignore lint/correctness/useImageSize: Data URL images have unknown dimensions */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          alt="Contract Document"
+          className="max-h-[600px] w-auto object-contain"
+          src={documentUrl}
+        />
+        <div className="flex justify-end border-t p-3">
+          <Button onClick={onDownload} size="sm" variant="outline">
+            <DownloadIcon className="mr-2 size-4" />
+            Download Document
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Unsupported document type - show fallback
+  return (
+    <div className="flex aspect-[8.5/11] items-center justify-center rounded-lg border bg-muted/50">
+      <div className="text-center">
+        <FileTextIcon className="mx-auto mb-2 size-12 text-muted-foreground/50" />
+        <p className="text-muted-foreground text-sm">
+          Preview not available for this document type
+        </p>
+        <Button
+          className="mt-4"
+          onClick={onDownload}
+          size="sm"
+          variant="outline"
+        >
+          <DownloadIcon className="mr-2 size-4" />
+          Download Document
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export function ContractDetailClient({
   contract,
   event,
@@ -726,24 +799,10 @@ export function ContractDetailClient({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="flex aspect-[8.5/11] items-center justify-center rounded-lg border bg-muted/50">
-                <div className="text-center">
-                  <FileTextIcon className="mx-auto mb-2 size-12 text-muted-foreground/50" />
-                  <p className="text-muted-foreground text-sm">
-                    Document preview will be available once the document is
-                    processed
-                  </p>
-                  <Button
-                    className="mt-4"
-                    onClick={handleDownloadDocument}
-                    size="sm"
-                    variant="outline"
-                  >
-                    <DownloadIcon className="mr-2 size-4" />
-                    Download Document
-                  </Button>
-                </div>
-              </div>
+              <DocumentPreview
+                documentUrl={contract.documentUrl}
+                onDownload={handleDownloadDocument}
+              />
             </CardContent>
           </Card>
         )}
