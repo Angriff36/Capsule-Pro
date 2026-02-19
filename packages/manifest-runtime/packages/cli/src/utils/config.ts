@@ -9,10 +9,10 @@
  * TS/JS config: Runtime bindings (stores, resolveUser)
  */
 
-import fs from "fs/promises";
+import fs from "node:fs/promises";
+import path from "node:path";
+import { pathToFileURL } from "node:url";
 import yaml from "js-yaml";
-import path from "path";
-import { pathToFileURL } from "url";
 
 // ============================================================================
 // Type Definitions
@@ -422,7 +422,7 @@ export async function getNextJsOptions(cwd: string = process.cwd()): Promise<{
   const { build } = await loadAllConfigs(cwd);
   const options =
     build.projections?.nextjs?.options ||
-    build.projections?.["nextjs"]?.options ||
+    build.projections?.nextjs?.options ||
     {};
 
   return {
@@ -456,7 +456,7 @@ export async function getOutputPaths(cwd: string = process.cwd()): Promise<{
     irOutput: build.output || "ir/",
     codeOutput:
       build.projections?.nextjs?.output ||
-      build.projections?.["nextjs"]?.output ||
+      build.projections?.nextjs?.output ||
       "generated/",
   };
 }
@@ -635,7 +635,7 @@ export function createUserResolver(
 
   return async (auth: AuthContext): Promise<UserContext | null> => {
     try {
-      return await config.resolveUser!(auth);
+      return await config.resolveUser?.(auth);
     } catch (error) {
       // Log error but don't throw - return null to indicate resolution failure
       console.error(
@@ -762,7 +762,9 @@ export async function parsePrismaSchema(
 
     for (const fieldLine of fieldLines) {
       // Skip block attributes like @@id, @@index, etc.
-      if (fieldLine.startsWith("@@")) continue;
+      if (fieldLine.startsWith("@@")) {
+        continue;
+      }
 
       // Parse field: name type options*
       const fieldMatch = fieldLine.match(/^(\w+)\s+(\w+)(\?|\[])?(\s+@.*)?$/);
@@ -771,7 +773,7 @@ export async function parsePrismaSchema(
 
         // Check for @id attribute
         const hasId = /@id/.test(fieldLine);
-        const hasDefault = /@default\(/.test(fieldLine);
+        const _hasDefault = /@default\(/.test(fieldLine);
         const isGenerated =
           /@default\(autoincrement\)|@updatedAt|@createdAt/.test(fieldLine);
 
@@ -827,7 +829,9 @@ export function propertyExistsInModel(
   // Check if property name matches a field
   const hasDirectMatch = model.fields.some((f) => f.name === propertyName);
 
-  if (hasDirectMatch) return true;
+  if (hasDirectMatch) {
+    return true;
+  }
 
   // Check if there's a mapping from this property to a field
   if (propertyMapping) {

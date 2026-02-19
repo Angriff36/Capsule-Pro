@@ -10,11 +10,11 @@
  * See docs/spec/manifest-vnext.md § "Canonical Routes (Normative)".
  */
 
+import fs from "node:fs/promises";
+import path from "node:path";
 import chalk from "chalk";
-import fs from "fs/promises";
 import { glob } from "glob";
 import ora from "ora";
-import path from "path";
 
 // ============================================================================
 // Types
@@ -167,7 +167,9 @@ export function scanFileForRoutes(
     const line = lines[i];
 
     // Skip comments and generated file headers
-    if (isCommentOrGenerated(line)) continue;
+    if (isCommentOrGenerated(line)) {
+      continue;
+    }
 
     // Reset regex state for each line
     pattern.lastIndex = 0;
@@ -177,11 +179,14 @@ export function scanFileForRoutes(
       const matchedPath = match[1];
 
       // Skip allowlisted paths
-      if (isAllowlisted(matchedPath, config.allowlist)) continue;
+      if (isAllowlisted(matchedPath, config.allowlist)) {
+        continue;
+      }
 
       // Skip if this looks like an import path (from "..." or require("..."))
-      if (/(?:from|require)\s*\(?\s*$/.test(line.slice(0, match.index)))
+      if (/(?:from|require)\s*\(?\s*$/.test(line.slice(0, match.index))) {
         continue;
+      }
 
       violations.push({
         file: filePath,

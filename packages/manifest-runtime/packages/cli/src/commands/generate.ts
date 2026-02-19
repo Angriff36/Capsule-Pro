@@ -4,11 +4,11 @@
  * Generates code from IR using a projection.
  */
 
+import fs from "node:fs/promises";
+import path from "node:path";
 import chalk from "chalk";
-import fs from "fs/promises";
 import { glob } from "glob";
 import ora, { type Ora } from "ora";
-import path from "path";
 
 // Import from the main Manifest package
 async function loadDependencies() {

@@ -15,11 +15,11 @@
  * See docs/spec/manifest-vnext.md § "Canonical Routes (Normative)".
  */
 
+import fs from "node:fs/promises";
+import path from "node:path";
 import chalk from "chalk";
-import fs from "fs/promises";
 import { glob } from "glob";
 import ora from "ora";
-import path from "path";
 import { getConfig } from "../utils/config.js";
 
 interface RoutesCommandOptions {
@@ -135,7 +135,7 @@ export async function routesCommand(
       console.log(
         chalk.bold("  Method  Path                                    Source")
       );
-      console.log("  " + "─".repeat(70));
+      console.log(`  ${"─".repeat(70)}`);
       for (const route of allRoutes) {
         const method =
           route.method === "GET"

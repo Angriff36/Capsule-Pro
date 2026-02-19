@@ -89,6 +89,7 @@ function _detectConflicts(
 /**
  * Sync events from Goodshuffle to Convoy
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex sync logic with multiple branches
 export async function syncEventsFromGoodshuffle(
   client: GoodshuffleClient,
   tenantId: string,
@@ -198,16 +199,15 @@ export async function syncEventsFromGoodshuffle(
 
     // Update last sync status
     if (!options.dryRun) {
+      const syncStatus =
+        result.errors.length > 0 || result.conflicts.length > 0
+          ? "partial"
+          : "success";
       await database.goodshuffleConfig.update({
         where: { tenantId },
         data: {
           lastSyncAt: new Date(),
-          lastSyncStatus:
-            result.errors.length > 0
-              ? result.conflicts.length > 0
-                ? "partial"
-                : "partial"
-              : "success",
+          lastSyncStatus: syncStatus,
           lastSyncError:
             result.errors.length > 0 ? result.errors.join("\n") : null,
         },

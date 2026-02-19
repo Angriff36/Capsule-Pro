@@ -32,7 +32,7 @@ test("order addItem succeeds with localStorage target", async () => {
   const result = await engine.runCommand(
     "addItem",
     { productId: "prod-1", name: "Test Product", price: 10, quantity: 2 },
-    { entityName: "Order", instanceId: instance!.id }
+    { entityName: "Order", instanceId: instance?.id }
   );
 
   // Assert success and event is emitted

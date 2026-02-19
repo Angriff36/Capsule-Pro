@@ -16,7 +16,7 @@ interface RouteParams {
  * GET /api/training/modules/[id]
  * Get a single training module by ID
  */
-export async function GET(request: Request, { params }: RouteParams) {
+export async function GET(_request: Request, { params }: RouteParams) {
   const { orgId } = await auth();
   if (!orgId) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
@@ -141,7 +141,7 @@ export async function PUT(request: Request, { params }: RouteParams) {
  * DELETE /api/training/modules/[id]
  * Soft delete a training module
  */
-export async function DELETE(request: Request, { params }: RouteParams) {
+export async function DELETE(_request: Request, { params }: RouteParams) {
   const { orgId } = await auth();
   if (!orgId) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });

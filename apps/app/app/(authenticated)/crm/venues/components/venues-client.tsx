@@ -205,7 +205,9 @@ export function VenuesClient() {
       cell: ({ row }) => {
         const city = row.getValue("city") as string | null;
         const state = row.original.stateProvince;
-        if (!(city || state)) return "-";
+        if (!(city || state)) {
+          return "-";
+        }
         return [city, state].filter(Boolean).join(", ");
       },
     },
@@ -234,7 +236,9 @@ export function VenuesClient() {
       header: "Tags",
       cell: ({ row }) => {
         const tags = row.getValue("tags") as string[];
-        if (!tags || tags.length === 0) return "-";
+        if (!tags || tags.length === 0) {
+          return "-";
+        }
         return (
           <div className="flex flex-wrap gap-1">
             {tags.slice(0, 3).map((tag) => (

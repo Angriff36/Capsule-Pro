@@ -31,6 +31,7 @@ const OUTPUT_FILE = join(OUTPUT_DIR, "kitchen.ir.json");
  * - Events: unique by channel (not name)
  * - Policies: globally unique by name
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Validation function with multiple collection types
 function validateNoDuplicates(compiledIRs, manifestFiles) {
   const errors = [];
 

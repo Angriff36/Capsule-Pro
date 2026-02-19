@@ -4,9 +4,9 @@
  * Compiles .manifest to IR and generates code in one step.
  */
 
+import path from "node:path";
 import chalk from "chalk";
 import ora from "ora";
-import path from "path";
 import { compileCommand } from "./compile.js";
 import { generateCommand } from "./generate.js";
 
@@ -46,7 +46,7 @@ export async function buildCommand(
     const compileSpinner = ora("Compiling").start();
 
     // Collect IR files that would be generated
-    const irFiles: IRFile[] = [];
+    const _irFiles: IRFile[] = [];
 
     // For now, we'll call compileCommand but capture the output
     // In a real implementation, we'd make compileCommand return the IR files

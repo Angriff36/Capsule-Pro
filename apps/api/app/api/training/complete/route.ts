@@ -19,6 +19,7 @@ import type { CompleteTrainingInput, StartTrainingInput } from "../types";
  * - passed: Whether the employee passed
  * - notes: Optional notes
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Two-action endpoint (start/complete) with shared validation
 export async function POST(request: Request) {
   const { orgId, userId } = await auth();
   if (!(orgId && userId)) {

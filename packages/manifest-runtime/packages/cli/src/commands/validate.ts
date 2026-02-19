@@ -4,11 +4,11 @@
  * Validates IR against the schema.
  */
 
+import fs from "node:fs/promises";
+import path from "node:path";
 import chalk from "chalk";
-import fs from "fs/promises";
 import { glob } from "glob";
 import ora from "ora";
-import path from "path";
 
 interface ValidateOptions {
   schema?: string;
@@ -28,7 +28,7 @@ async function loadSchema(schemaPath: string | undefined): Promise<any> {
     try {
       const content = await fs.readFile(defaultPath, "utf-8");
       return JSON.parse(content);
-    } catch (error) {
+    } catch (_error) {
       throw new Error(
         `Schema not found at ${defaultPath}. Specify --schema <path>`
       );
@@ -48,7 +48,7 @@ async function getIRFiles(irInput: string | undefined): Promise<string[]> {
     const resolved = path.resolve(process.cwd(), irInput);
     const stat = await fs.stat(resolved).catch(() => null);
 
-    if (stat && stat.isDirectory()) {
+    if (stat?.isDirectory()) {
       const files = await glob("**/*.ir.json", { cwd: resolved });
       return files.map((f) => path.join(resolved, f));
     }
@@ -71,7 +71,7 @@ async function getIRFiles(irInput: string | undefined): Promise<string[]> {
  */
 async function validateIR(
   irPath: string,
-  schema: any,
+  _schema: any,
   strict: boolean
 ): Promise<{
   valid: boolean;
