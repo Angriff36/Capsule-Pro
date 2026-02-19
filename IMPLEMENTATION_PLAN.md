@@ -140,6 +140,11 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
 
 ## Bug Fixes
 
+### Mobile Kitchen Duplicate Route (2026-02-19)
+- **Fixed:** Removed duplicate mobile kitchen route
+- **Issue:** Both `/(authenticated)/kitchen/mobile/page.tsx` and `/(mobile-kitchen)/kitchen/mobile/page.tsx` resolved to same path `/kitchen/mobile`, causing Next.js build failure
+- **Resolution:** Deleted old `(authenticated)` version since new `(mobile-kitchen)` route group has proper mobile shell with bottom navigation
+
 ### Manifest Runtime NodeJS Enforcement (2026-02-18)
 - **Fixed:** Manifest runtime nodejs enforcement
 - **Issue:** Command routes using createManifestRuntime needed explicit `export const runtime = 'nodejs'` to prevent Edge runtime usage
