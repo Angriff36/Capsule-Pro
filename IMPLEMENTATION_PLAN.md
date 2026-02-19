@@ -14,7 +14,7 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
 **Verification (2026-02-19):**
 - Build: ✅ Passed (all packages)
 - Tests: ✅ 720 tests passed (api package)
-- Tags: v0.6.42 (latest)
+- Tags: v0.6.43 (latest)
 
 ---
 
@@ -652,6 +652,24 @@ Several specs are marked `_TODO` but have substantial implementations:
     - Stock availability validation with configurable enforcement
     - Automatic shipment number generation with year-based sequencing
     - Links shipment to event and location
+
+### ~~32. Outbound Webhook System~~ ✅ COMPLETE (2026-02-19)
+- **Spec:** `specs/webhook-outbound-integrations_TODO/`
+- **Implemented:**
+  - Database models: `OutboundWebhook`, `WebhookDeliveryLog` with full Prisma schema
+  - Enums: `webhook_event_type`, `webhook_status`, `webhook_delivery_status`
+  - Webhook delivery service with HMAC-SHA256 signature generation
+  - Exponential backoff retry logic with configurable delays
+  - Auto-disable after 5 consecutive failures
+  - API endpoints:
+    - `GET/POST /api/integrations/webhooks` - List/create webhooks
+    - `GET/PUT/DELETE /api/integrations/webhooks/[id]` - Webhook CRUD
+    - `GET /api/integrations/webhooks/delivery-logs` - Delivery log history
+    - `POST /api/integrations/webhooks/trigger` - Trigger webhooks for entity events
+    - `POST /api/integrations/webhooks/retry` - Retry failed deliveries
+  - Event filtering by entity type and event type
+  - Full test coverage (21 tests passing)
+  - Support for custom headers, API keys, and secrets
 
 ---
 

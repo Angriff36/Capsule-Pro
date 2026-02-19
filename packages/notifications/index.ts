@@ -65,3 +65,18 @@ export {
   type SmsTemplateData,
   validateTemplateData,
 } from "./sms-templates";
+// Re-export Outbound Webhook utilities
+export {
+  buildWebhookPayload,
+  calculateRetryDelay,
+  determineNextStatus,
+  generateSignature,
+  type OutboundWebhookType,
+  sendWebhook,
+  shouldAutoDisable,
+  shouldTriggerWebhook,
+  type WebhookConfig,
+  type WebhookDeliveryResult,
+  type WebhookPayload,
+  type WebhookDeliveryLogType,
+} from "./outbound-webhook-service";
