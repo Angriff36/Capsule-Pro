@@ -5,17 +5,109 @@
 
 ## Executive Summary
 
-The Convoy platform is a catering/event management SaaS with strong foundations. The **Command Board** is feature-complete for core functionality and serves as the primary interface. All planned features have been implemented.
+The Convoy platform is a catering/event management SaaS with strong foundations. The **Command Board** is feature-complete for core functionality. Current focus: **Mobile Kitchen App**.
 
-**Overall Completion: 100%**
+**Overall Completion: 95%**
 
-**All specs implemented.**
+**Active Feature: Mobile Kitchen App** — `specs/mobile/mobile-kitchen-app_TODO/`
 
-**Verification (2026-02-19 07:23 UTC):**
+**Verification (2026-02-19 15:29 UTC):**
 - Build: ✅ Passed (api package)
 - Tests: ✅ 720 tests passed (api package)
-- Tags: v0.6.70 (latest)
-- Status: All specs implemented, production ready
+- Tags: v0.6.71 (latest)
+
+---
+
+## Mobile Kitchen App — Active Development
+
+**Spec:** `specs/mobile/mobile-kitchen-app_TODO/mobile-kitchen-app.md`
+
+### What Exists (Do Not Rebuild)
+
+| Component | Location | Status |
+|-----------|----------|--------|
+| Task claiming UI | `/(mobile-kitchen)/kitchen/mobile/tasks/page.tsx` | ✅ Tabs (Available/My Tasks), claim/release, offline sync |
+| Prep list view | `/kitchen/prep-lists/mobile/page.tsx` | ✅ Station grouping, completion display |
+| Tasks available API | `/api/kitchen/tasks/available` | ✅ Returns available tasks |
+| My tasks API | `/api/kitchen/tasks/my-tasks` | ✅ Returns claimed tasks |
+| Task commands | `/api/kitchen/kitchen-tasks/commands/*` | ✅ claim, release, start, complete |
+| Prep task commands | `/api/kitchen/prep-tasks/commands/*` | ✅ claim, release, start, complete |
+| Prep lists API | `/api/kitchen/prep-lists/` | ✅ CRUD, items, mark-completed |
+| Offline queue pattern | `/(mobile-kitchen)/kitchen/mobile/tasks/page.tsx` | ✅ Sync on reconnect |
+| Mobile shell (bottom nav) | `/(mobile-kitchen)/kitchen/mobile/layout.tsx` | ✅ 4-tab navigation, offline banner |
+| Today tab | `/(mobile-kitchen)/kitchen/mobile/page.tsx` | ✅ Event overview with urgency |
+| Prep lists tab | `/(mobile-kitchen)/kitchen/mobile/prep-lists/page.tsx` | ✅ Event-grouped prep lists |
+| Prep list detail | `/(mobile-kitchen)/kitchen/mobile/prep-lists/[id]/page.tsx` | ✅ Item completion with offline sync |
+| My Work tab | `/(mobile-kitchen)/kitchen/mobile/my-work/page.tsx` | ✅ Active/claimed tasks, start/complete/release |
+| Today events API | `/api/kitchen/events/today` | ✅ Returns events with urgency + prep status |
+
+### ~~P0 — Shell & Navigation (Critical Path)~~ ✅ COMPLETE (2026-02-19)
+
+- [x] **Create bottom nav shell** at `apps/app/app/(mobile-kitchen)/kitchen/mobile/layout.tsx`
+  - Bottom navigation: Today | Tasks | Prep Lists | My Work
+  - Fullscreen mobile viewport (no desktop sidebar)
+  - Offline banner (reuse existing pattern)
+  - Active tab highlighting
+
+- [x] **Create route structure:**
+  - `/kitchen/mobile/` → Today tab (event overview with urgency)
+  - `/kitchen/mobile/tasks` → Tasks tab (claim/release tasks)
+  - `/kitchen/mobile/prep-lists` → Prep Lists tab (event-grouped lists)
+  - `/kitchen/mobile/prep-lists/[id]` → Prep List detail (item completion)
+  - `/kitchen/mobile/my-work` → My Work tab (claimed/active tasks)
+
+### ~~P1 — Today Tab (Daily Overview)~~ ✅ COMPLETE (2026-02-19)
+
+- [x] **Create API endpoint:** `GET /api/kitchen/events/today`
+  - Returns events for today + tomorrow
+  - Each event: name, startTime, headcount, unclaimedPrepCount, incompleteItemsCount
+  - Urgency: `< 2h` = critical (red), `< 6h` = warning (amber), else = ok (green)
+
+- [x] **Create Today page:** `/(mobile-kitchen)/kitchen/mobile/page.tsx`
+  - Event cards with urgency color borders
+  - Shows: event name, time, headcount, "X tasks unclaimed", "Y items incomplete"
+  - Empty state: "No events today"
+
+### P2 — Task Bundle Claiming
+
+- [ ] **Create API endpoint:** `POST /api/kitchen/tasks/bundle-claim`
+  - Accepts `{ taskIds: string[] }`
+  - Atomic: all succeed or none claimed (transaction)
+  - Returns claimed tasks and any failures
+
+- [ ] **Add multi-select to Tasks tab:**
+  - Long-press → multi-select mode
+  - Checkboxes on all cards
+  - "Select All [Station]" shortcut
+  - Floating "Claim X Tasks" button
+
+- [ ] **Add station filter bottom sheet:**
+  - Filter by: station, priority, event
+  - "My Station" quick button (localStorage)
+  - Filter chips above task list
+
+### ~~P3 — Prep Lists Enhancement~~ ✅ COMPLETE (2026-02-19)
+
+- [x] **Add completion interaction to prep list items:**
+  - Large checkbox (single tap = complete)
+  - Filter bar: All | Incomplete | Complete
+  - Offline queue for completions
+  - Location: `/(mobile-kitchen)/kitchen/mobile/prep-lists/[id]/page.tsx`
+
+### ~~P4 — My Work Tab~~ ✅ COMPLETE (2026-02-19)
+
+- [x] **Create unified My Work page:** `/(mobile-kitchen)/kitchen/mobile/my-work`
+  - Fetch: claimed kitchen tasks + claimed prep tasks
+  - Groups: Active (in_progress) | Claimed (not started)
+  - Start/Complete/Release buttons
+  - 30s auto-refresh
+
+### Key Invariants (Must Never Happen)
+
+- Task must never be claimable by two users simultaneously
+- Bundle claim must be atomic (all or none)
+- Prep list completions must never be lost offline
+- Mobile UI must never require more than 2 taps to claim/complete
 
 ---
 
