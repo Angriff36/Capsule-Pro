@@ -295,9 +295,14 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
   - Document upload and PDF generation
   - Contract email sending via Resend
   - Expiring contracts API endpoint
+  - **Automated expiration alert notifications (cron job)** - 2026-02-18
+    - Added `contract_expiration` trigger type to `email_trigger_type` enum
+    - Created cron endpoint `/api/cron/contract-expiration-alerts` for daily processing
+    - Configurable reminder intervals (default: 30, 14, 7, 3, 1 days before expiration)
+    - Integrated with email workflow system for template-based notifications
+    - Added helper functions `buildContractRecipients` and `buildContractTemplateData`
 - **Missing:**
   - Contract history/versions view
-  - Automated expiration alert notifications (cron job)
   - Public client-side signing page
   - Document preview in UI
 

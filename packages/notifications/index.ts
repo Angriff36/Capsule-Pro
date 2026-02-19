@@ -32,6 +32,8 @@ export {
 } from "./email-templates";
 // Re-export Email Workflow Triggers
 export {
+  buildContractRecipients,
+  buildContractTemplateData,
   buildEventRecipients,
   buildEventTemplateData,
   buildTaskRecipients,

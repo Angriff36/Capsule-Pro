@@ -23,6 +23,7 @@ export interface WorkflowTriggerContext {
     | "shift_reminder"
     | "proposal_sent"
     | "contract_signed"
+    | "contract_expiration"
     | "custom";
   entity: {
     id: string;
@@ -292,4 +293,64 @@ function formatTime(date: Date): string {
     hour: "numeric",
     minute: "2-digit",
   });
+}
+
+/**
+ * Helper to build email recipients from contract data
+ */
+export function buildContractRecipients(contract: {
+  client_email?: string | null;
+  client_first_name?: string | null;
+  client_last_name?: string | null;
+  client_id?: string | null;
+}): EmailRecipient[] {
+  const recipients: EmailRecipient[] = [];
+
+  if (contract.client_email) {
+    recipients.push({
+      email: contract.client_email,
+      clientId: contract.client_id ?? undefined,
+      name: [contract.client_first_name, contract.client_last_name]
+        .filter(Boolean)
+        .join(" "),
+    });
+  }
+
+  return recipients;
+}
+
+/**
+ * Helper to build template data from contract
+ */
+export function buildContractTemplateData(contract: {
+  contract_number?: string | null;
+  title?: string | null;
+  expires_at?: Date | null;
+  event_name?: string | null;
+  event_date?: Date | null;
+}): Record<string, string | number | undefined> {
+  const daysUntilExpiration = contract.expires_at
+    ? Math.ceil(
+        (new Date(contract.expires_at).getTime() - Date.now()) /
+          (1000 * 60 * 60 * 24)
+      )
+    : undefined;
+
+  return {
+    contractNumber: contract.contract_number ?? undefined,
+    contractTitle: contract.title ?? "Contract",
+    expirationDate: contract.expires_at
+      ? formatDate(new Date(contract.expires_at))
+      : undefined,
+    daysUntilExpiration: daysUntilExpiration
+      ? Math.max(0, daysUntilExpiration)
+      : undefined,
+    eventName: contract.event_name ?? undefined,
+    eventDate: contract.event_date
+      ? formatDate(new Date(contract.event_date))
+      : undefined,
+    dashboardUrl: process.env.NEXT_PUBLIC_APP_URL
+      ? `${process.env.NEXT_PUBLIC_APP_URL}/events/contracts`
+      : undefined,
+  };
 }
