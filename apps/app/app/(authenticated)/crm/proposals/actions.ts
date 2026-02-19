@@ -249,9 +249,11 @@ export async function createProposal(input: CreateProposalInput) {
 
   // Apply template defaults where input values are not provided
   const effectiveTaxRate = input.taxRate ?? templateDefaults.taxRate ?? 0;
-  const effectiveTerms = input.termsAndConditions ?? templateDefaults.termsAndConditions;
+  const effectiveTerms =
+    input.termsAndConditions ?? templateDefaults.termsAndConditions;
   const effectiveNotes = input.notes ?? templateDefaults.notes;
-  const effectiveLineItems = input.lineItems ?? templateDefaults.lineItems ?? [];
+  const effectiveLineItems =
+    input.lineItems ?? templateDefaults.lineItems ?? [];
 
   // Generate proposal number
   const year = new Date().getFullYear();
@@ -507,12 +509,16 @@ export async function sendProposal(id: string, input: SendProposalInput = {}) {
 
   invariant(recipientEmail, "Recipient email is required");
 
-  // Update proposal status
+  // Generate a public token for the proposal (for public viewing)
+  const publicToken = crypto.randomUUID();
+
+  // Update proposal status and set public token
   const proposal = await database.proposal.update({
     where: { tenantId_id: { tenantId, id } },
     data: {
       status: "sent",
       sentAt: new Date(),
+      publicToken,
     },
   });
 
@@ -541,9 +547,9 @@ export async function sendProposal(id: string, input: SendProposalInput = {}) {
     }
   }
 
-  // Build proposal URL
+  // Build public proposal URL (no auth required)
   const appUrl = process.env.APP_URL || "https://app.convoy.com";
-  const proposalUrl = `${appUrl}/crm/proposals/${id}`;
+  const proposalUrl = `${appUrl}/view/proposal/${publicToken}`;
 
   // Format total amount
   const totalAmount =
@@ -577,6 +583,53 @@ export async function sendProposal(id: string, input: SendProposalInput = {}) {
     success: true,
     proposal,
     sentTo: recipientEmail,
+    publicUrl: proposalUrl,
+  };
+}
+
+/**
+ * Get or generate a public link for a proposal
+ * If the proposal already has a publicToken, returns the existing link
+ * Otherwise, generates a new token and returns the new link
+ */
+export async function getProposalPublicLink(id: string) {
+  const { orgId } = await auth();
+  invariant(orgId, "Unauthorized");
+
+  const tenantId = await getTenantId();
+  invariant(id, "Proposal ID is required");
+
+  const existingProposal = await database.proposal.findFirst({
+    where: {
+      AND: [{ tenantId }, { id }, { deletedAt: null }],
+    },
+    select: {
+      id: true,
+      publicToken: true,
+      status: true,
+    },
+  });
+
+  invariant(existingProposal, "Proposal not found");
+
+  let publicToken = existingProposal.publicToken;
+
+  // Generate a new token if one doesn't exist
+  if (!publicToken) {
+    publicToken = crypto.randomUUID();
+    await database.proposal.update({
+      where: { tenantId_id: { tenantId, id } },
+      data: { publicToken },
+    });
+  }
+
+  const appUrl = process.env.APP_URL || "https://app.convoy.com";
+  const publicUrl = `${appUrl}/view/proposal/${publicToken}`;
+
+  return {
+    success: true,
+    publicUrl,
+    publicToken,
   };
 }
 

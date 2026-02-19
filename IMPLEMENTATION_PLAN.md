@@ -527,10 +527,21 @@ Several specs are marked `_TODO` but have substantial implementations:
 - **Status:** Not implemented, not previously tracked
 - **Description:** Stock level tracking and management
 
-### 27. Event Import/Export
+### ~~27. Event Import/Export~~ ✅ COMPLETE (2026-02-18)
 - **Spec:** `specs/kitchen/event-import-export_TODO/`
-- **Status:** Not implemented, not previously tracked
-- **Description:** Event data import/export functionality
+- **Implemented:**
+  - **CSV Export** (`apps/api/app/api/events/[eventId]/export/csv/route.ts`):
+    - Single event CSV export with sections: summary, menu, staff, guests
+    - Proper CSV escaping, filename sanitization
+    - Download and JSON response modes
+  - **PDF Export** (`apps/api/app/api/events/[eventId]/export/pdf/route.tsx`):
+    - Single event PDF export using @react-pdf/renderer and EventDetailPDF component
+    - Includes event summary, menu, staff, guests, tasks
+    - Metadata with generated date and user info
+    - Base64 and download modes
+  - **Bulk CSV Export** (`apps/api/app/api/events/export/csv/route.ts`):
+    - Export filtered event lists with various filter parameters
+    - Summary row with filters applied
 
 ### 28. Event Timeline Builder
 - **Spec:** `specs/kitchen/event-timeline-builder_TODO/`
