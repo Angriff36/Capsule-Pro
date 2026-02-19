@@ -11,8 +11,8 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
 
 **Active Feature: Mobile Kitchen App** — `specs/mobile/mobile-kitchen-app_TODO/`
 
-**Verification (2026-02-19 22:23 UTC):**
-- Build: ✅ Passed (app package)
+**Verification (2026-02-19 14:42 UTC):**
+- Build: ✅ Passed (app + api packages)
 - Tests: ✅ Kitchen tests passed
 - Lint: ✅ Clean on mobile-kitchen code (warnings only)
 - Tags: v0.6.87 (latest)
@@ -35,6 +35,7 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
 | Task commands | `/api/kitchen/kitchen-tasks/commands/*` | ✅ claim, release, start, complete |
 | Prep task commands | `/api/kitchen/prep-tasks/commands/*` | ✅ claim, release, start, complete |
 | Prep lists API | `/api/kitchen/prep-lists/` | ✅ CRUD, items, mark-completed |
+| Prep list item complete | `/api/kitchen/prep-lists/[id]/items/[itemId]/complete` | ✅ Toggle item completion for mobile |
 | Offline queue pattern | `/(mobile-kitchen)/kitchen/mobile/tasks/page.tsx` | ✅ Sync on reconnect |
 | Mobile shell (bottom nav) | `/(mobile-kitchen)/kitchen/mobile/layout.tsx` | ✅ 4-tab navigation, offline banner |
 | Today tab | `/(mobile-kitchen)/kitchen/mobile/page.tsx` | ✅ Event overview with urgency |
@@ -141,6 +142,11 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
 ---
 
 ## Bug Fixes
+
+### Mobile Kitchen Prep List Item Completion API (2026-02-19)
+- **Fixed:** Added missing prep list item completion endpoint
+- **Issue:** Frontend at `/(mobile-kitchen)/kitchen/mobile/prep-lists/[id]/page.tsx` was calling `/api/kitchen/prep-lists/[id]/items/[itemId]/complete` which did not exist. The existing API was at `/api/kitchen/prep-lists/items/commands/mark-completed` with a different URL pattern.
+- **Resolution:** Created new endpoint at `/api/kitchen/prep-lists/[id]/items/[itemId]/complete/route.ts` that wraps the manifest commands `markCompleted` and `markUncompleted` based on the `completed: boolean` request body.
 
 ### Mobile Kitchen Duplicate Route (2026-02-19)
 - **Fixed:** Removed duplicate mobile kitchen route
