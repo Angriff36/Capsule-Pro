@@ -109,6 +109,10 @@ model Account {
   nowstaConfig            NowstaConfig?
   nowstaEmployeeMappings  NowstaEmployeeMapping[]
   nowstaShiftSyncs        NowstaShiftSync[]
+  goodshuffleConfig         GoodshuffleConfig?
+  goodshuffleEventSyncs     GoodshuffleEventSync[]
+  goodshuffleInventorySyncs GoodshuffleInventorySync[]
+  goodshuffleInvoiceSyncs   GoodshuffleInvoiceSync[]
 
   @@map("accounts")
   @@schema("platform")
@@ -3579,5 +3583,104 @@ model NowstaShiftSync {
   @@index([tenantId, shiftStart])
   @@index([tenantId, nowstaEmployeeId])
   @@map("nowsta_shift_syncs")
+  @@schema("tenant_admin")
+}
+
+// Goodshuffle Integration Models
+model GoodshuffleConfig {
+  tenantId            String    @map("tenant_id") @db.Uuid
+  id                  String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  apiKey              String    @map("api_key")
+  apiSecret           String    @map("api_secret")
+  webhookSecret       String?   @map("webhook_secret")
+  syncEnabled         Boolean   @default(true) @map("sync_enabled")
+  syncDirection       String    @default("one_way") // one_way or two_way
+  conflictResolution  String    @default("convoy_wins") // convoy_wins, goodshuffle_wins, manual
+  lastSyncAt          DateTime? @map("last_sync_at") @db.Timestamptz(6)
+  lastSyncStatus      String?   @map("last_sync_status")
+  lastSyncError       String?   @map("last_sync_error") @db.Text
+  autoSyncInterval    Int?      @map("auto_sync_interval") // in minutes
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  tenant              Account   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId])
+  @@map("goodshuffle_config")
+  @@schema("tenant_admin")
+}
+
+model GoodshuffleEventSync {
+  tenantId           String    @map("tenant_id") @db.Uuid
+  id                 String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  goodshuffleEventId String    @map("goodshuffle_event_id")
+  convoyEventId      String?   @map("convoy_event_id") @db.Uuid
+  eventName          String?   @map("event_name")
+  eventDate          DateTime? @map("event_date") @db.Timestamptz(6)
+  status             String    @default("pending") // pending, synced, conflict, error
+  syncError          String?   @map("sync_error") @db.Text
+  conflictData       Json?     @map("conflict_data")
+  conflictResolvedAt DateTime? @map("conflict_resolved_at") @db.Timestamptz(6)
+  lastSyncedAt       DateTime? @map("last_synced_at") @db.Timestamptz(6)
+  goodshuffleUpdatedAt DateTime? @map("goodshuffle_updated_at") @db.Timestamptz(6)
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  tenant             Account   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@unique([tenantId, goodshuffleEventId])
+  @@index([tenantId, status])
+  @@index([tenantId, eventDate])
+  @@index([tenantId, convoyEventId])
+  @@map("goodshuffle_event_syncs")
+  @@schema("tenant_admin")
+}
+
+model GoodshuffleInventorySync {
+  tenantId              String    @map("tenant_id") @db.Uuid
+  id                    String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  goodshuffleItemId     String    @map("goodshuffle_item_id")
+  convoyInventoryItemId String?   @map("convoy_inventory_item_id") @db.Uuid
+  itemName              String?   @map("item_name")
+  itemSku               String?   @map("item_sku")
+  status                String    @default("pending") // pending, synced, conflict, error
+  syncError             String?   @map("sync_error") @db.Text
+  conflictData          Json?     @map("conflict_data")
+  conflictResolvedAt    DateTime? @map("conflict_resolved_at") @db.Timestamptz(6)
+  lastSyncedAt          DateTime? @map("last_synced_at") @db.Timestamptz(6)
+  goodshuffleUpdatedAt  DateTime? @map("goodshuffle_updated_at") @db.Timestamptz(6)
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  tenant                Account   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@unique([tenantId, goodshuffleItemId])
+  @@index([tenantId, status])
+  @@index([tenantId, convoyInventoryItemId])
+  @@map("goodshuffle_inventory_syncs")
+  @@schema("tenant_admin")
+}
+
+model GoodshuffleInvoiceSync {
+  tenantId             String    @map("tenant_id") @db.Uuid
+  id                   String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  goodshuffleInvoiceId String    @map("goodshuffle_invoice_id")
+  convoyInvoiceId      String?   @map("convoy_invoice_id") @db.Uuid
+  invoiceNumber        String?   @map("invoice_number")
+  invoiceTotal         Decimal?  @map("invoice_total") @db.Decimal(12, 2)
+  status               String    @default("pending") // pending, synced, conflict, error
+  syncError            String?   @map("sync_error") @db.Text
+  conflictData         Json?     @map("conflict_data")
+  conflictResolvedAt   DateTime? @map("conflict_resolved_at") @db.Timestamptz(6)
+  lastSyncedAt         DateTime? @map("last_synced_at") @db.Timestamptz(6)
+  goodshuffleUpdatedAt DateTime? @map("goodshuffle_updated_at") @db.Timestamptz(6)
+  createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  tenant               Account   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@unique([tenantId, goodshuffleInvoiceId])
+  @@index([tenantId, status])
+  @@index([tenantId, convoyInvoiceId])
+  @@map("goodshuffle_invoice_syncs")
   @@schema("tenant_admin")
 }
