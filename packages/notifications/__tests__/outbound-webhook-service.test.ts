@@ -2,7 +2,7 @@
  * Tests for Outbound Webhook Service
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock the database module to avoid server-only import issues
 vi.mock("@repo/database", () => ({
@@ -25,22 +25,26 @@ vi.mock("@repo/database", () => ({
 }));
 
 import {
-  generateSignature,
+  webhook_delivery_status,
+  webhook_event_type,
+  webhook_status,
+} from "@repo/database";
+import {
   buildWebhookPayload,
   calculateRetryDelay,
-  sendWebhook,
-  shouldTriggerWebhook,
   determineNextStatus,
+  generateSignature,
+  sendWebhook,
   shouldAutoDisable,
+  shouldTriggerWebhook,
   type WebhookPayload,
 } from "../outbound-webhook-service";
-import { webhook_delivery_status, webhook_event_type, webhook_status } from "@repo/database";
 
 describe("generateSignature", () => {
   it("should generate HMAC-SHA256 signature with timestamp", () => {
     const secret = "test-secret";
     const payload = '{"test":"data"}';
-    const timestamp = 1234567890;
+    const timestamp = 1_234_567_890;
 
     const signature = generateSignature(secret, payload, timestamp);
 
@@ -50,7 +54,7 @@ describe("generateSignature", () => {
   it("should generate consistent signatures for same input", () => {
     const secret = "test-secret";
     const payload = '{"test":"data"}';
-    const timestamp = 1234567890;
+    const timestamp = 1_234_567_890;
 
     const sig1 = generateSignature(secret, payload, timestamp);
     const sig2 = generateSignature(secret, payload, timestamp);
@@ -60,7 +64,7 @@ describe("generateSignature", () => {
 
   it("should generate different signatures for different secrets", () => {
     const payload = '{"test":"data"}';
-    const timestamp = 1234567890;
+    const timestamp = 1_234_567_890;
 
     const sig1 = generateSignature("secret1", payload, timestamp);
     const sig2 = generateSignature("secret2", payload, timestamp);
@@ -77,7 +81,13 @@ describe("buildWebhookPayload", () => {
     const data = { name: "Test Event" };
     const tenantId = "tenant-123";
 
-    const payload = buildWebhookPayload(eventType, entityType, entityId, data, tenantId);
+    const payload = buildWebhookPayload(
+      eventType,
+      entityType,
+      entityId,
+      data,
+      tenantId
+    );
 
     expect(payload).toMatchObject({
       eventType,
@@ -113,22 +123,22 @@ describe("buildWebhookPayload", () => {
 describe("calculateRetryDelay", () => {
   it("should calculate exponential backoff delays", () => {
     const baseDelay = 1000;
-    const maxDelay = 30000;
+    const maxDelay = 30_000;
 
     expect(calculateRetryDelay(1, baseDelay, maxDelay)).toBe(1000);
     expect(calculateRetryDelay(2, baseDelay, maxDelay)).toBe(2000);
     expect(calculateRetryDelay(3, baseDelay, maxDelay)).toBe(4000);
     expect(calculateRetryDelay(4, baseDelay, maxDelay)).toBe(8000);
-    expect(calculateRetryDelay(5, baseDelay, maxDelay)).toBe(16000);
+    expect(calculateRetryDelay(5, baseDelay, maxDelay)).toBe(16_000);
   });
 
   it("should cap at max delay", () => {
     const baseDelay = 1000;
-    const maxDelay = 10000;
+    const maxDelay = 10_000;
 
     // 2^10 = 1024 * 1000 = 1,024,000 > 10,000
-    expect(calculateRetryDelay(10, baseDelay, maxDelay)).toBe(10000);
-    expect(calculateRetryDelay(20, baseDelay, maxDelay)).toBe(10000);
+    expect(calculateRetryDelay(10, baseDelay, maxDelay)).toBe(10_000);
+    expect(calculateRetryDelay(20, baseDelay, maxDelay)).toBe(10_000);
   });
 });
 
@@ -154,7 +164,7 @@ describe("sendWebhook", () => {
       url: "https://example.com/webhook",
       secret: "test-secret",
       apiKey: null,
-      timeoutMs: 30000,
+      timeoutMs: 30_000,
       customHeaders: null,
     };
 
@@ -197,7 +207,7 @@ describe("sendWebhook", () => {
       url: "https://example.com/webhook",
       secret: null,
       apiKey: null,
-      timeoutMs: 30000,
+      timeoutMs: 30_000,
       customHeaders: null,
     };
 
@@ -258,12 +268,17 @@ describe("shouldTriggerWebhook", () => {
   it("should return true for active webhook with matching filters", () => {
     const webhook = {
       status: webhook_status.active,
-      eventTypeFilters: [webhook_event_type.created, webhook_event_type.updated],
+      eventTypeFilters: [
+        webhook_event_type.created,
+        webhook_event_type.updated,
+      ],
       entityFilters: ["event"],
       deletedAt: null,
     };
 
-    expect(shouldTriggerWebhook(webhook, webhook_event_type.created, "event")).toBe(true);
+    expect(
+      shouldTriggerWebhook(webhook, webhook_event_type.created, "event")
+    ).toBe(true);
   });
 
   it("should return false for deleted webhook", () => {
@@ -274,7 +289,9 @@ describe("shouldTriggerWebhook", () => {
       deletedAt: new Date(),
     };
 
-    expect(shouldTriggerWebhook(webhook, webhook_event_type.created, "event")).toBe(false);
+    expect(
+      shouldTriggerWebhook(webhook, webhook_event_type.created, "event")
+    ).toBe(false);
   });
 
   it("should return false for inactive webhook", () => {
@@ -285,7 +302,9 @@ describe("shouldTriggerWebhook", () => {
       deletedAt: null,
     };
 
-    expect(shouldTriggerWebhook(webhook, webhook_event_type.created, "event")).toBe(false);
+    expect(
+      shouldTriggerWebhook(webhook, webhook_event_type.created, "event")
+    ).toBe(false);
   });
 
   it("should return false for non-matching event type", () => {
@@ -296,7 +315,9 @@ describe("shouldTriggerWebhook", () => {
       deletedAt: null,
     };
 
-    expect(shouldTriggerWebhook(webhook, webhook_event_type.deleted, "event")).toBe(false);
+    expect(
+      shouldTriggerWebhook(webhook, webhook_event_type.deleted, "event")
+    ).toBe(false);
   });
 
   it("should return false for non-matching entity type", () => {
@@ -307,7 +328,9 @@ describe("shouldTriggerWebhook", () => {
       deletedAt: null,
     };
 
-    expect(shouldTriggerWebhook(webhook, webhook_event_type.created, "task")).toBe(false);
+    expect(
+      shouldTriggerWebhook(webhook, webhook_event_type.created, "task")
+    ).toBe(false);
   });
 
   it("should return true when filters are empty (all events)", () => {
@@ -318,8 +341,12 @@ describe("shouldTriggerWebhook", () => {
       deletedAt: null,
     };
 
-    expect(shouldTriggerWebhook(webhook, webhook_event_type.created, "event")).toBe(true);
-    expect(shouldTriggerWebhook(webhook, webhook_event_type.updated, "task")).toBe(true);
+    expect(
+      shouldTriggerWebhook(webhook, webhook_event_type.created, "event")
+    ).toBe(true);
+    expect(
+      shouldTriggerWebhook(webhook, webhook_event_type.updated, "task")
+    ).toBe(true);
   });
 });
 

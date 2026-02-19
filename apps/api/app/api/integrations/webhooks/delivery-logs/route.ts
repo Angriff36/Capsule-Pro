@@ -5,7 +5,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database, type Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -16,7 +16,7 @@ type DeliveryStatus = (typeof VALID_STATUSES)[number];
 export async function GET(request: NextRequest) {
   try {
     const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
+    if (!(userId && orgId)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -30,8 +30,11 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status");
     const entityType = searchParams.get("entityType");
     const entityId = searchParams.get("entityId");
-    const limit = Math.min(parseInt(searchParams.get("limit") || "50"), 100);
-    const offset = parseInt(searchParams.get("offset") || "0");
+    const limit = Math.min(
+      Number.parseInt(searchParams.get("limit") || "50", 10),
+      100
+    );
+    const offset = Number.parseInt(searchParams.get("offset") || "0", 10);
 
     // Build filter conditions
     const where: Prisma.WebhookDeliveryLogWhereInput = {
@@ -75,7 +78,10 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error fetching delivery logs:", error);
-    return NextResponse.json({ error: "Failed to fetch delivery logs" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch delivery logs" },
+      { status: 500 }
+    );
   }
 }
 

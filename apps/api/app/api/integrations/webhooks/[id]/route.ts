@@ -7,7 +7,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database, type Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -49,12 +49,12 @@ interface UpdateWebhookRequest {
 }
 
 export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
+    if (!(userId && orgId)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -87,17 +87,20 @@ export async function GET(
     return NextResponse.json({ webhook: sanitizedWebhook });
   } catch (error) {
     console.error("Error fetching webhook:", error);
-    return NextResponse.json({ error: "Failed to fetch webhook" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch webhook" },
+      { status: 500 }
+    );
   }
 }
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
+    if (!(userId && orgId)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -114,31 +117,41 @@ export async function PUT(
       try {
         const url = new URL(body.url);
         if (!url.protocol.startsWith("http")) {
-          return NextResponse.json({ error: "URL must use HTTP or HTTPS protocol" }, { status: 400 });
+          return NextResponse.json(
+            { error: "URL must use HTTP or HTTPS protocol" },
+            { status: 400 }
+          );
         }
       } catch {
-        return NextResponse.json({ error: "Invalid URL format" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Invalid URL format" },
+          { status: 400 }
+        );
       }
     }
 
     // Validate event types if provided
     if (body.eventTypeFilters) {
-      const invalidTypes = body.eventTypeFilters.filter((t) => !VALID_EVENT_TYPES.includes(t));
+      const invalidTypes = body.eventTypeFilters.filter(
+        (t) => !VALID_EVENT_TYPES.includes(t)
+      );
       if (invalidTypes.length > 0) {
         return NextResponse.json(
           { error: `Invalid event types: ${invalidTypes.join(", ")}` },
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
 
     // Validate entity types if provided
     if (body.entityFilters) {
-      const invalidEntities = body.entityFilters.filter((e) => !VALID_ENTITY_TYPES.includes(e));
+      const invalidEntities = body.entityFilters.filter(
+        (e) => !VALID_ENTITY_TYPES.includes(e)
+      );
       if (invalidEntities.length > 0) {
         return NextResponse.json(
           { error: `Invalid entity types: ${invalidEntities.join(", ")}` },
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -163,17 +176,42 @@ export async function PUT(
 
     // Build update object
     const updateData: Prisma.OutboundWebhookUpdateInput = {};
-    if (body.name !== undefined) updateData.name = body.name;
-    if (body.url !== undefined) updateData.url = body.url;
-    if (body.secret !== undefined) updateData.secret = body.secret || null;
-    if (body.apiKey !== undefined) updateData.apiKey = body.apiKey || null;
-    if (body.eventTypeFilters !== undefined) updateData.eventTypeFilters = body.eventTypeFilters as unknown as Prisma.InputJsonValue;
-    if (body.entityFilters !== undefined) updateData.entityFilters = body.entityFilters as unknown as Prisma.InputJsonValue;
-    if (body.status !== undefined) updateData.status = body.status;
-    if (body.retryCount !== undefined) updateData.retryCount = body.retryCount;
-    if (body.retryDelayMs !== undefined) updateData.retryDelayMs = body.retryDelayMs;
-    if (body.timeoutMs !== undefined) updateData.timeoutMs = body.timeoutMs;
-    if (body.customHeaders !== undefined) updateData.customHeaders = body.customHeaders as unknown as Prisma.InputJsonValue;
+    if (body.name !== undefined) {
+      updateData.name = body.name;
+    }
+    if (body.url !== undefined) {
+      updateData.url = body.url;
+    }
+    if (body.secret !== undefined) {
+      updateData.secret = body.secret || null;
+    }
+    if (body.apiKey !== undefined) {
+      updateData.apiKey = body.apiKey || null;
+    }
+    if (body.eventTypeFilters !== undefined) {
+      updateData.eventTypeFilters =
+        body.eventTypeFilters as unknown as Prisma.InputJsonValue;
+    }
+    if (body.entityFilters !== undefined) {
+      updateData.entityFilters =
+        body.entityFilters as unknown as Prisma.InputJsonValue;
+    }
+    if (body.status !== undefined) {
+      updateData.status = body.status;
+    }
+    if (body.retryCount !== undefined) {
+      updateData.retryCount = body.retryCount;
+    }
+    if (body.retryDelayMs !== undefined) {
+      updateData.retryDelayMs = body.retryDelayMs;
+    }
+    if (body.timeoutMs !== undefined) {
+      updateData.timeoutMs = body.timeoutMs;
+    }
+    if (body.customHeaders !== undefined) {
+      updateData.customHeaders =
+        body.customHeaders as unknown as Prisma.InputJsonValue;
+    }
 
     const webhook = await database.outboundWebhook.update({
       where: {
@@ -195,17 +233,20 @@ export async function PUT(
     return NextResponse.json({ webhook: sanitizedWebhook });
   } catch (error) {
     console.error("Error updating webhook:", error);
-    return NextResponse.json({ error: "Failed to update webhook" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to update webhook" },
+      { status: 500 }
+    );
   }
 }
 
 export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
+  _request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
+    if (!(userId && orgId)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -245,7 +286,10 @@ export async function DELETE(
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting webhook:", error);
-    return NextResponse.json({ error: "Failed to delete webhook" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to delete webhook" },
+      { status: 500 }
+    );
   }
 }
 

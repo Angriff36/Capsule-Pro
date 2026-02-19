@@ -8,10 +8,10 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import {
-  sendWebhook,
   determineNextStatus,
+  sendWebhook,
   shouldAutoDisable,
   type WebhookPayload,
 } from "@repo/notifications";
@@ -19,7 +19,12 @@ import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 // Valid statuses
-const VALID_DELIVERY_STATUSES = ["pending", "success", "failed", "retrying"] as const;
+const VALID_DELIVERY_STATUSES = [
+  "pending",
+  "success",
+  "failed",
+  "retrying",
+] as const;
 type DeliveryStatus = (typeof VALID_DELIVERY_STATUSES)[number];
 
 interface RetryDeliveriesRequest {
@@ -33,7 +38,7 @@ interface RetryDeliveriesRequest {
 export async function POST(request: NextRequest) {
   try {
     const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
+    if (!(userId && orgId)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -163,7 +168,11 @@ export async function POST(request: NextRequest) {
       );
 
       // Determine next status
-      const { status, nextRetryAt } = determineNextStatus(newAttemptNumber, webhook.retryCount, result);
+      const { status, nextRetryAt } = determineNextStatus(
+        newAttemptNumber,
+        webhook.retryCount,
+        result
+      );
 
       // Update delivery log
       await database.webhookDeliveryLog.update({
@@ -192,7 +201,9 @@ export async function POST(request: NextRequest) {
         consecutiveFailures: number;
         status?: string;
       } = {
-        consecutiveFailures: result.success ? 0 : webhook.consecutiveFailures + 1,
+        consecutiveFailures: result.success
+          ? 0
+          : webhook.consecutiveFailures + 1,
       };
 
       if (result.success) {
@@ -230,7 +241,10 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error retrying webhooks:", error);
-    return NextResponse.json({ error: "Failed to retry webhooks" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to retry webhooks" },
+      { status: 500 }
+    );
   }
 }
 
