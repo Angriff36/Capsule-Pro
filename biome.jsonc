@@ -18,6 +18,9 @@
       "!!**/coverage",
       "!!.turbo",
       "!!**/.turbo",
+      "!!.tmp",
+      "!!**/.tmp",
+      "!!**/test-output",
       "!!.vercel",
       "!!**/.vercel",
       "!!**/test-results",
@@ -45,7 +48,8 @@
       "!!**/.react-email",
       "!!**/.specify",
       "!!**/*.tsbuildinfo",
-      "!!**/*.snap"
+      "!!**/*.snap",
+      "!!eslint.config.mjs"
     ]
   },
   "extends": [

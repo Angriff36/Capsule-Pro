@@ -31,10 +31,9 @@ export default clerkMiddleware(async (auth, req) => {
 // Skips static files, public pages (Plasmic, sign-in, sign-up)
 export const config = {
   matcher: [
-    // Protected routes only - authenticated area, dev-console
-    "/((authenticated|dev-console)(.*)|api(.*)|trpc(.*))",
-    // Auth routes (need clerk middleware)
-    "/sign-in(.*)",
-    "/sign-up(.*)",
+    // Run middleware for all app routes except static assets
+    "/((?!_next|.*\\..*).*)",
+    // Keep explicit API/trpc coverage for programmatic auth handling
+    "/(api|trpc)(.*)",
   ],
 };

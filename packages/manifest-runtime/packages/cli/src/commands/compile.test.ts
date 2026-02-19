@@ -4,16 +4,21 @@
  * Tests the manifest compile command for IR generation.
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import fs from 'fs/promises';
-import path from 'path';
-import os from 'os';
+import fs from "fs/promises";
+import os from "os";
+import path from "path";
+import { describe, expect, it, vi } from "vitest";
 
 // Helper to create temp manifest files
-async function createTempManifest(content: string, filename: string = 'test.manifest'): Promise<string> {
-  const tempDir = await fs.mkdtemp(path.join(os.tmpdir(), 'manifest-compile-test-'));
+async function createTempManifest(
+  content: string,
+  filename = "test.manifest"
+): Promise<string> {
+  const tempDir = await fs.mkdtemp(
+    path.join(os.tmpdir(), "manifest-compile-test-")
+  );
   const filePath = path.join(tempDir, filename);
-  await fs.writeFile(filePath, content, 'utf-8');
+  await fs.writeFile(filePath, content, "utf-8");
   return filePath;
 }
 
@@ -35,16 +40,18 @@ async function cleanupTemp(filePath: string): Promise<void> {
 // Helper to capture output
 function captureOutput() {
   const outputs: string[] = [];
-  const logSpy = vi.spyOn(console, 'log').mockImplementation((...args) => {
-    outputs.push(args.join(' '));
+  const logSpy = vi.spyOn(console, "log").mockImplementation((...args) => {
+    outputs.push(args.join(" "));
   });
-  const errorSpy = vi.spyOn(console, 'error').mockImplementation((...args) => {
-    outputs.push(args.join(' '));
+  const errorSpy = vi.spyOn(console, "error").mockImplementation((...args) => {
+    outputs.push(args.join(" "));
   });
-  const stderrSpy = vi.spyOn(process.stderr, 'write').mockImplementation((data: any) => {
-    outputs.push(String(data));
-    return true;
-  });
+  const stderrSpy = vi
+    .spyOn(process.stderr, "write")
+    .mockImplementation((data: any) => {
+      outputs.push(String(data));
+      return true;
+    });
 
   return {
     outputs,
@@ -56,11 +63,11 @@ function captureOutput() {
   };
 }
 
-describe('Compile Command - Basic Compilation', () => {
+describe("Compile Command - Basic Compilation", () => {
   // Note: Intentionally NOT using vi.resetModules() to avoid race conditions
   // with dynamic imports in the compile command
 
-  it('should compile a simple entity to IR', async () => {
+  it("should compile a simple entity to IR", async () => {
     const manifest = `
 entity Counter {
   property count: number = 0
@@ -69,22 +76,25 @@ entity Counter {
 `;
     const filePath = await createTempManifest(manifest);
     try {
-      const { compileCommand } = await import('./compile.js');
+      const { compileCommand } = await import("./compile.js");
       const capture = captureOutput();
 
       await compileCommand(filePath, { pretty: true });
 
       // Check that IR file was created
-      const irPath = filePath.replace('.manifest', '.ir.json');
-      const irExists = await fs.stat(irPath).then(() => true).catch(() => false);
+      const irPath = filePath.replace(".manifest", ".ir.json");
+      const irExists = await fs
+        .stat(irPath)
+        .then(() => true)
+        .catch(() => false);
       expect(irExists).toBe(true);
 
       // Check IR content
-      const rawContent = await fs.readFile(irPath, 'utf-8');
+      const rawContent = await fs.readFile(irPath, "utf-8");
       const irContent = JSON.parse(rawContent);
-      expect(irContent).toHaveProperty('entities');
+      expect(irContent).toHaveProperty("entities");
       expect(irContent.entities).toHaveLength(1);
-      expect(irContent.entities[0].name).toBe('Counter');
+      expect(irContent.entities[0].name).toBe("Counter");
 
       capture.restore();
     } finally {
@@ -92,7 +102,7 @@ entity Counter {
     }
   });
 
-  it('should compile entity with relationships', async () => {
+  it("should compile entity with relationships", async () => {
     const manifest = `
 entity Author {
   property id: string
@@ -108,18 +118,21 @@ entity Book {
 `;
     const filePath = await createTempManifest(manifest);
     try {
-      const { compileCommand } = await import('./compile.js');
+      const { compileCommand } = await import("./compile.js");
       const capture = captureOutput();
 
       await compileCommand(filePath, {});
 
-      const irPath = filePath.replace('.manifest', '.ir.json');
-      const irExists = await fs.stat(irPath).then(() => true).catch(() => false);
+      const irPath = filePath.replace(".manifest", ".ir.json");
+      const irExists = await fs
+        .stat(irPath)
+        .then(() => true)
+        .catch(() => false);
       expect(irExists).toBe(true);
 
-      const irContent = JSON.parse(await fs.readFile(irPath, 'utf-8'));
+      const irContent = JSON.parse(await fs.readFile(irPath, "utf-8"));
       expect(irContent.entities).toHaveLength(2);
-      const author = irContent.entities.find((e: any) => e.name === 'Author');
+      const author = irContent.entities.find((e: any) => e.name === "Author");
       expect(author.relationships).toBeDefined();
       expect(author.relationships.length).toBeGreaterThan(0);
 
@@ -130,10 +143,10 @@ entity Book {
   });
 });
 
-describe('Compile Command - Output Options', () => {
+describe("Compile Command - Output Options", () => {
   // Note: Intentionally NOT using vi.resetModules() to avoid race conditions
 
-  it('should output pretty JSON when requested', async () => {
+  it("should output pretty JSON when requested", async () => {
     const manifest = `
 entity Counter {
   property count: number
@@ -141,17 +154,17 @@ entity Counter {
 `;
     const filePath = await createTempManifest(manifest);
     try {
-      const { compileCommand } = await import('./compile.js');
+      const { compileCommand } = await import("./compile.js");
       const capture = captureOutput();
 
       await compileCommand(filePath, { pretty: true });
 
-      const irPath = filePath.replace('.manifest', '.ir.json');
-      const irRaw = await fs.readFile(irPath, 'utf-8');
+      const irPath = filePath.replace(".manifest", ".ir.json");
+      const irRaw = await fs.readFile(irPath, "utf-8");
 
       // Pretty JSON should have newlines and indentation
-      expect(irRaw).toContain('\n');
-      expect(irRaw).toContain('  ');
+      expect(irRaw).toContain("\n");
+      expect(irRaw).toContain("  ");
 
       capture.restore();
     } finally {
@@ -159,7 +172,7 @@ entity Counter {
     }
   });
 
-  it('should output compact JSON by default', async () => {
+  it("should output compact JSON by default", async () => {
     const manifest = `
 entity Counter {
   property count: number
@@ -167,16 +180,16 @@ entity Counter {
 `;
     const filePath = await createTempManifest(manifest);
     try {
-      const { compileCommand } = await import('./compile.js');
+      const { compileCommand } = await import("./compile.js");
       const capture = captureOutput();
 
       await compileCommand(filePath, {});
 
-      const irPath = filePath.replace('.manifest', '.ir.json');
-      const irRaw = await fs.readFile(irPath, 'utf-8');
+      const irPath = filePath.replace(".manifest", ".ir.json");
+      const irRaw = await fs.readFile(irPath, "utf-8");
 
       // Compact JSON should be single line
-      expect(irRaw.split('\n').length).toBe(1);
+      expect(irRaw.split("\n").length).toBe(1);
 
       capture.restore();
     } finally {
@@ -185,40 +198,45 @@ entity Counter {
   });
 });
 
-describe('Compile Command - Error Handling', () => {
+describe("Compile Command - Error Handling", () => {
   // Note: Intentionally NOT using vi.resetModules() to avoid race conditions
 
-  it('should report error for missing file', async () => {
-    const { compileCommand } = await import('./compile.js');
+  it("should report error for missing file", async () => {
+    const { compileCommand } = await import("./compile.js");
     const capture = captureOutput();
 
     const originalExit = process.exit;
-    const exitMock = vi.fn().mockImplementation(() => { throw new Error('exit'); });
+    const exitMock = vi.fn().mockImplementation(() => {
+      throw new Error("exit");
+    });
     process.exit = exitMock as any;
 
     try {
-      await compileCommand('/nonexistent/path/file.manifest', {});
-      expect.fail('Should have thrown');
+      await compileCommand("/nonexistent/path/file.manifest", {});
+      expect.fail("Should have thrown");
     } catch (e: any) {
-      expect(e.message).toBe('exit');
+      expect(e.message).toBe("exit");
     }
 
     process.exit = originalExit;
     capture.restore();
   });
 
-  it('should handle empty manifest file', async () => {
-    const manifest = '';
+  it("should handle empty manifest file", async () => {
+    const manifest = "";
     const filePath = await createTempManifest(manifest);
     try {
-      const { compileCommand } = await import('./compile.js');
+      const { compileCommand } = await import("./compile.js");
       const capture = captureOutput();
 
       await compileCommand(filePath, {});
 
       // Empty manifest should still compile (empty IR)
-      const irPath = filePath.replace('.manifest', '.ir.json');
-      const irExists = await fs.stat(irPath).then(() => true).catch(() => false);
+      const irPath = filePath.replace(".manifest", ".ir.json");
+      const irExists = await fs
+        .stat(irPath)
+        .then(() => true)
+        .catch(() => false);
       expect(irExists).toBe(true);
 
       capture.restore();
@@ -228,19 +246,24 @@ describe('Compile Command - Error Handling', () => {
   });
 });
 
-describe('Compile Command - Conformance Fixtures', () => {
+describe("Compile Command - Conformance Fixtures", () => {
   // Note: Intentionally NOT using vi.resetModules() to avoid race conditions
 
-  it('should compile existing conformance fixtures', async () => {
+  it("should compile existing conformance fixtures", async () => {
     // Use existing conformance fixtures that are known to work
-    const fixturePath = path.resolve(process.cwd(), 'src/manifest/conformance/fixtures/01-entity-properties.manifest');
+    const fixturePath = path.resolve(
+      process.cwd(),
+      "src/manifest/conformance/fixtures/01-entity-properties.manifest"
+    );
 
     try {
       await fs.stat(fixturePath);
-      const { compileCommand } = await import('./compile.js');
+      const { compileCommand } = await import("./compile.js");
       const capture = captureOutput();
 
-      await compileCommand(fixturePath, { output: path.join(os.tmpdir(), 'manifest-compile-test-output') });
+      await compileCommand(fixturePath, {
+        output: path.join(os.tmpdir(), "manifest-compile-test-output"),
+      });
 
       // Should complete without throwing
       capture.restore();

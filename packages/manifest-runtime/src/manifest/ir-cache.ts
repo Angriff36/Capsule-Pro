@@ -14,7 +14,7 @@ export class IRCache {
   private maxAge: number;
   private maxSize: number;
 
-  constructor(maxAge: number = 3600000, maxSize: number = 100) {
+  constructor(maxAge = 3_600_000, maxSize = 100) {
     // maxAge: 1 hour default (in milliseconds)
     // maxSize: maximum number of entries to store
     this.maxAge = maxAge;

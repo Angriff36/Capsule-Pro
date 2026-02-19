@@ -10,12 +10,15 @@
  * All 6 manifests are compiled and merged into packages/manifest-ir/ir/kitchen/kitchen.ir.json
  */
 
-import { readdirSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
-import { join } from "node:path";
 import { spawnSync } from "node:child_process";
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import { compileToIR } from "@manifest/runtime/ir-compiler";
 
-const MANIFESTS_DIR = join(process.cwd(), "packages/manifest-adapters/manifests");
+const MANIFESTS_DIR = join(
+  process.cwd(),
+  "packages/manifest-adapters/manifests"
+);
 const OUTPUT_DIR = join(process.cwd(), "packages/manifest-ir/ir/kitchen");
 const IR_OUTPUT_FILE = join(OUTPUT_DIR, "kitchen.ir.json");
 const PROVENANCE_OUTPUT_FILE = join(OUTPUT_DIR, "kitchen.provenance.json");
@@ -72,9 +75,14 @@ async function compileMergedManifests() {
 
   // Write merged IR
   writeFileSync(IR_OUTPUT_FILE, JSON.stringify(mergedIR, null, 2));
-  writeFileSync(PROVENANCE_OUTPUT_FILE, JSON.stringify(mergedIR.provenance, null, 2));
+  writeFileSync(
+    PROVENANCE_OUTPUT_FILE,
+    JSON.stringify(mergedIR.provenance, null, 2)
+  );
 
-  console.log(`[manifest/build] Compiled ${mergedIR.entities.length} entities, ${mergedIR.commands.length} commands`);
+  console.log(
+    `[manifest/build] Compiled ${mergedIR.entities.length} entities, ${mergedIR.commands.length} commands`
+  );
 }
 
 async function generateFromIR() {

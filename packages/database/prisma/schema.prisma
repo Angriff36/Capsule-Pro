@@ -105,6 +105,17 @@ model Account {
   adminChatMessages       AdminChatMessage[]
   chartOfAccounts         ChartOfAccount[]
   manifestEntities        ManifestEntity[]
+  venues                  Venue[]
+  nowstaConfig            NowstaConfig?
+  nowstaEmployeeMappings  NowstaEmployeeMapping[]
+  nowstaShiftSyncs        NowstaShiftSync[]
+  goodshuffleConfig         GoodshuffleConfig?
+  goodshuffleEventSyncs     GoodshuffleEventSync[]
+  goodshuffleInventorySyncs GoodshuffleInventorySync[]
+  goodshuffleInvoiceSyncs   GoodshuffleInvoiceSync[]
+  emailTemplates            email_templates[]
+  emailWorkflows            EmailWorkflow[]
+  emailLogs                 EmailLog[]
 
   @@map("accounts")
   @@schema("platform")
@@ -134,6 +145,43 @@ model Location {
   @@id([tenantId, id])
   @@unique([tenantId, id])
   @@map("locations")
+  @@schema("tenant")
+}
+
+model Venue {
+  tenantId        String     @map("tenant_id") @db.Uuid
+  id              String     @unique @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
+  name            String
+  venueType       String     @default("other") @map("venue_type")
+  addressLine1    String?    @map("address_line1")
+  addressLine2    String?    @map("address_line2")
+  city            String?
+  stateProvince   String?    @map("state_province")
+  postalCode      String?    @map("postal_code")
+  countryCode     String?    @map("country_code") @db.Char(2)
+  capacity        Int?       @default(0)
+  contactName     String?    @map("contact_name")
+  contactPhone    String?    @map("contact_phone")
+  contactEmail    String?    @map("contact_email")
+  equipmentList   Json?      @map("equipment_list")
+  preferredVendors Json?    @map("preferred_vendors")
+  accessNotes     String?    @map("access_notes")
+  cateringNotes   String?    @map("catering_notes")
+  layoutImageUrl  String?    @map("layout_image_url")
+  isActive        Boolean    @default(true) @map("is_active")
+  tags            String[]
+  createdAt       DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime   @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt       DateTime?  @map("deleted_at") @db.Timestamptz(6)
+  tenant          Account    @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  events          Event[]    @relation("EventVenue")
+
+  @@id([tenantId, id])
+  @@unique([tenantId, id])
+  @@index([tenantId, city])
+  @@index([tenantId, venueType])
+  @@index([tenantId, isActive])
+  @@map("venues")
   @@schema("tenant")
 }
 
@@ -374,6 +422,7 @@ model Event {
   clientId             String?         @map("client_id") @db.Uuid
   locationId           String?         @map("location_id") @db.Uuid
   venueId              String?         @map("venue_id") @db.Uuid
+  venueEntityId        String?         @map("venue_entity_id") @db.Uuid
   eventType            String          @map("event_type")
   eventDate            DateTime        @map("event_date") @db.Date
   guestCount           Int             @default(1) @map("guest_count")
@@ -396,6 +445,7 @@ model Event {
   client               Client?         @relation("EventClient", fields: [clientId], references: [id], onDelete: SetNull)
   location             Location?       @relation("EventLocation", fields: [locationId], references: [id], onDelete: SetNull)
   venue                Location?       @relation("LocationVenue", fields: [venueId], references: [id], onDelete: SetNull)
+  venueEntity          Venue?          @relation("EventVenue", fields: [venueEntityId], references: [id], onDelete: SetNull)
   budgets              EventBudget[]
   reports              EventReport[]
   wasteEntries         WasteEntry[]
@@ -406,6 +456,7 @@ model Event {
   @@id([tenantId, id])
   @@unique([tenantId, id])
   @@index([tenantId, venueId], map: "idx_events_venue_id")
+  @@index([tenantId, venueEntityId], map: "idx_events_venue_entity_id")
   @@index([clientId])
   @@index([locationId])
   @@map("events")
@@ -2509,6 +2560,78 @@ model notification_preferences {
   @@schema("tenant_admin")
 }
 
+/// SMS delivery log for tracking message status
+model sms_logs {
+  tenant_id          String            @db.Uuid
+  id                 String            @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employee_id        String?           @db.Uuid
+  phone_number       String
+  message            String
+  notification_type  String
+  status             sms_status        @default(pending)
+  twilio_sid         String?
+  error_message      String?
+  sent_at            DateTime?         @db.Timestamptz(6)
+  delivered_at       DateTime?         @db.Timestamptz(6)
+  failed_at          DateTime?         @db.Timestamptz(6)
+  created_at         DateTime          @default(now()) @db.Timestamptz(6)
+  updated_at         DateTime          @default(now()) @db.Timestamptz(6)
+
+  @@id([tenant_id, id])
+  @@index([tenant_id, status])
+  @@index([tenant_id, employee_id])
+  @@index([tenant_id, created_at(sort: Desc)])
+  @@schema("tenant_admin")
+}
+
+enum sms_status {
+  pending
+  sent
+  delivered
+  failed
+
+  @@schema("tenant_admin")
+}
+
+/// Email template for user-defined email content with merge fields
+model email_templates {
+  tenant_id    String            @db.Uuid
+  id           String            @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String
+  template_type email_template_type
+  subject      String
+  body         String            @db.Text
+  merge_fields Json              @default("[]")
+  is_active    Boolean           @default(true) @map("is_active")
+  is_default   Boolean           @default(false) @map("is_default")
+  created_at   DateTime          @default(now()) @db.Timestamptz(6)
+  updated_at   DateTime          @default(now()) @updatedAt @db.Timestamptz(6)
+  deleted_at   DateTime?         @db.Timestamptz(6)
+
+  tenant        Account          @relation(fields: [tenant_id], references: [id], onDelete: Restrict)
+  emailWorkflows EmailWorkflow[]
+
+  @@id([tenant_id, id])
+  @@index([tenant_id, template_type])
+  @@index([tenant_id, is_active])
+  @@index([tenant_id, is_default])
+  @@map("email_templates")
+  @@schema("tenant_admin")
+}
+
+enum email_template_type {
+  proposal
+  confirmation
+  reminder
+  follow_up
+  contract
+  contact
+  custom
+
+  @@map("email_template_type")
+  @@schema("tenant_admin")
+}
+
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model report_history {
@@ -3200,6 +3323,8 @@ enum EntityType {
   proposal
   shipment
   note
+  risk
+  financial_projection
 
   @@schema("tenant_events")
 }
@@ -3332,6 +3457,16 @@ enum ShipmentStatus {
   @@schema("core")
 }
 
+enum SentryFixJobStatus {
+  queued
+  running
+  succeeded
+  failed
+  cancelled
+
+  @@schema("core")
+}
+
 enum AccountType {
   ASSET
   LIABILITY
@@ -3391,4 +3526,288 @@ model ManifestIdempotency {
   @@index([expiresAt])
   @@map("manifest_idempotency")
   @@schema("tenant")
+}
+
+/// Sentry-to-PR auto-fixer job tracking
+model SentryFixJob {
+  id              String              @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sentryIssueId   String              @map("sentry_issue_id")
+  sentryEventId   String?             @map("sentry_event_id")
+  organizationSlug String             @map("organization_slug")
+  projectSlug     String              @map("project_slug")
+  environment     String?
+  release         String?
+  issueTitle      String              @map("issue_title")
+  issueUrl        String              @map("issue_url")
+  status          SentryFixJobStatus  @default(queued)
+  payloadSnapshot Json                @map("payload_snapshot")
+  branchName      String?             @map("branch_name")
+  prUrl           String?             @map("pr_url")
+  prNumber        Int?                @map("pr_number")
+  errorMessage    String?             @map("error_message")
+  retryCount      Int                 @default(0) @map("retry_count")
+  maxRetries      Int                 @default(3) @map("max_retries")
+  startedAt       DateTime?           @map("started_at") @db.Timestamptz(6)
+  completedAt     DateTime?           @map("completed_at") @db.Timestamptz(6)
+  createdAt       DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([sentryIssueId])
+  @@index([status, createdAt])
+  @@index([sentryIssueId, createdAt])
+  @@map("sentry_fix_jobs")
+  @@schema("platform")
+}
+
+// Nowsta Integration Models
+model NowstaConfig {
+  tenantId         String    @map("tenant_id") @db.Uuid
+  id               String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  apiKey           String    @map("api_key")
+  apiSecret        String    @map("api_secret")
+  organizationId   String?   @map("organization_id")
+  syncEnabled      Boolean   @default(true) @map("sync_enabled")
+  syncDirection    String    @default("one_way") // one_way or two_way
+  lastSyncAt       DateTime? @map("last_sync_at") @db.Timestamptz(6)
+  lastSyncStatus   String?   @map("last_sync_status")
+  lastSyncError    String?   @map("last_sync_error") @db.Text
+  autoSyncInterval Int?      @map("auto_sync_interval") // in minutes
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  tenant           Account   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId])
+  @@map("nowsta_config")
+  @@schema("tenant_admin")
+}
+
+model NowstaEmployeeMapping {
+  tenantId           String   @map("tenant_id") @db.Uuid
+  id                 String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nowstaEmployeeId   String   @map("nowsta_employee_id")
+  convoyEmployeeId   String   @map("convoy_employee_id") @db.Uuid
+  nowstaEmployeeName String?  @map("nowsta_employee_name")
+  nowstaEmployeeEmail String? @map("nowsta_employee_email")
+  autoMapped         Boolean  @default(false) @map("auto_mapped")
+  confirmedAt        DateTime? @map("confirmed_at") @db.Timestamptz(6)
+  createdAt          DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  tenant             Account  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@unique([tenantId, nowstaEmployeeId])
+  @@index([tenantId, convoyEmployeeId])
+  @@map("nowsta_employee_mappings")
+  @@schema("tenant_admin")
+}
+
+model NowstaShiftSync {
+  tenantId         String    @map("tenant_id") @db.Uuid
+  id               String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  nowstaShiftId    String    @map("nowsta_shift_id")
+  convoyShiftId    String?   @map("convoy_shift_id") @db.Uuid
+  nowstaEmployeeId String    @map("nowsta_employee_id")
+  locationId       String?   @map("location_id") @db.Uuid
+  shiftStart       DateTime  @map("shift_start") @db.Timestamptz(6)
+  shiftEnd         DateTime  @map("shift_end") @db.Timestamptz(6)
+  roleDuringShift  String?   @map("role_during_shift")
+  status           String    @default("pending") // pending, synced, error
+  syncError        String?   @map("sync_error") @db.Text
+  lastSyncedAt     DateTime? @map("last_synced_at") @db.Timestamptz(6)
+  nowstaUpdatedAt  DateTime? @map("nowsta_updated_at") @db.Timestamptz(6)
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  tenant           Account   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@unique([tenantId, nowstaShiftId])
+  @@index([tenantId, status])
+  @@index([tenantId, shiftStart])
+  @@index([tenantId, nowstaEmployeeId])
+  @@map("nowsta_shift_syncs")
+  @@schema("tenant_admin")
+}
+
+// Goodshuffle Integration Models
+model GoodshuffleConfig {
+  tenantId            String    @map("tenant_id") @db.Uuid
+  id                  String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  apiKey              String    @map("api_key")
+  apiSecret           String    @map("api_secret")
+  webhookSecret       String?   @map("webhook_secret")
+  syncEnabled         Boolean   @default(true) @map("sync_enabled")
+  syncDirection       String    @default("one_way") // one_way or two_way
+  conflictResolution  String    @default("convoy_wins") // convoy_wins, goodshuffle_wins, manual
+  lastSyncAt          DateTime? @map("last_sync_at") @db.Timestamptz(6)
+  lastSyncStatus      String?   @map("last_sync_status")
+  lastSyncError       String?   @map("last_sync_error") @db.Text
+  autoSyncInterval    Int?      @map("auto_sync_interval") // in minutes
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  tenant              Account   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId])
+  @@map("goodshuffle_config")
+  @@schema("tenant_admin")
+}
+
+model GoodshuffleEventSync {
+  tenantId           String    @map("tenant_id") @db.Uuid
+  id                 String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  goodshuffleEventId String    @map("goodshuffle_event_id")
+  convoyEventId      String?   @map("convoy_event_id") @db.Uuid
+  eventName          String?   @map("event_name")
+  eventDate          DateTime? @map("event_date") @db.Timestamptz(6)
+  status             String    @default("pending") // pending, synced, conflict, error
+  syncError          String?   @map("sync_error") @db.Text
+  conflictData       Json?     @map("conflict_data")
+  conflictResolvedAt DateTime? @map("conflict_resolved_at") @db.Timestamptz(6)
+  lastSyncedAt       DateTime? @map("last_synced_at") @db.Timestamptz(6)
+  goodshuffleUpdatedAt DateTime? @map("goodshuffle_updated_at") @db.Timestamptz(6)
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  tenant             Account   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@unique([tenantId, goodshuffleEventId])
+  @@index([tenantId, status])
+  @@index([tenantId, eventDate])
+  @@index([tenantId, convoyEventId])
+  @@map("goodshuffle_event_syncs")
+  @@schema("tenant_admin")
+}
+
+model GoodshuffleInventorySync {
+  tenantId              String    @map("tenant_id") @db.Uuid
+  id                    String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  goodshuffleItemId     String    @map("goodshuffle_item_id")
+  convoyInventoryItemId String?   @map("convoy_inventory_item_id") @db.Uuid
+  itemName              String?   @map("item_name")
+  itemSku               String?   @map("item_sku")
+  status                String    @default("pending") // pending, synced, conflict, error
+  syncError             String?   @map("sync_error") @db.Text
+  conflictData          Json?     @map("conflict_data")
+  conflictResolvedAt    DateTime? @map("conflict_resolved_at") @db.Timestamptz(6)
+  lastSyncedAt          DateTime? @map("last_synced_at") @db.Timestamptz(6)
+  goodshuffleUpdatedAt  DateTime? @map("goodshuffle_updated_at") @db.Timestamptz(6)
+  createdAt             DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  tenant                Account   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@unique([tenantId, goodshuffleItemId])
+  @@index([tenantId, status])
+  @@index([tenantId, convoyInventoryItemId])
+  @@map("goodshuffle_inventory_syncs")
+  @@schema("tenant_admin")
+}
+
+model GoodshuffleInvoiceSync {
+  tenantId             String    @map("tenant_id") @db.Uuid
+  id                   String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  goodshuffleInvoiceId String    @map("goodshuffle_invoice_id")
+  convoyInvoiceId      String?   @map("convoy_invoice_id") @db.Uuid
+  invoiceNumber        String?   @map("invoice_number")
+  invoiceTotal         Decimal?  @map("invoice_total") @db.Decimal(12, 2)
+  status               String    @default("pending") // pending, synced, conflict, error
+  syncError            String?   @map("sync_error") @db.Text
+  conflictData         Json?     @map("conflict_data")
+  conflictResolvedAt   DateTime? @map("conflict_resolved_at") @db.Timestamptz(6)
+  lastSyncedAt         DateTime? @map("last_synced_at") @db.Timestamptz(6)
+  goodshuffleUpdatedAt DateTime? @map("goodshuffle_updated_at") @db.Timestamptz(6)
+  createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  tenant               Account   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@unique([tenantId, goodshuffleInvoiceId])
+  @@index([tenantId, status])
+  @@index([tenantId, convoyInvoiceId])
+  @@map("goodshuffle_invoice_syncs")
+  @@schema("tenant_admin")
+}
+
+/// Email workflow trigger configuration for automated emails
+model EmailWorkflow {
+  tenantId              String             @map("tenant_id") @db.Uuid
+  id                    String             @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                  String
+  triggerType           email_trigger_type @map("trigger_type")
+  triggerConfig         Json               @default("{}") @map("trigger_config")
+  emailTemplateId       String?            @map("email_template_id") @db.Uuid
+  emailTemplateTenantId String?            @map("email_template_tenant_id") @db.Uuid
+  recipientConfig       Json               @default("{}") @map("recipient_config")
+  isActive              Boolean            @default(true) @map("is_active")
+  lastTriggeredAt       DateTime?          @map("last_triggered_at") @db.Timestamptz(6)
+  createdAt             DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt             DateTime?          @map("deleted_at") @db.Timestamptz(6)
+  tenant                Account            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  emailTemplate         email_templates?   @relation(fields: [emailTemplateTenantId, emailTemplateId], references: [tenant_id, id], onDelete: SetNull)
+
+  @@id([tenantId, id])
+  @@index([tenantId, triggerType])
+  @@index([tenantId, isActive])
+  @@map("email_workflows")
+  @@schema("tenant_admin")
+}
+
+/// Email delivery log for tracking automated email status
+model EmailLog {
+  tenantId         String      @map("tenant_id") @db.Uuid
+  id               String      @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  workflowId       String?     @map("workflow_id") @db.Uuid
+  recipientEmail   String      @map("recipient_email")
+  recipientId      String?     @map("recipient_id") @db.Uuid
+  recipientType    String?     @map("recipient_type") // employee, client, vendor
+  subject          String
+  notificationType String      @map("notification_type")
+  status           email_status @default(pending)
+  resendId         String?     @map("resend_id")
+  errorMessage     String?     @map("error_message") @db.Text
+  sentAt           DateTime?   @map("sent_at") @db.Timestamptz(6)
+  deliveredAt      DateTime?   @map("delivered_at") @db.Timestamptz(6)
+  openedAt         DateTime?   @map("opened_at") @db.Timestamptz(6)
+  failedAt         DateTime?   @map("failed_at") @db.Timestamptz(6)
+  createdAt        DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime    @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  tenant           Account     @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@index([tenantId, workflowId])
+  @@index([tenantId, recipientEmail])
+  @@index([tenantId, status])
+  @@index([tenantId, createdAt(sort: Desc)])
+  @@map("email_logs")
+  @@schema("tenant_admin")
+}
+
+/// Types of triggers that can initiate automated emails
+enum email_trigger_type {
+  event_confirmed
+  event_canceled
+  event_completed
+  task_assigned
+  task_completed
+  task_reminder
+  shift_reminder
+  proposal_sent
+  contract_signed
+  custom
+
+  @@map("email_trigger_type")
+  @@schema("tenant_admin")
+}
+
+/// Status of email delivery
+enum email_status {
+  pending
+  sent
+  delivered
+  opened
+  failed
+  bounced
+
+  @@map("email_status")
+  @@schema("tenant_admin")
 }

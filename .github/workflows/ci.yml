@@ -34,6 +34,10 @@ jobs:
       - name: Run linting
         run: pnpm run check
 
+      - name: Check canonical routes (no hardcoded /api/ in client code)
+        run: node scripts/check-hardcoded-routes.mjs
+        continue-on-error: true # TODO: Remove once all violations are migrated to route helpers
+
       - name: Run tests
         run: pnpm test
 

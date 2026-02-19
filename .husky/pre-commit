@@ -62,8 +62,8 @@ else
   fi
 fi
 
-# Check if staged files actually changed (cross-platform)
-NEW_STAGED_HASH=$(git diff --cached | openssl dgst -sha256 | cut -d' ' -f2 || git diff --cached | sha256sum | cut -d' ' -f1)
+# Check if staged files actually changed (cross-platform, uses git built-in)
+NEW_STAGED_HASH=$(git diff --cached | git hash-object --stdin)
 if [ "$STAGED_HASH" != "$NEW_STAGED_HASH" ]; then
   echo "✨ Files formatted by Ultracite"
 fi

@@ -18,7 +18,11 @@ import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useFormStatus } from "react-dom";
-import { type ActionState, deleteStaffMember, updateStaffMember } from "../actions";
+import {
+  type ActionState,
+  deleteStaffMember,
+  updateStaffMember,
+} from "../actions";
 import { employmentTypeOptions, roleOptions } from "../constants";
 
 interface Employee {
@@ -47,10 +51,16 @@ interface EditStaffDialogProps {
   children?: React.ReactNode;
 }
 
-export const EditStaffDialog = ({ employee, children }: EditStaffDialogProps) => {
+export const EditStaffDialog = ({
+  employee,
+  children,
+}: EditStaffDialogProps) => {
   const [open, setOpen] = useState(false);
   const [state, formAction] = useActionState(updateStaffMember, initialState);
-  const [deleteState, deleteAction] = useActionState(deleteStaffMember, initialState);
+  const [deleteState, deleteAction] = useActionState(
+    deleteStaffMember,
+    initialState
+  );
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
@@ -64,9 +74,13 @@ export const EditStaffDialog = ({ employee, children }: EditStaffDialogProps) =>
   }, [state.status, deleteState.status]);
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog onOpenChange={setOpen} open={open}>
       <DialogTrigger asChild>
-        {children || <Button variant="outline" size="sm">Edit</Button>}
+        {children || (
+          <Button size="sm" variant="outline">
+            Edit
+          </Button>
+        )}
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
@@ -76,8 +90,8 @@ export const EditStaffDialog = ({ employee, children }: EditStaffDialogProps) =>
           </DialogDescription>
         </DialogHeader>
 
-        <form action={formAction} ref={formRef} className="space-y-4">
-          <input type="hidden" name="id" value={employee.id} />
+        <form action={formAction} className="space-y-4" ref={formRef}>
+          <input name="id" type="hidden" value={employee.id} />
 
           {state.status === "error" ? (
             <Alert variant="destructive">
@@ -96,9 +110,9 @@ export const EditStaffDialog = ({ employee, children }: EditStaffDialogProps) =>
             <Label htmlFor={`email-${employee.id}`}>Email</Label>
             <Input
               autoComplete="email"
+              defaultValue={employee.email}
               id={`email-${employee.id}`}
               name="email"
-              defaultValue={employee.email}
               type="email"
             />
           </div>
@@ -107,9 +121,9 @@ export const EditStaffDialog = ({ employee, children }: EditStaffDialogProps) =>
             <Label htmlFor={`firstName-${employee.id}`}>First name</Label>
             <Input
               autoComplete="given-name"
+              defaultValue={employee.firstName}
               id={`firstName-${employee.id}`}
               name="firstName"
-              defaultValue={employee.firstName}
             />
           </div>
 
@@ -117,9 +131,9 @@ export const EditStaffDialog = ({ employee, children }: EditStaffDialogProps) =>
             <Label htmlFor={`lastName-${employee.id}`}>Last name</Label>
             <Input
               autoComplete="family-name"
+              defaultValue={employee.lastName}
               id={`lastName-${employee.id}`}
               name="lastName"
-              defaultValue={employee.lastName}
             />
           </div>
 
@@ -127,9 +141,9 @@ export const EditStaffDialog = ({ employee, children }: EditStaffDialogProps) =>
             <Label htmlFor={`role-${employee.id}`}>Role</Label>
             <select
               className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+              defaultValue={employee.role}
               id={`role-${employee.id}`}
               name="role"
-              defaultValue={employee.role}
             >
               {roleOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -140,12 +154,14 @@ export const EditStaffDialog = ({ employee, children }: EditStaffDialogProps) =>
           </div>
 
           <div className="grid gap-3">
-            <Label htmlFor={`employmentType-${employee.id}`}>Employment type</Label>
+            <Label htmlFor={`employmentType-${employee.id}`}>
+              Employment type
+            </Label>
             <select
               className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+              defaultValue={employee.employmentType}
               id={`employmentType-${employee.id}`}
               name="employmentType"
-              defaultValue={employee.employmentType}
             >
               {employmentTypeOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -159,9 +175,9 @@ export const EditStaffDialog = ({ employee, children }: EditStaffDialogProps) =>
             <Label htmlFor={`isActive-${employee.id}`}>Status</Label>
             <select
               className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
+              defaultValue={employee.isActive.toString()}
               id={`isActive-${employee.id}`}
               name="isActive"
-              defaultValue={employee.isActive.toString()}
             >
               <option value="true">Active</option>
               <option value="false">Inactive</option>
@@ -169,7 +185,11 @@ export const EditStaffDialog = ({ employee, children }: EditStaffDialogProps) =>
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button
+              onClick={() => setOpen(false)}
+              type="button"
+              variant="outline"
+            >
               Cancel
             </Button>
             <SubmitButton />
@@ -178,8 +198,8 @@ export const EditStaffDialog = ({ employee, children }: EditStaffDialogProps) =>
 
         <div className="border-t pt-4 mt-4">
           <form action={deleteAction}>
-            <input type="hidden" name="id" value={employee.id} />
-            <Button type="submit" variant="destructive" className="w-full">
+            <input name="id" type="hidden" value={employee.id} />
+            <Button className="w-full" type="submit" variant="destructive">
               Delete Staff Member
             </Button>
           </form>

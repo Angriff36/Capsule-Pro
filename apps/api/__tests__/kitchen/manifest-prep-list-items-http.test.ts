@@ -38,11 +38,35 @@ vi.mock("@repo/database", () => {
     outboxEvent: {
       create: vi.fn(),
     },
+    manifestState: {
+      findUnique: vi.fn(),
+      upsert: vi.fn(),
+    },
+    idempotencyKey: {
+      findUnique: vi.fn(),
+      upsert: vi.fn(),
+    },
+    $transaction: vi.fn((fn) => fn(mockDb)),
   };
   return {
     database: mockDb,
   };
 });
+
+// Mock manifest runtime to avoid complex dependencies
+vi.mock("@/lib/manifest-runtime", () => ({
+  createManifestRuntime: vi.fn(() =>
+    Promise.resolve({
+      runCommand: vi.fn(() =>
+        Promise.resolve({
+          success: true,
+          result: { id: "test-id" },
+          emittedEvents: [],
+        })
+      ),
+    })
+  ),
+}));
 
 // Mock tenant resolution
 vi.mock("@/app/lib/tenant", () => ({

@@ -1,20 +1,58 @@
 ---
-title: Introduction
-description: 'Welcome to the home of your new documentation'
+title: Capsule Pro
+description: Operations platform for catering and event management businesses.
 ---
 
-## Welcome
+Capsule Pro is a multi-tenant operations platform built for catering companies. It covers the full lifecycle of catering operations — from client acquisition and event planning through kitchen production, inventory management, staff scheduling, payroll, and analytics.
 
-This is the home of your documentation. Get started by exploring the sections below.
+## Platform Modules
 
-## Getting Started
+<CardGroup cols={3}>
+  <Card title="Command Board" href="/docs/command-board">
+    Strategic planning hub with AI-assisted coordination, entity cards, and real-time collaboration.
+  </Card>
+  <Card title="Events" href="/docs/events">
+    Full event lifecycle management — creation, contracts, budgets, battle boards, reports, and document import.
+  </Card>
+  <Card title="Kitchen" href="/docs/kitchen">
+    Production board, recipes, dishes, menus, prep lists, stations, waste tracking, and allergen management.
+  </Card>
+  <Card title="CRM" href="/docs/crm">
+    Client relationships, proposals, leads, contacts, and communication tracking.
+  </Card>
+  <Card title="Inventory" href="/docs/inventory">
+    Stock levels, purchase orders, depletion forecasting, reorder alerts, and recipe costing.
+  </Card>
+  <Card title="Warehouse" href="/docs/warehouse">
+    Receiving workflows, shipment management, and cycle count audits.
+  </Card>
+  <Card title="Scheduling" href="/docs/scheduling">
+    Shift management, employee availability, time-off requests, and labor budgets with real-time updates.
+  </Card>
+  <Card title="Payroll" href="/docs/payroll">
+    Timecards, pay periods, payroll runs, deductions, tax calculations, and QuickBooks export.
+  </Card>
+  <Card title="Analytics" href="/docs/analytics">
+    Operational insights, kitchen performance, financial metrics, event profitability, and staff analytics.
+  </Card>
+  <Card title="Administrative" href="/docs/administrative">
+    Production meeting prep, leadership overview boards, and operational kanban.
+  </Card>
+</CardGroup>
 
-- [Edit Your Docs](https://mintlify.com/docs/quickstart) - Get your docs set up locally for easy development
-- [Preview Changes](https://mintlify.com/docs/development) - Preview your changes before you push to make sure they're perfect
+## Architecture Highlights
 
-## Make It Yours
+- **Multi-tenant** — Composite primary keys with automatic tenant scoping across all data
+- **Manifest IR** — Custom DSL that compiles to an Intermediate Representation governing all domain mutations through Policies, Constraints, Guards, Actions, and Events
+- **Real-time** — Transactional outbox pattern with Ably for live updates across kitchen, scheduling, and command board
+- **Offline-capable** — Mobile views for kitchen tasks, prep lists, and waste logging with sync queues
+- **25+ integrations** — Clerk (auth), Stripe (payments), Ably (realtime), Sentry (errors), OpenAI (AI), Liveblocks (collaboration), Resend (email), and more
 
-- [Customize Style](https://mintlify.com/docs/settings/global) - Customize your docs to your company's colors and brands
-- [Reference APIs](https://mintlify.com/docs/api-playground/openapi) - Automatically generate endpoints from an OpenAPI spec
-- [Add Components](https://mintlify.com/docs/components/accordion) - Build interactive features and designs to guide your users
-- [Get Inspiration](https://mintlify.com/customers) - Check out our showcase of favorite documentation examples
+<CardGroup cols={2}>
+  <Card title="Platform Overview" href="/docs/platform">
+    Architecture, tech stack, multi-tenancy model, and the Manifest system.
+  </Card>
+  <Card title="Integrations" href="/docs/integrations">
+    All third-party services and how they connect.
+  </Card>
+</CardGroup>

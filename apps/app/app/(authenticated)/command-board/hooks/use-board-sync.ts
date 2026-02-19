@@ -94,7 +94,9 @@ export function useBoardSync(options: UseBoardSyncOptions = {}) {
     (projectionId: string, x: number, y: number) => {
       pendingMoveRef.current = { projectionId, x, y };
 
-      if (moveTimerRef.current) return; // Already debouncing
+      if (moveTimerRef.current) {
+        return; // Already debouncing
+      }
 
       moveTimerRef.current = setTimeout(() => {
         moveTimerRef.current = null;

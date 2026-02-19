@@ -2,49 +2,54 @@
 // Command Board Types — Barrel Export
 // ============================================================================
 
-// Entity types and resolved data shapes
-export type {
-  EntityType,
-  ResolvedEvent,
-  ResolvedClient,
-  ResolvedPrepTask,
-  ResolvedKitchenTask,
-  ResolvedEmployee,
-  ResolvedInventoryItem,
-  ResolvedRecipe,
-  ResolvedDish,
-  ResolvedProposal,
-  ResolvedShipment,
-  ResolvedNote,
-  ResolvedEntity,
-} from "./entities";
-export {
-  getEntityTitle,
-  getEntityStatus,
-  ENTITY_TYPE_COLORS,
-  ENTITY_TYPE_LABELS,
-} from "./entities";
-
 // Board, projection, and annotation types
 export type {
+  BoardAnnotation,
+  BoardGroup,
   BoardProjection,
   BoardScope,
   CommandBoard,
-  BoardGroup,
-  BoardAnnotation,
   DerivedConnection,
 } from "./board";
 export { RELATIONSHIP_STYLES } from "./board";
+// Entity types and resolved data shapes
+export type {
+  EntityType,
+  ResolvedClient,
+  ResolvedDish,
+  ResolvedEmployee,
+  ResolvedEntity,
+  ResolvedEvent,
+  ResolvedInventoryItem,
+  ResolvedKitchenTask,
+  ResolvedNote,
+  ResolvedPrepTask,
+  ResolvedProposal,
+  ResolvedRecipe,
+  ResolvedRisk,
+  ResolvedShipment,
+} from "./entities";
+export {
+  calculateInventoryThreshold,
+  ENTITY_TYPE_COLORS,
+  ENTITY_TYPE_LABELS,
+  getEntityStatus,
+  getEntityTitle,
+  getInventoryThresholdLabel,
+  InventoryThreshold,
+  RiskCategory,
+  RiskSeverity,
+} from "./entities";
 
 // React Flow integration types and converters
 export type {
-  ProjectionNodeData,
-  GroupNodeData,
-  ProjectionNode,
-  GroupNode,
-  BoardNode,
-  DerivedEdgeData,
   AnnotationEdgeData,
   BoardEdge,
+  BoardNode,
+  DerivedEdgeData,
+  GroupNode,
+  GroupNodeData,
+  ProjectionNode,
+  ProjectionNodeData,
 } from "./flow";
-export { projectionToNode, connectionToEdge, annotationToEdge } from "./flow";
+export { annotationToEdge, connectionToEdge, projectionToNode } from "./flow";

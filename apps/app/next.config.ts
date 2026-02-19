@@ -114,7 +114,7 @@ let nextConfig: NextConfig = withToolbar(
       "@repo/webhooks",
       "@repo/notifications",
       "@repo/collaboration",
-      "@manifest/runtime",
+      "@angriff36/manifest",
       "@repo/seo",
     ],
     experimental: {

@@ -127,7 +127,7 @@ export async function GET(request: Request) {
  * Create a new client via manifest command
  */
 export async function POST(request: NextRequest) {
-  return executeManifestCommand(request, {
+  return await executeManifestCommand(request, {
     entityName: "Client",
     commandName: "create",
   });

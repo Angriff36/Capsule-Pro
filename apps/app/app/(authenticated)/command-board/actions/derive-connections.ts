@@ -2,7 +2,9 @@
 
 import { database } from "@repo/database";
 import { requireTenantId } from "../../../lib/tenant";
+import type { Conflict } from "../conflict-types";
 import type { DerivedConnection } from "../types/board";
+import type { ResolvedFinancialProjection } from "../types/entities";
 
 // ============================================================================
 // Derived Connection Engine
@@ -31,9 +33,14 @@ interface ProjectionRef {
  * - Event → Employee (EventStaffAssignment join table)
  * - Event → Shipment (Shipment.eventId)
  * - Client → Proposal (Proposal.clientId)
+ * - Risk → Affected Entity (from conflict detection data)
+ * - Dish ↔ Recipe (Dish.recipeId foreign key)
+ * - Financial Projection → Events (from derived financial projection data)
  */
 export async function deriveConnections(
   projections: ProjectionRef[],
+  conflicts?: Conflict[],
+  financialProjections?: ResolvedFinancialProjection[]
 ): Promise<DerivedConnection[]> {
   try {
     const tenantId = await requireTenantId();
@@ -60,7 +67,7 @@ export async function deriveConnections(
     // Helper to find a projection by entity type + entity ID
     const findProj = (
       type: string,
-      entityId: string,
+      entityId: string
     ): ProjectionRef | undefined => lookupMap.get(`${type}:${entityId}`);
 
     const connections: DerivedConnection[] = [];
@@ -71,10 +78,12 @@ export async function deriveConnections(
       fromProj: ProjectionRef,
       toProj: ProjectionRef,
       relationshipType: string,
-      label: string,
+      label: string
     ) => {
       const id = `${fromProj.id}-${toProj.id}-${relationshipType}`;
-      if (seen.has(id)) return;
+      if (seen.has(id)) {
+        return;
+      }
       seen.add(id);
       connections.push({
         id,
@@ -94,6 +103,11 @@ export async function deriveConnections(
     const hasPrepTasks = (byType.get("prep_task")?.length ?? 0) > 0;
     const hasShipments = (byType.get("shipment")?.length ?? 0) > 0;
     const hasProposals = (byType.get("proposal")?.length ?? 0) > 0;
+    const hasRisks = (byType.get("risk")?.length ?? 0) > 0;
+    const hasRecipes = (byType.get("recipe")?.length ?? 0) > 0;
+    const hasDishes = (byType.get("dish")?.length ?? 0) > 0;
+    const hasFinancialProjections =
+      (byType.get("financial_projection")?.length ?? 0) > 0;
 
     // Build parallel query array — only query relationships where both
     // endpoint types have projections on the board
@@ -117,7 +131,9 @@ export async function deriveConnections(
           });
 
           for (const event of events) {
-            if (!event.clientId) continue;
+            if (!event.clientId) {
+              continue;
+            }
             const clientProj = findProj("client", event.clientId);
             const eventProj = findProj("event", event.id);
             if (clientProj && eventProj) {
@@ -125,14 +141,14 @@ export async function deriveConnections(
                 clientProj,
                 eventProj,
                 "client_to_event",
-                "has event",
+                "has event"
               );
             }
           }
         } catch (error) {
           console.error(
             "[derive-connections] Failed to derive client→event connections:",
-            error,
+            error
           );
         }
       });
@@ -159,18 +175,13 @@ export async function deriveConnections(
             const eventProj = findProj("event", task.eventId);
             const taskProj = findProj("prep_task", task.id);
             if (eventProj && taskProj) {
-              addConnection(
-                eventProj,
-                taskProj,
-                "event_to_task",
-                "includes",
-              );
+              addConnection(eventProj, taskProj, "event_to_task", "includes");
             }
           }
         } catch (error) {
           console.error(
             "[derive-connections] Failed to derive event→prepTask connections:",
-            error,
+            error
           );
         }
       });
@@ -183,23 +194,19 @@ export async function deriveConnections(
           const eventIds = idsForType("event");
           const employeeIds = idsForType("employee");
 
-          const assignments =
-            await database.eventStaffAssignment.findMany({
-              where: {
-                tenantId,
-                eventId: { in: eventIds },
-                employeeId: { in: employeeIds },
-                deletedAt: null,
-              },
-              select: { eventId: true, employeeId: true },
-            });
+          const assignments = await database.eventStaffAssignment.findMany({
+            where: {
+              tenantId,
+              eventId: { in: eventIds },
+              employeeId: { in: employeeIds },
+              deletedAt: null,
+            },
+            select: { eventId: true, employeeId: true },
+          });
 
           for (const assignment of assignments) {
             const eventProj = findProj("event", assignment.eventId);
-            const employeeProj = findProj(
-              "employee",
-              assignment.employeeId,
-            );
+            const employeeProj = findProj("employee", assignment.employeeId);
             if (eventProj && employeeProj) {
               // Deduplicated by addConnection — multiple roles on same
               // event produce only one connection
@@ -207,14 +214,14 @@ export async function deriveConnections(
                 eventProj,
                 employeeProj,
                 "event_to_employee",
-                "assigned",
+                "assigned"
               );
             }
           }
         } catch (error) {
           console.error(
             "[derive-connections] Failed to derive event→employee connections:",
-            error,
+            error
           );
         }
       });
@@ -238,7 +245,9 @@ export async function deriveConnections(
           });
 
           for (const shipment of shipments) {
-            if (!shipment.eventId) continue;
+            if (!shipment.eventId) {
+              continue;
+            }
             const eventProj = findProj("event", shipment.eventId);
             const shipmentProj = findProj("shipment", shipment.id);
             if (eventProj && shipmentProj) {
@@ -246,14 +255,14 @@ export async function deriveConnections(
                 eventProj,
                 shipmentProj,
                 "event_to_shipment",
-                "delivery",
+                "delivery"
               );
             }
           }
         } catch (error) {
           console.error(
             "[derive-connections] Failed to derive event→shipment connections:",
-            error,
+            error
           );
         }
       });
@@ -277,7 +286,9 @@ export async function deriveConnections(
           });
 
           for (const proposal of proposals) {
-            if (!proposal.clientId) continue;
+            if (!proposal.clientId) {
+              continue;
+            }
             const clientProj = findProj("client", proposal.clientId);
             const proposalProj = findProj("proposal", proposal.id);
             if (clientProj && proposalProj) {
@@ -285,14 +296,156 @@ export async function deriveConnections(
                 clientProj,
                 proposalProj,
                 "client_to_proposal",
-                "proposal",
+                "proposal"
               );
             }
           }
         } catch (error) {
           console.error(
             "[derive-connections] Failed to derive client→proposal connections:",
-            error,
+            error
+          );
+        }
+      });
+    }
+
+    // 6. Risk → Affected Entity: Risk has affectedEntityId and affectedEntityType
+    // This creates edges from risk nodes to the entities they threaten
+    // Uses conflict data passed to the function to find affected entities
+    if (hasRisks && conflicts && conflicts.length > 0) {
+      queries.push(async () => {
+        try {
+          const riskProjections = byType.get("risk") ?? [];
+
+          // Build a map of conflict ID to conflict for quick lookup
+          const conflictMap = new Map<string, Conflict>();
+          for (const conflict of conflicts) {
+            conflictMap.set(conflict.id, conflict);
+          }
+
+          // Map conflict entity types to board entity types
+          // Conflict uses: "event" | "task" | "employee" | "inventory"
+          // Board uses: "event" | "prep_task" | "employee" | "inventory_item"
+          const conflictToEntityType: Record<string, string> = {
+            event: "event",
+            task: "prep_task",
+            employee: "employee",
+            inventory: "inventory_item",
+          };
+
+          for (const riskProj of riskProjections) {
+            // Find the matching conflict using the risk's entityId
+            const conflict = conflictMap.get(riskProj.entityId);
+            if (!conflict) {
+              continue;
+            }
+
+            // For each affected entity in the conflict, create an edge
+            for (const affected of conflict.affectedEntities) {
+              const boardEntityType = conflictToEntityType[affected.type];
+              if (!boardEntityType) {
+                continue;
+              }
+
+              // Find the projection for this affected entity on the board
+              const affectedProj = findProj(boardEntityType, affected.id);
+              if (affectedProj) {
+                addConnection(
+                  riskProj,
+                  affectedProj,
+                  "risk_to_entity",
+                  "threatens"
+                );
+              }
+            }
+          }
+        } catch (error) {
+          console.error(
+            "[derive-connections] Failed to derive risk connections:",
+            error
+          );
+        }
+      });
+    }
+
+    // 7. Dish → Recipe: Dish has recipeId foreign key
+    if (hasDishes && hasRecipes) {
+      queries.push(async () => {
+        try {
+          const dishIds = idsForType("dish");
+          const recipeIds = idsForType("recipe");
+
+          const dishes = await database.dish.findMany({
+            where: {
+              tenantId,
+              id: { in: dishIds },
+              recipeId: { in: recipeIds },
+              deletedAt: null,
+            },
+            select: { id: true, recipeId: true },
+          });
+
+          for (const dish of dishes) {
+            if (!dish.recipeId) {
+              continue;
+            }
+            const dishProj = findProj("dish", dish.id);
+            const recipeProj = findProj("recipe", dish.recipeId);
+            if (dishProj && recipeProj) {
+              addConnection(dishProj, recipeProj, "dish_to_recipe", "based on");
+              // Also add reverse direction: recipe → dish
+              addConnection(recipeProj, dishProj, "recipe_to_dish", "used in");
+            }
+          }
+        } catch (error) {
+          console.error(
+            "[derive-connections] Failed to derive dish→recipe connections:",
+            error
+          );
+        }
+      });
+    }
+
+    // 8. Financial Projection → Events: Financial projection has sourceEventIds
+    // Creates edges from financial projections to the events they aggregate
+    if (hasFinancialProjections && hasEvents && financialProjections) {
+      queries.push(async () => {
+        try {
+          const financialProjs = byType.get("financial_projection") ?? [];
+
+          // Build a map of financial projection ID to resolved projection data
+          const financialDataMap = new Map<
+            string,
+            ResolvedFinancialProjection
+          >();
+          for (const fp of financialProjections) {
+            financialDataMap.set(fp.id, fp);
+          }
+
+          for (const finProj of financialProjs) {
+            // Get the financial projection data
+            const finData = financialDataMap.get(finProj.entityId);
+            if (!finData?.sourceEventIds) {
+              continue;
+            }
+
+            // For each source event, create a connection to the event on the board
+            for (const sourceEventId of finData.sourceEventIds) {
+              const eventProj = findProj("event", sourceEventId);
+              if (eventProj) {
+                addConnection(
+                  finProj,
+                  eventProj,
+                  "financial_to_event",
+                  "includes"
+                );
+              }
+            }
+          }
+        } catch (error) {
+          console.error(
+            "[derive-connections] Failed to derive financial→event connections:",
+            error
           );
         }
       });
@@ -303,10 +456,7 @@ export async function deriveConnections(
 
     return connections;
   } catch (error) {
-    console.error(
-      "[derive-connections] Failed to derive connections:",
-      error,
-    );
+    console.error("[derive-connections] Failed to derive connections:", error);
     return [];
   }
 }
