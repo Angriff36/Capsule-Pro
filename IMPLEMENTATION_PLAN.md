@@ -45,6 +45,26 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
 - **Issue:** Command routes using createManifestRuntime needed explicit `export const runtime = 'nodejs'` to prevent Edge runtime usage
 - **Resolution:** Added runtime declaration to 224 command route files, updated invariant test
 
+### Command Board Bugs (2026-02-18) ✅ ALL FIXED
+- **Location:** `specs/command-board/BUGS.md`
+- **Fixed Issues:**
+  - BUG-01: Entity Detail Panel now properly wired up
+  - BUG-02: Duplicate entities prevention implemented
+  - BUG-03: Undo/Redo functionality restored
+  - BUG-04: Entity Browser now tracks real-time projections
+  - BUG-05: Error boundary added for React Flow crashes
+  - BUG-06: Grid-based placement algorithm for card positioning
+  - BUG-07: Card width constraints applied
+  - BUG-08: MiniMap/Controls styling fixed
+
+### Linting Issues (2026-02-18) ✅ FIXED
+- **Fixed:** Various linting issues across codebase
+- **Issues:**
+  - Unused variables in QuickBooks export tests
+  - Missing default switch clause in SMS webhook route
+  - Formatting inconsistencies in 253 files
+- **Resolution:** Added underscore prefix to unused variables, added default switch clause, auto-fixed with biome
+
 ---
 
 ## P1 — High Priority (AI + Command Board Enhancement)
