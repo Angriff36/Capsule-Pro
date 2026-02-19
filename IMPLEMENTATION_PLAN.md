@@ -301,9 +301,15 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
     - Configurable reminder intervals (default: 30, 14, 7, 3, 1 days before expiration)
     - Integrated with email workflow system for template-based notifications
     - Added helper functions `buildContractRecipients` and `buildContractTemplateData`
+  - **Public client-side signing page** - 2026-02-18
+    - Added `signingToken` field to EventContract model for secure public access
+    - Public API endpoints at `/api/public/contracts/[token]` for contract access and signing
+    - Public signing page at `/sign/contract/[token]` (no auth required)
+    - Updated contract send endpoint to generate signing token and use public URL
+    - SignaturePad component updated with `isSubmitting` state
+    - Full contract details, document download, and signature capture
 - **Missing:**
   - Contract history/versions view
-  - Public client-side signing page
   - Document preview in UI
 
 ### 18. Event Proposal Generation

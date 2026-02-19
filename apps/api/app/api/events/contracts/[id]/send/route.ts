@@ -1,7 +1,7 @@
 /**
  * @module ContractSendAPI
  * @intent Handle sending contracts to clients for signature
- * @responsibility Process send requests, update contract status, initiate notification flow
+ * @responsibility Process send requests, generate signing token, update contract status, send notification
  * @domain Events
  * @tags contracts, api, send
  * @canonical true
@@ -11,6 +11,7 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { ContractTemplate, resend } from "@repo/email";
 import { type NextRequest, NextResponse } from "next/server";
+import { randomUUID } from "crypto";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 interface ContractSendAPIContext {
@@ -97,13 +98,10 @@ export async function POST(
       );
     }
 
-    // In a production environment, this would:
-    // 1. Generate a unique signing link/token
-    // 2. Send an email with the signing link
-    // 3. Create a signing request record
-    // For now, we'll update the contract status and return success
+    // Generate a unique signing token for public access
+    const signingToken = randomUUID();
 
-    // Update contract status to pending
+    // Update contract with signing token and set status to pending
     await database.eventContract.update({
       where: {
         tenantId_id: {
@@ -113,11 +111,13 @@ export async function POST(
       },
       data: {
         status: "pending",
+        signingToken,
       },
     });
 
-    // Send email with contract signing link
-    const signingUrl = `${process.env.APP_URL || "https://app.convoy.com"}/contracts/${contractId}/sign`;
+    // Build the public signing URL
+    const appUrl = process.env.APP_URL || "https://app.convoy.com";
+    const signingUrl = `${appUrl}/sign/contract/${signingToken}`;
     const clientName =
       client.first_name || client.company_name || "Valued Client";
 
@@ -142,6 +142,7 @@ export async function POST(
       success: true,
       message: "Contract sent successfully",
       clientEmail: client.email,
+      signingUrl,
     });
   } catch (error) {
     console.error("Error sending contract:", error);
