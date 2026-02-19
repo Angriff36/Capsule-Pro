@@ -85,7 +85,7 @@ async function compileMergedManifests() {
   );
 }
 
-async function generateFromIR() {
+function generateFromIR() {
   console.log("[manifest/build] Step 2: Generating code from IR...");
 
   const bin = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
@@ -117,7 +117,7 @@ async function generateFromIR() {
 
 async function main() {
   await compileMergedManifests();
-  await generateFromIR();
+  generateFromIR();
   console.log("[manifest/build] Build complete!");
 }
 

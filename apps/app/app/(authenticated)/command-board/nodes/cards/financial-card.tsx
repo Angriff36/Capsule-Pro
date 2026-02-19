@@ -64,9 +64,15 @@ function formatCurrency(value: number): string {
 
 /** Get margin bar color based on percentage */
 function getMarginColor(margin: number): string {
-  if (margin >= 30) return "bg-green-500";
-  if (margin >= 20) return "bg-yellow-500";
-  if (margin >= 10) return "bg-orange-500";
+  if (margin >= 30) {
+    return "bg-green-500";
+  }
+  if (margin >= 20) {
+    return "bg-yellow-500";
+  }
+  if (margin >= 10) {
+    return "bg-orange-500";
+  }
   return "bg-red-500";
 }
 

@@ -32,6 +32,8 @@ export {
 } from "./email-templates";
 // Re-export Email Workflow Triggers
 export {
+  buildContractRecipients,
+  buildContractTemplateData,
   buildEventRecipients,
   buildEventTemplateData,
   buildTaskRecipients,
@@ -39,6 +41,21 @@ export {
   triggerEmailWorkflows,
   type WorkflowTriggerContext,
 } from "./email-workflow-triggers";
+// Re-export Outbound Webhook utilities
+export {
+  buildWebhookPayload,
+  calculateRetryDelay,
+  determineNextStatus,
+  generateSignature,
+  type OutboundWebhookType,
+  sendWebhook,
+  shouldAutoDisable,
+  shouldTriggerWebhook,
+  type WebhookConfig,
+  type WebhookDeliveryLogType,
+  type WebhookDeliveryResult,
+  type WebhookPayload,
+} from "./outbound-webhook-service";
 // Re-export SMS utilities
 export { sendSms } from "./sms";
 export {

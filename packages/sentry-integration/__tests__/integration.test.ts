@@ -15,7 +15,7 @@ describe("Webhook Verification", () => {
   it("should verify a valid signature", () => {
     const body = JSON.stringify({ test: "data" });
     // Create expected signature
-    const crypto = require("crypto");
+    const crypto = require("node:crypto");
     const hmac = crypto.createHmac("sha256", secret);
     hmac.update(body, "utf8");
     const signature = hmac.digest("hex");

@@ -30,8 +30,8 @@ export const SignIn = () => (
         header: "hidden",
       },
     }}
+    fallbackRedirectUrl={afterSignInUrl}
     path={signInUrl}
-    redirectUrl={afterSignInUrl}
     routing="path"
     signUpUrl={signUpUrl}
   />

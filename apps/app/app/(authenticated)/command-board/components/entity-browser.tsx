@@ -119,7 +119,7 @@ export function EntityBrowser({
   const [entityCounts, setEntityCounts] = useState<Record<EntityType, number>>(
     {} as Record<EntityType, number>
   );
-  const [countsLoading, setCountsLoading] = useState(true);
+  const [_countsLoading, setCountsLoading] = useState(true);
 
   // Load entity counts on mount
   useEffect(() => {

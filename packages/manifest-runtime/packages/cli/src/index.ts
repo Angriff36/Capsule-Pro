@@ -94,7 +94,7 @@ program
     const config = (await getConfig()) ?? {};
     const nextJsOptions =
       config?.projections?.nextjs?.options ||
-      config?.projections?.["nextjs"]?.options ||
+      config?.projections?.nextjs?.options ||
       {};
 
     // Use CLI options, fall back to config, fall back to defaults
@@ -152,7 +152,7 @@ program
     const config = (await getConfig()) ?? {};
     const nextJsOptions =
       config?.projections?.nextjs?.options ||
-      config?.projections?.["nextjs"]?.options ||
+      config?.projections?.nextjs?.options ||
       {};
 
     // Use CLI options, fall back to config, fall back to defaults
@@ -179,7 +179,7 @@ program
       codeOutput:
         options.codeOutput ||
         config?.projections?.nextjs?.output ||
-        config?.projections?.["nextjs"]?.output ||
+        config?.projections?.nextjs?.output ||
         "generated/",
     };
 

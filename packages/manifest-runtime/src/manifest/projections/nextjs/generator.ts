@@ -90,7 +90,9 @@ function normalizeOptions(
 }
 
 function toLowerCamelCase(value: string): string {
-  if (!value) return value;
+  if (!value) {
+    return value;
+  }
   return value[0].toLowerCase() + value.slice(1);
 }
 
@@ -131,7 +133,6 @@ function generateAuthImport(options: NormalizedNextJsOptions): string {
     }
     case "custom":
       return generateImport("{ getUser }", authImportPath);
-    case "none":
     default:
       return "";
   }
@@ -571,13 +572,17 @@ export class NextJsProjection implements ProjectionTarget {
       }
     }
     const authImport = generateAuthImport(options);
-    if (authImport) lines.push(authImport);
+    if (authImport) {
+      lines.push(authImport);
+    }
     lines.push("");
     lines.push("export async function POST(request: NextRequest) {");
     lines.push("  try {");
     lines.push(generateAuthBody(options));
     const tenantLookup = generateTenantLookup(options);
-    if (tenantLookup) lines.push(tenantLookup);
+    if (tenantLookup) {
+      lines.push(tenantLookup);
+    }
     lines.push("");
     lines.push("    const body = await request.json();");
     lines.push("");
@@ -663,7 +668,9 @@ export class NextJsProjection implements ProjectionTarget {
       )
     );
     const authImport = generateAuthImport(options);
-    if (authImport) lines.push(authImport);
+    if (authImport) {
+      lines.push(authImport);
+    }
     lines.push("");
     lines.push("export async function GET(request: NextRequest) {");
     lines.push("  try {");

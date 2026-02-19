@@ -5,6 +5,7 @@ import type {
   IRConstraint,
   OverrideRequest,
 } from "@angriff36/manifest/ir";
+// biome-ignore lint/performance/noNamespaceImport: Sentry is designed to use namespace imports
 import * as Sentry from "@sentry/nextjs";
 
 /**

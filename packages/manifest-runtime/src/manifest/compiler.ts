@@ -3,12 +3,14 @@ import { Parser } from "./parser.js";
 import type { CompilationResult, ManifestProgram } from "./types.js";
 
 export class ManifestCompiler {
-  private parser = new Parser();
-  private generator = new CodeGenerator();
+  private readonly parser = new Parser();
+  private readonly generator = new CodeGenerator();
 
   compile(source: string): CompilationResult {
     const { program, errors } = this.parser.parse(source);
-    if (errors.length > 0) return { success: false, errors, ast: program };
+    if (errors.length > 0) {
+      return { success: false, errors, ast: program };
+    }
     try {
       const { code, serverCode, testCode } = this.generator.generate(program);
       return {

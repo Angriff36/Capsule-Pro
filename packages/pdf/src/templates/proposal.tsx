@@ -1,183 +1,213 @@
-import { Document, Page, StyleSheet, Text, View } from "@react-pdf/renderer";
+import {
+  Document,
+  Image,
+  Page,
+  StyleSheet,
+  Text,
+  View,
+} from "@react-pdf/renderer";
 import type React from "react";
 import type { ProposalPDFData } from "../types";
 
-const styles = StyleSheet.create({
-  page: {
-    padding: 40,
-    fontSize: 10,
-    fontFamily: "Helvetica",
-  },
-  header: {
-    marginBottom: 30,
-    borderBottom: "2pt solid #1e3a5f",
-    paddingBottom: 15,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#1e3a5f",
-    marginBottom: 5,
-  },
-  proposalNumber: {
-    fontSize: 12,
-    color: "#666",
-    marginBottom: 15,
-  },
-  statusBadge: {
-    padding: "4 8",
-    borderRadius: 3,
-    fontSize: 9,
-    fontWeight: "bold",
-    textTransform: "uppercase",
-    alignSelf: "flex-start",
-  },
-  statusDraft: {
-    backgroundColor: "#e5e7eb",
-    color: "#374151",
-  },
-  statusPending: {
-    backgroundColor: "#dbeafe",
-    color: "#1d4ed8",
-  },
-  statusAccepted: {
-    backgroundColor: "#d1fae5",
-    color: "#047857",
-  },
-  statusRejected: {
-    backgroundColor: "#fee2e2",
-    color: "#dc2626",
-  },
-  statusExpired: {
-    backgroundColor: "#fef3c7",
-    color: "#b45309",
-  },
-  section: {
-    marginBottom: 25,
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: "#1e3a5f",
-    marginBottom: 10,
-    borderBottom: "1pt solid #ccc",
-    paddingBottom: 5,
-  },
-  clientInfo: {
-    marginBottom: 15,
-  },
-  clientLabel: {
-    fontSize: 9,
-    color: "#666",
-    marginBottom: 2,
-  },
-  clientValue: {
-    fontSize: 11,
-    marginBottom: 8,
-  },
-  eventInfo: {
-    backgroundColor: "#f9fafb",
-    padding: 12,
-    borderRadius: 4,
-    marginBottom: 20,
-  },
-  lineItem: {
-    flexDirection: "row",
-    padding: "10 0",
-    borderBottom: "0.5pt solid #e5e7eb",
-  },
-  lineItemHeader: {
-    fontWeight: "bold",
-    backgroundColor: "#1e3a5f",
-    color: "#fff",
-    padding: "8 0",
-  },
-  itemName: {
-    flex: 3,
-    fontSize: 10,
-  },
-  itemDescription: {
-    flex: 3,
-    fontSize: 9,
-    color: "#666",
-  },
-  itemQuantity: {
-    flex: 1,
-    fontSize: 10,
-    textAlign: "center",
-  },
-  itemUnitPrice: {
-    flex: 1,
-    fontSize: 10,
-    textAlign: "right",
-  },
-  itemTotalPrice: {
-    flex: 1,
-    fontSize: 10,
-    textAlign: "right",
-    fontWeight: "bold",
-  },
-  totalSection: {
-    marginTop: 20,
-    alignItems: "flex-end",
-  },
-  totalRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    width: "40%",
-    marginBottom: 5,
-  },
-  totalLabel: {
-    fontSize: 10,
-    color: "#666",
-  },
-  totalValue: {
-    fontSize: 10,
-  },
-  grandTotal: {
-    borderTop: "1pt solid #000",
-    paddingTop: 10,
-    marginTop: 10,
-  },
-  grandTotalLabel: {
-    fontSize: 12,
-    fontWeight: "bold",
-    color: "#1e3a5f",
-  },
-  grandTotalValue: {
-    fontSize: 14,
-    fontWeight: "bold",
-    color: "#1e3a5f",
-  },
-  notes: {
-    marginTop: 20,
-    padding: 15,
-    backgroundColor: "#fef9e7",
-    borderLeft: "3pt solid #f59e0b",
-  },
-  notesTitle: {
-    fontSize: 11,
-    fontWeight: "bold",
-    marginBottom: 5,
-  },
-  notesText: {
-    fontSize: 9,
-    lineHeight: 1.6,
-  },
-  footer: {
-    marginTop: 30,
-    paddingTop: 15,
-    borderTop: "1pt solid #ccc",
-    fontSize: 8,
-    color: "#999",
-    textAlign: "center",
-  },
-  metadata: {
-    fontSize: 7,
-    color: "#999",
-    marginTop: 5,
-  },
-});
+// Default colors when no branding is specified
+const defaultColors = {
+  primary: "#1e3a5f",
+  secondary: "#4b5563",
+  accent: "#3b82f6",
+};
+
+// Helper to create styles with branding colors
+const createStyles = (branding?: ProposalPDFData["branding"]) => {
+  const primaryColor = branding?.primaryColor || defaultColors.primary;
+  const _secondaryColor = branding?.secondaryColor || defaultColors.secondary;
+  const fontFamily = branding?.fontFamily || "Helvetica";
+
+  return StyleSheet.create({
+    page: {
+      padding: 40,
+      fontSize: 10,
+      fontFamily,
+    },
+    header: {
+      marginBottom: 30,
+      borderBottom: `2pt solid ${primaryColor}`,
+      paddingBottom: 15,
+    },
+    logoContainer: {
+      marginBottom: 15,
+      height: 50,
+    },
+    logo: {
+      height: 50,
+      maxWidth: 200,
+      objectFit: "contain",
+    },
+    title: {
+      fontSize: 28,
+      fontWeight: "bold",
+      color: primaryColor,
+      marginBottom: 5,
+    },
+    proposalNumber: {
+      fontSize: 12,
+      color: "#666",
+      marginBottom: 15,
+    },
+    statusBadge: {
+      padding: "4 8",
+      borderRadius: 3,
+      fontSize: 9,
+      fontWeight: "bold",
+      textTransform: "uppercase",
+      alignSelf: "flex-start",
+    },
+    statusDraft: {
+      backgroundColor: "#e5e7eb",
+      color: "#374151",
+    },
+    statusPending: {
+      backgroundColor: "#dbeafe",
+      color: "#1d4ed8",
+    },
+    statusAccepted: {
+      backgroundColor: "#d1fae5",
+      color: "#047857",
+    },
+    statusRejected: {
+      backgroundColor: "#fee2e2",
+      color: "#dc2626",
+    },
+    statusExpired: {
+      backgroundColor: "#fef3c7",
+      color: "#b45309",
+    },
+    section: {
+      marginBottom: 25,
+    },
+    sectionTitle: {
+      fontSize: 14,
+      fontWeight: "bold",
+      color: primaryColor,
+      marginBottom: 10,
+      borderBottom: "1pt solid #ccc",
+      paddingBottom: 5,
+    },
+    clientInfo: {
+      marginBottom: 15,
+    },
+    clientLabel: {
+      fontSize: 9,
+      color: "#666",
+      marginBottom: 2,
+    },
+    clientValue: {
+      fontSize: 11,
+      marginBottom: 8,
+    },
+    eventInfo: {
+      backgroundColor: "#f9fafb",
+      padding: 12,
+      borderRadius: 4,
+      marginBottom: 20,
+    },
+    lineItem: {
+      flexDirection: "row",
+      padding: "10 0",
+      borderBottom: "0.5pt solid #e5e7eb",
+    },
+    lineItemHeader: {
+      fontWeight: "bold",
+      backgroundColor: primaryColor,
+      color: "#fff",
+      padding: "8 0",
+    },
+    itemName: {
+      flex: 3,
+      fontSize: 10,
+    },
+    itemDescription: {
+      flex: 3,
+      fontSize: 9,
+      color: "#666",
+    },
+    itemQuantity: {
+      flex: 1,
+      fontSize: 10,
+      textAlign: "center",
+    },
+    itemUnitPrice: {
+      flex: 1,
+      fontSize: 10,
+      textAlign: "right",
+    },
+    itemTotalPrice: {
+      flex: 1,
+      fontSize: 10,
+      textAlign: "right",
+      fontWeight: "bold",
+    },
+    totalSection: {
+      marginTop: 20,
+      alignItems: "flex-end",
+    },
+    totalRow: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      width: "40%",
+      marginBottom: 5,
+    },
+    totalLabel: {
+      fontSize: 10,
+      color: "#666",
+    },
+    totalValue: {
+      fontSize: 10,
+    },
+    grandTotal: {
+      borderTop: "1pt solid #000",
+      paddingTop: 10,
+      marginTop: 10,
+    },
+    grandTotalLabel: {
+      fontSize: 12,
+      fontWeight: "bold",
+      color: primaryColor,
+    },
+    grandTotalValue: {
+      fontSize: 14,
+      fontWeight: "bold",
+      color: primaryColor,
+    },
+    notes: {
+      marginTop: 20,
+      padding: 15,
+      backgroundColor: "#fef9e7",
+      borderLeft: `3pt solid ${branding?.accentColor || "#f59e0b"}`,
+    },
+    notesTitle: {
+      fontSize: 11,
+      fontWeight: "bold",
+      marginBottom: 5,
+    },
+    notesText: {
+      fontSize: 9,
+      lineHeight: 1.6,
+    },
+    footer: {
+      marginTop: 30,
+      paddingTop: 15,
+      borderTop: "1pt solid #ccc",
+      fontSize: 8,
+      color: "#999",
+      textAlign: "center",
+    },
+    metadata: {
+      fontSize: 7,
+      color: "#999",
+      marginTop: 5,
+    },
+  });
+};
 
 interface ProposalPDFProps {
   data: ProposalPDFData;
@@ -193,8 +223,11 @@ interface ProposalPDFProps {
  * - Line items with pricing
  * - Totals breakdown
  * - Terms and notes
+ * - Custom branding (logo, colors, fonts)
  */
 export const ProposalPDF: React.FC<ProposalPDFProps> = ({ data }) => {
+  const styles = createStyles(data.branding);
+
   const formatDate = (date: Date) => {
     return new Date(date).toLocaleDateString("en-US", {
       year: "numeric",
@@ -236,6 +269,12 @@ export const ProposalPDF: React.FC<ProposalPDFProps> = ({ data }) => {
       <Page size="LETTER" style={styles.page}>
         {/* Header */}
         <View style={styles.header}>
+          {/* Logo */}
+          {data.branding?.logoUrl && (
+            <View style={styles.logoContainer}>
+              <Image src={data.branding.logoUrl} style={styles.logo} />
+            </View>
+          )}
           <Text style={styles.title}>Proposal</Text>
           <Text style={styles.proposalNumber}>
             #{data.proposal.proposalNumber}

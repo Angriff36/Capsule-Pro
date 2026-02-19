@@ -1413,10 +1413,10 @@ describe("IRCompiler", () => {
           (d) => d.severity === "error"
         );
         expect(errorDiag).toBeDefined();
-        expect(errorDiag!.message).toContain(
+        expect(errorDiag?.message).toContain(
           "Duplicate constraint code 'balanceCheck'"
         );
-        expect(errorDiag!.message).toContain("entity 'Account'");
+        expect(errorDiag?.message).toContain("entity 'Account'");
       });
 
       it("should emit error for duplicate explicit codes within an entity", async () => {
@@ -1440,10 +1440,10 @@ describe("IRCompiler", () => {
           (d) => d.severity === "error"
         );
         expect(errorDiag).toBeDefined();
-        expect(errorDiag!.message).toContain(
+        expect(errorDiag?.message).toContain(
           "Duplicate constraint code 'BALANCE_CHECK'"
         );
-        expect(errorDiag!.message).toContain("entity 'Account'");
+        expect(errorDiag?.message).toContain("entity 'Account'");
       });
 
       it("should emit error for duplicate constraint codes within a command", async () => {
@@ -1464,10 +1464,10 @@ describe("IRCompiler", () => {
           (d) => d.severity === "error"
         );
         expect(errorDiag).toBeDefined();
-        expect(errorDiag!.message).toContain(
+        expect(errorDiag?.message).toContain(
           "Duplicate constraint code 'amountLimit'"
         );
-        expect(errorDiag!.message).toContain("command 'Payment.transfer'");
+        expect(errorDiag?.message).toContain("command 'Payment.transfer'");
       });
 
       it("should allow same constraint code in different entities", async () => {
@@ -1543,7 +1543,7 @@ describe("IRCompiler", () => {
         expect(
           result.diagnostics.filter((d) => d.severity === "error")
         ).toHaveLength(0);
-        expect(result.ir!.entities[0].constraints).toHaveLength(2);
+        expect(result.ir?.entities[0].constraints).toHaveLength(2);
       });
     });
   });
@@ -1581,7 +1581,7 @@ describe("IRCompiler", () => {
       expect(result.ir?.provenance.compiledAt).toBeDefined();
       expect(typeof result.ir?.provenance.compiledAt).toBe("string");
       // ISO 8601 format check
-      expect(Date.parse(result.ir!.provenance.compiledAt)).not.toBeNaN();
+      expect(Date.parse(result.ir?.provenance.compiledAt)).not.toBeNaN();
     });
 
     it("should set IR version to 1.0", async () => {
