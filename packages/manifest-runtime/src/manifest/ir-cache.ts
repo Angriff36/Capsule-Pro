@@ -10,9 +10,9 @@ export interface IRCacheEntry {
 }
 
 export class IRCache {
-  private cache: Map<string, IRCacheEntry> = new Map();
-  private maxAge: number;
-  private maxSize: number;
+  private readonly cache: Map<string, IRCacheEntry> = new Map();
+  private readonly maxAge: number;
+  private readonly maxSize: number;
 
   constructor(maxAge = 3_600_000, maxSize = 100) {
     // maxAge: 1 hour default (in milliseconds)
@@ -27,7 +27,9 @@ export class IRCache {
    */
   get(contentHash: string): unknown | null {
     const entry = this.cache.get(contentHash);
-    if (!entry) return null;
+    if (!entry) {
+      return null;
+    }
 
     // Check if entry has expired
     if (Date.now() - entry.timestamp > this.maxAge) {
@@ -51,7 +53,9 @@ export class IRCache {
     // Evict oldest entry if cache is full
     if (this.cache.size >= this.maxSize && !this.cache.has(contentHash)) {
       const firstKey = this.cache.keys().next().value;
-      if (firstKey) this.cache.delete(firstKey);
+      if (firstKey) {
+        this.cache.delete(firstKey);
+      }
     }
 
     this.cache.set(contentHash, {

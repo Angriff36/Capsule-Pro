@@ -522,9 +522,9 @@ describe("RuntimeEngine", () => {
         age: 25,
       });
       expect(created).toBeDefined();
-      const instance = await runtime.getInstance("User", created!.id);
+      const instance = await runtime.getInstance("User", created?.id);
       expect(instance).toBeDefined();
-      expect(instance?.id).toBe(created!.id);
+      expect(instance?.id).toBe(created?.id);
       expect(instance?.name).toBe("Bob");
     });
 
@@ -554,7 +554,7 @@ describe("RuntimeEngine", () => {
         age: 30,
       });
       expect(created).toBeDefined();
-      const updated = await runtime.updateInstance("User", created!.id, {
+      const updated = await runtime.updateInstance("User", created?.id, {
         age: 31,
       });
       expect(updated).toBeDefined();
@@ -569,9 +569,9 @@ describe("RuntimeEngine", () => {
         age: 30,
       });
       expect(created).toBeDefined();
-      const deleted = await runtime.deleteInstance("User", created!.id);
+      const deleted = await runtime.deleteInstance("User", created?.id);
       expect(deleted).toBe(true);
-      const instance = await runtime.getInstance("User", created!.id);
+      const instance = await runtime.getInstance("User", created?.id);
       expect(instance).toBeUndefined();
     });
   });
@@ -778,7 +778,7 @@ describe("RuntimeEngine", () => {
 
       const fullName = await runtime.evaluateComputed(
         "User",
-        instance!.id,
+        instance?.id,
         "fullName"
       );
       expect(fullName).toBe("John Doe");
@@ -870,7 +870,7 @@ describe("RuntimeEngine", () => {
     it("verifyIRHash() returns false when irHash is absent from provenance", async () => {
       // If provenance exists but irHash is missing, verification cannot succeed.
       const ir = await compileValidIR();
-      delete (ir.provenance as unknown as Record<string, unknown>).irHash;
+      (ir.provenance as unknown as Record<string, unknown>).irHash = undefined;
 
       const runtime = new RuntimeEngine(ir);
       const isValid = await runtime.verifyIRHash();
@@ -1321,7 +1321,7 @@ describe("RuntimeEngine", () => {
       expect(instance).toBeDefined();
       // evaluateComputed should propagate the budget error
       await expect(
-        runtime.evaluateComputed("Item", instance!.id, "deepValue")
+        runtime.evaluateComputed("Item", instance?.id, "deepValue")
       ).rejects.toThrow(EvaluationBudgetExceededError);
     });
   });

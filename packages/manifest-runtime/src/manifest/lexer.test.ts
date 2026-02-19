@@ -432,7 +432,7 @@ describe("Lexer", () => {
       const tokens = new Lexer(source).tokenize();
 
       expect(tokens[0].value).toBe("word1");
-      expect(tokens[tokens.length - 1].type).toBe("EOF");
+      expect(tokens.at(-1).type).toBe("EOF");
     });
 
     it("should handle multiple consecutive comments", () => {
@@ -481,7 +481,7 @@ describe("Lexer", () => {
       const source = "entity User";
       const tokens = new Lexer(source).tokenize();
 
-      expect(tokens[tokens.length - 1].type).toBe("EOF");
+      expect(tokens.at(-1).type).toBe("EOF");
     });
 
     it("should handle empty input", () => {

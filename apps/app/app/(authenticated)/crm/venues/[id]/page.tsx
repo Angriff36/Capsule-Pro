@@ -1,5 +1,16 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@repo/design-system/components/ui/alert-dialog";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -83,14 +94,6 @@ export default function VenuePage() {
   }, [venueId]);
 
   const handleDelete = async () => {
-    if (
-      !confirm(
-        "Are you sure you want to delete this venue? This action cannot be undone."
-      )
-    ) {
-      return;
-    }
-
     setDeleting(true);
     try {
       await deleteVenue(venueId);
@@ -175,15 +178,35 @@ export default function VenuePage() {
               Edit
             </Link>
           </Button>
-          <Button
-            disabled={deleting}
-            onClick={handleDelete}
-            variant="destructive"
-          >
-            {deleting && <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />}
-            <TrashIcon className="mr-2 h-4 w-4" />
-            Delete
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button disabled={deleting} variant="destructive">
+                {deleting && (
+                  <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+                )}
+                <TrashIcon className="mr-2 h-4 w-4" />
+                Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete venue?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete this venue? This action cannot
+                  be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  onClick={handleDelete}
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 

@@ -4,6 +4,7 @@
  * Form for editing an existing proposal
  */
 
+import type { Proposal } from "@repo/database/generated/prisma";
 import { Button } from "@repo/design-system/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
@@ -37,7 +38,7 @@ export default async function EditProposalPage({
 }: EditProposalPageProps) {
   const { id } = await params;
 
-  let proposal;
+  let proposal: Proposal | null = null;
   try {
     proposal = await getProposalById(id);
   } catch {
@@ -56,7 +57,11 @@ export default async function EditProposalPage({
     }
 
     const lineItemsJson = formData.get("lineItems") as string;
-    let lineItems = [];
+    let lineItems: Array<{
+      description: string;
+      quantity: number;
+      unitPrice: number;
+    }> = [];
     if (lineItemsJson) {
       try {
         lineItems = JSON.parse(lineItemsJson);

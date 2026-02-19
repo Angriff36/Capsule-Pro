@@ -55,18 +55,20 @@ async function detectSchedulingConflicts(
   >`
     SELECT
       e.id as employee_id,
-      e.name as employee_name,
+      TRIM(CONCAT_WS(' ', e.first_name, e.last_name)) as employee_name,
       COUNT(*) as shift_count,
       s.date
     FROM tenant_staff.schedule_shifts ss
     JOIN tenant_staff.shifts s ON ss.shift_id = s.id
-    JOIN public.users e ON s.employee_id = e.id
+    JOIN tenant_staff.employees e ON s.employee_id = e.id
+      AND e.tenant_id = ss.tenant_id
+      AND e.deleted_at IS NULL
     WHERE ss.tenant_id = ${tenantId}::uuid
       AND ss.deleted_at IS NULL
       AND s.deleted_at IS NULL
       AND s.date BETWEEN ${startDate} AND ${endDate}
       AND s.status != 'cancelled'
-    GROUP BY e.id, e.name, s.date
+    GROUP BY e.id, e.first_name, e.last_name, s.date
     HAVING COUNT(*) > 1
     ORDER BY s.date, shift_count DESC
     LIMIT 20
@@ -118,11 +120,13 @@ async function detectStaffConflicts(
   >`
     SELECT
       e.id as employee_id,
-      e.name as employee_name,
+      TRIM(CONCAT_WS(' ', e.first_name, e.last_name)) as employee_name,
       tor.start_date as time_off_date,
       COUNT(*) as shift_count
     FROM tenant_staff.time_off_requests tor
-    JOIN public.users e ON tor.employee_id = e.id
+    JOIN tenant_staff.employees e ON tor.employee_id = e.id
+      AND e.tenant_id = tor.tenant_id
+      AND e.deleted_at IS NULL
     JOIN tenant_staff.schedule_shifts ss ON ss.tenant_id = tor.tenant_id
     JOIN tenant_staff.shifts s ON s.id = ss.shift_id
     WHERE tor.tenant_id = ${tenantId}::uuid
@@ -131,7 +135,7 @@ async function detectStaffConflicts(
       AND s.deleted_at IS NULL
       AND s.date = tor.start_date::date
       AND s.date BETWEEN ${startDate} AND ${endDate}
-    GROUP BY e.id, e.name, tor.start_date
+    GROUP BY e.id, e.first_name, e.last_name, tor.start_date
     ORDER BY tor.start_date
     LIMIT 20
   `;

@@ -227,6 +227,7 @@ export async function POST(request: NextRequest) {
  * Parse a manifest file to extract entity names and their commands.
  * Simple regex-based parser — doesn't need the full compiler.
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Manifest parser with multiple states
 function parseManifestCommands(source) {
   const entities = {};
   let currentEntity = null;

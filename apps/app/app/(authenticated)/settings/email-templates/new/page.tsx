@@ -35,12 +35,12 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { createEmailTemplate, type EmailTemplateType } from "../actions";
 import {
   COMMON_MERGE_FIELDS,
   extractMergeFields,
   renderTemplate,
 } from "../utils";
-import { createEmailTemplate, type EmailTemplateType } from "../actions";
 
 const TEMPLATE_TYPES: { value: EmailTemplateType; label: string }[] = [
   { value: "proposal", label: "Proposal" },

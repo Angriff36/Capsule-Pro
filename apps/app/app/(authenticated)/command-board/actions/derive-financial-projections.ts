@@ -45,8 +45,12 @@ export interface DeriveFinancialProjectionsResult {
  * - unknown: no data
  */
 function determineHealthStatus(margin: number): FinancialHealthStatus {
-  if (margin >= 30) return "healthy";
-  if (margin >= 20) return "warning";
+  if (margin >= 30) {
+    return "healthy";
+  }
+  if (margin >= 20) {
+    return "warning";
+  }
   return "critical";
 }
 
@@ -129,7 +133,9 @@ export async function deriveFinancialProjections(
     const byPeriod = new Map<string, EventFinancialData[]>();
 
     for (const event of events) {
-      if (!event.eventDate) continue;
+      if (!event.eventDate) {
+        continue;
+      }
 
       const period = getPeriodLabel(event.eventDate);
       const existing = byPeriod.get(period) ?? [];
@@ -175,7 +181,9 @@ export async function deriveFinancialProjections(
       }
 
       // Skip periods with no financial data
-      if (totalRevenue === 0) continue;
+      if (totalRevenue === 0) {
+        continue;
+      }
 
       // Calculate gross profit and margin
       const grossProfit = totalRevenue - totalCosts;

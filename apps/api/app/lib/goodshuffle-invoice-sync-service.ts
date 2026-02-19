@@ -58,6 +58,7 @@ function _detectInvoiceConflicts(
 /**
  * Sync invoices from Goodshuffle to Convoy
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Complex sync logic with multiple branches
 export async function syncInvoicesFromGoodshuffle(
   client: GoodshuffleClient,
   tenantId: string,

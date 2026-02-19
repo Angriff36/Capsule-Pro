@@ -287,7 +287,9 @@ export default function MobileTimeClockPage() {
   const handlePhotoCapture = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
-      if (!file) return;
+      if (!file) {
+        return;
+      }
 
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -300,7 +302,9 @@ export default function MobileTimeClockPage() {
 
   // Handle clock in
   const handleClockIn = useCallback(async () => {
-    if (!employee) return;
+    if (!employee) {
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
@@ -379,11 +383,14 @@ export default function MobileTimeClockPage() {
     isOnline,
     getCurrentLocation,
     fetchStatus,
+    resetClockInForm,
   ]);
 
   // Handle clock out
   const handleClockOut = useCallback(async () => {
-    if (!activeTimeEntry) return;
+    if (!activeTimeEntry) {
+      return;
+    }
 
     setIsLoading(true);
     setError(null);
@@ -446,7 +453,9 @@ export default function MobileTimeClockPage() {
 
   // Handle break start/end
   const handleBreakToggle = useCallback(async () => {
-    if (!activeTimeEntry) return;
+    if (!activeTimeEntry) {
+      return;
+    }
 
     setIsLoading(true);
 
@@ -517,7 +526,9 @@ export default function MobileTimeClockPage() {
   }, [getCurrentLocation]);
 
   const getEmployeeName = () => {
-    if (!employee) return "Unknown";
+    if (!employee) {
+      return "Unknown";
+    }
     return (
       [employee.first_name, employee.last_name].filter(Boolean).join(" ") ||
       employee.email

@@ -4,9 +4,9 @@
  * Tests the manifest compile command for IR generation.
  */
 
-import fs from "fs/promises";
-import os from "os";
-import path from "path";
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
 import { describe, expect, it, vi } from "vitest";
 
 // Helper to create temp manifest files

@@ -45,12 +45,16 @@ function toEntitySegment(value: string): string {
 }
 
 function toCamelCase(value: string): string {
-  if (!value) return value;
+  if (!value) {
+    return value;
+  }
   return value[0].toLowerCase() + value.slice(1);
 }
 
 function toPascalCase(value: string): string {
-  if (!value) return value;
+  if (!value) {
+    return value;
+  }
   return value[0].toUpperCase() + value.slice(1);
 }
 
@@ -140,7 +144,9 @@ function deriveCommandRoute(
   includeAuth: boolean,
   includeTenant: boolean
 ): RouteEntry | null {
-  if (!command.entity) return null;
+  if (!command.entity) {
+    return null;
+  }
 
   const segment = toEntitySegment(command.entity);
   const commandSegment = toKebabCase(command.name);
@@ -325,10 +331,14 @@ function generateTypedPathBuilders(manifest: RouteManifest): string {
     // Group by entity
     const byEntity = new Map<string, typeof entityReadRoutes>();
     for (const route of entityReadRoutes) {
-      if (route.source.kind !== "entity-read") continue;
+      if (route.source.kind !== "entity-read") {
+        continue;
+      }
       const entity = route.source.entity;
-      if (!byEntity.has(entity)) byEntity.set(entity, []);
-      byEntity.get(entity)!.push(route);
+      if (!byEntity.has(entity)) {
+        byEntity.set(entity, []);
+      }
+      byEntity.get(entity)?.push(route);
     }
 
     for (const [entity, routes] of byEntity) {
@@ -373,7 +383,9 @@ function generateTypedPathBuilders(manifest: RouteManifest): string {
     lines.push("");
 
     for (const route of commandRoutes) {
-      if (route.source.kind !== "command") continue;
+      if (route.source.kind !== "command") {
+        continue;
+      }
       const fnName = `${toCamelCase(route.source.entity)}${toPascalCase(route.source.command)}Path`;
 
       lines.push(`/** ${route.method} ${route.path} */`);
@@ -396,20 +408,21 @@ function generateTypedPathBuilders(manifest: RouteManifest): string {
     lines.push("");
 
     for (const route of manualRoutes) {
-      if (route.source.kind !== "manual") continue;
+      if (route.source.kind !== "manual") {
+        continue;
+      }
 
       // Build function name from manual route id
-      const fnName =
-        route.source.id
-          .replace(/[^a-zA-Z0-9]+/g, " ")
-          .trim()
-          .split(/\s+/)
-          .map((w, i) =>
-            i === 0
-              ? w.toLowerCase()
-              : w[0].toUpperCase() + w.slice(1).toLowerCase()
-          )
-          .join("") + "Path";
+      const fnName = `${route.source.id
+        .replace(/[^a-zA-Z0-9]+/g, " ")
+        .trim()
+        .split(/\s+/)
+        .map((w, i) =>
+          i === 0
+            ? w.toLowerCase()
+            : w[0].toUpperCase() + w.slice(1).toLowerCase()
+        )
+        .join("")}Path`;
 
       // Determine if route has path params
       const pathParams = route.params.filter((p) => p.location === "path");
