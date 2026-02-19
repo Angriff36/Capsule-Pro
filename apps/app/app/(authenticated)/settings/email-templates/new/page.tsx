@@ -37,11 +37,10 @@ import { toast } from "sonner";
 import { z } from "zod";
 import {
   COMMON_MERGE_FIELDS,
-  createEmailTemplate,
-  type EmailTemplateType,
   extractMergeFields,
   renderTemplate,
-} from "../actions";
+} from "../utils";
+import { createEmailTemplate, type EmailTemplateType } from "../actions";
 
 const TEMPLATE_TYPES: { value: EmailTemplateType; label: string }[] = [
   { value: "proposal", label: "Proposal" },
