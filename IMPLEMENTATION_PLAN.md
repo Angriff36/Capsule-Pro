@@ -110,11 +110,23 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
   - Shift sync with duplicate prevention via Nowsta shift IDs
   - Full error handling and status tracking
 
-### 8. Goodshuffle Integration (3 parts)
+### ~~8. Goodshuffle Integration~~ ✅ COMPLETE (2026-02-18)
 - **Specs:** `specs/administrative/goodshuffle-*-sync_TODO/`
-- **Parts:** Event sync, Inventory sync, Invoicing sync
-- **Status:** Specs only - no implementation
-- **Effort:** 6-8 hours each
+- **Implemented:**
+  - Added `GoodshuffleInventorySync` and `GoodshuffleInvoiceSync` models to Prisma schema
+  - Extended GoodshuffleClient with inventory and invoice API methods
+  - Created inventory sync service (`apps/api/app/lib/goodshuffle-inventory-sync-service.ts`)
+  - Created invoice sync service (`apps/api/app/lib/goodshuffle-invoice-sync-service.ts`)
+  - Inventory sync maps Goodshuffle items to Convoy InventoryItem model
+  - Invoice sync maps Goodshuffle invoices to Convoy EventBudget/BudgetLineItem models
+  - API endpoints:
+    - `GET /api/integrations/goodshuffle/inventory` - List inventory sync records
+    - `POST /api/integrations/goodshuffle/inventory/sync` - Trigger inventory sync
+    - `GET /api/integrations/goodshuffle/invoices` - List invoice sync records
+    - `POST /api/integrations/goodshuffle/invoices/sync` - Trigger invoice sync
+  - Conflict detection for name, quantity, and cost fields
+  - Status tracking with synced, pending, conflict, and error states
+  - Note: Event sync was already implemented in prior work
 
 ### ~~9. QuickBooks Invoice Export~~ ✅ COMPLETE (2026-02-18)
 - **Spec:** `specs/staff/quickbooks-invoice-export_TODO/`
@@ -293,6 +305,7 @@ Several specs are marked `_TODO` but have substantial implementations:
 | Command Board Relationships | **Complete** | Derived connections |
 | Client Segmentation UI | **Complete** | Tag filter with multi-select, counts |
 | Nowsta Integration | **Complete** | Employee mapping, shift sync |
+| Goodshuffle Integration | **Complete** | Event, inventory, and invoice sync services |
 | Bulk Edit Operations | **Complete** | Multi-select toolbar, preview, undo/redo |
 | Bulk Grouping Operations | **Complete** | Group/ungroup UI, named groups |
 | SMS Notification System | **Complete** | Templates, delivery tracking, opt-in/opt-out |
@@ -326,13 +339,12 @@ Several specs are marked `_TODO` but have substantial implementations:
 3. **Command Board** - Feature-complete as primary interface
 4. **Payroll Engine** - Full calculation with tax and exports
 5. **Kitchen Operations** - Complete workflow with state machines
+6. **External Integrations** - Nowsta and Goodshuffle fully implemented
 
 ### Gaps
-1. **External Integrations** - Nowsta, Goodshuffle not implemented
-2. **Mobile Time Clock** - Frontend missing despite backend support
-3. **Venue Management** - Blocked on database model
-4. **PDF Generation** - Package is skeleton
-5. **Bulk Operations UI** - APIs exist, UI missing
+1. **Mobile Time Clock** - Frontend missing despite backend support
+2. **PDF Generation** - Package is skeleton
+3. **Email Templates** - Limited template coverage
 
 ---
 
