@@ -498,7 +498,6 @@ Several specs are marked `_TODO` but have substantial implementations:
 
 ### Gaps
 1. **Proposal Branding** - No logo/colors/fonts customization
-2. **Proposal Public Links** - No shareable public proposal URLs
 
 ---
 
@@ -560,8 +559,18 @@ Several specs are marked `_TODO` but have substantial implementations:
 
 ### 31. Warehouse Shipment Tracking
 - **Spec:** `specs/warehouse/warehouse-shipment-tracking_TODO/`
-- **Status:** Not implemented, not previously tracked
-- **Description:** Outbound shipment tracking functionality
+- **Status:** Partially implemented
+- **Implemented:**
+  - Shipment API (`apps/api/app/api/shipments/`) with full CRUD
+  - Status tracking: draft, scheduled, preparing, in_transit, delivered, returned, cancelled
+  - Delivery confirmation fields (delivered_by, received_by, signature)
+  - Tracking fields (tracking_number, carrier, shipping_method)
+  - Shipment items with quantity tracking and condition
+  - UI pages at `/warehouse/shipments`
+  - Manifest commands for create, update, schedule, start-preparing, ship, mark-delivered, cancel
+- **Missing:**
+  - Automatic inventory level updates on shipment preparation/delivery
+  - Packing list generation from event requirements
 
 ---
 
