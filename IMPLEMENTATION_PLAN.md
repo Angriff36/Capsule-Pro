@@ -199,7 +199,7 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
   - Delivery status tracking via sms_logs table
   - API endpoints:
     - `POST /api/collaboration/notifications/sms/send` - Send SMS notifications
-    - `GET /api/collaboration/notifications/sms/logs` - Get SMS delivery logs
+    - `GET /api/collaboration/notifications/sms/history` - Get SMS delivery history
     - `GET/POST /api/collaboration/notifications/sms/preferences` - Manage SMS preferences
     - `POST /api/collaboration/notifications/sms/webhook` - Twilio delivery status callback
   - Full test coverage (14 tests passing)
