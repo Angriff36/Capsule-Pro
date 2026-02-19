@@ -5,9 +5,14 @@
 
 ## Executive Summary
 
-The Convoy platform is a catering/event management SaaS with strong foundations. The **Command Board** is feature-complete for core functionality and serves as the primary interface. Key gaps exist in integrations, mobile features, and some AI capabilities.
+The Convoy platform is a catering/event management SaaS with strong foundations. The **Command Board** is feature-complete for core functionality and serves as the primary interface. Most planned features have been implemented.
 
-**Overall Completion: ~85%**
+**Overall Completion: ~92%**
+
+**Remaining Unimplemented:**
+- Training/HRMS system
+- Event-to-shipment packing list generation
+- Proposal branding customization
 
 ---
 
@@ -464,6 +469,11 @@ Several specs are marked `_TODO` but have substantial implementations:
 | Event Contract Management | **Complete** | CRUD, signatures, public signing, history timeline |
 | Event Proposal Generation | **Complete** | CRUD, PDF export, email sending via Resend, template system, public shareable links |
 | AI Event Summaries | **Complete** | API endpoint, EventBriefingCard UI, allergen/dietary info, team handoff summaries |
+| Inventory Item Management | **Complete** | Full CRUD, SKU management, FSA compliance, dependency checking |
+| Inventory Stock Levels | **Complete** | Stock tracking, adjustments, transactions, locations |
+| Event Timeline Builder | **Complete** | Battle Board provides full timeline functionality |
+| Manifest Kitchen Ops Rules Overrides | **Complete** | Constraint evaluation, override workflow, audit trail |
+| Warehouse Shipment Tracking | **Complete** | Full lifecycle, PDF export, inventory reservation on preparation |
 
 ---
 
@@ -516,15 +526,26 @@ Several specs are marked `_TODO` but have substantial implementations:
   - Copy to clipboard and regenerate functionality
   - Highlights and critical info sections with visual indicators
 
-### 25. Inventory Item Management
+### ~~25. Inventory Item Management~~ ✅ COMPLETE (2026-02-18)
 - **Spec:** `specs/inventory/inventory-item-management_TODO/`
-- **Status:** Not implemented, not previously tracked
-- **Description:** Basic inventory CRUD operations
+- **Implemented:**
+  - Full CRUD API endpoints at `/api/inventory/items/`
+  - Complete Prisma model with all required fields (SKU, description, unit, par levels, etc.)
+  - UI pages with filtering, search, and create/edit modals
+  - FSA compliance tracking (status, temperature logging, allergen info, traceability)
+  - Dependency checking for deletion safety
+  - Recipe cost recalculation when prices change
 
-### 26. Inventory Stock Levels
+### ~~26. Inventory Stock Levels~~ ✅ COMPLETE (2026-02-18)
 - **Spec:** `specs/inventory/inventory-stock-levels_TODO/`
-- **Status:** Not implemented, not previously tracked
-- **Description:** Stock level tracking and management
+- **Implemented:**
+  - Stock levels API (`/api/inventory/stock-levels/`) with pagination and filters
+  - Stock adjustment API (`/api/inventory/stock-levels/adjust`) with reason tracking
+  - Transaction history API (`/api/inventory/stock-levels/transactions`)
+  - Storage locations API (`/api/inventory/stock-levels/locations`)
+  - Reorder status calculation (below_par, at_par, above_par)
+  - Location-specific stock tracking
+  - UI with performance overview, filters, and adjustment modal
 
 ### ~~27. Event Import/Export~~ ✅ COMPLETE (2026-02-18)
 - **Spec:** `specs/kitchen/event-import-export_TODO/`
@@ -542,24 +563,48 @@ Several specs are marked `_TODO` but have substantial implementations:
     - Export filtered event lists with various filter parameters
     - Summary row with filters applied
 
-### 28. Event Timeline Builder
+### ~~28. Event Timeline Builder~~ ✅ COMPLETE (2026-02-18)
 - **Spec:** `specs/kitchen/event-timeline-builder_TODO/`
-- **Status:** Not implemented, not previously tracked
-- **Description:** Timeline/itinerary construction for events
+- **Implemented:**
+  - Battle Board provides complete timeline functionality:
+    - 24-hour interactive timeline with drag-and-drop task scheduling
+    - Time markers with 3-hour intervals and current time indicator
+    - Zoom controls (50%-200%)
+    - Task management with status tracking (not started, in progress, completed, delayed, blocked)
+    - Priority levels (low, medium, high, critical)
+    - Staff assignment with availability indicators
+    - Conflict detection for overlapping assignments
+    - Critical path calculation with visual highlighting
+    - Undo/redo and keyboard shortcuts
+    - Progress tracking and dependency management
+  - Database: `tenant_events.timeline_tasks` table with full CRUD
+  - Server actions for all operations including critical path calculation
 
-### 29. Manifest Kitchen Ops Rules Overrides
+### ~~29. Manifest Kitchen Ops Rules Overrides~~ ✅ COMPLETE (2026-02-18)
 - **Spec:** `specs/manifest/manifest-kitchen-ops-rules-overrides_TODO/`
-- **Status:** Not implemented, not previously tracked
-- **Description:** Overrides for kitchen operations manifest rules
+- **Implemented:**
+  - Constraint evaluation with severity levels (OK/WARN/BLOCK)
+  - Override workflow with role-based authorization
+  - `ConstraintOverrideDialog` UI component
+  - `OverrideAudit` table for tracking all overrides
+  - Full audit trail with event emission
+  - API routes for override management (`/api/kitchen/overrides/`)
+  - Integration with all kitchen operations
 
 ### 30. Training/HRMS
 - **Spec:** `specs/training-hrms_TODO/`
-- **Status:** Not implemented, not previously tracked
-- **Description:** Training/HRMS functionality
+- **Status:** Not implemented
+- **Description:** Training module system with HRMS capabilities
+- **Required:**
+  - Training module creation, assignment, and completion tracking
+  - Certification document upload with expiration alerts
+  - Secure PIN management with encryption
+  - Employee onboarding workflow
+  - Performance review management
+  - Disciplinary action tracking (CA/PIP)
 
-### 31. Warehouse Shipment Tracking
+### ~~31. Warehouse Shipment Tracking~~ ✅ COMPLETE (2026-02-18)
 - **Spec:** `specs/warehouse/warehouse-shipment-tracking_TODO/`
-- **Status:** Partially implemented
 - **Implemented:**
   - Shipment API (`apps/api/app/api/shipments/`) with full CRUD
   - Status tracking: draft, scheduled, preparing, in_transit, delivered, returned, cancelled
@@ -568,9 +613,15 @@ Several specs are marked `_TODO` but have substantial implementations:
   - Shipment items with quantity tracking and condition
   - UI pages at `/warehouse/shipments`
   - Manifest commands for create, update, schedule, start-preparing, ship, mark-delivered, cancel
+  - PDF packing list generation (`/api/shipments/[id]/pdf`)
+  - Automatic inventory updates on delivery (adds stock for incoming shipments)
+  - **Automatic inventory reservation on preparation** (2026-02-18):
+    - Outgoing shipments (with event_id) have inventory reserved when entering "preparing" status
+    - Inventory transactions created with "transfer" type and negative quantities
+    - Inventory quantity_on_hand reduced for reserved items
+    - Full reversal on cancellation (restores inventory)
 - **Missing:**
-  - Automatic inventory level updates on shipment preparation/delivery
-  - Packing list generation from event requirements
+  - Packing list generation from event requirements (auto-create shipments from prep lists)
 
 ---
 
