@@ -38,11 +38,13 @@ import { toast } from "sonner";
 import { z } from "zod";
 import {
   COMMON_MERGE_FIELDS,
+  extractMergeFields,
+  renderTemplate,
+} from "../utils";
+import {
   deleteEmailTemplate,
   type EmailTemplateType,
-  extractMergeFields,
   getEmailTemplateById,
-  renderTemplate,
   updateEmailTemplate,
 } from "../actions";
 

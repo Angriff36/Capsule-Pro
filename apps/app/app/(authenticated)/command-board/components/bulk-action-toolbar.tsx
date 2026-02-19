@@ -34,14 +34,16 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   BULK_EDITABLE_PROPERTIES,
+  ENTITY_STATUS_OPTIONS,
+  PRIORITY_OPTIONS,
+} from "../actions/bulk-edit-utils";
+import {
   type BulkEditChanges,
   type BulkEditItem,
   type BulkEditPreview,
   type BulkEditResult,
-  ENTITY_STATUS_OPTIONS,
   executeBulkEdit,
   getBulkEditPreview,
-  PRIORITY_OPTIONS,
 } from "../actions/bulk-edit";
 import {
   createGroup,
