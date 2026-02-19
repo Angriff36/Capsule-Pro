@@ -473,7 +473,7 @@ Several specs are marked `_TODO` but have substantial implementations:
 | Inventory Stock Levels | **Complete** | Stock tracking, adjustments, transactions, locations |
 | Event Timeline Builder | **Complete** | Battle Board provides full timeline functionality |
 | Manifest Kitchen Ops Rules Overrides | **Complete** | Constraint evaluation, override workflow, audit trail |
-| Warehouse Shipment Tracking | **Complete** | Full lifecycle, PDF export, inventory reservation on preparation |
+| Warehouse Shipment Tracking | **Complete** | Full lifecycle, PDF export, inventory reservation on preparation, event-to-shipment packing list generation |
 
 ---
 
@@ -620,8 +620,13 @@ Several specs are marked `_TODO` but have substantial implementations:
     - Inventory transactions created with "transfer" type and negative quantities
     - Inventory quantity_on_hand reduced for reserved items
     - Full reversal on cancellation (restores inventory)
-- **Missing:**
-  - Packing list generation from event requirements (auto-create shipments from prep lists)
+  - **Event-to-shipment packing list generation** (2026-02-18):
+    - API endpoint `POST /api/events/[eventId]/shipments/generate` to create shipments from event prep lists
+    - API endpoint `GET /api/events/[eventId]/shipments/generate` to preview shipment requirements
+    - Maps prep list ingredients to inventory items by name matching
+    - Stock availability validation with configurable enforcement
+    - Automatic shipment number generation with year-based sequencing
+    - Links shipment to event and location
 
 ---
 
