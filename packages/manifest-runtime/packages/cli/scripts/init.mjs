@@ -5,11 +5,11 @@
  * Run this directly without building the CLI: node packages/cli/scripts/init.mjs
  */
 
-import fs from 'fs/promises';
-import path from 'path';
-import yaml from 'js-yaml';
+import fs from "node:fs/promises";
+import path from "node:path";
+import yaml from "js-yaml";
 
-const CONFIG_FILE = 'manifest.config.yaml';
+const CONFIG_FILE = "manifest.config.yaml";
 
 async function main() {
   const cwd = process.cwd();
@@ -19,9 +19,9 @@ async function main() {
   try {
     await fs.access(configPath);
     console.log(`✓ ${CONFIG_FILE} already exists`);
-    console.log('');
-    console.log('Use --force to overwrite:');
-    console.log('  node packages/cli/scripts/init.mjs --force');
+    console.log("");
+    console.log("Use --force to overwrite:");
+    console.log("  node packages/cli/scripts/init.mjs --force");
     process.exit(0);
   } catch {
     // File doesn't exist, continue
@@ -29,9 +29,9 @@ async function main() {
 
   // Simple questions (non-interactive for now)
   const config = {
-    $schema: 'https://manifest.dev/config.schema.json',
-    src: '**/*.manifest',
-    output: 'ir/',
+    $schema: "https://manifest.dev/config.schema.json",
+    src: "**/*.manifest",
+    output: "ir/",
   };
 
   // Write config
@@ -39,21 +39,21 @@ async function main() {
     indent: 2,
     lineWidth: 120,
   });
-  await fs.writeFile(configPath, yamlContent, 'utf-8');
+  await fs.writeFile(configPath, yamlContent, "utf-8");
 
-  console.log('✓ Manifest initialized!');
-  console.log('');
+  console.log("✓ Manifest initialized!");
+  console.log("");
   console.log(`Created ${CONFIG_FILE}:`);
-  console.log('');
+  console.log("");
   console.log(yamlContent);
-  console.log('Quick start:');
+  console.log("Quick start:");
   console.log("  echo 'entity User { name: string }' > User.manifest");
-  console.log('  node packages/cli/scripts/compile.mjs User.manifest');
-  console.log('');
-  console.log('Edit manifest.config.yaml to customize paths.');
+  console.log("  node packages/cli/scripts/compile.mjs User.manifest");
+  console.log("");
+  console.log("Edit manifest.config.yaml to customize paths.");
 }
 
-main().catch(err => {
-  console.error('Init failed:', err.message);
+main().catch((err) => {
+  console.error("Init failed:", err.message);
   process.exit(1);
 });

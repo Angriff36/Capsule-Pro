@@ -109,6 +109,19 @@ function formatDueStatus(
   return { label: format(due, "h:mm a"), isOverdue: false, isUrgent: false };
 }
 
+function getDueStatusBadgeClass(dueStatus: {
+  isOverdue: boolean;
+  isUrgent: boolean;
+}): string {
+  if (dueStatus.isOverdue) {
+    return "bg-rose-100 text-rose-700";
+  }
+  if (dueStatus.isUrgent) {
+    return "bg-amber-100 text-amber-700";
+  }
+  return "bg-slate-100 text-slate-600";
+}
+
 // Extracted outside parent component to prevent recreation on every render
 function MobileTaskCard({
   task,
@@ -143,13 +156,7 @@ function MobileTaskCard({
         </Badge>
         {dueStatus && (
           <span
-            className={`flex items-center gap-1 rounded-full px-2 py-1 font-bold text-xs ${
-              dueStatus.isOverdue
-                ? "bg-rose-100 text-rose-700"
-                : dueStatus.isUrgent
-                  ? "bg-amber-100 text-amber-700"
-                  : "bg-slate-100 text-slate-600"
-            }`}
+            className={`flex items-center gap-1 rounded-full px-2 py-1 font-bold text-xs ${getDueStatusBadgeClass(dueStatus)}`}
           >
             <Clock className="h-3 w-3" />
             {dueStatus.label}
@@ -355,7 +362,9 @@ export default function KitchenMobilePage() {
           const errData = await response.json();
           const message = errData.message || "Failed to claim task";
           setError(message);
-          captureException(new Error(`[KitchenMobile] Claim failed: ${message}`));
+          captureException(
+            new Error(`[KitchenMobile] Claim failed: ${message}`)
+          );
         }
       } catch (err) {
         captureException(err);
@@ -427,7 +436,7 @@ export default function KitchenMobilePage() {
         const response = await apiFetch(`/api/kitchen/tasks/${taskId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: "completed" }),
+          body: JSON.stringify({ status: "done" }),
         });
 
         if (response.ok) {

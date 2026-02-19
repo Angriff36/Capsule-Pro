@@ -1,0 +1,149 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "ir-v1.schema.json",
+  "title": "Manifest IR Schema v1",
+  "description": "Schema for Manifest Intermediate Representation",
+  "type": "object",
+  "required": ["metadata"],
+  "properties": {
+    "metadata": {
+      "type": "object",
+      "required": ["compilerVersion"],
+      "properties": {
+        "compilerVersion": {
+          "type": "string",
+          "description": "Version of the compiler that produced this IR"
+        },
+        "schemaVersion": {
+          "type": "string",
+          "description": "Version of the IR schema"
+        },
+        "compiledAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Timestamp when IR was compiled"
+        },
+        "contentHash": {
+          "type": "string",
+          "description": "Hash of the source content"
+        },
+        "irHash": {
+          "type": "string",
+          "description": "Hash of the IR output"
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "properties": {
+        "compilerVersion": { "type": "string" },
+        "schemaVersion": { "type": "string" },
+        "compiledAt": { "type": "string" },
+        "contentHash": { "type": "string" },
+        "irHash": { "type": "string" }
+      }
+    },
+    "version": {
+      "type": "string"
+    },
+    "modules": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    },
+    "entities": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "properties"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Entity name"
+          },
+          "properties": {
+            "type": "array",
+            "description": "Entity properties",
+            "items": {
+              "type": "object",
+              "required": ["name", "type"],
+              "properties": {
+                "name": { "type": "string" },
+                "type": {
+                  "oneOf": [
+                    { "type": "string" },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "name": { "type": "string" },
+                        "nullable": { "type": "boolean" }
+                      }
+                    }
+                  ]
+                },
+                "modifiers": {
+                  "type": "array",
+                  "items": { "type": "string" }
+                },
+                "defaultValue": { "type": "object" }
+              }
+            }
+          },
+          "computedProperties": { "type": "array" },
+          "relationships": { "type": "array" },
+          "commands": { "type": "array" },
+          "constraints": { "type": "array" },
+          "policies": { "type": "array" }
+        }
+      }
+    },
+    "stores": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "entity": { "type": "string" },
+          "target": { "type": "string" },
+          "config": { "type": "object" }
+        }
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "channel": { "type": "string" },
+          "payload": { "type": "array" }
+        }
+      }
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Command name"
+          },
+          "entity": { "type": "string" },
+          "parameters": { "type": "array" },
+          "guards": { "type": "array" },
+          "constraints": { "type": "array" },
+          "actions": { "type": "array" },
+          "emits": { "type": "array" }
+        }
+      }
+    },
+    "policies": {
+      "type": "array",
+      "items": {
+        "type": "object"
+      }
+    }
+  }
+}

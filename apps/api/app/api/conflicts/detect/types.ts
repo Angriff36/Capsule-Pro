@@ -13,8 +13,10 @@ export const ConflictType = {
   resource: "resource",
   staff: "staff",
   inventory: "inventory",
+  equipment: "equipment",
   timeline: "timeline",
   venue: "venue",
+  financial: "financial",
 } as const;
 
 export type ConflictType = (typeof ConflictType)[keyof typeof ConflictType];
@@ -26,7 +28,7 @@ export interface Conflict {
   title: string;
   description: string;
   affectedEntities: {
-    type: "event" | "task" | "employee" | "inventory" | "venue";
+    type: "event" | "task" | "employee" | "inventory" | "equipment" | "venue";
     id: string;
     name: string;
   }[];
@@ -39,7 +41,7 @@ export interface ResolutionOption {
   type: "reassign" | "reschedule" | "substitute" | "cancel" | "split";
   description: string;
   affectedEntities: {
-    type: "event" | "task" | "employee" | "inventory" | "venue";
+    type: "event" | "task" | "employee" | "inventory" | "equipment" | "venue";
     id: string;
     name: string;
   }[];

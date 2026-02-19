@@ -35,10 +35,10 @@
  * - PrepList: update, updateBatchMultiplier, finalize, activate, deactivate, markCompleted, cancel
  * - PrepListItem: updateQuantity, updateStation, updatePrepNotes, markCompleted, markUncompleted
  */
-import type { CommandResult, EmittedEvent, RuntimeContext, RuntimeEngine } from "@manifest/runtime";
-import type { OverrideRequest } from "@manifest/runtime/ir";
+import type { CommandResult, EmittedEvent, RuntimeContext, RuntimeEngine } from "@angriff36/manifest";
+import type { OverrideRequest } from "@angriff36/manifest/ir";
 import { ManifestRuntimeEngine } from "./runtime-engine.js";
-import type { Store } from "@manifest/runtime";
+import type { Store } from "@angriff36/manifest";
 /**
  * Kitchen Ops Runtime Context
  */
@@ -147,9 +147,9 @@ export interface KitchenOpsContext extends RuntimeContext {
      * ```
      */
     telemetry?: {
-        onConstraintEvaluated?: (outcome: Readonly<import("@manifest/runtime/ir").ConstraintOutcome>, commandName: string, entityName?: string) => void;
-        onOverrideApplied?: (constraint: Readonly<import("@manifest/runtime/ir").IRConstraint>, overrideReq: Readonly<import("@manifest/runtime/ir").OverrideRequest>, outcome: Readonly<import("@manifest/runtime/ir").ConstraintOutcome>, commandName: string) => void;
-        onCommandExecuted?: (command: Readonly<import("@manifest/runtime/ir").IRCommand>, result: Readonly<import("@manifest/runtime").CommandResult>, entityName?: string) => void;
+        onConstraintEvaluated?: (outcome: Readonly<import("@angriff36/manifest/ir").ConstraintOutcome>, commandName: string, entityName?: string) => void;
+        onOverrideApplied?: (constraint: Readonly<import("@angriff36/manifest/ir").IRConstraint>, overrideReq: Readonly<import("@angriff36/manifest/ir").OverrideRequest>, outcome: Readonly<import("@angriff36/manifest/ir").ConstraintOutcome>, commandName: string) => void;
+        onCommandExecuted?: (command: Readonly<import("@angriff36/manifest/ir").IRCommand>, result: Readonly<import("@angriff36/manifest").CommandResult>, entityName?: string) => void;
     };
 }
 /**
@@ -573,7 +573,7 @@ export declare function createPrepTaskInstance(engine: RuntimeEngine, data: {
     dueByDate?: number;
     priority?: number;
     stationId?: string;
-}): Promise<import("@manifest/runtime").EntityInstance | undefined>;
+}): Promise<import("@angriff36/manifest").EntityInstance | undefined>;
 /**
  * Create a station instance
  */
@@ -585,7 +585,7 @@ export declare function createStationInstance(engine: RuntimeEngine, data: {
     stationType?: string;
     capacitySimultaneousTasks?: number;
     equipmentList?: string;
-}): Promise<import("@manifest/runtime").EntityInstance | undefined>;
+}): Promise<import("@angriff36/manifest").EntityInstance | undefined>;
 /**
  * Create an inventory item instance
  */
@@ -600,8 +600,8 @@ export declare function createInventoryItemInstance(engine: RuntimeEngine, data:
     parLevel?: number;
     costPerUnit?: number;
     locationId?: string;
-}): Promise<import("@manifest/runtime").EntityInstance | undefined>;
-import type { ConstraintOutcome } from "@manifest/runtime/ir";
+}): Promise<import("@angriff36/manifest").EntityInstance | undefined>;
+import type { ConstraintOutcome } from "@angriff36/manifest/ir";
 /**
  * Override reason codes for constraint overrides
  * These are application-specific reasons for authorizing constraint overrides

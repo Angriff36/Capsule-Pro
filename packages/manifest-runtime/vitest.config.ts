@@ -1,9 +1,41 @@
+import path from "node:path";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    environment: "jsdom",
-    include: ["**/*.test.ts"],
-    testTimeout: 10_000,
+    include: ["src/**/*.test.ts", "packages/cli/**/*.test.ts"],
+    environment: "node",
+    setupFiles: ["./test-setup.ts"],
+    deps: {
+      interopDefault: true,
+    },
+  },
+  resolve: {
+    alias: {
+      "@angriff36/manifest/ir-compiler": path.resolve(
+        import.meta.dirname,
+        "./src/manifest/ir-compiler.ts"
+      ),
+      "@angriff36/manifest/compiler": path.resolve(
+        import.meta.dirname,
+        "./src/manifest/compiler.ts"
+      ),
+      "@angriff36/manifest/ir": path.resolve(
+        import.meta.dirname,
+        "./src/manifest/ir.ts"
+      ),
+      "@angriff36/manifest/projections/nextjs": path.resolve(
+        import.meta.dirname,
+        "./src/manifest/projections/nextjs/generator.ts"
+      ),
+      "@angriff36/manifest/projections/routes": path.resolve(
+        import.meta.dirname,
+        "./src/manifest/projections/routes/generator.ts"
+      ),
+      "@angriff36/manifest": path.resolve(
+        import.meta.dirname,
+        "./src/manifest/runtime-engine.ts"
+      ),
+    },
   },
 });

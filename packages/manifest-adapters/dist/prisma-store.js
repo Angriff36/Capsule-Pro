@@ -818,8 +818,9 @@ export class KitchenTaskPrismaStore {
         const existing = await this.prisma.kitchenTask.findFirst({
             where: { tenantId: this.tenantId, id, deletedAt: null },
         });
-        if (!existing)
+        if (!existing) {
             return false;
+        }
         await this.prisma.kitchenTask.update({
             where: { tenantId_id: { tenantId: this.tenantId, id } },
             data: { deletedAt: new Date() },

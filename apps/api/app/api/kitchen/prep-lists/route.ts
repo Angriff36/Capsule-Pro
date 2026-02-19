@@ -241,7 +241,7 @@ export async function GET(request: Request) {
 export async function POST(request: NextRequest) {
   console.log("[PrepList/POST] Delegating to manifest create command");
 
-  return executeManifestCommand(request, {
+  return await executeManifestCommand(request, {
     entityName: "PrepList",
     commandName: "create",
   });

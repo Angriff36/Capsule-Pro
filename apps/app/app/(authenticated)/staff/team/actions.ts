@@ -49,11 +49,20 @@ const resolveEmploymentType = (value: string): EmploymentTypeValue => {
 export const syncCurrentUser = async (): Promise<ActionState> => {
   try {
     const { orgId, userId } = await auth();
-    if (!orgId) return { status: "error", message: "No orgId — are you signed in to an org?" };
-    if (!userId) return { status: "error", message: "No userId from Clerk auth." };
+    if (!orgId) {
+      return {
+        status: "error",
+        message: "No orgId — are you signed in to an org?",
+      };
+    }
+    if (!userId) {
+      return { status: "error", message: "No userId from Clerk auth." };
+    }
 
     const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) return { status: "error", message: `No tenant for org ${orgId}` };
+    if (!tenantId) {
+      return { status: "error", message: `No tenant for org ${orgId}` };
+    }
 
     const clerkUser = await currentUser();
     const clerkEmail =
@@ -131,7 +140,10 @@ export const syncCurrentUser = async (): Promise<ActionState> => {
     });
 
     revalidatePath("/staff/team");
-    return { status: "success", message: "Welcome! You're now registered as admin." };
+    return {
+      status: "success",
+      message: "Welcome! You're now registered as admin.",
+    };
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     console.error("[syncCurrentUser] FAILED:", msg, error);

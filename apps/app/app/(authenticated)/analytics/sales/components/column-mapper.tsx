@@ -49,31 +49,44 @@ function detectFieldType(values: unknown[]): FieldType {
   const nonNull = values.filter(
     (v) => v !== null && v !== undefined && v !== ""
   );
-  if (nonNull.length === 0) return "nominal";
+  if (nonNull.length === 0) {
+    return "nominal";
+  }
 
   // Check if all values are dates
   const dateCount = nonNull.filter((v) => {
-    if (v instanceof Date) return true;
+    if (v instanceof Date) {
+      return true;
+    }
     if (typeof v === "string") {
       const d = new Date(v);
       return !Number.isNaN(d.getTime()) && v.length > 6;
     }
     return false;
   }).length;
-  if (dateCount > nonNull.length * 0.7) return "temporal";
+  if (dateCount > nonNull.length * 0.7) {
+    return "temporal";
+  }
 
   // Check if all values are numbers
   const numCount = nonNull.filter((v) => {
-    if (typeof v === "number") return true;
-    if (typeof v === "string")
+    if (typeof v === "number") {
+      return true;
+    }
+    if (typeof v === "string") {
       return !Number.isNaN(Number(v)) && v.trim() !== "";
+    }
     return false;
   }).length;
-  if (numCount > nonNull.length * 0.7) return "quantitative";
+  if (numCount > nonNull.length * 0.7) {
+    return "quantitative";
+  }
 
   // Check cardinality for ordinal vs nominal
   const unique = new Set(nonNull.map(String));
-  if (unique.size <= 10 && unique.size < nonNull.length * 0.3) return "ordinal";
+  if (unique.size <= 10 && unique.size < nonNull.length * 0.3) {
+    return "ordinal";
+  }
 
   return "nominal";
 }
@@ -82,7 +95,9 @@ function detectFieldType(values: unknown[]): FieldType {
  * Build ColumnInfo array from raw data rows.
  */
 function buildColumnInfo(rows: Record<string, unknown>[]): ColumnInfo[] {
-  if (rows.length === 0) return [];
+  if (rows.length === 0) {
+    return [];
+  }
 
   const columnNames = new Set<string>();
   for (const row of rows) {

@@ -125,10 +125,7 @@ const ContractsPage = async () => {
 
   return (
     <>
-      <Header
-        page="Contracts"
-        pages={[{ label: "Events", href: "/events" }]}
-      >
+      <Header page="Contracts" pages={[{ label: "Events", href: "/events" }]}>
         {/* Add action buttons here if needed */}
       </Header>
 

@@ -14,7 +14,7 @@
  * @packageDocumentation
  */
 
-import type { CommandResult, IdempotencyStore } from "@manifest/runtime";
+import type { CommandResult, IdempotencyStore } from "@angriff36/manifest";
 import type { Prisma, PrismaClient } from "@repo/database";
 
 /**
