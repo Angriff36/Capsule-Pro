@@ -8,10 +8,10 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import {
   buildWebhookPayload,
-  sendWebhook,
-  shouldTriggerWebhook,
   determineNextStatus,
+  sendWebhook,
   shouldAutoDisable,
+  shouldTriggerWebhook,
 } from "@repo/notifications";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -33,7 +33,7 @@ interface TriggerWebhookRequest {
 export async function POST(request: NextRequest) {
   try {
     const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
+    if (!(userId && orgId)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -45,16 +45,19 @@ export async function POST(request: NextRequest) {
     const body: TriggerWebhookRequest = await request.json();
 
     // Validate required fields
-    if (!body.eventType || !body.entityType || !body.entityId) {
+    if (!(body.eventType && body.entityType && body.entityId)) {
       return NextResponse.json(
         { error: "eventType, entityType, and entityId are required" },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Validate event type
     if (!VALID_EVENT_TYPES.includes(body.eventType)) {
-      return NextResponse.json({ error: "Invalid event type" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid event type" },
+        { status: 400 }
+      );
     }
 
     // Get all active webhooks
@@ -133,7 +136,11 @@ export async function POST(request: NextRequest) {
       );
 
       // Determine next status
-      const { status, nextRetryAt } = determineNextStatus(1, webhook.retryCount, result);
+      const { status, nextRetryAt } = determineNextStatus(
+        1,
+        webhook.retryCount,
+        result
+      );
 
       // Update delivery log
       await database.webhookDeliveryLog.update({
@@ -163,7 +170,9 @@ export async function POST(request: NextRequest) {
         status?: string;
       } = {
         lastTriggeredAt: new Date(),
-        consecutiveFailures: result.success ? 0 : webhook.consecutiveFailures + 1,
+        consecutiveFailures: result.success
+          ? 0
+          : webhook.consecutiveFailures + 1,
       };
 
       if (result.success) {
@@ -201,7 +210,10 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error triggering webhooks:", error);
-    return NextResponse.json({ error: "Failed to trigger webhooks" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to trigger webhooks" },
+      { status: 500 }
+    );
   }
 }
 

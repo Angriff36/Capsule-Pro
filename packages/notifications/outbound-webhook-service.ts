@@ -10,7 +10,11 @@
 
 import { createHmac } from "node:crypto";
 import type { OutboundWebhook, WebhookDeliveryLog } from "@repo/database";
-import { webhook_delivery_status, webhook_event_type, webhook_status } from "@repo/database";
+import {
+  webhook_delivery_status,
+  type webhook_event_type,
+  webhook_status,
+} from "@repo/database";
 
 export interface WebhookPayload {
   id: string;
@@ -40,8 +44,8 @@ export interface WebhookConfig {
 const DEFAULT_CONFIG: WebhookConfig = {
   maxRetries: 3,
   initialDelayMs: 1000,
-  maxDelayMs: 30000,
-  timeoutMs: 30000,
+  maxDelayMs: 30_000,
+  timeoutMs: 30_000,
   maxConsecutiveFailures: 5,
 };
 
@@ -51,10 +55,12 @@ const DEFAULT_CONFIG: WebhookConfig = {
 export function generateSignature(
   secret: string,
   payload: string,
-  timestamp: number,
+  timestamp: number
 ): string {
   const signedPayload = `${timestamp}.${payload}`;
-  const signature = createHmac("sha256", secret).update(signedPayload).digest("hex");
+  const signature = createHmac("sha256", secret)
+    .update(signedPayload)
+    .digest("hex");
   return `t=${timestamp},v1=${signature}`;
 }
 
@@ -66,7 +72,7 @@ export function buildWebhookPayload(
   entityType: string,
   entityId: string,
   data: Record<string, unknown>,
-  tenantId: string,
+  tenantId: string
 ): WebhookPayload {
   return {
     id: crypto.randomUUID(),
@@ -82,7 +88,11 @@ export function buildWebhookPayload(
 /**
  * Calculate delay for retry with exponential backoff
  */
-export function calculateRetryDelay(attemptNumber: number, baseDelayMs: number, maxDelayMs: number): number {
+export function calculateRetryDelay(
+  attemptNumber: number,
+  baseDelayMs: number,
+  maxDelayMs: number
+): number {
   // Exponential backoff: delay = baseDelay * 2^(attempt-1)
   const delay = baseDelayMs * 2 ** (attemptNumber - 1);
   // Cap at max delay
@@ -93,8 +103,11 @@ export function calculateRetryDelay(attemptNumber: number, baseDelayMs: number, 
  * Send webhook to external URL
  */
 export async function sendWebhook(
-  webhook: Pick<OutboundWebhook, "url" | "secret" | "apiKey" | "timeoutMs" | "customHeaders">,
-  payload: WebhookPayload,
+  webhook: Pick<
+    OutboundWebhook,
+    "url" | "secret" | "apiKey" | "timeoutMs" | "customHeaders"
+  >,
+  payload: WebhookPayload
 ): Promise<WebhookDeliveryResult> {
   const body = JSON.stringify(payload);
   const timestamp = Math.floor(Date.now() / 1000);
@@ -108,12 +121,16 @@ export async function sendWebhook(
 
   // Add signature if secret is configured
   if (webhook.secret) {
-    headers["X-Webhook-Signature"] = generateSignature(webhook.secret, body, timestamp);
+    headers["X-Webhook-Signature"] = generateSignature(
+      webhook.secret,
+      body,
+      timestamp
+    );
   }
 
   // Add API key if configured
   if (webhook.apiKey) {
-    headers["Authorization"] = `Bearer ${webhook.apiKey}`;
+    headers.Authorization = `Bearer ${webhook.apiKey}`;
   }
 
   // Add custom headers
@@ -146,14 +163,14 @@ export async function sendWebhook(
       return {
         success: true,
         httpStatus: response.status,
-        responseBody: responseBody.slice(0, 10000), // Limit response size
+        responseBody: responseBody.slice(0, 10_000), // Limit response size
       };
     }
 
     return {
       success: false,
       httpStatus: response.status,
-      responseBody: responseBody.slice(0, 10000),
+      responseBody: responseBody.slice(0, 10_000),
       errorMessage: `HTTP ${response.status}: ${response.statusText}`,
     };
   } catch (error) {
@@ -183,9 +200,12 @@ export async function sendWebhook(
  * Check if webhook should be triggered based on filters
  */
 export function shouldTriggerWebhook(
-  webhook: Pick<OutboundWebhook, "status" | "eventTypeFilters" | "entityFilters" | "deletedAt">,
+  webhook: Pick<
+    OutboundWebhook,
+    "status" | "eventTypeFilters" | "entityFilters" | "deletedAt"
+  >,
   eventType: webhook_event_type,
-  entityType: string,
+  entityType: string
 ): boolean {
   // Skip deleted webhooks
   if (webhook.deletedAt) {
@@ -198,12 +218,18 @@ export function shouldTriggerWebhook(
   }
 
   // Check event type filter (empty array means all events)
-  if (webhook.eventTypeFilters.length > 0 && !webhook.eventTypeFilters.includes(eventType)) {
+  if (
+    webhook.eventTypeFilters.length > 0 &&
+    !webhook.eventTypeFilters.includes(eventType)
+  ) {
     return false;
   }
 
   // Check entity type filter (empty array means all entities)
-  if (webhook.entityFilters.length > 0 && !webhook.entityFilters.includes(entityType)) {
+  if (
+    webhook.entityFilters.length > 0 &&
+    !webhook.entityFilters.includes(entityType)
+  ) {
     return false;
   }
 
@@ -216,7 +242,7 @@ export function shouldTriggerWebhook(
 export function determineNextStatus(
   currentAttempt: number,
   maxRetries: number,
-  result: WebhookDeliveryResult,
+  result: WebhookDeliveryResult
 ): {
   status: webhook_delivery_status;
   nextRetryAt: Date | null;
@@ -230,7 +256,11 @@ export function determineNextStatus(
 
   // Check if we should retry
   if (currentAttempt < maxRetries) {
-    const delay = calculateRetryDelay(currentAttempt + 1, DEFAULT_CONFIG.initialDelayMs, DEFAULT_CONFIG.maxDelayMs);
+    const delay = calculateRetryDelay(
+      currentAttempt + 1,
+      DEFAULT_CONFIG.initialDelayMs,
+      DEFAULT_CONFIG.maxDelayMs
+    );
     return {
       status: webhook_delivery_status.retrying,
       nextRetryAt: new Date(Date.now() + delay),
@@ -251,4 +281,7 @@ export function shouldAutoDisable(consecutiveFailures: number): boolean {
   return consecutiveFailures >= DEFAULT_CONFIG.maxConsecutiveFailures;
 }
 
-export type { OutboundWebhook as OutboundWebhookType, WebhookDeliveryLog as WebhookDeliveryLogType };
+export type {
+  OutboundWebhook as OutboundWebhookType,
+  WebhookDeliveryLog as WebhookDeliveryLogType,
+};

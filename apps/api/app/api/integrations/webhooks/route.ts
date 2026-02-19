@@ -6,7 +6,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database, type Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -50,7 +50,7 @@ interface CreateWebhookRequest {
 export async function GET(request: NextRequest) {
   try {
     const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
+    if (!(userId && orgId)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -97,14 +97,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ webhooks: sanitizedWebhooks });
   } catch (error) {
     console.error("Error fetching webhooks:", error);
-    return NextResponse.json({ error: "Failed to fetch webhooks" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch webhooks" },
+      { status: 500 }
+    );
   }
 }
 
 export async function POST(request: NextRequest) {
   try {
     const { userId, orgId } = await auth();
-    if (!userId || !orgId) {
+    if (!(userId && orgId)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -116,38 +119,51 @@ export async function POST(request: NextRequest) {
     const body: CreateWebhookRequest = await request.json();
 
     // Validate required fields
-    if (!body.name || !body.url) {
-      return NextResponse.json({ error: "Name and URL are required" }, { status: 400 });
+    if (!(body.name && body.url)) {
+      return NextResponse.json(
+        { error: "Name and URL are required" },
+        { status: 400 }
+      );
     }
 
     // Validate URL
     try {
       const url = new URL(body.url);
       if (!url.protocol.startsWith("http")) {
-        return NextResponse.json({ error: "URL must use HTTP or HTTPS protocol" }, { status: 400 });
+        return NextResponse.json(
+          { error: "URL must use HTTP or HTTPS protocol" },
+          { status: 400 }
+        );
       }
     } catch {
-      return NextResponse.json({ error: "Invalid URL format" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid URL format" },
+        { status: 400 }
+      );
     }
 
     // Validate event types
     if (body.eventTypeFilters) {
-      const invalidTypes = body.eventTypeFilters.filter((t) => !VALID_EVENT_TYPES.includes(t));
+      const invalidTypes = body.eventTypeFilters.filter(
+        (t) => !VALID_EVENT_TYPES.includes(t)
+      );
       if (invalidTypes.length > 0) {
         return NextResponse.json(
           { error: `Invalid event types: ${invalidTypes.join(", ")}` },
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
 
     // Validate entity types
     if (body.entityFilters) {
-      const invalidEntities = body.entityFilters.filter((e) => !VALID_ENTITY_TYPES.includes(e));
+      const invalidEntities = body.entityFilters.filter(
+        (e) => !VALID_ENTITY_TYPES.includes(e)
+      );
       if (invalidEntities.length > 0) {
         return NextResponse.json(
           { error: `Invalid entity types: ${invalidEntities.join(", ")}` },
-          { status: 400 },
+          { status: 400 }
         );
       }
     }
@@ -164,7 +180,7 @@ export async function POST(request: NextRequest) {
         status: body.status || "active",
         retryCount: body.retryCount ?? 3,
         retryDelayMs: body.retryDelayMs ?? 1000,
-        timeoutMs: body.timeoutMs ?? 30000,
+        timeoutMs: body.timeoutMs ?? 30_000,
         customHeaders: body.customHeaders || null,
         consecutiveFailures: 0,
       },
@@ -180,7 +196,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ webhook: sanitizedWebhook }, { status: 201 });
   } catch (error) {
     console.error("Error creating webhook:", error);
-    return NextResponse.json({ error: "Failed to create webhook" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create webhook" },
+      { status: 500 }
+    );
   }
 }
 
