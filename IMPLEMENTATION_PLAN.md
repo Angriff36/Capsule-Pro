@@ -161,10 +161,17 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
   - Filters persist in URL query parameters
   - Tag selections clear with other filters
 
-### 11. Bulk Edit Operations (Command Board)
+### ~~11. Bulk Edit Operations (Command Board)~~ ✅ COMPLETE (2026-02-18)
 - **Spec:** `specs/kitchen/bulk-edit-operations_TODO/`
-- **Status:** Batch APIs exist, no multi-select on command board
-- **Effort:** 4-6 hours
+- **Implemented:**
+  - Created bulk edit server action (`apps/app/app/(authenticated)/command-board/actions/bulk-edit.ts`)
+  - Supports bulk editing status and priority for events, prep tasks, kitchen tasks, proposals, shipments
+  - Preview functionality shows current vs new values before applying changes
+  - Undo support with snapshot-based rollback
+  - Created BulkActionToolbar component with ReactFlow selection integration
+  - Multi-select support via Shift+click and drag selection
+  - Visual feedback with toast notifications for success/errors
+  - Undo toast after successful bulk edit
 
 ### 12. Bulk Grouping Operations
 - **Spec:** `specs/kitchen/bulk-grouping-operations_TODO/`
@@ -265,6 +272,7 @@ Several specs are marked `_TODO` but have substantial implementations:
 | Command Board Relationships | **Complete** | Derived connections |
 | Client Segmentation UI | **Complete** | Tag filter with multi-select, counts |
 | Nowsta Integration | **Complete** | Employee mapping, shift sync |
+| Bulk Edit Operations | **Complete** | Multi-select toolbar, preview, undo/redo |
 
 ---
 

@@ -27,6 +27,8 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { BoardDelta } from "../actions/boards";
+import { undoBulkEdit } from "../actions/bulk-edit";
+import type { BulkEditResult } from "../actions/bulk-edit";
 import {
   addProjection,
   batchRemoveProjections,
@@ -35,6 +37,7 @@ import {
   toggleProjectionPin,
   updateProjectionPosition,
 } from "../actions/projections";
+import { BulkActionToolbar } from "../components/bulk-action-toolbar";
 import { useBoardSync } from "../hooks/use-board-sync";
 import { useLiveblocksSync } from "../hooks/use-liveblocks-sync";
 import { edgeTypes, nodeTypes } from "../nodes/node-types";
@@ -240,6 +243,46 @@ function BoardFlowInner({
     // noop
   });
 
+  // ---- Bulk edit selection state ----
+
+  // Track selected projections for bulk operations
+  const [selectedProjections, setSelectedProjections] = useState<BoardProjection[]>([]);
+
+  // Handle selection changes from ReactFlow
+  const handleSelectionChange = useCallback(
+    ({ nodes }: { nodes: Node[] }) => {
+      const selectedIds = new Set(nodes.map((n) => n.id));
+      const selected = projections.filter((p) => selectedIds.has(p.id));
+      setSelectedProjections(selected);
+    },
+    [projections]
+  );
+
+  // Handle bulk edit completion
+  const handleBulkEditComplete = useCallback(() => {
+    // Trigger a refresh to update entity data
+    onProjectionAdded?.(undefined as unknown as BoardProjection);
+  }, [onProjectionAdded]);
+
+  // Handle undo of bulk edit
+  const handleBulkEditUndo = useCallback(
+    async (snapshot: BulkEditResult["undoSnapshot"]) => {
+      try {
+        const result = await undoBulkEdit(snapshot);
+        if (result.success) {
+          toast.success("Bulk edit undone");
+          onProjectionAdded?.(undefined as unknown as BoardProjection);
+        } else {
+          toast.error(result.error ?? "Failed to undo");
+        }
+      } catch (error) {
+        console.error("[BoardFlow] Failed to undo bulk edit:", error);
+        toast.error("Failed to undo bulk edit");
+      }
+    },
+    [onProjectionAdded]
+  );
+
   // ---- Callbacks for node data ----
 
   const handleRemoveProjection = useCallback(
@@ -424,6 +467,15 @@ function BoardFlowInner({
   useEffect(() => {
     setEdges(initialEdges);
   }, [initialEdges, setEdges]);
+
+  // ---- Bulk edit selection clear (uses setNodes, must be after useNodesState) ----
+
+  // Clear selection - must be defined after useNodesState since it uses setNodes
+  const handleClearSelection = useCallback(() => {
+    setSelectedProjections([]);
+    // Also clear ReactFlow's internal selection
+    setNodes((nds) => nds.map((n) => ({ ...n, selected: false })));
+  }, [setNodes]);
 
   // ---- Preview layer (ghost mutations before approval) ----
 
@@ -1127,6 +1179,7 @@ function BoardFlowInner({
         onEdgesChange={handleEdgesChange}
         onNodesChange={handleNodesChange}
         onNodesDelete={handleDelete}
+        onSelectionChange={handleSelectionChange}
         panActivationKeyCode="Space"
         panOnDrag={[1, 2]}
         proOptions={{ hideAttribution: true }}
@@ -1144,6 +1197,15 @@ function BoardFlowInner({
         <Controls />
         <MiniMap maskColor="rgba(0,0,0,0.1)" nodeColor={minimapNodeColor} />
       </ReactFlow>
+
+      {/* Bulk action toolbar for multi-select */}
+      <BulkActionToolbar
+        selectedProjections={selectedProjections}
+        entities={entities}
+        onBulkEditComplete={handleBulkEditComplete}
+        onClearSelection={handleClearSelection}
+        onUndo={handleBulkEditUndo}
+      />
     </div>
   );
 }
