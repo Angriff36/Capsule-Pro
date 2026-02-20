@@ -76,8 +76,12 @@ function assertTenant(
   inputTenantId: unknown,
   contextTenantId: string
 ): string | null {
+  if (inputTenantId === undefined || inputTenantId === null) {
+    return null;
+  }
+
   if (typeof inputTenantId !== "string" || inputTenantId.length === 0) {
-    return "tenantId is required";
+    return "tenantId must be a non-empty string when provided";
   }
 
   if (inputTenantId !== contextTenantId) {
@@ -377,7 +381,7 @@ const TOOL_DEFINITIONS: ToolDefinition[] = [
         tenantId: { type: "string" },
         boardId: { type: "string" },
       },
-      required: ["tenantId", "boardId"],
+      required: [],
       additionalProperties: false,
     },
   },
@@ -405,7 +409,7 @@ const TOOL_DEFINITIONS: ToolDefinition[] = [
           items: { type: "string" },
         },
       },
-      required: ["tenantId", "boardId"],
+      required: [],
       additionalProperties: false,
     },
   },
@@ -428,7 +432,7 @@ const TOOL_DEFINITIONS: ToolDefinition[] = [
         },
         idempotencyKey: { type: "string" },
       },
-      required: ["tenantId", "userId", "entityName", "commandName", "args"],
+      required: ["entityName", "commandName", "args"],
       additionalProperties: false,
     },
   },

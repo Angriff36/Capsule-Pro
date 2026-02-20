@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
       const newAttemptNumber = delivery.attemptNumber + 1;
 
       // Send webhook
-      const payload = delivery.payload as WebhookPayload;
+      const payload = delivery.payload as unknown as WebhookPayload;
 
       const result = await sendWebhook(
         {
@@ -199,7 +199,7 @@ export async function POST(request: NextRequest) {
         lastSuccessAt?: Date;
         lastFailureAt?: Date;
         consecutiveFailures: number;
-        status?: string;
+        status?: "active" | "inactive" | "disabled";
       } = {
         consecutiveFailures: result.success
           ? 0

@@ -2,6 +2,8 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import type { ParsedSentryIssue, SentryIssueAlertPayload } from "./types.js";
 import { SentryIssueAlertSchema } from "./types.js";
 
+export type { SentryIssueAlertPayload };
+
 /**
  * Verify Sentry webhook signature using HMAC-SHA256
  *

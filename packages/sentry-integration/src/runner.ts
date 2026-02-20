@@ -3,6 +3,7 @@ import { promisify } from "node:util";
 
 const execAsync = promisify(exec);
 
+import { attemptAIFix, type FileEdit, revertEdits } from "./fixer.js";
 import type { SentryFixJobRecord } from "./queue.js";
 import type { JobExecutionResult, ParsedSentryIssue } from "./types.js";
 import { DEFAULT_BLOCKED_PATTERNS, isBlockedPath } from "./types.js";
@@ -20,6 +21,8 @@ export interface JobRunnerConfig {
   repoName: string;
   /** GitHub token for API access */
   githubToken: string;
+  /** OpenAI API key for AI-powered fix generation */
+  openaiApiKey: string;
   /** Base branch for PRs */
   baseBranch: string;
   /** Working directory for git operations */
@@ -30,6 +33,8 @@ export interface JobRunnerConfig {
   testCommand: string;
   /** Whether to actually run tests (can be disabled for safety) */
   runTests: boolean;
+  /** AI model to use for fix generation (default: gpt-4o) */
+  aiModel: string;
 }
 
 const DEFAULT_CONFIG: Partial<JobRunnerConfig> = {
@@ -38,6 +43,7 @@ const DEFAULT_CONFIG: Partial<JobRunnerConfig> = {
   blockedPatterns: DEFAULT_BLOCKED_PATTERNS,
   testCommand: "pnpm test",
   runTests: true,
+  aiModel: "gpt-4o",
 };
 
 /**
@@ -67,10 +73,14 @@ interface PRResult {
  */
 export class SentryJobRunner {
   private readonly config: JobRunnerConfig;
+  private lastAppliedEdits: FileEdit[] = [];
 
   constructor(
     config: Partial<JobRunnerConfig> &
-      Pick<JobRunnerConfig, "repoOwner" | "repoName" | "githubToken">
+      Pick<
+        JobRunnerConfig,
+        "repoOwner" | "repoName" | "githubToken" | "openaiApiKey"
+      >
   ) {
     this.config = { ...DEFAULT_CONFIG, ...config } as JobRunnerConfig;
   }
@@ -87,8 +97,11 @@ export class SentryJobRunner {
       const branchName = this.generateBranchName(issue);
       const gitResult = await this.createBranch(branchName);
 
-      // Step 2: Check if any files are blocked
-      const blockedFiles = gitResult.filesChanged.filter((f) =>
+      // Step 2: Check if any stack trace files are in blocked paths
+      const stackFiles = (issue.stackFrames ?? [])
+        .map((f) => f.filename ?? f.absPath ?? "")
+        .filter(Boolean);
+      const blockedFiles = stackFiles.filter((f) =>
         isBlockedPath(f, this.config.blockedPatterns)
       );
       if (blockedFiles.length > 0) {
@@ -109,14 +122,19 @@ export class SentryJobRunner {
         };
       }
 
-      // Step 4: Run tests
+      // Step 4: Run tests — revert AI edits if they break things
       if (this.config.runTests) {
         const testResult = await this.runTests();
         if (!testResult.success) {
+          // Revert the AI's edits before cleaning up the branch
+          if (this.lastAppliedEdits.length > 0) {
+            await revertEdits(this.lastAppliedEdits, this.config.workingDir);
+            this.lastAppliedEdits = [];
+          }
           await this.cleanupBranch(branchName);
           return {
             success: false,
-            error: `Tests failed: ${testResult.error}`,
+            error: `Tests failed after applying fix: ${testResult.error}`,
           };
         }
       }
@@ -183,34 +201,31 @@ export class SentryJobRunner {
   }
 
   /**
-   * Attempt to fix the issue using the agent framework
-   * This is a placeholder that should be integrated with the actual agent
+   * Attempt to fix the issue using AI-powered analysis.
+   *
+   * Reads source files from the stack trace, sends them to GPT-4o
+   * with the error context, gets back structured file edits,
+   * and applies them to disk via search-and-replace.
    */
   private async attemptFix(
     issue: ParsedSentryIssue
   ): Promise<{ success: boolean; error?: string }> {
-    // TODO: Integrate with actual agent framework
-    // For now, this is a placeholder that would:
-    // 1. Analyze the stack trace
-    // 2. Identify the root cause
-    // 3. Generate a fix using the AI agent
-    // 4. Apply the fix to the relevant files
+    const result = await attemptAIFix(issue, {
+      openaiApiKey: this.config.openaiApiKey,
+      workingDir: this.config.workingDir,
+      model: this.config.aiModel,
+    });
 
-    // Placeholder implementation
-    // In production, this would call the agent framework
-    console.log("[SentryJobRunner] Attempting fix for:", issue.title);
-    console.log(
-      "[SentryJobRunner] Exception:",
-      issue.exceptionType,
-      issue.exceptionValue
-    );
-    console.log(
-      "[SentryJobRunner] Stack frames:",
-      issue.stackFrames?.slice(0, 3)
-    );
+    if (!result.success) {
+      return {
+        success: false,
+        error: result.error ?? `AI analysis: ${result.analysis}`,
+      };
+    }
 
-    // For now, return success to allow the pipeline to continue
-    // In production, this would return the actual result from the agent
+    // Store edits on the instance so we can revert if tests fail
+    this.lastAppliedEdits = result.edits;
+
     return { success: true };
   }
 
@@ -385,7 +400,10 @@ export class SentryJobRunner {
  */
 export const createJobRunner = (
   config: Partial<JobRunnerConfig> &
-    Pick<JobRunnerConfig, "repoOwner" | "repoName" | "githubToken">
+    Pick<
+      JobRunnerConfig,
+      "repoOwner" | "repoName" | "githubToken" | "openaiApiKey"
+    >
 ): SentryJobRunner => {
   return new SentryJobRunner(config);
 };

@@ -15,6 +15,18 @@ import { parseSentryIssue } from "@repo/sentry-integration/webhook";
 import { NextResponse } from "next/server";
 
 /**
+ * Max function duration in seconds.
+ *
+ * Vercel plan limits:
+ *   Hobby (free): max 60s, cron daily only, 2 crons
+ *   Pro:          max 300s, cron any frequency, 40 crons
+ *   Enterprise:   max 900s, cron any frequency, 100 crons
+ *
+ * Set to 60 for Hobby compatibility. Bump to 300 when on Pro.
+ */
+export const maxDuration = 60;
+
+/**
  * Sentry Fix Job Processor Endpoint
  *
  * This endpoint processes queued Sentry fix jobs. It is called by:
@@ -89,9 +101,11 @@ const getRunnerConfig = (): Partial<JobRunnerConfig> => ({
   repoOwner: process.env.GITHUB_REPO_OWNER,
   repoName: process.env.GITHUB_REPO_NAME,
   githubToken: process.env.GITHUB_TOKEN,
+  openaiApiKey: process.env.OPENAI_API_KEY,
   baseBranch: process.env.GITHUB_BASE_BRANCH ?? "main",
   runTests: process.env.SENTRY_FIXER_RUN_TESTS !== "false",
   testCommand: process.env.SENTRY_FIXER_TEST_COMMAND ?? "pnpm test",
+  aiModel: process.env.SENTRY_FIXER_AI_MODEL ?? "gpt-4o",
 });
 
 const getSlackConfig = (): SlackConfig => ({
@@ -106,12 +120,17 @@ const createJobQueue = () => {
   return new SentryJobQueue(store, getQueueConfig());
 };
 
-// Helper to validate GitHub runner configuration
+// Helper to validate runner configuration
 const validateRunnerConfig = (
   config: Partial<JobRunnerConfig>
 ): JobRunnerConfig => {
   if (!(config.githubToken && config.repoOwner && config.repoName)) {
     throw new Error("GitHub configuration incomplete");
+  }
+  if (!config.openaiApiKey) {
+    throw new Error(
+      "OPENAI_API_KEY not configured — required for AI fix generation"
+    );
   }
   return config as JobRunnerConfig;
 };
@@ -119,7 +138,7 @@ const validateRunnerConfig = (
 // Helper to send Slack notification for successful PR creation
 const notifyPRCreated = async (
   result: { prUrl?: string; prNumber?: number; branchName?: string },
-  issue: { title: string; issueUrl: string; environment: string }
+  issue: { title: string; issueUrl: string; environment: string | null }
 ) => {
   const slackConfig = getSlackConfig();
   if (slackConfig.webhookUrl || slackConfig.botToken) {
@@ -130,7 +149,7 @@ const notifyPRCreated = async (
       issueTitle: issue.title,
       issueUrl: issue.issueUrl,
       branchName: result.branchName ?? "",
-      environment: issue.environment,
+      environment: issue.environment || "unknown",
     });
   }
 };
@@ -189,9 +208,9 @@ const processJob = async (): Promise<{
 
     if (result.success) {
       await jobQueue.completeJob(job.id, {
-        branchName: result.branchName ?? undefined,
-        prUrl: result.prUrl ?? undefined,
-        prNumber: result.prNumber ?? undefined,
+        branchName: result.branchName ?? "",
+        prUrl: result.prUrl ?? "",
+        prNumber: result.prNumber ?? 0,
       });
 
       await notifyPRCreated(result, issue);
@@ -240,6 +259,18 @@ const processJob = async (): Promise<{
 };
 
 /**
+ * Time budget for processing jobs (ms).
+ * Must be less than maxDuration to leave room for response serialization.
+ *
+ * Default: 50s (leaves 10s buffer within the 60s Hobby limit).
+ * On Pro with maxDuration=300, set env to 240000 for ~240s budget.
+ */
+const MAX_EXECUTION_MS = Number.parseInt(
+  process.env.SENTRY_FIXER_MAX_EXECUTION_MS ?? "50000",
+  10
+);
+
+/**
  * POST /api/sentry-fixer/process
  *
  * Process queued Sentry fix jobs.
@@ -251,9 +282,12 @@ const processJob = async (): Promise<{
  * Behavior:
  * - If SENTRY_FIXER_ENABLED != true: returns 503 (service unavailable)
  * - If auth fails: returns 401 (unauthorized)
- * - Otherwise: processes up to ?batch=N jobs (default 1, max 5)
+ * - Otherwise: drains the queue until time budget is exhausted or queue is empty
+ *   Use ?limit=N to cap the number of jobs per invocation (default: no cap)
  */
 export const POST = async (request: Request): Promise<Response> => {
+  const startTime = Date.now();
+
   // GATE 1: Authentication (fail closed)
   // This MUST be the first check - no work happens without auth
   const auth = isAuthenticated(request);
@@ -284,10 +318,12 @@ export const POST = async (request: Request): Promise<Response> => {
     );
   }
 
-  // All gates passed - process jobs
+  // All gates passed - drain the queue within time budget
   const url = new URL(request.url);
-  const batch = Number.parseInt(url.searchParams.get("batch") ?? "1", 10);
-  const limit = Math.min(batch, 5); // Max 5 jobs per request
+  const limitParam = url.searchParams.get("limit");
+  const maxJobs = limitParam
+    ? Number.parseInt(limitParam, 10)
+    : Number.POSITIVE_INFINITY;
 
   const results: Array<{
     processed: boolean;
@@ -296,7 +332,20 @@ export const POST = async (request: Request): Promise<Response> => {
     error?: string;
   }> = [];
 
-  for (let i = 0; i < limit; i++) {
+  let jobsProcessed = 0;
+  while (jobsProcessed < maxJobs) {
+    // Check time budget — stop if we've used more than the allowed execution time.
+    // Each AI fix call takes ~5-10s, so we need at least that much headroom.
+    const elapsed = Date.now() - startTime;
+    if (elapsed > MAX_EXECUTION_MS) {
+      log.info("[SentryWorker] Time budget exhausted", {
+        elapsedMs: elapsed,
+        maxMs: MAX_EXECUTION_MS,
+        jobsProcessed,
+      });
+      break;
+    }
+
     const result = await processJob();
     results.push(result);
 
@@ -304,6 +353,8 @@ export const POST = async (request: Request): Promise<Response> => {
     if (!result.processed) {
       break;
     }
+
+    jobsProcessed++;
   }
 
   const processed = results.filter((r) => r.processed);
@@ -315,6 +366,7 @@ export const POST = async (request: Request): Promise<Response> => {
     processed: processed.length,
     succeeded: succeeded.length,
     failed: failed.length,
+    elapsedMs: Date.now() - startTime,
     results: results.map((r) => ({
       jobId: r.jobId,
       success: r.success,
@@ -349,6 +401,7 @@ export const GET = (): Response => {
         runnerConfig.repoOwner &&
         runnerConfig.repoName
       ),
+      openai: !!runnerConfig.openaiApiKey,
       slack: !!(slackConfig.webhookUrl || slackConfig.botToken),
     },
     config: {

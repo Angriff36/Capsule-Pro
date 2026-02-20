@@ -1,5 +1,5 @@
 // Store module exports
-export { getAuthToken, setAuthToken, removeAuthToken } from "./auth";
+export { getAuthToken, setAuthTokenGetter, clearAuthTokenGetter } from "./auth";
 export {
   getOfflineQueue,
   addToOfflineQueue,

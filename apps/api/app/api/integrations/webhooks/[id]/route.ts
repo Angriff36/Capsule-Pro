@@ -189,12 +189,10 @@ export async function PUT(
       updateData.apiKey = body.apiKey || null;
     }
     if (body.eventTypeFilters !== undefined) {
-      updateData.eventTypeFilters =
-        body.eventTypeFilters as unknown as Prisma.InputJsonValue;
+      updateData.eventTypeFilters = body.eventTypeFilters;
     }
     if (body.entityFilters !== undefined) {
-      updateData.entityFilters =
-        body.entityFilters as unknown as Prisma.InputJsonValue;
+      updateData.entityFilters = body.entityFilters;
     }
     if (body.status !== undefined) {
       updateData.status = body.status;

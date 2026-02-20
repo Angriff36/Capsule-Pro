@@ -185,8 +185,10 @@ export async function GET(_request: Request, { params }: { params: Params }) {
     if (!proposal.viewedAt) {
       await database.proposal.update({
         where: {
-          tenantId: proposal.tenantId,
-          id: proposal.id,
+          tenantId_id: {
+            tenantId: proposal.tenantId,
+            id: proposal.id,
+          },
         },
         data: {
           viewedAt: new Date(),

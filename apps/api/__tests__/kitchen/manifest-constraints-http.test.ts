@@ -76,7 +76,10 @@ vi.mock("@/lib/manifest-runtime", () => ({
     Promise.resolve({
       runCommand: vi.fn((_command: string, body: Record<string, unknown>) => {
         // Simulate constraint validation for RecipeVersion
-        if (body.difficulty && (body.difficulty < 1 || body.difficulty > 5)) {
+        if (
+          typeof body.difficulty === "number" &&
+          (body.difficulty < 1 || body.difficulty > 5)
+        ) {
           return Promise.resolve({
             success: false,
             guardFailure: {

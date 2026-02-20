@@ -3,7 +3,7 @@ import { log } from "@repo/observability/log";
 import { createPrismaJobStore } from "@repo/sentry-integration/prisma-store";
 import type { JobQueueConfig } from "@repo/sentry-integration/queue";
 import { SentryJobQueue } from "@repo/sentry-integration/queue";
-import type { SentryIssueAlertPayload } from "@repo/sentry-integration/webhook";
+import type { SentryIssueAlertPayload } from "@repo/sentry-integration";
 import {
   extractSentryHeaders,
   isIssueAlertWebhook,

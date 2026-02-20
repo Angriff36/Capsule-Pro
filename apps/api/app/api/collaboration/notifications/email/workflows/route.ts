@@ -6,7 +6,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { database, type Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -25,9 +25,9 @@ const createWorkflowSchema = z.object({
     "contract_signed",
     "custom",
   ]),
-  triggerConfig: z.record(z.unknown()).optional(),
+  triggerConfig: z.record(z.string(), z.unknown()).optional(),
   emailTemplateId: z.string().optional(),
-  recipientConfig: z.record(z.unknown()).optional(),
+  recipientConfig: z.record(z.string(), z.unknown()).optional(),
   isActive: z.boolean().optional(),
 });
 
@@ -153,10 +153,12 @@ export async function POST(request: NextRequest) {
         tenantId,
         name,
         triggerType,
-        triggerConfig: triggerConfig ?? {},
+        triggerConfig:
+          (triggerConfig as Prisma.InputJsonValue | undefined) ?? {},
         emailTemplateId: emailTemplateId ?? null,
         emailTemplateTenantId: emailTemplateId ? tenantId : null,
-        recipientConfig: recipientConfig ?? {},
+        recipientConfig:
+          (recipientConfig as Prisma.InputJsonValue | undefined) ?? {},
         isActive: isActive ?? true,
       },
       include: {

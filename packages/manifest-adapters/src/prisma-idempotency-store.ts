@@ -214,3 +214,22 @@ export function createPrismaIdempotencyStore(
 ): PrismaIdempotencyStore {
   return new PrismaIdempotencyStore({ prisma, tenantId, ttlMs });
 }
+
+/**
+ * Delete expired idempotency entries across all tenants.
+ *
+ * Returns the number of deleted rows.
+ */
+export async function cleanupExpiredIdempotencyEntries(
+  prisma: PrismaClient
+): Promise<number> {
+  const result = await prisma.manifestIdempotency.deleteMany({
+    where: {
+      expiresAt: {
+        lt: new Date(),
+      },
+    },
+  });
+
+  return result.count;
+}

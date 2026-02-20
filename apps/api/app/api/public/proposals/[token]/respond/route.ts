@@ -110,8 +110,10 @@ export async function POST(request: Request, { params }: { params: Params }) {
 
     const updatedProposal = await database.proposal.update({
       where: {
-        tenantId: proposal.tenantId,
-        id: proposal.id,
+        tenantId_id: {
+          tenantId: proposal.tenantId,
+          id: proposal.id,
+        },
       },
       data: updateData,
     });

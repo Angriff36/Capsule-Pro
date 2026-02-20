@@ -1,15 +1,15 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  FlatList,
   Pressable,
   RefreshControl,
+  ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
-import { useCallback, useMemo, useState } from "react";
-import { useAvailableTasks, useMyTasks } from "../api/queries";
 import {
   useBundleClaimTasks,
   useClaimTask,
@@ -17,17 +17,46 @@ import {
   useReleaseTask,
   useStartTask,
 } from "../api/mutations";
-import TaskCard from "../components/TaskCard";
+import { useAvailableTasks, useMyTasks } from "../api/queries";
 import ErrorState from "../components/ErrorState";
-import type { Task, FilterState } from "../types";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import type { FilterState, Task } from "../types";
 
 const MY_STATION_KEY = "mobile-kitchen-my-station";
 
-type TabType = "available" | "my-tasks";
+type BoardMode = "all" | "unclaimed" | "at-risk" | "my-tasks";
+
+type TaskSection = {
+  key: string;
+  title: string;
+  tasks: Task[];
+};
+
+function isDoneStatus(status: string): boolean {
+  return status === "complete" || status === "completed" || status === "done";
+}
+
+function isTaskAtRisk(task: Task): boolean {
+  if (task.priority <= 3) {
+    return true;
+  }
+
+  if (!task.dueDate) {
+    return false;
+  }
+
+  const now = Date.now();
+  const due = new Date(task.dueDate).getTime();
+  const diffMins = (due - now) / (1000 * 60);
+  return diffMins <= 60;
+}
+
+function getTaskGroup(task: Task): string {
+  const firstTag = task.tags?.[0]?.trim();
+  return firstTag && firstTag.length > 0 ? firstTag : "General Tasks";
+}
 
 export default function TasksScreen() {
-  const [activeTab, setActiveTab] = useState<TabType>("available");
+  const [boardMode, setBoardMode] = useState<BoardMode>("unclaimed");
   const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
   const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
@@ -39,7 +68,6 @@ export default function TasksScreen() {
   });
   const [showFilters, setShowFilters] = useState(false);
 
-  // Queries
   const {
     data: availableTasks = [],
     isLoading: isLoadingAvailable,
@@ -58,28 +86,23 @@ export default function TasksScreen() {
     isRefetching: isRefetchingMyTasks,
   } = useMyTasks();
 
-  // Mutations
   const claimTask = useClaimTask();
   const bundleClaimTasks = useBundleClaimTasks();
   const releaseTask = useReleaseTask();
   const startTask = useStartTask();
   const completeTask = useCompleteTask();
 
-  const isLoading =
+  const isMutating =
     claimTask.isPending ||
     bundleClaimTasks.isPending ||
     releaseTask.isPending ||
     startTask.isPending ||
     completeTask.isPending;
 
-  // Extract unique stations from available tasks
   const uniqueStations = useMemo(() => {
-    return Array.from(
-      new Set(availableTasks.flatMap((t) => t.tags || []).filter(Boolean))
-    );
+    return Array.from(new Set(availableTasks.flatMap((t) => t.tags || []).filter(Boolean)));
   }, [availableTasks]);
 
-  // Load "My Station" from AsyncStorage on mount
   useMemo(() => {
     AsyncStorage.getItem(MY_STATION_KEY).then((savedStation) => {
       if (savedStation) {
@@ -88,18 +111,14 @@ export default function TasksScreen() {
     });
   }, []);
 
-  // Filter available tasks based on current filters
   const filteredAvailableTasks = useMemo(() => {
     return availableTasks.filter((task) => {
-      // Apply station filter
       if (filters.station && !(task.tags || []).includes(filters.station)) {
         return false;
       }
-      // Apply my station quick filter
       if (filters.myStation && !(task.tags || []).includes(filters.myStation)) {
         return false;
       }
-      // Apply priority filter
       if (filters.minPriority && task.priority > filters.minPriority) {
         return false;
       }
@@ -107,23 +126,66 @@ export default function TasksScreen() {
     });
   }, [availableTasks, filters]);
 
-  // Multi-select handlers
+  const visibleAvailableTasks = useMemo(() => {
+    if (boardMode === "all") {
+      return filteredAvailableTasks;
+    }
+    if (boardMode === "unclaimed") {
+      return filteredAvailableTasks.filter((task) => task.isAvailable !== false);
+    }
+    if (boardMode === "at-risk") {
+      return filteredAvailableTasks.filter(isTaskAtRisk);
+    }
+    return [];
+  }, [boardMode, filteredAvailableTasks]);
+
+  const tasks = boardMode === "my-tasks" ? myTasks : visibleAvailableTasks;
+
+  const sections = useMemo<TaskSection[]>(() => {
+    const grouped = new Map<string, Task[]>();
+    for (const task of tasks) {
+      const key = getTaskGroup(task);
+      const list = grouped.get(key);
+      if (list) {
+        list.push(task);
+      } else {
+        grouped.set(key, [task]);
+      }
+    }
+    return Array.from(grouped.entries()).map(([title, groupTasks]) => ({
+      key: title,
+      title,
+      tasks: groupTasks,
+    }));
+  }, [tasks]);
+
+  const modeCounts = useMemo(() => {
+    const all = filteredAvailableTasks.length;
+    const unclaimed = filteredAvailableTasks.filter((task) => task.isAvailable !== false).length;
+    const atRisk = filteredAvailableTasks.filter(isTaskAtRisk).length;
+    const mine = myTasks.length;
+    return { all, unclaimed, atRisk, mine };
+  }, [filteredAvailableTasks, myTasks.length]);
+
   const toggleTaskSelection = useCallback((taskId: string) => {
     setSelectedTaskIds((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(taskId)) {
-        newSet.delete(taskId);
+      const next = new Set(prev);
+      if (next.has(taskId)) {
+        next.delete(taskId);
       } else {
-        newSet.add(taskId);
+        next.add(taskId);
       }
-      return newSet;
+      return next;
     });
   }, []);
 
   const enterMultiSelectMode = useCallback((taskId: string) => {
+    if (boardMode === "my-tasks") {
+      return;
+    }
     setIsMultiSelectMode(true);
     setSelectedTaskIds(new Set([taskId]));
-  }, []);
+  }, [boardMode]);
 
   const exitMultiSelectMode = useCallback(() => {
     setIsMultiSelectMode(false);
@@ -131,20 +193,17 @@ export default function TasksScreen() {
   }, []);
 
   const selectAllVisible = useCallback(() => {
-    const availableTaskIds = filteredAvailableTasks
-      .filter((t) => t.isAvailable)
-      .map((t) => t.id);
-    setSelectedTaskIds(new Set(availableTaskIds));
-  }, [filteredAvailableTasks]);
+    const ids = visibleAvailableTasks.filter((task) => task.isAvailable !== false).map((task) => task.id);
+    setSelectedTaskIds(new Set(ids));
+  }, [visibleAvailableTasks]);
 
-  // Task action handlers
   const handleClaim = useCallback(
     async (taskId: string) => {
       setError(null);
       try {
         await claimTask.mutateAsync(taskId);
-        setActiveTab("my-tasks");
-      } catch (err) {
+        setBoardMode("my-tasks");
+      } catch {
         setError("Failed to claim task. Please try again.");
       }
     },
@@ -163,13 +222,13 @@ export default function TasksScreen() {
       const response = await bundleClaimTasks.mutateAsync(taskIds);
       if (response.success) {
         exitMultiSelectMode();
-        setActiveTab("my-tasks");
-      } else if (response.alreadyClaimedTaskIds && response.alreadyClaimedTaskIds.length > 0) {
+        setBoardMode("my-tasks");
+      } else if (response.alreadyClaimedTaskIds?.length) {
         setError(`${response.alreadyClaimedTaskIds.length} task(s) were already claimed by others.`);
       } else {
         setError(response.message || "Failed to claim tasks");
       }
-    } catch (err) {
+    } catch {
       setError("Failed to claim tasks. Please try again.");
     }
   }, [selectedTaskIds, bundleClaimTasks, exitMultiSelectMode]);
@@ -179,7 +238,7 @@ export default function TasksScreen() {
       setError(null);
       try {
         await releaseTask.mutateAsync(taskId);
-      } catch (err) {
+      } catch {
         setError("Failed to release task. Please try again.");
       }
     },
@@ -191,7 +250,7 @@ export default function TasksScreen() {
       setError(null);
       try {
         await startTask.mutateAsync(taskId);
-      } catch (err) {
+      } catch {
         setError("Failed to start task. Please try again.");
       }
     },
@@ -203,14 +262,13 @@ export default function TasksScreen() {
       setError(null);
       try {
         await completeTask.mutateAsync(taskId);
-      } catch (err) {
+      } catch {
         setError("Failed to complete task. Please try again.");
       }
     },
     [completeTask]
   );
 
-  // Filter handlers
   const setMyStation = useCallback((station: string | null) => {
     setFilters((prev) => ({ ...prev, myStation: station }));
     if (station) {
@@ -225,149 +283,197 @@ export default function TasksScreen() {
       station: null,
       minPriority: null,
       eventId: null,
-      myStation: filters.myStation, // Preserve myStation
+      myStation: filters.myStation,
     });
   }, [filters.myStation]);
 
-  const activeFilterCount =
-    (filters.station ? 1 : 0) +
-    (filters.minPriority ? 1 : 0) +
-    (filters.eventId ? 1 : 0);
+  const activeFilterCount = (filters.station ? 1 : 0) + (filters.minPriority ? 1 : 0) + (filters.eventId ? 1 : 0);
 
   const onRefresh = useCallback(() => {
-    if (activeTab === "available") {
-      refetchAvailable();
-    } else {
+    if (boardMode === "my-tasks") {
       refetchMyTasks();
+    } else {
+      refetchAvailable();
     }
-  }, [activeTab, refetchAvailable, refetchMyTasks]);
+  }, [boardMode, refetchMyTasks, refetchAvailable]);
 
-  const renderTaskCard = useCallback(
-    ({ item }: { item: Task }) => (
-      <TaskCard
-        task={item}
-        type={activeTab}
-        isLoading={isLoading}
-        isMultiSelectMode={isMultiSelectMode}
-        isSelected={selectedTaskIds.has(item.id)}
-        onClaim={activeTab === "available" ? handleClaim : undefined}
-        onRelease={activeTab === "my-tasks" ? handleRelease : undefined}
-        onStart={activeTab === "my-tasks" ? handleStart : undefined}
-        onComplete={activeTab === "my-tasks" ? handleComplete : undefined}
-        onToggleSelect={toggleTaskSelection}
-        onLongPress={activeTab === "available" ? enterMultiSelectMode : undefined}
-      />
-    ),
-    [
-      activeTab,
-      isLoading,
-      isMultiSelectMode,
-      selectedTaskIds,
-      handleClaim,
-      handleRelease,
-      handleStart,
-      handleComplete,
-      toggleTaskSelection,
-      enterMultiSelectMode,
-    ]
-  );
+  const isLoadingCurrent = boardMode === "my-tasks" ? isLoadingMyTasks : isLoadingAvailable;
+  const isErrorCurrent = boardMode === "my-tasks" ? isErrorMyTasks : isErrorAvailable;
+  const errorCurrent = boardMode === "my-tasks" ? errorMyTasks : errorAvailable;
+  const isRefreshingCurrent = boardMode === "my-tasks" ? isRefetchingMyTasks : isRefetchingAvailable;
 
-  const renderEmptyState = useCallback(() => {
-    if (activeTab === "available") {
-      if (isLoadingAvailable) {
-        return (
-          <View style={styles.loadingContainer}>
-            <ActivityIndicator size="large" color="#2563eb" />
-            <Text style={styles.loadingText}>Loading tasks...</Text>
-          </View>
-        );
-      }
-
-      if (isErrorAvailable) {
-        return (
-          <ErrorState
-            message={errorAvailable?.message || "Failed to load tasks"}
-            onRetry={() => void refetchAvailable()}
-          />
-        );
-      }
-
+  const statusPill = (task: Task) => {
+    if (boardMode !== "my-tasks") {
       return (
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyIcon}>{"\u2713"}</Text>
-          <Text style={styles.emptyTitle}>No available tasks</Text>
-          <Text style={styles.emptySubtitle}>
-            {availableTasks.length === 0
-              ? "All caught up! Check back later."
-              : "No tasks match your filters."}
-          </Text>
+        <TouchableOpacity
+          style={[styles.statusPill, styles.statusPillNeutral]}
+          disabled={isMutating || task.isAvailable === false}
+          onPress={() => handleClaim(task.id)}
+        >
+          <Text style={styles.statusPillNeutralText}>Unclaimed</Text>
+        </TouchableOpacity>
+      );
+    }
+
+    if (isDoneStatus(task.status)) {
+      return (
+        <View style={[styles.statusPill, styles.statusPillDone]}>
+          <Text style={styles.statusPillDoneText}>Done</Text>
         </View>
       );
     }
 
-    // My Tasks tab
-    if (isLoadingMyTasks) {
+    if (task.status === "in_progress") {
+      return (
+        <TouchableOpacity
+          style={[styles.statusPill, styles.statusPillWorking]}
+          disabled={isMutating}
+          onPress={() => handleComplete(task.id)}
+        >
+          <Text style={styles.statusPillWorkingText}>Working</Text>
+        </TouchableOpacity>
+      );
+    }
+
+    return (
+      <TouchableOpacity
+        style={[styles.statusPill, styles.statusPillAssigned]}
+        disabled={isMutating}
+        onPress={() => handleStart(task.id)}
+      >
+        <Text style={styles.statusPillAssignedText}>Start</Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderTaskRow = (task: Task) => {
+    const isSelected = selectedTaskIds.has(task.id);
+    const selectable = isMultiSelectMode && boardMode !== "my-tasks";
+
+    const onPress = () => {
+      if (selectable) {
+        toggleTaskSelection(task.id);
+      }
+    };
+
+    return (
+      <Pressable
+        key={task.id}
+        style={[styles.taskRow, isSelected && styles.taskRowSelected]}
+        onPress={onPress}
+        onLongPress={() => enterMultiSelectMode(task.id)}
+        delayLongPress={500}
+      >
+        <View style={styles.taskMain}>
+          {selectable && (
+            <View style={[styles.selectDot, isSelected && styles.selectDotActive]}>
+              {isSelected && <Text style={styles.selectDotMark}>✓</Text>}
+            </View>
+          )}
+
+          <View style={styles.taskTextWrap}>
+            <Text style={styles.taskTitle} numberOfLines={2}>
+              {task.title}
+            </Text>
+            {task.summary ? (
+              <Text style={styles.taskSummary} numberOfLines={2}>
+                {task.summary}
+              </Text>
+            ) : null}
+          </View>
+        </View>
+
+        <View style={styles.taskActions}>
+          {boardMode !== "my-tasks" ? (
+            <TouchableOpacity
+              style={styles.claimCircle}
+              onPress={() => handleClaim(task.id)}
+              disabled={isMutating || task.isAvailable === false}
+            >
+              <Text style={styles.claimCircleText}>+</Text>
+            </TouchableOpacity>
+          ) : (
+            <View style={styles.assigneeAvatar}>
+              <Text style={styles.assigneeInitial}>
+                {(task.claims[0]?.user?.firstName?.[0] || "Y").toUpperCase()}
+              </Text>
+            </View>
+          )}
+
+          {statusPill(task)}
+
+          {boardMode === "my-tasks" && !isDoneStatus(task.status) && (
+            <TouchableOpacity onPress={() => handleRelease(task.id)}>
+              <Text style={styles.releaseInline}>Release</Text>
+            </TouchableOpacity>
+          )}
+        </View>
+      </Pressable>
+    );
+  };
+
+  const renderEmptyState = () => {
+    if (isLoadingCurrent) {
       return (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#2563eb" />
-          <Text style={styles.loadingText}>Loading your tasks...</Text>
+          <Text style={styles.loadingText}>Loading tasks...</Text>
         </View>
       );
     }
 
-    if (isErrorMyTasks) {
+    if (isErrorCurrent) {
       return (
         <ErrorState
-          message={errorMyTasks?.message || "Failed to load tasks"}
-          onRetry={() => void refetchMyTasks()}
+          message={errorCurrent?.message || "Failed to load tasks"}
+          onRetry={() => void onRefresh()}
         />
       );
     }
 
     return (
       <View style={styles.emptyState}>
-        <Text style={styles.emptyIcon}>{"\u23F3"}</Text>
-        <Text style={styles.emptyTitle}>No claimed tasks</Text>
-        <Text style={styles.emptySubtitle}>
-          Switch to Available tab to claim tasks.
-        </Text>
+        <Text style={styles.emptyTitle}>No tasks</Text>
+        <Text style={styles.emptySubtitle}>No tasks match your current view.</Text>
       </View>
     );
-  }, [
-    activeTab,
-    isLoadingAvailable,
-    isErrorAvailable,
-    errorAvailable,
-    availableTasks.length,
-    isLoadingMyTasks,
-    isErrorMyTasks,
-    errorMyTasks,
-    refetchAvailable,
-    refetchMyTasks,
-  ]);
+  };
 
-  const tasks = activeTab === "available" ? filteredAvailableTasks : myTasks;
+  const sectionCountLabel = (groupTasks: Task[]) => {
+    if (boardMode !== "my-tasks") {
+      return `${groupTasks.length} Open`;
+    }
+    const done = groupTasks.filter((task) => isDoneStatus(task.status)).length;
+    const active = groupTasks.length - done;
+    if (active > 0) {
+      return `${active} Active`;
+    }
+    return `${done} Done`;
+  };
+
+  const setMode = (mode: BoardMode) => {
+    setBoardMode(mode);
+    if (mode === "my-tasks") {
+      exitMultiSelectMode();
+    }
+  };
 
   return (
     <View style={styles.container}>
-      {/* Multi-select header */}
       {isMultiSelectMode && (
         <View style={styles.multiSelectHeader}>
-          <View style={styles.multiSelectInfo}>
-            <Text style={styles.multiSelectCount}>{selectedTaskIds.size} selected</Text>
-          </View>
+          <Text style={styles.multiSelectCount}>{selectedTaskIds.size} selected</Text>
           <View style={styles.multiSelectActions}>
-            <TouchableOpacity onPress={selectAllVisible} style={styles.selectAllButton}>
-              <Text style={styles.selectAllText}>Select All</Text>
+            <TouchableOpacity onPress={selectAllVisible}>
+              <Text style={styles.multiSelectActionText}>Select All</Text>
             </TouchableOpacity>
-            <TouchableOpacity onPress={exitMultiSelectMode} style={styles.cancelButton}>
-              <Text style={styles.cancelText}>Cancel</Text>
+            <TouchableOpacity onPress={exitMultiSelectMode}>
+              <Text style={styles.multiSelectCancelText}>Cancel</Text>
             </TouchableOpacity>
           </View>
         </View>
       )}
 
-      {/* Error banner */}
       {error && (
         <View style={styles.errorBanner}>
           <Text style={styles.errorBannerText}>{error}</Text>
@@ -377,56 +483,114 @@ export default function TasksScreen() {
         </View>
       )}
 
-      {/* Tab bar */}
-      <View style={styles.tabBar}>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === "available" && styles.tabActive]}
-          onPress={() => setActiveTab("available")}
-        >
-          <Text style={[styles.tabText, activeTab === "available" && styles.tabTextActive]}>
-            Available ({filteredAvailableTasks.length})
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[styles.tab, activeTab === "my-tasks" && styles.tabActive]}
-          onPress={() => setActiveTab("my-tasks")}
-        >
-          <Text style={[styles.tabText, activeTab === "my-tasks" && styles.tabTextActive]}>
-            My Tasks ({myTasks.length})
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {/* Filter chips */}
-      {(filters.myStation || filters.station || activeFilterCount > 0) && !isMultiSelectMode && (
-        <View style={styles.filterChipsRow}>
-          {filters.myStation && (
-            <TouchableOpacity
-              style={styles.filterChipPrimary}
-              onPress={() => setMyStation(null)}
-            >
-              <Text style={styles.filterChipPrimaryText}>My Station: {filters.myStation}</Text>
-              <Text style={styles.filterChipClose}> {"\u00D7"}</Text>
-            </TouchableOpacity>
-          )}
-          {filters.station && filters.station !== filters.myStation && (
-            <TouchableOpacity
-              style={styles.filterChip}
-              onPress={() => setFilters((prev) => ({ ...prev, station: null }))}
-            >
-              <Text style={styles.filterChipText}>Station: {filters.station}</Text>
-              <Text style={styles.filterChipClose}> {"\u00D7"}</Text>
-            </TouchableOpacity>
-          )}
-          {activeFilterCount > 0 && (
-            <TouchableOpacity onPress={clearAllFilters}>
-              <Text style={styles.clearFiltersText}>Clear filters</Text>
-            </TouchableOpacity>
-          )}
+      <ScrollView
+        contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshingCurrent}
+            onRefresh={onRefresh}
+            tintColor="#2563eb"
+          />
+        }
+      >
+        <View style={styles.headerRow}>
+          <View>
+            <Text style={styles.title}>Task Claim Board</Text>
+          </View>
+          <TouchableOpacity style={styles.filterIconButton} onPress={() => setShowFilters(true)}>
+            <Text style={styles.filterIcon}>≡</Text>
+            {activeFilterCount > 0 && (
+              <View style={styles.filterBadge}>
+                <Text style={styles.filterBadgeText}>{activeFilterCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
         </View>
-      )}
 
-      {/* Filter modal (simplified - shows bottom sheet style) */}
+        <View style={styles.modeChipsRow}>
+          <TouchableOpacity
+            style={[styles.modeChip, boardMode === "all" && styles.modeChipActive]}
+            onPress={() => setMode("all")}
+          >
+            <Text style={[styles.modeChipText, boardMode === "all" && styles.modeChipTextActive]}>
+              All Tasks
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.modeChip, boardMode === "unclaimed" && styles.modeChipActive]}
+            onPress={() => setMode("unclaimed")}
+          >
+            <Text style={[styles.modeChipText, boardMode === "unclaimed" && styles.modeChipTextActive]}>
+              Unclaimed
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.modeChip, boardMode === "at-risk" && styles.modeChipActive]}
+            onPress={() => setMode("at-risk")}
+          >
+            <Text style={[styles.modeChipText, boardMode === "at-risk" && styles.modeChipTextActive]}>
+              At Risk
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.modeChip, boardMode === "my-tasks" && styles.modeChipActive]}
+            onPress={() => setMode("my-tasks")}
+          >
+            <Text style={[styles.modeChipText, boardMode === "my-tasks" && styles.modeChipTextActive]}>
+              My Tasks
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.countRow}>
+          <Text style={styles.countText}>
+            {boardMode === "all" && `${modeCounts.all} total`}
+            {boardMode === "unclaimed" && `${modeCounts.unclaimed} unclaimed`}
+            {boardMode === "at-risk" && `${modeCounts.atRisk} at risk`}
+            {boardMode === "my-tasks" && `${modeCounts.mine} assigned to me`}
+          </Text>
+        </View>
+
+        {(filters.myStation || filters.station || activeFilterCount > 0) && (
+          <View style={styles.filterChipsRow}>
+            {filters.myStation && (
+              <TouchableOpacity style={styles.filterChipPrimary} onPress={() => setMyStation(null)}>
+                <Text style={styles.filterChipPrimaryText}>My Task Group: {filters.myStation}</Text>
+                <Text style={styles.filterChipClose}> ×</Text>
+              </TouchableOpacity>
+            )}
+            {filters.station && filters.station !== filters.myStation && (
+              <TouchableOpacity
+                style={styles.filterChip}
+                onPress={() => setFilters((prev) => ({ ...prev, station: null }))}
+              >
+                <Text style={styles.filterChipText}>Task Group: {filters.station}</Text>
+                <Text style={styles.filterChipClose}> ×</Text>
+              </TouchableOpacity>
+            )}
+            {activeFilterCount > 0 && (
+              <TouchableOpacity onPress={clearAllFilters}>
+                <Text style={styles.clearFiltersText}>Clear filters</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+        )}
+
+        {sections.length === 0 ? (
+          renderEmptyState()
+        ) : (
+          sections.map((section) => (
+            <View key={section.key} style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>{section.title}</Text>
+                <Text style={styles.sectionMeta}>{sectionCountLabel(section.tasks)}</Text>
+              </View>
+              {section.tasks.map(renderTaskRow)}
+            </View>
+          ))
+        )}
+      </ScrollView>
+
       {showFilters && (
         <Pressable style={styles.filterOverlay} onPress={() => setShowFilters(false)}>
           <View style={styles.filterSheet}>
@@ -437,18 +601,14 @@ export default function TasksScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* My Station quick filter */}
             <View style={styles.filterSection}>
-              <Text style={styles.filterSectionTitle}>My Station</Text>
+              <Text style={styles.filterSectionTitle}>My Task Group</Text>
               <View style={styles.filterButtonsRow}>
                 {uniqueStations.length > 0 ? (
                   uniqueStations.map((station) => (
                     <TouchableOpacity
                       key={station}
-                      style={[
-                        styles.filterButton,
-                        filters.myStation === station && styles.filterButtonActive,
-                      ]}
+                      style={[styles.filterButton, filters.myStation === station && styles.filterButtonActive]}
                       onPress={() => setMyStation(filters.myStation === station ? null : station)}
                     >
                       <Text
@@ -462,22 +622,18 @@ export default function TasksScreen() {
                     </TouchableOpacity>
                   ))
                 ) : (
-                  <Text style={styles.noFiltersText}>No stations found</Text>
+                  <Text style={styles.noFiltersText}>No task groups found</Text>
                 )}
               </View>
             </View>
 
-            {/* Station filter */}
             <View style={styles.filterSection}>
-              <Text style={styles.filterSectionTitle}>Station</Text>
+              <Text style={styles.filterSectionTitle}>Task Group</Text>
               <View style={styles.filterButtonsRow}>
                 {uniqueStations.map((station) => (
                   <TouchableOpacity
                     key={`station-${station}`}
-                    style={[
-                      styles.filterButton,
-                      filters.station === station && styles.filterButtonActive,
-                    ]}
+                    style={[styles.filterButton, filters.station === station && styles.filterButtonActive]}
                     onPress={() =>
                       setFilters((prev) => ({
                         ...prev,
@@ -486,10 +642,7 @@ export default function TasksScreen() {
                     }
                   >
                     <Text
-                      style={[
-                        styles.filterButtonText,
-                        filters.station === station && styles.filterButtonTextActive,
-                      ]}
+                      style={[styles.filterButtonText, filters.station === station && styles.filterButtonTextActive]}
                     >
                       {station}
                     </Text>
@@ -498,17 +651,13 @@ export default function TasksScreen() {
               </View>
             </View>
 
-            {/* Priority filter */}
             <View style={styles.filterSection}>
               <Text style={styles.filterSectionTitle}>Max Priority</Text>
               <View style={styles.filterButtonsRow}>
                 {[1, 2, 3, 4, 5].map((p) => (
                   <TouchableOpacity
                     key={p}
-                    style={[
-                      styles.filterButton,
-                      filters.minPriority === p && styles.filterButtonActive,
-                    ]}
+                    style={[styles.filterButton, filters.minPriority === p && styles.filterButtonActive]}
                     onPress={() =>
                       setFilters((prev) => ({
                         ...prev,
@@ -522,14 +671,13 @@ export default function TasksScreen() {
                         filters.minPriority === p && styles.filterButtonTextActive,
                       ]}
                     >
-                      {`\u2264${p}`}
+                      {`≤${p}`}
                     </Text>
                   </TouchableOpacity>
                 ))}
               </View>
             </View>
 
-            {/* Clear button */}
             <TouchableOpacity style={styles.clearAllButton} onPress={clearAllFilters}>
               <Text style={styles.clearAllButtonText}>Clear All</Text>
             </TouchableOpacity>
@@ -537,48 +685,12 @@ export default function TasksScreen() {
         </Pressable>
       )}
 
-      {/* Task list */}
-      <FlatList
-        data={tasks}
-        keyExtractor={(item) => item.id}
-        renderItem={renderTaskCard}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={activeTab === "available" ? isRefetchingAvailable : isRefetchingMyTasks}
-            onRefresh={onRefresh}
-            tintColor="#2563eb"
-          />
-        }
-        ListHeaderComponent={
-          <View style={styles.listHeader}>
-            <Text style={styles.title}>Tasks</Text>
-            <View style={styles.headerActions}>
-              <TouchableOpacity
-                style={styles.filterIconButton}
-                onPress={() => setShowFilters(true)}
-              >
-                <Text style={styles.filterIcon}>{"\u2699"}</Text>
-                {activeFilterCount > 0 && (
-                  <View style={styles.filterBadge}>
-                    <Text style={styles.filterBadgeText}>{activeFilterCount}</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-            </View>
-          </View>
-        }
-        ListEmptyComponent={renderEmptyState}
-      />
-
-      {/* Floating Action Button for bundle claim */}
-      {isMultiSelectMode && selectedTaskIds.size > 0 && (
+      {isMultiSelectMode && selectedTaskIds.size > 0 && boardMode !== "my-tasks" && (
         <View style={styles.fabContainer}>
           <TouchableOpacity
-            style={[styles.fab, isLoading && styles.fabDisabled]}
+            style={[styles.fab, isMutating && styles.fabDisabled]}
             onPress={handleBundleClaim}
-            disabled={isLoading}
+            disabled={isMutating}
           >
             <Text style={styles.fabText}>
               CLAIM {selectedTaskIds.size} TASK{selectedTaskIds.size > 1 ? "S" : ""}
@@ -593,91 +705,237 @@ export default function TasksScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f8fafc",
+    backgroundColor: "#f3f4f6",
   },
-  listContent: {
-    flexGrow: 1,
+  content: {
     padding: 16,
-    paddingBottom: 100, // Extra padding for FAB
+    paddingBottom: 120,
   },
-  listHeader: {
+  headerRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 16,
+    justifyContent: "space-between",
+    marginBottom: 12,
   },
   title: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: "#0f172a",
-  },
-  headerActions: {
-    flexDirection: "row",
-    gap: 8,
+    fontSize: 28,
+    fontWeight: "800",
+    color: "#111827",
   },
   filterIconButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "#ffffff",
+    width: 38,
+    height: 38,
+    borderRadius: 19,
+    backgroundColor: "#e5e7eb",
     alignItems: "center",
     justifyContent: "center",
-    borderWidth: 1,
-    borderColor: "#e2e8f0",
     position: "relative",
   },
   filterIcon: {
-    fontSize: 20,
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#111827",
   },
   filterBadge: {
     position: "absolute",
     top: -4,
     right: -4,
-    width: 18,
-    height: 18,
-    borderRadius: 9,
-    backgroundColor: "#2563eb",
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: "#111827",
     alignItems: "center",
     justifyContent: "center",
   },
   filterBadgeText: {
-    color: "#ffffff",
     fontSize: 10,
     fontWeight: "700",
+    color: "#ffffff",
   },
-  // Tab bar
-  tabBar: {
+  modeChipsRow: {
     flexDirection: "row",
-    marginHorizontal: 16,
-    marginTop: 8,
+    flexWrap: "wrap",
+    gap: 8,
     marginBottom: 8,
-    backgroundColor: "#e2e8f0",
-    borderRadius: 8,
-    padding: 4,
   },
-  tab: {
-    flex: 1,
-    paddingVertical: 10,
-    alignItems: "center",
-    borderRadius: 6,
+  modeChip: {
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: "#e5e7eb",
   },
-  tabActive: {
-    backgroundColor: "#ffffff",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
+  modeChipActive: {
+    backgroundColor: "#111111",
   },
-  tabText: {
+  modeChipText: {
     fontSize: 14,
+    fontWeight: "700",
+    color: "#374151",
+  },
+  modeChipTextActive: {
+    color: "#ffffff",
+  },
+  countRow: {
+    marginBottom: 10,
+  },
+  countText: {
+    fontSize: 13,
+    color: "#6b7280",
+    fontWeight: "500",
+  },
+  section: {
+    marginTop: 8,
+    marginBottom: 14,
+  },
+  sectionHeader: {
+    backgroundColor: "#e5e7eb",
+    borderRadius: 2,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#111827",
+  },
+  sectionMeta: {
+    fontSize: 16,
+    color: "#6b7280",
     fontWeight: "600",
-    color: "#64748b",
   },
-  tabTextActive: {
-    color: "#0f172a",
+  taskRow: {
+    backgroundColor: "#ffffff",
+    borderBottomWidth: 1,
+    borderBottomColor: "#e5e7eb",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 12,
   },
-  // Multi-select header
+  taskRowSelected: {
+    backgroundColor: "#eff6ff",
+  },
+  taskMain: {
+    flex: 1,
+    marginRight: 10,
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+  taskTextWrap: {
+    flex: 1,
+  },
+  taskTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    color: "#111827",
+    marginBottom: 4,
+  },
+  taskSummary: {
+    fontSize: 14,
+    lineHeight: 20,
+    color: "#6b7280",
+    fontWeight: "500",
+  },
+  taskActions: {
+    minWidth: 110,
+    alignItems: "flex-end",
+    gap: 8,
+  },
+  claimCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "#e5e7eb",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  claimCircleText: {
+    fontSize: 22,
+    color: "#4b5563",
+    fontWeight: "600",
+    marginTop: -1,
+  },
+  assigneeAvatar: {
+    width: 30,
+    height: 30,
+    borderRadius: 15,
+    backgroundColor: "#d1d5db",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  assigneeInitial: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#111827",
+  },
+  statusPill: {
+    minWidth: 102,
+    borderRadius: 10,
+    paddingVertical: 9,
+    paddingHorizontal: 12,
+    alignItems: "center",
+  },
+  statusPillNeutral: {
+    backgroundColor: "#eef2f7",
+  },
+  statusPillNeutralText: {
+    fontSize: 14,
+    color: "#6b7280",
+    fontWeight: "700",
+  },
+  statusPillAssigned: {
+    backgroundColor: "#eef2f7",
+  },
+  statusPillAssignedText: {
+    fontSize: 14,
+    color: "#111827",
+    fontWeight: "700",
+  },
+  statusPillWorking: {
+    backgroundColor: "#facc15",
+  },
+  statusPillWorkingText: {
+    fontSize: 14,
+    color: "#111827",
+    fontWeight: "800",
+  },
+  statusPillDone: {
+    backgroundColor: "#4ade80",
+  },
+  statusPillDoneText: {
+    fontSize: 14,
+    color: "#ffffff",
+    fontWeight: "800",
+  },
+  releaseInline: {
+    fontSize: 12,
+    color: "#6b7280",
+    textDecorationLine: "underline",
+  },
+  selectDot: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: "#cbd5e1",
+    marginRight: 8,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 2,
+  },
+  selectDotActive: {
+    backgroundColor: "#2563eb",
+    borderColor: "#2563eb",
+  },
+  selectDotMark: {
+    color: "#ffffff",
+    fontSize: 11,
+    fontWeight: "700",
+  },
   multiSelectHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -686,10 +944,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
   },
-  multiSelectInfo: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
   multiSelectCount: {
     fontSize: 16,
     fontWeight: "700",
@@ -697,103 +951,115 @@ const styles = StyleSheet.create({
   },
   multiSelectActions: {
     flexDirection: "row",
-    gap: 12,
+    gap: 14,
   },
-  selectAllButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-  },
-  selectAllText: {
+  multiSelectActionText: {
     fontSize: 14,
     color: "#1d4ed8",
     fontWeight: "600",
   },
-  cancelButton: {
-    paddingVertical: 6,
-    paddingHorizontal: 12,
-  },
-  cancelText: {
+  multiSelectCancelText: {
     fontSize: 14,
     color: "#64748b",
     fontWeight: "600",
   },
-  // Error banner
   errorBanner: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    backgroundColor: "#fce7f3",
+    backgroundColor: "#fee2e2",
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingVertical: 10,
     marginHorizontal: 16,
     marginTop: 8,
-    borderRadius: 8,
+    borderRadius: 10,
   },
   errorBannerText: {
     flex: 1,
+    color: "#b91c1c",
     fontSize: 14,
-    color: "#be185d",
+    marginRight: 8,
   },
   dismissText: {
-    fontSize: 14,
-    color: "#be185d",
-    fontWeight: "600",
+    color: "#b91c1c",
+    fontWeight: "700",
+    fontSize: 13,
   },
-  // Filter chips
   filterChipsRow: {
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
-    paddingHorizontal: 16,
-    paddingBottom: 8,
+    marginBottom: 12,
   },
   filterChipPrimary: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#2563eb",
+    backgroundColor: "#111827",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
   },
   filterChipPrimaryText: {
-    fontSize: 12,
     color: "#ffffff",
-    fontWeight: "500",
+    fontSize: 12,
+    fontWeight: "600",
   },
   filterChip: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#64748b",
+    backgroundColor: "#4b5563",
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 16,
   },
   filterChipText: {
-    fontSize: 12,
     color: "#ffffff",
-    fontWeight: "500",
+    fontSize: 12,
+    fontWeight: "600",
   },
   filterChipClose: {
-    fontSize: 14,
     color: "#ffffff",
-    marginLeft: 4,
+    fontSize: 13,
   },
   clearFiltersText: {
-    fontSize: 12,
-    color: "#64748b",
+    color: "#4b5563",
     textDecorationLine: "underline",
+    fontSize: 12,
     alignSelf: "center",
   },
-  // Filter sheet
+  loadingContainer: {
+    paddingVertical: 48,
+    alignItems: "center",
+  },
+  loadingText: {
+    marginTop: 10,
+    color: "#6b7280",
+    fontSize: 14,
+  },
+  emptyState: {
+    paddingVertical: 48,
+    alignItems: "center",
+  },
+  emptyTitle: {
+    fontSize: 20,
+    color: "#111827",
+    fontWeight: "700",
+    marginBottom: 6,
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: "#6b7280",
+    textAlign: "center",
+  },
   filterOverlay: {
     position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    backgroundColor: "rgba(0,0,0,0.45)",
     justifyContent: "flex-end",
-    zIndex: 100,
+    zIndex: 200,
   },
   filterSheet: {
     backgroundColor: "#ffffff",
@@ -806,25 +1072,25 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 18,
   },
   filterSheetTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#0f172a",
+    color: "#111827",
   },
   filterSheetClose: {
     fontSize: 16,
-    color: "#2563eb",
-    fontWeight: "600",
+    color: "#111827",
+    fontWeight: "700",
   },
   filterSection: {
-    marginBottom: 20,
+    marginBottom: 18,
   },
   filterSectionTitle: {
     fontSize: 14,
-    fontWeight: "600",
-    color: "#475569",
+    fontWeight: "700",
+    color: "#374151",
     marginBottom: 10,
   },
   filterButtonsRow: {
@@ -833,99 +1099,59 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   filterButton: {
-    paddingHorizontal: 14,
+    paddingHorizontal: 12,
     paddingVertical: 8,
     borderRadius: 8,
-    backgroundColor: "#f1f5f9",
+    backgroundColor: "#f3f4f6",
     borderWidth: 1,
-    borderColor: "#e2e8f0",
+    borderColor: "#e5e7eb",
   },
   filterButtonActive: {
-    backgroundColor: "#2563eb",
-    borderColor: "#2563eb",
+    backgroundColor: "#111827",
+    borderColor: "#111827",
   },
   filterButtonText: {
     fontSize: 13,
-    color: "#475569",
-    fontWeight: "500",
+    color: "#374151",
+    fontWeight: "600",
   },
   filterButtonTextActive: {
     color: "#ffffff",
   },
   noFiltersText: {
     fontSize: 14,
-    color: "#94a3b8",
+    color: "#9ca3af",
   },
   clearAllButton: {
-    backgroundColor: "#f1f5f9",
-    paddingVertical: 12,
+    marginTop: 6,
+    backgroundColor: "#f3f4f6",
     borderRadius: 8,
+    paddingVertical: 12,
     alignItems: "center",
-    marginTop: 8,
   },
   clearAllButtonText: {
+    color: "#4b5563",
+    fontWeight: "700",
     fontSize: 14,
-    color: "#475569",
-    fontWeight: "600",
   },
-  // Loading and empty states
-  loadingContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 48,
-  },
-  loadingText: {
-    fontSize: 14,
-    color: "#64748b",
-    marginTop: 12,
-  },
-  emptyState: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 48,
-  },
-  emptyIcon: {
-    fontSize: 64,
-    marginBottom: 16,
-    color: "#10b981",
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#475569",
-    marginBottom: 8,
-  },
-  emptySubtitle: {
-    fontSize: 14,
-    color: "#94a3b8",
-    textAlign: "center",
-  },
-  // FAB
   fabContainer: {
     position: "absolute",
-    bottom: 90,
     left: 16,
     right: 16,
+    bottom: 90,
   },
   fab: {
-    backgroundColor: "#2563eb",
-    paddingVertical: 18,
+    backgroundColor: "#111827",
     borderRadius: 12,
+    paddingVertical: 16,
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
   },
   fabDisabled: {
     opacity: 0.5,
   },
   fabText: {
     color: "#ffffff",
-    fontSize: 18,
-    fontWeight: "700",
+    fontSize: 16,
+    fontWeight: "800",
   },
 });
