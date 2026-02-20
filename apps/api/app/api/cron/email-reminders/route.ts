@@ -10,11 +10,7 @@
  */
 
 import { database } from "@repo/database";
-import {
-  buildTaskRecipients,
-  buildTaskTemplateData,
-  triggerEmailWorkflows,
-} from "@repo/notifications";
+import { triggerEmailWorkflows } from "@repo/notifications";
 import { type NextRequest, NextResponse } from "next/server";
 
 // Verify cron secret to prevent unauthorized access
@@ -78,6 +74,8 @@ export async function POST(request: NextRequest) {
 
 /**
  * Process task reminders for tasks due within the next 24 hours
+ * Uses KitchenTask with KitchenTaskClaim for assignments
+ * Note: KitchenTask and KitchenTaskClaim don't have direct relations - need manual joins
  */
 async function processTaskReminders() {
   const result = { processed: 0, sent: 0, errors: [] as string[] };
@@ -108,36 +106,71 @@ async function processTaskReminders() {
 
   for (const tenantId of tenantIds) {
     try {
-      // Find tasks due soon that have assigned employees
-      const tasks = await database.kitchen_tasks.findMany({
+      // Find tasks due soon
+      const tasks = await database.kitchenTask.findMany({
         where: {
-          tenant_id: tenantId,
-          due_date: {
+          tenantId,
+          dueDate: {
             gte: now,
             lte: twentyFourHoursFromNow,
           },
           status: {
             notIn: ["completed", "cancelled"],
           },
-          assigned_employee_id: { not: null },
-        },
-        include: {
-          employee: {
-            select: {
-              email: true,
-              first_name: true,
-              last_name: true,
-            },
-          },
+          deletedAt: null,
         },
       });
 
-      for (const task of tasks) {
-        result.processed++;
+      if (tasks.length === 0) {
+        continue;
+      }
 
-        if (!task.employee?.email) {
+      const taskIds = tasks.map((t) => t.id);
+
+      // Find active claims for these tasks
+      const claims = await database.kitchenTaskClaim.findMany({
+        where: {
+          tenantId,
+          taskId: { in: taskIds },
+          releasedAt: null, // Only active claims
+        },
+      });
+
+      if (claims.length === 0) {
+        continue;
+      }
+
+      // Get unique employee IDs from claims
+      const employeeIds = [...new Set(claims.map((c) => c.employeeId))];
+
+      // Fetch employees
+      const employees = await database.user.findMany({
+        where: {
+          tenantId,
+          id: { in: employeeIds },
+        },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+        },
+      });
+
+      // Create lookup maps
+      const taskMap = new Map(tasks.map((t) => [t.id, t]));
+      const employeeMap = new Map(employees.map((e) => [e.id, e]));
+
+      // Process each claim
+      for (const claim of claims) {
+        const task = taskMap.get(claim.taskId);
+        const employee = employeeMap.get(claim.employeeId);
+
+        if (!task || !employee?.email) {
           continue;
         }
+
+        result.processed++;
 
         const triggerResult = await triggerEmailWorkflows(database, {
           tenantId,
@@ -146,16 +179,31 @@ async function processTaskReminders() {
             id: task.id,
             type: "task",
           },
-          templateData: buildTaskTemplateData({
-            name: task.task_name,
-            description: task.description,
-            due_date: task.due_date,
-            priority: task.priority,
-          }),
-          recipients: buildTaskRecipients({
-            assigned_employee_id: task.assigned_employee_id,
-            employee: task.employee,
-          }),
+          templateData: {
+            taskName: task.title,
+            taskDescription: task.summary,
+            taskDueDate: task.dueDate
+              ? task.dueDate.toLocaleDateString("en-US", {
+                  weekday: "long",
+                  year: "numeric",
+                  month: "long",
+                  day: "numeric",
+                })
+              : undefined,
+            taskPriority: task.priority.toString(),
+            dashboardUrl: process.env.NEXT_PUBLIC_APP_URL
+              ? `${process.env.NEXT_PUBLIC_APP_URL}/kitchen/tasks`
+              : undefined,
+          },
+          recipients: [
+            {
+              email: employee.email,
+              employeeId: employee.id,
+              name: [employee.firstName, employee.lastName]
+                .filter(Boolean)
+                .join(" "),
+            },
+          ],
         });
 
         if (triggerResult.triggered > 0) {
@@ -173,6 +221,7 @@ async function processTaskReminders() {
 
 /**
  * Process shift reminders for shifts starting within the next 2-12 hours
+ * Uses ScheduleShift which has employeeId/locationId (no direct relations)
  */
 async function processShiftReminders() {
   const result = { processed: 0, sent: 0, errors: [] as string[] };
@@ -203,36 +252,61 @@ async function processShiftReminders() {
   for (const tenantId of tenantIds) {
     try {
       // Find upcoming shifts
-      const shifts = await database.scheduled_shifts.findMany({
+      const shifts = await database.scheduleShift.findMany({
         where: {
-          tenant_id: tenantId,
-          start_time: {
+          tenantId,
+          shift_start: {
             gte: twoHoursFromNow,
             lte: twelveHoursFromNow,
           },
-          status: "scheduled",
-        },
-        include: {
-          employee: {
-            select: {
-              id: true,
-              email: true,
-              first_name: true,
-              last_name: true,
-            },
-          },
-          location: {
-            select: {
-              name: true,
-            },
-          },
+          deletedAt: null,
         },
       });
+
+      if (shifts.length === 0) {
+        continue;
+      }
+
+      // Get unique employee IDs and location IDs
+      const employeeIds = [...new Set(shifts.map((s) => s.employeeId))];
+      const locationIds = [...new Set(shifts.map((s) => s.locationId))];
+
+      // Fetch employees and locations separately
+      const employees = await database.user.findMany({
+        where: {
+          tenantId,
+          id: { in: employeeIds },
+        },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+        },
+      });
+
+      const locations = await database.location.findMany({
+        where: {
+          tenantId,
+          id: { in: locationIds },
+        },
+        select: {
+          id: true,
+          name: true,
+        },
+      });
+
+      // Create lookup maps
+      const employeeMap = new Map(employees.map((e) => [e.id, e]));
+      const locationMap = new Map(locations.map((l) => [l.id, l]));
 
       for (const shift of shifts) {
         result.processed++;
 
-        if (!shift.employee?.email) {
+        const employee = employeeMap.get(shift.employeeId);
+        const location = locationMap.get(shift.locationId);
+
+        if (!employee?.email) {
           continue;
         }
 
@@ -244,23 +318,23 @@ async function processShiftReminders() {
             type: "shift",
           },
           templateData: {
-            shiftDate: shift.start_time.toLocaleDateString("en-US", {
+            shiftDate: shift.shift_start.toLocaleDateString("en-US", {
               weekday: "long",
               year: "numeric",
               month: "long",
               day: "numeric",
             }),
-            shiftTime: shift.start_time.toLocaleTimeString("en-US", {
+            shiftTime: shift.shift_start.toLocaleTimeString("en-US", {
               hour: "numeric",
               minute: "2-digit",
             }),
-            shiftEndTime: shift.end_time?.toLocaleTimeString("en-US", {
+            shiftEndTime: shift.shift_end?.toLocaleTimeString("en-US", {
               hour: "numeric",
               minute: "2-digit",
             }),
-            location: shift.location?.name ?? "TBD",
-            role: shift.role ?? undefined,
-            recipientName: [shift.employee.first_name, shift.employee.last_name]
+            location: location?.name ?? "TBD",
+            role: shift.role_during_shift ?? undefined,
+            recipientName: [employee.firstName, employee.lastName]
               .filter(Boolean)
               .join(" "),
             dashboardUrl: process.env.NEXT_PUBLIC_APP_URL
@@ -269,9 +343,9 @@ async function processShiftReminders() {
           },
           recipients: [
             {
-              email: shift.employee.email,
-              employeeId: shift.employee.id,
-              name: [shift.employee.first_name, shift.employee.last_name]
+              email: employee.email,
+              employeeId: employee.id,
+              name: [employee.firstName, employee.lastName]
                 .filter(Boolean)
                 .join(" "),
             },
