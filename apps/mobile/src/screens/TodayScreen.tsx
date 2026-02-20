@@ -10,6 +10,7 @@ import { useCallback } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { useEventsToday } from "../api/queries";
 import EventCard from "../components/EventCard";
+import ErrorState from "../components/ErrorState";
 import type { TodayEvent } from "../types";
 
 export default function TodayScreen() {
@@ -50,13 +51,10 @@ export default function TodayScreen() {
 
     if (isError) {
       return (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorIcon}>!</Text>
-          <Text style={styles.errorTitle}>Failed to load events</Text>
-          <Text style={styles.errorSubtitle}>
-            {error?.message || "Please try again."}
-          </Text>
-        </View>
+        <ErrorState
+          message={error?.message || "Failed to load events"}
+          onRetry={() => void refetch()}
+        />
       );
     }
 
@@ -137,29 +135,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#64748b",
     marginTop: 12,
-  },
-  errorContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 48,
-  },
-  errorIcon: {
-    fontSize: 48,
-    fontWeight: "700",
-    color: "#f43f5e",
-    marginBottom: 12,
-  },
-  errorTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#475569",
-    marginBottom: 8,
-  },
-  errorSubtitle: {
-    fontSize: 14,
-    color: "#94a3b8",
-    textAlign: "center",
   },
   emptyState: {
     flex: 1,

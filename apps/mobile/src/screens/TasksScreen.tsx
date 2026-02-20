@@ -18,6 +18,7 @@ import {
   useStartTask,
 } from "../api/mutations";
 import TaskCard from "../components/TaskCard";
+import ErrorState from "../components/ErrorState";
 import type { Task, FilterState } from "../types";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -284,13 +285,10 @@ export default function TasksScreen() {
 
       if (isErrorAvailable) {
         return (
-          <View style={styles.errorContainer}>
-            <Text style={styles.errorIcon}>!</Text>
-            <Text style={styles.errorTitle}>Failed to load tasks</Text>
-            <Text style={styles.errorSubtitle}>
-              {errorAvailable?.message || "Please try again."}
-            </Text>
-          </View>
+          <ErrorState
+            message={errorAvailable?.message || "Failed to load tasks"}
+            onRetry={() => void refetchAvailable()}
+          />
         );
       }
 
@@ -319,13 +317,10 @@ export default function TasksScreen() {
 
     if (isErrorMyTasks) {
       return (
-        <View style={styles.errorContainer}>
-          <Text style={styles.errorIcon}>!</Text>
-          <Text style={styles.errorTitle}>Failed to load tasks</Text>
-          <Text style={styles.errorSubtitle}>
-            {errorMyTasks?.message || "Please try again."}
-          </Text>
-        </View>
+        <ErrorState
+          message={errorMyTasks?.message || "Failed to load tasks"}
+          onRetry={() => void refetchMyTasks()}
+        />
       );
     }
 
@@ -347,6 +342,8 @@ export default function TasksScreen() {
     isLoadingMyTasks,
     isErrorMyTasks,
     errorMyTasks,
+    refetchAvailable,
+    refetchMyTasks,
   ]);
 
   const tasks = activeTab === "available" ? filteredAvailableTasks : myTasks;
@@ -882,29 +879,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#64748b",
     marginTop: 12,
-  },
-  errorContainer: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    paddingVertical: 48,
-  },
-  errorIcon: {
-    fontSize: 48,
-    fontWeight: "700",
-    color: "#f43f5e",
-    marginBottom: 12,
-  },
-  errorTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#475569",
-    marginBottom: 8,
-  },
-  errorSubtitle: {
-    fontSize: 14,
-    color: "#94a3b8",
-    textAlign: "center",
   },
   emptyState: {
     flex: 1,

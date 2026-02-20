@@ -7,6 +7,7 @@ import {
 } from "react-native";
 import type { Task } from "../types";
 import { priorityConfig } from "../types";
+import { useHaptics } from "../hooks";
 
 interface TaskCardProps {
   task: Task;
@@ -94,17 +95,40 @@ export default function TaskCard({
   const priority = priorityConfig[task.priority] || priorityConfig[5];
   const dueStatus = formatDueStatus(task.dueDate);
   const dueColors = dueStatus ? getDueStatusColors(dueStatus) : null;
+  const haptics = useHaptics();
 
   const handlePress = () => {
     if (isMultiSelectMode && onToggleSelect) {
+      haptics.selection();
       onToggleSelect(task.id);
     }
   };
 
   const handleLongPress = () => {
     if (type === "available" && !isMultiSelectMode && onLongPress) {
+      haptics.medium();
       onLongPress(task.id);
     }
+  };
+
+  const handleClaim = () => {
+    haptics.medium();
+    onClaim?.(task.id);
+  };
+
+  const handleRelease = () => {
+    haptics.light();
+    onRelease?.(task.id);
+  };
+
+  const handleStart = () => {
+    haptics.medium();
+    onStart?.(task.id);
+  };
+
+  const handleComplete = () => {
+    haptics.success();
+    onComplete?.(task.id);
   };
 
   const renderAvailableActions = () => {
@@ -116,7 +140,7 @@ export default function TaskCard({
       return (
         <TouchableOpacity
           style={[styles.claimButton, isLoading && styles.buttonDisabled]}
-          onPress={() => onClaim(task.id)}
+          onPress={handleClaim}
           disabled={isLoading}
           activeOpacity={0.7}
         >
@@ -138,7 +162,7 @@ export default function TaskCard({
         {onRelease && (
           <TouchableOpacity
             style={[styles.releaseButton, isLoading && styles.buttonDisabled]}
-            onPress={() => onRelease(task.id)}
+            onPress={handleRelease}
             disabled={isLoading}
             activeOpacity={0.7}
           >
@@ -149,7 +173,7 @@ export default function TaskCard({
         {task.status === "pending" && onStart && (
           <TouchableOpacity
             style={[styles.startButton, isLoading && styles.buttonDisabled]}
-            onPress={() => onStart(task.id)}
+            onPress={handleStart}
             disabled={isLoading}
             activeOpacity={0.7}
           >
@@ -160,7 +184,7 @@ export default function TaskCard({
         {task.status === "in_progress" && onComplete && (
           <TouchableOpacity
             style={[styles.completeButton, isLoading && styles.buttonDisabled]}
-            onPress={() => onComplete(task.id)}
+            onPress={handleComplete}
             disabled={isLoading}
             activeOpacity={0.7}
           >
