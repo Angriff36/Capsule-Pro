@@ -277,11 +277,26 @@
     - Derived connections removed on projection delete but NOT restored on undo (known limitation)
     - The hook's `past` and `future` dependencies cause function recreation on each state change (functional but could be optimized)
 
-- [ ] [medium] 16) Command route contract tests
+- [x] [medium] 16) Command route contract tests
   - Files: `apps/app/app/api/command-board/`, `apps/api/app/api/command-board/`
   - DoD:
     - Request/response contract tests for create/update/move/remove.
     - Idempotency assertions for safe retries.
+  - Evidence:
+    - 22 tests in `apps/api/__tests__/command-board/command-route-contracts.test.ts` covering:
+      - Success response shape for all 4 command routes (create/update/move/remove)
+      - Error response shapes with correct status codes (401, 400, 403, 422, 500)
+      - Idempotency key header handling (Idempotency-Key and X-Idempotency-Key variants)
+      - Safe retry behavior with same idempotency key
+      - Request body parsing (empty body, malformed JSON)
+      - All command routes return consistent error shape on auth failure
+      - Response headers include correct content-type
+  - Learnings:
+    - Command routes use Manifest runtime with `runCommand()` which enforces policies/guards
+    - Response format: `{ success: true, data: { result, events } }` or `{ success: false, message }`
+    - Idempotency key passed via headers to runtime, which handles deduplication
+    - Error status codes: 401 (unauth), 400 (tenant/user not found, general failure), 403 (policy denial), 422 (guard failure), 500 (internal error)
+    - All 4 command routes (create/update/move/remove) share identical auth/validation/response patterns
 
 ---
 
