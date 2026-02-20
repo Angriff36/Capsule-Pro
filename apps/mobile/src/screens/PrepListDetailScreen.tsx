@@ -16,6 +16,7 @@ import {
   useUpdatePrepItemNotes,
 } from "../api/mutations";
 import PrepListItem from "../components/PrepListItem";
+import ErrorState from "../components/ErrorState";
 import type { PrepListItem as PrepListItemType, PrepListDetailParams } from "../types";
 
 type FilterType = "incomplete" | "all" | "complete";
@@ -127,16 +128,10 @@ export default function PrepListDetailScreen({ route }: Props) {
   // Error state
   if (error) {
     return (
-      <View style={styles.centerContainer}>
-        <Text style={styles.errorIcon}>❌</Text>
-        <Text style={styles.errorTitle}>Failed to load</Text>
-        <Text style={styles.errorMessage}>
-          {error instanceof Error ? error.message : "Please try again"}
-        </Text>
-        <TouchableOpacity style={styles.retryButton} onPress={() => refetch()}>
-          <Text style={styles.retryButtonText}>Retry</Text>
-        </TouchableOpacity>
-      </View>
+      <ErrorState
+        message={error instanceof Error ? error.message : "Failed to load prep list"}
+        onRetry={() => void refetch()}
+      />
     );
   }
 
@@ -293,33 +288,6 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 16,
     color: "#64748b",
-  },
-  errorIcon: {
-    fontSize: 48,
-    marginBottom: 16,
-  },
-  errorTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#0f172a",
-    marginBottom: 8,
-  },
-  errorMessage: {
-    fontSize: 14,
-    color: "#64748b",
-    textAlign: "center",
-    marginBottom: 24,
-  },
-  retryButton: {
-    backgroundColor: "#2563eb",
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
-  },
-  retryButtonText: {
-    color: "#ffffff",
-    fontSize: 16,
-    fontWeight: "600",
   },
   headerInfo: {
     paddingHorizontal: 16,

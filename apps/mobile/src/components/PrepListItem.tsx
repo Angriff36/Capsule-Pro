@@ -7,6 +7,7 @@ import {
 } from "react-native";
 import Swipeable from "react-native-gesture-handler/Swipeable";
 import type { PrepListItem as PrepListItemType } from "../types";
+import { useHaptics } from "../hooks";
 
 interface PrepListItemProps {
   item: PrepListItemType;
@@ -19,6 +20,7 @@ export default function PrepListItem({
   onToggleComplete,
   onAddNote,
 }: PrepListItemProps) {
+  const haptics = useHaptics();
   const renderLeftActions = (
     _progress: Animated.AnimatedInterpolation<number>,
     dragX: Animated.AnimatedInterpolation<number>
@@ -68,11 +70,18 @@ export default function PrepListItem({
   };
 
   const handleSwipeLeftOpen = () => {
+    haptics.success();
     onToggleComplete(item);
   };
 
   const handleSwipeRightOpen = () => {
+    haptics.light();
     onAddNote(item);
+  };
+
+  const handleToggle = () => {
+    haptics.selection();
+    onToggleComplete(item);
   };
 
   return (
@@ -90,7 +99,7 @@ export default function PrepListItem({
           styles.container,
           item.completed && styles.containerCompleted,
         ]}
-        onPress={() => onToggleComplete(item)}
+        onPress={handleToggle}
         activeOpacity={0.7}
       >
         {/* Checkbox */}

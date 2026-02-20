@@ -10,7 +10,7 @@ import { useCallback, useMemo } from "react";
 import { useNavigation } from "@react-navigation/native";
 import type { StackNavigationProp } from "@react-navigation/stack";
 import { usePrepLists } from "../api/queries";
-import { PrepListCard } from "../components";
+import { PrepListCard, ErrorState } from "../components";
 import type { PrepList, PrepListStackParamList } from "../types";
 
 type NavigationProp = StackNavigationProp<PrepListStackParamList, "PrepListsIndex">;
@@ -112,14 +112,10 @@ export default function PrepListsScreen() {
   // Error state
   if (error) {
     return (
-      <View style={styles.centerContainer}>
-        <Text style={styles.errorIcon}>⚠️</Text>
-        <Text style={styles.errorTitle}>Failed to load prep lists</Text>
-        <Text style={styles.errorMessage}>
-          {error instanceof Error ? error.message : "Something went wrong"}
-        </Text>
-        <Text style={styles.retryHint}>Pull down to retry</Text>
-      </View>
+      <ErrorState
+        message={error instanceof Error ? error.message : "Failed to load prep lists"}
+        onRetry={() => void refetch()}
+      />
     );
   }
 
@@ -267,26 +263,6 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 16,
     color: "#64748b",
-  },
-  errorIcon: {
-    fontSize: 48,
-    marginBottom: 16,
-  },
-  errorTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    color: "#475569",
-    marginBottom: 8,
-  },
-  errorMessage: {
-    fontSize: 14,
-    color: "#64748b",
-    textAlign: "center",
-    marginBottom: 16,
-  },
-  retryHint: {
-    fontSize: 12,
-    color: "#94a3b8",
   },
   emptyIcon: {
     fontSize: 64,
