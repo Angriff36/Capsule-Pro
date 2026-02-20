@@ -38,7 +38,7 @@ const VENUE_TYPES: { value: VenueType; label: string }[] = [
 export default function EditVenuePage() {
   const params = useParams();
   const router = useRouter();
-  const venueId = params.id as string;
+  const venueId = params?.id as string;
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

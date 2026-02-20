@@ -300,6 +300,14 @@ export default function MobileTimeClockPage() {
     []
   );
 
+  // Reset clock in form
+  const resetClockInForm = useCallback(() => {
+    setNotes("");
+    setPhotoDataUrl(null);
+    setLocationWarning(null);
+    setCurrentLocation(null);
+  }, []);
+
   // Handle clock in
   const handleClockIn = useCallback(async () => {
     if (!employee) {
@@ -501,14 +509,6 @@ export default function MobileTimeClockPage() {
 
     setIsLoading(false);
   }, [activeTimeEntry, isOnBreak, breakStartTime, fetchStatus]);
-
-  // Reset clock in form
-  const resetClockInForm = useCallback(() => {
-    setNotes("");
-    setPhotoDataUrl(null);
-    setLocationWarning(null);
-    setCurrentLocation(null);
-  }, []);
 
   // Open clock in dialog with location check
   const openClockInDialog = useCallback(async () => {

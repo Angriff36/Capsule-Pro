@@ -62,7 +62,7 @@ const VENUE_TYPE_LABELS: Record<VenueType, string> = {
 export default function VenuePage() {
   const params = useParams();
   const router = useRouter();
-  const venueId = params.id as string;
+  const venueId = params?.id as string;
 
   const [venue, setVenue] = useState<Awaited<
     ReturnType<typeof getVenueById>
