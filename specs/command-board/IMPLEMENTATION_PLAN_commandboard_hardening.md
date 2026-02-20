@@ -47,12 +47,21 @@
     - UI: Simulation mode also propagates warnings via `useSimulationConflicts` hook (conflict-warning-panel.tsx:101, 116, 302).
     - Tests: 11 tests in "Error handling safety - partial results resilience" describe block covering all detector failures, some failures, SQL errors, timeouts, deadlocks, etc. (stabilization.test.ts:457-728).
 
-- [ ] [high] 4) Regression tests for known crash classes
+- [x] [high] 4) Regression tests for known crash classes
   - Files: `apps/app/__tests__/api/command-board/tool-registry-context.test.ts`, new conflict-route test files under `apps/app/__tests__/api/command-board/` and/or API test directories
   - DoD:
     - Add tests for invalid UUID, tenant mismatch, empty board, no conflicts.
     - Add tests for each previously observed SQL runtime error signature.
     - Tests fail pre-fix and pass post-fix for each targeted class.
+  - Evidence: 23 tests in `tool-registry-context.test.ts` organized into 3 describe blocks covering:
+    - read_board_state: invalid UUID in context, tenant mismatch/board not found, database errors (board lookup + projection lookup), malformed JSON args, unknown tool name, empty board with 0 projections.
+    - detect_conflicts: missing boardId, API error responses (401), empty conflicts array, timeRange/entityTypes parameter passing, partial results with warnings.
+    - execute_manifest_command: unsupported command route, missing entityName/commandName, API failure responses, successful execution, context userId fallback, custom idempotencyKey, non-JSON API response handling.
+  - Learnings:
+    - Tool registry uses `safeJsonParse` which returns `{}` on malformed input, allowing tools to fall back to context defaults.
+    - All tools return typed `AgentToolResult` with `ok`, `summary`, `error?`, `data?` fields.
+    - Database errors are caught by top-level try-catch in `executeToolCall` and reported to Sentry.
+    - API route tests for SQL error signatures already exist in `detect-route.stabilization.test.ts` (12 SQL error classes).
 
 ---
 
