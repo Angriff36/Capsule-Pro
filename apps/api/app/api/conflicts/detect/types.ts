@@ -57,6 +57,11 @@ export interface ConflictDetectionRequest {
   entityTypes?: ConflictType[];
 }
 
+export interface DetectorWarning {
+  detectorType: ConflictType;
+  message: string;
+}
+
 export interface ConflictDetectionResult {
   conflicts: Conflict[];
   summary: {
@@ -65,4 +70,18 @@ export interface ConflictDetectionResult {
     byType: Record<ConflictType, number>;
   };
   analyzedAt: Date;
+  /** Warnings from individual detectors that partially failed */
+  warnings?: DetectorWarning[];
+}
+
+/** Typed error response for conflict detection API */
+export interface ConflictApiError {
+  code:
+    | "UNAUTHORIZED"
+    | "TENANT_NOT_FOUND"
+    | "INVALID_REQUEST"
+    | "DETECTION_FAILED";
+  message: string;
+  /** Guidance for the user on how to proceed */
+  guidance?: string;
 }

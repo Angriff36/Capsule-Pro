@@ -142,11 +142,19 @@
     - BoardFlow empty state was already complete with proper UI
     - Card components needed defensive fallbacks for mapping lookups that could return undefined
 
-- [ ] [medium] 9) Select component safety pass (no empty-value items)
-  - Files: `apps/app/app/(authenticated)/command-board/components/`
+- [x] [medium] 9) Select component safety pass (no empty-value items)
+  - Files: `apps/app/app/(authenticated)/command-board/components/bulk-action-toolbar.tsx`
   - DoD:
     - No `SelectItem value=""` in command-board path.
     - Sentinel clear values are consistent and tested.
+  - Evidence:
+    - Changed status and priority Select components to use `CLEAR_SELECT_VALUE` sentinel (`"__clear__"`) as fallback instead of empty string `""` (bulk-action-toolbar.tsx:445, 479).
+    - Previously: `value={pendingChanges.status ?? ""}` caused empty string to be passed when undefined, with no matching `<SelectItem value="">`.
+    - Now: `value={pendingChanges.status ?? CLEAR_SELECT_VALUE}` uses sentinel that has a matching `<SelectItem value={CLEAR_SELECT_VALUE}>`.
+    - 7 tests in `apps/app/__tests__/command-board/bulk-action-toolbar-select.test.tsx` covering: component renders without errors, no empty value SelectItems, sentinel value behavior, undefined status/priority handling.
+  - Learnings:
+    - Radix UI Select treats `value=""` as a valid selected value, not "no selection" - requires matching SelectItem.
+    - Pattern: Use sentinel value (e.g., `"__clear__"`) as both Select value fallback and SelectItem value for clear/reset option.
 
 - [ ] [medium] 10) Projection normalization boundary pass
   - Files: `apps/app/app/(authenticated)/command-board/actions/projections.ts`

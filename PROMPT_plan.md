@@ -1,26 +1,29 @@
-0a. Study `specs/mobile/native-mobile-app_TODO/native-mobile-app.md` using up to 200 parallel Sonnet subagents to fully understand the native mobile app spec.
-0b. Study `specs/mobile/native-mobile-app_TODO/IMPLEMENTATION_PLAN.md` (if present) to understand what's already done.
-0c. Study existing code using up to 300 parallel Sonnet subagents: - `apps/mobile/` — existing Expo scaffold (App.tsx, package.json, app.json) - `apps/app/app/(mobile-kitchen)/kitchen/mobile/` — web mobile reference implementation (reuse patterns) - `apps/api/app/api/kitchen/tasks/` — task APIs to connect to - `apps/api/app/api/kitchen/prep-lists/` — prep list APIs to connect to - `apps/api/app/api/kitchen/events/today/` — events API to connect to - React Native best practices for navigation, offline-first, gesture handlers
+0a. Study `specs/command-board/*.md` using up to 300 parallel Sonnet subagents to understand Command Board product direction, existing bug history, and quality expectations.
+0b. Study `specs/command-board/IMPLEMENTATION_PLAN_commandboard_hardening.md` (if present) to understand what is already complete.
+0c. Study existing codepaths with up to 400 parallel Sonnet subagents:
 
-1. Study `specs/mobile/native-mobile-app_TODO/IMPLEMENTATION_PLAN.md` (it may be incomplete) and use up to 500 Sonnet subagents to map existing code against the spec. Use an Opus subagent to analyze findings, identify gaps, and create/update the IMPLEMENTATION_PLAN with a prioritized list of what remains. Ultrathink. Confirm before claiming anything is missing — search first.
+- `apps/api/app/api/conflicts/detect/route.ts`
+- `apps/app/app/api/command-board/chat/`
+- `apps/app/app/api/command-board/`
+- `apps/app/app/(authenticated)/command-board/`
+- `apps/app/__tests__/api/command-board/`
+  0d. For shared logic reference, inspect `packages/database/`, `packages/ai/`, and `packages/manifest-adapters/`.
 
-IMPORTANT: Plan only. Do NOT implement anything. This is a React Native (Expo) app, not a web app. Use React Native components (View, Text, FlatList, TouchableOpacity) not HTML/DOM. Use React Navigation not Next.js routing. Use AsyncStorage not localStorage. Use Expo Secure Store not browser storage.
+Study `specs/command-board/IMPLEMENTATION_PLAN_commandboard_hardening.md` (it may be incomplete) and use up to 500 Sonnet subagents to compare code against specs and this plan. Use an Opus subagent to prioritize tasks and update that implementation plan with a concise, ordered checklist.
 
-ULTIMATE GOAL: A complete **native mobile app** (iOS + Android) for kitchen staff at `apps/mobile/` with:
+IMPORTANT: Plan only. Do NOT implement anything. Do NOT assume gaps; verify by code search first.
 
-- Bottom tab navigation: Today | Tasks | Prep Lists | My Work
-- 5 screens fully implemented and wired to existing kitchen API
-- Offline-first with AsyncStorage queue + sync on reconnect
-- Native gestures (swipe to complete prep items)
-- Optimistic UI updates for instant feedback
-- Can be installed from App Store / Play Store
-- Works via Expo Go for instant dev testing on physical devices
+ULTIMATE GOAL: deliver a crash-resistant, observable, and regression-tested Command Board that behaves correctly on empty/new boards, seeded boards, malformed assistant tool args, tenant mismatches, and partial detector failures.
 
-Key capabilities:
+Priority order to enforce in the plan:
 
-- React Navigation tab + stack navigators
-- React Query for API state + caching
-- Offline action queue (claim/complete/release tasks while offline)
-- Swipe gestures for prep list item completion
-- Bundle task claiming (select multiple → claim atomically)
-- Pull-to-refresh on all list views
+- Conflict API stabilization and typed payload guarantees
+- SQL hardening (Prisma/typed `Prisma.sql` usage)
+- Assistant tool-arg safety and response guardrails
+- Regression tests for all known crash classes and signatures
+- Partial-results conflict resilience in API and UI
+- UX/data safety polish (empty state, select sentinel safety, projection/card fallbacks)
+- Command route contract/idempotency tests
+- Structured observability with correlation IDs + normalized error codes
+- CI board-health smoke script
+- Performance baseline and regression budget for board load
