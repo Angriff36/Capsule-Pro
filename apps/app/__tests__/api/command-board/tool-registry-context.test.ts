@@ -17,6 +17,8 @@ vi.mock("@repo/database", () => ({
 }));
 
 describe("command board chat tool registry context defaults", () => {
+  const boardId = "2957779c-9732-4060-86fd-c5b2be03cbee";
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -25,7 +27,7 @@ describe("command board chat tool registry context defaults", () => {
     const { database } = await import("@repo/database");
 
     vi.mocked(database.commandBoard.findFirst).mockResolvedValueOnce({
-      id: "board-1",
+      id: boardId,
       tenantId: "tenant-1",
       eventId: null,
       name: "Ops Board",
@@ -44,7 +46,7 @@ describe("command board chat tool registry context defaults", () => {
     const registry = createManifestToolRegistry({
       tenantId: "tenant-1",
       userId: "user-1",
-      boardId: "board-1",
+      boardId,
       correlationId: "corr-1",
       authCookie: null,
     });
@@ -60,8 +62,97 @@ describe("command board chat tool registry context defaults", () => {
     expect(database.commandBoard.findFirst).toHaveBeenCalledWith(
       expect.objectContaining({
         where: expect.objectContaining({
-          id: "board-1",
+          id: boardId,
           tenantId: "tenant-1",
+        }),
+      })
+    );
+  });
+
+  it("ignores mismatched tenantId in tool args and still uses authenticated context", async () => {
+    const { database } = await import("@repo/database");
+
+    vi.mocked(database.commandBoard.findFirst).mockResolvedValueOnce({
+      id: boardId,
+      tenantId: "tenant-1",
+      eventId: null,
+      name: "Ops Board",
+      description: null,
+      status: "active",
+      isTemplate: false,
+      scope: null,
+      autoPopulate: false,
+      createdAt: new Date("2026-02-01T00:00:00.000Z"),
+      updatedAt: new Date("2026-02-01T00:00:00.000Z"),
+      deletedAt: null,
+      tags: [],
+    });
+    vi.mocked(database.boardProjection.findMany).mockResolvedValueOnce([]);
+
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-1",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "read_board_state",
+      argumentsJson: JSON.stringify({ tenantId: "wrong-tenant" }),
+      callId: "call-2",
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.error).toBeUndefined();
+    expect(database.commandBoard.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          tenantId: "tenant-1",
+        }),
+      })
+    );
+  });
+
+  it("ignores invalid boardId in tool args and uses valid context boardId", async () => {
+    const { database } = await import("@repo/database");
+
+    vi.mocked(database.commandBoard.findFirst).mockResolvedValueOnce({
+      id: boardId,
+      tenantId: "tenant-1",
+      eventId: null,
+      name: "Ops Board",
+      description: null,
+      status: "active",
+      isTemplate: false,
+      scope: null,
+      autoPopulate: false,
+      createdAt: new Date("2026-02-01T00:00:00.000Z"),
+      updatedAt: new Date("2026-02-01T00:00:00.000Z"),
+      deletedAt: null,
+      tags: [],
+    });
+    vi.mocked(database.boardProjection.findMany).mockResolvedValueOnce([]);
+
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-3",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "read_board_state",
+      argumentsJson: JSON.stringify({ boardId: "invalid board id text" }),
+      callId: "call-3",
+    });
+
+    expect(result.ok).toBe(true);
+    expect(database.commandBoard.findFirst).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: expect.objectContaining({
+          id: boardId,
         }),
       })
     );
@@ -71,7 +162,7 @@ describe("command board chat tool registry context defaults", () => {
     const registry = createManifestToolRegistry({
       tenantId: "tenant-1",
       userId: "user-1",
-      boardId: "board-1",
+      boardId,
       correlationId: "corr-2",
       authCookie: null,
     });
@@ -87,5 +178,583 @@ describe("command board chat tool registry context defaults", () => {
     expect(detectConflicts).toBeDefined();
     expect(readBoard?.parameters.required).toEqual([]);
     expect(detectConflicts?.parameters.required).toEqual([]);
+  });
+
+  // --- P0-4 Regression tests for known crash classes ---
+
+  it("returns error when context boardId is not a valid UUID", async () => {
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId: "not-a-uuid",
+      correlationId: "corr-invalid-uuid",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "read_board_state",
+      argumentsJson: "{}",
+      callId: "call-invalid-uuid",
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.error).toBe("boardId is required");
+    expect(result.summary).toBe("boardId is required");
+  });
+
+  it("returns error when board does not exist or tenant mismatch", async () => {
+    const { database } = await import("@repo/database");
+
+    vi.mocked(database.commandBoard.findFirst).mockResolvedValueOnce(null);
+
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-not-found",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "read_board_state",
+      argumentsJson: "{}",
+      callId: "call-not-found",
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.error).toBe(`Board ${boardId} not found`);
+    expect(result.summary).toBe(`Board ${boardId} not found`);
+  });
+
+  it("handles database errors gracefully during board lookup", async () => {
+    const { database } = await import("@repo/database");
+
+    vi.mocked(database.commandBoard.findFirst).mockRejectedValueOnce(
+      new Error("Connection timeout")
+    );
+
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-db-error",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "read_board_state",
+      argumentsJson: "{}",
+      callId: "call-db-error",
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.error).toBe("Connection timeout");
+    expect(result.summary).toContain("failed");
+  });
+
+  it("handles database errors during projection lookup", async () => {
+    const { database } = await import("@repo/database");
+
+    vi.mocked(database.commandBoard.findFirst).mockResolvedValueOnce({
+      id: boardId,
+      tenantId: "tenant-1",
+      eventId: null,
+      name: "Ops Board",
+      description: null,
+      status: "active",
+      isTemplate: false,
+      scope: null,
+      autoPopulate: false,
+      createdAt: new Date("2026-02-01T00:00:00.000Z"),
+      updatedAt: new Date("2026-02-01T00:00:00.000Z"),
+      deletedAt: null,
+      tags: [],
+    });
+    vi.mocked(database.boardProjection.findMany).mockRejectedValueOnce(
+      new Error("Query timeout")
+    );
+
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-proj-error",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "read_board_state",
+      argumentsJson: "{}",
+      callId: "call-proj-error",
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.error).toBe("Query timeout");
+  });
+
+  it("handles malformed JSON in argumentsJson gracefully", async () => {
+    const { database } = await import("@repo/database");
+
+    vi.mocked(database.commandBoard.findFirst).mockResolvedValueOnce({
+      id: boardId,
+      tenantId: "tenant-1",
+      eventId: null,
+      name: "Ops Board",
+      description: null,
+      status: "active",
+      isTemplate: false,
+      scope: null,
+      autoPopulate: false,
+      createdAt: new Date("2026-02-01T00:00:00.000Z"),
+      updatedAt: new Date("2026-02-01T00:00:00.000Z"),
+      deletedAt: null,
+      tags: [],
+    });
+    vi.mocked(database.boardProjection.findMany).mockResolvedValueOnce([]);
+
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-malformed",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "read_board_state",
+      argumentsJson: "{ invalid json }",
+      callId: "call-malformed",
+    });
+
+    // Should treat as empty args and use context boardId
+    expect(result.ok).toBe(true);
+    expect(result.summary).toContain("Loaded board snapshot");
+  });
+
+  it("returns error for unknown tool names", async () => {
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-unknown",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "nonexistent_tool",
+      argumentsJson: "{}",
+      callId: "call-unknown",
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.error).toBe("Unknown tool: nonexistent_tool");
+    expect(result.summary).toBe("Unknown tool: nonexistent_tool");
+  });
+
+  it("returns empty projections array when board has no projections", async () => {
+    const { database } = await import("@repo/database");
+
+    vi.mocked(database.commandBoard.findFirst).mockResolvedValueOnce({
+      id: boardId,
+      tenantId: "tenant-1",
+      eventId: null,
+      name: "Empty Board",
+      description: null,
+      status: "active",
+      isTemplate: false,
+      scope: null,
+      autoPopulate: false,
+      createdAt: new Date("2026-02-01T00:00:00.000Z"),
+      updatedAt: new Date("2026-02-01T00:00:00.000Z"),
+      deletedAt: null,
+      tags: [],
+    });
+    vi.mocked(database.boardProjection.findMany).mockResolvedValueOnce([]);
+
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-empty",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "read_board_state",
+      argumentsJson: "{}",
+      callId: "call-empty",
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.summary).toBe("Loaded board snapshot with 0 projections");
+    expect((result.data as { projectionSummary: { total: number } }).projectionSummary.total).toBe(0);
+  });
+});
+
+describe("command board chat tool registry - detect_conflicts tool", () => {
+  const boardId = "2957779c-9732-4060-86fd-c5b2be03cbee";
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns error when boardId is missing for detect_conflicts", async () => {
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId: undefined,
+      correlationId: "corr-detect-no-board",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "detect_conflicts",
+      argumentsJson: "{}",
+      callId: "call-detect-no-board",
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.error).toBe("boardId is required");
+  });
+
+  it("handles API error responses from detect_conflicts", async () => {
+    const mockFetch = vi.fn().mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      text: async () => JSON.stringify({ code: "UNAUTHORIZED", message: "Not authenticated" }),
+    });
+    global.fetch = mockFetch;
+
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-detect-401",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "detect_conflicts",
+      argumentsJson: "{}",
+      callId: "call-detect-401",
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.summary).toContain("401");
+    expect(result.data).toBeDefined();
+  });
+
+  it("returns empty conflicts array when no conflicts detected", async () => {
+    const mockFetch = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      text: async () => JSON.stringify({
+        conflicts: [],
+        summary: { total: 0, bySeverity: {}, byType: {} },
+        analyzedAt: "2026-02-20T00:00:00.000Z",
+      }),
+    });
+    global.fetch = mockFetch;
+
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-detect-empty",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "detect_conflicts",
+      argumentsJson: "{}",
+      callId: "call-detect-empty",
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.summary).toBe("Detected 0 conflicts");
+  });
+
+  it("passes timeRange and entityTypes to detect_conflicts API", async () => {
+    const mockFetch = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      text: async () => JSON.stringify({
+        conflicts: [],
+        summary: { total: 0, bySeverity: {}, byType: {} },
+        analyzedAt: "2026-02-20T00:00:00.000Z",
+      }),
+    });
+    global.fetch = mockFetch;
+
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-detect-params",
+      authCookie: null,
+    });
+
+    await registry.executeToolCall({
+      name: "detect_conflicts",
+      argumentsJson: JSON.stringify({
+        timeRange: { start: "2026-02-20", end: "2026-02-21" },
+        entityTypes: ["scheduling", "inventory"],
+      }),
+      callId: "call-detect-params",
+    });
+
+    const fetchCall = mockFetch.mock.calls[0];
+    const body = JSON.parse(fetchCall[1].body as string);
+    expect(body.timeRange).toEqual({ start: "2026-02-20", end: "2026-02-21" });
+    expect(body.entityTypes).toEqual(["scheduling", "inventory"]);
+  });
+
+  it("handles partial results with warnings from detect_conflicts", async () => {
+    const mockFetch = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      text: async () => JSON.stringify({
+        conflicts: [{ type: "scheduling", severity: "high", title: "Test" }],
+        summary: { total: 1, bySeverity: { high: 1 }, byType: { scheduling: 1 } },
+        analyzedAt: "2026-02-20T00:00:00.000Z",
+        warnings: [{ detectorType: "inventory", message: "Query failed" }],
+      }),
+    });
+    global.fetch = mockFetch;
+
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-detect-warnings",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "detect_conflicts",
+      argumentsJson: "{}",
+      callId: "call-detect-warnings",
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.summary).toBe("Detected 1 conflicts");
+    const data = result.data as { warnings?: Array<{ detectorType: string }> };
+    expect(data.warnings).toBeDefined();
+    expect(data.warnings?.[0]?.detectorType).toBe("inventory");
+  });
+});
+
+describe("command board chat tool registry - execute_manifest_command tool", () => {
+  const boardId = "2957779c-9732-4060-86fd-c5b2be03cbee";
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("returns error for unsupported manifest command route", async () => {
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-cmd-invalid",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "execute_manifest_command",
+      argumentsJson: JSON.stringify({
+        entityName: "InvalidEntity",
+        commandName: "invalid",
+        args: {},
+      }),
+      callId: "call-cmd-invalid",
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.error).toContain("Unsupported manifest command route");
+    expect((result.data as { supported: string[] }).supported).toContain("CommandBoard:create");
+  });
+
+  it("returns error when entityName or commandName missing", async () => {
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-cmd-missing",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "execute_manifest_command",
+      argumentsJson: JSON.stringify({
+        entityName: "",
+        commandName: "",
+        args: {},
+      }),
+      callId: "call-cmd-missing",
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.error).toContain("Unsupported manifest command route");
+  });
+
+  it("handles API failure responses for execute_manifest_command", async () => {
+    const mockFetch = vi.fn().mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      text: async () => JSON.stringify({ code: "VALIDATION_ERROR", message: "Invalid payload" }),
+    });
+    global.fetch = mockFetch;
+
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-cmd-fail",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "execute_manifest_command",
+      argumentsJson: JSON.stringify({
+        entityName: "CommandBoardCard",
+        commandName: "create",
+        args: { title: "Test" },
+      }),
+      callId: "call-cmd-fail",
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.summary).toContain("400");
+    const data = result.data as { routePath: string; idempotencyKey: string };
+    expect(data.routePath).toBe("/api/command-board/cards/commands/create");
+    expect(data.idempotencyKey).toBeDefined();
+  });
+
+  it("executes manifest command successfully", async () => {
+    const mockFetch = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      text: async () => JSON.stringify({ ok: true, id: "new-card-id" }),
+    });
+    global.fetch = mockFetch;
+
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-cmd-success",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "execute_manifest_command",
+      argumentsJson: JSON.stringify({
+        entityName: "CommandBoardCard",
+        commandName: "create",
+        args: { title: "Test Card" },
+      }),
+      callId: "call-cmd-success",
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.summary).toBe("CommandBoardCard:create executed successfully");
+    const data = result.data as { routePath: string; idempotencyKey: string; response: { ok: boolean } };
+    expect(data.routePath).toBe("/api/command-board/cards/commands/create");
+    expect(data.response.ok).toBe(true);
+
+    // Verify idempotency header was sent
+    const fetchCall = mockFetch.mock.calls[0];
+    expect(fetchCall[1].headers["x-idempotency-key"]).toBeDefined();
+  });
+
+  it("uses context userId when not provided in args", async () => {
+    const mockFetch = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      text: async () => JSON.stringify({ ok: true }),
+    });
+    global.fetch = mockFetch;
+
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "context-user-123",
+      boardId,
+      correlationId: "corr-cmd-userid",
+      authCookie: null,
+    });
+
+    await registry.executeToolCall({
+      name: "execute_manifest_command",
+      argumentsJson: JSON.stringify({
+        entityName: "CommandBoardCard",
+        commandName: "update",
+        args: { id: "card-id", title: "Updated" },
+      }),
+      callId: "call-cmd-userid",
+    });
+
+    const fetchCall = mockFetch.mock.calls[0];
+    const body = JSON.parse(fetchCall[1].body as string);
+    expect(body.userId).toBe("context-user-123");
+  });
+
+  it("uses provided idempotencyKey when specified", async () => {
+    const mockFetch = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      text: async () => JSON.stringify({ ok: true }),
+    });
+    global.fetch = mockFetch;
+
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-cmd-idem",
+      authCookie: null,
+    });
+
+    await registry.executeToolCall({
+      name: "execute_manifest_command",
+      argumentsJson: JSON.stringify({
+        entityName: "CommandBoardCard",
+        commandName: "update",
+        args: { id: "card-id" },
+        idempotencyKey: "custom-idempotency-key-123",
+      }),
+      callId: "call-cmd-idem",
+    });
+
+    const fetchCall = mockFetch.mock.calls[0];
+    expect(fetchCall[1].headers["x-idempotency-key"]).toBe("custom-idempotency-key-123");
+  });
+
+  it("handles non-JSON API responses gracefully", async () => {
+    const mockFetch = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      text: async () => "Not JSON response",
+    });
+    global.fetch = mockFetch;
+
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-cmd-nonjson",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "execute_manifest_command",
+      argumentsJson: JSON.stringify({
+        entityName: "CommandBoardCard",
+        commandName: "create",
+        args: { title: "Test" },
+      }),
+      callId: "call-cmd-nonjson",
+    });
+
+    expect(result.ok).toBe(true);
+    const data = result.data as { response: string };
+    expect(data.response).toBe("Not JSON response");
   });
 });
