@@ -73,13 +73,15 @@ export function useAvailableTasks() {
 /**
  * Hook to fetch my claimed tasks
  * GET /api/kitchen/tasks/my-tasks
+ * @param options.refetchInterval - Auto-refresh interval in ms (default: false = disabled)
  */
-export function useMyTasks() {
+export function useMyTasks(options?: { refetchInterval?: number | false }) {
   return useQuery({
     queryKey: queryKeys.myTasks,
     queryFn: () => authRequest<MyTasksResponse>("/api/kitchen/tasks/my-tasks"),
     select: (data) => data.tasks,
     staleTime: 1000 * 30, // 30 seconds
+    refetchInterval: options?.refetchInterval ?? false, // Disabled by default
   });
 }
 
