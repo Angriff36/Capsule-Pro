@@ -8,7 +8,7 @@
 
 import { auth } from "@repo/auth/server";
 import type { Event, Venue } from "@repo/database";
-import { database } from "@repo/database";
+import { database, Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { invariant } from "@/app/lib/invariant";
 import { getTenantId } from "@/app/lib/tenant";
@@ -239,8 +239,8 @@ export async function createVenue(input: CreateVenueInput) {
       contactName: input.contactName,
       contactPhone: input.contactPhone,
       contactEmail: input.contactEmail,
-      equipmentList: input.equipmentList ?? null,
-      preferredVendors: input.preferredVendors ?? null,
+      equipmentList: input.equipmentList ?? Prisma.JsonNull,
+      preferredVendors: input.preferredVendors ?? Prisma.JsonNull,
       accessNotes: input.accessNotes,
       cateringNotes: input.cateringNotes,
       layoutImageUrl: input.layoutImageUrl,
@@ -308,10 +308,10 @@ export async function updateVenue(
         contactEmail: input.contactEmail,
       }),
       ...(input.equipmentList !== undefined && {
-        equipmentList: input.equipmentList,
+        equipmentList: input.equipmentList ?? Prisma.JsonNull,
       }),
       ...(input.preferredVendors !== undefined && {
-        preferredVendors: input.preferredVendors,
+        preferredVendors: input.preferredVendors ?? Prisma.JsonNull,
       }),
       ...(input.accessNotes !== undefined && {
         accessNotes: input.accessNotes,

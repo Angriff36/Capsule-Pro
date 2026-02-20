@@ -168,13 +168,13 @@ export const ProjectionNode = memo(function ProjectionNode({
   // Get task status for conditional action buttons
   const taskStatus =
     isTaskEntity && entity?.data
-      ? (entity.data as { status?: string }).status
+      ? ((entity.data as { status?: string }).status ?? null)
       : null;
 
   // Get event status for conditional action buttons
   const eventStatus =
     isEventEntity && entity?.data
-      ? (entity.data as { status?: string }).status
+      ? ((entity.data as { status?: string }).status ?? null)
       : null;
 
   const handleClick = useCallback(() => {
