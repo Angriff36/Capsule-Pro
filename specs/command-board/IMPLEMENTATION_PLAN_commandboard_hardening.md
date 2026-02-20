@@ -67,12 +67,22 @@
 
 ## P1 - Assistant Safety and Quality
 
-- [ ] [high] 5) Assistant tool arg hardening
+- [x] [high] 5) Assistant tool arg hardening
   - Files: `apps/app/app/api/command-board/chat/tool-registry.ts`
   - DoD:
     - Invalid/missing args never throw.
     - Assistant safely falls back to authenticated context.
     - Tenant/board lookup failures return safe typed envelopes.
+  - Evidence:
+    - `safeJsonParse()` (lines 62-73) handles malformed JSON by returning `{}`, allowing tools to proceed with context defaults.
+    - `resolveBoardId()` (lines 82-103) validates UUIDs via regex, falls back to context boardId if arg is invalid.
+    - `executeManifestCommandTool` uses context userId as fallback (lines 307-311).
+    - All tools return typed `AgentToolResult` with `ok`, `summary`, `error?`, `data?` fields.
+    - Top-level try-catch in `executeToolCall()` (lines 434-483) catches unexpected exceptions, reports to Sentry, returns safe error envelope.
+    - 23 tests in `tool-registry-context.test.ts` covering: empty args, malformed JSON, invalid UUIDs, tenant mismatch, database errors, unknown tools, context fallbacks for boardId/userId, API error handling, partial results with warnings.
+  - Learnings:
+    - Implementation was already complete from prior work; DoD fully satisfied without code changes.
+    - Schema `required: []` is intentional since context provides defaults.
 
 - [ ] [high] 6) Assistant response guardrails
   - Files: `apps/app/app/api/command-board/chat/route.ts`, `apps/app/app/api/command-board/chat/tool-registry.ts`
