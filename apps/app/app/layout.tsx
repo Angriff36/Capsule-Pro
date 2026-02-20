@@ -4,6 +4,7 @@ import { AnalyticsProvider } from "@repo/analytics/provider";
 import { DesignSystemProvider } from "@repo/design-system";
 import { Toaster } from "@repo/design-system/components/ui/sonner";
 import { fonts } from "@repo/design-system/lib/fonts";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { ReactNode } from "react";
 import ClerkProviderClient from "./clerk-provider.client";
 import { AuthHeader } from "./components/auth-header";
@@ -41,6 +42,7 @@ const RootLayout = async ({ children }: RootLayoutProperties) => {
           </AnalyticsProvider>
           {Toolbar && <Toolbar />}
           <Toaster />
+          <SpeedInsights />
         </ClerkProviderClient>
       </body>
     </html>
