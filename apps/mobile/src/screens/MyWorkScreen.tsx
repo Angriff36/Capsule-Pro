@@ -96,18 +96,10 @@ export default function MyWorkScreen() {
   // Error state
   if (error) {
     return (
-      <View style={styles.centerContainer}>
-        <Text style={styles.errorIcon}>⚠️</Text>
-        <Text style={styles.errorTitle}>Failed to load</Text>
-        <Text style={styles.errorMessage}>
-          {error instanceof Error ? error.message : "Please try again"}
-        </Text>
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          colors={["#2563eb"]}
-        />
-      </View>
+      <ErrorState
+        message={error instanceof Error ? error.message : "Failed to load your work"}
+        onRetry={() => void refetch()}
+      />
     );
   }
 
@@ -234,22 +226,6 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 16,
     color: "#64748b",
-  },
-  errorIcon: {
-    fontSize: 48,
-    marginBottom: 16,
-  },
-  errorTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#0f172a",
-    marginBottom: 8,
-  },
-  errorMessage: {
-    fontSize: 14,
-    color: "#64748b",
-    textAlign: "center",
-    marginBottom: 24,
   },
   header: {
     flexDirection: "row",
