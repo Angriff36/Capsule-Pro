@@ -1,23 +1,26 @@
-0a. Study `specs/mobile/mobile-kitchen-app_TODO/` using up to 200 parallel Sonnet subagents to fully understand the mobile kitchen app spec.
-0b. Study `specs/mobile/mobile-task-claim-interface_TODO/mobile-task-claim-interface.md` for additional task claiming requirements.
-0c. Study @IMPLEMENTATION_PLAN.md (if present) to understand what's already done.
-0d. Study existing mobile kitchen code using up to 300 parallel Sonnet subagents: - `apps/app/app/(authenticated)/kitchen/mobile/` — existing mobile pages - `apps/app/app/(authenticated)/kitchen/prep-lists/` — existing prep list pages - `apps/api/app/api/kitchen/tasks/` — task APIs - `apps/api/app/api/kitchen/prep-tasks/` — prep task APIs - `apps/api/app/api/kitchen/prep-lists/` — prep list APIs - `apps/api/app/api/kitchen/kitchen-tasks/` — kitchen task command APIs - `packages/database/prisma/schema.prisma` — database models
+0a. Study `specs/mobile/native-mobile-app_TODO/native-mobile-app.md` using up to 200 parallel Sonnet subagents to fully understand the native mobile app spec.
+0b. Study `specs/mobile/native-mobile-app_TODO/IMPLEMENTATION_PLAN.md` (if present) to understand what's already done.
+0c. Study existing code using up to 300 parallel Sonnet subagents: - `apps/mobile/` — existing Expo scaffold (App.tsx, package.json, app.json) - `apps/app/app/(mobile-kitchen)/kitchen/mobile/` — web mobile reference implementation (reuse patterns) - `apps/api/app/api/kitchen/tasks/` — task APIs to connect to - `apps/api/app/api/kitchen/prep-lists/` — prep list APIs to connect to - `apps/api/app/api/kitchen/events/today/` — events API to connect to - React Native best practices for navigation, offline-first, gesture handlers
 
-1. Study @IMPLEMENTATION_PLAN.md (it may be incomplete) and use up to 500 Sonnet subagents to map existing code against the spec. Use an Opus subagent to analyze findings, identify gaps, and create/update @IMPLEMENTATION_PLAN.md with a prioritized list of what remains. Ultrathink. Confirm before claiming anything is missing — search first.
+1. Study `specs/mobile/native-mobile-app_TODO/IMPLEMENTATION_PLAN.md` (it may be incomplete) and use up to 500 Sonnet subagents to map existing code against the spec. Use an Opus subagent to analyze findings, identify gaps, and create/update the IMPLEMENTATION_PLAN with a prioritized list of what remains. Ultrathink. Confirm before claiming anything is missing — search first.
 
-IMPORTANT: Plan only. Do NOT implement anything. Treat `packages/design-system` as the UI component library — use existing components, do not build new ones from scratch.
+IMPORTANT: Plan only. Do NOT implement anything. This is a React Native (Expo) app, not a web app. Use React Native components (View, Text, FlatList, TouchableOpacity) not HTML/DOM. Use React Navigation not Next.js routing. Use AsyncStorage not localStorage. Use Expo Secure Store not browser storage.
 
-ULTIMATE GOAL: A complete mobile-first kitchen app for daily prep workflow at `apps/app/app/(authenticated)/kitchen/mobile/` with:
+ULTIMATE GOAL: A complete **native mobile app** (iOS + Android) for kitchen staff at `apps/mobile/` with:
 
-- Today tab: daily overview of events, urgency indicators, prep status
-- Tasks tab: available tasks with station filter, multi-select bundle claiming, offline support
-- Prep Lists tab: event prep lists with item completion (single tap), swipe gestures, offline queue
-- My Work tab: all claimed tasks/bundles/prep tasks with start/complete/release actions
+- Bottom tab navigation: Today | Tasks | Prep Lists | My Work
+- 5 screens fully implemented and wired to existing kitchen API
+- Offline-first with AsyncStorage queue + sync on reconnect
+- Native gestures (swipe to complete prep items)
+- Optimistic UI updates for instant feedback
+- Can be installed from App Store / Play Store
+- Works via Expo Go for instant dev testing on physical devices
 
-Key new capabilities over what exists:
+Key capabilities:
 
-- Bottom nav shell routing between tabs
-- Task bundle claiming (select multiple → claim at once, atomically)
-- Prep list item interaction (tap/swipe complete, notes, per-station grouping)
-- Daily overview with event urgency
-- My Work unified view across kitchen tasks AND prep tasks
+- React Navigation tab + stack navigators
+- React Query for API state + caching
+- Offline action queue (claim/complete/release tasks while offline)
+- Swipe gestures for prep list item completion
+- Bundle task claiming (select multiple → claim atomically)
+- Pull-to-refresh on all list views
