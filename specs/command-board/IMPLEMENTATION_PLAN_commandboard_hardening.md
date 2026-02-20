@@ -84,12 +84,24 @@
     - Implementation was already complete from prior work; DoD fully satisfied without code changes.
     - Schema `required: []` is intentional since context provides defaults.
 
-- [ ] [high] 6) Assistant response guardrails
-  - Files: `apps/app/app/api/command-board/chat/route.ts`, `apps/app/app/api/command-board/chat/tool-registry.ts`
+- [x] [high] 6) Assistant response guardrails
+  - Files: `apps/app/app/api/command-board/chat/tool-registry.ts`
   - DoD:
     - Assistant never asks for tenant/board IDs.
     - Assistant never returns raw internal error objects/messages.
     - Assistant responses always include actionable next steps.
+  - Evidence:
+    - Added `sanitizeErrorMessage()` function that detects database/Prisma/SQL keywords and replaces with safe generic messages.
+    - Added `redactSensitiveFields()` function that strips tenantId, userId, authCookie, and other sensitive keys from data payloads.
+    - Added `SAFE_ERROR_MESSAGES` map with actionable guidance like "Please try again in a moment."
+    - Removed `tenantId` from `read_board_state` snapshot data entirely.
+    - API error responses now return safe messages like "Conflict detection could not be completed" instead of raw JSON.
+    - `execute_manifest_command` success data no longer exposes `idempotencyKey`.
+    - 6 new guardrail tests covering: tenantId redaction, database error sanitization, API error sanitization, userId non-exposure, actionable error messages.
+  - Learnings:
+    - System prompt already prevents assistant from asking for IDs (route.ts lines 21-31).
+    - `normalizeStructuredAgentResponse()` in agent-loop.ts already generates `nextSteps` array.
+    - Sentry still receives full error details for observability; only user-facing responses are sanitized.
 
 - [ ] [medium] 7) AI tool timeout/retry policy
   - Files: `apps/app/app/api/command-board/chat/agent-loop.ts`
