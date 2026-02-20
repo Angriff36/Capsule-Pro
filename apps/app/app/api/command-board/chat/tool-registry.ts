@@ -72,20 +72,152 @@ function safeJsonParse(input: string): Record<string, unknown> {
   return {};
 }
 
-function assertTenant(
-  inputTenantId: unknown,
-  contextTenantId: string
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+function isUuid(value: string): boolean {
+  return UUID_REGEX.test(value);
+}
+
+// Error codes for safe user-facing messages
+type SafeErrorCode =
+  | "BOARD_NOT_FOUND"
+  | "BOARD_UNAVAILABLE"
+  | "CONFLICT_CHECK_FAILED"
+  | "COMMAND_FAILED"
+  | "INVALID_REQUEST"
+  | "PERMISSION_DENIED"
+  | "SERVICE_UNAVAILABLE"
+  | "UNKNOWN_ERROR";
+
+// Map HTTP status codes to safe error codes
+function httpStatusToErrorCode(status: number): SafeErrorCode {
+  if (status === 401 || status === 403) return "PERMISSION_DENIED";
+  if (status === 404) return "BOARD_NOT_FOUND";
+  if (status >= 500) return "SERVICE_UNAVAILABLE";
+  if (status >= 400) return "INVALID_REQUEST";
+  return "UNKNOWN_ERROR";
+}
+
+// Map error codes to safe, actionable user messages
+const SAFE_ERROR_MESSAGES: Record<SafeErrorCode, string> = {
+  BOARD_NOT_FOUND: "The requested board could not be found. It may have been deleted or you may not have access.",
+  BOARD_UNAVAILABLE: "The board is temporarily unavailable. Please try again.",
+  CONFLICT_CHECK_FAILED: "Conflict detection could not be completed. Other operations can still proceed.",
+  COMMAND_FAILED: "The requested action could not be completed. Please try again.",
+  INVALID_REQUEST: "The request format was invalid. Please rephrase and try again.",
+  PERMISSION_DENIED: "You do not have permission to perform this action.",
+  SERVICE_UNAVAILABLE: "The service is temporarily unavailable. Please try again in a moment.",
+  UNKNOWN_ERROR: "An unexpected error occurred. Please try again.",
+};
+
+// Sanitize error messages - never expose raw internal errors, UUIDs, or stack traces
+function sanitizeErrorMessage(
+  rawMessage: string,
+  fallbackCode: SafeErrorCode = "UNKNOWN_ERROR"
+): { code: SafeErrorCode; message: string } {
+  // If message contains database/Prisma keywords, use generic message
+  const dbKeywords = [
+    "PrismaClient",
+    "database",
+    "connection",
+    "timeout",
+    "ECONNREFUSED",
+    "ETIMEDOUT",
+    "deadlock",
+    "constraint",
+    "violates",
+    "SQL",
+    "query",
+    "table",
+    "column",
+  ];
+
+  const lowerMessage = rawMessage.toLowerCase();
+  if (dbKeywords.some((kw) => lowerMessage.includes(kw.toLowerCase()))) {
+    return { code: "SERVICE_UNAVAILABLE", message: SAFE_ERROR_MESSAGES.SERVICE_UNAVAILABLE };
+  }
+
+  // If message contains UUIDs or looks like internal IDs, sanitize
+  if (UUID_REGEX.test(rawMessage) || rawMessage.includes("tenant_") || rawMessage.includes("id:")) {
+    return { code: fallbackCode, message: SAFE_ERROR_MESSAGES[fallbackCode] };
+  }
+
+  // For known safe patterns, pass through
+  const knownSafePatterns = [
+    /^boardId is required$/i,
+    /^board .* not found$/i,
+    /^unsupported manifest command route/i,
+    /^unknown tool:/i,
+  ];
+
+  if (knownSafePatterns.some((pattern) => pattern.test(rawMessage))) {
+    return { code: fallbackCode, message: rawMessage };
+  }
+
+  // Default: use safe generic message
+  return { code: fallbackCode, message: SAFE_ERROR_MESSAGES[fallbackCode] };
+}
+
+// Redact sensitive fields from data objects
+function redactSensitiveFields<T>(data: T): T {
+  if (data === null || data === undefined) {
+    return data;
+  }
+
+  if (typeof data !== "object") {
+    return data;
+  }
+
+  if (Array.isArray(data)) {
+    return data.map((item) => redactSensitiveFields(item)) as T;
+  }
+
+  const SENSITIVE_KEYS = new Set([
+    "tenantId",
+    "userId",
+    "authCookie",
+    "password",
+    "token",
+    "secret",
+    "apiKey",
+    "accessToken",
+    "refreshToken",
+  ]);
+
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(data as Record<string, unknown>)) {
+    if (SENSITIVE_KEYS.has(key)) {
+      // Redact sensitive fields
+      result[key] = "[REDACTED]";
+    } else if (typeof value === "object" && value !== null) {
+      result[key] = redactSensitiveFields(value);
+    } else {
+      result[key] = value;
+    }
+  }
+
+  return result as T;
+}
+
+function resolveBoardId(
+  args: Record<string, unknown>,
+  context: ManifestAgentContext
 ): string | null {
-  if (inputTenantId === undefined || inputTenantId === null) {
-    return null;
+  const argBoardId =
+    typeof args.boardId === "string" && args.boardId.length > 0
+      ? args.boardId
+      : null;
+  if (argBoardId && isUuid(argBoardId)) {
+    return argBoardId;
   }
 
-  if (typeof inputTenantId !== "string" || inputTenantId.length === 0) {
-    return "tenantId must be a non-empty string when provided";
-  }
-
-  if (inputTenantId !== contextTenantId) {
-    return "tenantId does not match authenticated tenant";
+  const contextBoardId =
+    typeof context.boardId === "string" && context.boardId.length > 0
+      ? context.boardId
+      : null;
+  if (contextBoardId && isUuid(contextBoardId)) {
+    return contextBoardId;
   }
 
   return null;
@@ -95,15 +227,7 @@ async function readBoardStateTool(
   args: Record<string, unknown>,
   context: ManifestAgentContext
 ): Promise<AgentToolResult> {
-  const tenantError = assertTenant(args.tenantId, context.tenantId);
-  if (tenantError) {
-    return { ok: false, summary: tenantError, error: tenantError };
-  }
-
-  const boardId =
-    typeof args.boardId === "string" && args.boardId.length > 0
-      ? args.boardId
-      : context.boardId;
+  const boardId = resolveBoardId(args, context);
 
   if (!boardId) {
     return {
@@ -131,10 +255,11 @@ async function readBoardStateTool(
   });
 
   if (!board) {
+    const sanitized = sanitizeErrorMessage("Board not found", "BOARD_NOT_FOUND");
     return {
       ok: false,
-      summary: `Board ${boardId} not found`,
-      error: `Board ${boardId} not found`,
+      summary: sanitized.message,
+      error: sanitized.message,
     };
   }
 
@@ -168,7 +293,6 @@ async function readBoardStateTool(
   );
 
   const snapshot = {
-    tenantId: context.tenantId,
     board,
     projections,
     projectionSummary: {
@@ -181,7 +305,7 @@ async function readBoardStateTool(
   return {
     ok: true,
     summary: `Loaded board snapshot with ${projections.length} projections`,
-    data: snapshot,
+    data: redactSensitiveFields(snapshot),
   };
 }
 
@@ -189,15 +313,7 @@ async function detectConflictsTool(
   args: Record<string, unknown>,
   context: ManifestAgentContext
 ): Promise<AgentToolResult> {
-  const tenantError = assertTenant(args.tenantId, context.tenantId);
-  if (tenantError) {
-    return { ok: false, summary: tenantError, error: tenantError };
-  }
-
-  const boardId =
-    typeof args.boardId === "string" && args.boardId.length > 0
-      ? args.boardId
-      : context.boardId;
+  const boardId = resolveBoardId(args, context);
 
   if (!boardId) {
     return {
@@ -237,14 +353,12 @@ async function detectConflictsTool(
   }
 
   if (!response.ok) {
+    const errorCode = httpStatusToErrorCode(response.status);
+    const safeMessage = SAFE_ERROR_MESSAGES.CONFLICT_CHECK_FAILED;
     return {
       ok: false,
-      summary: `detect_conflicts failed with ${response.status}`,
-      error:
-        typeof parsedBody === "string"
-          ? parsedBody
-          : JSON.stringify(parsedBody),
-      data: parsedBody,
+      summary: safeMessage,
+      error: safeMessage,
     };
   }
 
@@ -256,7 +370,7 @@ async function detectConflictsTool(
   return {
     ok: true,
     summary: `Detected ${conflicts.length} conflicts`,
-    data: parsedBody,
+    data: redactSensitiveFields(parsedBody),
   };
 }
 
@@ -265,11 +379,6 @@ async function executeManifestCommandTool(
   context: ManifestAgentContext,
   callId: string
 ): Promise<AgentToolResult> {
-  const tenantError = assertTenant(args.tenantId, context.tenantId);
-  if (tenantError) {
-    return { ok: false, summary: tenantError, error: tenantError };
-  }
-
   const entityName = typeof args.entityName === "string" ? args.entityName : "";
   const commandName =
     typeof args.commandName === "string" ? args.commandName : "";
@@ -343,29 +452,22 @@ async function executeManifestCommandTool(
   }
 
   if (!response.ok) {
+    const errorCode = httpStatusToErrorCode(response.status);
+    const safeMessage = SAFE_ERROR_MESSAGES.COMMAND_FAILED;
     return {
       ok: false,
-      summary: `${key} failed with ${response.status}`,
-      error:
-        typeof parsedResponse === "string"
-          ? parsedResponse
-          : JSON.stringify(parsedResponse),
-      data: {
-        routePath,
-        idempotencyKey,
-        response: parsedResponse,
-      },
+      summary: safeMessage,
+      error: safeMessage,
     };
   }
 
   return {
     ok: true,
     summary: `${key} executed successfully`,
-    data: {
+    data: redactSensitiveFields({
       routePath,
-      idempotencyKey,
       response: parsedResponse,
-    },
+    }),
   };
 }
 
@@ -378,7 +480,6 @@ const TOOL_DEFINITIONS: ToolDefinition[] = [
     parameters: {
       type: "object",
       properties: {
-        tenantId: { type: "string" },
         boardId: { type: "string" },
       },
       required: [],
@@ -393,7 +494,6 @@ const TOOL_DEFINITIONS: ToolDefinition[] = [
     parameters: {
       type: "object",
       properties: {
-        tenantId: { type: "string" },
         boardId: { type: "string" },
         timeRange: {
           type: "object",
@@ -421,7 +521,6 @@ const TOOL_DEFINITIONS: ToolDefinition[] = [
     parameters: {
       type: "object",
       properties: {
-        tenantId: { type: "string" },
         userId: { type: "string" },
         entityName: { type: "string" },
         instanceId: { type: "string" },
@@ -467,10 +566,12 @@ export function createManifestToolRegistry(context: ManifestAgentContext) {
           error: `Unknown tool: ${call.name}`,
         };
       } catch (error) {
-        const message =
+        const rawMessage =
           error instanceof Error
             ? error.message
             : "Unknown tool execution error";
+
+        // Capture full error for observability
         captureException(error, {
           tags: {
             route: "command-board-chat",
@@ -484,14 +585,16 @@ export function createManifestToolRegistry(context: ManifestAgentContext) {
 
         log.error("[command-board-chat] Tool execution failed", {
           toolName: call.name,
-          error: message,
+          error: rawMessage,
           correlationId: context.correlationId,
         });
 
+        // Sanitize error for user-facing response
+        const sanitized = sanitizeErrorMessage(rawMessage, "UNKNOWN_ERROR");
         return {
           ok: false,
-          summary: `Tool ${call.name} failed`,
-          error: message,
+          summary: sanitized.message,
+          error: sanitized.message,
         };
       }
     },

@@ -222,8 +222,11 @@ describe("command board chat tool registry context defaults", () => {
     });
 
     expect(result.ok).toBe(false);
-    expect(result.error).toBe(`Board ${boardId} not found`);
-    expect(result.summary).toBe(`Board ${boardId} not found`);
+    // Error message is sanitized - should not contain UUID
+    expect(result.error).not.toContain(boardId);
+    expect(result.summary).not.toContain(boardId);
+    // Should contain actionable guidance
+    expect(result.error).toContain("could not be found");
   });
 
   it("handles database errors gracefully during board lookup", async () => {
@@ -248,8 +251,11 @@ describe("command board chat tool registry context defaults", () => {
     });
 
     expect(result.ok).toBe(false);
-    expect(result.error).toBe("Connection timeout");
-    expect(result.summary).toContain("failed");
+    // Database errors are sanitized - should not expose internal error
+    expect(result.error).not.toContain("Connection timeout");
+    expect(result.error).not.toContain("timeout");
+    // Should provide safe actionable guidance
+    expect(result.summary).toContain("unavailable");
   });
 
   it("handles database errors during projection lookup", async () => {
@@ -289,7 +295,11 @@ describe("command board chat tool registry context defaults", () => {
     });
 
     expect(result.ok).toBe(false);
-    expect(result.error).toBe("Query timeout");
+    // Database errors are sanitized - should not expose internal error
+    expect(result.error).not.toContain("Query timeout");
+    expect(result.error).not.toContain("timeout");
+    // Should provide safe actionable guidance
+    expect(result.summary).toContain("unavailable");
   });
 
   it("handles malformed JSON in argumentsJson gracefully", async () => {
@@ -440,8 +450,11 @@ describe("command board chat tool registry - detect_conflicts tool", () => {
     });
 
     expect(result.ok).toBe(false);
-    expect(result.summary).toContain("401");
-    expect(result.data).toBeDefined();
+    // Error message is sanitized - should not expose raw API response
+    expect(result.error).not.toContain("UNAUTHORIZED");
+    expect(result.error).not.toContain("401");
+    // Should contain safe actionable guidance (case insensitive check)
+    expect(result.summary.toLowerCase()).toContain("conflict");
   });
 
   it("returns empty conflicts array when no conflicts detected", async () => {
@@ -622,10 +635,11 @@ describe("command board chat tool registry - execute_manifest_command tool", () 
     });
 
     expect(result.ok).toBe(false);
-    expect(result.summary).toContain("400");
-    const data = result.data as { routePath: string; idempotencyKey: string };
-    expect(data.routePath).toBe("/api/command-board/cards/commands/create");
-    expect(data.idempotencyKey).toBeDefined();
+    // Error message is sanitized - should not expose raw API response
+    expect(result.error).not.toContain("VALIDATION_ERROR");
+    expect(result.error).not.toContain("400");
+    // Should contain safe actionable guidance
+    expect(result.summary).toContain("could not be completed");
   });
 
   it("executes manifest command successfully", async () => {
@@ -656,7 +670,7 @@ describe("command board chat tool registry - execute_manifest_command tool", () 
 
     expect(result.ok).toBe(true);
     expect(result.summary).toBe("CommandBoardCard:create executed successfully");
-    const data = result.data as { routePath: string; idempotencyKey: string; response: { ok: boolean } };
+    const data = result.data as { routePath: string; response: { ok: boolean } };
     expect(data.routePath).toBe("/api/command-board/cards/commands/create");
     expect(data.response.ok).toBe(true);
 
@@ -756,5 +770,187 @@ describe("command board chat tool registry - execute_manifest_command tool", () 
     expect(result.ok).toBe(true);
     const data = result.data as { response: string };
     expect(data.response).toBe("Not JSON response");
+  });
+});
+
+// P1-6 Response guardrails tests
+describe("command board chat tool registry - response guardrails", () => {
+  const boardId = "2957779c-9732-4060-86fd-c5b2be03cbee";
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("never exposes tenantId in read_board_state success response", async () => {
+    const { database } = await import("@repo/database");
+
+    vi.mocked(database.commandBoard.findFirst).mockResolvedValueOnce({
+      id: boardId,
+      tenantId: "tenant-1",
+      eventId: null,
+      name: "Ops Board",
+      description: null,
+      status: "active",
+      isTemplate: false,
+      scope: null,
+      autoPopulate: false,
+      createdAt: new Date("2026-02-01T00:00:00.000Z"),
+      updatedAt: new Date("2026-02-01T00:00:00.000Z"),
+      deletedAt: null,
+      tags: [],
+    });
+    vi.mocked(database.boardProjection.findMany).mockResolvedValueOnce([]);
+
+    const registry = createManifestToolRegistry({
+      tenantId: "sensitive-tenant-id",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-1",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "read_board_state",
+      argumentsJson: "{}",
+      callId: "call-1",
+    });
+
+    expect(result.ok).toBe(true);
+    // Verify tenantId is not exposed in data (we removed it from snapshot)
+    const data = result.data as { tenantId?: string; board?: { id: string } };
+    expect(data.tenantId).toBeUndefined();
+    // Verify tenantId is not in summary
+    expect(result.summary).not.toContain("sensitive-tenant-id");
+  });
+
+  it("never exposes raw database errors to users", async () => {
+    const { database } = await import("@repo/database");
+
+    vi.mocked(database.commandBoard.findFirst).mockRejectedValueOnce(
+      new Error("PrismaClientKnownRequestError: Invalid `database.commandBoard.findFirst()` invocation. Connection refused.")
+    );
+
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-db-error",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "read_board_state",
+      argumentsJson: "{}",
+      callId: "call-db-error",
+    });
+
+    expect(result.ok).toBe(false);
+    // Should not expose Prisma/database error details
+    expect(result.error).not.toContain("PrismaClient");
+    expect(result.error).not.toContain("database");
+    expect(result.error).not.toContain("Connection refused");
+    // Should provide safe actionable guidance
+    expect(result.summary).toContain("unavailable");
+  });
+
+  it("never exposes raw API error responses", async () => {
+    const mockFetch = vi.fn().mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      text: async () => JSON.stringify({
+        code: "INTERNAL_ERROR",
+        message: "PostgreSQL error: relation \"tenant_foo\" does not exist",
+        stack: "Error at line 123...",
+      }),
+    });
+    global.fetch = mockFetch;
+
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-api-error",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "detect_conflicts",
+      argumentsJson: "{}",
+      callId: "call-api-error",
+    });
+
+    expect(result.ok).toBe(false);
+    // Should not expose raw API error details
+    expect(result.error).not.toContain("PostgreSQL");
+    expect(result.error).not.toContain("relation");
+    expect(result.error).not.toContain("stack");
+    // Should provide safe actionable guidance (case insensitive check)
+    expect(result.summary.toLowerCase()).toContain("conflict");
+  });
+
+  it("never exposes userId in execute_manifest_command responses", async () => {
+    const mockFetch = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      text: async () => JSON.stringify({ ok: true }),
+    });
+    global.fetch = mockFetch;
+
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "sensitive-user-id",
+      boardId,
+      correlationId: "corr-userid",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "execute_manifest_command",
+      argumentsJson: JSON.stringify({
+        entityName: "CommandBoardCard",
+        commandName: "create",
+        args: { title: "Test" },
+      }),
+      callId: "call-userid",
+    });
+
+    expect(result.ok).toBe(true);
+    // Summary should not contain userId
+    expect(result.summary).not.toContain("sensitive-user-id");
+  });
+
+  it("always provides actionable next steps on error", async () => {
+    const { database } = await import("@repo/database");
+
+    vi.mocked(database.commandBoard.findFirst).mockRejectedValueOnce(
+      new Error("Some internal error")
+    );
+
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-actionable",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "read_board_state",
+      argumentsJson: "{}",
+      callId: "call-actionable",
+    });
+
+    expect(result.ok).toBe(false);
+    // Error message should be actionable (not just "error occurred")
+    expect(result.error?.length ?? 0).toBeGreaterThan(10);
+    expect(result.summary.length).toBeGreaterThan(10);
+    // Should suggest some action
+    const hasActionableWords =
+      result.summary.toLowerCase().includes("try") ||
+      result.summary.toLowerCase().includes("check") ||
+      result.summary.toLowerCase().includes("unavailable") ||
+      result.summary.toLowerCase().includes("not found") ||
+      result.summary.toLowerCase().includes("could not");
+    expect(hasActionableWords).toBe(true);
   });
 });
