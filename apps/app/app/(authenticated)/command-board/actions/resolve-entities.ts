@@ -186,7 +186,7 @@ async function resolvePrepTasks(
       id: task.id,
       name: task.name,
       status: task.status,
-      priority: String(task.priority),
+      priority: task.priority != null ? String(task.priority) : null,
       dueByDate: task.dueByDate,
       eventTitle: eventTitleMap.get(task.eventId) ?? null,
       eventId: task.eventId,
@@ -229,7 +229,7 @@ async function resolveKitchenTasks(
       id: task.id,
       title: task.title,
       status: task.status,
-      priority: String(task.priority),
+      priority: task.priority != null ? String(task.priority) : null,
       dueDate: task.dueDate,
     };
 

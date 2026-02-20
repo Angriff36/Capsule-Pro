@@ -156,11 +156,20 @@
     - Radix UI Select treats `value=""` as a valid selected value, not "no selection" - requires matching SelectItem.
     - Pattern: Use sentinel value (e.g., `"__clear__"`) as both Select value fallback and SelectItem value for clear/reset option.
 
-- [ ] [medium] 10) Projection normalization boundary pass
-  - Files: `apps/app/app/(authenticated)/command-board/actions/projections.ts`
+- [x] [medium] 10) Projection normalization boundary pass
+  - Files: `apps/app/app/(authenticated)/command-board/actions/projections.ts`, `apps/app/app/(authenticated)/command-board/actions/resolve-entities.ts`
   - DoD:
     - Missing/null fields normalized at action boundary.
     - Card rendering never crashes due to partial payloads.
+  - Evidence:
+    - `dbToProjection()` in projections.ts now provides defaults for all numeric/boolean fields (positionX=0, positionY=0, width=280, height=180, zIndex=0, collapsed=false, pinned=false)
+    - Input type for dbToProjection changed to accept `| null` on all fields that could potentially be null from DB
+    - `resolvePrepTasks` and `resolveKitchenTasks` fixed to use `priority != null ? String(priority) : null` instead of bare `String(priority)` which converted null to "null" string
+    - 17 tests in `apps/app/__tests__/command-board/projection-normalization.test.ts` covering: null positionX/Y/width/height/zIndex, null collapsed/pinned, zero value preservation, priority null handling
+  - Learnings:
+    - DB stores priority as `Int` (not string), so conversion to string is needed but must check null first
+    - Bare `String(null)` produces "null" string which breaks priorityConfig lookups in cards
+    - React Flow crashes with NaN if width/height are null; defensive defaults at action boundary prevent this
 
 - [x] [medium] 11) Card fallback completeness
   - Files: `apps/app/app/(authenticated)/command-board/nodes/cards/`

@@ -10,22 +10,29 @@ import type { EntityType } from "../types/entities";
 // Helpers
 // ============================================================================
 
-/** Map a Prisma BoardProjection row to the BoardProjection domain type */
+/** Default values for projection fields if DB returns null */
+const DEFAULT_POSITION_X = 0;
+const DEFAULT_POSITION_Y = 0;
+const DEFAULT_WIDTH = 280;
+const DEFAULT_HEIGHT = 180;
+const DEFAULT_Z_INDEX = 0;
+
+/** Map a Prisma BoardProjection row to the BoardProjection domain type with defensive normalization */
 function dbToProjection(row: {
   id: string;
   tenantId: string;
   boardId: string;
   entityType: string;
   entityId: string;
-  positionX: number;
-  positionY: number;
-  width: number;
-  height: number;
-  zIndex: number;
+  positionX: number | null;
+  positionY: number | null;
+  width: number | null;
+  height: number | null;
+  zIndex: number | null;
   colorOverride: string | null;
-  collapsed: boolean;
+  collapsed: boolean | null;
   groupId: string | null;
-  pinned: boolean;
+  pinned: boolean | null;
 }): BoardProjection {
   return {
     id: row.id,
@@ -33,15 +40,15 @@ function dbToProjection(row: {
     boardId: row.boardId,
     entityType: row.entityType as EntityType,
     entityId: row.entityId,
-    positionX: row.positionX,
-    positionY: row.positionY,
-    width: row.width,
-    height: row.height,
-    zIndex: row.zIndex,
+    positionX: row.positionX ?? DEFAULT_POSITION_X,
+    positionY: row.positionY ?? DEFAULT_POSITION_Y,
+    width: row.width ?? DEFAULT_WIDTH,
+    height: row.height ?? DEFAULT_HEIGHT,
+    zIndex: row.zIndex ?? DEFAULT_Z_INDEX,
     colorOverride: row.colorOverride,
-    collapsed: row.collapsed,
+    collapsed: row.collapsed ?? false,
     groupId: row.groupId,
-    pinned: row.pinned,
+    pinned: row.pinned ?? false,
   };
 }
 
