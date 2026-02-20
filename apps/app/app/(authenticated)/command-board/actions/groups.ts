@@ -204,156 +204,280 @@ export interface UpdateGroupInput {
   height?: number;
 }
 
+export interface UpdateGroupResult {
+  success: boolean;
+  group?: BoardGroup;
+  error?: string;
+  groupNotFound?: boolean;
+}
+
+export interface ToggleCollapseResult {
+  success: boolean;
+  group?: BoardGroup;
+  error?: string;
+  groupNotFound?: boolean;
+}
+
 /** Update a group's properties */
 export async function updateGroup(
   groupId: string,
   input: UpdateGroupInput
-): Promise<BoardGroup> {
-  const tenantId = await requireTenantId();
+): Promise<UpdateGroupResult> {
+  try {
+    const tenantId = await requireTenantId();
 
-  const updated = await database.commandBoardGroup.update({
-    where: {
-      tenantId_id: {
-        tenantId,
-        id: groupId,
+    const updated = await database.commandBoardGroup.update({
+      where: {
+        tenantId_id: {
+          tenantId,
+          id: groupId,
+        },
+        deletedAt: null,
       },
-    },
-    data: {
-      ...(input.name !== undefined && { name: input.name.trim() }),
-      ...(input.color !== undefined && { color: input.color }),
-      ...(input.collapsed !== undefined && { collapsed: input.collapsed }),
-      ...(input.positionX !== undefined && {
-        positionX: Math.round(input.positionX),
-      }),
-      ...(input.positionY !== undefined && {
-        positionY: Math.round(input.positionY),
-      }),
-      ...(input.width !== undefined && { width: Math.round(input.width) }),
-      ...(input.height !== undefined && { height: Math.round(input.height) }),
-    },
-  });
+      data: {
+        ...(input.name !== undefined && { name: input.name.trim() }),
+        ...(input.color !== undefined && { color: input.color }),
+        ...(input.collapsed !== undefined && { collapsed: input.collapsed }),
+        ...(input.positionX !== undefined && {
+          positionX: Math.round(input.positionX),
+        }),
+        ...(input.positionY !== undefined && {
+          positionY: Math.round(input.positionY),
+        }),
+        ...(input.width !== undefined && { width: Math.round(input.width) }),
+        ...(input.height !== undefined && { height: Math.round(input.height) }),
+      },
+    });
 
-  revalidatePath(`/command-board/${updated.boardId}`);
+    revalidatePath(`/command-board/${updated.boardId}`);
 
-  return dbToGroup(updated);
+    return { success: true, group: dbToGroup(updated) };
+  } catch (error) {
+    // Check if it's a "not found" error from Prisma
+    if (error instanceof Error && error.message.includes("No record found")) {
+      return { success: false, groupNotFound: true, error: "Group not found" };
+    }
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to update group",
+    };
+  }
 }
 
 /** Toggle the collapsed state of a group */
 export async function toggleGroupCollapse(
   groupId: string
-): Promise<BoardGroup> {
-  const tenantId = await requireTenantId();
+): Promise<ToggleCollapseResult> {
+  try {
+    const tenantId = await requireTenantId();
 
-  const current = await database.commandBoardGroup.findUnique({
-    where: {
-      tenantId_id: {
-        tenantId,
-        id: groupId,
+    const current = await database.commandBoardGroup.findUnique({
+      where: {
+        tenantId_id: {
+          tenantId,
+          id: groupId,
+        },
+        deletedAt: null,
       },
-    },
-    select: { collapsed: true, boardId: true },
-  });
+      select: { collapsed: true, boardId: true },
+    });
 
-  if (!current) {
-    throw new Error("Group not found");
+    if (!current) {
+      return { success: false, groupNotFound: true, error: "Group not found" };
+    }
+
+    const updated = await database.commandBoardGroup.update({
+      where: {
+        tenantId_id: {
+          tenantId,
+          id: groupId,
+        },
+      },
+      data: {
+        collapsed: !current.collapsed,
+      },
+    });
+
+    revalidatePath(`/command-board/${current.boardId}`);
+
+    return { success: true, group: dbToGroup(updated) };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to toggle group collapse",
+    };
   }
-
-  const updated = await database.commandBoardGroup.update({
-    where: {
-      tenantId_id: {
-        tenantId,
-        id: groupId,
-      },
-    },
-    data: {
-      collapsed: !current.collapsed,
-    },
-  });
-
-  revalidatePath(`/command-board/${current.boardId}`);
-
-  return dbToGroup(updated);
 }
 
 // ============================================================================
 // Delete
 // ============================================================================
 
-/** Soft-delete a group and ungroup all its projections */
-export async function deleteGroup(groupId: string): Promise<void> {
-  const tenantId = await requireTenantId();
+export interface DeleteGroupResult {
+  success: boolean;
+  error?: string;
+  /** Group was not found or already deleted */
+  groupNotFound?: boolean;
+}
 
-  // First, ungroup all projections in this group
-  await database.boardProjection.updateMany({
-    where: {
-      tenantId,
-      groupId,
-    },
-    data: {
-      groupId: null,
-    },
-  });
+/** Soft-delete a group and ungroup all its projections (idempotent) */
+export async function deleteGroup(groupId: string): Promise<DeleteGroupResult> {
+  try {
+    const tenantId = await requireTenantId();
 
-  // Then soft-delete the group
-  const group = await database.commandBoardGroup.update({
-    where: {
-      tenantId_id: {
+    // Check if group exists and is not already deleted
+    const existingGroup = await database.commandBoardGroup.findFirst({
+      where: {
         tenantId,
         id: groupId,
+        deletedAt: null,
       },
-    },
-    data: {
-      deletedAt: new Date(),
-    },
-    select: { boardId: true },
-  });
+      select: { id: true, boardId: true },
+    });
 
-  revalidatePath(`/command-board/${group.boardId}`);
+    if (!existingGroup) {
+      // Idempotent: group already deleted or doesn't exist
+      return { success: true, groupNotFound: true };
+    }
+
+    // First, ungroup all projections in this group
+    await database.boardProjection.updateMany({
+      where: {
+        tenantId,
+        groupId,
+      },
+      data: {
+        groupId: null,
+      },
+    });
+
+    // Then soft-delete the group
+    await database.commandBoardGroup.update({
+      where: {
+        tenantId_id: {
+          tenantId,
+          id: groupId,
+        },
+      },
+      data: {
+        deletedAt: new Date(),
+      },
+      select: { boardId: true },
+    });
+
+    revalidatePath(`/command-board/${existingGroup.boardId}`);
+
+    return { success: true };
+  } catch (error) {
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : "Failed to delete group",
+    };
+  }
 }
 
 // ============================================================================
 // Card/Projection Management
 // ============================================================================
 
-/** Add projections to a group */
+export interface AddProjectionsResult {
+  success: boolean;
+  count: number;
+  error?: string;
+  /** Group was not found or is deleted */
+  groupNotFound?: boolean;
+}
+
+export interface RemoveProjectionsResult {
+  success: boolean;
+  count: number;
+  error?: string;
+}
+
+/** Add projections to a group (idempotent - validates group exists first) */
 export async function addProjectionsToGroup(
   groupId: string,
   projectionIds: string[]
-): Promise<{ count: number }> {
-  const tenantId = await requireTenantId();
+): Promise<AddProjectionsResult> {
+  try {
+    if (!projectionIds || projectionIds.length === 0) {
+      return { success: true, count: 0 };
+    }
 
-  const result = await database.boardProjection.updateMany({
-    where: {
-      tenantId,
-      id: { in: projectionIds },
-      deletedAt: null,
-    },
-    data: {
-      groupId,
-    },
-  });
+    const tenantId = await requireTenantId();
 
-  return { count: result.count };
+    // Validate that the group exists and is not deleted
+    const group = await database.commandBoardGroup.findFirst({
+      where: {
+        tenantId,
+        id: groupId,
+        deletedAt: null,
+      },
+      select: { id: true },
+    });
+
+    if (!group) {
+      return {
+        success: false,
+        count: 0,
+        groupNotFound: true,
+        error: "Group not found or has been deleted",
+      };
+    }
+
+    // Idempotent: updateMany is naturally idempotent - setting groupId to the same value has no effect
+    const result = await database.boardProjection.updateMany({
+      where: {
+        tenantId,
+        id: { in: projectionIds },
+        deletedAt: null,
+      },
+      data: {
+        groupId,
+      },
+    });
+
+    return { success: true, count: result.count };
+  } catch (error) {
+    return {
+      success: false,
+      count: 0,
+      error: error instanceof Error ? error.message : "Failed to add projections to group",
+    };
+  }
 }
 
-/** Remove projections from their group (ungroup) */
+/** Remove projections from their group (ungroup) - idempotent operation */
 export async function removeProjectionsFromGroup(
   projectionIds: string[]
-): Promise<{ count: number }> {
-  const tenantId = await requireTenantId();
+): Promise<RemoveProjectionsResult> {
+  try {
+    if (!projectionIds || projectionIds.length === 0) {
+      return { success: true, count: 0 };
+    }
 
-  const result = await database.boardProjection.updateMany({
-    where: {
-      tenantId,
-      id: { in: projectionIds },
-      deletedAt: null,
-    },
-    data: {
-      groupId: null,
-    },
-  });
+    const tenantId = await requireTenantId();
 
-  return { count: result.count };
+    // Idempotent: setting groupId to null is safe even if already null
+    const result = await database.boardProjection.updateMany({
+      where: {
+        tenantId,
+        id: { in: projectionIds },
+        deletedAt: null,
+      },
+      data: {
+        groupId: null,
+      },
+    });
+
+    return { success: true, count: result.count };
+  } catch (error) {
+    return {
+      success: false,
+      count: 0,
+      error: error instanceof Error ? error.message : "Failed to remove projections from group",
+    };
+  }
 }
 
 /** Get the group ID for a set of projections (returns null if they don't all share the same group) */
@@ -384,4 +508,85 @@ export async function getSharedGroupForProjections(
 
   const groupId = Array.from(groupIds)[0];
   return groupId ?? null;
+}
+
+// ============================================================================
+// Orphan Cleanup
+// ============================================================================
+
+export interface CleanupOrphansResult {
+  success: boolean;
+  /** Number of projections that had stale groupIds cleared */
+  cleanedCount: number;
+  error?: string;
+}
+
+/**
+ * Clean up orphan projections - projections that reference a groupId
+ * that no longer exists or has been soft-deleted.
+ *
+ * This should be called periodically or when loading a board to ensure
+ * projections don't reference invalid groups.
+ */
+export async function cleanupOrphanProjections(
+  boardId: string
+): Promise<CleanupOrphansResult> {
+  try {
+    const tenantId = await requireTenantId();
+
+    // Find all projections on this board that have a groupId
+    const projectionsWithGroups = await database.boardProjection.findMany({
+      where: {
+        tenantId,
+        boardId,
+        deletedAt: null,
+        groupId: { not: null },
+      },
+      select: { id: true, groupId: true },
+    });
+
+    if (projectionsWithGroups.length === 0) {
+      return { success: true, cleanedCount: 0 };
+    }
+
+    // Get all valid (non-deleted) group IDs for this board
+    const validGroups = await database.commandBoardGroup.findMany({
+      where: {
+        tenantId,
+        boardId,
+        deletedAt: null,
+      },
+      select: { id: true },
+    });
+
+    const validGroupIds = new Set(validGroups.map((g) => g.id));
+
+    // Find projections with stale groupIds
+    const staleProjectionIds = projectionsWithGroups
+      .filter((p) => p.groupId && !validGroupIds.has(p.groupId))
+      .map((p) => p.id);
+
+    if (staleProjectionIds.length === 0) {
+      return { success: true, cleanedCount: 0 };
+    }
+
+    // Clear the stale groupIds
+    await database.boardProjection.updateMany({
+      where: {
+        tenantId,
+        id: { in: staleProjectionIds },
+      },
+      data: {
+        groupId: null,
+      },
+    });
+
+    return { success: true, cleanedCount: staleProjectionIds.length };
+  } catch (error) {
+    return {
+      success: false,
+      cleanedCount: 0,
+      error: error instanceof Error ? error.message : "Failed to cleanup orphan projections",
+    };
+  }
 }

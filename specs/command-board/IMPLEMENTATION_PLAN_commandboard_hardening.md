@@ -234,11 +234,25 @@
     - assignedTo references external Nowsta employees; no Prisma model exists for direct validation
     - Validation returns partial success with errors for individual field failures (doesn't fail entire operation)
 
-- [ ] [medium] 14) Grouping consistency fixes
+- [x] [medium] 14) Grouping consistency fixes
   - Files: `apps/app/app/(authenticated)/command-board/actions/groups.ts`
   - DoD:
     - Grouping/ungrouping idempotent.
     - No orphan projections or stale group IDs.
+  - Evidence:
+    - `addProjectionsToGroup`: Added group existence validation (groups.ts:344-361), returns `groupNotFound` flag for non-existent/deleted groups, early return for empty arrays (idempotent)
+    - `removeProjectionsFromGroup`: Added early return for empty arrays, try-catch error handling, returns structured result (idempotent - setting groupId to null when already null succeeds)
+    - `deleteGroup`: Added existence check before delete (idempotent - returns success for already-deleted groups), try-catch error handling (groups.ts:290-342)
+    - `updateGroup`: Added `deletedAt: null` to where clause, try-catch with `groupNotFound` detection (groups.ts:221-265)
+    - `toggleGroupCollapse`: Added `deletedAt: null` to where clause, returns structured result instead of throwing (groups.ts:267-310)
+    - Added `cleanupOrphanProjections(boardId)` function to clear stale groupId references from projections (groups.ts:531-592)
+    - New result interfaces: `AddProjectionsResult`, `RemoveProjectionsResult`, `DeleteGroupResult`, `UpdateGroupResult`, `ToggleCollapseResult`, `CleanupOrphansResult`
+    - 39 tests in `apps/app/__tests__/command-board/group-consistency.test.ts` covering: result interface behavior for all operations, orphan detection logic, shared group detection, bounds calculation, delete order invariants, tenant isolation invariants
+  - Learnings:
+    - All group operations now return structured results (never throw) - safer for caller error handling
+    - `updateMany` is naturally idempotent for both add (setting same groupId) and remove (setting null)
+    - Delete order invariant: ungroup projections BEFORE soft-delete to prevent orphans
+    - Orphan cleanup validates groupId against active groups table (deletedAt: null)
 
 - [ ] [medium] 15) Undo/redo reliability hardening
   - Files: `apps/app/app/(authenticated)/command-board/hooks/use-board-history.ts`
