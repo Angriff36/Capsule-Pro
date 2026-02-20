@@ -31,6 +31,7 @@ export default defineConfig({
     {
       name: "api",
       root: "./apps/api",
+      config: "./vitest.config.ts",
     },
     {
       name: "web",

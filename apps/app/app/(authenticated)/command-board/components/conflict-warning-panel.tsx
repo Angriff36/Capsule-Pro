@@ -14,10 +14,13 @@ import type {
   Conflict,
   ConflictSeverity,
   ConflictType,
+  DetectorWarning,
 } from "../conflict-types";
 
 interface ConflictWarningPanelProps {
   conflicts: Conflict[];
+  /** Warnings from individual detectors that partially failed */
+  detectorWarnings?: DetectorWarning[];
   errorMessage?: string | null;
   onClose?: () => void;
   /** When provided, shows simulation-specific conflicts and delta */
@@ -95,11 +98,13 @@ function useSimulationConflicts(simulationBoardId?: string) {
   const [simulationConflicts, setSimulationConflicts] = useState<Conflict[]>(
     []
   );
+  const [simulationWarnings, setSimulationWarnings] = useState<DetectorWarning[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (!simulationBoardId) {
       setSimulationConflicts([]);
+      setSimulationWarnings([]);
       return;
     }
 
@@ -108,9 +113,11 @@ function useSimulationConflicts(simulationBoardId?: string) {
       try {
         const result = await detectConflicts({ boardId: simulationBoardId });
         setSimulationConflicts(result.conflicts);
+        setSimulationWarnings(result.warnings ?? []);
       } catch (error) {
         console.error("Failed to fetch simulation conflicts:", error);
         setSimulationConflicts([]);
+        setSimulationWarnings([]);
       } finally {
         setIsLoading(false);
       }
@@ -119,7 +126,7 @@ function useSimulationConflicts(simulationBoardId?: string) {
     fetchSimulationConflicts();
   }, [simulationBoardId]);
 
-  return { simulationConflicts, isLoading };
+  return { simulationConflicts, simulationWarnings, isLoading };
 }
 
 // Sub-component for rendering a single conflict item
@@ -265,6 +272,7 @@ function ConflictList({
 
 export function ConflictWarningPanel({
   conflicts: liveConflicts,
+  detectorWarnings: liveDetectorWarnings = [],
   errorMessage,
   onClose,
   simulationBoardId,
@@ -272,7 +280,7 @@ export function ConflictWarningPanel({
   const [expandedConflicts, setExpandedConflicts] = useState<Set<string>>(
     new Set()
   );
-  const { simulationConflicts, isLoading: isLoadingSimulation } =
+  const { simulationConflicts, simulationWarnings, isLoading: isLoadingSimulation } =
     useSimulationConflicts(simulationBoardId);
 
   const toggleExpand = (id: string) => {
@@ -289,6 +297,9 @@ export function ConflictWarningPanel({
 
   // When in simulation mode, show simulation conflicts; otherwise show live conflicts
   const conflicts = simulationBoardId ? simulationConflicts : liveConflicts;
+
+  // Use appropriate warnings based on mode
+  const activeDetectorWarnings = simulationBoardId ? simulationWarnings : liveDetectorWarnings;
 
   // Compute delta between live and simulation
   const liveConflictIds = new Set(liveConflicts.map((c) => c.id));
@@ -307,13 +318,14 @@ export function ConflictWarningPanel({
 
   // Early returns for empty states
   const hasNoContent =
-    conflicts.length === 0 && !errorMessage && !simulationBoardId;
+    conflicts.length === 0 && !errorMessage && !simulationBoardId && activeDetectorWarnings.length === 0;
   const simulationHasNoChanges =
     simulationBoardId &&
     simulationConflicts.length === 0 &&
     !errorMessage &&
     newConflictsInSimulation.length === 0 &&
-    resolvedInSimulation.length === 0;
+    resolvedInSimulation.length === 0 &&
+    simulationWarnings.length === 0;
 
   if (hasNoContent || simulationHasNoChanges) {
     return null;
@@ -378,6 +390,21 @@ export function ConflictWarningPanel({
                   : "Unable to fetch conflicts"}
               </AlertTitle>
               <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
+          )}
+          {activeDetectorWarnings.length > 0 && !isLoadingSimulation && (
+            <Alert className="border-amber-500 bg-amber-50">
+              <AlertCircle className="h-4 w-4 text-amber-600" />
+              <AlertTitle className="text-amber-800">Partial conflict check</AlertTitle>
+              <AlertDescription className="text-amber-700">
+                <ul className="list-disc pl-4 space-y-1">
+                  {activeDetectorWarnings.map((warning, index) => (
+                    <li key={`${warning.detectorType}-${index}`}>
+                      {warning.message}
+                    </li>
+                  ))}
+                </ul>
+              </AlertDescription>
             </Alert>
           )}
           {isLoadingSimulation && (

@@ -83,6 +83,7 @@ export function BulkActionToolbar({
   onUndo,
   onGroupChange,
 }: BulkActionToolbarProps) {
+  const CLEAR_SELECT_VALUE = "__clear__";
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [preview, setPreview] = useState<BulkEditPreview | null>(null);
   const [isLoadingPreview, setIsLoadingPreview] = useState(false);
@@ -437,16 +438,17 @@ export function BulkActionToolbar({
                     onValueChange={(value) =>
                       handleChangesUpdate({
                         ...pendingChanges,
-                        status: value || undefined,
+                          status:
+                          value === CLEAR_SELECT_VALUE ? undefined : value,
                       })
                     }
-                    value={pendingChanges.status ?? ""}
+                    value={pendingChanges.status ?? CLEAR_SELECT_VALUE}
                   >
                     <SelectTrigger id="bulk-status-select">
                       <SelectValue placeholder="Select status..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Clear</SelectItem>
+                      <SelectItem value={CLEAR_SELECT_VALUE}>Clear</SelectItem>
                       {availableStatusOptions.map((status) => (
                         <SelectItem key={status} value={status}>
                           {status.replace(/_/g, " ")}
@@ -470,16 +472,17 @@ export function BulkActionToolbar({
                     onValueChange={(value) =>
                       handleChangesUpdate({
                         ...pendingChanges,
-                        priority: value || undefined,
+                        priority:
+                          value === CLEAR_SELECT_VALUE ? undefined : value,
                       })
                     }
-                    value={pendingChanges.priority ?? ""}
+                    value={pendingChanges.priority ?? CLEAR_SELECT_VALUE}
                   >
                     <SelectTrigger id="bulk-priority-select">
                       <SelectValue placeholder="Select priority..." />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Clear</SelectItem>
+                      <SelectItem value={CLEAR_SELECT_VALUE}>Clear</SelectItem>
                       {PRIORITY_OPTIONS.map((priority) => (
                         <SelectItem key={priority} value={priority}>
                           {priority}

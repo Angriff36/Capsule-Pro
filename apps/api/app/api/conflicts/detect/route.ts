@@ -13,15 +13,17 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type {
   Conflict,
+  ConflictApiError,
   ConflictDetectionRequest,
   ConflictDetectionResult,
   ConflictSeverity,
   ConflictType,
+  DetectorWarning,
 } from "./types";
 
 const SEVERITY_ORDER: Record<ConflictSeverity, number> = {
@@ -30,6 +32,127 @@ const SEVERITY_ORDER: Record<ConflictSeverity, number> = {
   high: 3,
   critical: 4,
 };
+
+/** Valid conflict types for request validation */
+const VALID_CONFLICT_TYPES: ReadonlySet<string> = new Set([
+  "scheduling",
+  "resource",
+  "staff",
+  "inventory",
+  "equipment",
+  "timeline",
+  "venue",
+  "financial",
+] as const);
+
+/**
+ * Status constants for SQL queries
+ * These are extracted to typed constants to improve maintainability
+ * and ensure consistency across queries.
+ */
+const INACTIVE_EVENT_STATUSES = ["cancelled", "completed"] as const;
+const TIME_OFF_APPROVED_STATUS = "APPROVED";
+
+/**
+ * Create a typed API error response
+ */
+function apiError(
+  code: ConflictApiError["code"],
+  message: string,
+  guidance?: string,
+  status: number = 400
+): NextResponse<ConflictApiError> {
+  return NextResponse.json({ code, message, guidance }, { status });
+}
+
+/**
+ * Safely run a detector, returning partial results on failure
+ */
+async function safeDetect(
+  detectorType: ConflictType,
+  detector: () => Promise<Conflict[]>,
+  warnings: DetectorWarning[]
+): Promise<Conflict[]> {
+  try {
+    return await detector();
+  } catch (error) {
+    // Log the error for observability but don't fail the whole response
+    console.error(`Conflict detector ${detectorType} failed:`, error);
+    warnings.push({
+      detectorType,
+      message: `Unable to check ${detectorType} conflicts. Other conflict types were still checked.`,
+    });
+    return [];
+  }
+}
+
+/**
+ * Validate date range parameters
+ */
+function validateTimeRange(
+  timeRange: unknown
+):
+  | { ok: true; value: { start: Date; end: Date } | undefined }
+  | { ok: false; error: string } {
+  if (timeRange === undefined || timeRange === null) {
+    return { ok: true, value: undefined };
+  }
+
+  if (typeof timeRange !== "object" || timeRange === null) {
+    return { ok: false, error: "timeRange must be an object" };
+  }
+
+  const { start, end } = timeRange as Record<string, unknown>;
+
+  if (start === undefined || end === undefined) {
+    return { ok: false, error: "timeRange must have both start and end" };
+  }
+
+  const startDate = new Date(start as string | Date);
+  const endDate = new Date(end as string | Date);
+
+  if (Number.isNaN(startDate.getTime())) {
+    return { ok: false, error: "timeRange.start is not a valid date" };
+  }
+
+  if (Number.isNaN(endDate.getTime())) {
+    return { ok: false, error: "timeRange.end is not a valid date" };
+  }
+
+  if (startDate > endDate) {
+    return { ok: false, error: "timeRange.start must be before timeRange.end" };
+  }
+
+  return { ok: true, value: { start: startDate, end: endDate } };
+}
+
+/**
+ * Validate entityTypes parameter
+ */
+function validateEntityTypes(
+  entityTypes: unknown
+):
+  | { ok: true; value: ConflictType[] | undefined }
+  | { ok: false; error: string } {
+  if (entityTypes === undefined || entityTypes === null) {
+    return { ok: true, value: undefined };
+  }
+
+  if (!Array.isArray(entityTypes)) {
+    return { ok: false, error: "entityTypes must be an array" };
+  }
+
+  for (const type of entityTypes) {
+    if (typeof type !== "string" || !VALID_CONFLICT_TYPES.has(type)) {
+      return {
+        ok: false,
+        error: `entityTypes contains invalid type: ${String(type)}`,
+      };
+    }
+  }
+
+  return { ok: true, value: entityTypes as ConflictType[] };
+}
 
 /**
  * Detect scheduling conflicts (double-booked staff, overlapping shifts)
@@ -44,43 +167,41 @@ async function detectSchedulingConflicts(
   const endDate =
     timeRange?.end || new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-  // Find overlapping shifts for the same employee
+  // Find overlapping shifts for the same employee using typed Prisma.sql
+  // Note: tenantId is passed as string; Prisma/PostgreSQL handle UUID coercion
   const overlappingShifts = await database.$queryRaw<
     Array<{
       employee_id: string;
       employee_name: string;
       shift_count: number;
-      date: Date;
+      shift_date: Date;
     }>
-  >`
+  >(Prisma.sql`
     SELECT
       e.id as employee_id,
       TRIM(CONCAT_WS(' ', e.first_name, e.last_name)) as employee_name,
-      COUNT(*) as shift_count,
-      s.date
+      COUNT(*)::int as shift_count,
+      ss.shift_start::date as shift_date
     FROM tenant_staff.schedule_shifts ss
-    JOIN tenant_staff.shifts s ON ss.shift_id = s.id
-    JOIN tenant_staff.employees e ON s.employee_id = e.id
+    JOIN tenant_staff.employees e ON ss.employee_id = e.id
       AND e.tenant_id = ss.tenant_id
       AND e.deleted_at IS NULL
     WHERE ss.tenant_id = ${tenantId}::uuid
       AND ss.deleted_at IS NULL
-      AND s.deleted_at IS NULL
-      AND s.date BETWEEN ${startDate} AND ${endDate}
-      AND s.status != 'cancelled'
-    GROUP BY e.id, e.first_name, e.last_name, s.date
+      AND ss.shift_start BETWEEN ${startDate} AND ${endDate}
+    GROUP BY e.id, e.first_name, e.last_name, ss.shift_start::date
     HAVING COUNT(*) > 1
-    ORDER BY s.date, shift_count DESC
+    ORDER BY shift_date, shift_count DESC
     LIMIT 20
-  `;
+  `);
 
   for (const overlap of overlappingShifts) {
     conflicts.push({
-      id: `scheduling-overlap-${overlap.employee_id}-${overlap.date.toISOString()}`,
+      id: `scheduling-overlap-${overlap.employee_id}-${overlap.shift_date.toISOString()}`,
       type: "scheduling",
       severity: overlap.shift_count > 2 ? "critical" : "high",
       title: `Double-booked employee: ${overlap.employee_name}`,
-      description: `${overlap.employee_name} is scheduled for ${overlap.shift_count} shifts on ${overlap.date.toLocaleDateString()}`,
+      description: `${overlap.employee_name} is scheduled for ${overlap.shift_count} shifts on ${overlap.shift_date.toLocaleDateString()}`,
       affectedEntities: [
         {
           type: "employee",
@@ -109,7 +230,7 @@ async function detectStaffConflicts(
   const endDate =
     timeRange?.end || new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-  // Find shifts scheduled during time-off requests
+  // Find shifts scheduled during time-off requests using typed Prisma.sql
   const shiftsDuringTimeOff = await database.$queryRaw<
     Array<{
       employee_id: string;
@@ -117,28 +238,28 @@ async function detectStaffConflicts(
       time_off_date: Date;
       shift_count: number;
     }>
-  >`
+  >(Prisma.sql`
     SELECT
       e.id as employee_id,
       TRIM(CONCAT_WS(' ', e.first_name, e.last_name)) as employee_name,
-      tor.start_date as time_off_date,
-      COUNT(*) as shift_count
-    FROM tenant_staff.time_off_requests tor
+      ss.shift_start::date as time_off_date,
+      COUNT(*)::int as shift_count
+    FROM tenant_staff.employee_time_off_requests tor
     JOIN tenant_staff.employees e ON tor.employee_id = e.id
       AND e.tenant_id = tor.tenant_id
       AND e.deleted_at IS NULL
     JOIN tenant_staff.schedule_shifts ss ON ss.tenant_id = tor.tenant_id
-    JOIN tenant_staff.shifts s ON s.id = ss.shift_id
+      AND ss.employee_id = tor.employee_id
+      AND ss.deleted_at IS NULL
     WHERE tor.tenant_id = ${tenantId}::uuid
       AND tor.deleted_at IS NULL
-      AND tor.status = 'approved'
-      AND s.deleted_at IS NULL
-      AND s.date = tor.start_date::date
-      AND s.date BETWEEN ${startDate} AND ${endDate}
-    GROUP BY e.id, e.first_name, e.last_name, tor.start_date
-    ORDER BY tor.start_date
+      AND UPPER(tor.status) = ${TIME_OFF_APPROVED_STATUS}
+      AND ss.shift_start::date BETWEEN tor.start_date AND tor.end_date
+      AND ss.shift_start BETWEEN ${startDate} AND ${endDate}
+    GROUP BY e.id, e.first_name, e.last_name, ss.shift_start::date
+    ORDER BY ss.shift_start::date
     LIMIT 20
-  `;
+  `);
 
   for (const conflict of shiftsDuringTimeOff) {
     conflicts.push({
@@ -164,6 +285,9 @@ async function detectStaffConflicts(
 
 /**
  * Detect inventory conflicts (stock shortages for upcoming events)
+ *
+ * Uses Prisma ORM instead of raw SQL for better type safety and maintainability.
+ * The item name is fetched separately to avoid fragile UUID casts in joins.
  */
 async function detectInventoryConflicts(
   tenantId: string,
@@ -172,51 +296,61 @@ async function detectInventoryConflicts(
   const conflicts: Conflict[] = [];
   const now = new Date();
   const startDate = timeRange?.start || now;
-  const _endDate =
-    timeRange?.end || new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-  // Find active inventory alerts
-  const activeAlerts = await database.$queryRaw<
-    Array<{
-      alert_id: string;
-      item_id: string;
-      item_name: string;
-      alert_type: string;
-      threshold_value: string;
-      triggered_at: Date;
-    }>
-  >`
-    SELECT
-      ia.id as alert_id,
-      ia.item_id,
-      COALESCE(ii.name, 'Unknown Item') as item_name,
-      ia.alert_type,
-      ia.threshold_value::text as threshold_value,
-      ia.triggered_at
-    FROM tenant_inventory.inventory_alerts ia
-    LEFT JOIN tenant_inventory.inventory_items ii ON ii.id = ia.item_id
-    WHERE ia.tenant_id = ${tenantId}::uuid
-      AND ia.deleted_at IS NULL
-      AND ia.resolved_at IS NULL
-      AND ia.triggered_at >= ${startDate}
-    ORDER BY ia.triggered_at DESC
-    LIMIT 20
-  `;
+  // Find active inventory alerts using Prisma ORM
+  const activeAlerts = await database.inventoryAlert.findMany({
+    where: {
+      tenantId,
+      deleted_at: null,
+      resolved_at: null,
+      triggered_at: { gte: startDate },
+    },
+    orderBy: { triggered_at: "desc" },
+    take: 20,
+    select: {
+      id: true,
+      itemId: true,
+      alertType: true,
+      threshold_value: true,
+      triggered_at: true,
+    },
+  });
+
+  if (activeAlerts.length === 0) {
+    return conflicts;
+  }
+
+  // Fetch item names for all alerts in a single query
+  const itemIds = [...new Set(activeAlerts.map((alert) => alert.itemId))];
+  const items = await database.inventoryItem.findMany({
+    where: {
+      id: { in: itemIds },
+    },
+    select: {
+      id: true,
+      name: true,
+    },
+  });
+
+  // Create a map for O(1) lookups
+  const itemMap = new Map(items.map((item) => [item.id, item.name]));
 
   for (const alert of activeAlerts) {
-    const severity = alert.alert_type === "critical" ? "critical" : "medium";
+    const itemName = itemMap.get(alert.itemId) ?? "Unknown Item";
+    const severity = alert.alertType === "critical" ? "critical" : "medium";
+    const thresholdValue = alert.threshold_value.toString();
 
     conflicts.push({
-      id: `inventory-alert-${alert.alert_id}`,
+      id: `inventory-alert-${alert.id}`,
       type: "inventory",
       severity,
-      title: `Inventory ${alert.alert_type}: ${alert.item_name}`,
-      description: `${alert.item_name} is ${alert.alert_type} (threshold: ${alert.threshold_value})`,
+      title: `Inventory ${alert.alertType}: ${itemName}`,
+      description: `${itemName} is ${alert.alertType} (threshold: ${thresholdValue})`,
       affectedEntities: [
         {
           type: "inventory",
-          id: alert.item_id,
-          name: alert.item_name,
+          id: alert.itemId,
+          name: itemName,
         },
       ],
       suggestedAction:
@@ -243,7 +377,7 @@ async function detectVenueConflicts(
   const endDate =
     timeRange?.end || new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-  // Find multiple events at same venue on same date
+  // Find multiple events at same venue on same date using typed Prisma.sql
   const venueConflicts = await database.$queryRaw<
     Array<{
       venue_id: string;
@@ -253,7 +387,7 @@ async function detectVenueConflicts(
       event_ids: string[];
       event_titles: string[];
     }>
-  >`
+  >(Prisma.sql`
     SELECT
       v.id as venue_id,
       v.name as venue_name,
@@ -268,12 +402,12 @@ async function detectVenueConflicts(
       AND v.deleted_at IS NULL
       AND e.venue_id IS NOT NULL
       AND e.event_date BETWEEN ${startDate}::date AND ${endDate}::date
-      AND e.status NOT IN ('cancelled', 'completed')
+      AND e.status NOT IN (${Prisma.join(INACTIVE_EVENT_STATUSES)})
     GROUP BY v.id, v.name, e.event_date
     HAVING COUNT(*) > 1
     ORDER BY e.event_date, event_count DESC
     LIMIT 20
-  `;
+  `);
 
   for (const conflict of venueConflicts) {
     let severity: "critical" | "high" | "medium";
@@ -327,56 +461,63 @@ async function detectVenueConflicts(
 }
 
 /**
+ * Calculate days overdue between a due date and now
+ */
+function calculateDaysOverdue(dueDate: Date, now: Date): number {
+  const diffMs = now.getTime() - dueDate.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+  return Math.max(0, diffDays);
+}
+
+/**
  * Detect timeline conflicts (task dependency violations, deadline risks)
+ *
+ * Uses Prisma ORM instead of raw SQL for better type safety and maintainability.
+ * Days overdue is calculated in application code rather than SQL.
  */
 async function detectTimelineConflicts(
   tenantId: string,
-  timeRange?: { start: Date; end: Date }
+  _timeRange?: { start: Date; end: Date }
 ): Promise<Conflict[]> {
   const conflicts: Conflict[] = [];
   const now = new Date();
-  const _startDate = timeRange?.start || now;
-  const _endDate =
-    timeRange?.end || new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-  // Find incomplete high-priority tasks past due date
-  const overdueTasks = await database.$queryRaw<
-    Array<{
-      task_id: string;
-      task_name: string;
-      due_date: Date;
-      priority: string;
-      days_overdue: number;
-    }>
-  >`
-    SELECT
-      pt.id as task_id,
-      pt.name as task_name,
-      pt.due_by_date as due_date,
-      pt.priority,
-      EXTRACT(DAY FROM (${now} - pt.due_by_date))::int as days_overdue
-    FROM tenant_kitchen.prep_tasks pt
-    WHERE pt.tenant_id = ${tenantId}::uuid
-      AND pt.deleted_at IS NULL
-      AND pt.status != 'completed'
-      AND pt.due_by_date < ${now}
-      AND pt.priority IN ('high', 'urgent')
-    ORDER BY pt.due_by_date ASC
-    LIMIT 20
-  `;
+  // Find incomplete high-priority tasks past due date using Prisma ORM
+  const TASK_COMPLETED_STATUS = "completed";
+  const HIGH_PRIORITY_THRESHOLD = 3;
+
+  const overdueTasks = await database.prepTask.findMany({
+    where: {
+      tenantId,
+      deletedAt: null,
+      status: { not: TASK_COMPLETED_STATUS },
+      dueByDate: { lt: now },
+      priority: { lte: HIGH_PRIORITY_THRESHOLD },
+    },
+    orderBy: { dueByDate: "asc" },
+    take: 20,
+    select: {
+      id: true,
+      name: true,
+      dueByDate: true,
+      priority: true,
+    },
+  });
 
   for (const task of overdueTasks) {
+    const daysOverdue = calculateDaysOverdue(task.dueByDate, now);
+    const priorityLabel = task.priority <= 2 ? "urgent" : "high";
     conflicts.push({
-      id: `timeline-overdue-${task.task_id}`,
+      id: `timeline-overdue-${task.id}`,
       type: "timeline",
-      severity: task.priority === "urgent" ? "critical" : "high",
-      title: `Overdue ${task.priority} task: ${task.task_name}`,
-      description: `${task.task_name} is ${task.days_overdue} day(s) overdue (was due ${task.due_date.toLocaleDateString()})`,
+      severity: task.priority <= 2 ? "critical" : "high",
+      title: `Overdue ${priorityLabel} task: ${task.name}`,
+      description: `${task.name} is ${daysOverdue} day(s) overdue (was due ${task.dueByDate.toLocaleDateString()})`,
       affectedEntities: [
         {
           type: "task",
-          id: task.task_id,
-          name: task.task_name,
+          id: task.id,
+          name: task.name,
         },
       ],
       suggestedAction: "Prioritize this task immediately or adjust timeline",
@@ -468,7 +609,7 @@ async function detectFinancialConflicts(
       cost_variance: string;
       margin_variance_pct: string;
     }>
-  >`
+  >(Prisma.sql`
     SELECT
       e.id as event_id,
       e.title as event_title,
@@ -482,7 +623,7 @@ async function detectFinancialConflicts(
     WHERE e.tenant_id = ${tenantId}::uuid
       AND e.deleted_at IS NULL
       AND e.event_date BETWEEN ${startDate}::date AND ${endDate}::date
-      AND e.status NOT IN ('cancelled', 'completed')
+      AND e.status NOT IN (${Prisma.join(INACTIVE_EVENT_STATUSES)})
       AND (
         (ep.actual_total_cost > ep.budgeted_total_cost * 1.1)
         OR (ep.budgeted_gross_margin_pct - ep.actual_gross_margin_pct) > 5
@@ -490,7 +631,7 @@ async function detectFinancialConflicts(
       )
     ORDER BY ABS(ep.margin_variance_pct) DESC
     LIMIT 20
-  `;
+  `);
 
   for (const risk of financialRisks) {
     const budgetedCost = Number.parseFloat(risk.budgeted_total_cost) || 0;
@@ -559,7 +700,7 @@ async function detectEquipmentConflicts(
       station_ids: string[];
       station_names: string[];
     }>
-  >`
+  >(Prisma.sql`
     WITH event_equipment AS (
       SELECT DISTINCT
         e.id as event_id,
@@ -567,7 +708,7 @@ async function detectEquipmentConflicts(
         e.event_date,
         s.id as station_id,
         s.name as station_name,
-        unnest(s.equipment_list) as equipment_name
+        unnest(s."equipmentList") as equipment_name
       FROM tenant_events.events e
       JOIN tenant_kitchen.prep_lists pl ON pl.event_id = e.id AND pl.tenant_id = e.tenant_id AND pl.deleted_at IS NULL
       JOIN tenant_kitchen.prep_list_items pli ON pli.prep_list_id = pl.id AND pli.tenant_id = pl.tenant_id AND pli.deleted_at IS NULL
@@ -575,15 +716,15 @@ async function detectEquipmentConflicts(
       WHERE e.tenant_id = ${tenantId}::uuid
         AND e.deleted_at IS NULL
         AND e.event_date BETWEEN ${startDate}::date AND ${endDate}::date
-        AND e.status NOT IN ('cancelled', 'completed')
-        AND cardinality(s.equipment_list) > 0
+        AND e.status NOT IN (${Prisma.join(INACTIVE_EVENT_STATUSES)})
+        AND cardinality(s."equipmentList") > 0
     )
     SELECT
       equipment_name,
       event_date,
       COUNT(DISTINCT event_id) as event_count,
       ARRAY_AGG(DISTINCT event_id ORDER BY event_id) as event_ids,
-      ARRAY_AGG(DISTINCT event_title ORDER BY event_id) as event_titles,
+      ARRAY_AGG(DISTINCT event_title ORDER BY event_title) as event_titles,
       ARRAY_AGG(DISTINCT station_id) as station_ids,
       ARRAY_AGG(DISTINCT station_name) as station_names
     FROM event_equipment
@@ -591,7 +732,7 @@ async function detectEquipmentConflicts(
     HAVING COUNT(DISTINCT event_id) > 1
     ORDER BY event_date, event_count DESC
     LIMIT 20
-  `;
+  `);
 
   for (const conflict of equipmentConflicts) {
     let severity: "critical" | "high" | "medium";
@@ -693,74 +834,139 @@ function buildConflictSummary(conflicts: Conflict[]) {
  * Detect conflicts across operations data
  */
 export async function POST(request: Request) {
-  try {
-    const { orgId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return NextResponse.json(
-        { message: "Tenant not found" },
-        { status: 404 }
-      );
-    }
-
-    const body = (await request.json()) as ConflictDetectionRequest;
-    const { timeRange, entityTypes } = body;
-
-    const conflicts: Conflict[] = [];
-
-    // Detect conflicts by type
-    if (!entityTypes || entityTypes.includes("scheduling")) {
-      conflicts.push(...(await detectSchedulingConflicts(tenantId, timeRange)));
-    }
-
-    if (!entityTypes || entityTypes.includes("staff")) {
-      conflicts.push(...(await detectStaffConflicts(tenantId, timeRange)));
-    }
-
-    if (!entityTypes || entityTypes.includes("inventory")) {
-      conflicts.push(...(await detectInventoryConflicts(tenantId, timeRange)));
-    }
-
-    if (!entityTypes || entityTypes.includes("equipment")) {
-      conflicts.push(...(await detectEquipmentConflicts(tenantId, timeRange)));
-    }
-
-    if (!entityTypes || entityTypes.includes("timeline")) {
-      conflicts.push(...(await detectTimelineConflicts(tenantId, timeRange)));
-    }
-
-    if (!entityTypes || entityTypes.includes("venue")) {
-      conflicts.push(...(await detectVenueConflicts(tenantId, timeRange)));
-    }
-
-    if (!entityTypes || entityTypes.includes("financial")) {
-      conflicts.push(...(await detectFinancialConflicts(tenantId, timeRange)));
-    }
-
-    // Sort by severity (critical first)
-    conflicts.sort(
-      (a, b) => SEVERITY_ORDER[b.severity] - SEVERITY_ORDER[a.severity]
-    );
-
-    const result: ConflictDetectionResult = {
-      conflicts,
-      summary: buildConflictSummary(conflicts),
-      analyzedAt: new Date(),
-    };
-
-    return NextResponse.json(result);
-  } catch (error) {
-    console.error("Conflicts detection error:", error);
-    return NextResponse.json(
-      {
-        message: "Failed to detect conflicts",
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
+  // Authentication check
+  const { orgId } = await auth();
+  if (!orgId) {
+    return apiError(
+      "UNAUTHORIZED",
+      "Authentication required",
+      "Please sign in to access conflict detection.",
+      401
     );
   }
+
+  // Tenant resolution
+  const tenantId = await getTenantIdForOrg(orgId);
+  if (!tenantId) {
+    return apiError(
+      "TENANT_NOT_FOUND",
+      "Tenant not found",
+      "Your organization is not set up for conflict detection. Please contact support.",
+      404
+    );
+  }
+
+  // Parse and validate request body
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return apiError(
+      "INVALID_REQUEST",
+      "Invalid JSON in request body",
+      "Please ensure your request contains valid JSON."
+    );
+  }
+
+  // Validate timeRange
+  const timeRangeResult = validateTimeRange(
+    (body as Record<string, unknown>).timeRange
+  );
+  if (!timeRangeResult.ok) {
+    return apiError("INVALID_REQUEST", timeRangeResult.error);
+  }
+  const timeRange = timeRangeResult.value;
+
+  // Validate entityTypes
+  const entityTypesResult = validateEntityTypes(
+    (body as Record<string, unknown>).entityTypes
+  );
+  if (!entityTypesResult.ok) {
+    return apiError("INVALID_REQUEST", entityTypesResult.error);
+  }
+  const entityTypes = entityTypesResult.value;
+
+  // Track warnings from individual detector failures
+  const warnings: DetectorWarning[] = [];
+  const conflicts: Conflict[] = [];
+
+  // Run each detector with error resilience
+  // Each detector failure returns empty array and adds a warning
+  if (!entityTypes || entityTypes.includes("scheduling")) {
+    const result = await safeDetect(
+      "scheduling",
+      () => detectSchedulingConflicts(tenantId, timeRange),
+      warnings
+    );
+    conflicts.push(...result);
+  }
+
+  if (!entityTypes || entityTypes.includes("staff")) {
+    const result = await safeDetect(
+      "staff",
+      () => detectStaffConflicts(tenantId, timeRange),
+      warnings
+    );
+    conflicts.push(...result);
+  }
+
+  if (!entityTypes || entityTypes.includes("inventory")) {
+    const result = await safeDetect(
+      "inventory",
+      () => detectInventoryConflicts(tenantId, timeRange),
+      warnings
+    );
+    conflicts.push(...result);
+  }
+
+  if (!entityTypes || entityTypes.includes("equipment")) {
+    const result = await safeDetect(
+      "equipment",
+      () => detectEquipmentConflicts(tenantId, timeRange),
+      warnings
+    );
+    conflicts.push(...result);
+  }
+
+  if (!entityTypes || entityTypes.includes("timeline")) {
+    const result = await safeDetect(
+      "timeline",
+      () => detectTimelineConflicts(tenantId, timeRange),
+      warnings
+    );
+    conflicts.push(...result);
+  }
+
+  if (!entityTypes || entityTypes.includes("venue")) {
+    const result = await safeDetect(
+      "venue",
+      () => detectVenueConflicts(tenantId, timeRange),
+      warnings
+    );
+    conflicts.push(...result);
+  }
+
+  if (!entityTypes || entityTypes.includes("financial")) {
+    const result = await safeDetect(
+      "financial",
+      () => detectFinancialConflicts(tenantId, timeRange),
+      warnings
+    );
+    conflicts.push(...result);
+  }
+
+  // Sort by severity (critical first)
+  conflicts.sort(
+    (a, b) => SEVERITY_ORDER[b.severity] - SEVERITY_ORDER[a.severity]
+  );
+
+  // Build result with optional warnings
+  const result: ConflictDetectionResult = {
+    conflicts,
+    summary: buildConflictSummary(conflicts),
+    analyzedAt: new Date(),
+    ...(warnings.length > 0 ? { warnings } : {}),
+  };
+
+  return NextResponse.json(result);
 }
