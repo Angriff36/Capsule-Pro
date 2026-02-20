@@ -206,11 +206,33 @@
 
 ## P3 - Command Integrity and History Reliability
 
-- [ ] [medium] 13) Safer bulk edit guardrails
-  - Files: `apps/app/app/(authenticated)/command-board/actions/bulk-edit.ts`
+- [x] [medium] 13) Safer bulk edit guardrails
+  - Files: `apps/app/app/(authenticated)/command-board/actions/bulk-edit.ts`, `apps/app/app/(authenticated)/command-board/actions/bulk-edit-utils.ts`
   - DoD:
     - Invalid field/entity combinations rejected before write.
     - Preview and execute share one validation path.
+  - Evidence:
+    - Added `validateBulkEditChanges()` function in bulk-edit-utils.ts (lines 101-198) that validates:
+      - Entity type editability (8 non-editable types: client, employee, inventory_item, recipe, dish, note, risk, financial_projection)
+      - Status values per entity type using `ENTITY_STATUS_OPTIONS`
+      - Priority values using `PRIORITY_LEVELS` (low, medium, high, urgent)
+      - assignedTo field restriction to events only
+    - Added `validateBulkEditBatch()` function (lines 204-228) for batch validation
+    - Updated `getBulkEditPreview()` to call shared validation before processing (lines 75-88)
+    - Updated `executeBulkEdit()` to call shared validation before write (lines 296-318)
+    - Both preview and execute now return validation errors in structured format
+    - 37 tests in `apps/app/__tests__/command-board/bulk-edit-guardrails.test.ts` covering:
+      - Non-editable entity types rejection (8 tests)
+      - Status validation per entity type (6 tests)
+      - Priority validation (5 tests)
+      - assignedTo validation (4 tests)
+      - Multiple changes validation (3 tests)
+      - Batch validation (4 tests)
+      - Configuration consistency (4 tests)
+  - Learnings:
+    - `ENTITY_STATUS_OPTIONS` and `PRIORITY_LEVELS` already existed in bulk-edit-utils.ts but were not used for validation
+    - assignedTo references external Nowsta employees; no Prisma model exists for direct validation
+    - Validation returns partial success with errors for individual field failures (doesn't fail entire operation)
 
 - [ ] [medium] 14) Grouping consistency fixes
   - Files: `apps/app/app/(authenticated)/command-board/actions/groups.ts`

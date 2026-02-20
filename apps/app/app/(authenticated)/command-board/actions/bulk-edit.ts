@@ -8,6 +8,8 @@ import {
   BULK_EDITABLE_PROPERTIES,
   getPriorityLabel,
   PRIORITY_LEVELS,
+  validateBulkEditBatch,
+  type ValidationError,
 } from "./bulk-edit-utils";
 
 // ============================================================================
@@ -38,6 +40,8 @@ export interface BulkEditPreview {
     fieldName: string;
   }>;
   warnings: string[];
+  /** Validation errors that would prevent execution */
+  validationErrors: ValidationError[];
 }
 
 export interface BulkEditResult {
@@ -68,15 +72,38 @@ export async function getBulkEditPreview(
   const preview: BulkEditPreview["items"] = [];
   const warnings: string[] = [];
 
-  // Group items by entity type for efficient querying
+  // Shared validation: validate all items upfront
+  const validation = validateBulkEditBatch(
+    items.map((i) => ({ entityType: i.entityType, entityId: i.entityId })),
+    changes
+  );
+
+  // If no valid items after validation, return early with errors
+  if (validation.validItems.length === 0) {
+    return {
+      items: [],
+      warnings,
+      validationErrors: validation.errors,
+    };
+  }
+
+  // Filter to only valid items for further processing
+  const validItemSet = new Set(
+    validation.validItems.map((i) => `${i.entityType}:${i.entityId}`)
+  );
+  const validItems = items.filter((i) =>
+    validItemSet.has(`${i.entityType}:${i.entityId}`)
+  );
+
+  // Group valid items by entity type for efficient querying
   const byType = new Map<EntityType, BulkEditItem[]>();
-  for (const item of items) {
+  for (const item of validItems) {
     const list = byType.get(item.entityType) ?? [];
     list.push(item);
     byType.set(item.entityType, list);
   }
 
-  // Convert priority string to number for comparison
+  // Convert priority string to number for comparison (only if valid)
   const newPriorityValue = changes.priority
     ? (PRIORITY_LEVELS[changes.priority] ?? null)
     : undefined;
@@ -86,8 +113,8 @@ export async function getBulkEditPreview(
     const entityIds = entityItems.map((i) => i.entityId);
     const editableProps = BULK_EDITABLE_PROPERTIES[entityType] ?? [];
 
+    // Skip if no editable props (shouldn't happen due to validation, but safety check)
     if (editableProps.length === 0) {
-      warnings.push(`${entityType} entities cannot be bulk edited`);
       continue;
     }
 
@@ -246,7 +273,7 @@ export async function getBulkEditPreview(
     }
   }
 
-  return { items: preview, warnings };
+  return { items: preview, warnings, validationErrors: validation.errors };
 }
 
 // ============================================================================
@@ -266,15 +293,47 @@ export async function executeBulkEdit(
   const undoSnapshot: BulkEditResult["undoSnapshot"] = [];
   let updatedCount = 0;
 
-  // Group items by entity type
+  // Shared validation: validate all items upfront (same as preview)
+  const validation = validateBulkEditBatch(
+    items.map((i) => ({ entityType: i.entityType, entityId: i.entityId })),
+    changes
+  );
+
+  // Add validation errors to result
+  for (const valError of validation.errors) {
+    errors.push({
+      entityId: valError.entityId,
+      error: valError.message,
+    });
+  }
+
+  // If no valid items after validation, return early
+  if (validation.validItems.length === 0) {
+    return {
+      success: false,
+      updatedCount: 0,
+      errors,
+      undoSnapshot: [],
+    };
+  }
+
+  // Filter to only valid items for execution
+  const validItemSet = new Set(
+    validation.validItems.map((i) => `${i.entityType}:${i.entityId}`)
+  );
+  const validItems = items.filter((i) =>
+    validItemSet.has(`${i.entityType}:${i.entityId}`)
+  );
+
+  // Group valid items by entity type
   const byType = new Map<EntityType, BulkEditItem[]>();
-  for (const item of items) {
+  for (const item of validItems) {
     const list = byType.get(item.entityType) ?? [];
     list.push(item);
     byType.set(item.entityType, list);
   }
 
-  // Convert priority string to number
+  // Convert priority string to number (validation already confirmed it's valid)
   const priorityValue = changes.priority
     ? (PRIORITY_LEVELS[changes.priority] ?? undefined)
     : undefined;
@@ -306,6 +365,9 @@ export async function executeBulkEdit(
       try {
         switch (entityType) {
           case "event": {
+            // Note: assignedTo references an employee from external source (Nowsta)
+            // Database will handle referential integrity if needed
+
             // Fetch current values for undo
             const current = await tx.event.findMany({
               where: { tenantId, id: { in: entityIds } },
