@@ -13,7 +13,8 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
 
 **Verification (2026-02-19):**
 - Build: ✅ TypeScript passes (app package)
-- Build: ⚠️ 245 TypeScript errors in api package (pre-existing, not blocking)
+- Build: ✅ Email reminders cron route fixed (no more TS errors)
+- Build: ⚠️ ~200 TypeScript errors in api package (pre-existing, unrelated to email-reminders)
 - Tests: ✅ No failing tests (110 passed)
 - Lint: ✅ Clean on modified code (warnings only - cognitive complexity)
 - Tags: v0.6.101 (latest)
@@ -200,13 +201,16 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
   - Formatting inconsistencies in 253 files
 - **Resolution:** Added underscore prefix to unused variables, added default switch clause, auto-fixed with biome
 
-### Email Reminders Cron Route (2026-02-19) ⚠️ KNOWN BUG
+### ~~Email Reminders Cron Route~~ ✅ FIXED (2026-02-19)
 - **Issue:** TypeScript errors in `/api/cron/email-reminders/route.ts`
-  - Uses `database.kitchen_tasks` instead of `database.kitchenTask`
-  - Uses snake_case field names (`task_name`, `due_date`, `assigned_employee_id`) instead of camelCase Prisma fields (`title`, `dueDate`, etc.)
-  - Schema mismatch: KitchenTask model doesn't have `assigned_employee_id` or `employee` relation - assignments go through `KitchenTaskClaim` model
-- **Impact:** 245 TypeScript errors in api package (not blocking app package builds)
-- **Status:** Not blocking mobile kitchen work - documented for future fix
+  - Used `database.kitchen_tasks` instead of `database.kitchenTask`
+  - Used snake_case field names instead of camelCase Prisma fields
+  - Schema mismatch: KitchenTask model doesn't have `assigned_employee_id` or `employee` relation
+- **Resolution:**
+  - Rewrote to use correct Prisma model names (`database.kitchenTask`, `database.kitchenTaskClaim`, `database.scheduleShift`, `database.user`, `database.location`)
+  - Fixed field names to match schema (`title`, `dueDate`, `shift_start`, `shift_end`, etc.)
+  - Implemented manual joins since `KitchenTask` → `KitchenTaskClaim` and `ScheduleShift` → `User`/`Location` don't have explicit Prisma relations
+  - Task assignments now properly queried via `KitchenTaskClaim` with active claim filtering (`releasedAt: null`)
 
 ---
 
