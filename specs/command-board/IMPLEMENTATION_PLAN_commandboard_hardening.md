@@ -254,11 +254,28 @@
     - Delete order invariant: ungroup projections BEFORE soft-delete to prevent orphans
     - Orphan cleanup validates groupId against active groups table (deletedAt: null)
 
-- [ ] [medium] 15) Undo/redo reliability hardening
+- [x] [medium] 15) Undo/redo reliability hardening
   - Files: `apps/app/app/(authenticated)/command-board/hooks/use-board-history.ts`
   - DoD:
     - Multi-step bulk edits, moves, deletes round-trip through undo/redo.
     - Add targeted tests for history invariants.
+  - Evidence:
+    - 30 tests in `apps/app/__tests__/command-board/board-history.test.ts` covering:
+      - Initial state invariants (canUndo/canRedo false when stacks empty)
+      - Push state logic (adds to past, clears future, maintains order)
+      - History size limit (MAX_HISTORY_SIZE=50, pruning oldest entries)
+      - Undo logic (pops from past, pushes to future, supports consecutive undos)
+      - Redo logic (pops from future, pushes to past, supports consecutive redos)
+      - Clear history (resets both stacks, disables undo/redo)
+      - Multi-step operations round-trip (add/remove sequences, data integrity)
+      - Edge cases (single state, empty arrays, null fields, rapid consecutive operations)
+      - History invariants (state machine transitions, total state consistency)
+  - Learnings:
+    - `useBoardHistory` is a simple snapshot-based system storing `BoardProjection[]` arrays
+    - Position changes (drag) are NOT tracked in history - saved directly to DB
+    - Bulk edit uses separate server-side `undoBulkEdit` with `undoSnapshot` field
+    - Derived connections removed on projection delete but NOT restored on undo (known limitation)
+    - The hook's `past` and `future` dependencies cause function recreation on each state change (functional but could be optimized)
 
 - [ ] [medium] 16) Command route contract tests
   - Files: `apps/app/app/api/command-board/`, `apps/api/app/api/command-board/`
