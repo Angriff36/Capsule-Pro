@@ -13,9 +13,10 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
 
 **Verification (2026-02-19):**
 - Build: ✅ TypeScript passes (app package)
+- Build: ⚠️ 245 TypeScript errors in api package (pre-existing, not blocking)
 - Tests: ✅ No failing tests (110 passed)
 - Lint: ✅ Clean on modified code (warnings only - cognitive complexity)
-- Tags: v0.6.100 (latest)
+- Tags: v0.6.101 (latest)
 - Mobile Kitchen App: ✅ ALL TASKS COMPLETE (P0-P4 + swipe notes)
   - All pages implemented: Today, Tasks, Prep Lists, My Work
   - All APIs functional: events/today, bundle-claim, task commands, prep list items
@@ -198,6 +199,14 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
   - Missing default switch clause in SMS webhook route
   - Formatting inconsistencies in 253 files
 - **Resolution:** Added underscore prefix to unused variables, added default switch clause, auto-fixed with biome
+
+### Email Reminders Cron Route (2026-02-19) ⚠️ KNOWN BUG
+- **Issue:** TypeScript errors in `/api/cron/email-reminders/route.ts`
+  - Uses `database.kitchen_tasks` instead of `database.kitchenTask`
+  - Uses snake_case field names (`task_name`, `due_date`, `assigned_employee_id`) instead of camelCase Prisma fields (`title`, `dueDate`, etc.)
+  - Schema mismatch: KitchenTask model doesn't have `assigned_employee_id` or `employee` relation - assignments go through `KitchenTaskClaim` model
+- **Impact:** 245 TypeScript errors in api package (not blocking app package builds)
+- **Status:** Not blocking mobile kitchen work - documented for future fix
 
 ---
 
