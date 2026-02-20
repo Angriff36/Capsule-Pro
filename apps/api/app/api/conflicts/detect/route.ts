@@ -14,12 +14,17 @@
 
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { log } from "@repo/observability/log";
+import {
+  CORRELATION_ID_HEADER,
+  generateCorrelationId,
+} from "@repo/observability/correlation";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type {
   Conflict,
   ConflictApiError,
-  ConflictDetectionRequest,
   ConflictDetectionResult,
   ConflictSeverity,
   ConflictType,
@@ -54,15 +59,24 @@ const INACTIVE_EVENT_STATUSES = ["cancelled", "completed"] as const;
 const TIME_OFF_APPROVED_STATUS = "APPROVED";
 
 /**
- * Create a typed API error response
+ * Create a typed API error response with correlation ID
  */
 function apiError(
   code: ConflictApiError["code"],
   message: string,
   guidance?: string,
-  status: number = 400
+  status: number = 400,
+  correlationId?: string
 ): NextResponse<ConflictApiError> {
-  return NextResponse.json({ code, message, guidance }, { status });
+  return NextResponse.json(
+    {
+      code,
+      message,
+      guidance,
+      ...(correlationId ? { correlationId } : {}),
+    },
+    { status }
+  );
 }
 
 /**
@@ -71,13 +85,23 @@ function apiError(
 async function safeDetect(
   detectorType: ConflictType,
   detector: () => Promise<Conflict[]>,
-  warnings: DetectorWarning[]
+  warnings: DetectorWarning[],
+  correlationId: string
 ): Promise<Conflict[]> {
   try {
     return await detector();
   } catch (error) {
     // Log the error for observability but don't fail the whole response
-    console.error(`Conflict detector ${detectorType} failed:`, error);
+    log.error(`Conflict detector ${detectorType} failed`, {
+      correlationId,
+      detectorType,
+      errorCode: "DETECTION_FAILED",
+      error: error instanceof Error ? error.message : String(error),
+    });
+    captureException(error, {
+      tags: { detectorType, route: "conflicts-detect" },
+      extra: { correlationId },
+    });
     warnings.push({
       detectorType,
       message: `Unable to check ${detectorType} conflicts. Other conflict types were still checked.`,
@@ -834,25 +858,46 @@ function buildConflictSummary(conflicts: Conflict[]) {
  * Detect conflicts across operations data
  */
 export async function POST(request: Request) {
+  // Extract or generate correlation ID for end-to-end tracing
+  const correlationId =
+    request.headers.get(CORRELATION_ID_HEADER) ?? generateCorrelationId();
+  const startTime = Date.now();
+
+  log.info("[conflicts/detect] Starting conflict detection", {
+    correlationId,
+    route: "conflicts-detect",
+  });
+
   // Authentication check
   const { orgId } = await auth();
   if (!orgId) {
+    log.warn("[conflicts/detect] Unauthorized request", {
+      correlationId,
+      errorCode: "AUTH_REQUIRED",
+    });
     return apiError(
-      "UNAUTHORIZED",
+      "AUTH_REQUIRED",
       "Authentication required",
       "Please sign in to access conflict detection.",
-      401
+      401,
+      correlationId
     );
   }
 
   // Tenant resolution
   const tenantId = await getTenantIdForOrg(orgId);
   if (!tenantId) {
+    log.warn("[conflicts/detect] Tenant not found", {
+      correlationId,
+      orgId,
+      errorCode: "TENANT_NOT_FOUND",
+    });
     return apiError(
       "TENANT_NOT_FOUND",
       "Tenant not found",
       "Your organization is not set up for conflict detection. Please contact support.",
-      404
+      404,
+      correlationId
     );
   }
 
@@ -861,10 +906,16 @@ export async function POST(request: Request) {
   try {
     body = await request.json();
   } catch {
+    log.warn("[conflicts/detect] Invalid JSON in request body", {
+      correlationId,
+      errorCode: "INVALID_REQUEST",
+    });
     return apiError(
       "INVALID_REQUEST",
       "Invalid JSON in request body",
-      "Please ensure your request contains valid JSON."
+      "Please ensure your request contains valid JSON.",
+      400,
+      correlationId
     );
   }
 
@@ -873,7 +924,18 @@ export async function POST(request: Request) {
     (body as Record<string, unknown>).timeRange
   );
   if (!timeRangeResult.ok) {
-    return apiError("INVALID_REQUEST", timeRangeResult.error);
+    log.warn("[conflicts/detect] Invalid timeRange", {
+      correlationId,
+      errorCode: "VALIDATION_ERROR",
+      error: timeRangeResult.error,
+    });
+    return apiError(
+      "VALIDATION_ERROR",
+      timeRangeResult.error,
+      undefined,
+      400,
+      correlationId
+    );
   }
   const timeRange = timeRangeResult.value;
 
@@ -882,7 +944,18 @@ export async function POST(request: Request) {
     (body as Record<string, unknown>).entityTypes
   );
   if (!entityTypesResult.ok) {
-    return apiError("INVALID_REQUEST", entityTypesResult.error);
+    log.warn("[conflicts/detect] Invalid entityTypes", {
+      correlationId,
+      errorCode: "VALIDATION_ERROR",
+      error: entityTypesResult.error,
+    });
+    return apiError(
+      "VALIDATION_ERROR",
+      entityTypesResult.error,
+      undefined,
+      400,
+      correlationId
+    );
   }
   const entityTypes = entityTypesResult.value;
 
@@ -896,7 +969,8 @@ export async function POST(request: Request) {
     const result = await safeDetect(
       "scheduling",
       () => detectSchedulingConflicts(tenantId, timeRange),
-      warnings
+      warnings,
+      correlationId
     );
     conflicts.push(...result);
   }
@@ -905,7 +979,8 @@ export async function POST(request: Request) {
     const result = await safeDetect(
       "staff",
       () => detectStaffConflicts(tenantId, timeRange),
-      warnings
+      warnings,
+      correlationId
     );
     conflicts.push(...result);
   }
@@ -914,7 +989,8 @@ export async function POST(request: Request) {
     const result = await safeDetect(
       "inventory",
       () => detectInventoryConflicts(tenantId, timeRange),
-      warnings
+      warnings,
+      correlationId
     );
     conflicts.push(...result);
   }
@@ -923,7 +999,8 @@ export async function POST(request: Request) {
     const result = await safeDetect(
       "equipment",
       () => detectEquipmentConflicts(tenantId, timeRange),
-      warnings
+      warnings,
+      correlationId
     );
     conflicts.push(...result);
   }
@@ -932,7 +1009,8 @@ export async function POST(request: Request) {
     const result = await safeDetect(
       "timeline",
       () => detectTimelineConflicts(tenantId, timeRange),
-      warnings
+      warnings,
+      correlationId
     );
     conflicts.push(...result);
   }
@@ -941,7 +1019,8 @@ export async function POST(request: Request) {
     const result = await safeDetect(
       "venue",
       () => detectVenueConflicts(tenantId, timeRange),
-      warnings
+      warnings,
+      correlationId
     );
     conflicts.push(...result);
   }
@@ -950,7 +1029,8 @@ export async function POST(request: Request) {
     const result = await safeDetect(
       "financial",
       () => detectFinancialConflicts(tenantId, timeRange),
-      warnings
+      warnings,
+      correlationId
     );
     conflicts.push(...result);
   }
@@ -968,5 +1048,17 @@ export async function POST(request: Request) {
     ...(warnings.length > 0 ? { warnings } : {}),
   };
 
-  return NextResponse.json(result);
+  const duration = Date.now() - startTime;
+  log.info("[conflicts/detect] Conflict detection complete", {
+    correlationId,
+    tenantId,
+    conflictCount: conflicts.length,
+    warningCount: warnings.length,
+    durationMs: duration,
+  });
+
+  // Include correlation ID in response headers for client-side tracing
+  const response = NextResponse.json(result);
+  response.headers.set(CORRELATION_ID_HEADER, correlationId);
+  return response;
 }

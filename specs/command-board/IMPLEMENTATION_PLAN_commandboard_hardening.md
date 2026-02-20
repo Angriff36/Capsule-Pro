@@ -302,12 +302,26 @@
 
 ## P4 - Observability and Performance Gates
 
-- [ ] [high] 17) Structured observability with correlation ID
-  - Files: command-board API routes + app command-board handlers/components as needed
+- [x] [high] 17) Structured observability with correlation ID
+  - Files: `packages/observability/correlation.ts`, `apps/api/app/api/conflicts/detect/route.ts`, `apps/api/app/api/conflicts/detect/types.ts`
   - DoD:
     - Correlation ID propagated end-to-end.
     - Normalized error codes emitted for recurring failure classes.
     - Logs are searchable by correlation ID and error code.
+  - Evidence:
+    - Added `packages/observability/correlation.ts` with `generateCorrelationId()`, `getOrCreateCorrelationId()`, `CORRELATION_ID_HEADER`, and `CommandBoardErrorCode` type.
+    - Updated `apps/api/app/api/conflicts/detect/route.ts` to:
+      - Extract or generate correlation ID from `x-correlation-id` header.
+      - Use structured `log.info/warn/error` with `correlationId` and `errorCode` fields.
+      - Include correlation ID in all error response bodies.
+      - Include correlation ID in response headers via `x-correlation-id`.
+      - Track request duration and emit completion log with conflict/warning counts.
+    - Updated `ConflictApiError` type to include new error codes: `AUTH_REQUIRED`, `VALIDATION_ERROR`, `USER_NOT_FOUND`, and optional `correlationId` field.
+    - 12 tests in `apps/api/__tests__/conflicts/detect-route.correlation.test.ts` covering: correlation ID generation, extraction from headers, inclusion in error responses, inclusion in response headers, error code normalization, request lifecycle logging.
+  - Learnings:
+    - Correlation ID already existed in `apps/app/app/api/command-board/chat/route.ts` - this implementation extends it to the API layer.
+    - Structured logging via `@repo/observability/log` uses Logtail in production, console in dev.
+    - Sentry `captureException` now includes correlation ID in `extra` field for cross-referencing logs and errors.
 
 - [ ] [medium] 18) Board health smoke test in CI
   - Files: command board test targets and CI workflow config
