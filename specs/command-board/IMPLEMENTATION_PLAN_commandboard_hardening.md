@@ -103,12 +103,26 @@
     - `normalizeStructuredAgentResponse()` in agent-loop.ts already generates `nextSteps` array.
     - Sentry still receives full error details for observability; only user-facing responses are sanitized.
 
-- [ ] [medium] 7) AI tool timeout/retry policy
+- [x] [medium] 7) AI tool timeout/retry policy
   - Files: `apps/app/app/api/command-board/chat/agent-loop.ts`
   - DoD:
     - Tool calls have bounded timeout and retry/backoff policy.
     - Failures return structured error envelopes.
     - No unbounded hangs or raw tool exceptions leak to user.
+  - Evidence:
+    - Added `withTimeout()` helper wrapping operations with AbortController (lines 26-52).
+    - Added `isRetryableError()` helper detecting transient failures (lines 62-69).
+    - Added `executeToolWithRetry()` function with exponential backoff (500ms, 1000ms) and max 2 retries (lines 416-491).
+    - Tool calls bounded at 30 seconds (`TOOL_CALL_TIMEOUT_MS`).
+    - OpenAI API calls bounded at 60 seconds (`API_CALL_TIMEOUT_MS`).
+    - Retries on ETIMEDOUT, ECONNRESET, ECONNREFUSED, 5xx errors, rate limits, gateway errors.
+    - Non-retryable errors (validation, "not found", permission) return immediately.
+    - All timeout/retry failures return structured error envelope with actionable message.
+    - 17 tests in `apps/app/__tests__/api/command-board/agent-loop-timeout.test.ts` covering: retryable error patterns, non-retryable patterns, backoff calculations, error envelope structure, safe message content.
+  - Learnings:
+    - Regex patterns moved to top-level constant `RETRYABLE_ERROR_PATTERNS` for performance (Biome rule).
+    - Existing `RetryManager` in `packages/ai/src/retry.ts` available for future centralized retry logic.
+    - Timeout handling uses simple `AbortController` pattern; no need for external libraries.
 
 ---
 

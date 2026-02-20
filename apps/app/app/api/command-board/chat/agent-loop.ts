@@ -2,6 +2,73 @@ import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import type { UIMessage } from "ai";
 
+// Timeout configuration constants
+const TOOL_CALL_TIMEOUT_MS = 30_000; // 30 seconds per tool call
+const API_CALL_TIMEOUT_MS = 60_000; // 60 seconds for OpenAI API calls
+const MAX_TOOL_RETRIES = 2; // Max retries for retryable tool failures
+
+// Patterns that indicate retryable (transient) errors
+const RETRYABLE_ERROR_PATTERNS = [
+  /ETIMEDOUT/i,
+  /ECONNRESET/i,
+  /ECONNREFUSED/i,
+  /ENOTFOUND/i,
+  /network/i,
+  /timeout/i,
+  /5\d{2}/, // 5xx status codes
+  /rate.?limit/i,
+  /too many requests/i,
+  /service unavailable/i,
+  /bad gateway/i,
+  /gateway timeout/i,
+];
+
+/**
+ * Wraps a promise with a timeout using AbortController.
+ * Returns a tuple of [result, timedOut] where timedOut is true if the operation timed out.
+ */
+async function withTimeout<T>(
+  operation: Promise<T>,
+  timeoutMs: number,
+  operationName: string
+): Promise<[result: T, timedOut: false] | [result: null, timedOut: true]> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+  try {
+    const result = await operation;
+    clearTimeout(timeoutId);
+    return [result, false];
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === "AbortError") {
+      log.warn("[command-board-chat] Operation timed out", {
+        operation: operationName,
+        timeoutMs,
+      });
+      return [null, true];
+    }
+    throw error;
+  }
+}
+
+/**
+ * Delay helper for retry backoff.
+ */
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Determines if an error is retryable (transient failures).
+ */
+function isRetryableError(error: unknown): boolean {
+  if (!(error instanceof Error)) return false;
+
+  const message = error.message.toLowerCase();
+  return RETRYABLE_ERROR_PATTERNS.some((pattern) => pattern.test(message));
+}
+
 interface ResponsesFunctionCall {
   type: "function_call";
   name: string;
@@ -205,8 +272,11 @@ async function callResponsesApi(params: {
   input: unknown;
   tools: unknown[];
   previousResponseId?: string;
+  timeoutMs?: number;
 }): Promise<ResponsesApiResult> {
-  const response = await fetch("https://api.openai.com/v1/responses", {
+  const timeoutMs = params.timeoutMs ?? API_CALL_TIMEOUT_MS;
+
+  const responsePromise = fetch("https://api.openai.com/v1/responses", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -221,6 +291,18 @@ async function callResponsesApi(params: {
       previous_response_id: params.previousResponseId,
     }),
   });
+
+  const [response, timedOut] = await withTimeout(
+    responsePromise,
+    timeoutMs,
+    "callResponsesApi"
+  );
+
+  if (timedOut) {
+    throw new Error(
+      `OpenAI API request timed out after ${timeoutMs}ms. Please try again.`
+    );
+  }
 
   if (!response.ok) {
     const errorBody = await response.text();
@@ -278,11 +360,12 @@ export async function runManifestActionAgent(
         correlationId: params.context.correlationId,
       });
 
-      const toolResult = await registry.executeToolCall({
-        name: functionCall.name,
-        argumentsJson: functionCall.arguments,
-        callId: functionCall.call_id,
-      });
+      // Execute tool with timeout and retry logic
+      const toolResult = await executeToolWithRetry(
+        registry,
+        functionCall,
+        params.context.correlationId
+      );
 
       toolExecutions.push({
         toolName: functionCall.name,
@@ -313,6 +396,83 @@ export async function runManifestActionAgent(
     latestAssistantText || "Tool loop reached max rounds.",
     toolExecutions
   );
+}
+
+/**
+ * Executes a tool call with timeout and retry logic for transient failures.
+ */
+async function executeToolWithRetry(
+  registry: ReturnType<
+    typeof import("./tool-registry").createManifestToolRegistry
+  >,
+  functionCall: ResponsesFunctionCall,
+  correlationId: string
+): Promise<import("./tool-registry").AgentToolResult> {
+  let lastError: Error | null = null;
+
+  for (let attempt = 0; attempt <= MAX_TOOL_RETRIES; attempt += 1) {
+    if (attempt > 0) {
+      // Exponential backoff: 500ms, 1000ms
+      const backoffMs = 500 * 2 ** (attempt - 1);
+      log.info("[command-board-chat] Retrying tool call", {
+        toolName: functionCall.name,
+        callId: functionCall.call_id,
+        attempt,
+        backoffMs,
+        correlationId,
+      });
+      await delay(backoffMs);
+    }
+
+    // Execute with timeout
+    const toolPromise = registry.executeToolCall({
+      name: functionCall.name,
+      argumentsJson: functionCall.arguments,
+      callId: functionCall.call_id,
+    });
+
+    const [result, timedOut] = await withTimeout(
+      toolPromise,
+      TOOL_CALL_TIMEOUT_MS,
+      `tool:${functionCall.name}`
+    );
+
+    if (timedOut) {
+      lastError = new Error(
+        `Tool call timed out after ${TOOL_CALL_TIMEOUT_MS}ms`
+      );
+      continue; // Retry on timeout
+    }
+
+    // If tool returned an error that might be retryable, check and retry
+    if (!result.ok && result.error) {
+      const error = new Error(result.error);
+      if (isRetryableError(error)) {
+        lastError = error;
+        continue; // Retry on transient errors
+      }
+    }
+
+    // Success or non-retryable error - return result
+    return result;
+  }
+
+  // All retries exhausted - return structured error envelope
+  log.error("[command-board-chat] Tool call failed after retries", {
+    toolName: functionCall.name,
+    callId: functionCall.call_id,
+    attempts: MAX_TOOL_RETRIES + 1,
+    lastError: lastError?.message,
+    correlationId,
+  });
+
+  return {
+    ok: false,
+    summary:
+      "The operation timed out or encountered a transient error. Please try again.",
+    error:
+      "The operation timed out or encountered a transient error. Please try again.",
+  };
 }
 
 export async function runManifestActionAgentSafe(
