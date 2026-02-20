@@ -7,16 +7,16 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { database, type Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 const updateWorkflowSchema = z.object({
   name: z.string().min(1).optional(),
-  triggerConfig: z.record(z.unknown()).optional(),
+  triggerConfig: z.record(z.string(), z.unknown()).optional(),
   emailTemplateId: z.string().nullable().optional(),
-  recipientConfig: z.record(z.unknown()).optional(),
+  recipientConfig: z.record(z.string(), z.unknown()).optional(),
   isActive: z.boolean().optional(),
 });
 
@@ -150,6 +150,24 @@ export async function PUT(
       }
     }
 
+    const updateData: Prisma.EmailWorkflowUncheckedUpdateInput = {};
+    if (name !== undefined) {
+      updateData.name = name;
+    }
+    if (triggerConfig !== undefined) {
+      updateData.triggerConfig = triggerConfig as Prisma.InputJsonValue;
+    }
+    if (emailTemplateId !== undefined) {
+      updateData.emailTemplateId = emailTemplateId ?? null;
+      updateData.emailTemplateTenantId = emailTemplateId ? tenantId : null;
+    }
+    if (recipientConfig !== undefined) {
+      updateData.recipientConfig = recipientConfig as Prisma.InputJsonValue;
+    }
+    if (isActive !== undefined) {
+      updateData.isActive = isActive;
+    }
+
     const workflow = await database.emailWorkflow.update({
       where: {
         tenantId_id: {
@@ -157,16 +175,7 @@ export async function PUT(
           id,
         },
       },
-      data: {
-        ...(name !== undefined && { name }),
-        ...(triggerConfig !== undefined && { triggerConfig }),
-        ...(emailTemplateId !== undefined && {
-          emailTemplateId: emailTemplateId ?? null,
-          emailTemplateTenantId: emailTemplateId ? tenantId : null,
-        }),
-        ...(recipientConfig !== undefined && { recipientConfig }),
-        ...(isActive !== undefined && { isActive }),
-      },
+      data: updateData,
       include: {
         emailTemplate: {
           select: {

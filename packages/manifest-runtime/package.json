@@ -48,7 +48,7 @@
     "build:lib": "tsc -p tsconfig.lib.json",
     "lint": "eslint .",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit -p tsconfig.app.json",
+    "typecheck": "tsc --noEmit -p tsconfig.lib.json",
     "test": "vitest run",
     "test:watch": "vitest",
     "bench": "vitest bench --reporter=verbose",
@@ -66,5 +66,8 @@
     "manifest:build": "tsx ./packages/cli/src/index.ts build",
     "manifest:validate": "tsx ./packages/cli/src/index.ts validate",
     "prepublishOnly": "pnpm run build:lib && cd packages/cli && tsc"
+  },
+  "devDependencies": {
+    "@supabase/supabase-js": "^2.97.0"
   }
 }

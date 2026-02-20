@@ -1,7 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { NextResponse } from "next/server";
-import { getTenantId } from "@/app/lib/tenant";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 /**
  * GET /api/crm/proposals/templates
@@ -14,7 +14,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const tenantId = await getTenantId();
+    const tenantId = await getTenantIdForOrg(orgId);
 
     const templates = await database.proposalTemplate.findMany({
       where: {

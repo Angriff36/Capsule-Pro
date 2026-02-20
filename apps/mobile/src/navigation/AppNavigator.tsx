@@ -84,8 +84,8 @@ export default function AppNavigator() {
           name="TasksTab"
           component={TasksScreen}
           options={{
-            title: "Tasks",
-            tabBarLabel: "Tasks",
+            title: "Task Board",
+            tabBarLabel: "Task Board",
             tabBarIcon: ({ focused }) => <ClipboardIcon focused={focused} />,
           }}
         />

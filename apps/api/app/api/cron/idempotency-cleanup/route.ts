@@ -14,7 +14,6 @@
  */
 
 import { database } from "@repo/database";
-import { cleanupExpiredIdempotencyEntries } from "@repo/manifest-adapters/prisma-idempotency-store";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 
@@ -42,7 +41,14 @@ export async function GET(request: Request): Promise<NextResponse> {
   }
 
   try {
-    const deleted = await cleanupExpiredIdempotencyEntries(database);
+    const result = await database.manifestIdempotency.deleteMany({
+      where: {
+        expiresAt: {
+          lt: new Date(),
+        },
+      },
+    });
+    const deleted = result.count;
 
     console.log(
       `[idempotency-cleanup] Cleaned up ${deleted} expired idempotency entries`

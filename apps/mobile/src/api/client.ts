@@ -1,7 +1,12 @@
 // API Client for native mobile app
 // Handles authentication, base URL, and error handling
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? "http://localhost:2223";
+import { Platform } from "react-native";
+
+const DEFAULT_API_BASE_URL =
+  Platform.OS === "android" ? "http://10.0.2.2:2223" : "http://localhost:2223";
+
+const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? DEFAULT_API_BASE_URL;
 
 interface FetchOptions extends RequestInit {
   token?: string;

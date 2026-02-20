@@ -5,7 +5,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { database, type Prisma } from "@repo/database";
 import {
   buildWebhookPayload,
   determineNextStatus,
@@ -115,7 +115,7 @@ export async function POST(request: NextRequest) {
           eventType: body.eventType as "created" | "updated" | "deleted",
           entityType: body.entityType,
           entityId: body.entityId,
-          payload: payload as unknown as Record<string, unknown>,
+          payload: payload as unknown as Prisma.InputJsonValue,
           status: "pending",
           attemptNumber: 1,
         },
@@ -167,7 +167,7 @@ export async function POST(request: NextRequest) {
         lastSuccessAt?: Date;
         lastFailureAt?: Date;
         consecutiveFailures: number;
-        status?: string;
+        status?: typeof webhook.status;
       } = {
         lastTriggeredAt: new Date(),
         consecutiveFailures: result.success

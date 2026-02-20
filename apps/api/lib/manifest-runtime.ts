@@ -66,6 +66,7 @@ interface GeneratedRuntimeContext {
     tenantId: string;
     role?: string;
   };
+  entityName?: string;
 }
 
 type ManifestIR = IR;

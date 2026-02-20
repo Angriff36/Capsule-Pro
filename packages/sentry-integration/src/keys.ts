@@ -39,6 +39,16 @@ export const keys = () =>
       GITHUB_REPO_OWNER: z.string().min(1).optional(),
       GITHUB_REPO_NAME: z.string().min(1).optional(),
 
+      // OpenAI configuration for AI-powered fix generation
+      OPENAI_API_KEY: z.string().startsWith("sk-").optional(),
+      SENTRY_FIXER_AI_MODEL: z.string().default("gpt-4o"),
+
+      // Time budget for cron invocations (ms). Default 240s (leaves 60s buffer for 300s Vercel limit).
+      SENTRY_FIXER_MAX_EXECUTION_MS: z
+        .string()
+        .default("240000")
+        .transform((val) => Number.parseInt(val, 10)),
+
       // Blocked paths for auto-fix (comma-separated)
       SENTRY_FIXER_BLOCKED_PATHS: z.string().default("migrations,auth,billing"),
     },
@@ -57,6 +67,9 @@ export const keys = () =>
       GITHUB_TOKEN: process.env.GITHUB_TOKEN,
       GITHUB_REPO_OWNER: process.env.GITHUB_REPO_OWNER,
       GITHUB_REPO_NAME: process.env.GITHUB_REPO_NAME,
+      OPENAI_API_KEY: process.env.OPENAI_API_KEY,
+      SENTRY_FIXER_AI_MODEL: process.env.SENTRY_FIXER_AI_MODEL,
+      SENTRY_FIXER_MAX_EXECUTION_MS: process.env.SENTRY_FIXER_MAX_EXECUTION_MS,
       SENTRY_FIXER_BLOCKED_PATHS: process.env.SENTRY_FIXER_BLOCKED_PATHS,
     },
   });

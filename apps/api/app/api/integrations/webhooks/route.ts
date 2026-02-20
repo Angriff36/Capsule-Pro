@@ -6,7 +6,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database, type Prisma } from "@repo/database";
+import { database, Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -181,7 +181,9 @@ export async function POST(request: NextRequest) {
         retryCount: body.retryCount ?? 3,
         retryDelayMs: body.retryDelayMs ?? 1000,
         timeoutMs: body.timeoutMs ?? 30_000,
-        customHeaders: body.customHeaders || null,
+        customHeaders:
+          (body.customHeaders as Prisma.InputJsonValue | undefined) ??
+          Prisma.JsonNull,
         consecutiveFailures: 0,
       },
     });
