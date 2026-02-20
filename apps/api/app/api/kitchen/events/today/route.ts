@@ -194,6 +194,7 @@ export async function GET() {
       unclaimedPrepCount,
       incompleteItemsCount,
       urgency,
+      prepListIds: prepListsForEvent.map((pl) => pl.id),
     };
   });
 

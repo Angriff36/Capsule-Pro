@@ -15,15 +15,16 @@ The Convoy platform is a catering/event management SaaS with strong foundations.
 - Build: ✅ TypeScript passes (app package)
 - Build: ✅ Email reminders cron route fixed (no more TS errors)
 - Build: ⚠️ ~200 TypeScript errors in api package (pre-existing, unrelated to email-reminders)
-- Tests: ✅ No failing tests (110 passed)
+- Tests: ✅ No failing tests (720 passed)
 - Lint: ✅ Clean on modified code (warnings only - cognitive complexity)
 - Tags: v0.6.103 (latest)
-- Mobile Kitchen App: ✅ ALL TASKS COMPLETE (P0-P4 + swipe notes)
+- Mobile Kitchen App: ✅ ALL TASKS COMPLETE (P0-P4 + swipe notes + event navigation)
   - All pages implemented: Today, Tasks, Prep Lists, My Work
   - All APIs functional: events/today, bundle-claim, task commands, prep list items
   - Offline sync working across all operations
   - Types centralized in types.ts
   - Swipe-left to add notes on prep list items (2026-02-19)
+  - Event card tap navigation to prep lists (2026-02-19)
 
 ---
 

@@ -78,6 +78,7 @@ export interface TodayEvent {
   unclaimedPrepCount: number;
   incompleteItemsCount: number;
   urgency: "critical" | "warning" | "ok";
+  prepListIds: string[];
 }
 
 export const priorityConfig: Record<number, { label: string; color: string }> =
