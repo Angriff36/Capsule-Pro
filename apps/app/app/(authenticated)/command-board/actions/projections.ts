@@ -1,6 +1,7 @@
 "use server";
 
 import { database } from "@repo/database";
+import { Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { requireTenantId } from "../../../lib/tenant";
 import type { BoardProjection } from "../types/board";
@@ -93,6 +94,16 @@ export interface AddProjectionResult {
   success: boolean;
   projection?: BoardProjection;
   error?: string;
+  /** True if the entity already exists on the board (duplicate) */
+  isDuplicate?: boolean;
+}
+
+/** Check if error is a Prisma unique constraint violation (P2002) */
+function isUniqueConstraintError(error: unknown): boolean {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    return error.code === "P2002";
+  }
+  return false;
 }
 
 /** Add a new entity projection to a board */
@@ -117,6 +128,7 @@ export async function addProjection(
     if (existing) {
       return {
         success: false,
+        isDuplicate: true,
         error: `A ${input.entityType} projection for this entity already exists on this board`,
       };
     }
@@ -158,6 +170,14 @@ export async function addProjection(
       projection: dbToProjection(created),
     };
   } catch (error) {
+    // Handle race condition: another request inserted the same projection between our check and create
+    if (isUniqueConstraintError(error)) {
+      return {
+        success: false,
+        isDuplicate: true,
+        error: `A ${input.entityType} projection for this entity already exists on this board`,
+      };
+    }
     console.error("[addProjection] Failed to add projection:", error);
     return {
       success: false,

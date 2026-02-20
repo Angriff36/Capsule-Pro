@@ -184,10 +184,23 @@
     - Most cards already had reasonable fallback patterns
     - Main gaps were in mapping lookups that could return undefined (status variants, severity configs)
 
-- [ ] [medium] 12) Entity add flow resilience
-  - Files: `apps/app/app/(authenticated)/command-board/components/add-to-board-dialog.tsx`
+- [x] [medium] 12) Entity add flow resilience
+  - Files: `apps/app/app/(authenticated)/command-board/components/add-to-board-dialog.tsx`, `apps/app/app/(authenticated)/command-board/actions/projections.ts`
   - DoD:
     - Handles duplicate entities, stale IDs, and races without corrupting board state.
+  - Evidence:
+    - Server-side: Added `isUniqueConstraintError()` helper to detect P2002 errors (projections.ts:101-107)
+    - Server-side: Added `isDuplicate` flag to `AddProjectionResult` interface for client detection
+    - Server-side: P2002 race condition handling returns duplicate response instead of crashing (projections.ts:172-180)
+    - Client-side: `handleAddToExistingBoard` now shows info toast for duplicates with `toast.info()` instead of error
+    - Client-side: `handleCreateNewBoard` now properly checks `addProjection` result (was previously silently ignored)
+    - Client-side: Create board flow shows distinct toasts for: success, duplicate, or failure
+    - 31 tests in `apps/app/__tests__/command-board/add-to-board-resilience.test.ts` covering: P2002 error detection, AddProjectionResult interface behavior, duplicate error messages, toast message logic for existing/new board flows, entity type mapping, race condition scenarios, stale ID handling
+  - Learnings:
+    - The check-then-create pattern in `addProjection` has a race window; P2002 catching at DB level is the safety net
+    - Previous `handleCreateNewBoard` silently ignored `addProjection` result - user saw "Board created and X added" even if projection failed
+    - UI shows `toast.info()` for duplicates to differentiate from errors (entity already on board is not a failure)
+    - Board state is never corrupted because DB unique constraint ensures single projection per entity/board
 
 ---
 
