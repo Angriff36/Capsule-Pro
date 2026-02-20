@@ -1,2 +1,2 @@
-// Components module - placeholder for shared components
-// Will include TaskCard, PrepListItem, EventCard, etc.
+// Components module - shared components for the mobile app
+export { default as EventCard } from "./EventCard";
