@@ -128,11 +128,19 @@
 
 ## P2 - Command Board Data/UI Safety
 
-- [ ] [medium] 8) Empty-state board UX polish
-  - Files: `apps/app/app/(authenticated)/command-board/components/board-shell.tsx` and related components
+- [x] [medium] 8) Empty-state board UX polish
+  - Files: `apps/app/app/(authenticated)/command-board/components/board-shell.tsx`, `apps/app/app/(authenticated)/command-board/nodes/cards/risk-card.tsx`, `apps/app/app/(authenticated)/command-board/nodes/cards/financial-card.tsx`
   - DoD:
     - Empty/new boards have explicit guidance and safe defaults.
     - No crash/regression when projections are absent.
+  - Evidence:
+    - BoardFlow already has proper empty state UI with quick action buttons (board-flow.tsx:1064-1124)
+    - RiskCard: Added fallback for unknown status (`statusVariant ?? "outline"`), unknown severity (`severityConfig[data.severity] ?? severityConfig.medium`), null category, null affectedEntityName/Type (risk-card.tsx:73-78, 105, 124)
+    - FinancialCard: Added fallback for unknown healthStatus (`healthStatusConfig[data.healthStatus] ?? healthStatusConfig.unknown`), null margin (`margin ?? 0`), null revenue/costs/profit/eventCount (financial-card.tsx:85-89, 120-131, 140-145, 153, 170)
+    - 15 tests in `apps/app/__tests__/command-board/cards-fallback.test.tsx` covering: null margin, null revenue/costs/profit/eventCount, unknown healthStatus, unknown severity, unknown status, null status, unknown category, null affectedEntityName
+  - Learnings:
+    - BoardFlow empty state was already complete with proper UI
+    - Card components needed defensive fallbacks for mapping lookups that could return undefined
 
 - [ ] [medium] 9) Select component safety pass (no empty-value items)
   - Files: `apps/app/app/(authenticated)/command-board/components/`
@@ -146,10 +154,18 @@
     - Missing/null fields normalized at action boundary.
     - Card rendering never crashes due to partial payloads.
 
-- [ ] [medium] 11) Card fallback completeness
+- [x] [medium] 11) Card fallback completeness
   - Files: `apps/app/app/(authenticated)/command-board/nodes/cards/`
   - DoD:
     - Every card type has deterministic fallback for missing title/status/priority/assignee/date.
+  - Evidence:
+    - RiskCard: Fallbacks for unknown status/severity/category/affectedEntityName (risk-card.tsx:73-78, 105, 124)
+    - FinancialCard: Fallbacks for unknown healthStatus, null margin/revenue/costs/profit/eventCount (financial-card.tsx:85-89, 120-131, 140-145, 153, 170)
+    - TaskCard: Already has fallbacks with `statusConfig[data.status] ?? statusConfig.pending` and `priorityConfig[priority] ?? null` (task-card.tsx:74-80)
+    - 15 tests in `apps/app/__tests__/command-board/cards-fallback.test.tsx` covering null/unknown field handling
+  - Learnings:
+    - Most cards already had reasonable fallback patterns
+    - Main gaps were in mapping lookups that could return undefined (status variants, severity configs)
 
 - [ ] [medium] 12) Entity add flow resilience
   - Files: `apps/app/app/(authenticated)/command-board/components/add-to-board-dialog.tsx`

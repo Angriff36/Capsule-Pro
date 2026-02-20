@@ -81,7 +81,12 @@ export const FinancialNodeCard = memo(function FinancialNodeCard({
   stale,
 }: FinancialNodeCardProps) {
   const colors = ENTITY_TYPE_COLORS.financial_projection;
-  const health = healthStatusConfig[data.healthStatus];
+  // Fallback to "unknown" health status for missing values
+  const health =
+    healthStatusConfig[data.healthStatus] ?? healthStatusConfig.unknown;
+
+  // Safe margin value with fallback to 0
+  const margin = data.grossProfitMargin ?? 0;
 
   return (
     <div className={cn("flex h-full flex-col gap-1.5", stale && "opacity-50")}>
@@ -117,12 +122,12 @@ export const FinancialNodeCard = memo(function FinancialNodeCard({
         <div className="flex items-center gap-1">
           <TrendingUp className="size-3 text-green-600 dark:text-green-400" />
           <span className="font-medium">
-            {formatCurrency(data.projectedRevenue)}
+            {formatCurrency(data.projectedRevenue ?? 0)}
           </span>
         </div>
         <div className="flex items-center gap-1">
           <TrendingDown className="size-3 text-red-600 dark:text-red-400" />
-          <span>{formatCurrency(data.projectedCosts)}</span>
+          <span>{formatCurrency(data.projectedCosts ?? 0)}</span>
         </div>
       </div>
 
@@ -132,12 +137,12 @@ export const FinancialNodeCard = memo(function FinancialNodeCard({
         <span
           className={cn(
             "font-semibold text-sm",
-            data.grossProfit >= 0
+            (data.grossProfit ?? 0) >= 0
               ? "text-green-700 dark:text-green-300"
               : "text-red-700 dark:text-red-300"
           )}
         >
-          {formatCurrency(data.grossProfit)}
+          {formatCurrency(data.grossProfit ?? 0)}
         </span>
       </div>
 
@@ -145,17 +150,15 @@ export const FinancialNodeCard = memo(function FinancialNodeCard({
       <div className="space-y-1">
         <div className="flex items-center justify-between text-xs">
           <span className="text-muted-foreground">Margin</span>
-          <span className="font-medium">
-            {data.grossProfitMargin.toFixed(1)}%
-          </span>
+          <span className="font-medium">{margin.toFixed(1)}%</span>
         </div>
         <div className="relative h-2 rounded-full bg-muted overflow-hidden">
           <div
             className={cn(
               "absolute left-0 top-0 h-full rounded-full transition-all",
-              getMarginColor(data.grossProfitMargin)
+              getMarginColor(margin)
             )}
-            style={{ width: `${Math.min(data.grossProfitMargin, 100)}%` }}
+            style={{ width: `${Math.min(margin, 100)}%` }}
           />
         </div>
       </div>
@@ -164,9 +167,9 @@ export const FinancialNodeCard = memo(function FinancialNodeCard({
       <div className="mt-auto flex items-center gap-3 text-muted-foreground text-xs">
         <div className="flex items-center gap-1">
           <Calendar className="size-3" />
-          <span>{data.eventCount} events</span>
+          <span>{data.eventCount ?? 0} events</span>
         </div>
-        {data.totalGuests !== null && (
+        {data.totalGuests !== null && data.totalGuests !== undefined && (
           <div className="flex items-center gap-1">
             <Users className="size-3" />
             <span>{data.totalGuests.toLocaleString()} guests</span>

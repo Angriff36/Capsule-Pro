@@ -70,7 +70,12 @@ export const RiskNodeCard = memo(function RiskNodeCard({
   stale,
 }: RiskNodeCardProps) {
   const colors = ENTITY_TYPE_COLORS.risk;
-  const severity = severityConfig[data.severity];
+  // Fallback to "medium" severity for unknown values
+  const severity =
+    severityConfig[data.severity] ?? severityConfig.medium;
+  // Fallback to "outline" variant for unknown status values
+  const statusVariant =
+    statusVariantMap[data.status] ?? "outline";
 
   return (
     <div className={cn("flex h-full flex-col gap-1.5", stale && "opacity-50")}>
@@ -82,9 +87,9 @@ export const RiskNodeCard = memo(function RiskNodeCard({
         </div>
         <Badge
           className="text-[10px] px-1.5 py-0"
-          variant={statusVariantMap[data.status]}
+          variant={statusVariant}
         >
-          {data.status}
+          {data.status ?? "unknown"}
         </Badge>
       </div>
 
@@ -97,7 +102,7 @@ export const RiskNodeCard = memo(function RiskNodeCard({
           severity.border
         )}
       >
-        {severity.label} - {categoryLabels[data.category] ?? data.category}
+        {severity.label} - {categoryLabels[data.category] ?? data.category ?? "Unknown"}
       </div>
 
       {/* Title */}
@@ -116,7 +121,7 @@ export const RiskNodeCard = memo(function RiskNodeCard({
       <div className="mt-auto flex items-center gap-1.5 text-muted-foreground text-xs">
         <Target className="size-3 shrink-0" />
         <span className="truncate">
-          Affects: {data.affectedEntityName || data.affectedEntityType}
+          Affects: {data.affectedEntityName ?? data.affectedEntityType ?? "Unknown"}
         </span>
       </div>
 
