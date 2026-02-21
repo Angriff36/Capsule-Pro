@@ -1,1669 +1,2278 @@
-/**
- * Generated Route Helpers — DO NOT EDIT
- *
- * Re-run:  node scripts/manifest/generate-route-manifest.mjs
- * Generated at: 2026-02-16T23:26:08.905Z
- * Total routes: 412
- */
-
-// eslint-disable-next-line -- generated file, string literals are canonical definitions
-
-// ---------------------------------------------------------------------------
-// Route path builders
-// ---------------------------------------------------------------------------
-
-/** GET /api/accounting/accounts */
-export const accountingAccounts = (): string => "/api/accounting/accounts";
-
-/** GET /api/accounting/accounts/:id */
-export const accountingAccountsById = (id: string): string => "/api/accounting/accounts/:id".replace(":id", encodeURIComponent(id));
-
-/** GET /api/administrative/chat/threads */
-export const administrativeChatThreads = (): string => "/api/administrative/chat/threads";
-
-/** PATCH /api/administrative/chat/threads/:threadId */
-export const administrativeChatThreadsByThreadId = (threadId: string): string => "/api/administrative/chat/threads/:threadId".replace(":threadId", encodeURIComponent(threadId));
-
-/** GET /api/administrative/chat/threads/:threadId/messages */
-export const administrativeChatThreadsMessages = (threadId: string): string => "/api/administrative/chat/threads/:threadId/messages".replace(":threadId", encodeURIComponent(threadId));
-
-/** GET, POST /api/administrative/tasks */
-export const administrativeTasks = (): string => "/api/administrative/tasks";
-
-/** GET, PATCH, DELETE /api/administrative/tasks/:id */
-export const administrativeTasksById = (id: string): string => "/api/administrative/tasks/:id".replace(":id", encodeURIComponent(id));
-
-/** GET /api/ai/suggestions */
-export const aiSuggestions = (): string => "/api/ai/suggestions";
-
-/** GET /api/ai/summaries/:eventId */
-export const aiSummaries = (eventId: string): string => "/api/ai/summaries/:eventId".replace(":eventId", encodeURIComponent(eventId));
-
-/** GET /api/analytics/events/profitability */
-export const analyticsEventsProfitability = (): string => "/api/analytics/events/profitability";
-
-/** GET /api/analytics/finance */
-export const analyticsFinance = (): string => "/api/analytics/finance";
-
-/** GET /api/analytics/kitchen */
-export const analyticsKitchen = (): string => "/api/analytics/kitchen";
-
-/** GET /api/analytics/staff/employees/:employeeId */
-export const analyticsStaffEmployees = (employeeId: string): string => "/api/analytics/staff/employees/:employeeId".replace(":employeeId", encodeURIComponent(employeeId));
-
-/** GET /api/analytics/staff/summary */
-export const analyticsStaffSummary = (): string => "/api/analytics/staff/summary";
-
-/** GET /api/collaboration/auth */
-export const collaborationAuth = (): string => "/api/collaboration/auth";
-
-/** POST /api/collaboration/notifications/commands/create */
-export const collaborationNotificationsCommandsCreate = (): string => "/api/collaboration/notifications/commands/create";
-
-/** POST /api/collaboration/notifications/commands/mark-dismissed */
-export const collaborationNotificationsCommandsMarkDismissed = (): string => "/api/collaboration/notifications/commands/mark-dismissed";
-
-/** POST /api/collaboration/notifications/commands/mark-read */
-export const collaborationNotificationsCommandsMarkRead = (): string => "/api/collaboration/notifications/commands/mark-read";
-
-/** POST /api/collaboration/notifications/commands/remove */
-export const collaborationNotificationsCommandsRemove = (): string => "/api/collaboration/notifications/commands/remove";
-
-/** POST /api/collaboration/workflows/commands/activate */
-export const collaborationWorkflowsCommandsActivate = (): string => "/api/collaboration/workflows/commands/activate";
-
-/** POST /api/collaboration/workflows/commands/create */
-export const collaborationWorkflowsCommandsCreate = (): string => "/api/collaboration/workflows/commands/create";
-
-/** POST /api/collaboration/workflows/commands/deactivate */
-export const collaborationWorkflowsCommandsDeactivate = (): string => "/api/collaboration/workflows/commands/deactivate";
-
-/** POST /api/collaboration/workflows/commands/update */
-export const collaborationWorkflowsCommandsUpdate = (): string => "/api/collaboration/workflows/commands/update";
-
-/** GET /api/command-board */
-export const commandBoard = (): string => "/api/command-board";
-
-/** GET /api/command-board/:boardId */
-export const commandBoardByBoardId = (boardId: string): string => "/api/command-board/:boardId".replace(":boardId", encodeURIComponent(boardId));
-
-/** GET /api/command-board/:boardId/cards */
-export const commandBoardCards = (boardId: string): string => "/api/command-board/:boardId/cards".replace(":boardId", encodeURIComponent(boardId));
-
-/** GET /api/command-board/:boardId/cards/:cardId */
-export const commandBoardCardsByBoardId = (boardId: string, cardId: string): string => "/api/command-board/:boardId/cards/:cardId".replace(":boardId", encodeURIComponent(boardId)).replace(":cardId", encodeURIComponent(cardId));
-
-/** GET /api/command-board/:boardId/connections */
-export const commandBoardConnections = (boardId: string): string => "/api/command-board/:boardId/connections".replace(":boardId", encodeURIComponent(boardId));
-
-/** GET /api/command-board/:boardId/connections/:connectionId */
-export const commandBoardConnectionsByBoardId = (boardId: string, connectionId: string): string => "/api/command-board/:boardId/connections/:connectionId".replace(":boardId", encodeURIComponent(boardId)).replace(":connectionId", encodeURIComponent(connectionId));
-
-/** POST /api/command-board/:boardId/draft */
-export const commandBoardDraft = (boardId: string): string => "/api/command-board/:boardId/draft".replace(":boardId", encodeURIComponent(boardId));
-
-/** GET /api/command-board/:boardId/groups */
-export const commandBoardGroups = (boardId: string): string => "/api/command-board/:boardId/groups".replace(":boardId", encodeURIComponent(boardId));
-
-/** GET, PUT /api/command-board/:boardId/groups/:groupId */
-export const commandBoardGroupsByBoardId = (boardId: string, groupId: string): string => "/api/command-board/:boardId/groups/:groupId".replace(":boardId", encodeURIComponent(boardId)).replace(":groupId", encodeURIComponent(groupId));
-
-/** POST /api/command-board/:boardId/groups/:groupId/cards */
-export const commandBoardGroupsCards = (boardId: string, groupId: string): string => "/api/command-board/:boardId/groups/:groupId/cards".replace(":boardId", encodeURIComponent(boardId)).replace(":groupId", encodeURIComponent(groupId));
-
-/** GET /api/command-board/:boardId/replay */
-export const commandBoardReplay = (boardId: string): string => "/api/command-board/:boardId/replay".replace(":boardId", encodeURIComponent(boardId));
-
-/** POST /api/command-board/boards/commands/activate */
-export const commandBoardBoardsCommandsActivate = (): string => "/api/command-board/boards/commands/activate";
-
-/** POST /api/command-board/boards/commands/create */
-export const commandBoardBoardsCommandsCreate = (): string => "/api/command-board/boards/commands/create";
-
-/** POST /api/command-board/boards/commands/deactivate */
-export const commandBoardBoardsCommandsDeactivate = (): string => "/api/command-board/boards/commands/deactivate";
-
-/** POST /api/command-board/boards/commands/update */
-export const commandBoardBoardsCommandsUpdate = (): string => "/api/command-board/boards/commands/update";
-
-/** POST /api/command-board/cards/commands/create */
-export const commandBoardCardsCommandsCreate = (): string => "/api/command-board/cards/commands/create";
-
-/** POST /api/command-board/cards/commands/move */
-export const commandBoardCardsCommandsMove = (): string => "/api/command-board/cards/commands/move";
-
-/** POST /api/command-board/cards/commands/remove */
-export const commandBoardCardsCommandsRemove = (): string => "/api/command-board/cards/commands/remove";
-
-/** POST /api/command-board/cards/commands/resize */
-export const commandBoardCardsCommandsResize = (): string => "/api/command-board/cards/commands/resize";
-
-/** POST /api/command-board/cards/commands/update */
-export const commandBoardCardsCommandsUpdate = (): string => "/api/command-board/cards/commands/update";
-
-/** POST /api/command-board/connections/commands/create */
-export const commandBoardConnectionsCommandsCreate = (): string => "/api/command-board/connections/commands/create";
-
-/** POST /api/command-board/connections/commands/remove */
-export const commandBoardConnectionsCommandsRemove = (): string => "/api/command-board/connections/commands/remove";
-
-/** POST /api/command-board/groups/commands/create */
-export const commandBoardGroupsCommandsCreate = (): string => "/api/command-board/groups/commands/create";
-
-/** POST /api/command-board/groups/commands/remove */
-export const commandBoardGroupsCommandsRemove = (): string => "/api/command-board/groups/commands/remove";
-
-/** POST /api/command-board/groups/commands/update */
-export const commandBoardGroupsCommandsUpdate = (): string => "/api/command-board/groups/commands/update";
-
-/** GET, POST /api/command-board/layouts */
-export const commandBoardLayouts = (): string => "/api/command-board/layouts";
-
-/** GET /api/command-board/layouts/:layoutId */
-export const commandBoardLayoutsByLayoutId = (layoutId: string): string => "/api/command-board/layouts/:layoutId".replace(":layoutId", encodeURIComponent(layoutId));
-
-/** POST /api/command-board/layouts/commands/create */
-export const commandBoardLayoutsCommandsCreate = (): string => "/api/command-board/layouts/commands/create";
-
-/** POST /api/command-board/layouts/commands/remove */
-export const commandBoardLayoutsCommandsRemove = (): string => "/api/command-board/layouts/commands/remove";
-
-/** POST /api/command-board/layouts/commands/update */
-export const commandBoardLayoutsCommandsUpdate = (): string => "/api/command-board/layouts/commands/update";
-
-/** GET /api/conflicts/detect */
-export const conflictsDetect = (): string => "/api/conflicts/detect";
-
-/** POST /api/crm/client-contacts/commands/create */
-export const crmClientContactsCommandsCreate = (): string => "/api/crm/client-contacts/commands/create";
-
-/** POST /api/crm/client-contacts/commands/remove */
-export const crmClientContactsCommandsRemove = (): string => "/api/crm/client-contacts/commands/remove";
-
-/** POST /api/crm/client-contacts/commands/set-primary */
-export const crmClientContactsCommandsSetPrimary = (): string => "/api/crm/client-contacts/commands/set-primary";
-
-/** POST /api/crm/client-contacts/commands/update */
-export const crmClientContactsCommandsUpdate = (): string => "/api/crm/client-contacts/commands/update";
-
-/** POST /api/crm/client-interactions/commands/complete */
-export const crmClientInteractionsCommandsComplete = (): string => "/api/crm/client-interactions/commands/complete";
-
-/** POST /api/crm/client-interactions/commands/create */
-export const crmClientInteractionsCommandsCreate = (): string => "/api/crm/client-interactions/commands/create";
-
-/** POST /api/crm/client-interactions/commands/update */
-export const crmClientInteractionsCommandsUpdate = (): string => "/api/crm/client-interactions/commands/update";
-
-/** POST /api/crm/client-preferences/commands/create */
-export const crmClientPreferencesCommandsCreate = (): string => "/api/crm/client-preferences/commands/create";
-
-/** POST /api/crm/client-preferences/commands/remove */
-export const crmClientPreferencesCommandsRemove = (): string => "/api/crm/client-preferences/commands/remove";
-
-/** POST /api/crm/client-preferences/commands/update */
-export const crmClientPreferencesCommandsUpdate = (): string => "/api/crm/client-preferences/commands/update";
-
-/** GET /api/crm/clients */
-export const crmClients = (): string => "/api/crm/clients";
-
-/** GET /api/crm/clients/:id */
-export const crmClientsById = (id: string): string => "/api/crm/clients/:id".replace(":id", encodeURIComponent(id));
-
-/** GET, POST /api/crm/clients/:id/contacts */
-export const crmClientsContacts = (id: string): string => "/api/crm/clients/:id/contacts".replace(":id", encodeURIComponent(id));
-
-/** GET /api/crm/clients/:id/events */
-export const crmClientsEvents = (id: string): string => "/api/crm/clients/:id/events".replace(":id", encodeURIComponent(id));
-
-/** GET, POST /api/crm/clients/:id/interactions */
-export const crmClientsInteractions = (id: string): string => "/api/crm/clients/:id/interactions".replace(":id", encodeURIComponent(id));
-
-/** PUT, DELETE /api/crm/clients/:id/interactions/:interactionId */
-export const crmClientsInteractionsById = (id: string, interactionId: string): string => "/api/crm/clients/:id/interactions/:interactionId".replace(":id", encodeURIComponent(id)).replace(":interactionId", encodeURIComponent(interactionId));
-
-/** GET, POST /api/crm/clients/:id/preferences */
-export const crmClientsPreferences = (id: string): string => "/api/crm/clients/:id/preferences".replace(":id", encodeURIComponent(id));
-
-/** POST /api/crm/clients/commands/archive */
-export const crmClientsCommandsArchive = (): string => "/api/crm/clients/commands/archive";
-
-/** POST /api/crm/clients/commands/create */
-export const crmClientsCommandsCreate = (): string => "/api/crm/clients/commands/create";
-
-/** POST /api/crm/clients/commands/reactivate */
-export const crmClientsCommandsReactivate = (): string => "/api/crm/clients/commands/reactivate";
-
-/** POST /api/crm/clients/commands/update */
-export const crmClientsCommandsUpdate = (): string => "/api/crm/clients/commands/update";
-
-/** POST /api/crm/leads/commands/archive */
-export const crmLeadsCommandsArchive = (): string => "/api/crm/leads/commands/archive";
-
-/** POST /api/crm/leads/commands/convert-to-client */
-export const crmLeadsCommandsConvertToClient = (): string => "/api/crm/leads/commands/convert-to-client";
-
-/** POST /api/crm/leads/commands/create */
-export const crmLeadsCommandsCreate = (): string => "/api/crm/leads/commands/create";
-
-/** POST /api/crm/leads/commands/disqualify */
-export const crmLeadsCommandsDisqualify = (): string => "/api/crm/leads/commands/disqualify";
-
-/** POST /api/crm/leads/commands/update */
-export const crmLeadsCommandsUpdate = (): string => "/api/crm/leads/commands/update";
-
-/** POST /api/crm/proposal-line-items/commands/create */
-export const crmProposalLineItemsCommandsCreate = (): string => "/api/crm/proposal-line-items/commands/create";
-
-/** POST /api/crm/proposal-line-items/commands/remove */
-export const crmProposalLineItemsCommandsRemove = (): string => "/api/crm/proposal-line-items/commands/remove";
-
-/** POST /api/crm/proposal-line-items/commands/update */
-export const crmProposalLineItemsCommandsUpdate = (): string => "/api/crm/proposal-line-items/commands/update";
-
-/** GET /api/crm/proposals */
-export const crmProposals = (): string => "/api/crm/proposals";
-
-/** GET /api/crm/proposals/:id */
-export const crmProposalsById = (id: string): string => "/api/crm/proposals/:id".replace(":id", encodeURIComponent(id));
-
-/** POST /api/crm/proposals/:id/send */
-export const crmProposalsSend = (id: string): string => "/api/crm/proposals/:id/send".replace(":id", encodeURIComponent(id));
-
-/** POST /api/crm/proposals/commands/accept */
-export const crmProposalsCommandsAccept = (): string => "/api/crm/proposals/commands/accept";
-
-/** POST /api/crm/proposals/commands/create */
-export const crmProposalsCommandsCreate = (): string => "/api/crm/proposals/commands/create";
-
-/** POST /api/crm/proposals/commands/mark-viewed */
-export const crmProposalsCommandsMarkViewed = (): string => "/api/crm/proposals/commands/mark-viewed";
-
-/** POST /api/crm/proposals/commands/reject */
-export const crmProposalsCommandsReject = (): string => "/api/crm/proposals/commands/reject";
-
-/** POST /api/crm/proposals/commands/send */
-export const crmProposalsCommandsSend = (): string => "/api/crm/proposals/commands/send";
-
-/** POST /api/crm/proposals/commands/update */
-export const crmProposalsCommandsUpdate = (): string => "/api/crm/proposals/commands/update";
-
-/** POST /api/crm/proposals/commands/withdraw */
-export const crmProposalsCommandsWithdraw = (): string => "/api/crm/proposals/commands/withdraw";
-
-/** GET /api/crm/venues */
-export const crmVenues = (): string => "/api/crm/venues";
-
-/** GET /api/crm/venues/:id */
-export const crmVenuesById = (id: string): string => "/api/crm/venues/:id".replace(":id", encodeURIComponent(id));
-
-/** GET /api/crm/venues/:id/events */
-export const crmVenuesEvents = (id: string): string => "/api/crm/venues/:id/events".replace(":id", encodeURIComponent(id));
-
-/** GET /api/cron/idempotency-cleanup */
-export const cronIdempotencyCleanup = (): string => "/api/cron/idempotency-cleanup";
-
-/** GET /api/events */
-export const events = (): string => "/api/events";
-
-/** GET /api/events/:eventId/export/csv */
-export const eventsExportCsv = (eventId: string): string => "/api/events/:eventId/export/csv".replace(":eventId", encodeURIComponent(eventId));
-
-/** GET, POST /api/events/:eventId/guests */
-export const eventsGuests = (eventId: string): string => "/api/events/:eventId/guests".replace(":eventId", encodeURIComponent(eventId));
-
-/** GET /api/events/:eventId/warnings */
-export const eventsWarnings = (eventId: string): string => "/api/events/:eventId/warnings".replace(":eventId", encodeURIComponent(eventId));
-
-/** GET /api/events/allergens/check */
-export const eventsAllergensCheck = (): string => "/api/events/allergens/check";
-
-/** POST /api/events/allergens/warnings/acknowledge */
-export const eventsAllergensWarningsAcknowledge = (): string => "/api/events/allergens/warnings/acknowledge";
-
-/** GET, POST /api/events/battle-boards */
-export const eventsBattleBoards = (): string => "/api/events/battle-boards";
-
-/** GET, PUT, DELETE /api/events/battle-boards/:boardId */
-export const eventsBattleBoardsByBoardId = (boardId: string): string => "/api/events/battle-boards/:boardId".replace(":boardId", encodeURIComponent(boardId));
-
-/** POST /api/events/battle-boards/commands/add-dish */
-export const eventsBattleBoardsCommandsAddDish = (): string => "/api/events/battle-boards/commands/add-dish";
-
-/** POST /api/events/battle-boards/commands/create */
-export const eventsBattleBoardsCommandsCreate = (): string => "/api/events/battle-boards/commands/create";
-
-/** POST /api/events/battle-boards/commands/finalize */
-export const eventsBattleBoardsCommandsFinalize = (): string => "/api/events/battle-boards/commands/finalize";
-
-/** POST /api/events/battle-boards/commands/open */
-export const eventsBattleBoardsCommandsOpen = (): string => "/api/events/battle-boards/commands/open";
-
-/** POST /api/events/battle-boards/commands/remove-dish */
-export const eventsBattleBoardsCommandsRemoveDish = (): string => "/api/events/battle-boards/commands/remove-dish";
-
-/** POST /api/events/battle-boards/commands/start-voting */
-export const eventsBattleBoardsCommandsStartVoting = (): string => "/api/events/battle-boards/commands/start-voting";
-
-/** POST /api/events/battle-boards/commands/vote */
-export const eventsBattleBoardsCommandsVote = (): string => "/api/events/battle-boards/commands/vote";
-
-/** POST /api/events/budget-line-items/commands/create */
-export const eventsBudgetLineItemsCommandsCreate = (): string => "/api/events/budget-line-items/commands/create";
-
-/** POST /api/events/budget-line-items/commands/remove */
-export const eventsBudgetLineItemsCommandsRemove = (): string => "/api/events/budget-line-items/commands/remove";
-
-/** POST /api/events/budget-line-items/commands/update */
-export const eventsBudgetLineItemsCommandsUpdate = (): string => "/api/events/budget-line-items/commands/update";
-
-/** GET /api/events/budgets */
-export const eventsBudgets = (): string => "/api/events/budgets";
-
-/** GET, PUT, DELETE /api/events/budgets/:id */
-export const eventsBudgetsById = (id: string): string => "/api/events/budgets/:id".replace(":id", encodeURIComponent(id));
-
-/** GET, POST /api/events/budgets/:id/line-items */
-export const eventsBudgetsLineItems = (id: string): string => "/api/events/budgets/:id/line-items".replace(":id", encodeURIComponent(id));
-
-/** GET, PUT, DELETE /api/events/budgets/:id/line-items/:lineItemId */
-export const eventsBudgetsLineItemsById = (id: string, lineItemId: string): string => "/api/events/budgets/:id/line-items/:lineItemId".replace(":id", encodeURIComponent(id)).replace(":lineItemId", encodeURIComponent(lineItemId));
-
-/** POST /api/events/budgets/commands/approve */
-export const eventsBudgetsCommandsApprove = (): string => "/api/events/budgets/commands/approve";
-
-/** POST /api/events/budgets/commands/create */
-export const eventsBudgetsCommandsCreate = (): string => "/api/events/budgets/commands/create";
-
-/** POST /api/events/budgets/commands/finalize */
-export const eventsBudgetsCommandsFinalize = (): string => "/api/events/budgets/commands/finalize";
-
-/** POST /api/events/budgets/commands/update */
-export const eventsBudgetsCommandsUpdate = (): string => "/api/events/budgets/commands/update";
-
-/** POST /api/events/catering-orders/commands/cancel */
-export const eventsCateringOrdersCommandsCancel = (): string => "/api/events/catering-orders/commands/cancel";
-
-/** POST /api/events/catering-orders/commands/confirm */
-export const eventsCateringOrdersCommandsConfirm = (): string => "/api/events/catering-orders/commands/confirm";
-
-/** POST /api/events/catering-orders/commands/create */
-export const eventsCateringOrdersCommandsCreate = (): string => "/api/events/catering-orders/commands/create";
-
-/** POST /api/events/catering-orders/commands/mark-complete */
-export const eventsCateringOrdersCommandsMarkComplete = (): string => "/api/events/catering-orders/commands/mark-complete";
-
-/** POST /api/events/catering-orders/commands/start-prep */
-export const eventsCateringOrdersCommandsStartPrep = (): string => "/api/events/catering-orders/commands/start-prep";
-
-/** POST /api/events/catering-orders/commands/update */
-export const eventsCateringOrdersCommandsUpdate = (): string => "/api/events/catering-orders/commands/update";
-
-/** GET /api/events/contracts */
-export const eventsContracts = (): string => "/api/events/contracts";
-
-/** GET /api/events/contracts/:id */
-export const eventsContractsById = (id: string): string => "/api/events/contracts/:id".replace(":id", encodeURIComponent(id));
-
-/** POST /api/events/contracts/:id/document */
-export const eventsContractsDocument = (id: string): string => "/api/events/contracts/:id/document".replace(":id", encodeURIComponent(id));
-
-/** POST /api/events/contracts/:id/send */
-export const eventsContractsSend = (id: string): string => "/api/events/contracts/:id/send".replace(":id", encodeURIComponent(id));
-
-/** POST /api/events/contracts/:id/signature */
-export const eventsContractsSignature = (id: string): string => "/api/events/contracts/:id/signature".replace(":id", encodeURIComponent(id));
-
-/** GET /api/events/contracts/:id/signatures */
-export const eventsContractsSignatures = (id: string): string => "/api/events/contracts/:id/signatures".replace(":id", encodeURIComponent(id));
-
-/** PATCH /api/events/contracts/:id/status */
-export const eventsContractsStatus = (id: string): string => "/api/events/contracts/:id/status".replace(":id", encodeURIComponent(id));
-
-/** GET /api/events/contracts/expiring */
-export const eventsContractsExpiring = (): string => "/api/events/contracts/expiring";
-
-/** GET /api/events/documents/parse */
-export const eventsDocumentsParse = (): string => "/api/events/documents/parse";
-
-/** POST /api/events/event/commands/archive */
-export const eventsEventCommandsArchive = (): string => "/api/events/event/commands/archive";
-
-/** POST /api/events/event/commands/cancel */
-export const eventsEventCommandsCancel = (): string => "/api/events/event/commands/cancel";
-
-/** POST /api/events/event/commands/confirm */
-export const eventsEventCommandsConfirm = (): string => "/api/events/event/commands/confirm";
-
-/** POST /api/events/event/commands/create */
-export const eventsEventCommandsCreate = (): string => "/api/events/event/commands/create";
-
-/** POST /api/events/event/commands/finalize */
-export const eventsEventCommandsFinalize = (): string => "/api/events/event/commands/finalize";
-
-/** POST /api/events/event/commands/unfinalize */
-export const eventsEventCommandsUnfinalize = (): string => "/api/events/event/commands/unfinalize";
-
-/** POST /api/events/event/commands/update */
-export const eventsEventCommandsUpdate = (): string => "/api/events/event/commands/update";
-
-/** POST /api/events/event/commands/update-date */
-export const eventsEventCommandsUpdateDate = (): string => "/api/events/event/commands/update-date";
-
-/** POST /api/events/event/commands/update-guest-count */
-export const eventsEventCommandsUpdateGuestCount = (): string => "/api/events/event/commands/update-guest-count";
-
-/** POST /api/events/event/commands/update-location */
-export const eventsEventCommandsUpdateLocation = (): string => "/api/events/event/commands/update-location";
-
-/** GET /api/events/export/csv */
-export const eventsExportCsv_1 = (): string => "/api/events/export/csv";
-
-/** GET /api/events/guests/:guestId */
-export const eventsGuestsByGuestId = (guestId: string): string => "/api/events/guests/:guestId".replace(":guestId", encodeURIComponent(guestId));
-
-/** GET /api/events/import/server-to-server */
-export const eventsImportServerToServer = (): string => "/api/events/import/server-to-server";
-
-/** GET /api/events/imports/:importId */
-export const eventsImports = (importId: string): string => "/api/events/imports/:importId".replace(":importId", encodeURIComponent(importId));
-
-/** POST /api/events/profitability/commands/create */
-export const eventsProfitabilityCommandsCreate = (): string => "/api/events/profitability/commands/create";
-
-/** POST /api/events/profitability/commands/recalculate */
-export const eventsProfitabilityCommandsRecalculate = (): string => "/api/events/profitability/commands/recalculate";
-
-/** POST /api/events/profitability/commands/update */
-export const eventsProfitabilityCommandsUpdate = (): string => "/api/events/profitability/commands/update";
-
-/** GET, POST /api/events/reports */
-export const eventsReports = (): string => "/api/events/reports";
-
-/** GET, PUT, DELETE /api/events/reports/:reportId */
-export const eventsReportsByReportId = (reportId: string): string => "/api/events/reports/:reportId".replace(":reportId", encodeURIComponent(reportId));
-
-/** POST /api/events/reports/commands/approve */
-export const eventsReportsCommandsApprove = (): string => "/api/events/reports/commands/approve";
-
-/** POST /api/events/reports/commands/complete */
-export const eventsReportsCommandsComplete = (): string => "/api/events/reports/commands/complete";
-
-/** POST /api/events/reports/commands/create */
-export const eventsReportsCommandsCreate = (): string => "/api/events/reports/commands/create";
-
-/** POST /api/events/reports/commands/submit */
-export const eventsReportsCommandsSubmit = (): string => "/api/events/reports/commands/submit";
-
-/** POST /api/events/summaries/commands/create */
-export const eventsSummariesCommandsCreate = (): string => "/api/events/summaries/commands/create";
-
-/** POST /api/events/summaries/commands/refresh */
-export const eventsSummariesCommandsRefresh = (): string => "/api/events/summaries/commands/refresh";
-
-/** POST /api/events/summaries/commands/update */
-export const eventsSummariesCommandsUpdate = (): string => "/api/events/summaries/commands/update";
-
-/** POST /api/inventory/alerts/subscribe */
-export const inventoryAlertsSubscribe = (): string => "/api/inventory/alerts/subscribe";
-
-/** GET /api/inventory/cycle-count/audit-logs */
-export const inventoryCycleCountAuditLogs = (): string => "/api/inventory/cycle-count/audit-logs";
-
-/** GET /api/inventory/cycle-count/records/:id */
-export const inventoryCycleCountRecords = (id: string): string => "/api/inventory/cycle-count/records/:id".replace(":id", encodeURIComponent(id));
-
-/** POST /api/inventory/cycle-count/records/commands/create */
-export const inventoryCycleCountRecordsCommandsCreate = (): string => "/api/inventory/cycle-count/records/commands/create";
-
-/** POST /api/inventory/cycle-count/records/commands/update */
-export const inventoryCycleCountRecordsCommandsUpdate = (): string => "/api/inventory/cycle-count/records/commands/update";
-
-/** POST /api/inventory/cycle-count/records/commands/verify */
-export const inventoryCycleCountRecordsCommandsVerify = (): string => "/api/inventory/cycle-count/records/commands/verify";
-
-/** GET /api/inventory/cycle-count/sessions */
-export const inventoryCycleCountSessions = (): string => "/api/inventory/cycle-count/sessions";
-
-/** GET /api/inventory/cycle-count/sessions/:sessionId */
-export const inventoryCycleCountSessionsBySessionId = (sessionId: string): string => "/api/inventory/cycle-count/sessions/:sessionId".replace(":sessionId", encodeURIComponent(sessionId));
-
-/** GET /api/inventory/cycle-count/sessions/:sessionId/finalize */
-export const inventoryCycleCountSessionsFinalize = (sessionId: string): string => "/api/inventory/cycle-count/sessions/:sessionId/finalize".replace(":sessionId", encodeURIComponent(sessionId));
-
-/** GET /api/inventory/cycle-count/sessions/:sessionId/records */
-export const inventoryCycleCountSessionsRecords = (sessionId: string): string => "/api/inventory/cycle-count/sessions/:sessionId/records".replace(":sessionId", encodeURIComponent(sessionId));
-
-/** GET /api/inventory/cycle-count/sessions/:sessionId/variance-reports */
-export const inventoryCycleCountSessionsVarianceReports = (sessionId: string): string => "/api/inventory/cycle-count/sessions/:sessionId/variance-reports".replace(":sessionId", encodeURIComponent(sessionId));
-
-/** POST /api/inventory/cycle-count/sessions/commands/cancel */
-export const inventoryCycleCountSessionsCommandsCancel = (): string => "/api/inventory/cycle-count/sessions/commands/cancel";
-
-/** POST /api/inventory/cycle-count/sessions/commands/complete */
-export const inventoryCycleCountSessionsCommandsComplete = (): string => "/api/inventory/cycle-count/sessions/commands/complete";
-
-/** POST /api/inventory/cycle-count/sessions/commands/create */
-export const inventoryCycleCountSessionsCommandsCreate = (): string => "/api/inventory/cycle-count/sessions/commands/create";
-
-/** POST /api/inventory/cycle-count/sessions/commands/finalize */
-export const inventoryCycleCountSessionsCommandsFinalize = (): string => "/api/inventory/cycle-count/sessions/commands/finalize";
-
-/** POST /api/inventory/cycle-count/sessions/commands/start */
-export const inventoryCycleCountSessionsCommandsStart = (): string => "/api/inventory/cycle-count/sessions/commands/start";
-
-/** POST /api/inventory/cycle-count/variance-reports/commands/approve */
-export const inventoryCycleCountVarianceReportsCommandsApprove = (): string => "/api/inventory/cycle-count/variance-reports/commands/approve";
-
-/** POST /api/inventory/cycle-count/variance-reports/commands/create */
-export const inventoryCycleCountVarianceReportsCommandsCreate = (): string => "/api/inventory/cycle-count/variance-reports/commands/create";
-
-/** POST /api/inventory/cycle-count/variance-reports/commands/review */
-export const inventoryCycleCountVarianceReportsCommandsReview = (): string => "/api/inventory/cycle-count/variance-reports/commands/review";
-
-/** GET /api/inventory/forecasts */
-export const inventoryForecasts = (): string => "/api/inventory/forecasts";
-
-/** GET /api/inventory/forecasts/alerts */
-export const inventoryForecastsAlerts = (): string => "/api/inventory/forecasts/alerts";
-
-/** GET /api/inventory/forecasts/batch */
-export const inventoryForecastsBatch = (): string => "/api/inventory/forecasts/batch";
-
-/** GET /api/inventory/items */
-export const inventoryItems = (): string => "/api/inventory/items";
-
-/** GET /api/inventory/items/:id */
-export const inventoryItemsById = (id: string): string => "/api/inventory/items/:id".replace(":id", encodeURIComponent(id));
-
-/** POST /api/inventory/purchase-order-items/commands/create */
-export const inventoryPurchaseOrderItemsCommandsCreate = (): string => "/api/inventory/purchase-order-items/commands/create";
-
-/** POST /api/inventory/purchase-order-items/commands/remove */
-export const inventoryPurchaseOrderItemsCommandsRemove = (): string => "/api/inventory/purchase-order-items/commands/remove";
-
-/** POST /api/inventory/purchase-order-items/commands/update */
-export const inventoryPurchaseOrderItemsCommandsUpdate = (): string => "/api/inventory/purchase-order-items/commands/update";
-
-/** GET /api/inventory/purchase-orders */
-export const inventoryPurchaseOrders = (): string => "/api/inventory/purchase-orders";
-
-/** GET /api/inventory/purchase-orders/:id */
-export const inventoryPurchaseOrdersById = (id: string): string => "/api/inventory/purchase-orders/:id".replace(":id", encodeURIComponent(id));
-
-/** POST /api/inventory/purchase-orders/:id/complete */
-export const inventoryPurchaseOrdersComplete = (id: string): string => "/api/inventory/purchase-orders/:id/complete".replace(":id", encodeURIComponent(id));
-
-/** GET /api/inventory/purchase-orders/:id/items/:itemId/quality */
-export const inventoryPurchaseOrdersItemsQuality = (id: string, itemId: string): string => "/api/inventory/purchase-orders/:id/items/:itemId/quality".replace(":id", encodeURIComponent(id)).replace(":itemId", encodeURIComponent(itemId));
-
-/** PUT /api/inventory/purchase-orders/:id/items/:itemId/quantity */
-export const inventoryPurchaseOrdersItemsQuantity = (id: string, itemId: string): string => "/api/inventory/purchase-orders/:id/items/:itemId/quantity".replace(":id", encodeURIComponent(id)).replace(":itemId", encodeURIComponent(itemId));
-
-/** POST /api/inventory/purchase-orders/commands/approve */
-export const inventoryPurchaseOrdersCommandsApprove = (): string => "/api/inventory/purchase-orders/commands/approve";
-
-/** POST /api/inventory/purchase-orders/commands/cancel */
-export const inventoryPurchaseOrdersCommandsCancel = (): string => "/api/inventory/purchase-orders/commands/cancel";
-
-/** POST /api/inventory/purchase-orders/commands/create */
-export const inventoryPurchaseOrdersCommandsCreate = (): string => "/api/inventory/purchase-orders/commands/create";
-
-/** POST /api/inventory/purchase-orders/commands/mark-ordered */
-export const inventoryPurchaseOrdersCommandsMarkOrdered = (): string => "/api/inventory/purchase-orders/commands/mark-ordered";
-
-/** POST /api/inventory/purchase-orders/commands/mark-received */
-export const inventoryPurchaseOrdersCommandsMarkReceived = (): string => "/api/inventory/purchase-orders/commands/mark-received";
-
-/** POST /api/inventory/purchase-orders/commands/reject */
-export const inventoryPurchaseOrdersCommandsReject = (): string => "/api/inventory/purchase-orders/commands/reject";
-
-/** POST /api/inventory/purchase-orders/commands/submit */
-export const inventoryPurchaseOrdersCommandsSubmit = (): string => "/api/inventory/purchase-orders/commands/submit";
-
-/** GET, POST /api/inventory/reorder-suggestions */
-export const inventoryReorderSuggestions = (): string => "/api/inventory/reorder-suggestions";
-
-/** GET /api/inventory/stock-levels */
-export const inventoryStockLevels = (): string => "/api/inventory/stock-levels";
-
-/** GET /api/inventory/stock-levels/adjust */
-export const inventoryStockLevelsAdjust = (): string => "/api/inventory/stock-levels/adjust";
-
-/** GET /api/inventory/stock-levels/locations */
-export const inventoryStockLevelsLocations = (): string => "/api/inventory/stock-levels/locations";
-
-/** GET /api/inventory/stock-levels/transactions */
-export const inventoryStockLevelsTransactions = (): string => "/api/inventory/stock-levels/transactions";
-
-/** POST /api/inventory/suppliers/commands/create */
-export const inventorySuppliersCommandsCreate = (): string => "/api/inventory/suppliers/commands/create";
-
-/** POST /api/inventory/suppliers/commands/deactivate */
-export const inventorySuppliersCommandsDeactivate = (): string => "/api/inventory/suppliers/commands/deactivate";
-
-/** POST /api/inventory/suppliers/commands/update */
-export const inventorySuppliersCommandsUpdate = (): string => "/api/inventory/suppliers/commands/update";
-
-/** POST /api/inventory/transactions/commands/create */
-export const inventoryTransactionsCommandsCreate = (): string => "/api/inventory/transactions/commands/create";
-
-/** POST /api/kitchen/ai/bulk-generate/prep-tasks */
-export const kitchenAiBulkGeneratePrepTasks = (): string => "/api/kitchen/ai/bulk-generate/prep-tasks";
-
-/** POST /api/kitchen/ai/bulk-generate/prep-tasks/save */
-export const kitchenAiBulkGeneratePrepTasksSave = (): string => "/api/kitchen/ai/bulk-generate/prep-tasks/save";
-
-/** GET /api/kitchen/allergens/detect-conflicts */
-export const kitchenAllergensDetectConflicts = (): string => "/api/kitchen/allergens/detect-conflicts";
-
-/** POST /api/kitchen/allergens/update-dish */
-export const kitchenAllergensUpdateDish = (): string => "/api/kitchen/allergens/update-dish";
-
-/** GET /api/kitchen/allergens/warnings */
-export const kitchenAllergensWarnings = (): string => "/api/kitchen/allergens/warnings";
-
-/** POST /api/kitchen/containers/commands/create */
-export const kitchenContainersCommandsCreate = (): string => "/api/kitchen/containers/commands/create";
-
-/** POST /api/kitchen/containers/commands/deactivate */
-export const kitchenContainersCommandsDeactivate = (): string => "/api/kitchen/containers/commands/deactivate";
-
-/** POST /api/kitchen/containers/commands/update */
-export const kitchenContainersCommandsUpdate = (): string => "/api/kitchen/containers/commands/update";
-
-/** GET /api/kitchen/dish/list */
-export const kitchenDishList = (): string => "/api/kitchen/dish/list";
-
-/** GET /api/kitchen/dishes */
-export const kitchenDishes = (): string => "/api/kitchen/dishes";
-
-/** POST /api/kitchen/dishes/commands/create */
-export const kitchenDishesCommandsCreate = (): string => "/api/kitchen/dishes/commands/create";
-
-/** POST /api/kitchen/dishes/commands/update-lead-time */
-export const kitchenDishesCommandsUpdateLeadTime = (): string => "/api/kitchen/dishes/commands/update-lead-time";
-
-/** POST /api/kitchen/dishes/commands/update-pricing */
-export const kitchenDishesCommandsUpdatePricing = (): string => "/api/kitchen/dishes/commands/update-pricing";
-
-/** GET /api/kitchen/ingredient/list */
-export const kitchenIngredientList = (): string => "/api/kitchen/ingredient/list";
-
-/** GET /api/kitchen/ingredients */
-export const kitchenIngredients = (): string => "/api/kitchen/ingredients";
-
-/** POST /api/kitchen/ingredients/commands/create */
-export const kitchenIngredientsCommandsCreate = (): string => "/api/kitchen/ingredients/commands/create";
-
-/** POST /api/kitchen/ingredients/commands/update-allergens */
-export const kitchenIngredientsCommandsUpdateAllergens = (): string => "/api/kitchen/ingredients/commands/update-allergens";
-
-/** POST /api/kitchen/inventory/commands/adjust */
-export const kitchenInventoryCommandsAdjust = (): string => "/api/kitchen/inventory/commands/adjust";
-
-/** POST /api/kitchen/inventory/commands/consume */
-export const kitchenInventoryCommandsConsume = (): string => "/api/kitchen/inventory/commands/consume";
-
-/** POST /api/kitchen/inventory/commands/create */
-export const kitchenInventoryCommandsCreate = (): string => "/api/kitchen/inventory/commands/create";
-
-/** POST /api/kitchen/inventory/commands/release-reservation */
-export const kitchenInventoryCommandsReleaseReservation = (): string => "/api/kitchen/inventory/commands/release-reservation";
-
-/** POST /api/kitchen/inventory/commands/reserve */
-export const kitchenInventoryCommandsReserve = (): string => "/api/kitchen/inventory/commands/reserve";
-
-/** POST /api/kitchen/inventory/commands/restock */
-export const kitchenInventoryCommandsRestock = (): string => "/api/kitchen/inventory/commands/restock";
-
-/** POST /api/kitchen/inventory/commands/waste */
-export const kitchenInventoryCommandsWaste = (): string => "/api/kitchen/inventory/commands/waste";
-
-/** GET /api/kitchen/inventoryitem/list */
-export const kitchenInventoryitemList = (): string => "/api/kitchen/inventoryitem/list";
-
-/** POST /api/kitchen/kitchen-tasks/commands/add-tag */
-export const kitchenKitchenTasksCommandsAddTag = (): string => "/api/kitchen/kitchen-tasks/commands/add-tag";
-
-/** POST /api/kitchen/kitchen-tasks/commands/cancel */
-export const kitchenKitchenTasksCommandsCancel = (): string => "/api/kitchen/kitchen-tasks/commands/cancel";
-
-/** POST /api/kitchen/kitchen-tasks/commands/claim */
-export const kitchenKitchenTasksCommandsClaim = (): string => "/api/kitchen/kitchen-tasks/commands/claim";
-
-/** POST /api/kitchen/kitchen-tasks/commands/complete */
-export const kitchenKitchenTasksCommandsComplete = (): string => "/api/kitchen/kitchen-tasks/commands/complete";
-
-/** POST /api/kitchen/kitchen-tasks/commands/create */
-export const kitchenKitchenTasksCommandsCreate = (): string => "/api/kitchen/kitchen-tasks/commands/create";
-
-/** POST /api/kitchen/kitchen-tasks/commands/reassign */
-export const kitchenKitchenTasksCommandsReassign = (): string => "/api/kitchen/kitchen-tasks/commands/reassign";
-
-/** POST /api/kitchen/kitchen-tasks/commands/release */
-export const kitchenKitchenTasksCommandsRelease = (): string => "/api/kitchen/kitchen-tasks/commands/release";
-
-/** POST /api/kitchen/kitchen-tasks/commands/remove-tag */
-export const kitchenKitchenTasksCommandsRemoveTag = (): string => "/api/kitchen/kitchen-tasks/commands/remove-tag";
-
-/** POST /api/kitchen/kitchen-tasks/commands/start */
-export const kitchenKitchenTasksCommandsStart = (): string => "/api/kitchen/kitchen-tasks/commands/start";
-
-/** POST /api/kitchen/kitchen-tasks/commands/update-complexity */
-export const kitchenKitchenTasksCommandsUpdateComplexity = (): string => "/api/kitchen/kitchen-tasks/commands/update-complexity";
-
-/** POST /api/kitchen/kitchen-tasks/commands/update-priority */
-export const kitchenKitchenTasksCommandsUpdatePriority = (): string => "/api/kitchen/kitchen-tasks/commands/update-priority";
-
-/** POST /api/kitchen/manifest/dishes */
-export const kitchenManifestDishes = (): string => "/api/kitchen/manifest/dishes";
-
-/** PATCH /api/kitchen/manifest/dishes/:dishId/pricing */
-export const kitchenManifestDishesPricing = (dishId: string): string => "/api/kitchen/manifest/dishes/:dishId/pricing".replace(":dishId", encodeURIComponent(dishId));
-
-/** GET /api/kitchen/manifest/prep-lists */
-export const kitchenManifestPrepLists = (): string => "/api/kitchen/manifest/prep-lists";
-
-/** GET /api/kitchen/manifest/recipes */
-export const kitchenManifestRecipes = (): string => "/api/kitchen/manifest/recipes";
-
-/** POST /api/kitchen/manifest/recipes/:recipeId/activate */
-export const kitchenManifestRecipesActivate = (recipeId: string): string => "/api/kitchen/manifest/recipes/:recipeId/activate".replace(":recipeId", encodeURIComponent(recipeId));
-
-/** POST /api/kitchen/manifest/recipes/:recipeId/deactivate */
-export const kitchenManifestRecipesDeactivate = (recipeId: string): string => "/api/kitchen/manifest/recipes/:recipeId/deactivate".replace(":recipeId", encodeURIComponent(recipeId));
-
-/** GET /api/kitchen/manifest/recipes/:recipeId/metadata */
-export const kitchenManifestRecipesMetadata = (recipeId: string): string => "/api/kitchen/manifest/recipes/:recipeId/metadata".replace(":recipeId", encodeURIComponent(recipeId));
-
-/** POST /api/kitchen/manifest/recipes/:recipeId/restore */
-export const kitchenManifestRecipesRestore = (recipeId: string): string => "/api/kitchen/manifest/recipes/:recipeId/restore".replace(":recipeId", encodeURIComponent(recipeId));
-
-/** POST /api/kitchen/manifest/recipes/:recipeId/versions */
-export const kitchenManifestRecipesVersions = (recipeId: string): string => "/api/kitchen/manifest/recipes/:recipeId/versions".replace(":recipeId", encodeURIComponent(recipeId));
-
-/** GET /api/kitchen/menu/list */
-export const kitchenMenuList = (): string => "/api/kitchen/menu/list";
-
-/** GET /api/kitchen/menudish/list */
-export const kitchenMenudishList = (): string => "/api/kitchen/menudish/list";
-
-/** GET /api/kitchen/menus */
-export const kitchenMenus = (): string => "/api/kitchen/menus";
-
-/** POST /api/kitchen/menus/commands/activate */
-export const kitchenMenusCommandsActivate = (): string => "/api/kitchen/menus/commands/activate";
-
-/** POST /api/kitchen/menus/commands/create */
-export const kitchenMenusCommandsCreate = (): string => "/api/kitchen/menus/commands/create";
-
-/** POST /api/kitchen/menus/commands/deactivate */
-export const kitchenMenusCommandsDeactivate = (): string => "/api/kitchen/menus/commands/deactivate";
-
-/** POST /api/kitchen/menus/commands/update */
-export const kitchenMenusCommandsUpdate = (): string => "/api/kitchen/menus/commands/update";
-
-/** POST /api/kitchen/menus/dishes/commands/create */
-export const kitchenMenusDishesCommandsCreate = (): string => "/api/kitchen/menus/dishes/commands/create";
-
-/** POST /api/kitchen/overrides */
-export const kitchenOverrides = (): string => "/api/kitchen/overrides";
-
-/** POST /api/kitchen/prep-comments/commands/create */
-export const kitchenPrepCommentsCommandsCreate = (): string => "/api/kitchen/prep-comments/commands/create";
-
-/** POST /api/kitchen/prep-comments/commands/resolve */
-export const kitchenPrepCommentsCommandsResolve = (): string => "/api/kitchen/prep-comments/commands/resolve";
-
-/** POST /api/kitchen/prep-comments/commands/soft-delete */
-export const kitchenPrepCommentsCommandsSoftDelete = (): string => "/api/kitchen/prep-comments/commands/soft-delete";
-
-/** POST /api/kitchen/prep-comments/commands/unresolve */
-export const kitchenPrepCommentsCommandsUnresolve = (): string => "/api/kitchen/prep-comments/commands/unresolve";
-
-/** GET /api/kitchen/prep-lists */
-export const kitchenPrepLists = (): string => "/api/kitchen/prep-lists";
-
-/** GET /api/kitchen/prep-lists/:id */
-export const kitchenPrepListsById = (id: string): string => "/api/kitchen/prep-lists/:id".replace(":id", encodeURIComponent(id));
-
-/** GET, POST /api/kitchen/prep-lists/autogenerate/process */
-export const kitchenPrepListsAutogenerateProcess = (): string => "/api/kitchen/prep-lists/autogenerate/process";
-
-/** POST /api/kitchen/prep-lists/commands/activate */
-export const kitchenPrepListsCommandsActivate = (): string => "/api/kitchen/prep-lists/commands/activate";
-
-/** POST /api/kitchen/prep-lists/commands/cancel */
-export const kitchenPrepListsCommandsCancel = (): string => "/api/kitchen/prep-lists/commands/cancel";
-
-/** POST /api/kitchen/prep-lists/commands/create */
-export const kitchenPrepListsCommandsCreate = (): string => "/api/kitchen/prep-lists/commands/create";
-
-/** POST /api/kitchen/prep-lists/commands/deactivate */
-export const kitchenPrepListsCommandsDeactivate = (): string => "/api/kitchen/prep-lists/commands/deactivate";
-
-/** POST /api/kitchen/prep-lists/commands/finalize */
-export const kitchenPrepListsCommandsFinalize = (): string => "/api/kitchen/prep-lists/commands/finalize";
-
-/** POST /api/kitchen/prep-lists/commands/mark-completed */
-export const kitchenPrepListsCommandsMarkCompleted = (): string => "/api/kitchen/prep-lists/commands/mark-completed";
-
-/** POST /api/kitchen/prep-lists/commands/update */
-export const kitchenPrepListsCommandsUpdate = (): string => "/api/kitchen/prep-lists/commands/update";
-
-/** POST /api/kitchen/prep-lists/commands/update-batch-multiplier */
-export const kitchenPrepListsCommandsUpdateBatchMultiplier = (): string => "/api/kitchen/prep-lists/commands/update-batch-multiplier";
-
-/** GET /api/kitchen/prep-lists/generate */
-export const kitchenPrepListsGenerate = (): string => "/api/kitchen/prep-lists/generate";
-
-/** PATCH /api/kitchen/prep-lists/items/:id */
-export const kitchenPrepListsItems = (id: string): string => "/api/kitchen/prep-lists/items/:id".replace(":id", encodeURIComponent(id));
-
-/** POST /api/kitchen/prep-lists/items/commands/create */
-export const kitchenPrepListsItemsCommandsCreate = (): string => "/api/kitchen/prep-lists/items/commands/create";
-
-/** POST /api/kitchen/prep-lists/items/commands/mark-completed */
-export const kitchenPrepListsItemsCommandsMarkCompleted = (): string => "/api/kitchen/prep-lists/items/commands/mark-completed";
-
-/** POST /api/kitchen/prep-lists/items/commands/mark-uncompleted */
-export const kitchenPrepListsItemsCommandsMarkUncompleted = (): string => "/api/kitchen/prep-lists/items/commands/mark-uncompleted";
-
-/** POST /api/kitchen/prep-lists/items/commands/update-prep-notes */
-export const kitchenPrepListsItemsCommandsUpdatePrepNotes = (): string => "/api/kitchen/prep-lists/items/commands/update-prep-notes";
-
-/** POST /api/kitchen/prep-lists/items/commands/update-quantity */
-export const kitchenPrepListsItemsCommandsUpdateQuantity = (): string => "/api/kitchen/prep-lists/items/commands/update-quantity";
-
-/** POST /api/kitchen/prep-lists/items/commands/update-station */
-export const kitchenPrepListsItemsCommandsUpdateStation = (): string => "/api/kitchen/prep-lists/items/commands/update-station";
-
-/** POST /api/kitchen/prep-lists/save */
-export const kitchenPrepListsSave = (): string => "/api/kitchen/prep-lists/save";
-
-/** POST /api/kitchen/prep-lists/save-db */
-export const kitchenPrepListsSaveDb = (): string => "/api/kitchen/prep-lists/save-db";
-
-/** POST /api/kitchen/prep-methods/commands/create */
-export const kitchenPrepMethodsCommandsCreate = (): string => "/api/kitchen/prep-methods/commands/create";
-
-/** POST /api/kitchen/prep-methods/commands/deactivate */
-export const kitchenPrepMethodsCommandsDeactivate = (): string => "/api/kitchen/prep-methods/commands/deactivate";
-
-/** POST /api/kitchen/prep-methods/commands/update */
-export const kitchenPrepMethodsCommandsUpdate = (): string => "/api/kitchen/prep-methods/commands/update";
-
-/** GET /api/kitchen/prep-tasks */
-export const kitchenPrepTasks = (): string => "/api/kitchen/prep-tasks";
-
-/** POST /api/kitchen/prep-tasks/commands/cancel */
-export const kitchenPrepTasksCommandsCancel = (): string => "/api/kitchen/prep-tasks/commands/cancel";
-
-/** POST /api/kitchen/prep-tasks/commands/claim */
-export const kitchenPrepTasksCommandsClaim = (): string => "/api/kitchen/prep-tasks/commands/claim";
-
-/** POST /api/kitchen/prep-tasks/commands/complete */
-export const kitchenPrepTasksCommandsComplete = (): string => "/api/kitchen/prep-tasks/commands/complete";
-
-/** POST /api/kitchen/prep-tasks/commands/create */
-export const kitchenPrepTasksCommandsCreate = (): string => "/api/kitchen/prep-tasks/commands/create";
-
-/** POST /api/kitchen/prep-tasks/commands/reassign */
-export const kitchenPrepTasksCommandsReassign = (): string => "/api/kitchen/prep-tasks/commands/reassign";
-
-/** POST /api/kitchen/prep-tasks/commands/release */
-export const kitchenPrepTasksCommandsRelease = (): string => "/api/kitchen/prep-tasks/commands/release";
-
-/** POST /api/kitchen/prep-tasks/commands/start */
-export const kitchenPrepTasksCommandsStart = (): string => "/api/kitchen/prep-tasks/commands/start";
-
-/** POST /api/kitchen/prep-tasks/commands/update-quantity */
-export const kitchenPrepTasksCommandsUpdateQuantity = (): string => "/api/kitchen/prep-tasks/commands/update-quantity";
-
-/** GET /api/kitchen/preplist/list */
-export const kitchenPreplistList = (): string => "/api/kitchen/preplist/list";
-
-/** GET /api/kitchen/preplistitem/list */
-export const kitchenPreplistitemList = (): string => "/api/kitchen/preplistitem/list";
-
-/** GET /api/kitchen/preptask/list */
-export const kitchenPreptaskList = (): string => "/api/kitchen/preptask/list";
-
-/** POST /api/kitchen/recipe-ingredients/commands/create */
-export const kitchenRecipeIngredientsCommandsCreate = (): string => "/api/kitchen/recipe-ingredients/commands/create";
-
-/** POST /api/kitchen/recipe-ingredients/commands/update-quantity */
-export const kitchenRecipeIngredientsCommandsUpdateQuantity = (): string => "/api/kitchen/recipe-ingredients/commands/update-quantity";
-
-/** GET /api/kitchen/recipe/list */
-export const kitchenRecipeList = (): string => "/api/kitchen/recipe/list";
-
-/** GET /api/kitchen/recipeingredient/list */
-export const kitchenRecipeingredientList = (): string => "/api/kitchen/recipeingredient/list";
-
-/** GET /api/kitchen/recipes */
-export const kitchenRecipes = (): string => "/api/kitchen/recipes";
-
-/** GET /api/kitchen/recipes/:recipeId/cost */
-export const kitchenRecipesCost = (recipeId: string): string => "/api/kitchen/recipes/:recipeId/cost".replace(":recipeId", encodeURIComponent(recipeId));
-
-/** GET /api/kitchen/recipes/:recipeId/ingredients */
-export const kitchenRecipesIngredients = (recipeId: string): string => "/api/kitchen/recipes/:recipeId/ingredients".replace(":recipeId", encodeURIComponent(recipeId));
-
-/** POST, PATCH /api/kitchen/recipes/:recipeId/scale */
-export const kitchenRecipesScale = (recipeId: string): string => "/api/kitchen/recipes/:recipeId/scale".replace(":recipeId", encodeURIComponent(recipeId));
-
-/** GET /api/kitchen/recipes/:recipeId/steps */
-export const kitchenRecipesSteps = (recipeId: string): string => "/api/kitchen/recipes/:recipeId/steps".replace(":recipeId", encodeURIComponent(recipeId));
-
-/** POST /api/kitchen/recipes/:recipeId/update-budgets */
-export const kitchenRecipesUpdateBudgets = (recipeId: string): string => "/api/kitchen/recipes/:recipeId/update-budgets".replace(":recipeId", encodeURIComponent(recipeId));
-
-/** GET /api/kitchen/recipes/:recipeId/versions */
-export const kitchenRecipesVersions = (recipeId: string): string => "/api/kitchen/recipes/:recipeId/versions".replace(":recipeId", encodeURIComponent(recipeId));
-
-/** POST /api/kitchen/recipes/commands/activate */
-export const kitchenRecipesCommandsActivate = (): string => "/api/kitchen/recipes/commands/activate";
-
-/** POST /api/kitchen/recipes/commands/create */
-export const kitchenRecipesCommandsCreate = (): string => "/api/kitchen/recipes/commands/create";
-
-/** POST /api/kitchen/recipes/commands/deactivate */
-export const kitchenRecipesCommandsDeactivate = (): string => "/api/kitchen/recipes/commands/deactivate";
-
-/** POST /api/kitchen/recipes/commands/update */
-export const kitchenRecipesCommandsUpdate = (): string => "/api/kitchen/recipes/commands/update";
-
-/** POST /api/kitchen/recipes/versions/commands/create */
-export const kitchenRecipesVersionsCommandsCreate = (): string => "/api/kitchen/recipes/versions/commands/create";
-
-/** GET /api/kitchen/recipeversion/list */
-export const kitchenRecipeversionList = (): string => "/api/kitchen/recipeversion/list";
-
-/** GET /api/kitchen/station/list */
-export const kitchenStationList = (): string => "/api/kitchen/station/list";
-
-/** GET /api/kitchen/stations */
-export const kitchenStations = (): string => "/api/kitchen/stations";
-
-/** POST /api/kitchen/stations/commands/activate */
-export const kitchenStationsCommandsActivate = (): string => "/api/kitchen/stations/commands/activate";
-
-/** POST /api/kitchen/stations/commands/assignTask */
-export const kitchenStationsCommandsAssignTask = (): string => "/api/kitchen/stations/commands/assignTask";
-
-/** POST /api/kitchen/stations/commands/create */
-export const kitchenStationsCommandsCreate = (): string => "/api/kitchen/stations/commands/create";
-
-/** POST /api/kitchen/stations/commands/deactivate */
-export const kitchenStationsCommandsDeactivate = (): string => "/api/kitchen/stations/commands/deactivate";
-
-/** POST /api/kitchen/stations/commands/removeTask */
-export const kitchenStationsCommandsRemoveTask = (): string => "/api/kitchen/stations/commands/removeTask";
-
-/** POST /api/kitchen/stations/commands/updateCapacity */
-export const kitchenStationsCommandsUpdateCapacity = (): string => "/api/kitchen/stations/commands/updateCapacity";
-
-/** POST /api/kitchen/stations/commands/updateEquipment */
-export const kitchenStationsCommandsUpdateEquipment = (): string => "/api/kitchen/stations/commands/updateEquipment";
-
-/** GET, POST /api/kitchen/tasks */
-export const kitchenTasks = (): string => "/api/kitchen/tasks";
-
-/** PATCH /api/kitchen/tasks/:id */
-export const kitchenTasksById = (id: string): string => "/api/kitchen/tasks/:id".replace(":id", encodeURIComponent(id));
-
-/** POST /api/kitchen/tasks/:id/claim */
-export const kitchenTasksClaim = (id: string): string => "/api/kitchen/tasks/:id/claim".replace(":id", encodeURIComponent(id));
-
-/** POST /api/kitchen/tasks/:id/claim-shadow-manifest */
-export const kitchenTasksClaimShadowManifest = (id: string): string => "/api/kitchen/tasks/:id/claim-shadow-manifest".replace(":id", encodeURIComponent(id));
-
-/** POST /api/kitchen/tasks/:id/release */
-export const kitchenTasksRelease = (id: string): string => "/api/kitchen/tasks/:id/release".replace(":id", encodeURIComponent(id));
-
-/** GET /api/kitchen/tasks/available */
-export const kitchenTasksAvailable = (): string => "/api/kitchen/tasks/available";
-
-/** GET /api/kitchen/tasks/my-tasks */
-export const kitchenTasksMyTasks = (): string => "/api/kitchen/tasks/my-tasks";
-
-/** GET /api/kitchen/tasks/sync-claims */
-export const kitchenTasksSyncClaims = (): string => "/api/kitchen/tasks/sync-claims";
-
-/** GET /api/kitchen/waste/entries */
-export const kitchenWasteEntries = (): string => "/api/kitchen/waste/entries";
-
-/** GET, PUT /api/kitchen/waste/entries/:id */
-export const kitchenWasteEntriesById = (id: string): string => "/api/kitchen/waste/entries/:id".replace(":id", encodeURIComponent(id));
-
-/** GET /api/kitchen/waste/reasons */
-export const kitchenWasteReasons = (): string => "/api/kitchen/waste/reasons";
-
-/** GET /api/kitchen/waste/reports */
-export const kitchenWasteReports = (): string => "/api/kitchen/waste/reports";
-
-/** GET /api/kitchen/waste/trends */
-export const kitchenWasteTrends = (): string => "/api/kitchen/waste/trends";
-
-/** GET /api/kitchen/waste/units */
-export const kitchenWasteUnits = (): string => "/api/kitchen/waste/units";
-
-/** GET /api/locations */
-export const locations = (): string => "/api/locations";
-
-/** GET /api/payroll/approvals */
-export const payrollApprovals = (): string => "/api/payroll/approvals";
-
-/** PUT /api/payroll/approvals/:approvalId */
-export const payrollApprovalsByApprovalId = (approvalId: string): string => "/api/payroll/approvals/:approvalId".replace(":approvalId", encodeURIComponent(approvalId));
-
-/** GET /api/payroll/approvals/history */
-export const payrollApprovalsHistory = (): string => "/api/payroll/approvals/history";
-
-/** GET /api/payroll/deductions */
-export const payrollDeductions = (): string => "/api/payroll/deductions";
-
-/** POST /api/payroll/export/quickbooks */
-export const payrollExportQuickbooks = (): string => "/api/payroll/export/quickbooks";
-
-/** POST /api/payroll/generate */
-export const payrollGenerate = (): string => "/api/payroll/generate";
-
-/** GET /api/payroll/periods */
-export const payrollPeriods = (): string => "/api/payroll/periods";
-
-/** GET /api/payroll/reports/:periodId */
-export const payrollReports = (periodId: string): string => "/api/payroll/reports/:periodId".replace(":periodId", encodeURIComponent(periodId));
-
-/** GET /api/payroll/runs */
-export const payrollRuns = (): string => "/api/payroll/runs";
-
-/** GET /api/payroll/runs/:runId */
-export const payrollRunsByRunId = (runId: string): string => "/api/payroll/runs/:runId".replace(":runId", encodeURIComponent(runId));
-
-/** POST /api/sales-reporting/generate */
-export const salesReportingGenerate = (): string => "/api/sales-reporting/generate";
-
-/** GET /api/shipments */
-export const shipments = (): string => "/api/shipments";
-
-/** GET /api/shipments/:id */
-export const shipmentsById = (id: string): string => "/api/shipments/:id".replace(":id", encodeURIComponent(id));
-
-/** GET, POST /api/shipments/:id/items */
-export const shipmentsItems = (id: string): string => "/api/shipments/:id/items".replace(":id", encodeURIComponent(id));
-
-/** PUT, DELETE /api/shipments/:id/items/:itemId */
-export const shipmentsItemsById = (id: string, itemId: string): string => "/api/shipments/:id/items/:itemId".replace(":id", encodeURIComponent(id)).replace(":itemId", encodeURIComponent(itemId));
-
-/** GET /api/shipments/:id/status */
-export const shipmentsStatus = (id: string): string => "/api/shipments/:id/status".replace(":id", encodeURIComponent(id));
-
-/** POST /api/shipments/shipment-items/commands/create */
-export const shipmentsShipmentItemsCommandsCreate = (): string => "/api/shipments/shipment-items/commands/create";
-
-/** POST /api/shipments/shipment-items/commands/update-received */
-export const shipmentsShipmentItemsCommandsUpdateReceived = (): string => "/api/shipments/shipment-items/commands/update-received";
-
-/** POST /api/shipments/shipment/commands/cancel */
-export const shipmentsShipmentCommandsCancel = (): string => "/api/shipments/shipment/commands/cancel";
-
-/** POST /api/shipments/shipment/commands/create */
-export const shipmentsShipmentCommandsCreate = (): string => "/api/shipments/shipment/commands/create";
-
-/** POST /api/shipments/shipment/commands/mark-delivered */
-export const shipmentsShipmentCommandsMarkDelivered = (): string => "/api/shipments/shipment/commands/mark-delivered";
-
-/** POST /api/shipments/shipment/commands/schedule */
-export const shipmentsShipmentCommandsSchedule = (): string => "/api/shipments/shipment/commands/schedule";
-
-/** POST /api/shipments/shipment/commands/ship */
-export const shipmentsShipmentCommandsShip = (): string => "/api/shipments/shipment/commands/ship";
-
-/** POST /api/shipments/shipment/commands/start-preparing */
-export const shipmentsShipmentCommandsStartPreparing = (): string => "/api/shipments/shipment/commands/start-preparing";
-
-/** POST /api/shipments/shipment/commands/update */
-export const shipmentsShipmentCommandsUpdate = (): string => "/api/shipments/shipment/commands/update";
-
-/** GET /api/staff/availability */
-export const staffAvailability = (): string => "/api/staff/availability";
-
-/** GET, PATCH /api/staff/availability/:id */
-export const staffAvailabilityById = (id: string): string => "/api/staff/availability/:id".replace(":id", encodeURIComponent(id));
-
-/** POST /api/staff/availability/batch */
-export const staffAvailabilityBatch = (): string => "/api/staff/availability/batch";
-
-/** GET /api/staff/availability/employees */
-export const staffAvailabilityEmployees = (): string => "/api/staff/availability/employees";
-
-/** GET, POST /api/staff/budgets */
-export const staffBudgets = (): string => "/api/staff/budgets";
-
-/** GET, PUT /api/staff/budgets/:id */
-export const staffBudgetsById = (id: string): string => "/api/staff/budgets/:id".replace(":id", encodeURIComponent(id));
-
-/** GET, POST /api/staff/budgets/alerts */
-export const staffBudgetsAlerts = (): string => "/api/staff/budgets/alerts";
-
-/** GET /api/staff/employees */
-export const staffEmployees = (): string => "/api/staff/employees";
-
-/** GET, PUT /api/staff/employees/:id */
-export const staffEmployeesById = (id: string): string => "/api/staff/employees/:id".replace(":id", encodeURIComponent(id));
-
-/** POST /api/staff/employees/commands/create */
-export const staffEmployeesCommandsCreate = (): string => "/api/staff/employees/commands/create";
-
-/** POST /api/staff/employees/commands/deactivate */
-export const staffEmployeesCommandsDeactivate = (): string => "/api/staff/employees/commands/deactivate";
-
-/** POST /api/staff/employees/commands/terminate */
-export const staffEmployeesCommandsTerminate = (): string => "/api/staff/employees/commands/terminate";
-
-/** POST /api/staff/employees/commands/update */
-export const staffEmployeesCommandsUpdate = (): string => "/api/staff/employees/commands/update";
-
-/** POST /api/staff/employees/commands/update-role */
-export const staffEmployeesCommandsUpdateRole = (): string => "/api/staff/employees/commands/update-role";
-
-/** GET /api/staff/schedules */
-export const staffSchedules = (): string => "/api/staff/schedules";
-
-/** POST /api/staff/schedules/commands/close */
-export const staffSchedulesCommandsClose = (): string => "/api/staff/schedules/commands/close";
-
-/** POST /api/staff/schedules/commands/create */
-export const staffSchedulesCommandsCreate = (): string => "/api/staff/schedules/commands/create";
-
-/** POST /api/staff/schedules/commands/release */
-export const staffSchedulesCommandsRelease = (): string => "/api/staff/schedules/commands/release";
-
-/** POST /api/staff/schedules/commands/update */
-export const staffSchedulesCommandsUpdate = (): string => "/api/staff/schedules/commands/update";
-
-/** GET /api/staff/shifts */
-export const staffShifts = (): string => "/api/staff/shifts";
-
-/** GET, PUT, DELETE /api/staff/shifts/:shiftId */
-export const staffShiftsByShiftId = (shiftId: string): string => "/api/staff/shifts/:shiftId".replace(":shiftId", encodeURIComponent(shiftId));
-
-/** GET /api/staff/shifts/:shiftId/assignment-suggestions */
-export const staffShiftsAssignmentSuggestions = (shiftId: string): string => "/api/staff/shifts/:shiftId/assignment-suggestions".replace(":shiftId", encodeURIComponent(shiftId));
-
-/** GET /api/staff/shifts/available-employees */
-export const staffShiftsAvailableEmployees = (): string => "/api/staff/shifts/available-employees";
-
-/** POST /api/staff/shifts/bulk-assignment */
-export const staffShiftsBulkAssignment = (): string => "/api/staff/shifts/bulk-assignment";
-
-/** POST /api/staff/shifts/bulk-assignment-suggestions */
-export const staffShiftsBulkAssignmentSuggestions = (): string => "/api/staff/shifts/bulk-assignment-suggestions";
-
-/** POST /api/staff/shifts/commands/create */
-export const staffShiftsCommandsCreate = (): string => "/api/staff/shifts/commands/create";
-
-/** POST /api/staff/shifts/commands/remove */
-export const staffShiftsCommandsRemove = (): string => "/api/staff/shifts/commands/remove";
-
-/** POST /api/staff/shifts/commands/update */
-export const staffShiftsCommandsUpdate = (): string => "/api/staff/shifts/commands/update";
-
-/** GET /api/staff/time-off/requests */
-export const staffTimeOffRequests = (): string => "/api/staff/time-off/requests";
-
-/** GET, PATCH /api/staff/time-off/requests/:id */
-export const staffTimeOffRequestsById = (id: string): string => "/api/staff/time-off/requests/:id".replace(":id", encodeURIComponent(id));
-
-/** GET /api/timecards */
-export const timecards = (): string => "/api/timecards";
-
-/** GET /api/timecards/:id */
-export const timecardsById = (id: string): string => "/api/timecards/:id".replace(":id", encodeURIComponent(id));
-
-/** GET /api/timecards/bulk */
-export const timecardsBulk = (): string => "/api/timecards/bulk";
-
-/** POST /api/timecards/edit-requests/commands/approve */
-export const timecardsEditRequestsCommandsApprove = (): string => "/api/timecards/edit-requests/commands/approve";
-
-/** POST /api/timecards/edit-requests/commands/create */
-export const timecardsEditRequestsCommandsCreate = (): string => "/api/timecards/edit-requests/commands/create";
-
-/** POST /api/timecards/edit-requests/commands/reject */
-export const timecardsEditRequestsCommandsReject = (): string => "/api/timecards/edit-requests/commands/reject";
-
-/** POST /api/timecards/entries/commands/add-entry */
-export const timecardsEntriesCommandsAddEntry = (): string => "/api/timecards/entries/commands/add-entry";
-
-/** POST /api/timecards/entries/commands/clock-in */
-export const timecardsEntriesCommandsClockIn = (): string => "/api/timecards/entries/commands/clock-in";
-
-/** POST /api/timecards/entries/commands/clock-out */
-export const timecardsEntriesCommandsClockOut = (): string => "/api/timecards/entries/commands/clock-out";
-
-/** GET /api/user-preferences */
-export const userPreferences = (): string => "/api/user-preferences";
-
-// ---------------------------------------------------------------------------
-// Route pattern list (for dev-time validation)
-// ---------------------------------------------------------------------------
-
-/** All known route patterns. Used by apiFetch dev guard. */
-export const ROUTE_PATTERNS: readonly string[] = [
-  "/api/accounting/accounts",
-  "/api/accounting/accounts/:id",
-  "/api/administrative/chat/threads",
-  "/api/administrative/chat/threads/:threadId",
-  "/api/administrative/chat/threads/:threadId/messages",
-  "/api/administrative/tasks",
-  "/api/administrative/tasks/:id",
-  "/api/ai/suggestions",
-  "/api/ai/summaries/:eventId",
-  "/api/analytics/events/profitability",
-  "/api/analytics/finance",
-  "/api/analytics/kitchen",
-  "/api/analytics/staff/employees/:employeeId",
-  "/api/analytics/staff/summary",
-  "/api/collaboration/auth",
-  "/api/collaboration/notifications/commands/create",
-  "/api/collaboration/notifications/commands/mark-dismissed",
-  "/api/collaboration/notifications/commands/mark-read",
-  "/api/collaboration/notifications/commands/remove",
-  "/api/collaboration/workflows/commands/activate",
-  "/api/collaboration/workflows/commands/create",
-  "/api/collaboration/workflows/commands/deactivate",
-  "/api/collaboration/workflows/commands/update",
-  "/api/command-board",
-  "/api/command-board/:boardId",
-  "/api/command-board/:boardId/cards",
-  "/api/command-board/:boardId/cards/:cardId",
-  "/api/command-board/:boardId/connections",
-  "/api/command-board/:boardId/connections/:connectionId",
-  "/api/command-board/:boardId/draft",
-  "/api/command-board/:boardId/groups",
-  "/api/command-board/:boardId/groups/:groupId",
-  "/api/command-board/:boardId/groups/:groupId/cards",
-  "/api/command-board/:boardId/replay",
-  "/api/command-board/boards/commands/activate",
-  "/api/command-board/boards/commands/create",
-  "/api/command-board/boards/commands/deactivate",
-  "/api/command-board/boards/commands/update",
-  "/api/command-board/cards/commands/create",
-  "/api/command-board/cards/commands/move",
-  "/api/command-board/cards/commands/remove",
-  "/api/command-board/cards/commands/resize",
-  "/api/command-board/cards/commands/update",
-  "/api/command-board/connections/commands/create",
-  "/api/command-board/connections/commands/remove",
-  "/api/command-board/groups/commands/create",
-  "/api/command-board/groups/commands/remove",
-  "/api/command-board/groups/commands/update",
-  "/api/command-board/layouts",
-  "/api/command-board/layouts/:layoutId",
-  "/api/command-board/layouts/commands/create",
-  "/api/command-board/layouts/commands/remove",
-  "/api/command-board/layouts/commands/update",
-  "/api/conflicts/detect",
-  "/api/crm/client-contacts/commands/create",
-  "/api/crm/client-contacts/commands/remove",
-  "/api/crm/client-contacts/commands/set-primary",
-  "/api/crm/client-contacts/commands/update",
-  "/api/crm/client-interactions/commands/complete",
-  "/api/crm/client-interactions/commands/create",
-  "/api/crm/client-interactions/commands/update",
-  "/api/crm/client-preferences/commands/create",
-  "/api/crm/client-preferences/commands/remove",
-  "/api/crm/client-preferences/commands/update",
-  "/api/crm/clients",
-  "/api/crm/clients/:id",
-  "/api/crm/clients/:id/contacts",
-  "/api/crm/clients/:id/events",
-  "/api/crm/clients/:id/interactions",
-  "/api/crm/clients/:id/interactions/:interactionId",
-  "/api/crm/clients/:id/preferences",
-  "/api/crm/clients/commands/archive",
-  "/api/crm/clients/commands/create",
-  "/api/crm/clients/commands/reactivate",
-  "/api/crm/clients/commands/update",
-  "/api/crm/leads/commands/archive",
-  "/api/crm/leads/commands/convert-to-client",
-  "/api/crm/leads/commands/create",
-  "/api/crm/leads/commands/disqualify",
-  "/api/crm/leads/commands/update",
-  "/api/crm/proposal-line-items/commands/create",
-  "/api/crm/proposal-line-items/commands/remove",
-  "/api/crm/proposal-line-items/commands/update",
-  "/api/crm/proposals",
-  "/api/crm/proposals/:id",
-  "/api/crm/proposals/:id/send",
-  "/api/crm/proposals/commands/accept",
-  "/api/crm/proposals/commands/create",
-  "/api/crm/proposals/commands/mark-viewed",
-  "/api/crm/proposals/commands/reject",
-  "/api/crm/proposals/commands/send",
-  "/api/crm/proposals/commands/update",
-  "/api/crm/proposals/commands/withdraw",
-  "/api/crm/venues",
-  "/api/crm/venues/:id",
-  "/api/crm/venues/:id/events",
-  "/api/cron/idempotency-cleanup",
-  "/api/events",
-  "/api/events/:eventId/export/csv",
-  "/api/events/:eventId/guests",
-  "/api/events/:eventId/warnings",
-  "/api/events/allergens/check",
-  "/api/events/allergens/warnings/acknowledge",
-  "/api/events/battle-boards",
-  "/api/events/battle-boards/:boardId",
-  "/api/events/battle-boards/commands/add-dish",
-  "/api/events/battle-boards/commands/create",
-  "/api/events/battle-boards/commands/finalize",
-  "/api/events/battle-boards/commands/open",
-  "/api/events/battle-boards/commands/remove-dish",
-  "/api/events/battle-boards/commands/start-voting",
-  "/api/events/battle-boards/commands/vote",
-  "/api/events/budget-line-items/commands/create",
-  "/api/events/budget-line-items/commands/remove",
-  "/api/events/budget-line-items/commands/update",
-  "/api/events/budgets",
-  "/api/events/budgets/:id",
-  "/api/events/budgets/:id/line-items",
-  "/api/events/budgets/:id/line-items/:lineItemId",
-  "/api/events/budgets/commands/approve",
-  "/api/events/budgets/commands/create",
-  "/api/events/budgets/commands/finalize",
-  "/api/events/budgets/commands/update",
-  "/api/events/catering-orders/commands/cancel",
-  "/api/events/catering-orders/commands/confirm",
-  "/api/events/catering-orders/commands/create",
-  "/api/events/catering-orders/commands/mark-complete",
-  "/api/events/catering-orders/commands/start-prep",
-  "/api/events/catering-orders/commands/update",
-  "/api/events/contracts",
-  "/api/events/contracts/:id",
-  "/api/events/contracts/:id/document",
-  "/api/events/contracts/:id/send",
-  "/api/events/contracts/:id/signature",
-  "/api/events/contracts/:id/signatures",
-  "/api/events/contracts/:id/status",
-  "/api/events/contracts/expiring",
-  "/api/events/documents/parse",
-  "/api/events/event/commands/archive",
-  "/api/events/event/commands/cancel",
-  "/api/events/event/commands/confirm",
-  "/api/events/event/commands/create",
-  "/api/events/event/commands/finalize",
-  "/api/events/event/commands/unfinalize",
-  "/api/events/event/commands/update",
-  "/api/events/event/commands/update-date",
-  "/api/events/event/commands/update-guest-count",
-  "/api/events/event/commands/update-location",
-  "/api/events/export/csv",
-  "/api/events/guests/:guestId",
-  "/api/events/import/server-to-server",
-  "/api/events/imports/:importId",
-  "/api/events/profitability/commands/create",
-  "/api/events/profitability/commands/recalculate",
-  "/api/events/profitability/commands/update",
-  "/api/events/reports",
-  "/api/events/reports/:reportId",
-  "/api/events/reports/commands/approve",
-  "/api/events/reports/commands/complete",
-  "/api/events/reports/commands/create",
-  "/api/events/reports/commands/submit",
-  "/api/events/summaries/commands/create",
-  "/api/events/summaries/commands/refresh",
-  "/api/events/summaries/commands/update",
-  "/api/inventory/alerts/subscribe",
-  "/api/inventory/cycle-count/audit-logs",
-  "/api/inventory/cycle-count/records/:id",
-  "/api/inventory/cycle-count/records/commands/create",
-  "/api/inventory/cycle-count/records/commands/update",
-  "/api/inventory/cycle-count/records/commands/verify",
-  "/api/inventory/cycle-count/sessions",
-  "/api/inventory/cycle-count/sessions/:sessionId",
-  "/api/inventory/cycle-count/sessions/:sessionId/finalize",
-  "/api/inventory/cycle-count/sessions/:sessionId/records",
-  "/api/inventory/cycle-count/sessions/:sessionId/variance-reports",
-  "/api/inventory/cycle-count/sessions/commands/cancel",
-  "/api/inventory/cycle-count/sessions/commands/complete",
-  "/api/inventory/cycle-count/sessions/commands/create",
-  "/api/inventory/cycle-count/sessions/commands/finalize",
-  "/api/inventory/cycle-count/sessions/commands/start",
-  "/api/inventory/cycle-count/variance-reports/commands/approve",
-  "/api/inventory/cycle-count/variance-reports/commands/create",
-  "/api/inventory/cycle-count/variance-reports/commands/review",
-  "/api/inventory/forecasts",
-  "/api/inventory/forecasts/alerts",
-  "/api/inventory/forecasts/batch",
-  "/api/inventory/items",
-  "/api/inventory/items/:id",
-  "/api/inventory/purchase-order-items/commands/create",
-  "/api/inventory/purchase-order-items/commands/remove",
-  "/api/inventory/purchase-order-items/commands/update",
-  "/api/inventory/purchase-orders",
-  "/api/inventory/purchase-orders/:id",
-  "/api/inventory/purchase-orders/:id/complete",
-  "/api/inventory/purchase-orders/:id/items/:itemId/quality",
-  "/api/inventory/purchase-orders/:id/items/:itemId/quantity",
-  "/api/inventory/purchase-orders/commands/approve",
-  "/api/inventory/purchase-orders/commands/cancel",
-  "/api/inventory/purchase-orders/commands/create",
-  "/api/inventory/purchase-orders/commands/mark-ordered",
-  "/api/inventory/purchase-orders/commands/mark-received",
-  "/api/inventory/purchase-orders/commands/reject",
-  "/api/inventory/purchase-orders/commands/submit",
-  "/api/inventory/reorder-suggestions",
-  "/api/inventory/stock-levels",
-  "/api/inventory/stock-levels/adjust",
-  "/api/inventory/stock-levels/locations",
-  "/api/inventory/stock-levels/transactions",
-  "/api/inventory/suppliers/commands/create",
-  "/api/inventory/suppliers/commands/deactivate",
-  "/api/inventory/suppliers/commands/update",
-  "/api/inventory/transactions/commands/create",
-  "/api/kitchen/ai/bulk-generate/prep-tasks",
-  "/api/kitchen/ai/bulk-generate/prep-tasks/save",
-  "/api/kitchen/allergens/detect-conflicts",
-  "/api/kitchen/allergens/update-dish",
-  "/api/kitchen/allergens/warnings",
-  "/api/kitchen/containers/commands/create",
-  "/api/kitchen/containers/commands/deactivate",
-  "/api/kitchen/containers/commands/update",
-  "/api/kitchen/dish/list",
-  "/api/kitchen/dishes",
-  "/api/kitchen/dishes/commands/create",
-  "/api/kitchen/dishes/commands/update-lead-time",
-  "/api/kitchen/dishes/commands/update-pricing",
-  "/api/kitchen/ingredient/list",
-  "/api/kitchen/ingredients",
-  "/api/kitchen/ingredients/commands/create",
-  "/api/kitchen/ingredients/commands/update-allergens",
-  "/api/kitchen/inventory/commands/adjust",
-  "/api/kitchen/inventory/commands/consume",
-  "/api/kitchen/inventory/commands/create",
-  "/api/kitchen/inventory/commands/release-reservation",
-  "/api/kitchen/inventory/commands/reserve",
-  "/api/kitchen/inventory/commands/restock",
-  "/api/kitchen/inventory/commands/waste",
-  "/api/kitchen/inventoryitem/list",
-  "/api/kitchen/kitchen-tasks/commands/add-tag",
-  "/api/kitchen/kitchen-tasks/commands/cancel",
-  "/api/kitchen/kitchen-tasks/commands/claim",
-  "/api/kitchen/kitchen-tasks/commands/complete",
-  "/api/kitchen/kitchen-tasks/commands/create",
-  "/api/kitchen/kitchen-tasks/commands/reassign",
-  "/api/kitchen/kitchen-tasks/commands/release",
-  "/api/kitchen/kitchen-tasks/commands/remove-tag",
-  "/api/kitchen/kitchen-tasks/commands/start",
-  "/api/kitchen/kitchen-tasks/commands/update-complexity",
-  "/api/kitchen/kitchen-tasks/commands/update-priority",
-  "/api/kitchen/manifest/dishes",
-  "/api/kitchen/manifest/dishes/:dishId/pricing",
-  "/api/kitchen/manifest/prep-lists",
-  "/api/kitchen/manifest/recipes",
-  "/api/kitchen/manifest/recipes/:recipeId/activate",
-  "/api/kitchen/manifest/recipes/:recipeId/deactivate",
-  "/api/kitchen/manifest/recipes/:recipeId/metadata",
-  "/api/kitchen/manifest/recipes/:recipeId/restore",
-  "/api/kitchen/manifest/recipes/:recipeId/versions",
-  "/api/kitchen/menu/list",
-  "/api/kitchen/menudish/list",
-  "/api/kitchen/menus",
-  "/api/kitchen/menus/commands/activate",
-  "/api/kitchen/menus/commands/create",
-  "/api/kitchen/menus/commands/deactivate",
-  "/api/kitchen/menus/commands/update",
-  "/api/kitchen/menus/dishes/commands/create",
-  "/api/kitchen/overrides",
-  "/api/kitchen/prep-comments/commands/create",
-  "/api/kitchen/prep-comments/commands/resolve",
-  "/api/kitchen/prep-comments/commands/soft-delete",
-  "/api/kitchen/prep-comments/commands/unresolve",
-  "/api/kitchen/prep-lists",
-  "/api/kitchen/prep-lists/:id",
-  "/api/kitchen/prep-lists/autogenerate/process",
-  "/api/kitchen/prep-lists/commands/activate",
-  "/api/kitchen/prep-lists/commands/cancel",
-  "/api/kitchen/prep-lists/commands/create",
-  "/api/kitchen/prep-lists/commands/deactivate",
-  "/api/kitchen/prep-lists/commands/finalize",
-  "/api/kitchen/prep-lists/commands/mark-completed",
-  "/api/kitchen/prep-lists/commands/update",
-  "/api/kitchen/prep-lists/commands/update-batch-multiplier",
-  "/api/kitchen/prep-lists/generate",
-  "/api/kitchen/prep-lists/items/:id",
-  "/api/kitchen/prep-lists/items/commands/create",
-  "/api/kitchen/prep-lists/items/commands/mark-completed",
-  "/api/kitchen/prep-lists/items/commands/mark-uncompleted",
-  "/api/kitchen/prep-lists/items/commands/update-prep-notes",
-  "/api/kitchen/prep-lists/items/commands/update-quantity",
-  "/api/kitchen/prep-lists/items/commands/update-station",
-  "/api/kitchen/prep-lists/save",
-  "/api/kitchen/prep-lists/save-db",
-  "/api/kitchen/prep-methods/commands/create",
-  "/api/kitchen/prep-methods/commands/deactivate",
-  "/api/kitchen/prep-methods/commands/update",
-  "/api/kitchen/prep-tasks",
-  "/api/kitchen/prep-tasks/commands/cancel",
-  "/api/kitchen/prep-tasks/commands/claim",
-  "/api/kitchen/prep-tasks/commands/complete",
-  "/api/kitchen/prep-tasks/commands/create",
-  "/api/kitchen/prep-tasks/commands/reassign",
-  "/api/kitchen/prep-tasks/commands/release",
-  "/api/kitchen/prep-tasks/commands/start",
-  "/api/kitchen/prep-tasks/commands/update-quantity",
-  "/api/kitchen/preplist/list",
-  "/api/kitchen/preplistitem/list",
-  "/api/kitchen/preptask/list",
-  "/api/kitchen/recipe-ingredients/commands/create",
-  "/api/kitchen/recipe-ingredients/commands/update-quantity",
-  "/api/kitchen/recipe/list",
-  "/api/kitchen/recipeingredient/list",
-  "/api/kitchen/recipes",
-  "/api/kitchen/recipes/:recipeId/cost",
-  "/api/kitchen/recipes/:recipeId/ingredients",
-  "/api/kitchen/recipes/:recipeId/scale",
-  "/api/kitchen/recipes/:recipeId/steps",
-  "/api/kitchen/recipes/:recipeId/update-budgets",
-  "/api/kitchen/recipes/:recipeId/versions",
-  "/api/kitchen/recipes/commands/activate",
-  "/api/kitchen/recipes/commands/create",
-  "/api/kitchen/recipes/commands/deactivate",
-  "/api/kitchen/recipes/commands/update",
-  "/api/kitchen/recipes/versions/commands/create",
-  "/api/kitchen/recipeversion/list",
-  "/api/kitchen/station/list",
-  "/api/kitchen/stations",
-  "/api/kitchen/stations/commands/activate",
-  "/api/kitchen/stations/commands/assignTask",
-  "/api/kitchen/stations/commands/create",
-  "/api/kitchen/stations/commands/deactivate",
-  "/api/kitchen/stations/commands/removeTask",
-  "/api/kitchen/stations/commands/updateCapacity",
-  "/api/kitchen/stations/commands/updateEquipment",
-  "/api/kitchen/tasks",
-  "/api/kitchen/tasks/:id",
-  "/api/kitchen/tasks/:id/claim",
-  "/api/kitchen/tasks/:id/claim-shadow-manifest",
-  "/api/kitchen/tasks/:id/release",
-  "/api/kitchen/tasks/available",
-  "/api/kitchen/tasks/my-tasks",
-  "/api/kitchen/tasks/sync-claims",
-  "/api/kitchen/waste/entries",
-  "/api/kitchen/waste/entries/:id",
-  "/api/kitchen/waste/reasons",
-  "/api/kitchen/waste/reports",
-  "/api/kitchen/waste/trends",
-  "/api/kitchen/waste/units",
-  "/api/locations",
-  "/api/payroll/approvals",
-  "/api/payroll/approvals/:approvalId",
-  "/api/payroll/approvals/history",
-  "/api/payroll/deductions",
-  "/api/payroll/export/quickbooks",
-  "/api/payroll/generate",
-  "/api/payroll/periods",
-  "/api/payroll/reports/:periodId",
-  "/api/payroll/runs",
-  "/api/payroll/runs/:runId",
-  "/api/sales-reporting/generate",
-  "/api/shipments",
-  "/api/shipments/:id",
-  "/api/shipments/:id/items",
-  "/api/shipments/:id/items/:itemId",
-  "/api/shipments/:id/status",
-  "/api/shipments/shipment-items/commands/create",
-  "/api/shipments/shipment-items/commands/update-received",
-  "/api/shipments/shipment/commands/cancel",
-  "/api/shipments/shipment/commands/create",
-  "/api/shipments/shipment/commands/mark-delivered",
-  "/api/shipments/shipment/commands/schedule",
-  "/api/shipments/shipment/commands/ship",
-  "/api/shipments/shipment/commands/start-preparing",
-  "/api/shipments/shipment/commands/update",
-  "/api/staff/availability",
-  "/api/staff/availability/:id",
-  "/api/staff/availability/batch",
-  "/api/staff/availability/employees",
-  "/api/staff/budgets",
-  "/api/staff/budgets/:id",
-  "/api/staff/budgets/alerts",
-  "/api/staff/employees",
-  "/api/staff/employees/:id",
-  "/api/staff/employees/commands/create",
-  "/api/staff/employees/commands/deactivate",
-  "/api/staff/employees/commands/terminate",
-  "/api/staff/employees/commands/update",
-  "/api/staff/employees/commands/update-role",
-  "/api/staff/schedules",
-  "/api/staff/schedules/commands/close",
-  "/api/staff/schedules/commands/create",
-  "/api/staff/schedules/commands/release",
-  "/api/staff/schedules/commands/update",
-  "/api/staff/shifts",
-  "/api/staff/shifts/:shiftId",
-  "/api/staff/shifts/:shiftId/assignment-suggestions",
-  "/api/staff/shifts/available-employees",
-  "/api/staff/shifts/bulk-assignment",
-  "/api/staff/shifts/bulk-assignment-suggestions",
-  "/api/staff/shifts/commands/create",
-  "/api/staff/shifts/commands/remove",
-  "/api/staff/shifts/commands/update",
-  "/api/staff/time-off/requests",
-  "/api/staff/time-off/requests/:id",
-  "/api/timecards",
-  "/api/timecards/:id",
-  "/api/timecards/bulk",
-  "/api/timecards/edit-requests/commands/approve",
-  "/api/timecards/edit-requests/commands/create",
-  "/api/timecards/edit-requests/commands/reject",
-  "/api/timecards/entries/commands/add-entry",
-  "/api/timecards/entries/commands/clock-in",
-  "/api/timecards/entries/commands/clock-out",
-  "/api/user-preferences",
+// Auto-generated route helpers from Manifest IR
+// DO NOT EDIT — This file is generated by `manifest generate --surface routes.ts`
+// Clients MUST use these helpers. Hardcoded transport paths are non-conformant.
+// See docs/spec/manifest-vnext.md § "Canonical Routes (Normative)".
+
+// ============================================================================
+// Entity Read Routes
+// ============================================================================
+
+/** GET /api/alertsconfig/list */
+export function alertsConfigListPath(): string {
+  return "/api/alertsconfig/list";
+}
+
+/** GET /api/alertsconfig/:id */
+export function alertsConfigDetailPath(id: string): string {
+  return "/api/alertsconfig/" + encodeURIComponent(id);
+}
+
+/** GET /api/allergenwarning/list */
+export function allergenWarningListPath(): string {
+  return "/api/allergenwarning/list";
+}
+
+/** GET /api/allergenwarning/:id */
+export function allergenWarningDetailPath(id: string): string {
+  return "/api/allergenwarning/" + encodeURIComponent(id);
+}
+
+/** GET /api/battleboard/list */
+export function battleBoardListPath(): string {
+  return "/api/battleboard/list";
+}
+
+/** GET /api/battleboard/:id */
+export function battleBoardDetailPath(id: string): string {
+  return "/api/battleboard/" + encodeURIComponent(id);
+}
+
+/** GET /api/budgetlineitem/list */
+export function budgetLineItemListPath(): string {
+  return "/api/budgetlineitem/list";
+}
+
+/** GET /api/budgetlineitem/:id */
+export function budgetLineItemDetailPath(id: string): string {
+  return "/api/budgetlineitem/" + encodeURIComponent(id);
+}
+
+/** GET /api/cateringorder/list */
+export function cateringOrderListPath(): string {
+  return "/api/cateringorder/list";
+}
+
+/** GET /api/cateringorder/:id */
+export function cateringOrderDetailPath(id: string): string {
+  return "/api/cateringorder/" + encodeURIComponent(id);
+}
+
+/** GET /api/client/list */
+export function clientListPath(): string {
+  return "/api/client/list";
+}
+
+/** GET /api/client/:id */
+export function clientDetailPath(id: string): string {
+  return "/api/client/" + encodeURIComponent(id);
+}
+
+/** GET /api/clientcontact/list */
+export function clientContactListPath(): string {
+  return "/api/clientcontact/list";
+}
+
+/** GET /api/clientcontact/:id */
+export function clientContactDetailPath(id: string): string {
+  return "/api/clientcontact/" + encodeURIComponent(id);
+}
+
+/** GET /api/clientinteraction/list */
+export function clientInteractionListPath(): string {
+  return "/api/clientinteraction/list";
+}
+
+/** GET /api/clientinteraction/:id */
+export function clientInteractionDetailPath(id: string): string {
+  return "/api/clientinteraction/" + encodeURIComponent(id);
+}
+
+/** GET /api/clientpreference/list */
+export function clientPreferenceListPath(): string {
+  return "/api/clientpreference/list";
+}
+
+/** GET /api/clientpreference/:id */
+export function clientPreferenceDetailPath(id: string): string {
+  return "/api/clientpreference/" + encodeURIComponent(id);
+}
+
+/** GET /api/commandboard/list */
+export function commandBoardListPath(): string {
+  return "/api/commandboard/list";
+}
+
+/** GET /api/commandboard/:id */
+export function commandBoardDetailPath(id: string): string {
+  return "/api/commandboard/" + encodeURIComponent(id);
+}
+
+/** GET /api/commandboardcard/list */
+export function commandBoardCardListPath(): string {
+  return "/api/commandboardcard/list";
+}
+
+/** GET /api/commandboardcard/:id */
+export function commandBoardCardDetailPath(id: string): string {
+  return "/api/commandboardcard/" + encodeURIComponent(id);
+}
+
+/** GET /api/commandboardconnection/list */
+export function commandBoardConnectionListPath(): string {
+  return "/api/commandboardconnection/list";
+}
+
+/** GET /api/commandboardconnection/:id */
+export function commandBoardConnectionDetailPath(id: string): string {
+  return "/api/commandboardconnection/" + encodeURIComponent(id);
+}
+
+/** GET /api/commandboardgroup/list */
+export function commandBoardGroupListPath(): string {
+  return "/api/commandboardgroup/list";
+}
+
+/** GET /api/commandboardgroup/:id */
+export function commandBoardGroupDetailPath(id: string): string {
+  return "/api/commandboardgroup/" + encodeURIComponent(id);
+}
+
+/** GET /api/commandboardlayout/list */
+export function commandBoardLayoutListPath(): string {
+  return "/api/commandboardlayout/list";
+}
+
+/** GET /api/commandboardlayout/:id */
+export function commandBoardLayoutDetailPath(id: string): string {
+  return "/api/commandboardlayout/" + encodeURIComponent(id);
+}
+
+/** GET /api/container/list */
+export function containerListPath(): string {
+  return "/api/container/list";
+}
+
+/** GET /api/container/:id */
+export function containerDetailPath(id: string): string {
+  return "/api/container/" + encodeURIComponent(id);
+}
+
+/** GET /api/contractsignature/list */
+export function contractSignatureListPath(): string {
+  return "/api/contractsignature/list";
+}
+
+/** GET /api/contractsignature/:id */
+export function contractSignatureDetailPath(id: string): string {
+  return "/api/contractsignature/" + encodeURIComponent(id);
+}
+
+/** GET /api/cyclecountrecord/list */
+export function cycleCountRecordListPath(): string {
+  return "/api/cyclecountrecord/list";
+}
+
+/** GET /api/cyclecountrecord/:id */
+export function cycleCountRecordDetailPath(id: string): string {
+  return "/api/cyclecountrecord/" + encodeURIComponent(id);
+}
+
+/** GET /api/cyclecountsession/list */
+export function cycleCountSessionListPath(): string {
+  return "/api/cyclecountsession/list";
+}
+
+/** GET /api/cyclecountsession/:id */
+export function cycleCountSessionDetailPath(id: string): string {
+  return "/api/cyclecountsession/" + encodeURIComponent(id);
+}
+
+/** GET /api/dish/list */
+export function dishListPath(): string {
+  return "/api/dish/list";
+}
+
+/** GET /api/dish/:id */
+export function dishDetailPath(id: string): string {
+  return "/api/dish/" + encodeURIComponent(id);
+}
+
+/** GET /api/event/list */
+export function eventListPath(): string {
+  return "/api/event/list";
+}
+
+/** GET /api/event/:id */
+export function eventDetailPath(id: string): string {
+  return "/api/event/" + encodeURIComponent(id);
+}
+
+/** GET /api/eventbudget/list */
+export function eventBudgetListPath(): string {
+  return "/api/eventbudget/list";
+}
+
+/** GET /api/eventbudget/:id */
+export function eventBudgetDetailPath(id: string): string {
+  return "/api/eventbudget/" + encodeURIComponent(id);
+}
+
+/** GET /api/eventcontract/list */
+export function eventContractListPath(): string {
+  return "/api/eventcontract/list";
+}
+
+/** GET /api/eventcontract/:id */
+export function eventContractDetailPath(id: string): string {
+  return "/api/eventcontract/" + encodeURIComponent(id);
+}
+
+/** GET /api/eventguest/list */
+export function eventGuestListPath(): string {
+  return "/api/eventguest/list";
+}
+
+/** GET /api/eventguest/:id */
+export function eventGuestDetailPath(id: string): string {
+  return "/api/eventguest/" + encodeURIComponent(id);
+}
+
+/** GET /api/eventprofitability/list */
+export function eventProfitabilityListPath(): string {
+  return "/api/eventprofitability/list";
+}
+
+/** GET /api/eventprofitability/:id */
+export function eventProfitabilityDetailPath(id: string): string {
+  return "/api/eventprofitability/" + encodeURIComponent(id);
+}
+
+/** GET /api/eventreport/list */
+export function eventReportListPath(): string {
+  return "/api/eventreport/list";
+}
+
+/** GET /api/eventreport/:id */
+export function eventReportDetailPath(id: string): string {
+  return "/api/eventreport/" + encodeURIComponent(id);
+}
+
+/** GET /api/eventsummary/list */
+export function eventSummaryListPath(): string {
+  return "/api/eventsummary/list";
+}
+
+/** GET /api/eventsummary/:id */
+export function eventSummaryDetailPath(id: string): string {
+  return "/api/eventsummary/" + encodeURIComponent(id);
+}
+
+/** GET /api/ingredient/list */
+export function ingredientListPath(): string {
+  return "/api/ingredient/list";
+}
+
+/** GET /api/ingredient/:id */
+export function ingredientDetailPath(id: string): string {
+  return "/api/ingredient/" + encodeURIComponent(id);
+}
+
+/** GET /api/inventoryitem/list */
+export function inventoryItemListPath(): string {
+  return "/api/inventoryitem/list";
+}
+
+/** GET /api/inventoryitem/:id */
+export function inventoryItemDetailPath(id: string): string {
+  return "/api/inventoryitem/" + encodeURIComponent(id);
+}
+
+/** GET /api/inventorysupplier/list */
+export function inventorySupplierListPath(): string {
+  return "/api/inventorysupplier/list";
+}
+
+/** GET /api/inventorysupplier/:id */
+export function inventorySupplierDetailPath(id: string): string {
+  return "/api/inventorysupplier/" + encodeURIComponent(id);
+}
+
+/** GET /api/inventorytransaction/list */
+export function inventoryTransactionListPath(): string {
+  return "/api/inventorytransaction/list";
+}
+
+/** GET /api/inventorytransaction/:id */
+export function inventoryTransactionDetailPath(id: string): string {
+  return "/api/inventorytransaction/" + encodeURIComponent(id);
+}
+
+/** GET /api/kitchentask/list */
+export function kitchenTaskListPath(): string {
+  return "/api/kitchentask/list";
+}
+
+/** GET /api/kitchentask/:id */
+export function kitchenTaskDetailPath(id: string): string {
+  return "/api/kitchentask/" + encodeURIComponent(id);
+}
+
+/** GET /api/lead/list */
+export function leadListPath(): string {
+  return "/api/lead/list";
+}
+
+/** GET /api/lead/:id */
+export function leadDetailPath(id: string): string {
+  return "/api/lead/" + encodeURIComponent(id);
+}
+
+/** GET /api/menu/list */
+export function menuListPath(): string {
+  return "/api/menu/list";
+}
+
+/** GET /api/menu/:id */
+export function menuDetailPath(id: string): string {
+  return "/api/menu/" + encodeURIComponent(id);
+}
+
+/** GET /api/menudish/list */
+export function menuDishListPath(): string {
+  return "/api/menudish/list";
+}
+
+/** GET /api/menudish/:id */
+export function menuDishDetailPath(id: string): string {
+  return "/api/menudish/" + encodeURIComponent(id);
+}
+
+/** GET /api/notification/list */
+export function notificationListPath(): string {
+  return "/api/notification/list";
+}
+
+/** GET /api/notification/:id */
+export function notificationDetailPath(id: string): string {
+  return "/api/notification/" + encodeURIComponent(id);
+}
+
+/** GET /api/overrideaudit/list */
+export function overrideAuditListPath(): string {
+  return "/api/overrideaudit/list";
+}
+
+/** GET /api/overrideaudit/:id */
+export function overrideAuditDetailPath(id: string): string {
+  return "/api/overrideaudit/" + encodeURIComponent(id);
+}
+
+/** GET /api/prepcomment/list */
+export function prepCommentListPath(): string {
+  return "/api/prepcomment/list";
+}
+
+/** GET /api/prepcomment/:id */
+export function prepCommentDetailPath(id: string): string {
+  return "/api/prepcomment/" + encodeURIComponent(id);
+}
+
+/** GET /api/preplist/list */
+export function prepListListPath(): string {
+  return "/api/preplist/list";
+}
+
+/** GET /api/preplist/:id */
+export function prepListDetailPath(id: string): string {
+  return "/api/preplist/" + encodeURIComponent(id);
+}
+
+/** GET /api/preplistitem/list */
+export function prepListItemListPath(): string {
+  return "/api/preplistitem/list";
+}
+
+/** GET /api/preplistitem/:id */
+export function prepListItemDetailPath(id: string): string {
+  return "/api/preplistitem/" + encodeURIComponent(id);
+}
+
+/** GET /api/prepmethod/list */
+export function prepMethodListPath(): string {
+  return "/api/prepmethod/list";
+}
+
+/** GET /api/prepmethod/:id */
+export function prepMethodDetailPath(id: string): string {
+  return "/api/prepmethod/" + encodeURIComponent(id);
+}
+
+/** GET /api/preptask/list */
+export function prepTaskListPath(): string {
+  return "/api/preptask/list";
+}
+
+/** GET /api/preptask/:id */
+export function prepTaskDetailPath(id: string): string {
+  return "/api/preptask/" + encodeURIComponent(id);
+}
+
+/** GET /api/proposal/list */
+export function proposalListPath(): string {
+  return "/api/proposal/list";
+}
+
+/** GET /api/proposal/:id */
+export function proposalDetailPath(id: string): string {
+  return "/api/proposal/" + encodeURIComponent(id);
+}
+
+/** GET /api/proposallineitem/list */
+export function proposalLineItemListPath(): string {
+  return "/api/proposallineitem/list";
+}
+
+/** GET /api/proposallineitem/:id */
+export function proposalLineItemDetailPath(id: string): string {
+  return "/api/proposallineitem/" + encodeURIComponent(id);
+}
+
+/** GET /api/purchaseorder/list */
+export function purchaseOrderListPath(): string {
+  return "/api/purchaseorder/list";
+}
+
+/** GET /api/purchaseorder/:id */
+export function purchaseOrderDetailPath(id: string): string {
+  return "/api/purchaseorder/" + encodeURIComponent(id);
+}
+
+/** GET /api/purchaseorderitem/list */
+export function purchaseOrderItemListPath(): string {
+  return "/api/purchaseorderitem/list";
+}
+
+/** GET /api/purchaseorderitem/:id */
+export function purchaseOrderItemDetailPath(id: string): string {
+  return "/api/purchaseorderitem/" + encodeURIComponent(id);
+}
+
+/** GET /api/recipe/list */
+export function recipeListPath(): string {
+  return "/api/recipe/list";
+}
+
+/** GET /api/recipe/:id */
+export function recipeDetailPath(id: string): string {
+  return "/api/recipe/" + encodeURIComponent(id);
+}
+
+/** GET /api/recipeingredient/list */
+export function recipeIngredientListPath(): string {
+  return "/api/recipeingredient/list";
+}
+
+/** GET /api/recipeingredient/:id */
+export function recipeIngredientDetailPath(id: string): string {
+  return "/api/recipeingredient/" + encodeURIComponent(id);
+}
+
+/** GET /api/recipeversion/list */
+export function recipeVersionListPath(): string {
+  return "/api/recipeversion/list";
+}
+
+/** GET /api/recipeversion/:id */
+export function recipeVersionDetailPath(id: string): string {
+  return "/api/recipeversion/" + encodeURIComponent(id);
+}
+
+/** GET /api/schedule/list */
+export function scheduleListPath(): string {
+  return "/api/schedule/list";
+}
+
+/** GET /api/schedule/:id */
+export function scheduleDetailPath(id: string): string {
+  return "/api/schedule/" + encodeURIComponent(id);
+}
+
+/** GET /api/scheduleshift/list */
+export function scheduleShiftListPath(): string {
+  return "/api/scheduleshift/list";
+}
+
+/** GET /api/scheduleshift/:id */
+export function scheduleShiftDetailPath(id: string): string {
+  return "/api/scheduleshift/" + encodeURIComponent(id);
+}
+
+/** GET /api/shipment/list */
+export function shipmentListPath(): string {
+  return "/api/shipment/list";
+}
+
+/** GET /api/shipment/:id */
+export function shipmentDetailPath(id: string): string {
+  return "/api/shipment/" + encodeURIComponent(id);
+}
+
+/** GET /api/shipmentitem/list */
+export function shipmentItemListPath(): string {
+  return "/api/shipmentitem/list";
+}
+
+/** GET /api/shipmentitem/:id */
+export function shipmentItemDetailPath(id: string): string {
+  return "/api/shipmentitem/" + encodeURIComponent(id);
+}
+
+/** GET /api/station/list */
+export function stationListPath(): string {
+  return "/api/station/list";
+}
+
+/** GET /api/station/:id */
+export function stationDetailPath(id: string): string {
+  return "/api/station/" + encodeURIComponent(id);
+}
+
+/** GET /api/timecardeditrequest/list */
+export function timecardEditRequestListPath(): string {
+  return "/api/timecardeditrequest/list";
+}
+
+/** GET /api/timecardeditrequest/:id */
+export function timecardEditRequestDetailPath(id: string): string {
+  return "/api/timecardeditrequest/" + encodeURIComponent(id);
+}
+
+/** GET /api/timeentry/list */
+export function timeEntryListPath(): string {
+  return "/api/timeentry/list";
+}
+
+/** GET /api/timeentry/:id */
+export function timeEntryDetailPath(id: string): string {
+  return "/api/timeentry/" + encodeURIComponent(id);
+}
+
+/** GET /api/user/list */
+export function userListPath(): string {
+  return "/api/user/list";
+}
+
+/** GET /api/user/:id */
+export function userDetailPath(id: string): string {
+  return "/api/user/" + encodeURIComponent(id);
+}
+
+/** GET /api/variancereport/list */
+export function varianceReportListPath(): string {
+  return "/api/variancereport/list";
+}
+
+/** GET /api/variancereport/:id */
+export function varianceReportDetailPath(id: string): string {
+  return "/api/variancereport/" + encodeURIComponent(id);
+}
+
+/** GET /api/wasteentry/list */
+export function wasteEntryListPath(): string {
+  return "/api/wasteentry/list";
+}
+
+/** GET /api/wasteentry/:id */
+export function wasteEntryDetailPath(id: string): string {
+  return "/api/wasteentry/" + encodeURIComponent(id);
+}
+
+/** GET /api/workflow/list */
+export function workflowListPath(): string {
+  return "/api/workflow/list";
+}
+
+/** GET /api/workflow/:id */
+export function workflowDetailPath(id: string): string {
+  return "/api/workflow/" + encodeURIComponent(id);
+}
+
+// ============================================================================
+// Command Routes
+// ============================================================================
+
+/** POST /api/alertsconfig/create */
+export function alertsConfigCreatePath(): string {
+  return "/api/alertsconfig/create";
+}
+
+/** POST /api/alertsconfig/remove */
+export function alertsConfigRemovePath(): string {
+  return "/api/alertsconfig/remove";
+}
+
+/** POST /api/alertsconfig/update */
+export function alertsConfigUpdatePath(): string {
+  return "/api/alertsconfig/update";
+}
+
+/** POST /api/allergenwarning/acknowledge */
+export function allergenWarningAcknowledgePath(): string {
+  return "/api/allergenwarning/acknowledge";
+}
+
+/** POST /api/allergenwarning/apply-override */
+export function allergenWarningApplyOverridePath(): string {
+  return "/api/allergenwarning/apply-override";
+}
+
+/** POST /api/allergenwarning/create */
+export function allergenWarningCreatePath(): string {
+  return "/api/allergenwarning/create";
+}
+
+/** POST /api/allergenwarning/resolve */
+export function allergenWarningResolvePath(): string {
+  return "/api/allergenwarning/resolve";
+}
+
+/** POST /api/allergenwarning/soft-delete */
+export function allergenWarningSoftDeletePath(): string {
+  return "/api/allergenwarning/soft-delete";
+}
+
+/** POST /api/battleboard/add-dish */
+export function battleBoardAddDishPath(): string {
+  return "/api/battleboard/add-dish";
+}
+
+/** POST /api/battleboard/create */
+export function battleBoardCreatePath(): string {
+  return "/api/battleboard/create";
+}
+
+/** POST /api/battleboard/finalize */
+export function battleBoardFinalizePath(): string {
+  return "/api/battleboard/finalize";
+}
+
+/** POST /api/battleboard/open */
+export function battleBoardOpenPath(): string {
+  return "/api/battleboard/open";
+}
+
+/** POST /api/battleboard/remove-dish */
+export function battleBoardRemoveDishPath(): string {
+  return "/api/battleboard/remove-dish";
+}
+
+/** POST /api/battleboard/start-voting */
+export function battleBoardStartVotingPath(): string {
+  return "/api/battleboard/start-voting";
+}
+
+/** POST /api/battleboard/vote */
+export function battleBoardVotePath(): string {
+  return "/api/battleboard/vote";
+}
+
+/** POST /api/budgetlineitem/create */
+export function budgetLineItemCreatePath(): string {
+  return "/api/budgetlineitem/create";
+}
+
+/** POST /api/budgetlineitem/remove */
+export function budgetLineItemRemovePath(): string {
+  return "/api/budgetlineitem/remove";
+}
+
+/** POST /api/budgetlineitem/update */
+export function budgetLineItemUpdatePath(): string {
+  return "/api/budgetlineitem/update";
+}
+
+/** POST /api/cateringorder/cancel */
+export function cateringOrderCancelPath(): string {
+  return "/api/cateringorder/cancel";
+}
+
+/** POST /api/cateringorder/confirm */
+export function cateringOrderConfirmPath(): string {
+  return "/api/cateringorder/confirm";
+}
+
+/** POST /api/cateringorder/create */
+export function cateringOrderCreatePath(): string {
+  return "/api/cateringorder/create";
+}
+
+/** POST /api/cateringorder/mark-complete */
+export function cateringOrderMarkCompletePath(): string {
+  return "/api/cateringorder/mark-complete";
+}
+
+/** POST /api/cateringorder/start-prep */
+export function cateringOrderStartPrepPath(): string {
+  return "/api/cateringorder/start-prep";
+}
+
+/** POST /api/cateringorder/update */
+export function cateringOrderUpdatePath(): string {
+  return "/api/cateringorder/update";
+}
+
+/** POST /api/client/archive */
+export function clientArchivePath(): string {
+  return "/api/client/archive";
+}
+
+/** POST /api/client/create */
+export function clientCreatePath(): string {
+  return "/api/client/create";
+}
+
+/** POST /api/client/reactivate */
+export function clientReactivatePath(): string {
+  return "/api/client/reactivate";
+}
+
+/** POST /api/client/update */
+export function clientUpdatePath(): string {
+  return "/api/client/update";
+}
+
+/** POST /api/clientcontact/create */
+export function clientContactCreatePath(): string {
+  return "/api/clientcontact/create";
+}
+
+/** POST /api/clientcontact/remove */
+export function clientContactRemovePath(): string {
+  return "/api/clientcontact/remove";
+}
+
+/** POST /api/clientcontact/set-primary */
+export function clientContactSetPrimaryPath(): string {
+  return "/api/clientcontact/set-primary";
+}
+
+/** POST /api/clientcontact/update */
+export function clientContactUpdatePath(): string {
+  return "/api/clientcontact/update";
+}
+
+/** POST /api/clientinteraction/complete */
+export function clientInteractionCompletePath(): string {
+  return "/api/clientinteraction/complete";
+}
+
+/** POST /api/clientinteraction/create */
+export function clientInteractionCreatePath(): string {
+  return "/api/clientinteraction/create";
+}
+
+/** POST /api/clientinteraction/update */
+export function clientInteractionUpdatePath(): string {
+  return "/api/clientinteraction/update";
+}
+
+/** POST /api/clientpreference/create */
+export function clientPreferenceCreatePath(): string {
+  return "/api/clientpreference/create";
+}
+
+/** POST /api/clientpreference/remove */
+export function clientPreferenceRemovePath(): string {
+  return "/api/clientpreference/remove";
+}
+
+/** POST /api/clientpreference/update */
+export function clientPreferenceUpdatePath(): string {
+  return "/api/clientpreference/update";
+}
+
+/** POST /api/commandboard/activate */
+export function commandBoardActivatePath(): string {
+  return "/api/commandboard/activate";
+}
+
+/** POST /api/commandboard/create */
+export function commandBoardCreatePath(): string {
+  return "/api/commandboard/create";
+}
+
+/** POST /api/commandboard/deactivate */
+export function commandBoardDeactivatePath(): string {
+  return "/api/commandboard/deactivate";
+}
+
+/** POST /api/commandboard/update */
+export function commandBoardUpdatePath(): string {
+  return "/api/commandboard/update";
+}
+
+/** POST /api/commandboardcard/create */
+export function commandBoardCardCreatePath(): string {
+  return "/api/commandboardcard/create";
+}
+
+/** POST /api/commandboardcard/move */
+export function commandBoardCardMovePath(): string {
+  return "/api/commandboardcard/move";
+}
+
+/** POST /api/commandboardcard/remove */
+export function commandBoardCardRemovePath(): string {
+  return "/api/commandboardcard/remove";
+}
+
+/** POST /api/commandboardcard/resize */
+export function commandBoardCardResizePath(): string {
+  return "/api/commandboardcard/resize";
+}
+
+/** POST /api/commandboardcard/update */
+export function commandBoardCardUpdatePath(): string {
+  return "/api/commandboardcard/update";
+}
+
+/** POST /api/commandboardconnection/create */
+export function commandBoardConnectionCreatePath(): string {
+  return "/api/commandboardconnection/create";
+}
+
+/** POST /api/commandboardconnection/remove */
+export function commandBoardConnectionRemovePath(): string {
+  return "/api/commandboardconnection/remove";
+}
+
+/** POST /api/commandboardgroup/create */
+export function commandBoardGroupCreatePath(): string {
+  return "/api/commandboardgroup/create";
+}
+
+/** POST /api/commandboardgroup/remove */
+export function commandBoardGroupRemovePath(): string {
+  return "/api/commandboardgroup/remove";
+}
+
+/** POST /api/commandboardgroup/update */
+export function commandBoardGroupUpdatePath(): string {
+  return "/api/commandboardgroup/update";
+}
+
+/** POST /api/commandboardlayout/create */
+export function commandBoardLayoutCreatePath(): string {
+  return "/api/commandboardlayout/create";
+}
+
+/** POST /api/commandboardlayout/remove */
+export function commandBoardLayoutRemovePath(): string {
+  return "/api/commandboardlayout/remove";
+}
+
+/** POST /api/commandboardlayout/update */
+export function commandBoardLayoutUpdatePath(): string {
+  return "/api/commandboardlayout/update";
+}
+
+/** POST /api/container/create */
+export function containerCreatePath(): string {
+  return "/api/container/create";
+}
+
+/** POST /api/container/deactivate */
+export function containerDeactivatePath(): string {
+  return "/api/container/deactivate";
+}
+
+/** POST /api/container/update */
+export function containerUpdatePath(): string {
+  return "/api/container/update";
+}
+
+/** POST /api/contractsignature/create */
+export function contractSignatureCreatePath(): string {
+  return "/api/contractsignature/create";
+}
+
+/** POST /api/contractsignature/soft-delete */
+export function contractSignatureSoftDeletePath(): string {
+  return "/api/contractsignature/soft-delete";
+}
+
+/** POST /api/cyclecountrecord/create */
+export function cycleCountRecordCreatePath(): string {
+  return "/api/cyclecountrecord/create";
+}
+
+/** POST /api/cyclecountrecord/update */
+export function cycleCountRecordUpdatePath(): string {
+  return "/api/cyclecountrecord/update";
+}
+
+/** POST /api/cyclecountrecord/verify */
+export function cycleCountRecordVerifyPath(): string {
+  return "/api/cyclecountrecord/verify";
+}
+
+/** POST /api/cyclecountsession/cancel */
+export function cycleCountSessionCancelPath(): string {
+  return "/api/cyclecountsession/cancel";
+}
+
+/** POST /api/cyclecountsession/complete */
+export function cycleCountSessionCompletePath(): string {
+  return "/api/cyclecountsession/complete";
+}
+
+/** POST /api/cyclecountsession/create */
+export function cycleCountSessionCreatePath(): string {
+  return "/api/cyclecountsession/create";
+}
+
+/** POST /api/cyclecountsession/finalize */
+export function cycleCountSessionFinalizePath(): string {
+  return "/api/cyclecountsession/finalize";
+}
+
+/** POST /api/cyclecountsession/start */
+export function cycleCountSessionStartPath(): string {
+  return "/api/cyclecountsession/start";
+}
+
+/** POST /api/dish/create */
+export function dishCreatePath(): string {
+  return "/api/dish/create";
+}
+
+/** POST /api/dish/deactivate */
+export function dishDeactivatePath(): string {
+  return "/api/dish/deactivate";
+}
+
+/** POST /api/dish/update */
+export function dishUpdatePath(): string {
+  return "/api/dish/update";
+}
+
+/** POST /api/dish/update-lead-time */
+export function dishUpdateLeadTimePath(): string {
+  return "/api/dish/update-lead-time";
+}
+
+/** POST /api/dish/update-pricing */
+export function dishUpdatePricingPath(): string {
+  return "/api/dish/update-pricing";
+}
+
+/** POST /api/event/archive */
+export function eventArchivePath(): string {
+  return "/api/event/archive";
+}
+
+/** POST /api/event/cancel */
+export function eventCancelPath(): string {
+  return "/api/event/cancel";
+}
+
+/** POST /api/event/confirm */
+export function eventConfirmPath(): string {
+  return "/api/event/confirm";
+}
+
+/** POST /api/event/create */
+export function eventCreatePath(): string {
+  return "/api/event/create";
+}
+
+/** POST /api/event/finalize */
+export function eventFinalizePath(): string {
+  return "/api/event/finalize";
+}
+
+/** POST /api/event/unfinalize */
+export function eventUnfinalizePath(): string {
+  return "/api/event/unfinalize";
+}
+
+/** POST /api/event/update */
+export function eventUpdatePath(): string {
+  return "/api/event/update";
+}
+
+/** POST /api/event/update-date */
+export function eventUpdateDatePath(): string {
+  return "/api/event/update-date";
+}
+
+/** POST /api/event/update-guest-count */
+export function eventUpdateGuestCountPath(): string {
+  return "/api/event/update-guest-count";
+}
+
+/** POST /api/event/update-location */
+export function eventUpdateLocationPath(): string {
+  return "/api/event/update-location";
+}
+
+/** POST /api/eventbudget/approve */
+export function eventBudgetApprovePath(): string {
+  return "/api/eventbudget/approve";
+}
+
+/** POST /api/eventbudget/create */
+export function eventBudgetCreatePath(): string {
+  return "/api/eventbudget/create";
+}
+
+/** POST /api/eventbudget/finalize */
+export function eventBudgetFinalizePath(): string {
+  return "/api/eventbudget/finalize";
+}
+
+/** POST /api/eventbudget/update */
+export function eventBudgetUpdatePath(): string {
+  return "/api/eventbudget/update";
+}
+
+/** POST /api/eventcontract/cancel */
+export function eventContractCancelPath(): string {
+  return "/api/eventcontract/cancel";
+}
+
+/** POST /api/eventcontract/create */
+export function eventContractCreatePath(): string {
+  return "/api/eventcontract/create";
+}
+
+/** POST /api/eventcontract/expire */
+export function eventContractExpirePath(): string {
+  return "/api/eventcontract/expire";
+}
+
+/** POST /api/eventcontract/mark-viewed */
+export function eventContractMarkViewedPath(): string {
+  return "/api/eventcontract/mark-viewed";
+}
+
+/** POST /api/eventcontract/send */
+export function eventContractSendPath(): string {
+  return "/api/eventcontract/send";
+}
+
+/** POST /api/eventcontract/sign */
+export function eventContractSignPath(): string {
+  return "/api/eventcontract/sign";
+}
+
+/** POST /api/eventcontract/soft-delete */
+export function eventContractSoftDeletePath(): string {
+  return "/api/eventcontract/soft-delete";
+}
+
+/** POST /api/eventcontract/update */
+export function eventContractUpdatePath(): string {
+  return "/api/eventcontract/update";
+}
+
+/** POST /api/eventguest/create */
+export function eventGuestCreatePath(): string {
+  return "/api/eventguest/create";
+}
+
+/** POST /api/eventguest/soft-delete */
+export function eventGuestSoftDeletePath(): string {
+  return "/api/eventguest/soft-delete";
+}
+
+/** POST /api/eventguest/update */
+export function eventGuestUpdatePath(): string {
+  return "/api/eventguest/update";
+}
+
+/** POST /api/eventprofitability/create */
+export function eventProfitabilityCreatePath(): string {
+  return "/api/eventprofitability/create";
+}
+
+/** POST /api/eventprofitability/recalculate */
+export function eventProfitabilityRecalculatePath(): string {
+  return "/api/eventprofitability/recalculate";
+}
+
+/** POST /api/eventprofitability/update */
+export function eventProfitabilityUpdatePath(): string {
+  return "/api/eventprofitability/update";
+}
+
+/** POST /api/eventreport/approve */
+export function eventReportApprovePath(): string {
+  return "/api/eventreport/approve";
+}
+
+/** POST /api/eventreport/complete */
+export function eventReportCompletePath(): string {
+  return "/api/eventreport/complete";
+}
+
+/** POST /api/eventreport/create */
+export function eventReportCreatePath(): string {
+  return "/api/eventreport/create";
+}
+
+/** POST /api/eventreport/submit */
+export function eventReportSubmitPath(): string {
+  return "/api/eventreport/submit";
+}
+
+/** POST /api/eventsummary/create */
+export function eventSummaryCreatePath(): string {
+  return "/api/eventsummary/create";
+}
+
+/** POST /api/eventsummary/refresh */
+export function eventSummaryRefreshPath(): string {
+  return "/api/eventsummary/refresh";
+}
+
+/** POST /api/eventsummary/update */
+export function eventSummaryUpdatePath(): string {
+  return "/api/eventsummary/update";
+}
+
+/** POST /api/ingredient/create */
+export function ingredientCreatePath(): string {
+  return "/api/ingredient/create";
+}
+
+/** POST /api/ingredient/deactivate */
+export function ingredientDeactivatePath(): string {
+  return "/api/ingredient/deactivate";
+}
+
+/** POST /api/ingredient/update */
+export function ingredientUpdatePath(): string {
+  return "/api/ingredient/update";
+}
+
+/** POST /api/ingredient/update-allergens */
+export function ingredientUpdateAllergensPath(): string {
+  return "/api/ingredient/update-allergens";
+}
+
+/** POST /api/ingredient/update-shelf-life */
+export function ingredientUpdateShelfLifePath(): string {
+  return "/api/ingredient/update-shelf-life";
+}
+
+/** POST /api/inventoryitem/adjust */
+export function inventoryItemAdjustPath(): string {
+  return "/api/inventoryitem/adjust";
+}
+
+/** POST /api/inventoryitem/consume */
+export function inventoryItemConsumePath(): string {
+  return "/api/inventoryitem/consume";
+}
+
+/** POST /api/inventoryitem/create */
+export function inventoryItemCreatePath(): string {
+  return "/api/inventoryitem/create";
+}
+
+/** POST /api/inventoryitem/release-reservation */
+export function inventoryItemReleaseReservationPath(): string {
+  return "/api/inventoryitem/release-reservation";
+}
+
+/** POST /api/inventoryitem/reserve */
+export function inventoryItemReservePath(): string {
+  return "/api/inventoryitem/reserve";
+}
+
+/** POST /api/inventoryitem/restock */
+export function inventoryItemRestockPath(): string {
+  return "/api/inventoryitem/restock";
+}
+
+/** POST /api/inventoryitem/waste */
+export function inventoryItemWastePath(): string {
+  return "/api/inventoryitem/waste";
+}
+
+/** POST /api/inventorysupplier/create */
+export function inventorySupplierCreatePath(): string {
+  return "/api/inventorysupplier/create";
+}
+
+/** POST /api/inventorysupplier/deactivate */
+export function inventorySupplierDeactivatePath(): string {
+  return "/api/inventorysupplier/deactivate";
+}
+
+/** POST /api/inventorysupplier/update */
+export function inventorySupplierUpdatePath(): string {
+  return "/api/inventorysupplier/update";
+}
+
+/** POST /api/inventorytransaction/create */
+export function inventoryTransactionCreatePath(): string {
+  return "/api/inventorytransaction/create";
+}
+
+/** POST /api/kitchentask/add-tag */
+export function kitchenTaskAddTagPath(): string {
+  return "/api/kitchentask/add-tag";
+}
+
+/** POST /api/kitchentask/cancel */
+export function kitchenTaskCancelPath(): string {
+  return "/api/kitchentask/cancel";
+}
+
+/** POST /api/kitchentask/claim */
+export function kitchenTaskClaimPath(): string {
+  return "/api/kitchentask/claim";
+}
+
+/** POST /api/kitchentask/complete */
+export function kitchenTaskCompletePath(): string {
+  return "/api/kitchentask/complete";
+}
+
+/** POST /api/kitchentask/create */
+export function kitchenTaskCreatePath(): string {
+  return "/api/kitchentask/create";
+}
+
+/** POST /api/kitchentask/reassign */
+export function kitchenTaskReassignPath(): string {
+  return "/api/kitchentask/reassign";
+}
+
+/** POST /api/kitchentask/release */
+export function kitchenTaskReleasePath(): string {
+  return "/api/kitchentask/release";
+}
+
+/** POST /api/kitchentask/remove-tag */
+export function kitchenTaskRemoveTagPath(): string {
+  return "/api/kitchentask/remove-tag";
+}
+
+/** POST /api/kitchentask/start */
+export function kitchenTaskStartPath(): string {
+  return "/api/kitchentask/start";
+}
+
+/** POST /api/kitchentask/update-complexity */
+export function kitchenTaskUpdateComplexityPath(): string {
+  return "/api/kitchentask/update-complexity";
+}
+
+/** POST /api/kitchentask/update-priority */
+export function kitchenTaskUpdatePriorityPath(): string {
+  return "/api/kitchentask/update-priority";
+}
+
+/** POST /api/lead/archive */
+export function leadArchivePath(): string {
+  return "/api/lead/archive";
+}
+
+/** POST /api/lead/convert-to-client */
+export function leadConvertToClientPath(): string {
+  return "/api/lead/convert-to-client";
+}
+
+/** POST /api/lead/create */
+export function leadCreatePath(): string {
+  return "/api/lead/create";
+}
+
+/** POST /api/lead/disqualify */
+export function leadDisqualifyPath(): string {
+  return "/api/lead/disqualify";
+}
+
+/** POST /api/lead/update */
+export function leadUpdatePath(): string {
+  return "/api/lead/update";
+}
+
+/** POST /api/menu/activate */
+export function menuActivatePath(): string {
+  return "/api/menu/activate";
+}
+
+/** POST /api/menu/create */
+export function menuCreatePath(): string {
+  return "/api/menu/create";
+}
+
+/** POST /api/menu/deactivate */
+export function menuDeactivatePath(): string {
+  return "/api/menu/deactivate";
+}
+
+/** POST /api/menu/update */
+export function menuUpdatePath(): string {
+  return "/api/menu/update";
+}
+
+/** POST /api/menudish/create */
+export function menuDishCreatePath(): string {
+  return "/api/menudish/create";
+}
+
+/** POST /api/menudish/remove */
+export function menuDishRemovePath(): string {
+  return "/api/menudish/remove";
+}
+
+/** POST /api/menudish/update-course */
+export function menuDishUpdateCoursePath(): string {
+  return "/api/menudish/update-course";
+}
+
+/** POST /api/notification/create */
+export function notificationCreatePath(): string {
+  return "/api/notification/create";
+}
+
+/** POST /api/notification/mark-dismissed */
+export function notificationMarkDismissedPath(): string {
+  return "/api/notification/mark-dismissed";
+}
+
+/** POST /api/notification/mark-read */
+export function notificationMarkReadPath(): string {
+  return "/api/notification/mark-read";
+}
+
+/** POST /api/notification/remove */
+export function notificationRemovePath(): string {
+  return "/api/notification/remove";
+}
+
+/** POST /api/overrideaudit/authorize */
+export function overrideAuditAuthorizePath(): string {
+  return "/api/overrideaudit/authorize";
+}
+
+/** POST /api/overrideaudit/create */
+export function overrideAuditCreatePath(): string {
+  return "/api/overrideaudit/create";
+}
+
+/** POST /api/prepcomment/create */
+export function prepCommentCreatePath(): string {
+  return "/api/prepcomment/create";
+}
+
+/** POST /api/prepcomment/resolve */
+export function prepCommentResolvePath(): string {
+  return "/api/prepcomment/resolve";
+}
+
+/** POST /api/prepcomment/soft-delete */
+export function prepCommentSoftDeletePath(): string {
+  return "/api/prepcomment/soft-delete";
+}
+
+/** POST /api/prepcomment/unresolve */
+export function prepCommentUnresolvePath(): string {
+  return "/api/prepcomment/unresolve";
+}
+
+/** POST /api/preplist/activate */
+export function prepListActivatePath(): string {
+  return "/api/preplist/activate";
+}
+
+/** POST /api/preplist/cancel */
+export function prepListCancelPath(): string {
+  return "/api/preplist/cancel";
+}
+
+/** POST /api/preplist/create */
+export function prepListCreatePath(): string {
+  return "/api/preplist/create";
+}
+
+/** POST /api/preplist/create-from-seed */
+export function prepListCreateFromSeedPath(): string {
+  return "/api/preplist/create-from-seed";
+}
+
+/** POST /api/preplist/deactivate */
+export function prepListDeactivatePath(): string {
+  return "/api/preplist/deactivate";
+}
+
+/** POST /api/preplist/finalize */
+export function prepListFinalizePath(): string {
+  return "/api/preplist/finalize";
+}
+
+/** POST /api/preplist/mark-completed */
+export function prepListMarkCompletedPath(): string {
+  return "/api/preplist/mark-completed";
+}
+
+/** POST /api/preplist/reopen */
+export function prepListReopenPath(): string {
+  return "/api/preplist/reopen";
+}
+
+/** POST /api/preplist/update */
+export function prepListUpdatePath(): string {
+  return "/api/preplist/update";
+}
+
+/** POST /api/preplist/update-batch-multiplier */
+export function prepListUpdateBatchMultiplierPath(): string {
+  return "/api/preplist/update-batch-multiplier";
+}
+
+/** POST /api/preplistitem/create */
+export function prepListItemCreatePath(): string {
+  return "/api/preplistitem/create";
+}
+
+/** POST /api/preplistitem/mark-completed */
+export function prepListItemMarkCompletedPath(): string {
+  return "/api/preplistitem/mark-completed";
+}
+
+/** POST /api/preplistitem/mark-uncompleted */
+export function prepListItemMarkUncompletedPath(): string {
+  return "/api/preplistitem/mark-uncompleted";
+}
+
+/** POST /api/preplistitem/update-prep-notes */
+export function prepListItemUpdatePrepNotesPath(): string {
+  return "/api/preplistitem/update-prep-notes";
+}
+
+/** POST /api/preplistitem/update-quantity */
+export function prepListItemUpdateQuantityPath(): string {
+  return "/api/preplistitem/update-quantity";
+}
+
+/** POST /api/preplistitem/update-station */
+export function prepListItemUpdateStationPath(): string {
+  return "/api/preplistitem/update-station";
+}
+
+/** POST /api/prepmethod/create */
+export function prepMethodCreatePath(): string {
+  return "/api/prepmethod/create";
+}
+
+/** POST /api/prepmethod/deactivate */
+export function prepMethodDeactivatePath(): string {
+  return "/api/prepmethod/deactivate";
+}
+
+/** POST /api/prepmethod/update */
+export function prepMethodUpdatePath(): string {
+  return "/api/prepmethod/update";
+}
+
+/** POST /api/preptask/cancel */
+export function prepTaskCancelPath(): string {
+  return "/api/preptask/cancel";
+}
+
+/** POST /api/preptask/claim */
+export function prepTaskClaimPath(): string {
+  return "/api/preptask/claim";
+}
+
+/** POST /api/preptask/complete */
+export function prepTaskCompletePath(): string {
+  return "/api/preptask/complete";
+}
+
+/** POST /api/preptask/create */
+export function prepTaskCreatePath(): string {
+  return "/api/preptask/create";
+}
+
+/** POST /api/preptask/reassign */
+export function prepTaskReassignPath(): string {
+  return "/api/preptask/reassign";
+}
+
+/** POST /api/preptask/release */
+export function prepTaskReleasePath(): string {
+  return "/api/preptask/release";
+}
+
+/** POST /api/preptask/start */
+export function prepTaskStartPath(): string {
+  return "/api/preptask/start";
+}
+
+/** POST /api/preptask/unclaim */
+export function prepTaskUnclaimPath(): string {
+  return "/api/preptask/unclaim";
+}
+
+/** POST /api/preptask/update-quantity */
+export function prepTaskUpdateQuantityPath(): string {
+  return "/api/preptask/update-quantity";
+}
+
+/** POST /api/proposal/accept */
+export function proposalAcceptPath(): string {
+  return "/api/proposal/accept";
+}
+
+/** POST /api/proposal/create */
+export function proposalCreatePath(): string {
+  return "/api/proposal/create";
+}
+
+/** POST /api/proposal/mark-viewed */
+export function proposalMarkViewedPath(): string {
+  return "/api/proposal/mark-viewed";
+}
+
+/** POST /api/proposal/reject */
+export function proposalRejectPath(): string {
+  return "/api/proposal/reject";
+}
+
+/** POST /api/proposal/send */
+export function proposalSendPath(): string {
+  return "/api/proposal/send";
+}
+
+/** POST /api/proposal/update */
+export function proposalUpdatePath(): string {
+  return "/api/proposal/update";
+}
+
+/** POST /api/proposal/withdraw */
+export function proposalWithdrawPath(): string {
+  return "/api/proposal/withdraw";
+}
+
+/** POST /api/proposallineitem/create */
+export function proposalLineItemCreatePath(): string {
+  return "/api/proposallineitem/create";
+}
+
+/** POST /api/proposallineitem/remove */
+export function proposalLineItemRemovePath(): string {
+  return "/api/proposallineitem/remove";
+}
+
+/** POST /api/proposallineitem/update */
+export function proposalLineItemUpdatePath(): string {
+  return "/api/proposallineitem/update";
+}
+
+/** POST /api/purchaseorder/approve */
+export function purchaseOrderApprovePath(): string {
+  return "/api/purchaseorder/approve";
+}
+
+/** POST /api/purchaseorder/cancel */
+export function purchaseOrderCancelPath(): string {
+  return "/api/purchaseorder/cancel";
+}
+
+/** POST /api/purchaseorder/create */
+export function purchaseOrderCreatePath(): string {
+  return "/api/purchaseorder/create";
+}
+
+/** POST /api/purchaseorder/mark-ordered */
+export function purchaseOrderMarkOrderedPath(): string {
+  return "/api/purchaseorder/mark-ordered";
+}
+
+/** POST /api/purchaseorder/mark-received */
+export function purchaseOrderMarkReceivedPath(): string {
+  return "/api/purchaseorder/mark-received";
+}
+
+/** POST /api/purchaseorder/reject */
+export function purchaseOrderRejectPath(): string {
+  return "/api/purchaseorder/reject";
+}
+
+/** POST /api/purchaseorder/submit */
+export function purchaseOrderSubmitPath(): string {
+  return "/api/purchaseorder/submit";
+}
+
+/** POST /api/purchaseorderitem/create */
+export function purchaseOrderItemCreatePath(): string {
+  return "/api/purchaseorderitem/create";
+}
+
+/** POST /api/purchaseorderitem/remove */
+export function purchaseOrderItemRemovePath(): string {
+  return "/api/purchaseorderitem/remove";
+}
+
+/** POST /api/purchaseorderitem/update */
+export function purchaseOrderItemUpdatePath(): string {
+  return "/api/purchaseorderitem/update";
+}
+
+/** POST /api/recipe/activate */
+export function recipeActivatePath(): string {
+  return "/api/recipe/activate";
+}
+
+/** POST /api/recipe/create */
+export function recipeCreatePath(): string {
+  return "/api/recipe/create";
+}
+
+/** POST /api/recipe/deactivate */
+export function recipeDeactivatePath(): string {
+  return "/api/recipe/deactivate";
+}
+
+/** POST /api/recipe/update */
+export function recipeUpdatePath(): string {
+  return "/api/recipe/update";
+}
+
+/** POST /api/recipeingredient/create */
+export function recipeIngredientCreatePath(): string {
+  return "/api/recipeingredient/create";
+}
+
+/** POST /api/recipeingredient/remove */
+export function recipeIngredientRemovePath(): string {
+  return "/api/recipeingredient/remove";
+}
+
+/** POST /api/recipeingredient/update-quantity */
+export function recipeIngredientUpdateQuantityPath(): string {
+  return "/api/recipeingredient/update-quantity";
+}
+
+/** POST /api/recipeversion/create */
+export function recipeVersionCreatePath(): string {
+  return "/api/recipeversion/create";
+}
+
+/** POST /api/schedule/close */
+export function scheduleClosePath(): string {
+  return "/api/schedule/close";
+}
+
+/** POST /api/schedule/create */
+export function scheduleCreatePath(): string {
+  return "/api/schedule/create";
+}
+
+/** POST /api/schedule/release */
+export function scheduleReleasePath(): string {
+  return "/api/schedule/release";
+}
+
+/** POST /api/schedule/update */
+export function scheduleUpdatePath(): string {
+  return "/api/schedule/update";
+}
+
+/** POST /api/scheduleshift/create */
+export function scheduleShiftCreatePath(): string {
+  return "/api/scheduleshift/create";
+}
+
+/** POST /api/scheduleshift/remove */
+export function scheduleShiftRemovePath(): string {
+  return "/api/scheduleshift/remove";
+}
+
+/** POST /api/scheduleshift/update */
+export function scheduleShiftUpdatePath(): string {
+  return "/api/scheduleshift/update";
+}
+
+/** POST /api/shipment/cancel */
+export function shipmentCancelPath(): string {
+  return "/api/shipment/cancel";
+}
+
+/** POST /api/shipment/create */
+export function shipmentCreatePath(): string {
+  return "/api/shipment/create";
+}
+
+/** POST /api/shipment/mark-delivered */
+export function shipmentMarkDeliveredPath(): string {
+  return "/api/shipment/mark-delivered";
+}
+
+/** POST /api/shipment/schedule */
+export function shipmentSchedulePath(): string {
+  return "/api/shipment/schedule";
+}
+
+/** POST /api/shipment/ship */
+export function shipmentShipPath(): string {
+  return "/api/shipment/ship";
+}
+
+/** POST /api/shipment/start-preparing */
+export function shipmentStartPreparingPath(): string {
+  return "/api/shipment/start-preparing";
+}
+
+/** POST /api/shipment/update */
+export function shipmentUpdatePath(): string {
+  return "/api/shipment/update";
+}
+
+/** POST /api/shipmentitem/create */
+export function shipmentItemCreatePath(): string {
+  return "/api/shipmentitem/create";
+}
+
+/** POST /api/shipmentitem/update-received */
+export function shipmentItemUpdateReceivedPath(): string {
+  return "/api/shipmentitem/update-received";
+}
+
+/** POST /api/station/activate */
+export function stationActivatePath(): string {
+  return "/api/station/activate";
+}
+
+/** POST /api/station/assign-task */
+export function stationAssignTaskPath(): string {
+  return "/api/station/assign-task";
+}
+
+/** POST /api/station/create */
+export function stationCreatePath(): string {
+  return "/api/station/create";
+}
+
+/** POST /api/station/deactivate */
+export function stationDeactivatePath(): string {
+  return "/api/station/deactivate";
+}
+
+/** POST /api/station/remove-task */
+export function stationRemoveTaskPath(): string {
+  return "/api/station/remove-task";
+}
+
+/** POST /api/station/update-capacity */
+export function stationUpdateCapacityPath(): string {
+  return "/api/station/update-capacity";
+}
+
+/** POST /api/station/update-equipment */
+export function stationUpdateEquipmentPath(): string {
+  return "/api/station/update-equipment";
+}
+
+/** POST /api/timecardeditrequest/approve */
+export function timecardEditRequestApprovePath(): string {
+  return "/api/timecardeditrequest/approve";
+}
+
+/** POST /api/timecardeditrequest/create */
+export function timecardEditRequestCreatePath(): string {
+  return "/api/timecardeditrequest/create";
+}
+
+/** POST /api/timecardeditrequest/reject */
+export function timecardEditRequestRejectPath(): string {
+  return "/api/timecardeditrequest/reject";
+}
+
+/** POST /api/timeentry/add-entry */
+export function timeEntryAddEntryPath(): string {
+  return "/api/timeentry/add-entry";
+}
+
+/** POST /api/timeentry/clock-in */
+export function timeEntryClockInPath(): string {
+  return "/api/timeentry/clock-in";
+}
+
+/** POST /api/timeentry/clock-out */
+export function timeEntryClockOutPath(): string {
+  return "/api/timeentry/clock-out";
+}
+
+/** POST /api/user/create */
+export function userCreatePath(): string {
+  return "/api/user/create";
+}
+
+/** POST /api/user/deactivate */
+export function userDeactivatePath(): string {
+  return "/api/user/deactivate";
+}
+
+/** POST /api/user/terminate */
+export function userTerminatePath(): string {
+  return "/api/user/terminate";
+}
+
+/** POST /api/user/update */
+export function userUpdatePath(): string {
+  return "/api/user/update";
+}
+
+/** POST /api/user/update-role */
+export function userUpdateRolePath(): string {
+  return "/api/user/update-role";
+}
+
+/** POST /api/variancereport/approve */
+export function varianceReportApprovePath(): string {
+  return "/api/variancereport/approve";
+}
+
+/** POST /api/variancereport/create */
+export function varianceReportCreatePath(): string {
+  return "/api/variancereport/create";
+}
+
+/** POST /api/variancereport/review */
+export function varianceReportReviewPath(): string {
+  return "/api/variancereport/review";
+}
+
+/** POST /api/wasteentry/create */
+export function wasteEntryCreatePath(): string {
+  return "/api/wasteentry/create";
+}
+
+/** POST /api/wasteentry/soft-delete */
+export function wasteEntrySoftDeletePath(): string {
+  return "/api/wasteentry/soft-delete";
+}
+
+/** POST /api/wasteentry/update */
+export function wasteEntryUpdatePath(): string {
+  return "/api/wasteentry/update";
+}
+
+/** POST /api/workflow/activate */
+export function workflowActivatePath(): string {
+  return "/api/workflow/activate";
+}
+
+/** POST /api/workflow/create */
+export function workflowCreatePath(): string {
+  return "/api/workflow/create";
+}
+
+/** POST /api/workflow/deactivate */
+export function workflowDeactivatePath(): string {
+  return "/api/workflow/deactivate";
+}
+
+/** POST /api/workflow/update */
+export function workflowUpdatePath(): string {
+  return "/api/workflow/update";
+}
+
+// ============================================================================
+// Route Metadata (for tooling)
+// ============================================================================
+
+export interface RouteMetadata {
+  readonly id: string;
+  readonly path: string;
+  readonly method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  readonly source: 'entity-read' | 'command' | 'manual';
+  readonly auth: boolean;
+  readonly tenant: boolean;
+}
+
+export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
+  { id: "AlertsConfig.get.list", path: "/api/alertsconfig/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "AlertsConfig.get.detail", path: "/api/alertsconfig/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "AllergenWarning.get.list", path: "/api/allergenwarning/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "AllergenWarning.get.detail", path: "/api/allergenwarning/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "BattleBoard.get.list", path: "/api/battleboard/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "BattleBoard.get.detail", path: "/api/battleboard/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "BudgetLineItem.get.list", path: "/api/budgetlineitem/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "BudgetLineItem.get.detail", path: "/api/budgetlineitem/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "CateringOrder.get.list", path: "/api/cateringorder/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "CateringOrder.get.detail", path: "/api/cateringorder/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Client.get.list", path: "/api/client/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Client.get.detail", path: "/api/client/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "ClientContact.get.list", path: "/api/clientcontact/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "ClientContact.get.detail", path: "/api/clientcontact/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "ClientInteraction.get.list", path: "/api/clientinteraction/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "ClientInteraction.get.detail", path: "/api/clientinteraction/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "ClientPreference.get.list", path: "/api/clientpreference/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "ClientPreference.get.detail", path: "/api/clientpreference/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "CommandBoard.get.list", path: "/api/commandboard/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "CommandBoard.get.detail", path: "/api/commandboard/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "CommandBoardCard.get.list", path: "/api/commandboardcard/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "CommandBoardCard.get.detail", path: "/api/commandboardcard/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "CommandBoardConnection.get.list", path: "/api/commandboardconnection/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "CommandBoardConnection.get.detail", path: "/api/commandboardconnection/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "CommandBoardGroup.get.list", path: "/api/commandboardgroup/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "CommandBoardGroup.get.detail", path: "/api/commandboardgroup/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "CommandBoardLayout.get.list", path: "/api/commandboardlayout/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "CommandBoardLayout.get.detail", path: "/api/commandboardlayout/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Container.get.list", path: "/api/container/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Container.get.detail", path: "/api/container/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "ContractSignature.get.list", path: "/api/contractsignature/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "ContractSignature.get.detail", path: "/api/contractsignature/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "CycleCountRecord.get.list", path: "/api/cyclecountrecord/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "CycleCountRecord.get.detail", path: "/api/cyclecountrecord/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "CycleCountSession.get.list", path: "/api/cyclecountsession/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "CycleCountSession.get.detail", path: "/api/cyclecountsession/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Dish.get.list", path: "/api/dish/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Dish.get.detail", path: "/api/dish/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Event.get.list", path: "/api/event/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Event.get.detail", path: "/api/event/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "EventBudget.get.list", path: "/api/eventbudget/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "EventBudget.get.detail", path: "/api/eventbudget/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "EventContract.get.list", path: "/api/eventcontract/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "EventContract.get.detail", path: "/api/eventcontract/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "EventGuest.get.list", path: "/api/eventguest/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "EventGuest.get.detail", path: "/api/eventguest/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "EventProfitability.get.list", path: "/api/eventprofitability/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "EventProfitability.get.detail", path: "/api/eventprofitability/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "EventReport.get.list", path: "/api/eventreport/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "EventReport.get.detail", path: "/api/eventreport/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "EventSummary.get.list", path: "/api/eventsummary/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "EventSummary.get.detail", path: "/api/eventsummary/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Ingredient.get.list", path: "/api/ingredient/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Ingredient.get.detail", path: "/api/ingredient/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "InventoryItem.get.list", path: "/api/inventoryitem/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "InventoryItem.get.detail", path: "/api/inventoryitem/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "InventorySupplier.get.list", path: "/api/inventorysupplier/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "InventorySupplier.get.detail", path: "/api/inventorysupplier/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "InventoryTransaction.get.list", path: "/api/inventorytransaction/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "InventoryTransaction.get.detail", path: "/api/inventorytransaction/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "KitchenTask.get.list", path: "/api/kitchentask/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "KitchenTask.get.detail", path: "/api/kitchentask/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Lead.get.list", path: "/api/lead/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Lead.get.detail", path: "/api/lead/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Menu.get.list", path: "/api/menu/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Menu.get.detail", path: "/api/menu/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "MenuDish.get.list", path: "/api/menudish/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "MenuDish.get.detail", path: "/api/menudish/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Notification.get.list", path: "/api/notification/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Notification.get.detail", path: "/api/notification/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "OverrideAudit.get.list", path: "/api/overrideaudit/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "OverrideAudit.get.detail", path: "/api/overrideaudit/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "PrepComment.get.list", path: "/api/prepcomment/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "PrepComment.get.detail", path: "/api/prepcomment/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "PrepList.get.list", path: "/api/preplist/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "PrepList.get.detail", path: "/api/preplist/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "PrepListItem.get.list", path: "/api/preplistitem/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "PrepListItem.get.detail", path: "/api/preplistitem/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "PrepMethod.get.list", path: "/api/prepmethod/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "PrepMethod.get.detail", path: "/api/prepmethod/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "PrepTask.get.list", path: "/api/preptask/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "PrepTask.get.detail", path: "/api/preptask/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Proposal.get.list", path: "/api/proposal/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Proposal.get.detail", path: "/api/proposal/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "ProposalLineItem.get.list", path: "/api/proposallineitem/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "ProposalLineItem.get.detail", path: "/api/proposallineitem/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "PurchaseOrder.get.list", path: "/api/purchaseorder/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "PurchaseOrder.get.detail", path: "/api/purchaseorder/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "PurchaseOrderItem.get.list", path: "/api/purchaseorderitem/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "PurchaseOrderItem.get.detail", path: "/api/purchaseorderitem/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Recipe.get.list", path: "/api/recipe/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Recipe.get.detail", path: "/api/recipe/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "RecipeIngredient.get.list", path: "/api/recipeingredient/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "RecipeIngredient.get.detail", path: "/api/recipeingredient/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "RecipeVersion.get.list", path: "/api/recipeversion/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "RecipeVersion.get.detail", path: "/api/recipeversion/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Schedule.get.list", path: "/api/schedule/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Schedule.get.detail", path: "/api/schedule/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "ScheduleShift.get.list", path: "/api/scheduleshift/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "ScheduleShift.get.detail", path: "/api/scheduleshift/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Shipment.get.list", path: "/api/shipment/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Shipment.get.detail", path: "/api/shipment/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "ShipmentItem.get.list", path: "/api/shipmentitem/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "ShipmentItem.get.detail", path: "/api/shipmentitem/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Station.get.list", path: "/api/station/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Station.get.detail", path: "/api/station/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "TimecardEditRequest.get.list", path: "/api/timecardeditrequest/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "TimecardEditRequest.get.detail", path: "/api/timecardeditrequest/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "TimeEntry.get.list", path: "/api/timeentry/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "TimeEntry.get.detail", path: "/api/timeentry/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "User.get.list", path: "/api/user/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "User.get.detail", path: "/api/user/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "VarianceReport.get.list", path: "/api/variancereport/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "VarianceReport.get.detail", path: "/api/variancereport/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "WasteEntry.get.list", path: "/api/wasteentry/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "WasteEntry.get.detail", path: "/api/wasteentry/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Workflow.get.list", path: "/api/workflow/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Workflow.get.detail", path: "/api/workflow/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "AlertsConfig.create", path: "/api/alertsconfig/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "AlertsConfig.remove", path: "/api/alertsconfig/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "AlertsConfig.update", path: "/api/alertsconfig/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "AllergenWarning.acknowledge", path: "/api/allergenwarning/acknowledge", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "AllergenWarning.applyOverride", path: "/api/allergenwarning/apply-override", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "AllergenWarning.create", path: "/api/allergenwarning/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "AllergenWarning.resolve", path: "/api/allergenwarning/resolve", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "AllergenWarning.softDelete", path: "/api/allergenwarning/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "BattleBoard.addDish", path: "/api/battleboard/add-dish", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "BattleBoard.create", path: "/api/battleboard/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "BattleBoard.finalize", path: "/api/battleboard/finalize", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "BattleBoard.open", path: "/api/battleboard/open", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "BattleBoard.removeDish", path: "/api/battleboard/remove-dish", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "BattleBoard.startVoting", path: "/api/battleboard/start-voting", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "BattleBoard.vote", path: "/api/battleboard/vote", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "BudgetLineItem.create", path: "/api/budgetlineitem/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "BudgetLineItem.remove", path: "/api/budgetlineitem/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "BudgetLineItem.update", path: "/api/budgetlineitem/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CateringOrder.cancel", path: "/api/cateringorder/cancel", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CateringOrder.confirm", path: "/api/cateringorder/confirm", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CateringOrder.create", path: "/api/cateringorder/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CateringOrder.markComplete", path: "/api/cateringorder/mark-complete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CateringOrder.startPrep", path: "/api/cateringorder/start-prep", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CateringOrder.update", path: "/api/cateringorder/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Client.archive", path: "/api/client/archive", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Client.create", path: "/api/client/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Client.reactivate", path: "/api/client/reactivate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Client.update", path: "/api/client/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ClientContact.create", path: "/api/clientcontact/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ClientContact.remove", path: "/api/clientcontact/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ClientContact.setPrimary", path: "/api/clientcontact/set-primary", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ClientContact.update", path: "/api/clientcontact/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ClientInteraction.complete", path: "/api/clientinteraction/complete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ClientInteraction.create", path: "/api/clientinteraction/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ClientInteraction.update", path: "/api/clientinteraction/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ClientPreference.create", path: "/api/clientpreference/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ClientPreference.remove", path: "/api/clientpreference/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ClientPreference.update", path: "/api/clientpreference/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CommandBoard.activate", path: "/api/commandboard/activate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CommandBoard.create", path: "/api/commandboard/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CommandBoard.deactivate", path: "/api/commandboard/deactivate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CommandBoard.update", path: "/api/commandboard/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CommandBoardCard.create", path: "/api/commandboardcard/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CommandBoardCard.move", path: "/api/commandboardcard/move", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CommandBoardCard.remove", path: "/api/commandboardcard/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CommandBoardCard.resize", path: "/api/commandboardcard/resize", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CommandBoardCard.update", path: "/api/commandboardcard/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CommandBoardConnection.create", path: "/api/commandboardconnection/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CommandBoardConnection.remove", path: "/api/commandboardconnection/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CommandBoardGroup.create", path: "/api/commandboardgroup/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CommandBoardGroup.remove", path: "/api/commandboardgroup/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CommandBoardGroup.update", path: "/api/commandboardgroup/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CommandBoardLayout.create", path: "/api/commandboardlayout/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CommandBoardLayout.remove", path: "/api/commandboardlayout/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CommandBoardLayout.update", path: "/api/commandboardlayout/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Container.create", path: "/api/container/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Container.deactivate", path: "/api/container/deactivate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Container.update", path: "/api/container/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ContractSignature.create", path: "/api/contractsignature/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ContractSignature.softDelete", path: "/api/contractsignature/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CycleCountRecord.create", path: "/api/cyclecountrecord/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CycleCountRecord.update", path: "/api/cyclecountrecord/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CycleCountRecord.verify", path: "/api/cyclecountrecord/verify", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CycleCountSession.cancel", path: "/api/cyclecountsession/cancel", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CycleCountSession.complete", path: "/api/cyclecountsession/complete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CycleCountSession.create", path: "/api/cyclecountsession/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CycleCountSession.finalize", path: "/api/cyclecountsession/finalize", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CycleCountSession.start", path: "/api/cyclecountsession/start", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Dish.create", path: "/api/dish/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Dish.deactivate", path: "/api/dish/deactivate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Dish.update", path: "/api/dish/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Dish.updateLeadTime", path: "/api/dish/update-lead-time", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Dish.updatePricing", path: "/api/dish/update-pricing", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Event.archive", path: "/api/event/archive", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Event.cancel", path: "/api/event/cancel", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Event.confirm", path: "/api/event/confirm", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Event.create", path: "/api/event/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Event.finalize", path: "/api/event/finalize", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Event.unfinalize", path: "/api/event/unfinalize", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Event.update", path: "/api/event/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Event.updateDate", path: "/api/event/update-date", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Event.updateGuestCount", path: "/api/event/update-guest-count", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Event.updateLocation", path: "/api/event/update-location", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventBudget.approve", path: "/api/eventbudget/approve", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventBudget.create", path: "/api/eventbudget/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventBudget.finalize", path: "/api/eventbudget/finalize", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventBudget.update", path: "/api/eventbudget/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventContract.cancel", path: "/api/eventcontract/cancel", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventContract.create", path: "/api/eventcontract/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventContract.expire", path: "/api/eventcontract/expire", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventContract.markViewed", path: "/api/eventcontract/mark-viewed", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventContract.send", path: "/api/eventcontract/send", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventContract.sign", path: "/api/eventcontract/sign", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventContract.softDelete", path: "/api/eventcontract/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventContract.update", path: "/api/eventcontract/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventGuest.create", path: "/api/eventguest/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventGuest.softDelete", path: "/api/eventguest/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventGuest.update", path: "/api/eventguest/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventProfitability.create", path: "/api/eventprofitability/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventProfitability.recalculate", path: "/api/eventprofitability/recalculate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventProfitability.update", path: "/api/eventprofitability/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventReport.approve", path: "/api/eventreport/approve", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventReport.complete", path: "/api/eventreport/complete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventReport.create", path: "/api/eventreport/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventReport.submit", path: "/api/eventreport/submit", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventSummary.create", path: "/api/eventsummary/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventSummary.refresh", path: "/api/eventsummary/refresh", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventSummary.update", path: "/api/eventsummary/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Ingredient.create", path: "/api/ingredient/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Ingredient.deactivate", path: "/api/ingredient/deactivate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Ingredient.update", path: "/api/ingredient/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Ingredient.updateAllergens", path: "/api/ingredient/update-allergens", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Ingredient.updateShelfLife", path: "/api/ingredient/update-shelf-life", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "InventoryItem.adjust", path: "/api/inventoryitem/adjust", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "InventoryItem.consume", path: "/api/inventoryitem/consume", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "InventoryItem.create", path: "/api/inventoryitem/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "InventoryItem.releaseReservation", path: "/api/inventoryitem/release-reservation", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "InventoryItem.reserve", path: "/api/inventoryitem/reserve", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "InventoryItem.restock", path: "/api/inventoryitem/restock", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "InventoryItem.waste", path: "/api/inventoryitem/waste", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "InventorySupplier.create", path: "/api/inventorysupplier/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "InventorySupplier.deactivate", path: "/api/inventorysupplier/deactivate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "InventorySupplier.update", path: "/api/inventorysupplier/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "InventoryTransaction.create", path: "/api/inventorytransaction/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KitchenTask.addTag", path: "/api/kitchentask/add-tag", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KitchenTask.cancel", path: "/api/kitchentask/cancel", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KitchenTask.claim", path: "/api/kitchentask/claim", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KitchenTask.complete", path: "/api/kitchentask/complete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KitchenTask.create", path: "/api/kitchentask/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KitchenTask.reassign", path: "/api/kitchentask/reassign", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KitchenTask.release", path: "/api/kitchentask/release", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KitchenTask.removeTag", path: "/api/kitchentask/remove-tag", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KitchenTask.start", path: "/api/kitchentask/start", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KitchenTask.updateComplexity", path: "/api/kitchentask/update-complexity", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KitchenTask.updatePriority", path: "/api/kitchentask/update-priority", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Lead.archive", path: "/api/lead/archive", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Lead.convertToClient", path: "/api/lead/convert-to-client", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Lead.create", path: "/api/lead/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Lead.disqualify", path: "/api/lead/disqualify", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Lead.update", path: "/api/lead/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Menu.activate", path: "/api/menu/activate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Menu.create", path: "/api/menu/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Menu.deactivate", path: "/api/menu/deactivate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Menu.update", path: "/api/menu/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "MenuDish.create", path: "/api/menudish/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "MenuDish.remove", path: "/api/menudish/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "MenuDish.updateCourse", path: "/api/menudish/update-course", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Notification.create", path: "/api/notification/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Notification.markDismissed", path: "/api/notification/mark-dismissed", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Notification.markRead", path: "/api/notification/mark-read", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Notification.remove", path: "/api/notification/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "OverrideAudit.authorize", path: "/api/overrideaudit/authorize", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "OverrideAudit.create", path: "/api/overrideaudit/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepComment.create", path: "/api/prepcomment/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepComment.resolve", path: "/api/prepcomment/resolve", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepComment.softDelete", path: "/api/prepcomment/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepComment.unresolve", path: "/api/prepcomment/unresolve", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepList.activate", path: "/api/preplist/activate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepList.cancel", path: "/api/preplist/cancel", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepList.create", path: "/api/preplist/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepList.createFromSeed", path: "/api/preplist/create-from-seed", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepList.deactivate", path: "/api/preplist/deactivate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepList.finalize", path: "/api/preplist/finalize", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepList.markCompleted", path: "/api/preplist/mark-completed", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepList.reopen", path: "/api/preplist/reopen", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepList.update", path: "/api/preplist/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepList.updateBatchMultiplier", path: "/api/preplist/update-batch-multiplier", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepListItem.create", path: "/api/preplistitem/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepListItem.markCompleted", path: "/api/preplistitem/mark-completed", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepListItem.markUncompleted", path: "/api/preplistitem/mark-uncompleted", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepListItem.updatePrepNotes", path: "/api/preplistitem/update-prep-notes", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepListItem.updateQuantity", path: "/api/preplistitem/update-quantity", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepListItem.updateStation", path: "/api/preplistitem/update-station", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepMethod.create", path: "/api/prepmethod/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepMethod.deactivate", path: "/api/prepmethod/deactivate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepMethod.update", path: "/api/prepmethod/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepTask.cancel", path: "/api/preptask/cancel", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepTask.claim", path: "/api/preptask/claim", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepTask.complete", path: "/api/preptask/complete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepTask.create", path: "/api/preptask/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepTask.reassign", path: "/api/preptask/reassign", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepTask.release", path: "/api/preptask/release", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepTask.start", path: "/api/preptask/start", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepTask.unclaim", path: "/api/preptask/unclaim", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepTask.updateQuantity", path: "/api/preptask/update-quantity", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Proposal.accept", path: "/api/proposal/accept", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Proposal.create", path: "/api/proposal/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Proposal.markViewed", path: "/api/proposal/mark-viewed", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Proposal.reject", path: "/api/proposal/reject", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Proposal.send", path: "/api/proposal/send", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Proposal.update", path: "/api/proposal/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Proposal.withdraw", path: "/api/proposal/withdraw", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ProposalLineItem.create", path: "/api/proposallineitem/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ProposalLineItem.remove", path: "/api/proposallineitem/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ProposalLineItem.update", path: "/api/proposallineitem/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PurchaseOrder.approve", path: "/api/purchaseorder/approve", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PurchaseOrder.cancel", path: "/api/purchaseorder/cancel", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PurchaseOrder.create", path: "/api/purchaseorder/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PurchaseOrder.markOrdered", path: "/api/purchaseorder/mark-ordered", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PurchaseOrder.markReceived", path: "/api/purchaseorder/mark-received", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PurchaseOrder.reject", path: "/api/purchaseorder/reject", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PurchaseOrder.submit", path: "/api/purchaseorder/submit", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PurchaseOrderItem.create", path: "/api/purchaseorderitem/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PurchaseOrderItem.remove", path: "/api/purchaseorderitem/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PurchaseOrderItem.update", path: "/api/purchaseorderitem/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Recipe.activate", path: "/api/recipe/activate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Recipe.create", path: "/api/recipe/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Recipe.deactivate", path: "/api/recipe/deactivate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Recipe.update", path: "/api/recipe/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RecipeIngredient.create", path: "/api/recipeingredient/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RecipeIngredient.remove", path: "/api/recipeingredient/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RecipeIngredient.updateQuantity", path: "/api/recipeingredient/update-quantity", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RecipeVersion.create", path: "/api/recipeversion/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Schedule.close", path: "/api/schedule/close", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Schedule.create", path: "/api/schedule/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Schedule.release", path: "/api/schedule/release", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Schedule.update", path: "/api/schedule/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ScheduleShift.create", path: "/api/scheduleshift/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ScheduleShift.remove", path: "/api/scheduleshift/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ScheduleShift.update", path: "/api/scheduleshift/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Shipment.cancel", path: "/api/shipment/cancel", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Shipment.create", path: "/api/shipment/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Shipment.markDelivered", path: "/api/shipment/mark-delivered", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Shipment.schedule", path: "/api/shipment/schedule", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Shipment.ship", path: "/api/shipment/ship", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Shipment.startPreparing", path: "/api/shipment/start-preparing", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Shipment.update", path: "/api/shipment/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ShipmentItem.create", path: "/api/shipmentitem/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ShipmentItem.updateReceived", path: "/api/shipmentitem/update-received", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Station.activate", path: "/api/station/activate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Station.assignTask", path: "/api/station/assign-task", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Station.create", path: "/api/station/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Station.deactivate", path: "/api/station/deactivate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Station.removeTask", path: "/api/station/remove-task", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Station.updateCapacity", path: "/api/station/update-capacity", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Station.updateEquipment", path: "/api/station/update-equipment", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "TimecardEditRequest.approve", path: "/api/timecardeditrequest/approve", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "TimecardEditRequest.create", path: "/api/timecardeditrequest/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "TimecardEditRequest.reject", path: "/api/timecardeditrequest/reject", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "TimeEntry.addEntry", path: "/api/timeentry/add-entry", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "TimeEntry.clockIn", path: "/api/timeentry/clock-in", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "TimeEntry.clockOut", path: "/api/timeentry/clock-out", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "User.create", path: "/api/user/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "User.deactivate", path: "/api/user/deactivate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "User.terminate", path: "/api/user/terminate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "User.update", path: "/api/user/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "User.updateRole", path: "/api/user/update-role", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "VarianceReport.approve", path: "/api/variancereport/approve", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "VarianceReport.create", path: "/api/variancereport/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "VarianceReport.review", path: "/api/variancereport/review", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "WasteEntry.create", path: "/api/wasteentry/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "WasteEntry.softDelete", path: "/api/wasteentry/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "WasteEntry.update", path: "/api/wasteentry/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Workflow.activate", path: "/api/workflow/activate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Workflow.create", path: "/api/workflow/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Workflow.deactivate", path: "/api/workflow/deactivate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Workflow.update", path: "/api/workflow/update", method: "POST", source: "command", auth: true, tenant: true },
 ] as const;
