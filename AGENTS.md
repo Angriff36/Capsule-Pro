@@ -24,6 +24,7 @@ Run these after implementing to get immediate feedback:
 
 - IR is authority — filesystem is not source of truth for routes
 - All mutations compile to Manifest domain commands
+- New/changed API write handlers (`POST`/`PUT`/`PATCH`/`DELETE`) under `apps/api/app/api` must exist in canonical route surface (`packages/manifest-ir/dist/routes.manifest.json`) unless explicitly infrastructure-allowlisted (`webhooks`/`auth`/`cron`/`health`)
 - Generated code is projection — never edit generated files
 - Exactly one commit per iteration, conventional commit format
 
@@ -34,3 +35,12 @@ Run these after implementing to get immediate feedback:
 - AI API: `apps/api/app/api/ai/`
 - Shared packages: `packages/ai/`, `packages/database/`
 - Specs: `specs/command-board/`
+
+## Important Efficiency Standards.
+- Never re-read files you just wrote or edited. You know the contents.
+- Never re-run commands to "verify" unless the outcome was uncertain.
+- Don't echo back large blocks of code or file contents unless asked.
+- Batch related edits into single operations. Don't make 5 edits when 1 handles it.
+- Skip confirmations like "I'll continue..."  Lust do it.
+- If a task needs 1 tool call, don't use 3. Plan before acting.
+- Do not summarize what you just did unless the result is ambiguous or you need additional input.
