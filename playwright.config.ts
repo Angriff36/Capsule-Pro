@@ -39,16 +39,29 @@ const wsEndpoint = USE_PERSISTENT_BROWSER
   ? getPersistentBrowserEndpoint()
   : undefined;
 
+// Workflow specs run sequentially (they mutate DB state); spider runs alone.
+// Set E2E_SUITE=workflows | spider | all (default: all)
+const E2E_SUITE = process.env.E2E_SUITE ?? "all";
+const testMatch =
+  E2E_SUITE === "workflows"
+    ? ["**/workflows/*.spec.ts"]
+    : E2E_SUITE === "spider"
+      ? ["**/workflows/full-site.spider.spec.ts"]
+      : ["**/*.spec.ts"];
+
 export default defineConfig({
   testDir: "e2e",
+  testMatch,
   globalSetup: USE_PERSISTENT_BROWSER
     ? "e2e/global-setup-persistent-browser.ts"
     : "e2e/global-setup.ts",
 
-  timeout: 60_000,
-  expect: { timeout: 10_000 },
-  fullyParallel: !USE_PERSISTENT_BROWSER,
-  retries: process.env.CI ? 2 : 0,
+  timeout: 120_000,
+  expect: { timeout: 15_000 },
+  // Workflow specs must run sequentially — they share DB state
+  fullyParallel: false,
+  workers: 1,
+  retries: 0, // Fail hard — no retries, force fixes
   reporter: process.env.CI ? [["github"], ["html"]] : [["list"], ["html"]],
 
   use: {
