@@ -1,6 +1,7 @@
 "use server";
 
 import { headers } from "next/headers";
+import { getApiBaseUrl } from "@/app/lib/api";
 import type {
   ConflictDetectionRequest,
   ConflictDetectionResult,
@@ -19,11 +20,10 @@ export type {
 export async function detectConflicts(
   request: ConflictDetectionRequest
 ): Promise<ConflictDetectionResult> {
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
   const requestHeaders = await headers();
   const cookie = requestHeaders.get("cookie");
 
-  const response = await fetch(`${baseUrl}/api/conflicts/detect`, {
+  const response = await fetch(`${getApiBaseUrl()}/api/conflicts/detect`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

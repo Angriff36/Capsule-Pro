@@ -117,6 +117,25 @@ let nextConfig: NextConfig = withToolbar(
       "@angriff36/manifest",
       "@repo/seo",
     ],
+    // Allow cross-origin requests to the Next.js dev server from:
+    //   - The app itself on its own port (2221) — needed when the browser
+    //     resolves the host as 127.0.0.1 or the LAN IP instead of localhost.
+    //   - The API server (2223) — server actions and tool-registry fetch from it.
+    //   - The Vercel Toolbar companion (25002).
+    // https://nextjs.org/docs/app/api-reference/config/next-config-js/allowedDevOrigins
+    allowedDevOrigins: [
+      // App port — covers browser → Next dev server cross-origin warnings
+      "localhost:2221",
+      "127.0.0.1:2221",
+      // LAN/WiFi IP that appears in `next dev` output on multi-interface machines
+      "10.2.231.104:2221",
+      // API server — server actions call it directly in dev
+      "localhost:2223",
+      "127.0.0.1:2223",
+      // Vercel Toolbar companion
+      "localhost:25002",
+      "127.0.0.1:25002",
+    ],
     experimental: {
       optimizePackageImports: [
         "lucide-react",
