@@ -394,6 +394,9 @@ spec-prompt-template-generator.md
 !packages/manifest-ir/dist/
 !packages/manifest-ir/dist/routes.manifest.json
 !packages/manifest-ir/dist/routes.ts
+# manifest-adapters dist is consumed directly by apps/api (no publish step); must be committed
+!packages/manifest-adapters/dist/
+!packages/manifest-adapters/dist/**
 **/build/
 **/.output/
 **/.vite/
