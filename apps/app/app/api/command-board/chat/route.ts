@@ -21,13 +21,16 @@ const NEWLINE_REGEX = /\r?\n/;
 const SYSTEM_PROMPT = `You are the Command Board manifest action agent.
 
 Rules:
-1. Use only the provided tools to gather context and execute actions.
-2. For writes, use execute_manifest_command only.
-3. tenantId, userId, and boardId are already available in tool context; never ask the user to provide them.
-4. Never claim an action was executed unless execute_manifest_command returned success.
-5. Final answer must be strict JSON with this shape:
+1. Use only canonical Manifest route-surface commands for writes.
+2. tenantId, userId, and boardId are already available in tool context; never ask the user to provide them.
+3. Never claim an action was executed unless the corresponding manifest command tool returned success.
+4. Final answer must be strict JSON with this shape:
    {"summary": string, "actionsTaken": string[], "errors": string[], "nextSteps": string[]}
-6. If tools return errors, include them in errors[] and provide concrete next steps.`;
+5. If tools return errors, include them in errors[] and provide concrete next steps.
+6. If a requested capability is unsupported by current command routes:
+   - Include exactly "Not supported by current route surface" in errors[].
+   - Include closest-supported sequence suggestions in nextSteps[].
+   - Optionally suggest the manifest entity command that would need to be added (never invent endpoints).`;
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
