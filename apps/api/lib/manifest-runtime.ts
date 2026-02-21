@@ -145,6 +145,25 @@ export async function createManifestRuntime(
     );
   }
 
+  // Resolve role from DB when not provided by the caller.
+  // Generated routes that were created before the template included the user
+  // DB lookup pass only { id, tenantId }. Without role, every policy that
+  // checks `user.role in [...]` evaluates to false → 403 for all users.
+  let resolvedUser = ctx.user;
+  if (!resolvedUser.role) {
+    const record = await database.user.findFirst({
+      where: {
+        id: resolvedUser.id,
+        tenantId: resolvedUser.tenantId,
+        deletedAt: null,
+      },
+      select: { role: true },
+    });
+    if (record?.role) {
+      resolvedUser = { ...resolvedUser, role: record.role };
+    }
+  }
+
   const ir = await getManifestIR();
 
   // Create a shared event collector for transactional outbox pattern
@@ -161,13 +180,13 @@ export async function createManifestRuntime(
     if (ENTITIES_WITH_SPECIFIC_STORES.has(entityName)) {
       const outboxWriter = createPrismaOutboxWriter(
         entityName,
-        ctx.user.tenantId
+        resolvedUser.tenantId
       );
 
       const config: PrismaStoreConfig = {
         prisma: database,
         entityName,
-        tenantId: ctx.user.tenantId,
+        tenantId: resolvedUser.tenantId,
         outboxWriter,
         eventCollector, // Share the event collector with the store
       };
@@ -182,7 +201,7 @@ export async function createManifestRuntime(
     );
     return new PrismaJsonStore({
       prisma: database,
-      tenantId: ctx.user.tenantId,
+      tenantId: resolvedUser.tenantId,
       entityType: entityName,
     });
   };
@@ -209,7 +228,7 @@ export async function createManifestRuntime(
       ) {
         const outboxWriter = createPrismaOutboxWriter(
           entityName || "unknown",
-          ctx.user.tenantId
+          resolvedUser.tenantId
         );
 
         const aggregateId = (result.result as { id?: string })?.id || "unknown";
@@ -240,12 +259,12 @@ export async function createManifestRuntime(
   // the cached result is returned without re-execution.
   const idempotencyStore = new PrismaIdempotencyStore({
     prisma: database,
-    tenantId: ctx.user.tenantId,
+    tenantId: resolvedUser.tenantId,
   });
 
   return new ManifestRuntimeEngine(
     ir,
-    { user: ctx.user, eventCollector, telemetry },
+    { user: resolvedUser, eventCollector, telemetry },
     { storeProvider, idempotencyStore }
   );
 }
