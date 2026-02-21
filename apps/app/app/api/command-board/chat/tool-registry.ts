@@ -2,6 +2,10 @@ import { randomUUID } from "node:crypto";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
+import {
+  loadCommandCatalog,
+  resolveCanonicalEntityCommandPair,
+} from "./manifest-command-tools";
 
 export interface ManifestAgentContext {
   tenantId: string;
@@ -33,31 +37,75 @@ interface ToolDefinition {
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:2223";
 
-const COMMAND_ROUTE_REGISTRY = new Map<string, string>([
-  ["CommandBoard:create", "/api/command-board/boards/commands/create"],
-  ["CommandBoard:update", "/api/command-board/boards/commands/update"],
-  ["CommandBoard:activate", "/api/command-board/boards/commands/activate"],
-  ["CommandBoard:deactivate", "/api/command-board/boards/commands/deactivate"],
-  ["CommandBoardCard:create", "/api/command-board/cards/commands/create"],
-  ["CommandBoardCard:update", "/api/command-board/cards/commands/update"],
-  ["CommandBoardCard:move", "/api/command-board/cards/commands/move"],
-  ["CommandBoardCard:resize", "/api/command-board/cards/commands/resize"],
-  ["CommandBoardCard:remove", "/api/command-board/cards/commands/remove"],
-  ["CommandBoardGroup:create", "/api/command-board/groups/commands/create"],
-  ["CommandBoardGroup:update", "/api/command-board/groups/commands/update"],
-  ["CommandBoardGroup:remove", "/api/command-board/groups/commands/remove"],
-  [
-    "CommandBoardConnection:create",
-    "/api/command-board/connections/commands/create",
-  ],
-  [
-    "CommandBoardConnection:remove",
-    "/api/command-board/connections/commands/remove",
-  ],
-  ["CommandBoardLayout:create", "/api/command-board/layouts/commands/create"],
-  ["CommandBoardLayout:update", "/api/command-board/layouts/commands/update"],
-  ["CommandBoardLayout:remove", "/api/command-board/layouts/commands/remove"],
-]);
+function tokenize(input: string): string[] {
+  return input
+    .split(/[^a-z0-9]+/i)
+    .map((token) => token.trim().toLowerCase())
+    .filter((token) => token.length > 0);
+}
+
+function closestSupportedSequence(
+  entityName: string,
+  commandName: string,
+  supportedKeys: string[]
+): string[] {
+  if (supportedKeys.length === 0) {
+    return [];
+  }
+
+  if (commandName.length > 0) {
+    const matchingCommand = supportedKeys
+      .filter((key) => {
+        const command = key.split(".")[1] ?? "";
+        return command.toLowerCase() === commandName.toLowerCase();
+      })
+      .sort((a, b) => {
+        const aEntity = a.split(".")[0] ?? "";
+        const bEntity = b.split(".")[0] ?? "";
+        const aExactEntity = aEntity.toLowerCase() === entityName.toLowerCase();
+        const bExactEntity = bEntity.toLowerCase() === entityName.toLowerCase();
+        if (aExactEntity !== bExactEntity) {
+          return aExactEntity ? -1 : 1;
+        }
+        return a.localeCompare(b);
+      });
+
+    if (matchingCommand.length > 0) {
+      return matchingCommand.slice(0, 5);
+    }
+  }
+
+  if (entityName.length > 0) {
+    const matchingEntity = supportedKeys
+      .filter((key) => {
+        const entity = key.split(".")[0] ?? "";
+        return entity.toLowerCase() === entityName.toLowerCase();
+      })
+      .sort((a, b) => a.localeCompare(b));
+
+    if (matchingEntity.length > 0) {
+      return matchingEntity.slice(0, 5);
+    }
+  }
+
+  const requestedTokens = tokenize(`${entityName} ${commandName}`);
+  return [...supportedKeys]
+    .sort((a, b) => {
+      const aTokens = tokenize(a);
+      const bTokens = tokenize(b);
+      const aOverlap = requestedTokens.filter((token) =>
+        aTokens.includes(token)
+      ).length;
+      const bOverlap = requestedTokens.filter((token) =>
+        bTokens.includes(token)
+      ).length;
+      if (aOverlap !== bOverlap) {
+        return bOverlap - aOverlap;
+      }
+      return a.localeCompare(b);
+    })
+    .slice(0, 5);
+}
 
 function safeJsonParse(input: string): Record<string, unknown> {
   try {
@@ -148,6 +196,7 @@ function sanitizeErrorMessage(
     /^boardId is required$/i,
     /^board .* not found$/i,
     /^unsupported manifest command route/i,
+    /^not supported by current route surface$/i,
     /^unknown tool:/i,
   ];
 
@@ -382,20 +431,60 @@ async function executeManifestCommandTool(
   const entityName = typeof args.entityName === "string" ? args.entityName : "";
   const commandName =
     typeof args.commandName === "string" ? args.commandName : "";
-  const key = `${entityName}:${commandName}`;
-  const routePath = COMMAND_ROUTE_REGISTRY.get(key);
+  const commandCatalog = loadCommandCatalog();
+  const canonicalPair = resolveCanonicalEntityCommandPair(
+    commandCatalog,
+    entityName,
+    commandName
+  );
+  const key = canonicalPair ?? `${entityName}.${commandName}`;
+  const commandRoute = canonicalPair
+    ? commandCatalog.byEntityCommand.get(canonicalPair)
+    : null;
 
-  if (!routePath) {
+  if (!commandRoute) {
+    const notSupportedMessage = "Not supported by current route surface";
+    const closestSequence = closestSupportedSequence(
+      entityName,
+      commandName,
+      commandCatalog.canonicalEntityCommandPairs
+    );
     return {
       ok: false,
-      summary: `Unsupported manifest command route for ${key}`,
-      error: `Unsupported manifest command route for ${key}`,
+      summary: notSupportedMessage,
+      error: notSupportedMessage,
       data: {
-        supported: Array.from(COMMAND_ROUTE_REGISTRY.keys()),
+        requested: key,
+        closestSupportedSequence: closestSequence,
+        supported: commandCatalog.canonicalEntityCommandPairs,
+        suggestedManifestCommand:
+          entityName.length > 0 && commandName.length > 0
+            ? {
+                entityName,
+                commandName,
+                hint: `Add '${commandName}' command to '${entityName}' in manifest to enable this action.`,
+              }
+            : null,
       },
     };
   }
 
+  return executeManifestCommandRoute(
+    commandRoute.path,
+    key,
+    args,
+    context,
+    callId
+  );
+}
+
+async function executeManifestCommandRoute(
+  routePath: string,
+  key: string,
+  args: Record<string, unknown>,
+  context: ManifestAgentContext,
+  callId: string
+): Promise<AgentToolResult> {
   const idempotencyKey =
     typeof args.idempotencyKey === "string" && args.idempotencyKey.length > 0
       ? args.idempotencyKey
@@ -404,7 +493,16 @@ async function executeManifestCommandTool(
   const bodyArgs =
     args.args && typeof args.args === "object" && !Array.isArray(args.args)
       ? { ...(args.args as Record<string, unknown>) }
-      : {};
+      : Object.fromEntries(
+          Object.entries(args).filter(
+            ([name]) =>
+              name !== "args" &&
+              name !== "entityName" &&
+              name !== "commandName" &&
+              name !== "instanceId" &&
+              name !== "idempotencyKey"
+          )
+        );
 
   const instanceId =
     typeof args.instanceId === "string" && args.instanceId.length > 0
@@ -452,7 +550,6 @@ async function executeManifestCommandTool(
   }
 
   if (!response.ok) {
-    const errorCode = httpStatusToErrorCode(response.status);
     const safeMessage = SAFE_ERROR_MESSAGES.COMMAND_FAILED;
     return {
       ok: false,
@@ -471,7 +568,7 @@ async function executeManifestCommandTool(
   };
 }
 
-const TOOL_DEFINITIONS: ToolDefinition[] = [
+const BASE_TOOL_DEFINITIONS: ToolDefinition[] = [
   {
     type: "function",
     name: "read_board_state",
@@ -538,8 +635,14 @@ const TOOL_DEFINITIONS: ToolDefinition[] = [
 ];
 
 export function createManifestToolRegistry(context: ManifestAgentContext) {
+  const commandCatalog = loadCommandCatalog();
+  const commandToolDefinitions = commandCatalog.toolDefinitions.map(
+    (definition) => ({ ...definition })
+  );
+  const definitions = [...BASE_TOOL_DEFINITIONS, ...commandToolDefinitions];
+
   return {
-    definitions: TOOL_DEFINITIONS,
+    definitions,
     async executeToolCall(call: AgentToolCall): Promise<AgentToolResult> {
       const parsedArgs = safeJsonParse(call.argumentsJson);
 
@@ -554,6 +657,26 @@ export function createManifestToolRegistry(context: ManifestAgentContext) {
 
         if (call.name === "execute_manifest_command") {
           return await executeManifestCommandTool(
+            parsedArgs,
+            context,
+            call.callId
+          );
+        }
+
+        const entityCommand = commandCatalog.toolToEntityCommand.get(call.name);
+        if (entityCommand) {
+          const commandRoute = commandCatalog.byEntityCommand.get(entityCommand);
+          if (!commandRoute) {
+            return {
+              ok: false,
+              summary: "Not supported by current route surface",
+              error: "Not supported by current route surface",
+            };
+          }
+
+          return await executeManifestCommandRoute(
+            commandRoute.path,
+            entityCommand,
             parsedArgs,
             context,
             call.callId
