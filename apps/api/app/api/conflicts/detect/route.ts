@@ -22,6 +22,17 @@ import {
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import {
+  FINANCIAL_THRESHOLDS,
+  getEquipmentSeverity,
+  getFinancialSeverity,
+  getInventorySeverity,
+  getSchedulingSeverity,
+  getStaffSeverity,
+  getTimelineSeverity,
+  getVenueSeverity,
+  TIMELINE_THRESHOLDS,
+} from "./severity-thresholds";
 import type {
   Conflict,
   ConflictApiError,
@@ -220,10 +231,11 @@ async function detectSchedulingConflicts(
   `);
 
   for (const overlap of overlappingShifts) {
+    const severity = getSchedulingSeverity(overlap.shift_count);
     conflicts.push({
       id: `scheduling-overlap-${overlap.employee_id}-${overlap.shift_date.toISOString()}`,
       type: "scheduling",
-      severity: overlap.shift_count > 2 ? "critical" : "high",
+      severity,
       title: `Double-booked employee: ${overlap.employee_name}`,
       description: `${overlap.employee_name} is scheduled for ${overlap.shift_count} shifts on ${overlap.shift_date.toLocaleDateString()}`,
       affectedEntities: [
@@ -286,10 +298,11 @@ async function detectStaffConflicts(
   `);
 
   for (const conflict of shiftsDuringTimeOff) {
+    const severity = getStaffSeverity(conflict.shift_count);
     conflicts.push({
       id: `staff-timeoff-${conflict.employee_id}-${conflict.time_off_date.toISOString()}`,
       type: "staff",
-      severity: "high",
+      severity,
       title: `Shift during approved time-off: ${conflict.employee_name}`,
       description: `${conflict.employee_name} has ${conflict.shift_count} shift(s) scheduled during approved time-off on ${conflict.time_off_date.toLocaleDateString()}`,
       affectedEntities: [
@@ -361,7 +374,7 @@ async function detectInventoryConflicts(
 
   for (const alert of activeAlerts) {
     const itemName = itemMap.get(alert.itemId) ?? "Unknown Item";
-    const severity = alert.alertType === "critical" ? "critical" : "medium";
+    const severity = getInventorySeverity(alert.alertType);
     const thresholdValue = alert.threshold_value.toString();
 
     conflicts.push({
@@ -434,14 +447,7 @@ async function detectVenueConflicts(
   `);
 
   for (const conflict of venueConflicts) {
-    let severity: "critical" | "high" | "medium";
-    if (conflict.event_count > 2) {
-      severity = "critical";
-    } else if (conflict.event_count > 1) {
-      severity = "high";
-    } else {
-      severity = "medium";
-    }
+    const severity = getVenueSeverity(conflict.event_count);
 
     conflicts.push({
       id: `venue-conflict-${conflict.venue_id}-${conflict.event_date.toISOString()}`,
@@ -508,7 +514,6 @@ async function detectTimelineConflicts(
 
   // Find incomplete high-priority tasks past due date using Prisma ORM
   const TASK_COMPLETED_STATUS = "completed";
-  const HIGH_PRIORITY_THRESHOLD = 3;
 
   const overdueTasks = await database.prepTask.findMany({
     where: {
@@ -516,7 +521,7 @@ async function detectTimelineConflicts(
       deletedAt: null,
       status: { not: TASK_COMPLETED_STATUS },
       dueByDate: { lt: now },
-      priority: { lte: HIGH_PRIORITY_THRESHOLD },
+      priority: { lte: TIMELINE_THRESHOLDS.highPriorityMax },
     },
     orderBy: { dueByDate: "asc" },
     take: 20,
@@ -530,11 +535,12 @@ async function detectTimelineConflicts(
 
   for (const task of overdueTasks) {
     const daysOverdue = calculateDaysOverdue(task.dueByDate, now);
-    const priorityLabel = task.priority <= 2 ? "urgent" : "high";
+    const severity = getTimelineSeverity(task.priority);
+    const priorityLabel = task.priority <= TIMELINE_THRESHOLDS.criticalPriorityMax ? "urgent" : "high";
     conflicts.push({
       id: `timeline-overdue-${task.id}`,
       type: "timeline",
-      severity: task.priority <= 2 ? "critical" : "high",
+      severity,
       title: `Overdue ${priorityLabel} task: ${task.name}`,
       description: `${task.name} is ${daysOverdue} day(s) overdue (was due ${task.dueByDate.toLocaleDateString()})`,
       affectedEntities: [
@@ -554,6 +560,7 @@ async function detectTimelineConflicts(
 
 /**
  * Determine financial risk severity and messaging
+ * Uses centralized thresholds from severity-thresholds.ts
  */
 function getFinancialRiskInfo(
   eventTitle: string,
@@ -567,34 +574,44 @@ function getFinancialRiskInfo(
   title: string;
   description: string;
 } {
+  const severity = getFinancialSeverity(
+    actualMarginPct,
+    marginVariance,
+    costVariance,
+    budgetedCost
+  );
+
   if (actualMarginPct < 0) {
     return {
-      severity: "critical",
+      severity,
       title: `Unprofitable event: ${eventTitle}`,
       description: `${eventTitle} has a negative margin (${actualMarginPct.toFixed(1)}%). Immediate review required.`,
     };
   }
 
-  if (marginVariance < -10) {
+  if (marginVariance < FINANCIAL_THRESHOLDS.criticalMarginVariance) {
     return {
-      severity: "critical",
+      severity,
       title: `Severe margin erosion: ${eventTitle}`,
       description: `${eventTitle} margin dropped ${Math.abs(marginVariance).toFixed(1)}% (from ${budgetedMarginPct.toFixed(1)}% to ${actualMarginPct.toFixed(1)}%).`,
     };
   }
 
-  if (budgetedCost > 0 && costVariance > budgetedCost * 0.25) {
+  if (
+    budgetedCost > 0 &&
+    costVariance > budgetedCost * FINANCIAL_THRESHOLDS.highCostOverrunPercent
+  ) {
     const percentOver = ((costVariance / budgetedCost) * 100).toFixed(0);
     return {
-      severity: "high",
+      severity,
       title: `Cost overrun: ${eventTitle}`,
       description: `${eventTitle} is over budget by $${costVariance.toFixed(0)} (${percentOver}% over budget).`,
     };
   }
 
-  if (marginVariance < -5) {
+  if (marginVariance < FINANCIAL_THRESHOLDS.highMarginVariance) {
     return {
-      severity: "high",
+      severity,
       title: `Margin erosion: ${eventTitle}`,
       description: `${eventTitle} margin dropped ${Math.abs(marginVariance).toFixed(1)}% (from ${budgetedMarginPct.toFixed(1)}% to ${actualMarginPct.toFixed(1)}%).`,
     };
@@ -603,7 +620,7 @@ function getFinancialRiskInfo(
   const percentOver =
     budgetedCost > 0 ? ((costVariance / budgetedCost) * 100).toFixed(0) : "0";
   return {
-    severity: "medium",
+    severity,
     title: `Cost variance: ${eventTitle}`,
     description: `${eventTitle} has cost variance of $${costVariance.toFixed(0)} (${percentOver}% over budget).`,
   };
@@ -759,14 +776,7 @@ async function detectEquipmentConflicts(
   `);
 
   for (const conflict of equipmentConflicts) {
-    let severity: "critical" | "high" | "medium";
-    if (conflict.event_count > 2) {
-      severity = "critical";
-    } else if (conflict.event_count > 1) {
-      severity = "high";
-    } else {
-      severity = "medium";
-    }
+    const severity = getEquipmentSeverity(conflict.event_count);
 
     conflicts.push({
       id: `equipment-conflict-${conflict.equipment_name.replace(/\s+/g, "-").toLowerCase()}-${conflict.event_date.toISOString()}`,
