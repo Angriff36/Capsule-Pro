@@ -1,9 +1,12 @@
 import { createHash } from "node:crypto";
+import { existsSync, readFileSync } from "node:fs";
 import { readdir, readFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import type { IR } from "@angriff36/manifest/ir";
 import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { enforceCommandOwnership } from "../ir-contract.js";
+
+const MANIFEST_EXTENSION_RE = /\.manifest$/;
 
 export interface ManifestFile {
   name: string;
@@ -30,10 +33,49 @@ interface CompileBundleOptions extends LoadManifestOptions {
   forceRecompile?: boolean;
 }
 
-const DEFAULT_MANIFESTS_DIR = resolve(
-  process.cwd(),
-  "packages/manifest-adapters/manifests"
-);
+/**
+ * Walk up from startDir until pnpm-workspace.yaml is found.
+ * Returns the directory containing pnpm-workspace.yaml (the monorepo root).
+ *
+ * This is necessary because Next.js sets process.cwd() to the app directory
+ * (e.g. apps/api), not the monorepo root. Any path resolved off process.cwd()
+ * will silently point into a void when the server starts from apps/api.
+ */
+function findRepoRoot(startDir: string): string {
+  let dir = startDir;
+  while (true) {
+    if (existsSync(join(dir, "pnpm-workspace.yaml"))) {
+      return dir;
+    }
+    const parent = resolve(dir, "..");
+    if (parent === dir) {
+      throw new Error(
+        `[loadManifests] Could not find repo root (pnpm-workspace.yaml). Started from: ${startDir}`
+      );
+    }
+    dir = parent;
+  }
+}
+
+/**
+ * Resolve the manifests directory to an absolute path.
+ *
+ * If manifestsDir is already absolute, use it as-is (supports tests that
+ * pass temp dirs). If it is relative, resolve it from the monorepo root
+ * (not process.cwd()) so the path is stable regardless of which directory
+ * Next.js started the server from.
+ */
+function resolveManifestsDir(manifestsDir?: string): string {
+  const rel = manifestsDir ?? "packages/manifest-adapters/manifests";
+
+  // Already absolute — caller knows what they want (e.g. test fixtures).
+  if (resolve(rel) === rel) {
+    return rel;
+  }
+
+  const repoRoot = findRepoRoot(process.cwd());
+  return resolve(repoRoot, rel);
+}
 
 const loadedManifestCache = new Map<string, Promise<LoadedManifestSet>>();
 const compiledBundleCache = new Map<string, Promise<CompiledManifestBundle>>();
@@ -164,7 +206,7 @@ async function readManifestFilesFromDisk(
 export async function loadManifests(
   options: LoadManifestOptions = {}
 ): Promise<LoadedManifestSet> {
-  const manifestsDir = options.manifestsDir ?? DEFAULT_MANIFESTS_DIR;
+  const manifestsDir = resolveManifestsDir(options.manifestsDir);
   const cacheKey = getCacheKey(manifestsDir);
 
   if (!options.forceReload) {
@@ -193,7 +235,7 @@ async function compileManifestSet(
       throw new Error(`Failed to compile ${file.name}: ${messages}`);
     }
 
-    const manifestName = file.name.replace(/\.manifest$/, "");
+    const manifestName = file.name.replace(MANIFEST_EXTENSION_RE, "");
     compiledIRs.push(enforceCommandOwnership(ir, manifestName));
   }
 
@@ -233,7 +275,7 @@ export async function getCompiledManifestBundle(
 ): Promise<CompiledManifestBundle> {
   const manifests = await loadManifests(options);
   const compileCacheKey = `${getCacheKey(
-    options.manifestsDir ?? DEFAULT_MANIFESTS_DIR
+    resolveManifestsDir(options.manifestsDir)
   )}:${manifests.hash}`;
 
   if (!options.forceRecompile) {
@@ -246,4 +288,52 @@ export async function getCompiledManifestBundle(
   const pending = compileManifestSet(manifests);
   compiledBundleCache.set(compileCacheKey, pending);
   return pending;
+}
+
+// ---------------------------------------------------------------------------
+// Precompiled IR loader — avoids runtime compilation entirely.
+// Use this in production route handlers where the IR is already built.
+// ---------------------------------------------------------------------------
+
+let cachedPrecompiledBundle: CompiledManifestBundle | null = null;
+let cachedPrecompiledPath = "";
+
+/**
+ * Load a precompiled IR JSON file and return it as a CompiledManifestBundle.
+ *
+ * The irPath is resolved relative to the monorepo root (not process.cwd()),
+ * so it works correctly when Next.js runs from apps/api.
+ *
+ * @param irPath - Repo-root-relative path to the precompiled IR JSON.
+ *   Example: "packages/manifest-ir/ir/kitchen/kitchen.ir.json"
+ */
+export function loadPrecompiledIR(irPath: string): CompiledManifestBundle {
+  const repoRoot = findRepoRoot(process.cwd());
+  const absPath = resolve(repoRoot, irPath);
+
+  if (cachedPrecompiledBundle && cachedPrecompiledPath === absPath) {
+    return cachedPrecompiledBundle;
+  }
+
+  if (!existsSync(absPath)) {
+    throw new Error(
+      `[loadManifests] Precompiled IR not found at: ${absPath}\n` +
+        `  irPath: ${irPath}\n` +
+        `  repoRoot: ${repoRoot}\n` +
+        `  process.cwd(): ${process.cwd()}`
+    );
+  }
+
+  const ir = JSON.parse(readFileSync(absPath, "utf8")) as IR;
+  const hash = createHash("sha256").update(readFileSync(absPath)).digest("hex");
+
+  const bundle: CompiledManifestBundle = {
+    files: [],
+    hash,
+    ir,
+  };
+
+  cachedPrecompiledBundle = bundle;
+  cachedPrecompiledPath = absPath;
+  return bundle;
 }
