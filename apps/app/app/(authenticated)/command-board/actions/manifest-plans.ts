@@ -3,6 +3,7 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";
+import { getApiBaseUrl } from "@/app/lib/api";
 import {
   createManifestPlanAuditEvent,
   getPendingManifestPlan,
@@ -726,12 +727,10 @@ async function executeCreatePrepTasksStep(
     };
   }
 
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
-
   try {
     // First generate prep tasks
     const generateResponse = await fetch(
-      `${baseUrl}/api/kitchen/ai/bulk-generate/prep-tasks`,
+      `${getApiBaseUrl()}/api/kitchen/ai/bulk-generate/prep-tasks`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -787,7 +786,7 @@ async function executeCreatePrepTasksStep(
 
     // Save tasks to database
     const saveResponse = await fetch(
-      `${baseUrl}/api/kitchen/ai/bulk-generate/prep-tasks/save`,
+      `${getApiBaseUrl()}/api/kitchen/ai/bulk-generate/prep-tasks/save`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -878,11 +877,9 @@ async function executeCreatePurchaseOrderStep(
   const notes = asString(step.args.notes);
   const status = asString(step.args.status) ?? "draft";
 
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
-
   try {
     const response = await fetch(
-      `${baseUrl}/api/inventory/purchase-orders/commands/create`,
+      `${getApiBaseUrl()}/api/inventory/purchase-orders/commands/create`,
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1223,9 +1220,8 @@ async function executeCreateRecipeStep(
   }
 
   // Create the recipe via manifest runtime API
-  const baseUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2223";
   const response = await fetch(
-    `${baseUrl}/api/kitchen/recipes/commands/create`,
+    `${getApiBaseUrl()}/api/kitchen/recipes/commands/create`,
     {
       method: "POST",
       headers: {

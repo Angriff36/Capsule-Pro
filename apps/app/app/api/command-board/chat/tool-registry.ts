@@ -2,6 +2,8 @@ import { randomUUID } from "node:crypto";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
+// Use the shared helper: server-side → direct API URL; client-side → "" (rewrite proxy)
+import { getApiBaseUrl } from "@/app/lib/api";
 import {
   loadCommandCatalog,
   resolveCanonicalEntityCommandPair,
@@ -34,8 +36,6 @@ interface ToolDefinition {
   description: string;
   parameters: Record<string, unknown>;
 }
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:2223";
 
 function tokenize(input: string): string[] {
   return input
@@ -149,13 +149,18 @@ function httpStatusToErrorCode(status: number): SafeErrorCode {
 
 // Map error codes to safe, actionable user messages
 const SAFE_ERROR_MESSAGES: Record<SafeErrorCode, string> = {
-  BOARD_NOT_FOUND: "The requested board could not be found. It may have been deleted or you may not have access.",
+  BOARD_NOT_FOUND:
+    "The requested board could not be found. It may have been deleted or you may not have access.",
   BOARD_UNAVAILABLE: "The board is temporarily unavailable. Please try again.",
-  CONFLICT_CHECK_FAILED: "Conflict detection could not be completed. Other operations can still proceed.",
-  COMMAND_FAILED: "The requested action could not be completed. Please try again.",
-  INVALID_REQUEST: "The request format was invalid. Please rephrase and try again.",
+  CONFLICT_CHECK_FAILED:
+    "Conflict detection could not be completed. Other operations can still proceed.",
+  COMMAND_FAILED:
+    "The requested action could not be completed. Please try again.",
+  INVALID_REQUEST:
+    "The request format was invalid. Please rephrase and try again.",
   PERMISSION_DENIED: "You do not have permission to perform this action.",
-  SERVICE_UNAVAILABLE: "The service is temporarily unavailable. Please try again in a moment.",
+  SERVICE_UNAVAILABLE:
+    "The service is temporarily unavailable. Please try again in a moment.",
   UNKNOWN_ERROR: "An unexpected error occurred. Please try again.",
 };
 
@@ -183,11 +188,18 @@ function sanitizeErrorMessage(
 
   const lowerMessage = rawMessage.toLowerCase();
   if (dbKeywords.some((kw) => lowerMessage.includes(kw.toLowerCase()))) {
-    return { code: "SERVICE_UNAVAILABLE", message: SAFE_ERROR_MESSAGES.SERVICE_UNAVAILABLE };
+    return {
+      code: "SERVICE_UNAVAILABLE",
+      message: SAFE_ERROR_MESSAGES.SERVICE_UNAVAILABLE,
+    };
   }
 
   // If message contains UUIDs or looks like internal IDs, sanitize
-  if (UUID_REGEX.test(rawMessage) || rawMessage.includes("tenant_") || rawMessage.includes("id:")) {
+  if (
+    UUID_REGEX.test(rawMessage) ||
+    rawMessage.includes("tenant_") ||
+    rawMessage.includes("id:")
+  ) {
     return { code: fallbackCode, message: SAFE_ERROR_MESSAGES[fallbackCode] };
   }
 
@@ -206,6 +218,17 @@ function sanitizeErrorMessage(
 
   // Default: use safe generic message
   return { code: fallbackCode, message: SAFE_ERROR_MESSAGES[fallbackCode] };
+}
+
+// Extract a candidate error message from a parsed response body or raw text
+function extractErrorMessage(parsed: unknown, raw: string): string {
+  if (parsed !== null && typeof parsed === "object") {
+    const obj = parsed as Record<string, unknown>;
+    if (typeof obj.error === "string" && obj.error.length > 0) return obj.error;
+    if (typeof obj.message === "string" && obj.message.length > 0)
+      return obj.message;
+  }
+  return raw;
 }
 
 // Redact sensitive fields from data objects
@@ -304,7 +327,10 @@ async function readBoardStateTool(
   });
 
   if (!board) {
-    const sanitized = sanitizeErrorMessage("Board not found", "BOARD_NOT_FOUND");
+    const sanitized = sanitizeErrorMessage(
+      "Board not found",
+      "BOARD_NOT_FOUND"
+    );
     return {
       ok: false,
       summary: sanitized.message,
@@ -382,7 +408,7 @@ async function detectConflictsTool(
     payload.entityTypes = args.entityTypes;
   }
 
-  const response = await fetch(`${API_BASE_URL}/api/conflicts/detect`, {
+  const response = await fetch(`${getApiBaseUrl()}/api/conflicts/detect`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -403,11 +429,13 @@ async function detectConflictsTool(
 
   if (!response.ok) {
     const errorCode = httpStatusToErrorCode(response.status);
-    const safeMessage = SAFE_ERROR_MESSAGES.CONFLICT_CHECK_FAILED;
+    const candidate = extractErrorMessage(parsedBody, responseBody);
+    const sanitized = sanitizeErrorMessage(candidate, errorCode);
     return {
       ok: false,
-      summary: safeMessage,
-      error: safeMessage,
+      summary: sanitized.message,
+      error: sanitized.message,
+      data: { status: response.status, errorCode },
     };
   }
 
@@ -527,7 +555,7 @@ async function executeManifestCommandRoute(
     bodyArgs.userId = context.userId;
   }
 
-  const endpoint = `${API_BASE_URL}${routePath}`;
+  const endpoint = `${getApiBaseUrl()}${routePath}`;
 
   const response = await fetch(endpoint, {
     method: "POST",
@@ -550,11 +578,23 @@ async function executeManifestCommandRoute(
   }
 
   if (!response.ok) {
-    const safeMessage = SAFE_ERROR_MESSAGES.COMMAND_FAILED;
+    const errorCode = httpStatusToErrorCode(response.status);
+    const candidate = extractErrorMessage(parsedResponse, responseText);
+    const sanitized = sanitizeErrorMessage(candidate, errorCode);
+    captureException(new Error(`manifest command failed: ${key}`), {
+      tags: { route: "command-board-chat", manifestKey: key },
+      extra: {
+        status: response.status,
+        routePath,
+        responseText,
+        correlationId: context.correlationId,
+      },
+    });
     return {
       ok: false,
-      summary: safeMessage,
-      error: safeMessage,
+      summary: sanitized.message,
+      error: sanitized.message,
+      data: { status: response.status, routePath, errorCode },
     };
   }
 
@@ -665,7 +705,8 @@ export function createManifestToolRegistry(context: ManifestAgentContext) {
 
         const entityCommand = commandCatalog.toolToEntityCommand.get(call.name);
         if (entityCommand) {
-          const commandRoute = commandCatalog.byEntityCommand.get(entityCommand);
+          const commandRoute =
+            commandCatalog.byEntityCommand.get(entityCommand);
           if (!commandRoute) {
             return {
               ok: false,
