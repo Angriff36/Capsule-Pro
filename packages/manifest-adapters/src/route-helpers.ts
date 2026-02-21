@@ -11,14 +11,16 @@
 // ============ Route Handler Response Helpers ============
 
 /**
- * Create a standard error response
+ * Create a standard error response.
+ * Uses the standard Web API Response so this package does not need a
+ * hard dependency on next/server. Next.js accepts plain Response objects
+ * from App Router route handlers.
  */
 export function manifestErrorResponse(
   error: Error | string,
   statusCode = 500,
   details?: Record<string, unknown>
 ): Response {
-  const { NextResponse } = require("next/server");
   const message = typeof error === "string" ? error : error.message;
 
   const body = {
@@ -27,21 +29,27 @@ export function manifestErrorResponse(
     ...(details && { details }),
   };
 
-  return NextResponse.json(body, { status: statusCode });
+  return new Response(JSON.stringify(body), {
+    status: statusCode,
+    headers: { "Content-Type": "application/json" },
+  });
 }
 
 /**
- * Create a standard success response
+ * Create a standard success response.
+ * Uses the standard Web API Response so this package does not need a
+ * hard dependency on next/server.
  */
 export function manifestSuccessResponse<T>(data: T): Response {
-  const { NextResponse } = require("next/server");
-
   const body = {
     success: true,
     data,
   };
 
-  return NextResponse.json(body);
+  return new Response(JSON.stringify(body), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
 }
 
 /**
