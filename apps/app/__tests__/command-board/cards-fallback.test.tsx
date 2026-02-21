@@ -73,8 +73,10 @@ describe("FinancialNodeCard", () => {
       <FinancialNodeCard data={dataWithNullRevenue} stale={false} />
     );
     expect(container).toBeTruthy();
-    // Should show $0 for null revenue
-    expect(screen.getByText("$0")).toBeTruthy();
+    // Should show $0 for null revenue (in the revenue/costs section)
+    // There are multiple $0 values (revenue and gross profit), so use getAllByText
+    const zeros = screen.getAllByText("$0");
+    expect(zeros.length).toBeGreaterThan(0);
   });
 
   it("handles null projectedCosts gracefully", () => {
@@ -207,8 +209,8 @@ describe("RiskNodeCard", () => {
       <RiskNodeCard data={dataWithNullEntity} stale={false} />
     );
     expect(container).toBeTruthy();
-    // Should show the entity type as fallback
-    expect(screen.getByText(/event/)).toBeTruthy();
+    // Should show the entity type as fallback ("Affects: event")
+    expect(screen.getByText("Affects: event")).toBeTruthy();
   });
 
   it("applies stale styling when stale is true", () => {

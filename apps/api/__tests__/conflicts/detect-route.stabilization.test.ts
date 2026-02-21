@@ -66,6 +66,8 @@ const mockAuth = vi.mocked(auth);
 const mockGetTenantIdForOrg = vi.mocked(getTenantIdForOrg);
 const mockQueryRaw = vi.mocked(database.$queryRaw);
 const mockPrepTaskFindMany = vi.mocked(database.prepTask.findMany);
+const mockInventoryAlertFindMany = vi.mocked(database.inventoryAlert.findMany);
+const mockInventoryItemFindMany = vi.mocked(database.inventoryItem.findMany);
 
 describe("Conflict Detection API Route Stabilization", () => {
   const validTenantId = "550e8400-e29b-41d4-a716-446655440000";
@@ -91,7 +93,7 @@ describe("Conflict Detection API Route Stabilization", () => {
       expect(response.status).toBe(401);
       expect(body).toHaveProperty("message");
       expect(body.message).toBe("Authentication required");
-      expect(body).toHaveProperty("code", "UNAUTHORIZED");
+      expect(body).toHaveProperty("code", "AUTH_REQUIRED");
       expect(body).toHaveProperty("guidance");
       expect(body).not.toHaveProperty("error");
       expect(body).not.toHaveProperty("stack");
@@ -294,14 +296,20 @@ describe("Conflict Detection API Route Stabilization", () => {
     });
 
     it("returns valid typed payload for inventory conflicts", async () => {
-      mockQueryRaw.mockResolvedValueOnce([
+      // Inventory detector uses Prisma ORM (inventoryAlert + inventoryItem), not $queryRaw
+      mockInventoryAlertFindMany.mockResolvedValueOnce([
         {
-          alert_id: "alert-1",
-          item_id: "item-1",
-          item_name: "Flour",
-          alert_type: "critical",
-          threshold_value: "10",
+          id: "alert-1",
+          itemId: "item-1",
+          alertType: "critical",
+          threshold_value: BigInt(10),
           triggered_at: new Date("2026-02-20"),
+        },
+      ]);
+      mockInventoryItemFindMany.mockResolvedValueOnce([
+        {
+          id: "item-1",
+          name: "Flour",
         },
       ]);
       mockQueryRaw.mockResolvedValue([]);
@@ -785,7 +793,10 @@ describe("Conflict Detection API Route Stabilization", () => {
     });
 
     it("correctly counts conflicts by type", async () => {
-      // 2 scheduling conflicts
+      mockAuth.mockResolvedValue({ orgId: validOrgId, userId: "user_123" } as never);
+      mockGetTenantIdForOrg.mockResolvedValue(validTenantId);
+
+      // 2 scheduling conflicts (uses $queryRaw)
       mockQueryRaw.mockResolvedValueOnce([
         {
           employee_id: "emp-1",
@@ -800,19 +811,25 @@ describe("Conflict Detection API Route Stabilization", () => {
           shift_date: new Date("2026-02-21"),
         },
       ]);
-      // 1 inventory conflict
-      mockQueryRaw.mockResolvedValueOnce([
+      // Other $queryRaw queries return empty
+      mockQueryRaw.mockResolvedValue([]);
+
+      // 1 inventory conflict (uses Prisma ORM: inventoryAlert + inventoryItem)
+      mockInventoryAlertFindMany.mockResolvedValueOnce([
         {
-          alert_id: "alert-1",
-          item_id: "item-1",
-          item_name: "Flour",
-          alert_type: "critical",
-          threshold_value: "10",
+          id: "alert-1",
+          itemId: "item-1",
+          alertType: "critical",
+          threshold_value: BigInt(10),
           triggered_at: new Date("2026-02-20"),
         },
       ]);
-      // Other queries return empty
-      mockQueryRaw.mockResolvedValue([]);
+      mockInventoryItemFindMany.mockResolvedValueOnce([
+        {
+          id: "item-1",
+          name: "Flour",
+        },
+      ]);
 
       const request = new Request("http://localhost/api/conflicts/detect", {
         method: "POST",
@@ -849,6 +866,9 @@ describe("Conflict Detection API Route Stabilization", () => {
       ]);
       mockQueryRaw.mockResolvedValue([]);
       mockPrepTaskFindMany.mockResolvedValue([]);
+      // Inventory mocks return empty to avoid warnings
+      mockInventoryAlertFindMany.mockResolvedValue([]);
+      mockInventoryItemFindMany.mockResolvedValue([]);
 
       const request = new Request("http://localhost/api/conflicts/detect", {
         method: "POST",
