@@ -14,14 +14,35 @@ export default defineConfig({
     exclude: ["**/e2e/**", "**/node_modules/**"],
   },
   resolve: {
-    alias: {
-      "server-only": resolve(__dirname, "test/stubs/server-only.ts"),
-      "@testing-library/jest-dom/vitest": resolve(
-        __dirname,
-        "test/stubs/jest-dom.ts"
-      ),
-      "@/app": resolve(__dirname, "apps/app/app"),
-    },
+    alias: [
+      // Exact match aliases for apps/api when running tests from root
+      // Must come before the generic @/app pattern
+      {
+        find: /^@\/lib\/manifest-runtime$/,
+        replacement: resolve(__dirname, "apps/api/lib/manifest-runtime"),
+      },
+      {
+        find: /^@\/app\/lib\/tenant$/,
+        replacement: resolve(__dirname, "apps/api/app/lib/tenant"),
+      },
+      {
+        find: /^@\/app\/api\/(.*)$/,
+        replacement: resolve(__dirname, "apps/api/app/api/$1"),
+      },
+      // Generic aliases
+      {
+        find: "server-only",
+        replacement: resolve(__dirname, "test/stubs/server-only.ts"),
+      },
+      {
+        find: "@testing-library/jest-dom/vitest",
+        replacement: resolve(__dirname, "test/stubs/jest-dom.ts"),
+      },
+      {
+        find: "@/app",
+        replacement: resolve(__dirname, "apps/app/app"),
+      },
+    ],
   },
   projects: [
     {
