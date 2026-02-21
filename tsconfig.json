@@ -18,5 +18,7 @@
     "strict": true,
     "target": "ES2022",
     "strictNullChecks": true
-  }
+  },
+  "include": ["scripts/**/*.ts"],
+  "exclude": ["apps", "packages", "archive", "node_modules"]
 }

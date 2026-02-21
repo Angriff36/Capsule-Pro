@@ -9,6 +9,7 @@
 import { auth } from "@repo/auth/server";
 import type { Prisma, Proposal } from "@repo/database";
 import { database } from "@repo/database";
+import { ProposalTemplate, resend } from "@repo/email";
 import { revalidatePath } from "next/cache";
 import { invariant } from "@/app/lib/invariant";
 import { getTenantId } from "@/app/lib/tenant";
@@ -25,6 +26,7 @@ export interface ProposalFilters {
 }
 
 export interface CreateProposalInput {
+  templateId?: string | null;
   clientId?: string | null;
   leadId?: string | null;
   eventId?: string | null;
@@ -202,6 +204,57 @@ export async function createProposal(input: CreateProposalInput) {
     "At least one of clientId, leadId, or eventId must be provided"
   );
 
+  // Fetch template if provided and apply defaults
+  let templateDefaults: {
+    taxRate?: number;
+    termsAndConditions?: string;
+    notes?: string;
+    lineItems?: CreateLineItemInput[];
+  } = {};
+
+  if (input.templateId) {
+    const template = await database.proposalTemplate.findFirst({
+      where: {
+        AND: [{ tenantId }, { id: input.templateId }, { deletedAt: null }],
+      },
+    });
+
+    if (template) {
+      const templateLineItems = template.defaultLineItems as Array<{
+        sortOrder?: number;
+        itemType: string;
+        category: string;
+        description: string;
+        quantity: number;
+        unitOfMeasure?: string;
+        unitPrice: number;
+        notes?: string;
+      }>;
+
+      templateDefaults = {
+        taxRate: template.defaultTaxRate?.toNumber() ?? undefined,
+        termsAndConditions: template.defaultTerms ?? undefined,
+        notes: template.defaultNotes ?? undefined,
+        lineItems: templateLineItems.map((item) => ({
+          sortOrder: item.sortOrder ?? 0,
+          itemType: item.itemType,
+          description: item.description,
+          quantity: item.quantity,
+          unitPrice: item.unitPrice,
+          notes: item.notes,
+        })),
+      };
+    }
+  }
+
+  // Apply template defaults where input values are not provided
+  const effectiveTaxRate = input.taxRate ?? templateDefaults.taxRate ?? 0;
+  const effectiveTerms =
+    input.termsAndConditions ?? templateDefaults.termsAndConditions;
+  const effectiveNotes = input.notes ?? templateDefaults.notes;
+  const effectiveLineItems =
+    input.lineItems ?? templateDefaults.lineItems ?? [];
+
   // Generate proposal number
   const year = new Date().getFullYear();
   const count = await database.proposal.count({
@@ -220,13 +273,12 @@ export async function createProposal(input: CreateProposalInput) {
   let calculatedTax = input.taxAmount ?? 0;
   let calculatedTotal = input.total ?? 0;
 
-  if (input.lineItems && input.lineItems.length > 0) {
-    calculatedSubtotal = input.lineItems.reduce(
+  if (effectiveLineItems && effectiveLineItems.length > 0) {
+    calculatedSubtotal = effectiveLineItems.reduce(
       (sum, item) => sum + item.quantity * item.unitPrice,
       0
     );
-    const taxRate = input.taxRate ?? 0;
-    calculatedTax = calculatedSubtotal * (taxRate / 100);
+    calculatedTax = calculatedSubtotal * (effectiveTaxRate / 100);
     const discount = input.discountAmount ?? 0;
     calculatedTotal = calculatedSubtotal + calculatedTax - discount;
   }
@@ -235,6 +287,7 @@ export async function createProposal(input: CreateProposalInput) {
     data: {
       tenantId,
       proposalNumber,
+      templateId: input.templateId,
       clientId: input.clientId,
       leadId: input.leadId,
       eventId: input.eventId,
@@ -245,16 +298,35 @@ export async function createProposal(input: CreateProposalInput) {
       venueName: input.venueName?.trim() || null,
       venueAddress: input.venueAddress?.trim() || null,
       subtotal: calculatedSubtotal,
-      taxRate: input.taxRate ?? 0,
+      taxRate: effectiveTaxRate,
       taxAmount: calculatedTax,
       discountAmount: input.discountAmount ?? 0,
       total: calculatedTotal,
       status: input.status ?? "draft",
       validUntil: input.validUntil ? new Date(input.validUntil) : null,
-      notes: input.notes?.trim() || null,
-      termsAndConditions: input.termsAndConditions?.trim() || null,
+      notes: effectiveNotes?.trim() || null,
+      termsAndConditions: effectiveTerms?.trim() || null,
     },
   });
+
+  // Create line items if provided
+  if (effectiveLineItems && effectiveLineItems.length > 0) {
+    await database.proposalLineItem.createMany({
+      data: effectiveLineItems.map((item, index) => ({
+        tenantId,
+        proposalId: proposal.id,
+        itemType: item.itemType,
+        category: "general",
+        description: item.description,
+        quantity: item.quantity,
+        unitPrice: item.unitPrice,
+        total: item.quantity * item.unitPrice,
+        totalPrice: item.quantity * item.unitPrice,
+        sortOrder: item.sortOrder ?? index,
+        notes: item.notes,
+      })),
+    });
+  }
 
   revalidatePath("/crm/proposals");
 
@@ -437,25 +509,127 @@ export async function sendProposal(id: string, input: SendProposalInput = {}) {
 
   invariant(recipientEmail, "Recipient email is required");
 
-  // Update proposal status
+  // Generate a public token for the proposal (for public viewing)
+  const publicToken = crypto.randomUUID();
+
+  // Update proposal status and set public token
   const proposal = await database.proposal.update({
     where: { tenantId_id: { tenantId, id } },
     data: {
       status: "sent",
       sentAt: new Date(),
+      publicToken,
     },
   });
 
   revalidatePath("/crm/proposals");
   revalidatePath(`/crm/proposals/${id}`);
 
-  // TODO: Send email with proposal PDF
-  console.log(`Proposal ${id} would be sent to ${recipientEmail}`);
+  // Get client name for email personalization
+  let recipientName = "Valued Client";
+  if (existingProposal.clientId) {
+    const clientResult = await database.$queryRaw<
+      Array<{
+        company_name: string | null;
+        first_name: string | null;
+        last_name: string | null;
+      }>
+    >`
+      SELECT c.company_name, c.first_name, c.last_name
+      FROM tenant_crm.clients AS c
+      WHERE c.tenant_id = ${tenantId}
+        AND c.id = ${existingProposal.clientId}
+        AND c.deleted_at IS NULL
+    `;
+    const client = clientResult[0];
+    if (client) {
+      recipientName = client.first_name || client.company_name || recipientName;
+    }
+  }
+
+  // Build public proposal URL (no auth required)
+  const appUrl = process.env.APP_URL || "https://app.convoy.com";
+  const proposalUrl = `${appUrl}/view/proposal/${publicToken}`;
+
+  // Format total amount
+  const totalAmount =
+    existingProposal.total !== null
+      ? new Intl.NumberFormat("en-US", {
+          style: "currency",
+          currency: "USD",
+        }).format(Number(existingProposal.total))
+      : undefined;
+
+  // Send email using Resend
+  try {
+    await resend.emails.send({
+      from: process.env.RESEND_FROM || "noreply@convoy.com",
+      to: recipientEmail,
+      subject: `Proposal: ${existingProposal.title}`,
+      react: ProposalTemplate({
+        recipientName,
+        proposalTitle: existingProposal.title,
+        proposalUrl,
+        message: input.message,
+        totalAmount,
+      }),
+    });
+  } catch (emailError) {
+    console.error("Failed to send proposal email:", emailError);
+    // Continue with the response even if email fails
+  }
 
   return {
     success: true,
     proposal,
     sentTo: recipientEmail,
+    publicUrl: proposalUrl,
+  };
+}
+
+/**
+ * Get or generate a public link for a proposal
+ * If the proposal already has a publicToken, returns the existing link
+ * Otherwise, generates a new token and returns the new link
+ */
+export async function getProposalPublicLink(id: string) {
+  const { orgId } = await auth();
+  invariant(orgId, "Unauthorized");
+
+  const tenantId = await getTenantId();
+  invariant(id, "Proposal ID is required");
+
+  const existingProposal = await database.proposal.findFirst({
+    where: {
+      AND: [{ tenantId }, { id }, { deletedAt: null }],
+    },
+    select: {
+      id: true,
+      publicToken: true,
+      status: true,
+    },
+  });
+
+  invariant(existingProposal, "Proposal not found");
+
+  let publicToken = existingProposal.publicToken;
+
+  // Generate a new token if one doesn't exist
+  if (!publicToken) {
+    publicToken = crypto.randomUUID();
+    await database.proposal.update({
+      where: { tenantId_id: { tenantId, id } },
+      data: { publicToken },
+    });
+  }
+
+  const appUrl = process.env.APP_URL || "https://app.convoy.com";
+  const publicUrl = `${appUrl}/view/proposal/${publicToken}`;
+
+  return {
+    success: true,
+    publicUrl,
+    publicToken,
   };
 }
 

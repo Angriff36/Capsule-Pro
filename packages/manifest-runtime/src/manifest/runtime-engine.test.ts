@@ -12,38 +12,55 @@
  * - Context management
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { RuntimeEngine, EvaluationBudgetExceededError, type RuntimeContext, type RuntimeOptions, type EntityInstance } from './runtime-engine';
-import { IRCompiler } from './ir-compiler';
-import type { IR, IRExpression } from './ir';
-import { COMPILER_VERSION } from './version';
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import type { IR, IRExpression } from "./ir";
+import { IRCompiler } from "./ir-compiler";
+import {
+  type EntityInstance,
+  EvaluationBudgetExceededError,
+  type RuntimeContext,
+  RuntimeEngine,
+  type RuntimeOptions,
+} from "./runtime-engine";
+import { COMPILER_VERSION } from "./version";
 
 // Helper to compile manifest source to IR
 async function compileToIR(source: string): Promise<IR> {
   const compiler = new IRCompiler();
   const result = await compiler.compileToIR(source);
   if (!result.ir) {
-    throw new Error(`Compilation failed: ${result.diagnostics.map(d => d.message).join(', ')}`);
+    throw new Error(
+      `Compilation failed: ${result.diagnostics.map((d) => d.message).join(", ")}`
+    );
   }
   return result.ir;
 }
 
 // Simple test IR
 const simpleIR: IR = {
-  version: '1.0',
+  version: "1.0",
   provenance: {
-    contentHash: 'test-content-hash',
+    contentHash: "test-content-hash",
     compilerVersion: COMPILER_VERSION,
-    schemaVersion: '1.0',
+    schemaVersion: "1.0",
     compiledAt: new Date().toISOString(),
   },
   modules: [],
   entities: [
     {
-      name: 'User',
+      name: "User",
       properties: [
-        { name: 'name', type: { name: 'string', nullable: false }, modifiers: [], defaultValue: { kind: 'string', value: 'Anonymous' } },
-        { name: 'age', type: { name: 'number', nullable: false }, modifiers: [] },
+        {
+          name: "name",
+          type: { name: "string", nullable: false },
+          modifiers: [],
+          defaultValue: { kind: "string", value: "Anonymous" },
+        },
+        {
+          name: "age",
+          type: { name: "number", nullable: false },
+          modifiers: [],
+        },
       ],
       computedProperties: [],
       relationships: [],
@@ -58,94 +75,97 @@ const simpleIR: IR = {
   policies: [],
 };
 
-describe('RuntimeEngine', () => {
-  describe('Basic Runtime', () => {
-    it('should initialize with IR', () => {
+describe("RuntimeEngine", () => {
+  describe("Basic Runtime", () => {
+    it("should initialize with IR", () => {
       const runtime = new RuntimeEngine(simpleIR);
       expect(runtime.getIR()).toBe(simpleIR);
     });
 
-    it('should initialize with context', () => {
-      const context: RuntimeContext = { user: { id: 'user1', role: 'admin' } };
+    it("should initialize with context", () => {
+      const context: RuntimeContext = { user: { id: "user1", role: "admin" } };
       const runtime = new RuntimeEngine(simpleIR, context);
       expect(runtime.getContext()).toBe(context);
     });
 
-    it('should initialize with options', () => {
+    it("should initialize with options", () => {
       const options: RuntimeOptions = {
-        generateId: () => 'custom-id',
-        now: () => 1234567890,
+        generateId: () => "custom-id",
+        now: () => 1_234_567_890,
       };
       const runtime = new RuntimeEngine(simpleIR, {}, options);
       expect(runtime.getIR()).toBe(simpleIR);
     });
 
-    it('should get provenance from IR', () => {
+    it("should get provenance from IR", () => {
       const runtime = new RuntimeEngine(simpleIR);
       const provenance = runtime.getProvenance();
       expect(provenance).toBeDefined();
       expect(provenance?.compilerVersion).toBe(COMPILER_VERSION);
     });
 
-    it('should get entities from IR', () => {
+    it("should get entities from IR", () => {
       const runtime = new RuntimeEngine(simpleIR);
       const entities = runtime.getEntities();
       expect(entities).toHaveLength(1);
-      expect(entities[0].name).toBe('User');
+      expect(entities[0].name).toBe("User");
     });
 
-    it('should get entity by name', () => {
+    it("should get entity by name", () => {
       const runtime = new RuntimeEngine(simpleIR);
-      const entity = runtime.getEntity('User');
+      const entity = runtime.getEntity("User");
       expect(entity).toBeDefined();
-      expect(entity?.name).toBe('User');
+      expect(entity?.name).toBe("User");
     });
 
-    it('should return undefined for non-existent entity', () => {
+    it("should return undefined for non-existent entity", () => {
       const runtime = new RuntimeEngine(simpleIR);
-      const entity = runtime.getEntity('NonExistent');
+      const entity = runtime.getEntity("NonExistent");
       expect(entity).toBeUndefined();
     });
 
-    it('should get commands from IR', () => {
+    it("should get commands from IR", () => {
       const runtime = new RuntimeEngine(simpleIR);
       const commands = runtime.getCommands();
       expect(commands).toEqual([]);
     });
   });
 
-  describe('Store Initialization', () => {
-    it('should initialize memory store for entities without store config', async () => {
+  describe("Store Initialization", () => {
+    it("should initialize memory store for entities without store config", async () => {
       const runtime = new RuntimeEngine(simpleIR);
-      const store = runtime.getStore('User');
+      const store = runtime.getStore("User");
       expect(store).toBeDefined();
       // Should be able to create an instance
-      const instance = await store?.create({ name: 'Test', age: 25 });
+      const instance = await store?.create({ name: "Test", age: 25 });
       expect(instance).toBeDefined();
       expect(instance?.id).toBeDefined();
     });
 
-    it('should initialize memory store when explicitly configured', async () => {
+    it("should initialize memory store when explicitly configured", async () => {
       const irWithStore: IR = {
         ...simpleIR,
         stores: [
           {
-            entity: 'User',
-            target: 'memory',
+            entity: "User",
+            target: "memory",
             config: {},
           },
         ],
       };
       const runtime = new RuntimeEngine(irWithStore);
-      const store = runtime.getStore('User');
+      const store = runtime.getStore("User");
       expect(store).toBeDefined();
     });
 
-    it('should use custom store provider when configured', async () => {
+    it("should use custom store provider when configured", async () => {
       const mockStore = {
         getAll: async () => [],
         getById: async () => undefined,
-        create: async (data: Partial<EntityInstance>) => ({ id: 'custom-id', ...data }),
+        create: async (data: Partial<EntityInstance>) => ({
+          id: "custom-id",
+          ...data,
+        }),
         update: async () => undefined,
         delete: async () => false,
         clear: async () => {},
@@ -154,269 +174,308 @@ describe('RuntimeEngine', () => {
         storeProvider: () => mockStore,
       };
       const runtime = new RuntimeEngine(simpleIR, {}, options);
-      const store = runtime.getStore('User');
+      const store = runtime.getStore("User");
       expect(store).toBe(mockStore);
     });
 
-    it('should throw error for postgres store in browser', async () => {
+    it("should throw error for postgres store in browser", async () => {
       const irWithPostgres: IR = {
         ...simpleIR,
         stores: [
           {
-            entity: 'User',
-            target: 'postgres',
+            entity: "User",
+            target: "postgres",
             config: {},
           },
         ],
       };
-      expect(() => new RuntimeEngine(irWithPostgres)).toThrow('not available in browser environments');
+      expect(() => new RuntimeEngine(irWithPostgres)).toThrow(
+        "not available in browser environments"
+      );
     });
 
-    it('should throw error for supabase store in browser', async () => {
+    it("should throw error for supabase store in browser", async () => {
       const irWithSupabase: IR = {
         ...simpleIR,
         stores: [
           {
-            entity: 'User',
-            target: 'supabase',
+            entity: "User",
+            target: "supabase",
             config: {},
           },
         ],
       };
-      expect(() => new RuntimeEngine(irWithSupabase)).toThrow('not available in browser environments');
+      expect(() => new RuntimeEngine(irWithSupabase)).toThrow(
+        "not available in browser environments"
+      );
     });
   });
 
-  describe('Context Management', () => {
-    it('should get current context', () => {
-      const context: RuntimeContext = { user: { id: 'user1' }, env: 'test' };
+  describe("Context Management", () => {
+    it("should get current context", () => {
+      const context: RuntimeContext = { user: { id: "user1" }, env: "test" };
       const runtime = new RuntimeEngine(simpleIR, context);
       expect(runtime.getContext()).toEqual(context);
     });
 
-    it('should set partial context', () => {
-      const runtime = new RuntimeEngine(simpleIR, { user: { id: 'user1' } });
-      runtime.setContext({ env: 'test' });
+    it("should set partial context", () => {
+      const runtime = new RuntimeEngine(simpleIR, { user: { id: "user1" } });
+      runtime.setContext({ env: "test" });
       const context = runtime.getContext();
-      expect(context.user).toEqual({ id: 'user1' });
-      expect(context.env).toBe('test');
+      expect(context.user).toEqual({ id: "user1" });
+      expect(context.env).toBe("test");
     });
 
-    it('should replace entire context', () => {
-      const runtime = new RuntimeEngine(simpleIR, { user: { id: 'user1' } });
-      runtime.replaceContext({ admin: { id: 'admin1' } });
+    it("should replace entire context", () => {
+      const runtime = new RuntimeEngine(simpleIR, { user: { id: "user1" } });
+      runtime.replaceContext({ admin: { id: "admin1" } });
       const context = runtime.getContext();
       expect(context.user).toBeUndefined();
-      expect(context.admin).toEqual({ id: 'admin1' });
+      expect(context.admin).toEqual({ id: "admin1" });
     });
   });
 
-  describe('Expression Evaluation', () => {
-    it('should evaluate literal string', async () => {
+  describe("Expression Evaluation", () => {
+    it("should evaluate literal string", async () => {
       const runtime = new RuntimeEngine(simpleIR);
-      const expr: IRExpression = { kind: 'literal', value: { kind: 'string', value: 'hello' } };
+      const expr: IRExpression = {
+        kind: "literal",
+        value: { kind: "string", value: "hello" },
+      };
       const result = await runtime.evaluateExpression(expr, {});
-      expect(result).toBe('hello');
+      expect(result).toBe("hello");
     });
 
-    it('should evaluate literal number', async () => {
+    it("should evaluate literal number", async () => {
       const runtime = new RuntimeEngine(simpleIR);
-      const expr: IRExpression = { kind: 'literal', value: { kind: 'number', value: 42 } };
+      const expr: IRExpression = {
+        kind: "literal",
+        value: { kind: "number", value: 42 },
+      };
       const result = await runtime.evaluateExpression(expr, {});
       expect(result).toBe(42);
     });
 
-    it('should evaluate literal boolean true', async () => {
+    it("should evaluate literal boolean true", async () => {
       const runtime = new RuntimeEngine(simpleIR);
-      const expr: IRExpression = { kind: 'literal', value: { kind: 'boolean', value: true } };
+      const expr: IRExpression = {
+        kind: "literal",
+        value: { kind: "boolean", value: true },
+      };
       const result = await runtime.evaluateExpression(expr, {});
       expect(result).toBe(true);
     });
 
-    it('should evaluate literal boolean false', async () => {
+    it("should evaluate literal boolean false", async () => {
       const runtime = new RuntimeEngine(simpleIR);
-      const expr: IRExpression = { kind: 'literal', value: { kind: 'boolean', value: false } };
+      const expr: IRExpression = {
+        kind: "literal",
+        value: { kind: "boolean", value: false },
+      };
       const result = await runtime.evaluateExpression(expr, {});
       expect(result).toBe(false);
     });
 
-    it('should evaluate literal null', async () => {
+    it("should evaluate literal null", async () => {
       const runtime = new RuntimeEngine(simpleIR);
-      const expr: IRExpression = { kind: 'literal', value: { kind: 'null' } };
+      const expr: IRExpression = { kind: "literal", value: { kind: "null" } };
       const result = await runtime.evaluateExpression(expr, {});
       expect(result).toBe(null);
     });
 
-    it('should evaluate identifier', async () => {
+    it("should evaluate identifier", async () => {
       const runtime = new RuntimeEngine(simpleIR);
-      const expr: IRExpression = { kind: 'identifier', name: 'x' };
+      const expr: IRExpression = { kind: "identifier", name: "x" };
       const result = await runtime.evaluateExpression(expr, { x: 10 });
       expect(result).toBe(10);
     });
 
-    it('should evaluate member access', async () => {
+    it("should evaluate member access", async () => {
       const runtime = new RuntimeEngine(simpleIR);
       const expr: IRExpression = {
-        kind: 'member',
-        object: { kind: 'identifier', name: 'user' },
-        property: 'name',
+        kind: "member",
+        object: { kind: "identifier", name: "user" },
+        property: "name",
       };
-      const result = await runtime.evaluateExpression(expr, { user: { name: 'Alice' } });
-      expect(result).toBe('Alice');
+      const result = await runtime.evaluateExpression(expr, {
+        user: { name: "Alice" },
+      });
+      expect(result).toBe("Alice");
     });
 
-    it('should evaluate nested member access', async () => {
+    it("should evaluate nested member access", async () => {
       const runtime = new RuntimeEngine(simpleIR);
       const expr: IRExpression = {
-        kind: 'member',
+        kind: "member",
         object: {
-          kind: 'member',
-          object: { kind: 'identifier', name: 'data' },
-          property: 'user',
+          kind: "member",
+          object: { kind: "identifier", name: "data" },
+          property: "user",
         },
-        property: 'name',
+        property: "name",
       };
-      const result = await runtime.evaluateExpression(expr, { data: { user: { name: 'Bob' } } });
-      expect(result).toBe('Bob');
+      const result = await runtime.evaluateExpression(expr, {
+        data: { user: { name: "Bob" } },
+      });
+      expect(result).toBe("Bob");
     });
 
-    it('should evaluate binary arithmetic expression', async () => {
+    it("should evaluate binary arithmetic expression", async () => {
       const runtime = new RuntimeEngine(simpleIR);
       const expr: IRExpression = {
-        kind: 'binary',
-        operator: '+',
-        left: { kind: 'literal', value: { kind: 'number', value: 5 } },
-        right: { kind: 'literal', value: { kind: 'number', value: 3 } },
+        kind: "binary",
+        operator: "+",
+        left: { kind: "literal", value: { kind: "number", value: 5 } },
+        right: { kind: "literal", value: { kind: "number", value: 3 } },
       };
       const result = await runtime.evaluateExpression(expr, {});
       expect(result).toBe(8);
     });
 
-    it('should evaluate binary comparison expression', async () => {
+    it("should evaluate binary comparison expression", async () => {
       const runtime = new RuntimeEngine(simpleIR);
       const expr: IRExpression = {
-        kind: 'binary',
-        operator: '>',
-        left: { kind: 'literal', value: { kind: 'number', value: 5 } },
-        right: { kind: 'literal', value: { kind: 'number', value: 3 } },
+        kind: "binary",
+        operator: ">",
+        left: { kind: "literal", value: { kind: "number", value: 5 } },
+        right: { kind: "literal", value: { kind: "number", value: 3 } },
       };
       const result = await runtime.evaluateExpression(expr, {});
       expect(result).toBe(true);
     });
 
-    it('should evaluate binary logical AND expression', async () => {
+    it("should evaluate binary logical AND expression", async () => {
       const runtime = new RuntimeEngine(simpleIR);
       const expr: IRExpression = {
-        kind: 'binary',
-        operator: '&&',
-        left: { kind: 'literal', value: { kind: 'boolean', value: true } },
-        right: { kind: 'literal', value: { kind: 'boolean', value: false } },
+        kind: "binary",
+        operator: "&&",
+        left: { kind: "literal", value: { kind: "boolean", value: true } },
+        right: { kind: "literal", value: { kind: "boolean", value: false } },
       };
       const result = await runtime.evaluateExpression(expr, {});
       expect(result).toBe(false);
     });
 
-    it('should evaluate binary logical OR expression', async () => {
+    it("should evaluate binary logical OR expression", async () => {
       const runtime = new RuntimeEngine(simpleIR);
       const expr: IRExpression = {
-        kind: 'binary',
-        operator: '||',
-        left: { kind: 'literal', value: { kind: 'boolean', value: true } },
-        right: { kind: 'literal', value: { kind: 'boolean', value: false } },
+        kind: "binary",
+        operator: "||",
+        left: { kind: "literal", value: { kind: "boolean", value: true } },
+        right: { kind: "literal", value: { kind: "boolean", value: false } },
       };
       const result = await runtime.evaluateExpression(expr, {});
       expect(result).toBe(true);
     });
 
-    it('should evaluate unary NOT expression', async () => {
+    it("should evaluate unary NOT expression", async () => {
       const runtime = new RuntimeEngine(simpleIR);
       const expr: IRExpression = {
-        kind: 'unary',
-        operator: '!',
-        operand: { kind: 'literal', value: { kind: 'boolean', value: true } },
+        kind: "unary",
+        operator: "!",
+        operand: { kind: "literal", value: { kind: "boolean", value: true } },
       };
       const result = await runtime.evaluateExpression(expr, {});
       expect(result).toBe(false);
     });
 
-    it('should evaluate unary negate expression', async () => {
+    it("should evaluate unary negate expression", async () => {
       const runtime = new RuntimeEngine(simpleIR);
       const expr: IRExpression = {
-        kind: 'unary',
-        operator: '-',
-        operand: { kind: 'literal', value: { kind: 'number', value: 5 } },
+        kind: "unary",
+        operator: "-",
+        operand: { kind: "literal", value: { kind: "number", value: 5 } },
       };
       const result = await runtime.evaluateExpression(expr, {});
       expect(result).toBe(-5);
     });
 
-    it('should evaluate conditional expression', async () => {
+    it("should evaluate conditional expression", async () => {
       const runtime = new RuntimeEngine(simpleIR);
       const expr: IRExpression = {
-        kind: 'conditional',
-        condition: { kind: 'literal', value: { kind: 'boolean', value: true } },
-        consequent: { kind: 'literal', value: { kind: 'string', value: 'yes' } },
-        alternate: { kind: 'literal', value: { kind: 'string', value: 'no' } },
+        kind: "conditional",
+        condition: { kind: "literal", value: { kind: "boolean", value: true } },
+        consequent: {
+          kind: "literal",
+          value: { kind: "string", value: "yes" },
+        },
+        alternate: { kind: "literal", value: { kind: "string", value: "no" } },
       };
       const result = await runtime.evaluateExpression(expr, {});
-      expect(result).toBe('yes');
+      expect(result).toBe("yes");
     });
 
-    it('should evaluate array literal', async () => {
+    it("should evaluate array literal", async () => {
       const runtime = new RuntimeEngine(simpleIR);
       const expr: IRExpression = {
-        kind: 'array',
+        kind: "array",
         elements: [
-          { kind: 'literal', value: { kind: 'number', value: 1 } },
-          { kind: 'literal', value: { kind: 'number', value: 2 } },
-          { kind: 'literal', value: { kind: 'number', value: 3 } },
+          { kind: "literal", value: { kind: "number", value: 1 } },
+          { kind: "literal", value: { kind: "number", value: 2 } },
+          { kind: "literal", value: { kind: "number", value: 3 } },
         ],
       };
       const result = await runtime.evaluateExpression(expr, {});
       expect(result).toEqual([1, 2, 3]);
     });
 
-    it('should evaluate object literal', async () => {
+    it("should evaluate object literal", async () => {
       const runtime = new RuntimeEngine(simpleIR);
       const expr: IRExpression = {
-        kind: 'object',
+        kind: "object",
         properties: [
-          { key: 'a', value: { kind: 'literal', value: { kind: 'number', value: 1 } } },
-          { key: 'b', value: { kind: 'literal', value: { kind: 'string', value: 'hello' } } },
+          {
+            key: "a",
+            value: { kind: "literal", value: { kind: "number", value: 1 } },
+          },
+          {
+            key: "b",
+            value: {
+              kind: "literal",
+              value: { kind: "string", value: "hello" },
+            },
+          },
         ],
       };
       const result = await runtime.evaluateExpression(expr, {});
-      expect(result).toEqual({ a: 1, b: 'hello' });
+      expect(result).toEqual({ a: 1, b: "hello" });
     });
 
-    it('should evaluate function call', async () => {
+    it("should evaluate function call", async () => {
       const runtime = new RuntimeEngine(simpleIR);
       const expr: IRExpression = {
-        kind: 'call',
-        callee: { kind: 'identifier', name: 'upper' },
-        args: [{ kind: 'literal', value: { kind: 'string', value: 'hello' } }],
+        kind: "call",
+        callee: { kind: "identifier", name: "upper" },
+        args: [{ kind: "literal", value: { kind: "string", value: "hello" } }],
       };
-      const result = await runtime.evaluateExpression(expr, { upper: (s: string) => s.toUpperCase() });
-      expect(result).toBe('HELLO');
+      const result = await runtime.evaluateExpression(expr, {
+        upper: (s: string) => s.toUpperCase(),
+      });
+      expect(result).toBe("HELLO");
     });
 
-    it('should evaluate lambda expression', async () => {
+    it("should evaluate lambda expression", async () => {
       const runtime = new RuntimeEngine(simpleIR);
       const expr: IRExpression = {
-        kind: 'call',
+        kind: "call",
         callee: {
-          kind: 'lambda',
-          params: ['x'],
-          body: { kind: 'binary', operator: '*', left: { kind: 'identifier', name: 'x' }, right: { kind: 'literal', value: { kind: 'number', value: 2 } } },
+          kind: "lambda",
+          params: ["x"],
+          body: {
+            kind: "binary",
+            operator: "*",
+            left: { kind: "identifier", name: "x" },
+            right: { kind: "literal", value: { kind: "number", value: 2 } },
+          },
         },
-        args: [{ kind: 'literal', value: { kind: 'number', value: 5 } }],
+        args: [{ kind: "literal", value: { kind: "number", value: 5 } }],
       };
       const result = await runtime.evaluateExpression(expr, {});
       expect(result).toBe(10);
     });
   });
 
-  describe('CRUD Operations', () => {
+  describe("CRUD Operations", () => {
     let runtime: RuntimeEngine;
 
     beforeEach(async () => {
@@ -430,20 +489,20 @@ describe('RuntimeEngine', () => {
       runtime = new RuntimeEngine(ir);
     });
 
-    it('should create instance', async () => {
-      const instance = await runtime.createInstance('User', {
-        name: 'Alice',
-        email: 'alice@example.com',
+    it("should create instance", async () => {
+      const instance = await runtime.createInstance("User", {
+        name: "Alice",
+        email: "alice@example.com",
         age: 30,
       });
       expect(instance).toBeDefined();
-      expect(instance?.name).toBe('Alice');
-      expect(instance?.email).toBe('alice@example.com');
+      expect(instance?.name).toBe("Alice");
+      expect(instance?.email).toBe("alice@example.com");
       expect(instance?.age).toBe(30);
       expect(instance?.id).toBeDefined();
     });
 
-    it('should use default values for properties', async () => {
+    it("should use default values for properties", async () => {
       const ir = await compileToIR(`
         entity User {
           property name: string = "Anonymous"
@@ -451,61 +510,74 @@ describe('RuntimeEngine', () => {
         }
       `);
       const localRuntime = new RuntimeEngine(ir);
-      const instance = await localRuntime.createInstance('User', { age: 25 });
-      expect(instance?.name).toBe('Anonymous');
+      const instance = await localRuntime.createInstance("User", { age: 25 });
+      expect(instance?.name).toBe("Anonymous");
       expect(instance?.age).toBe(25);
     });
 
-    it('should get instance by id', async () => {
-      const created = await runtime.createInstance('User', {
-        name: 'Bob',
-        email: 'bob@example.com',
+    it("should get instance by id", async () => {
+      const created = await runtime.createInstance("User", {
+        name: "Bob",
+        email: "bob@example.com",
         age: 25,
       });
       expect(created).toBeDefined();
-      const instance = await runtime.getInstance('User', created!.id);
+      const instance = await runtime.getInstance("User", created?.id);
       expect(instance).toBeDefined();
-      expect(instance?.id).toBe(created!.id);
-      expect(instance?.name).toBe('Bob');
+      expect(instance?.id).toBe(created?.id);
+      expect(instance?.name).toBe("Bob");
     });
 
-    it('should get all instances', async () => {
-      await runtime.createInstance('User', { name: 'Alice', email: 'alice@example.com', age: 30 });
-      await runtime.createInstance('User', { name: 'Bob', email: 'bob@example.com', age: 25 });
-      const instances = await runtime.getAllInstances('User');
+    it("should get all instances", async () => {
+      await runtime.createInstance("User", {
+        name: "Alice",
+        email: "alice@example.com",
+        age: 30,
+      });
+      await runtime.createInstance("User", {
+        name: "Bob",
+        email: "bob@example.com",
+        age: 25,
+      });
+      const instances = await runtime.getAllInstances("User");
       expect(instances).toHaveLength(2);
-      expect(instances.map((i: EntityInstance) => i.name).sort()).toEqual(['Alice', 'Bob']);
+      expect(instances.map((i: EntityInstance) => i.name).sort()).toEqual([
+        "Alice",
+        "Bob",
+      ]);
     });
 
-    it('should update instance', async () => {
-      const created = await runtime.createInstance('User', {
-        name: 'Alice',
-        email: 'alice@example.com',
+    it("should update instance", async () => {
+      const created = await runtime.createInstance("User", {
+        name: "Alice",
+        email: "alice@example.com",
         age: 30,
       });
       expect(created).toBeDefined();
-      const updated = await runtime.updateInstance('User', created!.id, { age: 31 });
+      const updated = await runtime.updateInstance("User", created?.id, {
+        age: 31,
+      });
       expect(updated).toBeDefined();
       expect(updated?.age).toBe(31);
-      expect(updated?.name).toBe('Alice'); // unchanged
+      expect(updated?.name).toBe("Alice"); // unchanged
     });
 
-    it('should delete instance', async () => {
-      const created = await runtime.createInstance('User', {
-        name: 'Alice',
-        email: 'alice@example.com',
+    it("should delete instance", async () => {
+      const created = await runtime.createInstance("User", {
+        name: "Alice",
+        email: "alice@example.com",
         age: 30,
       });
       expect(created).toBeDefined();
-      const deleted = await runtime.deleteInstance('User', created!.id);
+      const deleted = await runtime.deleteInstance("User", created?.id);
       expect(deleted).toBe(true);
-      const instance = await runtime.getInstance('User', created!.id);
+      const instance = await runtime.getInstance("User", created?.id);
       expect(instance).toBeUndefined();
     });
   });
 
-  describe('Constraint Evaluation', () => {
-    it('should pass valid constraint', async () => {
+  describe("Constraint Evaluation", () => {
+    it("should pass valid constraint", async () => {
       const ir = await compileToIR(`
         entity User {
           property age: number
@@ -513,11 +585,11 @@ describe('RuntimeEngine', () => {
         }
       `);
       const runtime = new RuntimeEngine(ir);
-      const failures = await runtime.checkConstraints('User', { age: 25 });
+      const failures = await runtime.checkConstraints("User", { age: 25 });
       expect(failures).toHaveLength(0);
     });
 
-    it('should fail invalid constraint', async () => {
+    it("should fail invalid constraint", async () => {
       const ir = await compileToIR(`
         entity User {
           property age: number
@@ -525,12 +597,12 @@ describe('RuntimeEngine', () => {
         }
       `);
       const runtime = new RuntimeEngine(ir);
-      const failures = await runtime.checkConstraints('User', { age: 15 });
+      const failures = await runtime.checkConstraints("User", { age: 15 });
       expect(failures).toHaveLength(1);
-      expect(failures[0].constraintName).toBe('adult');
+      expect(failures[0].constraintName).toBe("adult");
     });
 
-    it('should check multiple constraints', async () => {
+    it("should check multiple constraints", async () => {
       const ir = await compileToIR(`
         entity User {
           property age: number
@@ -540,13 +612,16 @@ describe('RuntimeEngine', () => {
         }
       `);
       const runtime = new RuntimeEngine(ir);
-      const failures = await runtime.checkConstraints('User', { age: 15, name: null });
+      const failures = await runtime.checkConstraints("User", {
+        age: 15,
+        name: null,
+      });
       expect(failures).toHaveLength(2);
     });
   });
 
-  describe('Command Execution', () => {
-    it('should execute simple command', async () => {
+  describe("Command Execution", () => {
+    it("should execute simple command", async () => {
       const ir = await compileToIR(`
         entity User {
           property name: string
@@ -556,12 +631,12 @@ describe('RuntimeEngine', () => {
         }
       `);
       const runtime = new RuntimeEngine(ir);
-      const result = await runtime.runCommand('greet', { name: 'World' });
+      const result = await runtime.runCommand("greet", { name: "World" });
       expect(result.success).toBe(true);
-      expect(result.result).toBe('Hello, World');
+      expect(result.result).toBe("Hello, World");
     });
 
-    it('should fail command guard', async () => {
+    it("should fail command guard", async () => {
       const ir = await compileToIR(`
         entity User {
           property name: string
@@ -572,12 +647,12 @@ describe('RuntimeEngine', () => {
         }
       `);
       const runtime = new RuntimeEngine(ir);
-      const result = await runtime.runCommand('updateName', { newName: '' });
+      const result = await runtime.runCommand("updateName", { newName: "" });
       expect(result.success).toBe(false);
       expect(result.guardFailure).toBeDefined();
     });
 
-    it('should emit events from command', async () => {
+    it("should emit events from command", async () => {
       const ir = await compileToIR(`
         entity User {
           property name: string
@@ -589,15 +664,15 @@ describe('RuntimeEngine', () => {
         }
       `);
       const runtime = new RuntimeEngine(ir);
-      const result = await runtime.runCommand('createUser', { name: 'Alice' });
+      const result = await runtime.runCommand("createUser", { name: "Alice" });
       expect(result.success).toBe(true);
       expect(result.emittedEvents).toHaveLength(1);
-      expect(result.emittedEvents[0].name).toBe('UserCreated');
+      expect(result.emittedEvents[0].name).toBe("UserCreated");
     });
   });
 
-  describe('Event System', () => {
-    it('should register event listener', async () => {
+  describe("Event System", () => {
+    it("should register event listener", async () => {
       const ir = await compileToIR(`
         entity User {
           property name: string
@@ -612,18 +687,18 @@ describe('RuntimeEngine', () => {
       const listener = vi.fn();
       runtime.onEvent(listener);
 
-      await runtime.runCommand('createUser', { name: 'Alice' });
+      await runtime.runCommand("createUser", { name: "Alice" });
 
       expect(listener).toHaveBeenCalledTimes(1);
       expect(listener).toHaveBeenCalledWith(
         expect.objectContaining({
-          name: 'UserCreated',
-          channel: 'UserCreated', // Channel defaults to event name
+          name: "UserCreated",
+          channel: "UserCreated", // Channel defaults to event name
         })
       );
     });
 
-    it('should unregister event listener', async () => {
+    it("should unregister event listener", async () => {
       const ir = await compileToIR(`
         entity User {
           property name: string
@@ -639,12 +714,12 @@ describe('RuntimeEngine', () => {
       const unregister = runtime.onEvent(listener);
       unregister();
 
-      await runtime.runCommand('createUser', { name: 'Alice' });
+      await runtime.runCommand("createUser", { name: "Alice" });
 
       expect(listener).not.toHaveBeenCalled();
     });
 
-    it('should maintain event log', async () => {
+    it("should maintain event log", async () => {
       const ir = await compileToIR(`
         entity User {
           property name: string
@@ -657,14 +732,14 @@ describe('RuntimeEngine', () => {
       `);
       const runtime = new RuntimeEngine(ir);
 
-      await runtime.runCommand('createUser', { name: 'Alice' });
-      await runtime.runCommand('createUser', { name: 'Bob' });
+      await runtime.runCommand("createUser", { name: "Alice" });
+      await runtime.runCommand("createUser", { name: "Bob" });
 
       const log = runtime.getEventLog();
       expect(log).toHaveLength(2);
     });
 
-    it('should clear event log', async () => {
+    it("should clear event log", async () => {
       const ir = await compileToIR(`
         entity User {
           property name: string
@@ -677,7 +752,7 @@ describe('RuntimeEngine', () => {
       `);
       const runtime = new RuntimeEngine(ir);
 
-      await runtime.runCommand('createUser', { name: 'Alice' });
+      await runtime.runCommand("createUser", { name: "Alice" });
       expect(runtime.getEventLog()).toHaveLength(1);
 
       runtime.clearEventLog();
@@ -685,8 +760,8 @@ describe('RuntimeEngine', () => {
     });
   });
 
-  describe('Computed Properties', () => {
-    it('should evaluate computed property', async () => {
+  describe("Computed Properties", () => {
+    it("should evaluate computed property", async () => {
       const ir = await compileToIR(`
         entity User {
           property firstName: string
@@ -695,35 +770,44 @@ describe('RuntimeEngine', () => {
         }
       `);
       const runtime = new RuntimeEngine(ir);
-      const instance = await runtime.createInstance('User', {
-        firstName: 'John',
-        lastName: 'Doe',
+      const instance = await runtime.createInstance("User", {
+        firstName: "John",
+        lastName: "Doe",
       });
       expect(instance).toBeDefined();
 
-      const fullName = await runtime.evaluateComputed('User', instance!.id, 'fullName');
-      expect(fullName).toBe('John Doe');
+      const fullName = await runtime.evaluateComputed(
+        "User",
+        instance?.id,
+        "fullName"
+      );
+      expect(fullName).toBe("John Doe");
     });
   });
 
-  describe('Provenance Verification', () => {
+  describe("Provenance Verification", () => {
     // Helper: compile a simple manifest to get IR with valid irHash from the compiler.
     // Uses useCache: false to avoid shared-object mutation between tests
     // (e.g., delete irHash in one test corrupting the cached object for later tests).
     async function compileValidIR(): Promise<IR> {
       const compiler = new IRCompiler();
-      const result = await compiler.compileToIR(`
+      const result = await compiler.compileToIR(
+        `
         entity Item {
           property name: string
         }
-      `, { useCache: false });
+      `,
+        { useCache: false }
+      );
       if (!result.ir) {
-        throw new Error(`Compilation failed: ${result.diagnostics.map(d => d.message).join(', ')}`);
+        throw new Error(
+          `Compilation failed: ${result.diagnostics.map((d) => d.message).join(", ")}`
+        );
       }
       return result.ir;
     }
 
-    it('should include provenance in emitted events', async () => {
+    it("should include provenance in emitted events", async () => {
       const ir = await compileToIR(`
         entity User {
           property name: string
@@ -735,14 +819,14 @@ describe('RuntimeEngine', () => {
         }
       `);
       const runtime = new RuntimeEngine(ir);
-      const result = await runtime.runCommand('createUser', { name: 'Alice' });
+      const result = await runtime.runCommand("createUser", { name: "Alice" });
 
       expect(result.emittedEvents[0].provenance).toBeDefined();
       expect(result.emittedEvents[0].provenance?.compilerVersion).toBeDefined();
       expect(result.emittedEvents[0].provenance?.contentHash).toBeDefined();
     });
 
-    it('verifyIRHash() returns true for compiler-produced IR with valid irHash', async () => {
+    it("verifyIRHash() returns true for compiler-produced IR with valid irHash", async () => {
       // Compiler sets irHash via computeIRHash — the runtime's verifyIRHash
       // must reproduce the same hash and confirm integrity.
       const ir = await compileValidIR();
@@ -753,7 +837,7 @@ describe('RuntimeEngine', () => {
       expect(isValid).toBe(true);
     });
 
-    it('verifyIRHash() returns false when IR has been tampered with after compilation', async () => {
+    it("verifyIRHash() returns false when IR has been tampered with after compilation", async () => {
       // Tampering: change IR content after compilation so hash no longer matches.
       // This is the core integrity guarantee — if someone modifies the IR
       // (e.g., injects a malicious entity), the hash check catches it.
@@ -763,8 +847,14 @@ describe('RuntimeEngine', () => {
 
       // Tamper: add an entity that wasn't in the original compilation
       ir.entities.push({
-        name: 'Injected',
-        properties: [{ name: 'evil', type: { name: 'string', nullable: false }, modifiers: [] }],
+        name: "Injected",
+        properties: [
+          {
+            name: "evil",
+            type: { name: "string", nullable: false },
+            modifiers: [],
+          },
+        ],
         computedProperties: [],
         relationships: [],
         commands: [],
@@ -777,17 +867,17 @@ describe('RuntimeEngine', () => {
       expect(isValid).toBe(false);
     });
 
-    it('verifyIRHash() returns false when irHash is absent from provenance', async () => {
+    it("verifyIRHash() returns false when irHash is absent from provenance", async () => {
       // If provenance exists but irHash is missing, verification cannot succeed.
       const ir = await compileValidIR();
-      delete (ir.provenance as unknown as Record<string, unknown>).irHash;
+      (ir.provenance as unknown as Record<string, unknown>).irHash = undefined;
 
       const runtime = new RuntimeEngine(ir);
       const isValid = await runtime.verifyIRHash();
       expect(isValid).toBe(false);
     });
 
-    it('verifyIRHash() accepts an external expectedHash that matches', async () => {
+    it("verifyIRHash() accepts an external expectedHash that matches", async () => {
       // Callers can supply an expected hash (e.g., from a deployment manifest)
       // instead of trusting the IR's self-reported irHash.
       const ir = await compileValidIR();
@@ -798,177 +888,213 @@ describe('RuntimeEngine', () => {
       expect(isValid).toBe(true);
     });
 
-    it('verifyIRHash() rejects an external expectedHash that does not match', async () => {
+    it("verifyIRHash() rejects an external expectedHash that does not match", async () => {
       const ir = await compileValidIR();
 
       const runtime = new RuntimeEngine(ir);
-      const isValid = await runtime.verifyIRHash('0000000000000000000000000000000000000000000000000000000000000000');
+      const isValid = await runtime.verifyIRHash(
+        "0000000000000000000000000000000000000000000000000000000000000000"
+      );
       expect(isValid).toBe(false);
     });
 
-    it('assertValidProvenance() throws when requireValidProvenance is true and IR is tampered', async () => {
+    it("assertValidProvenance() throws when requireValidProvenance is true and IR is tampered", async () => {
       // Spec: "A runtime MUST NOT silently execute IR with mismatched provenance
       // when requireValidProvenance is enabled" (manifest-vnext.md § Provenance)
       const ir = await compileValidIR();
 
       // Tamper with the IR
       ir.entities[0].properties.push({
-        name: 'injected',
-        type: { name: 'number', nullable: false },
+        name: "injected",
+        type: { name: "number", nullable: false },
         modifiers: [],
       });
 
-      const runtime = new RuntimeEngine(ir, {}, { requireValidProvenance: true });
+      const runtime = new RuntimeEngine(
+        ir,
+        {},
+        { requireValidProvenance: true }
+      );
       await expect(runtime.assertValidProvenance()).rejects.toThrow(
-        'IR provenance verification failed'
+        "IR provenance verification failed"
       );
     });
 
-    it('assertValidProvenance() does not throw when requireValidProvenance is false', async () => {
+    it("assertValidProvenance() does not throw when requireValidProvenance is false", async () => {
       // Even with tampered IR, if verification is disabled, no throw occurs.
       const ir = await compileValidIR();
       ir.entities[0].properties.push({
-        name: 'injected',
-        type: { name: 'number', nullable: false },
+        name: "injected",
+        type: { name: "number", nullable: false },
         modifiers: [],
       });
 
-      const runtime = new RuntimeEngine(ir, {}, { requireValidProvenance: false });
+      const runtime = new RuntimeEngine(
+        ir,
+        {},
+        { requireValidProvenance: false }
+      );
       // Should not throw — verification is opt-in
       await expect(runtime.assertValidProvenance()).resolves.toBeUndefined();
     });
 
-    it('assertValidProvenance() succeeds when requireValidProvenance is true and IR is valid', async () => {
+    it("assertValidProvenance() succeeds when requireValidProvenance is true and IR is valid", async () => {
       const ir = await compileValidIR();
 
-      const runtime = new RuntimeEngine(ir, {}, { requireValidProvenance: true });
+      const runtime = new RuntimeEngine(
+        ir,
+        {},
+        { requireValidProvenance: true }
+      );
       await expect(runtime.assertValidProvenance()).resolves.toBeUndefined();
     });
 
-    it('RuntimeEngine.create() returns { valid: true } for untampered compiler-produced IR', async () => {
+    it("RuntimeEngine.create() returns { valid: true } for untampered compiler-produced IR", async () => {
       // The static factory verifies provenance when requireValidProvenance is true
       const ir = await compileValidIR();
 
-      const [runtime, result] = await RuntimeEngine.create(ir, {}, { requireValidProvenance: true });
+      const [runtime, result] = await RuntimeEngine.create(
+        ir,
+        {},
+        { requireValidProvenance: true }
+      );
       expect(result.valid).toBe(true);
       expect(result.error).toBeUndefined();
       expect(runtime).toBeInstanceOf(RuntimeEngine);
     });
 
-    it('RuntimeEngine.create() returns { valid: false } for tampered IR', async () => {
+    it("RuntimeEngine.create() returns { valid: false } for tampered IR", async () => {
       const ir = await compileValidIR();
 
       // Tamper: modify a property name
-      ir.entities[0].properties[0].name = 'tampered';
+      ir.entities[0].properties[0].name = "tampered";
 
-      const [runtime, result] = await RuntimeEngine.create(ir, {}, { requireValidProvenance: true });
+      const [runtime, result] = await RuntimeEngine.create(
+        ir,
+        {},
+        { requireValidProvenance: true }
+      );
       expect(result.valid).toBe(false);
-      expect(result.error).toBe('IR hash verification failed');
+      expect(result.error).toBe("IR hash verification failed");
       // Runtime is still created (caller decides whether to use it)
       expect(runtime).toBeInstanceOf(RuntimeEngine);
     });
 
-    it('RuntimeEngine.create() skips verification when requireValidProvenance is false', async () => {
+    it("RuntimeEngine.create() skips verification when requireValidProvenance is false", async () => {
       // In development mode, verification is disabled — even tampered IR passes
       const ir = await compileValidIR();
-      ir.entities[0].properties[0].name = 'tampered';
+      ir.entities[0].properties[0].name = "tampered";
 
-      const [runtime, result] = await RuntimeEngine.create(ir, {}, { requireValidProvenance: false });
+      const [runtime, result] = await RuntimeEngine.create(
+        ir,
+        {},
+        { requireValidProvenance: false }
+      );
       expect(result.valid).toBe(true);
       expect(result.error).toBeUndefined();
       expect(runtime).toBeInstanceOf(RuntimeEngine);
     });
   });
 
-  describe('Serialization', () => {
-    it('should serialize runtime state', async () => {
+  describe("Serialization", () => {
+    it("should serialize runtime state", async () => {
       const ir = await compileToIR(`
         entity User {
           property name: string
         }
       `);
       const runtime = new RuntimeEngine(ir);
-      await runtime.createInstance('User', { name: 'Alice' });
-      await runtime.createInstance('User', { name: 'Bob' });
+      await runtime.createInstance("User", { name: "Alice" });
+      await runtime.createInstance("User", { name: "Bob" });
 
       const serialized = await runtime.serialize();
       expect(serialized.ir).toBe(ir);
       expect(serialized.stores.User).toHaveLength(2);
-      expect(serialized.stores.User.map((u: EntityInstance) => u.name).sort()).toEqual(['Alice', 'Bob']);
+      expect(
+        serialized.stores.User.map((u: EntityInstance) => u.name).sort()
+      ).toEqual(["Alice", "Bob"]);
     });
 
-    it('should restore runtime state', async () => {
+    it("should restore runtime state", async () => {
       const ir = await compileToIR(`
         entity User {
           property name: string
         }
       `);
       const runtime1 = new RuntimeEngine(ir);
-      await runtime1.createInstance('User', { name: 'Alice' });
+      await runtime1.createInstance("User", { name: "Alice" });
 
       const serialized = await runtime1.serialize();
 
       const runtime2 = new RuntimeEngine(ir);
       await runtime2.restore({ stores: serialized.stores });
 
-      const instances = await runtime2.getAllInstances('User');
+      const instances = await runtime2.getAllInstances("User");
       expect(instances).toHaveLength(1);
-      expect(instances[0].name).toBe('Alice');
+      expect(instances[0].name).toBe("Alice");
     });
   });
 
-  describe('Bounded Complexity Limits', () => {
+  describe("Bounded Complexity Limits", () => {
     // Helper: build a deeply nested binary expression tree (depth N)
     function makeNestedBinaryExpr(depth: number): IRExpression {
       if (depth <= 0) {
-        return { kind: 'literal', value: { kind: 'number', value: 1 } };
+        return { kind: "literal", value: { kind: "number", value: 1 } };
       }
       return {
-        kind: 'binary',
-        operator: '+',
+        kind: "binary",
+        operator: "+",
         left: makeNestedBinaryExpr(depth - 1),
-        right: { kind: 'literal', value: { kind: 'number', value: 1 } },
+        right: { kind: "literal", value: { kind: "number", value: 1 } },
       };
     }
 
     // Helper: build an IR with a command whose guard is a given expression
     function makeIRWithGuard(guardExpr: IRExpression): IR {
       return {
-        version: '1.0',
+        version: "1.0",
         provenance: {
-          contentHash: 'budget-test',
+          contentHash: "budget-test",
           compilerVersion: COMPILER_VERSION,
-          schemaVersion: '1.0',
+          schemaVersion: "1.0",
           compiledAt: new Date().toISOString(),
         },
         modules: [],
-        entities: [{
-          name: 'Item',
-          properties: [
-            { name: 'value', type: { name: 'number', nullable: false }, modifiers: [] },
-          ],
-          computedProperties: [],
-          relationships: [],
-          commands: ['doSomething'],
-          constraints: [],
-          policies: [],
-        }],
+        entities: [
+          {
+            name: "Item",
+            properties: [
+              {
+                name: "value",
+                type: { name: "number", nullable: false },
+                modifiers: [],
+              },
+            ],
+            computedProperties: [],
+            relationships: [],
+            commands: ["doSomething"],
+            constraints: [],
+            policies: [],
+          },
+        ],
         stores: [],
         events: [],
-        commands: [{
-          name: 'doSomething',
-          entity: 'Item',
-          params: [],
-          guards: [guardExpr],
-          actions: [],
-          emits: [],
-          constraints: [],
-        }],
+        commands: [
+          {
+            name: "doSomething",
+            entity: "Item",
+            params: [],
+            guards: [guardExpr],
+            actions: [],
+            emits: [],
+            constraints: [],
+          },
+        ],
         policies: [],
       };
     }
 
-    it('default limits (no evaluationLimits) — existing tests still pass', async () => {
+    it("default limits (no evaluationLimits) — existing tests still pass", async () => {
       const ir = await compileToIR(`
         entity Task {
           property title: string
@@ -980,53 +1106,82 @@ describe('RuntimeEngine', () => {
         }
       `);
       const runtime = new RuntimeEngine(ir, {}, {}); // No evaluationLimits
-      const result = await runtime.runCommand('doCreate', { title: 'Test', priority: 1 });
+      const result = await runtime.runCommand("doCreate", {
+        title: "Test",
+        priority: 1,
+      });
       expect(result.success).toBe(true);
     });
 
-    it('depth limit exceeded returns CommandResult failure', async () => {
+    it("depth limit exceeded returns CommandResult failure", async () => {
       const deepExpr = makeNestedBinaryExpr(10);
       const ir = makeIRWithGuard(deepExpr);
-      const runtime = new RuntimeEngine(ir, {}, {
-        evaluationLimits: { maxExpressionDepth: 5 },
-      });
-      const result = await runtime.runCommand('doSomething', {}, { entityName: 'Item' });
+      const runtime = new RuntimeEngine(
+        ir,
+        {},
+        {
+          evaluationLimits: { maxExpressionDepth: 5 },
+        }
+      );
+      const result = await runtime.runCommand(
+        "doSomething",
+        {},
+        { entityName: "Item" }
+      );
       expect(result.success).toBe(false);
-      expect(result.error).toContain('depth');
-      expect(result.error).toContain('5');
+      expect(result.error).toContain("depth");
+      expect(result.error).toContain("5");
     });
 
-    it('step limit exceeded returns CommandResult failure', async () => {
+    it("step limit exceeded returns CommandResult failure", async () => {
       // Build an expression with many steps but shallow depth:
       // binary(binary(binary(..., 1), 1), 1) — depth 1 per binary but many steps
       // Actually, a wide expression: array of many literals
       const elements: IRExpression[] = [];
       for (let i = 0; i < 60; i++) {
-        elements.push({ kind: 'literal', value: { kind: 'number', value: i } });
+        elements.push({ kind: "literal", value: { kind: "number", value: i } });
       }
-      const wideExpr: IRExpression = { kind: 'array', elements };
+      const wideExpr: IRExpression = { kind: "array", elements };
       const ir = makeIRWithGuard(wideExpr);
-      const runtime = new RuntimeEngine(ir, {}, {
-        evaluationLimits: { maxEvaluationSteps: 50 },
-      });
-      const result = await runtime.runCommand('doSomething', {}, { entityName: 'Item' });
+      const runtime = new RuntimeEngine(
+        ir,
+        {},
+        {
+          evaluationLimits: { maxEvaluationSteps: 50 },
+        }
+      );
+      const result = await runtime.runCommand(
+        "doSomething",
+        {},
+        { entityName: "Item" }
+      );
       expect(result.success).toBe(false);
-      expect(result.error).toContain('steps');
-      expect(result.error).toContain('50');
+      expect(result.error).toContain("steps");
+      expect(result.error).toContain("50");
     });
 
-    it('depth limit produces descriptive error with limit type and value', async () => {
+    it("depth limit produces descriptive error with limit type and value", async () => {
       const deepExpr = makeNestedBinaryExpr(20);
       const ir = makeIRWithGuard(deepExpr);
-      const runtime = new RuntimeEngine(ir, {}, {
-        evaluationLimits: { maxExpressionDepth: 3 },
-      });
-      const result = await runtime.runCommand('doSomething', {}, { entityName: 'Item' });
+      const runtime = new RuntimeEngine(
+        ir,
+        {},
+        {
+          evaluationLimits: { maxExpressionDepth: 3 },
+        }
+      );
+      const result = await runtime.runCommand(
+        "doSomething",
+        {},
+        { entityName: "Item" }
+      );
       expect(result.success).toBe(false);
-      expect(result.error).toBe('Evaluation budget exceeded: depth limit 3 reached');
+      expect(result.error).toBe(
+        "Evaluation budget exceeded: depth limit 3 reached"
+      );
     });
 
-    it('step counter resets between commands', async () => {
+    it("step counter resets between commands", async () => {
       const ir = await compileToIR(`
         entity Task {
           property title: string
@@ -1036,106 +1191,138 @@ describe('RuntimeEngine', () => {
           }
         }
       `);
-      const runtime = new RuntimeEngine(ir, {}, {
-        evaluationLimits: { maxEvaluationSteps: 100 },
-      });
+      const runtime = new RuntimeEngine(
+        ir,
+        {},
+        {
+          evaluationLimits: { maxEvaluationSteps: 100 },
+        }
+      );
       // First command should succeed
-      const result1 = await runtime.runCommand('doCreate', { title: 'First' });
+      const result1 = await runtime.runCommand("doCreate", { title: "First" });
       expect(result1.success).toBe(true);
       // Second command should also succeed (budget resets)
-      const result2 = await runtime.runCommand('doCreate', { title: 'Second' });
+      const result2 = await runtime.runCommand("doCreate", { title: "Second" });
       expect(result2.success).toBe(true);
     });
 
-    it('EvaluationBudgetExceededError has correct properties', () => {
-      const err = new EvaluationBudgetExceededError('depth', 64);
-      expect(err.name).toBe('EvaluationBudgetExceededError');
-      expect(err.limitType).toBe('depth');
+    it("EvaluationBudgetExceededError has correct properties", () => {
+      const err = new EvaluationBudgetExceededError("depth", 64);
+      expect(err.name).toBe("EvaluationBudgetExceededError");
+      expect(err.limitType).toBe("depth");
       expect(err.limit).toBe(64);
-      expect(err.message).toBe('Evaluation budget exceeded: depth limit 64 reached');
+      expect(err.message).toBe(
+        "Evaluation budget exceeded: depth limit 64 reached"
+      );
     });
 
-    it('checkConstraints respects evaluation limits', async () => {
+    it("checkConstraints respects evaluation limits", async () => {
       // Build an entity with a constraint that uses a deeply nested expression
       const deepExpr = makeNestedBinaryExpr(10);
       const ir: IR = {
-        version: '1.0',
+        version: "1.0",
         provenance: {
-          contentHash: 'constraint-budget-test',
+          contentHash: "constraint-budget-test",
           compilerVersion: COMPILER_VERSION,
-          schemaVersion: '1.0',
+          schemaVersion: "1.0",
           compiledAt: new Date().toISOString(),
         },
         modules: [],
-        entities: [{
-          name: 'Item',
-          properties: [
-            { name: 'value', type: { name: 'number', nullable: false }, modifiers: [] },
-          ],
-          computedProperties: [],
-          relationships: [],
-          commands: [],
-          constraints: [{
-            name: 'deepCheck',
-            code: 'deepCheck',
-            expression: deepExpr,
-            severity: 'block',
-          }],
-          policies: [],
-        }],
+        entities: [
+          {
+            name: "Item",
+            properties: [
+              {
+                name: "value",
+                type: { name: "number", nullable: false },
+                modifiers: [],
+              },
+            ],
+            computedProperties: [],
+            relationships: [],
+            commands: [],
+            constraints: [
+              {
+                name: "deepCheck",
+                code: "deepCheck",
+                expression: deepExpr,
+                severity: "block",
+              },
+            ],
+            policies: [],
+          },
+        ],
         stores: [],
         events: [],
         commands: [],
         policies: [],
       };
-      const runtime = new RuntimeEngine(ir, {}, {
-        evaluationLimits: { maxExpressionDepth: 5 },
-      });
+      const runtime = new RuntimeEngine(
+        ir,
+        {},
+        {
+          evaluationLimits: { maxExpressionDepth: 5 },
+        }
+      );
       // checkConstraints should propagate the budget error (not swallowed)
-      await expect(runtime.checkConstraints('Item', { value: 1 }))
-        .rejects.toThrow(EvaluationBudgetExceededError);
+      await expect(
+        runtime.checkConstraints("Item", { value: 1 })
+      ).rejects.toThrow(EvaluationBudgetExceededError);
     });
 
-    it('evaluateComputed respects evaluation limits', async () => {
+    it("evaluateComputed respects evaluation limits", async () => {
       const deepExpr = makeNestedBinaryExpr(10);
       const ir: IR = {
-        version: '1.0',
+        version: "1.0",
         provenance: {
-          contentHash: 'computed-budget-test',
+          contentHash: "computed-budget-test",
           compilerVersion: COMPILER_VERSION,
-          schemaVersion: '1.0',
+          schemaVersion: "1.0",
           compiledAt: new Date().toISOString(),
         },
         modules: [],
-        entities: [{
-          name: 'Item',
-          properties: [
-            { name: 'value', type: { name: 'number', nullable: false }, modifiers: [] },
-          ],
-          computedProperties: [{
-            name: 'deepValue',
-            expression: deepExpr,
-            type: { name: 'number', nullable: false },
-          }],
-          relationships: [],
-          commands: [],
-          constraints: [],
-          policies: [],
-        }],
+        entities: [
+          {
+            name: "Item",
+            properties: [
+              {
+                name: "value",
+                type: { name: "number", nullable: false },
+                modifiers: [],
+              },
+            ],
+            computedProperties: [
+              {
+                name: "deepValue",
+                expression: deepExpr,
+                type: { name: "number", nullable: false },
+              },
+            ],
+            relationships: [],
+            commands: [],
+            constraints: [],
+            policies: [],
+          },
+        ],
         stores: [],
         events: [],
         commands: [],
         policies: [],
       };
-      const runtime = new RuntimeEngine(ir, {}, {
-        evaluationLimits: { maxExpressionDepth: 5 },
-      });
+      const runtime = new RuntimeEngine(
+        ir,
+        {},
+        {
+          evaluationLimits: { maxExpressionDepth: 5 },
+        }
+      );
       // Create an instance first
-      const instance = await runtime.createInstance('Item', { value: 42 });
+      const instance = await runtime.createInstance("Item", { value: 42 });
       expect(instance).toBeDefined();
       // evaluateComputed should propagate the budget error
-      await expect(runtime.evaluateComputed('Item', instance!.id, 'deepValue'))
-        .rejects.toThrow(EvaluationBudgetExceededError);
+      await expect(
+        runtime.evaluateComputed("Item", instance?.id, "deepValue")
+      ).rejects.toThrow(EvaluationBudgetExceededError);
     });
   });
 });

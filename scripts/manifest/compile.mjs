@@ -10,11 +10,14 @@
  * All 6 manifests are compiled and merged into packages/manifest-ir/ir/kitchen/kitchen.ir.json
  */
 
-import { readdirSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { compileToIR } from "@manifest/runtime/ir-compiler";
 
-const MANIFESTS_DIR = join(process.cwd(), "packages/manifest-adapters/manifests");
+const MANIFESTS_DIR = join(
+  process.cwd(),
+  "packages/manifest-adapters/manifests"
+);
 const OUTPUT_DIR = join(process.cwd(), "packages/manifest-ir/ir/kitchen");
 const OUTPUT_FILE = join(OUTPUT_DIR, "kitchen.ir.json");
 
@@ -28,6 +31,7 @@ const OUTPUT_FILE = join(OUTPUT_DIR, "kitchen.ir.json");
  * - Events: unique by channel (not name)
  * - Policies: globally unique by name
  */
+// biome-ignore lint/complexity/noExcessiveCognitiveComplexity: Validation function with multiple collection types
 function validateNoDuplicates(compiledIRs, manifestFiles) {
   const errors = [];
 
@@ -42,18 +46,22 @@ function validateNoDuplicates(compiledIRs, manifestFiles) {
     const ir = compiledIRs[i];
     const sourceFile = manifestFiles[i];
 
-    for (const entity of (ir.entities || [])) {
+    for (const entity of ir.entities || []) {
       entities.push({ name: entity.name, source: sourceFile });
     }
-    for (const command of (ir.commands || [])) {
+    for (const command of ir.commands || []) {
       // Commands are scoped to entity: (entity, name) is the identity
-      commands.push({ name: command.name, entity: command.entity, source: sourceFile });
+      commands.push({
+        name: command.name,
+        entity: command.entity,
+        source: sourceFile,
+      });
     }
-    for (const event of (ir.events || [])) {
+    for (const event of ir.events || []) {
       // Events are identified by channel, not name
       events.push({ channel: event.channel, source: sourceFile });
     }
-    for (const policy of (ir.policies || [])) {
+    for (const policy of ir.policies || []) {
       policies.push({ name: policy.name, source: sourceFile });
     }
   }
@@ -69,7 +77,9 @@ function validateNoDuplicates(compiledIRs, manifestFiles) {
 
   for (const [name, sources] of entityNames) {
     if (sources.length > 1) {
-      errors.push(`Duplicate entity "${name}" found in:\n${sources.map(s => `  - ${s}`).join('\n')}`);
+      errors.push(
+        `Duplicate entity "${name}" found in:\n${sources.map((s) => `  - ${s}`).join("\n")}`
+      );
     }
   }
 
@@ -85,8 +95,10 @@ function validateNoDuplicates(compiledIRs, manifestFiles) {
 
   for (const [key, sources] of commandKeys) {
     if (sources.length > 1) {
-      const [entity, name] = key.split('.');
-      errors.push(`Duplicate command "${entity}.${name}" found in:\n${sources.map(s => `  - ${s}`).join('\n')}`);
+      const [entity, name] = key.split(".");
+      errors.push(
+        `Duplicate command "${entity}.${name}" found in:\n${sources.map((s) => `  - ${s}`).join("\n")}`
+      );
     }
   }
 
@@ -101,7 +113,9 @@ function validateNoDuplicates(compiledIRs, manifestFiles) {
 
   for (const [channel, sources] of eventChannels) {
     if (sources.length > 1) {
-      errors.push(`Duplicate event channel "${channel}" found in:\n${sources.map(s => `  - ${s}`).join('\n')}`);
+      errors.push(
+        `Duplicate event channel "${channel}" found in:\n${sources.map((s) => `  - ${s}`).join("\n")}`
+      );
     }
   }
 
@@ -116,7 +130,9 @@ function validateNoDuplicates(compiledIRs, manifestFiles) {
 
   for (const [name, sources] of policyNames) {
     if (sources.length > 1) {
-      errors.push(`Duplicate policy "${name}" found in:\n${sources.map(s => `  - ${s}`).join('\n')}`);
+      errors.push(
+        `Duplicate policy "${name}" found in:\n${sources.map((s) => `  - ${s}`).join("\n")}`
+      );
     }
   }
 
@@ -163,8 +179,12 @@ async function compileMergedManifests() {
     for (const error of errors) {
       console.error(`  ${error}`);
     }
-    console.error("[manifest/compile] Cannot write combined.ir.json with duplicate names.");
-    console.error("[manifest/compile] Please resolve duplicates by renaming or consolidating conflicting definitions.");
+    console.error(
+      "[manifest/compile] Cannot write combined.ir.json with duplicate names."
+    );
+    console.error(
+      "[manifest/compile] Please resolve duplicates by renaming or consolidating conflicting definitions."
+    );
     process.exit(1);
   }
 
@@ -187,7 +207,9 @@ async function compileMergedManifests() {
     policies: compiledIRs.flatMap((ir) => ir.policies || []),
   };
 
-  console.log(`[manifest/compile] Merged IR: ${mergedIR.entities.length} entities, ${mergedIR.commands.length} commands, ${mergedIR.events.length} events`);
+  console.log(
+    `[manifest/compile] Merged IR: ${mergedIR.entities.length} entities, ${mergedIR.commands.length} commands, ${mergedIR.events.length} events`
+  );
 
   // Write merged IR
   writeFileSync(OUTPUT_FILE, JSON.stringify(mergedIR, null, 2));

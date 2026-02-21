@@ -37,7 +37,9 @@ const entityTypeLinkLabels: Partial<Record<EntityType, string>> = {
 
 /** Format a value for display in the key-value list */
 function formatValue(value: unknown): string {
-  if (value == null) return "N/A";
+  if (value == null) {
+    return "N/A";
+  }
   if (value instanceof Date) {
     return new Intl.DateTimeFormat("en-US", {
       month: "long",
@@ -108,10 +110,17 @@ function extractFields(
   const fields: Array<{ label: string; value: string }> = [];
 
   for (const [key, value] of Object.entries(data)) {
-    if (excludeKeys.has(key)) continue;
+    if (excludeKeys.has(key)) {
+      continue;
+    }
 
     // Skip nested objects (like latestVersion) — flatten them instead
-    if (value != null && typeof value === "object" && !Array.isArray(value) && !(value instanceof Date)) {
+    if (
+      value != null &&
+      typeof value === "object" &&
+      !Array.isArray(value) &&
+      !(value instanceof Date)
+    ) {
       for (const [nestedKey, nestedValue] of Object.entries(
         value as Record<string, unknown>
       )) {
@@ -136,7 +145,9 @@ export function GenericDetail({ entity }: GenericDetailProps) {
   const typeLabel = ENTITY_TYPE_LABELS[entity.type];
   const linkPath = entityTypeLinks[entity.type];
   const linkLabel = entityTypeLinkLabels[entity.type] ?? "Open Full Page";
-  const fields = extractFields(entity.data as unknown as Record<string, unknown>);
+  const fields = extractFields(
+    entity.data as unknown as Record<string, unknown>
+  );
 
   return (
     <div className="space-y-4">

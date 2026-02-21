@@ -1,3 +1,10 @@
 {
-  "ignoreCommand": "exit 0"
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "ignoreCommand": "exit 0",
+  "crons": [
+    {
+      "path": "/api/sentry-fixer/process",
+      "schedule": "0 0 * * *"
+    }
+  ]
 }

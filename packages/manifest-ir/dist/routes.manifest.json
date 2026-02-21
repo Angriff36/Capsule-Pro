@@ -1,0 +1,3932 @@
+{
+  "version": "1.0",
+  "generatedAt": "2026-02-16T23:26:08.904Z",
+  "routeCount": 412,
+  "routes": [
+    {
+      "path": "/api/accounting/accounts",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "accountingAccounts",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/accounting/accounts/:id",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "accountingAccounts",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/administrative/chat/threads",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "administrativeChatThreads",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/administrative/chat/threads/:threadId",
+      "methods": [
+        "PATCH"
+      ],
+      "params": [
+        "threadId"
+      ],
+      "helperName": "administrativeChatThreads",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/administrative/chat/threads/:threadId/messages",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "threadId"
+      ],
+      "helperName": "administrativeChatThreadsMessages",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/administrative/tasks",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "params": [],
+      "helperName": "administrativeTasks",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/administrative/tasks/:id",
+      "methods": [
+        "GET",
+        "PATCH",
+        "DELETE"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "administrativeTasks",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/ai/suggestions",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "aiSuggestions",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/ai/summaries/:eventId",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "eventId"
+      ],
+      "helperName": "aiSummaries",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/analytics/events/profitability",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "analyticsEventsProfitability",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/analytics/finance",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "analyticsFinance",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/analytics/kitchen",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "analyticsKitchen",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/analytics/staff/employees/:employeeId",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "employeeId"
+      ],
+      "helperName": "analyticsStaffEmployees",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/analytics/staff/summary",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "analyticsStaffSummary",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/collaboration/auth",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "collaborationAuth",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/collaboration/notifications/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "collaborationNotificationsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/collaboration/notifications/commands/mark-dismissed",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "collaborationNotificationsCommandsMarkDismissed",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/collaboration/notifications/commands/mark-read",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "collaborationNotificationsCommandsMarkRead",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/collaboration/notifications/commands/remove",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "collaborationNotificationsCommandsRemove",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/collaboration/workflows/commands/activate",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "collaborationWorkflowsCommandsActivate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/collaboration/workflows/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "collaborationWorkflowsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/collaboration/workflows/commands/deactivate",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "collaborationWorkflowsCommandsDeactivate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/collaboration/workflows/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "collaborationWorkflowsCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/command-board",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "commandBoard",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/command-board/:boardId",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "boardId"
+      ],
+      "helperName": "commandBoard",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/command-board/:boardId/cards",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "boardId"
+      ],
+      "helperName": "commandBoardCards",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/command-board/:boardId/cards/:cardId",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "boardId",
+        "cardId"
+      ],
+      "helperName": "commandBoardCards",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/command-board/:boardId/connections",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "boardId"
+      ],
+      "helperName": "commandBoardConnections",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/command-board/:boardId/connections/:connectionId",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "boardId",
+        "connectionId"
+      ],
+      "helperName": "commandBoardConnections",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/command-board/:boardId/draft",
+      "methods": [
+        "POST"
+      ],
+      "params": [
+        "boardId"
+      ],
+      "helperName": "commandBoardDraft",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/command-board/:boardId/groups",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "boardId"
+      ],
+      "helperName": "commandBoardGroups",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/command-board/:boardId/groups/:groupId",
+      "methods": [
+        "GET",
+        "PUT"
+      ],
+      "params": [
+        "boardId",
+        "groupId"
+      ],
+      "helperName": "commandBoardGroups",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/command-board/:boardId/groups/:groupId/cards",
+      "methods": [
+        "POST"
+      ],
+      "params": [
+        "boardId",
+        "groupId"
+      ],
+      "helperName": "commandBoardGroupsCards",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/command-board/:boardId/replay",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "boardId"
+      ],
+      "helperName": "commandBoardReplay",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/command-board/boards/commands/activate",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "commandBoardBoardsCommandsActivate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/command-board/boards/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "commandBoardBoardsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/command-board/boards/commands/deactivate",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "commandBoardBoardsCommandsDeactivate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/command-board/boards/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "commandBoardBoardsCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/command-board/cards/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "commandBoardCardsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/command-board/cards/commands/move",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "commandBoardCardsCommandsMove",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/command-board/cards/commands/remove",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "commandBoardCardsCommandsRemove",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/command-board/cards/commands/resize",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "commandBoardCardsCommandsResize",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/command-board/cards/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "commandBoardCardsCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/command-board/connections/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "commandBoardConnectionsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/command-board/connections/commands/remove",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "commandBoardConnectionsCommandsRemove",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/command-board/groups/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "commandBoardGroupsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/command-board/groups/commands/remove",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "commandBoardGroupsCommandsRemove",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/command-board/groups/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "commandBoardGroupsCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/command-board/layouts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "params": [],
+      "helperName": "commandBoardLayouts",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/command-board/layouts/:layoutId",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "layoutId"
+      ],
+      "helperName": "commandBoardLayouts",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/command-board/layouts/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "commandBoardLayoutsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/command-board/layouts/commands/remove",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "commandBoardLayoutsCommandsRemove",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/command-board/layouts/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "commandBoardLayoutsCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/conflicts/detect",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "conflictsDetect",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/crm/client-contacts/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "crmClientContactsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/crm/client-contacts/commands/remove",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "crmClientContactsCommandsRemove",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/crm/client-contacts/commands/set-primary",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "crmClientContactsCommandsSetPrimary",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/crm/client-contacts/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "crmClientContactsCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/crm/client-interactions/commands/complete",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "crmClientInteractionsCommandsComplete",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/crm/client-interactions/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "crmClientInteractionsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/crm/client-interactions/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "crmClientInteractionsCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/crm/client-preferences/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "crmClientPreferencesCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/crm/client-preferences/commands/remove",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "crmClientPreferencesCommandsRemove",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/crm/client-preferences/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "crmClientPreferencesCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/crm/clients",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "crmClients",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/crm/clients/:id",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "crmClients",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/crm/clients/:id/contacts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "crmClientsContacts",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/crm/clients/:id/events",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "crmClientsEvents",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/crm/clients/:id/interactions",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "crmClientsInteractions",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/crm/clients/:id/interactions/:interactionId",
+      "methods": [
+        "PUT",
+        "DELETE"
+      ],
+      "params": [
+        "id",
+        "interactionId"
+      ],
+      "helperName": "crmClientsInteractions",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/crm/clients/:id/preferences",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "crmClientsPreferences",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/crm/clients/commands/archive",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "crmClientsCommandsArchive",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/crm/clients/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "crmClientsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/crm/clients/commands/reactivate",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "crmClientsCommandsReactivate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/crm/clients/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "crmClientsCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/crm/leads/commands/archive",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "crmLeadsCommandsArchive",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/crm/leads/commands/convert-to-client",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "crmLeadsCommandsConvertToClient",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/crm/leads/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "crmLeadsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/crm/leads/commands/disqualify",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "crmLeadsCommandsDisqualify",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/crm/leads/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "crmLeadsCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/crm/proposal-line-items/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "crmProposalLineItemsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/crm/proposal-line-items/commands/remove",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "crmProposalLineItemsCommandsRemove",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/crm/proposal-line-items/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "crmProposalLineItemsCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/crm/proposals",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "crmProposals",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/crm/proposals/:id",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "crmProposals",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/crm/proposals/:id/send",
+      "methods": [
+        "POST"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "crmProposalsSend",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/crm/proposals/commands/accept",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "crmProposalsCommandsAccept",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/crm/proposals/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "crmProposalsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/crm/proposals/commands/mark-viewed",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "crmProposalsCommandsMarkViewed",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/crm/proposals/commands/reject",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "crmProposalsCommandsReject",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/crm/proposals/commands/send",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "crmProposalsCommandsSend",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/crm/proposals/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "crmProposalsCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/crm/proposals/commands/withdraw",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "crmProposalsCommandsWithdraw",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/crm/venues",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "crmVenues",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/crm/venues/:id",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "crmVenues",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/crm/venues/:id/events",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "crmVenuesEvents",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/cron/idempotency-cleanup",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "cronIdempotencyCleanup",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/events",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "events",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/events/:eventId/export/csv",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "eventId"
+      ],
+      "helperName": "eventsExportCsv",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/events/:eventId/guests",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "params": [
+        "eventId"
+      ],
+      "helperName": "eventsGuests",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/events/:eventId/warnings",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "eventId"
+      ],
+      "helperName": "eventsWarnings",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/events/allergens/check",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "eventsAllergensCheck",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/events/allergens/warnings/acknowledge",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsAllergensWarningsAcknowledge",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/events/battle-boards",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsBattleBoards",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/events/battle-boards/:boardId",
+      "methods": [
+        "GET",
+        "PUT",
+        "DELETE"
+      ],
+      "params": [
+        "boardId"
+      ],
+      "helperName": "eventsBattleBoards",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/events/battle-boards/commands/add-dish",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsBattleBoardsCommandsAddDish",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/battle-boards/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsBattleBoardsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/battle-boards/commands/finalize",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsBattleBoardsCommandsFinalize",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/battle-boards/commands/open",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsBattleBoardsCommandsOpen",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/battle-boards/commands/remove-dish",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsBattleBoardsCommandsRemoveDish",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/battle-boards/commands/start-voting",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsBattleBoardsCommandsStartVoting",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/battle-boards/commands/vote",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsBattleBoardsCommandsVote",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/budget-line-items/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsBudgetLineItemsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/budget-line-items/commands/remove",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsBudgetLineItemsCommandsRemove",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/budget-line-items/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsBudgetLineItemsCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/budgets",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "eventsBudgets",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/events/budgets/:id",
+      "methods": [
+        "GET",
+        "PUT",
+        "DELETE"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "eventsBudgets",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/events/budgets/:id/line-items",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "eventsBudgetsLineItems",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/events/budgets/:id/line-items/:lineItemId",
+      "methods": [
+        "GET",
+        "PUT",
+        "DELETE"
+      ],
+      "params": [
+        "id",
+        "lineItemId"
+      ],
+      "helperName": "eventsBudgetsLineItems",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/events/budgets/commands/approve",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsBudgetsCommandsApprove",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/budgets/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsBudgetsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/budgets/commands/finalize",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsBudgetsCommandsFinalize",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/budgets/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsBudgetsCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/catering-orders/commands/cancel",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsCateringOrdersCommandsCancel",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/catering-orders/commands/confirm",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsCateringOrdersCommandsConfirm",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/catering-orders/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsCateringOrdersCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/catering-orders/commands/mark-complete",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsCateringOrdersCommandsMarkComplete",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/catering-orders/commands/start-prep",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsCateringOrdersCommandsStartPrep",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/catering-orders/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsCateringOrdersCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/contracts",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "eventsContracts",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/events/contracts/:id",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "eventsContracts",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/events/contracts/:id/document",
+      "methods": [
+        "POST"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "eventsContractsDocument",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/events/contracts/:id/send",
+      "methods": [
+        "POST"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "eventsContractsSend",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/events/contracts/:id/signature",
+      "methods": [
+        "POST"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "eventsContractsSignature",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/events/contracts/:id/signatures",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "eventsContractsSignatures",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/events/contracts/:id/status",
+      "methods": [
+        "PATCH"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "eventsContractsStatus",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/events/contracts/expiring",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "eventsContractsExpiring",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/events/documents/parse",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "eventsDocumentsParse",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/events/event/commands/archive",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsEventCommandsArchive",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/event/commands/cancel",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsEventCommandsCancel",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/event/commands/confirm",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsEventCommandsConfirm",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/event/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsEventCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/event/commands/finalize",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsEventCommandsFinalize",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/event/commands/unfinalize",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsEventCommandsUnfinalize",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/event/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsEventCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/event/commands/update-date",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsEventCommandsUpdateDate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/event/commands/update-guest-count",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsEventCommandsUpdateGuestCount",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/event/commands/update-location",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsEventCommandsUpdateLocation",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/export/csv",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "eventsExportCsv",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/events/guests/:guestId",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "guestId"
+      ],
+      "helperName": "eventsGuests",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/events/import/server-to-server",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "eventsImportServerToServer",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/events/imports/:importId",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "importId"
+      ],
+      "helperName": "eventsImports",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/events/profitability/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsProfitabilityCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/profitability/commands/recalculate",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsProfitabilityCommandsRecalculate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/profitability/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsProfitabilityCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/reports",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsReports",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/events/reports/:reportId",
+      "methods": [
+        "GET",
+        "PUT",
+        "DELETE"
+      ],
+      "params": [
+        "reportId"
+      ],
+      "helperName": "eventsReports",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/events/reports/commands/approve",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsReportsCommandsApprove",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/reports/commands/complete",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsReportsCommandsComplete",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/reports/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsReportsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/reports/commands/submit",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsReportsCommandsSubmit",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/summaries/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsSummariesCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/summaries/commands/refresh",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsSummariesCommandsRefresh",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/events/summaries/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "eventsSummariesCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/inventory/alerts/subscribe",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "inventoryAlertsSubscribe",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/inventory/cycle-count/audit-logs",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "inventoryCycleCountAuditLogs",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/inventory/cycle-count/records/:id",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "inventoryCycleCountRecords",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/inventory/cycle-count/records/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "inventoryCycleCountRecordsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/inventory/cycle-count/records/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "inventoryCycleCountRecordsCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/inventory/cycle-count/records/commands/verify",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "inventoryCycleCountRecordsCommandsVerify",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/inventory/cycle-count/sessions",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "inventoryCycleCountSessions",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/inventory/cycle-count/sessions/:sessionId",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "sessionId"
+      ],
+      "helperName": "inventoryCycleCountSessions",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/inventory/cycle-count/sessions/:sessionId/finalize",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "sessionId"
+      ],
+      "helperName": "inventoryCycleCountSessionsFinalize",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/inventory/cycle-count/sessions/:sessionId/records",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "sessionId"
+      ],
+      "helperName": "inventoryCycleCountSessionsRecords",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/inventory/cycle-count/sessions/:sessionId/variance-reports",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "sessionId"
+      ],
+      "helperName": "inventoryCycleCountSessionsVarianceReports",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/inventory/cycle-count/sessions/commands/cancel",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "inventoryCycleCountSessionsCommandsCancel",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/inventory/cycle-count/sessions/commands/complete",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "inventoryCycleCountSessionsCommandsComplete",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/inventory/cycle-count/sessions/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "inventoryCycleCountSessionsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/inventory/cycle-count/sessions/commands/finalize",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "inventoryCycleCountSessionsCommandsFinalize",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/inventory/cycle-count/sessions/commands/start",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "inventoryCycleCountSessionsCommandsStart",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/inventory/cycle-count/variance-reports/commands/approve",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "inventoryCycleCountVarianceReportsCommandsApprove",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/inventory/cycle-count/variance-reports/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "inventoryCycleCountVarianceReportsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/inventory/cycle-count/variance-reports/commands/review",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "inventoryCycleCountVarianceReportsCommandsReview",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/inventory/forecasts",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "inventoryForecasts",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/inventory/forecasts/alerts",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "inventoryForecastsAlerts",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/inventory/forecasts/batch",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "inventoryForecastsBatch",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/inventory/items",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "inventoryItems",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/inventory/items/:id",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "inventoryItems",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/inventory/purchase-order-items/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "inventoryPurchaseOrderItemsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/inventory/purchase-order-items/commands/remove",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "inventoryPurchaseOrderItemsCommandsRemove",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/inventory/purchase-order-items/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "inventoryPurchaseOrderItemsCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/inventory/purchase-orders",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "inventoryPurchaseOrders",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/inventory/purchase-orders/:id",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "inventoryPurchaseOrders",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/inventory/purchase-orders/:id/complete",
+      "methods": [
+        "POST"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "inventoryPurchaseOrdersComplete",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/inventory/purchase-orders/:id/items/:itemId/quality",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "id",
+        "itemId"
+      ],
+      "helperName": "inventoryPurchaseOrdersItemsQuality",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/inventory/purchase-orders/:id/items/:itemId/quantity",
+      "methods": [
+        "PUT"
+      ],
+      "params": [
+        "id",
+        "itemId"
+      ],
+      "helperName": "inventoryPurchaseOrdersItemsQuantity",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/inventory/purchase-orders/commands/approve",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "inventoryPurchaseOrdersCommandsApprove",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/inventory/purchase-orders/commands/cancel",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "inventoryPurchaseOrdersCommandsCancel",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/inventory/purchase-orders/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "inventoryPurchaseOrdersCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/inventory/purchase-orders/commands/mark-ordered",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "inventoryPurchaseOrdersCommandsMarkOrdered",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/inventory/purchase-orders/commands/mark-received",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "inventoryPurchaseOrdersCommandsMarkReceived",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/inventory/purchase-orders/commands/reject",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "inventoryPurchaseOrdersCommandsReject",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/inventory/purchase-orders/commands/submit",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "inventoryPurchaseOrdersCommandsSubmit",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/inventory/reorder-suggestions",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "params": [],
+      "helperName": "inventoryReorderSuggestions",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/inventory/stock-levels",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "inventoryStockLevels",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/inventory/stock-levels/adjust",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "inventoryStockLevelsAdjust",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/inventory/stock-levels/locations",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "inventoryStockLevelsLocations",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/inventory/stock-levels/transactions",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "inventoryStockLevelsTransactions",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/inventory/suppliers/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "inventorySuppliersCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/inventory/suppliers/commands/deactivate",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "inventorySuppliersCommandsDeactivate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/inventory/suppliers/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "inventorySuppliersCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/inventory/transactions/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "inventoryTransactionsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/ai/bulk-generate/prep-tasks",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenAiBulkGeneratePrepTasks",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/ai/bulk-generate/prep-tasks/save",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenAiBulkGeneratePrepTasksSave",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/allergens/detect-conflicts",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenAllergensDetectConflicts",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/allergens/update-dish",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenAllergensUpdateDish",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/allergens/warnings",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenAllergensWarnings",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/containers/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenContainersCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/containers/commands/deactivate",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenContainersCommandsDeactivate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/containers/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenContainersCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/dish/list",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenDishList",
+      "source": "manifest-projection"
+    },
+    {
+      "path": "/api/kitchen/dishes",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenDishes",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/dishes/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenDishesCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/dishes/commands/update-lead-time",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenDishesCommandsUpdateLeadTime",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/dishes/commands/update-pricing",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenDishesCommandsUpdatePricing",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/ingredient/list",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenIngredientList",
+      "source": "manifest-projection"
+    },
+    {
+      "path": "/api/kitchen/ingredients",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenIngredients",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/ingredients/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenIngredientsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/ingredients/commands/update-allergens",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenIngredientsCommandsUpdateAllergens",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/inventory/commands/adjust",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenInventoryCommandsAdjust",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/inventory/commands/consume",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenInventoryCommandsConsume",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/inventory/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenInventoryCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/inventory/commands/release-reservation",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenInventoryCommandsReleaseReservation",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/inventory/commands/reserve",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenInventoryCommandsReserve",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/inventory/commands/restock",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenInventoryCommandsRestock",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/inventory/commands/waste",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenInventoryCommandsWaste",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/inventoryitem/list",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenInventoryitemList",
+      "source": "manifest-projection"
+    },
+    {
+      "path": "/api/kitchen/kitchen-tasks/commands/add-tag",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenKitchenTasksCommandsAddTag",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/kitchen-tasks/commands/cancel",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenKitchenTasksCommandsCancel",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/kitchen-tasks/commands/claim",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenKitchenTasksCommandsClaim",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/kitchen-tasks/commands/complete",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenKitchenTasksCommandsComplete",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/kitchen-tasks/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenKitchenTasksCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/kitchen-tasks/commands/reassign",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenKitchenTasksCommandsReassign",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/kitchen-tasks/commands/release",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenKitchenTasksCommandsRelease",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/kitchen-tasks/commands/remove-tag",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenKitchenTasksCommandsRemoveTag",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/kitchen-tasks/commands/start",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenKitchenTasksCommandsStart",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/kitchen-tasks/commands/update-complexity",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenKitchenTasksCommandsUpdateComplexity",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/kitchen-tasks/commands/update-priority",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenKitchenTasksCommandsUpdatePriority",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/manifest/dishes",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenManifestDishes",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/manifest/dishes/:dishId/pricing",
+      "methods": [
+        "PATCH"
+      ],
+      "params": [
+        "dishId"
+      ],
+      "helperName": "kitchenManifestDishesPricing",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/manifest/prep-lists",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenManifestPrepLists",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/manifest/recipes",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenManifestRecipes",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/manifest/recipes/:recipeId/activate",
+      "methods": [
+        "POST"
+      ],
+      "params": [
+        "recipeId"
+      ],
+      "helperName": "kitchenManifestRecipesActivate",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/manifest/recipes/:recipeId/deactivate",
+      "methods": [
+        "POST"
+      ],
+      "params": [
+        "recipeId"
+      ],
+      "helperName": "kitchenManifestRecipesDeactivate",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/manifest/recipes/:recipeId/metadata",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "recipeId"
+      ],
+      "helperName": "kitchenManifestRecipesMetadata",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/manifest/recipes/:recipeId/restore",
+      "methods": [
+        "POST"
+      ],
+      "params": [
+        "recipeId"
+      ],
+      "helperName": "kitchenManifestRecipesRestore",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/manifest/recipes/:recipeId/versions",
+      "methods": [
+        "POST"
+      ],
+      "params": [
+        "recipeId"
+      ],
+      "helperName": "kitchenManifestRecipesVersions",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/menu/list",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenMenuList",
+      "source": "manifest-projection"
+    },
+    {
+      "path": "/api/kitchen/menudish/list",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenMenudishList",
+      "source": "manifest-projection"
+    },
+    {
+      "path": "/api/kitchen/menus",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenMenus",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/menus/commands/activate",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenMenusCommandsActivate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/menus/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenMenusCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/menus/commands/deactivate",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenMenusCommandsDeactivate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/menus/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenMenusCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/menus/dishes/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenMenusDishesCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/overrides",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenOverrides",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/prep-comments/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepCommentsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/prep-comments/commands/resolve",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepCommentsCommandsResolve",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/prep-comments/commands/soft-delete",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepCommentsCommandsSoftDelete",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/prep-comments/commands/unresolve",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepCommentsCommandsUnresolve",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/prep-lists",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepLists",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/prep-lists/:id",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "kitchenPrepLists",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/prep-lists/autogenerate/process",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepListsAutogenerateProcess",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/prep-lists/commands/activate",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepListsCommandsActivate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/prep-lists/commands/cancel",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepListsCommandsCancel",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/prep-lists/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepListsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/prep-lists/commands/deactivate",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepListsCommandsDeactivate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/prep-lists/commands/finalize",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepListsCommandsFinalize",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/prep-lists/commands/mark-completed",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepListsCommandsMarkCompleted",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/prep-lists/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepListsCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/prep-lists/commands/update-batch-multiplier",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepListsCommandsUpdateBatchMultiplier",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/prep-lists/generate",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepListsGenerate",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/prep-lists/items/:id",
+      "methods": [
+        "PATCH"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "kitchenPrepListsItems",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/prep-lists/items/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepListsItemsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/prep-lists/items/commands/mark-completed",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepListsItemsCommandsMarkCompleted",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/prep-lists/items/commands/mark-uncompleted",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepListsItemsCommandsMarkUncompleted",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/prep-lists/items/commands/update-prep-notes",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepListsItemsCommandsUpdatePrepNotes",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/prep-lists/items/commands/update-quantity",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepListsItemsCommandsUpdateQuantity",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/prep-lists/items/commands/update-station",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepListsItemsCommandsUpdateStation",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/prep-lists/save",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepListsSave",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/prep-lists/save-db",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepListsSaveDb",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/prep-methods/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepMethodsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/prep-methods/commands/deactivate",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepMethodsCommandsDeactivate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/prep-methods/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepMethodsCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/prep-tasks",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepTasks",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/prep-tasks/commands/cancel",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepTasksCommandsCancel",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/prep-tasks/commands/claim",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepTasksCommandsClaim",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/prep-tasks/commands/complete",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepTasksCommandsComplete",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/prep-tasks/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepTasksCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/prep-tasks/commands/reassign",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepTasksCommandsReassign",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/prep-tasks/commands/release",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepTasksCommandsRelease",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/prep-tasks/commands/start",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepTasksCommandsStart",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/prep-tasks/commands/update-quantity",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenPrepTasksCommandsUpdateQuantity",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/preplist/list",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenPreplistList",
+      "source": "manifest-projection"
+    },
+    {
+      "path": "/api/kitchen/preplistitem/list",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenPreplistitemList",
+      "source": "manifest-projection"
+    },
+    {
+      "path": "/api/kitchen/preptask/list",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenPreptaskList",
+      "source": "manifest-projection"
+    },
+    {
+      "path": "/api/kitchen/recipe-ingredients/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenRecipeIngredientsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/recipe-ingredients/commands/update-quantity",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenRecipeIngredientsCommandsUpdateQuantity",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/recipe/list",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenRecipeList",
+      "source": "manifest-projection"
+    },
+    {
+      "path": "/api/kitchen/recipeingredient/list",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenRecipeingredientList",
+      "source": "manifest-projection"
+    },
+    {
+      "path": "/api/kitchen/recipes",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenRecipes",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/recipes/:recipeId/cost",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "recipeId"
+      ],
+      "helperName": "kitchenRecipesCost",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/recipes/:recipeId/ingredients",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "recipeId"
+      ],
+      "helperName": "kitchenRecipesIngredients",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/recipes/:recipeId/scale",
+      "methods": [
+        "POST",
+        "PATCH"
+      ],
+      "params": [
+        "recipeId"
+      ],
+      "helperName": "kitchenRecipesScale",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/recipes/:recipeId/steps",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "recipeId"
+      ],
+      "helperName": "kitchenRecipesSteps",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/recipes/:recipeId/update-budgets",
+      "methods": [
+        "POST"
+      ],
+      "params": [
+        "recipeId"
+      ],
+      "helperName": "kitchenRecipesUpdateBudgets",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/recipes/:recipeId/versions",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "recipeId"
+      ],
+      "helperName": "kitchenRecipesVersions",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/recipes/commands/activate",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenRecipesCommandsActivate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/recipes/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenRecipesCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/recipes/commands/deactivate",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenRecipesCommandsDeactivate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/recipes/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenRecipesCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/recipes/versions/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenRecipesVersionsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/recipeversion/list",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenRecipeversionList",
+      "source": "manifest-projection"
+    },
+    {
+      "path": "/api/kitchen/station/list",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenStationList",
+      "source": "manifest-projection"
+    },
+    {
+      "path": "/api/kitchen/stations",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenStations",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/stations/commands/activate",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenStationsCommandsActivate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/stations/commands/assignTask",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenStationsCommandsAssignTask",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/stations/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenStationsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/stations/commands/deactivate",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenStationsCommandsDeactivate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/stations/commands/removeTask",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenStationsCommandsRemoveTask",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/stations/commands/updateCapacity",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenStationsCommandsUpdateCapacity",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/stations/commands/updateEquipment",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenStationsCommandsUpdateEquipment",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/kitchen/tasks",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "params": [],
+      "helperName": "kitchenTasks",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/tasks/:id",
+      "methods": [
+        "PATCH"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "kitchenTasks",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/tasks/:id/claim",
+      "methods": [
+        "POST"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "kitchenTasksClaim",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/tasks/:id/claim-shadow-manifest",
+      "methods": [
+        "POST"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "kitchenTasksClaimShadowManifest",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/tasks/:id/release",
+      "methods": [
+        "POST"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "kitchenTasksRelease",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/tasks/available",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenTasksAvailable",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/tasks/my-tasks",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenTasksMyTasks",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/tasks/sync-claims",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenTasksSyncClaims",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/waste/entries",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenWasteEntries",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/waste/entries/:id",
+      "methods": [
+        "GET",
+        "PUT"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "kitchenWasteEntries",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/waste/reasons",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenWasteReasons",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/waste/reports",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenWasteReports",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/waste/trends",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenWasteTrends",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/kitchen/waste/units",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "kitchenWasteUnits",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/locations",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "locations",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/payroll/approvals",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "payrollApprovals",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/payroll/approvals/:approvalId",
+      "methods": [
+        "PUT"
+      ],
+      "params": [
+        "approvalId"
+      ],
+      "helperName": "payrollApprovals",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/payroll/approvals/history",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "payrollApprovalsHistory",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/payroll/deductions",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "payrollDeductions",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/payroll/export/quickbooks",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "payrollExportQuickbooks",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/payroll/generate",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "payrollGenerate",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/payroll/periods",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "payrollPeriods",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/payroll/reports/:periodId",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "periodId"
+      ],
+      "helperName": "payrollReports",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/payroll/runs",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "payrollRuns",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/payroll/runs/:runId",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "runId"
+      ],
+      "helperName": "payrollRuns",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/sales-reporting/generate",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "salesReportingGenerate",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/shipments",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "shipments",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/shipments/:id",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "shipments",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/shipments/:id/items",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "shipmentsItems",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/shipments/:id/items/:itemId",
+      "methods": [
+        "PUT",
+        "DELETE"
+      ],
+      "params": [
+        "id",
+        "itemId"
+      ],
+      "helperName": "shipmentsItems",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/shipments/:id/status",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "shipmentsStatus",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/shipments/shipment-items/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "shipmentsShipmentItemsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/shipments/shipment-items/commands/update-received",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "shipmentsShipmentItemsCommandsUpdateReceived",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/shipments/shipment/commands/cancel",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "shipmentsShipmentCommandsCancel",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/shipments/shipment/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "shipmentsShipmentCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/shipments/shipment/commands/mark-delivered",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "shipmentsShipmentCommandsMarkDelivered",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/shipments/shipment/commands/schedule",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "shipmentsShipmentCommandsSchedule",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/shipments/shipment/commands/ship",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "shipmentsShipmentCommandsShip",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/shipments/shipment/commands/start-preparing",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "shipmentsShipmentCommandsStartPreparing",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/shipments/shipment/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "shipmentsShipmentCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/staff/availability",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "staffAvailability",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/staff/availability/:id",
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "staffAvailability",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/staff/availability/batch",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "staffAvailabilityBatch",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/staff/availability/employees",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "staffAvailabilityEmployees",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/staff/budgets",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "params": [],
+      "helperName": "staffBudgets",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/staff/budgets/:id",
+      "methods": [
+        "GET",
+        "PUT"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "staffBudgets",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/staff/budgets/alerts",
+      "methods": [
+        "GET",
+        "POST"
+      ],
+      "params": [],
+      "helperName": "staffBudgetsAlerts",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/staff/employees",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "staffEmployees",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/staff/employees/:id",
+      "methods": [
+        "GET",
+        "PUT"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "staffEmployees",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/staff/employees/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "staffEmployeesCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/staff/employees/commands/deactivate",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "staffEmployeesCommandsDeactivate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/staff/employees/commands/terminate",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "staffEmployeesCommandsTerminate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/staff/employees/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "staffEmployeesCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/staff/employees/commands/update-role",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "staffEmployeesCommandsUpdateRole",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/staff/schedules",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "staffSchedules",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/staff/schedules/commands/close",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "staffSchedulesCommandsClose",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/staff/schedules/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "staffSchedulesCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/staff/schedules/commands/release",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "staffSchedulesCommandsRelease",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/staff/schedules/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "staffSchedulesCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/staff/shifts",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "staffShifts",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/staff/shifts/:shiftId",
+      "methods": [
+        "GET",
+        "PUT",
+        "DELETE"
+      ],
+      "params": [
+        "shiftId"
+      ],
+      "helperName": "staffShifts",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/staff/shifts/:shiftId/assignment-suggestions",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "shiftId"
+      ],
+      "helperName": "staffShiftsAssignmentSuggestions",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/staff/shifts/available-employees",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "staffShiftsAvailableEmployees",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/staff/shifts/bulk-assignment",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "staffShiftsBulkAssignment",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/staff/shifts/bulk-assignment-suggestions",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "staffShiftsBulkAssignmentSuggestions",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/staff/shifts/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "staffShiftsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/staff/shifts/commands/remove",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "staffShiftsCommandsRemove",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/staff/shifts/commands/update",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "staffShiftsCommandsUpdate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/staff/time-off/requests",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "staffTimeOffRequests",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/staff/time-off/requests/:id",
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "staffTimeOffRequests",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/timecards",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "timecards",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/timecards/:id",
+      "methods": [
+        "GET"
+      ],
+      "params": [
+        "id"
+      ],
+      "helperName": "timecards",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/timecards/bulk",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "timecardsBulk",
+      "source": "filesystem"
+    },
+    {
+      "path": "/api/timecards/edit-requests/commands/approve",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "timecardsEditRequestsCommandsApprove",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/timecards/edit-requests/commands/create",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "timecardsEditRequestsCommandsCreate",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/timecards/edit-requests/commands/reject",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "timecardsEditRequestsCommandsReject",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/timecards/entries/commands/add-entry",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "timecardsEntriesCommandsAddEntry",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/timecards/entries/commands/clock-in",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "timecardsEntriesCommandsClockIn",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/timecards/entries/commands/clock-out",
+      "methods": [
+        "POST"
+      ],
+      "params": [],
+      "helperName": "timecardsEntriesCommandsClockOut",
+      "source": "manifest-command"
+    },
+    {
+      "path": "/api/user-preferences",
+      "methods": [
+        "GET"
+      ],
+      "params": [],
+      "helperName": "userPreferences",
+      "source": "filesystem"
+    }
+  ]
+}

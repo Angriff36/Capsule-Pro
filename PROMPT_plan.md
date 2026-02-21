@@ -1,10 +1,29 @@
-0a. Study `specs/manifest/` with up to 250 parallel Sonnet subagents to learn the application specifications.
-0b. Study @IMPLEMENTATION_PLAN.md (if present) to understand the plan so far.
-0c. Study `packages/` with up to 250 parallel Sonnet subagents to understand shared utilities & components.
-0d. For reference, the application source code is in `apps/*`.
+0a. Study `specs/command-board/*.md` using up to 300 parallel Sonnet subagents to understand Command Board product direction, existing bug history, and quality expectations.
+0b. Study `specs/command-board/IMPLEMENTATION_PLAN_commandboard_hardening.md` (if present) to understand what is already complete.
+0c. Study existing codepaths with up to 400 parallel Sonnet subagents:
 
-1. Study @IMPLEMENTATION_PLAN.md (if present; it may be incorrect) and use up to 500 Sonnet subagents to study existing source code in `apps/api/app/api` and `apps/app/app/` and compare it against `specs/manifest/`. Use an Opus subagent to analyze findings, prioritize tasks, and create/update @IMPLEMENTATION_PLAN.md as a bullet point list sorted in priority of items yet to be implemented. Ultrathink. Consider searching for TODO, minimal implementations, placeholders, skipped/flaky tests, and inconsistent patterns. Study @IMPLEMENTATION_PLAN.md to determine starting point for research and keep it up to date with items considered complete/incomplete using subagents.
+- `apps/api/app/api/conflicts/detect/route.ts`
+- `apps/app/app/api/command-board/chat/`
+- `apps/app/app/api/command-board/`
+- `apps/app/app/(authenticated)/command-board/`
+- `apps/app/__tests__/api/command-board/`
+  0d. For shared logic reference, inspect `packages/database/`, `packages/ai/`, and `packages/manifest-adapters/`.
 
-IMPORTANT: Plan only. Do NOT implement anything. Do NOT assume functionality is missing; confirm with code search first. Treat `packages/` as the project's standard library for shared utilities and components. Prefer consolidated, idiomatic implementations there over ad-hoc copies.
+Study `specs/command-board/IMPLEMENTATION_PLAN_commandboard_hardening.md` (it may be incomplete) and use up to 500 Sonnet subagents to compare code against specs and this plan. Use an Opus subagent to prioritize tasks and update that implementation plan with a concise, ordered checklist.
 
-ULTIMATE GOAL: We want to achieve Full manifest implementation in the codebase. Consider missing elements and plan accordingly. If an element is missing, search first to confirm it doesn't exist, then if needed author the specification at specs/FILENAME.md. If you create a new element then document the plan to implement it in @IMPLEMENTATION_PLAN.md using a subagent.
+IMPORTANT: Plan only. Do NOT implement anything. Do NOT assume gaps; verify by code search first.
+
+ULTIMATE GOAL: deliver a crash-resistant, observable, and regression-tested Command Board that behaves correctly on empty/new boards, seeded boards, malformed assistant tool args, tenant mismatches, and partial detector failures.
+
+Priority order to enforce in the plan:
+
+- Conflict API stabilization and typed payload guarantees
+- SQL hardening (Prisma/typed `Prisma.sql` usage)
+- Assistant tool-arg safety and response guardrails
+- Regression tests for all known crash classes and signatures
+- Partial-results conflict resilience in API and UI
+- UX/data safety polish (empty state, select sentinel safety, projection/card fallbacks)
+- Command route contract/idempotency tests
+- Structured observability with correlation IDs + normalized error codes
+- CI board-health smoke script
+- Performance baseline and regression budget for board load

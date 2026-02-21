@@ -12,7 +12,7 @@
  * @packageDocumentation
  */
 
-import type { Store } from "@manifest/runtime";
+import type { Store } from "@angriff36/manifest";
 import type { Prisma, PrismaClient } from "@repo/database";
 import type { EntityInstance } from "./prisma-store.js";
 

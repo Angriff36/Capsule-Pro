@@ -1,14 +1,25 @@
+0a. Study `specs/command-board/*.md` with up to 500 parallel Sonnet subagents.
+0b. Study `specs/command-board/IMPLEMENTATION_PLAN_commandboard_hardening.md` and pick the highest-priority incomplete item.
+0c. Before coding, use Sonnet subagents to search for existing implementations in: - `apps/api/app/api/conflicts/detect/route.ts` - `apps/app/app/api/command-board/` - `apps/app/app/(authenticated)/command-board/` - `apps/app/__tests__/api/command-board/` - related shared packages in `packages/*`
 
-0a. Study `specs/*` with up to 500 parallel Sonnet subagents to learn to application specifications. 0b. Study @IMPLEMENTATION_PLAN.md. 0c. For reference, application source code is in `packages/manifest-adapters/*`, `packages/kitchen-ops/*`, `apps/api/app/api/kitchen/*`, and `packages/database/prisma/*`.
+Your task is to implement exactly one highest-priority incomplete item from `specs/command-board/IMPLEMENTATION_PLAN_commandboard_hardening.md` per iteration. Use parallel Sonnet subagents for discovery/analysis and one Sonnet subagent for final verification runs.
 
-1. Your task is to implement functionality per the specifications using the Task tool with parallel subagents. Follow @IMPLEMENTATION_PLAN.md and choose the most important item to address. Before making changes, search the codebase (don't assume not implemented) using the Task tool with subagent_type='Explore' (up to 500 parallel subagents). Use the Task tool with subagent_type='general-purpose' or model='sonnet' for build/tests (only 1 subagent). Use the Task tool with subagent_type='Opus' or model='opus' when complex reasoning is needed (debugging, architectural decisions). IMPORTANT: Always use the Task tool for file operations, searches, and analysis - never use Read/Grep directly unless it's a single quick lookup.
-2. After implementing functionality or resolving problems, run the tests for that unit of code that was improved. If functionality is missing then it's your job to add it as per the application specifications. Ultrathink.
-3. When you discover issues, immediately update @IMPLEMENTATION_PLAN.md with your findings using a subagent. When resolved, update and remove the item.
-4. When the tests pass, update @IMPLEMENTATION_PLAN.md, then `git add -A` then `git commit` with a message describing the changes. After the commit, `git push`.
+After implementing:
 
-5. Important: When authoring documentation, capture the why — tests and implementation importance.
-6. Important: Single sources of truth, no migrations/adapters. If tests unrelated to your work fail, resolve them as part of the increment.
-7. As soon as there are no build or test errors create a git tag. If there are no git tags start at 0.0.0 and increment patch by 1 for example 0.0.1 if 0.0.0 does not exist.
-8. You may add extra logging if required to debug issues.
-9. Keep @IMPLEMENTATION_PLAN.md current with learnings using a subagent_type='sonnet' — future work depends on this to avoid duplicating efforts. Update especially after finishing your turn. 9999999999. When you learn something new about how to run the application, update @AGENTS.md using a subagent_type='sonnet' but keep it brief. For example if you run commands multiple times before learning the correct command then that file should be updated. 99999999999. For any bugs you notice, resolve them or document them in @IMPLEMENTATION_PLAN.md using a subagent_type='sonnet' even if it is unrelated to the current piece of work. 999999999999. Implement functionality completely. Placeholders and stubs waste efforts and time redoing the same work.
-10. When @IMPLEMENTATION_PLAN.md becomes large periodically clean out the items that are completed from the file using a subagent_type='sonnet'. 99999999999999. If you find inconsistencies in the specs/\* then use a subagent_type='Opus' with 'ultrathink' requested to update the specs. 999999999999999. IMPORTANT: Keep @AGENTS.md operational only — status updates and progress notes belong in `IMPLEMENTATION_PLAN.md`. A bloated AGENTS.md pollutes every future loop's context.
+1. Run targeted tests for touched Command Board API/UI modules.
+2. Run related typecheck/lint only as needed for touched surfaces.
+3. Verify behavior on empty/new board and seeded board paths where relevant.
+4. Update `specs/command-board/IMPLEMENTATION_PLAN_commandboard_hardening.md` (mark complete, add concise learnings).
+5. `git add -A && git commit -m "fix(command-board): <concise why-focused message>"`
+6. `git push`
+
+IMPORTANT:
+
+- Keep behavior compatible unless the plan explicitly calls for changed behavior.
+- Never throw raw internal errors to assistant users; return safe actionable guidance.
+- For conflict checks, one failing detector must not fail the whole response; return partial results with warnings.
+- No placeholder stubs. Ship complete increments with tests.
+- Keep `AGENTS.md` operational only; put progress and findings in the implementation plan.
+- If spec inconsistencies are found, update the relevant spec file and implementation plan in the same iteration.
+
+ULTIMATE GOAL: Command Board remains reliable under malformed input, empty data, partial subsystem failures, and large-board load while providing searchable observability and CI smoke confidence.

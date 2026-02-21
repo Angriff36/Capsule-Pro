@@ -23,12 +23,14 @@ interface SignaturePadProps {
   ) => void;
   onCancel: () => void;
   requireEmail?: boolean;
+  isSubmitting?: boolean;
 }
 
 export function SignaturePad({
   onSave,
   onCancel,
   requireEmail = false,
+  isSubmitting = false,
 }: SignaturePadProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -288,13 +290,22 @@ export function SignaturePad({
         </div>
 
         <div className="flex items-center gap-2">
-          <Button onClick={handleCancel} size="sm" variant="outline">
+          <Button
+            disabled={isSubmitting}
+            onClick={handleCancel}
+            size="sm"
+            variant="outline"
+          >
             <XIcon className="mr-2 size-4" />
             Cancel
           </Button>
-          <Button disabled={!hasSignature} onClick={handleSave} size="sm">
+          <Button
+            disabled={!hasSignature || isSubmitting}
+            onClick={handleSave}
+            size="sm"
+          >
             <CheckIcon className="mr-2 size-4" />
-            Save Signature
+            {isSubmitting ? "Saving..." : "Save Signature"}
           </Button>
         </div>
       </div>

@@ -114,7 +114,7 @@ let nextConfig: NextConfig = withToolbar(
       "@repo/webhooks",
       "@repo/notifications",
       "@repo/collaboration",
-      "@manifest/runtime",
+      "@angriff36/manifest",
       "@repo/seo",
     ],
     experimental: {
@@ -139,12 +139,22 @@ let nextConfig: NextConfig = withToolbar(
       "pdfjs-dist",
       "ably",
       "pdfkit",
+      "vega",
+      "vega-lite",
+      "vega-embed",
+      "vega-canvas",
       "@capsule-pro/sales-reporting",
       "@clerk/backend",
     ],
     webpack: (webpackConfig: WebpackConfig, context: WebpackContext) => {
       // Production optimizations to reduce bundle size and build time
       if (context.isServer && context.nextRuntime === "nodejs") {
+        webpackConfig.resolve = webpackConfig.resolve ?? {};
+        webpackConfig.resolve.alias = {
+          ...(webpackConfig.resolve.alias ?? {}),
+          canvas: false,
+        };
+
         // Increase memory limit for production builds
         if (process.env.NODE_ENV === "production") {
           webpackConfig.optimization = {

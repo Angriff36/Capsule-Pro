@@ -6,7 +6,7 @@
  * model and the Prisma database tables.
  */
 
-import type { Store } from "@manifest/runtime";
+import type { Store } from "@angriff36/manifest";
 import type {
   Dish,
   Ingredient,
@@ -936,7 +936,9 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
       where: { tenantId: this.tenantId, id, deletedAt: null },
     });
 
-    if (!existing) return false;
+    if (!existing) {
+      return false;
+    }
 
     await this.prisma.kitchenTask.update({
       where: { tenantId_id: { tenantId: this.tenantId, id } },

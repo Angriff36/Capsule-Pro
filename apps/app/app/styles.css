@@ -737,3 +737,36 @@ body.dev-console > header {
     margin: 0.5in;
   }
 }
+
+/* React Flow Command Board Styles */
+.react-flow__background {
+  background-color: hsl(var(--background));
+}
+
+.react-flow__controls {
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.react-flow__controls-button {
+  background-color: hsl(var(--card));
+  border-bottom: 1px solid hsl(var(--border));
+  color: hsl(var(--foreground));
+}
+
+.react-flow__controls-button:hover {
+  background-color: hsl(var(--muted));
+}
+
+.react-flow__controls-button svg {
+  fill: hsl(var(--foreground));
+}
+
+.react-flow__minimap {
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: 6px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}

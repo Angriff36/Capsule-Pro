@@ -10,9 +10,22 @@
  * See docs/patterns/external-projections.md for detailed rationale.
  */
 
-export * from './interface.js';
-export * from './registry.js';
+export {
+  listBuiltinProjections,
+  registerBuiltinProjections,
+} from "./builtins.js";
+export * from "./interface.js";
 
 // Re-export built-in projections for convenience
-export { NextJsProjection } from './nextjs/generator.js';
-export { registerBuiltinProjections, listBuiltinProjections } from './builtins.js';
+export { NextJsProjection } from "./nextjs/generator.js";
+export * from "./registry.js";
+export { RoutesProjection } from "./routes/generator.js";
+
+// Re-export route surface types
+export type {
+  ManualRouteDeclaration,
+  RouteEntry,
+  RouteManifest,
+  RouteParam,
+  RoutesProjectionOptions,
+} from "./routes/types.js";

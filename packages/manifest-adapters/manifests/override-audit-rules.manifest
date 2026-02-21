@@ -1,0 +1,83 @@
+// Override Audit - Constraint Override Tracking
+// Manifest spec for recording and authorizing constraint overrides
+
+entity OverrideAudit {
+  property required id: string
+  property required tenantId: string
+  property entityType: string = ""
+  property entityId: string = ""
+  property constraintId: string = ""
+  property guardExpression: string = ""
+  property overriddenBy: string = ""
+  property overrideReason: string = ""
+  property authorizedBy: string = ""
+  property authorizedAt: number = 0
+  property createdAt: number = 0
+
+  computed isAuthorized: boolean = self.authorizedBy != ""
+  computed isPendingAuthorization: boolean = self.authorizedBy == ""
+  computed hasGuardExpression: boolean = self.guardExpression != ""
+
+  constraint requireEntityType: self.entityType != "" "Entity type is required"
+  constraint requireEntityId: self.entityId != "" "Entity ID is required"
+  constraint requireConstraintId: self.constraintId != "" "Constraint ID is required"
+  constraint requireOverriddenBy: self.overriddenBy != "" "Overridden by user is required"
+  constraint requireOverrideReason: self.overrideReason != "" "Override reason is required"
+
+  constraint cannotAuthorizeTwice:warn self.authorizedBy != "" "Override already authorized"
+
+  command create(entityType: string, entityId: string, constraintId: string, guardExpression: string, overriddenBy: string, overrideReason: string) {
+    guard entityType != null and entityType != "" "Entity type is required"
+    guard entityId != null and entityId != "" "Entity ID is required"
+    guard constraintId != null and constraintId != "" "Constraint ID is required"
+    guard overriddenBy != null and overriddenBy != "" "Overridden by user is required"
+    guard overrideReason != null and overrideReason != "" "Override reason is required"
+
+    mutate entityType = entityType
+    mutate entityId = entityId
+    mutate constraintId = constraintId
+    mutate guardExpression = guardExpression
+    mutate overriddenBy = overriddenBy
+    mutate overrideReason = overrideReason
+    mutate createdAt = now()
+
+    emit OverrideAuditCreated
+  }
+
+  command authorize(authorizedBy: string) {
+    guard authorizedBy != null and authorizedBy != "" "Authorized by user is required"
+    guard self.authorizedBy == "" "Override has already been authorized"
+
+    mutate authorizedBy = authorizedBy
+    mutate authorizedAt = now()
+
+    emit OverrideAuditAuthorized
+  }
+
+  store OverrideAudit in memory
+}
+
+policy AuditManagersCanOverride execute: user.role in ["manager", "admin"] "Managers and admins can create override audit entries"
+policy AuditAdminsCanAuthorize execute: user.role in ["admin"] "Only admins can authorize overrides"
+
+event OverrideAuditCreated: "audit.override.created" {
+  overrideAuditId: string
+  tenantId: string
+  entityType: string
+  entityId: string
+  constraintId: string
+  guardExpression: string
+  overriddenBy: string
+  overrideReason: string
+  createdAt: number
+}
+
+event OverrideAuditAuthorized: "audit.override.authorized" {
+  overrideAuditId: string
+  tenantId: string
+  entityType: string
+  entityId: string
+  constraintId: string
+  authorizedBy: string
+  authorizedAt: number
+}
