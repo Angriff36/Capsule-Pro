@@ -1,6 +1,6 @@
 # Command Board Hardening Implementation Plan
 
-> Last updated: 2026-02-20 (item 19 complete)
+> Last updated: 2026-02-20 (item 20 complete)
 > Scope: API reliability, assistant safety, regression prevention, UX safety, and observability for Command Board
 
 ## Execution Rules
@@ -369,11 +369,30 @@
     - Data transformation pipeline is very fast (<0.1ms for 150 items) - UI rendering is the bottleneck
     - Budget thresholds should be 5-10x measured baseline to account for CI variance
 
-- [ ] [medium] 20) Conflict severity mapping audit
-  - Files: `apps/api/app/api/conflicts/detect/route.ts`, fixture tests
+- [x] [medium] 20) Conflict severity mapping audit
+  - Files: `apps/api/app/api/conflicts/detect/route.ts`, `apps/api/app/api/conflicts/detect/severity-thresholds.ts`, `apps/api/__tests__/conflicts/detect-route.severity-thresholds.test.ts`
   - DoD:
     - Severity mapping aligns with kitchen/events/staff domain thresholds.
     - Fixture-backed tests assert threshold behavior.
+  - Evidence:
+    - Created `severity-thresholds.ts` with centralized thresholds for all conflict types:
+      - Scheduling: 2 shifts = high, 3+ shifts = critical
+      - Staff: 1-2 shifts during time-off = high, 3+ = critical
+      - Inventory: critical alert type = critical, others = medium
+      - Venue/Equipment: 2 events = high, 3+ events = critical
+      - Timeline: priority 1-2 = critical, priority 3 = high, priority 4+ = medium
+      - Financial: negative margin = critical, >10% margin erosion = critical, >25% cost overrun = high, >5% margin erosion = high
+    - Refactored all detector functions to use centralized `get*Severity()` functions
+    - Added 44 fixture-backed tests covering:
+      - All severity functions with domain-specific fixtures
+      - Threshold constant validation
+      - Edge cases at threshold boundaries
+      - Domain alignment verification (kitchen, events, staff, financial)
+    - All tests pass: `pnpm vitest run __tests__/conflicts/detect-route.severity-thresholds.test.ts`
+  - Learnings:
+    - Previous implementation had hard-coded thresholds scattered across detector functions
+    - Centralizing thresholds makes domain alignment explicit and testable
+    - Specs defined severity as "warning, error, critical" but implementation uses "low, medium, high, critical" - kept existing levels for backward compatibility
 
 ---
 
