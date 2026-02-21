@@ -21,7 +21,9 @@ const defaultOutput = resolve(repoRoot, "apps/api/app/api");
 
 const userArgs = process.argv.slice(2);
 
-// Default: generate kitchen IR with nextjs projection (all surfaces)
+// Default: generate kitchen IR with nextjs projection (route surface only).
+// List surface routes need different output path handling and are not yet
+// fully mapped via ENTITY_DOMAIN_MAP — kept as "route" to avoid malformed output.
 const baseArgs =
   userArgs.length > 0
     ? userArgs
@@ -30,7 +32,7 @@ const baseArgs =
         "--projection",
         "nextjs",
         "--surface",
-        "all",
+        "route",
         "--output",
         defaultOutput,
       ];
