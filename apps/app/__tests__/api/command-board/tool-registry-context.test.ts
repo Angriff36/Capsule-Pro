@@ -574,15 +574,18 @@ describe("command board chat tool registry - execute_manifest_command tool", () 
       name: "execute_manifest_command",
       argumentsJson: JSON.stringify({
         entityName: "InvalidEntity",
-        commandName: "invalid",
+        commandName: "create",
         args: {},
       }),
       callId: "call-cmd-invalid",
     });
 
     expect(result.ok).toBe(false);
-    expect(result.error).toContain("Unsupported manifest command route");
-    expect((result.data as { supported: string[] }).supported).toContain("CommandBoard:create");
+    expect(result.error).toBe("Not supported by current route surface");
+    expect((result.data as { supported: string[] }).supported).toContain("CommandBoard.create");
+    expect(
+      (result.data as { closestSupportedSequence: string[] }).closestSupportedSequence.length
+    ).toBeGreaterThan(0);
   });
 
   it("returns error when entityName or commandName missing", async () => {
@@ -605,7 +608,7 @@ describe("command board chat tool registry - execute_manifest_command tool", () 
     });
 
     expect(result.ok).toBe(false);
-    expect(result.error).toContain("Unsupported manifest command route");
+    expect(result.error).toBe("Not supported by current route surface");
   });
 
   it("handles API failure responses for execute_manifest_command", async () => {
@@ -669,14 +672,46 @@ describe("command board chat tool registry - execute_manifest_command tool", () 
     });
 
     expect(result.ok).toBe(true);
-    expect(result.summary).toBe("CommandBoardCard:create executed successfully");
+    expect(result.summary).toBe("CommandBoardCard.create executed successfully");
     const data = result.data as { routePath: string; response: { ok: boolean } };
-    expect(data.routePath).toBe("/api/command-board/cards/commands/create");
+    expect(data.routePath).toBe("/api/commandboardcard/create");
     expect(data.response.ok).toBe(true);
 
     // Verify idempotency header was sent
     const fetchCall = mockFetch.mock.calls[0];
     expect(fetchCall[1].headers["x-idempotency-key"]).toBeDefined();
+  });
+
+  it("resolves lowercase entity names to canonical manifest commands", async () => {
+    const mockFetch = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      text: async () => JSON.stringify({ ok: true, id: "new-card-id" }),
+    });
+    global.fetch = mockFetch;
+
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-cmd-lowercase",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "execute_manifest_command",
+      argumentsJson: JSON.stringify({
+        entityName: "commandboardcard",
+        commandName: "CREATE",
+        args: { title: "Test Card" },
+      }),
+      callId: "call-cmd-lowercase",
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.summary).toBe("CommandBoardCard.create executed successfully");
+    const data = result.data as { routePath: string };
+    expect(data.routePath).toBe("/api/commandboardcard/create");
   });
 
   it("uses context userId when not provided in args", async () => {
