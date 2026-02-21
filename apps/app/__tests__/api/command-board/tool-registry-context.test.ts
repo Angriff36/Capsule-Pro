@@ -714,6 +714,38 @@ describe("command board chat tool registry - execute_manifest_command tool", () 
     expect(data.routePath).toBe("/api/commandboardcard/create");
   });
 
+  it("resolves separator variants to canonical manifest commands", async () => {
+    const mockFetch = vi.fn().mockResolvedValueOnce({
+      ok: true,
+      status: 200,
+      text: async () => JSON.stringify({ ok: true, id: "new-card-id" }),
+    });
+    global.fetch = mockFetch;
+
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-cmd-decorated",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "execute_manifest_command",
+      argumentsJson: JSON.stringify({
+        entityName: "command-board-card",
+        commandName: "create",
+        args: { title: "Test Card" },
+      }),
+      callId: "call-cmd-separated",
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.summary).toBe("CommandBoardCard.create executed successfully");
+    const data = result.data as { routePath: string };
+    expect(data.routePath).toBe("/api/commandboardcard/create");
+  });
+
   it("uses context userId when not provided in args", async () => {
     const mockFetch = vi.fn().mockResolvedValueOnce({
       ok: true,

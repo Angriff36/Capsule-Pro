@@ -950,16 +950,7 @@ export async function runManifestActionAgent(
   for (let index = 0; index < plan.commandSequence.length; index += 1) {
     const step = plan.commandSequence[index];
     const pair = `${step.entity}.${step.command}`;
-    const toolName = commandCatalog.toolNameByEntityCommand.get(pair);
-
-    if (!toolName) {
-      toolExecutions.push({
-        toolName: pair,
-        status: "error",
-        summary: "Not supported by current route surface",
-      });
-      continue;
-    }
+    const toolName = "execute_manifest_command";
 
     const executionArgs = materializeStepArgs(step, commandCatalog);
     const validationError = validateStepArgs(
@@ -969,7 +960,7 @@ export async function runManifestActionAgent(
     );
     if (validationError) {
       toolExecutions.push({
-        toolName,
+        toolName: pair,
         status: "error",
         summary: validationError,
       });
@@ -987,7 +978,11 @@ export async function runManifestActionAgent(
     const toolCall: ResponsesFunctionCall = {
       type: "function_call",
       name: toolName,
-      arguments: JSON.stringify(executionArgs),
+      arguments: JSON.stringify({
+        entityName: step.entity,
+        commandName: step.command,
+        args: executionArgs,
+      }),
       call_id: `${params.context.correlationId}:plan:${index}`,
     };
 
@@ -998,7 +993,7 @@ export async function runManifestActionAgent(
     );
 
     toolExecutions.push({
-      toolName,
+      toolName: pair,
       status: toolResult.ok ? "success" : "error",
       summary: toolResult.summary,
     });
