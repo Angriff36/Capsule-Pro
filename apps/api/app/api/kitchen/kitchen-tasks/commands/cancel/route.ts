@@ -1,116 +1,46 @@
 // Auto-generated Next.js command handler for KitchenTask.cancel
 // Generated from Manifest IR - DO NOT EDIT
-// Writes MUST flow through runtime.runCommand() to enforce guards, policies, and constraints
+// Writes MUST flow through runtime to enforce guards, policies, and constraints
 
-import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
-import {
-  manifestErrorResponse,
-  manifestSuccessResponse,
-} from "@repo/manifest-adapters/route-helpers";
-import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
-
-export const runtime = "nodejs";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { auth } from "@repo/auth/server";
 
 export async function POST(request: NextRequest) {
   try {
-    const { orgId, userId: clerkId } = await auth();
-    if (!(clerkId && orgId)) {
-      return manifestErrorResponse("Unauthorized", 401);
-    }
+  const { orgId, userId } = await auth();
+  if (!(userId && orgId)) {
+    return manifestErrorResponse("Unauthorized", 401);
+  }
 
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return manifestErrorResponse("Tenant not found", 400);
-    }
+  const tenantId = await getTenantIdForOrg(orgId);
 
-    // Fetch user's role for policy evaluation
-    const currentUser = await database.user.findFirst({
-      where: {
-        AND: [{ tenantId }, { authUserId: clerkId }],
-      },
-    });
-
-    if (!currentUser) {
-      return manifestErrorResponse("User not found in database", 400);
-    }
+  if (!tenantId) {
+    return manifestErrorResponse("Tenant not found", 400);
+  }
 
     const body = await request.json();
-    const { id, reason, canceledBy, ...commandArgs } = body;
 
-    if (!id) {
-      return manifestErrorResponse("Task ID is required", 400);
-    }
-
-    if (!reason) {
-      return manifestErrorResponse("reason is required", 400);
-    }
-
-    if (!canceledBy) {
-      return manifestErrorResponse("canceledBy is required", 400);
-    }
-
-    const runtime = await createManifestRuntime({
-      user: { id: currentUser.id, tenantId, role: currentUser.role },
+    const runtime = await createManifestRuntime({ user: { id: userId, tenantId: tenantId } });
+    const result = await runtime.runCommand("cancel", body, {
       entityName: "KitchenTask",
     });
 
-    // Log state before running command for debugging
-    const taskRecord = await database.kitchenTask.findFirst({
-      where: { tenantId, id },
-    });
-    console.log("[kitchen-task/cancel] Pre-command state:", {
-      taskId: id,
-      taskStatus: taskRecord?.status,
-      reason,
-      canceledBy,
-      userRole: currentUser.role,
-      tenantId,
-    });
-
-    const result = await runtime.runCommand(
-      "cancel",
-      { reason, canceledBy, ...commandArgs },
-      {
-        entityName: "KitchenTask",
-        instanceId: id,
-      }
-    );
-
     if (!result.success) {
-      console.error("[kitchen-task/cancel] Command failed:", {
-        policyDenial: result.policyDenial,
-        guardFailure: result.guardFailure,
-        error: result.error,
-        taskStatus: taskRecord?.status,
-        userRole: currentUser.role,
-      });
-
       if (result.policyDenial) {
-        return manifestErrorResponse(
-          `Access denied: ${result.policyDenial.policyName} (role=${currentUser.role})`,
-          403
-        );
+        return manifestErrorResponse(`Access denied: ${result.policyDenial.policyName}`, 403);
       }
       if (result.guardFailure) {
-        return manifestErrorResponse(
-          `Guard ${result.guardFailure.index} failed: ${result.guardFailure.formatted} (task.status=${taskRecord?.status})`,
-          422
-        );
+        return manifestErrorResponse(`Guard ${result.guardFailure.index} failed: ${result.guardFailure.formatted}`, 422);
       }
       return manifestErrorResponse(result.error ?? "Command failed", 400);
     }
 
-    return manifestSuccessResponse({
-      result: result.result,
-      events: result.emittedEvents,
-    });
+    return manifestSuccessResponse({ result: result.result, events: result.emittedEvents });
   } catch (error) {
-    console.error("[kitchen-task/cancel] Error:", error);
-    captureException(error);
+    console.error("Error executing KitchenTask.cancel:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }
