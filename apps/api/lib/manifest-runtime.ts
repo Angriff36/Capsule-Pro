@@ -28,7 +28,6 @@ import {
   createPrismaOutboxWriter,
   PrismaStore,
 } from "@repo/manifest-adapters/prisma-store";
-import { getCompiledManifestBundle } from "@repo/manifest-adapters/runtime/loadManifests";
 import { ManifestRuntimeEngine } from "@repo/manifest-adapters/runtime-engine";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
@@ -72,13 +71,19 @@ interface GeneratedRuntimeContext {
 type ManifestIR = IR;
 
 /**
- * Load and compile a manifest IR, with caching.
+ * Load the precompiled manifest IR from the build artifact.
+ *
+ * Uses loadPrecompiledIR which anchors to the monorepo root via
+ * pnpm-workspace.yaml — safe regardless of what directory Next.js
+ * started the server from (e.g. apps/api vs repo root).
  */
-async function getManifestIR(): Promise<ManifestIR> {
-  const { ir, hash } = await getCompiledManifestBundle();
+function getManifestIR(): ManifestIR {
+  const { ir, hash } = loadPrecompiledIR(
+    "packages/manifest-ir/ir/kitchen/kitchen.ir.json"
+  );
 
   if (process.env.DEBUG_MANIFEST_IR === "true") {
-    log.info("[manifest-runtime] Loaded manifest bundle", {
+    log.info("[manifest-runtime] Loaded precompiled manifest IR", {
       hash,
       entities: ir.entities.length,
       commands: ir.commands.length,
@@ -164,7 +169,7 @@ export async function createManifestRuntime(
     }
   }
 
-  const ir = await getManifestIR();
+  const ir = getManifestIR();
 
   // Create a shared event collector for transactional outbox pattern
   // This array will be populated with events during command execution
