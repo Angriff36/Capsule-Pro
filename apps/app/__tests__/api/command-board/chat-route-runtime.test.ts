@@ -3,8 +3,8 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const ROUTE_PATH = resolve(
-  process.cwd(),
-  "app/api/command-board/chat/route.ts"
+  import.meta.dirname,
+  "../../../app/api/command-board/chat/route.ts"
 );
 
 describe("command board chat route runtime", () => {
