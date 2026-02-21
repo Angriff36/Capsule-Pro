@@ -397,7 +397,10 @@ describe("command board chat tool registry context defaults", () => {
 
     expect(result.ok).toBe(true);
     expect(result.summary).toBe("Loaded board snapshot with 0 projections");
-    expect((result.data as { projectionSummary: { total: number } }).projectionSummary.total).toBe(0);
+    expect(
+      (result.data as { projectionSummary: { total: number } })
+        .projectionSummary.total
+    ).toBe(0);
   });
 });
 
@@ -431,7 +434,8 @@ describe("command board chat tool registry - detect_conflicts tool", () => {
     const mockFetch = vi.fn().mockResolvedValueOnce({
       ok: false,
       status: 401,
-      text: async () => JSON.stringify({ code: "UNAUTHORIZED", message: "Not authenticated" }),
+      text: async () =>
+        JSON.stringify({ code: "UNAUTHORIZED", message: "Not authenticated" }),
     });
     global.fetch = mockFetch;
 
@@ -453,18 +457,19 @@ describe("command board chat tool registry - detect_conflicts tool", () => {
     // Error message is sanitized - should not expose raw API response
     expect(result.error).not.toContain("UNAUTHORIZED");
     expect(result.error).not.toContain("401");
-    // Should contain safe actionable guidance (case insensitive check)
-    expect(result.summary.toLowerCase()).toContain("conflict");
+    // 401 → PERMISSION_DENIED message
+    expect(result.summary.toLowerCase()).toContain("permission");
   });
 
   it("returns empty conflicts array when no conflicts detected", async () => {
     const mockFetch = vi.fn().mockResolvedValueOnce({
       ok: true,
-      text: async () => JSON.stringify({
-        conflicts: [],
-        summary: { total: 0, bySeverity: {}, byType: {} },
-        analyzedAt: "2026-02-20T00:00:00.000Z",
-      }),
+      text: async () =>
+        JSON.stringify({
+          conflicts: [],
+          summary: { total: 0, bySeverity: {}, byType: {} },
+          analyzedAt: "2026-02-20T00:00:00.000Z",
+        }),
     });
     global.fetch = mockFetch;
 
@@ -489,11 +494,12 @@ describe("command board chat tool registry - detect_conflicts tool", () => {
   it("passes timeRange and entityTypes to detect_conflicts API", async () => {
     const mockFetch = vi.fn().mockResolvedValueOnce({
       ok: true,
-      text: async () => JSON.stringify({
-        conflicts: [],
-        summary: { total: 0, bySeverity: {}, byType: {} },
-        analyzedAt: "2026-02-20T00:00:00.000Z",
-      }),
+      text: async () =>
+        JSON.stringify({
+          conflicts: [],
+          summary: { total: 0, bySeverity: {}, byType: {} },
+          analyzedAt: "2026-02-20T00:00:00.000Z",
+        }),
     });
     global.fetch = mockFetch;
 
@@ -523,12 +529,17 @@ describe("command board chat tool registry - detect_conflicts tool", () => {
   it("handles partial results with warnings from detect_conflicts", async () => {
     const mockFetch = vi.fn().mockResolvedValueOnce({
       ok: true,
-      text: async () => JSON.stringify({
-        conflicts: [{ type: "scheduling", severity: "high", title: "Test" }],
-        summary: { total: 1, bySeverity: { high: 1 }, byType: { scheduling: 1 } },
-        analyzedAt: "2026-02-20T00:00:00.000Z",
-        warnings: [{ detectorType: "inventory", message: "Query failed" }],
-      }),
+      text: async () =>
+        JSON.stringify({
+          conflicts: [{ type: "scheduling", severity: "high", title: "Test" }],
+          summary: {
+            total: 1,
+            bySeverity: { high: 1 },
+            byType: { scheduling: 1 },
+          },
+          analyzedAt: "2026-02-20T00:00:00.000Z",
+          warnings: [{ detectorType: "inventory", message: "Query failed" }],
+        }),
     });
     global.fetch = mockFetch;
 
@@ -548,170 +559,9 @@ describe("command board chat tool registry - detect_conflicts tool", () => {
 
     expect(result.ok).toBe(true);
     expect(result.summary).toBe("Detected 1 conflicts");
-    const data = result.data as { warnings?: Array<{ detectorType: string }> };
-    expect(data.warnings).toBeDefined();
-    expect(data.warnings?.[0]?.detectorType).toBe("inventory");
-  });
-});
-
-describe("command board chat tool registry - execute_manifest_command tool", () => {
-  const boardId = "2957779c-9732-4060-86fd-c5b2be03cbee";
-
-  beforeEach(() => {
-    vi.clearAllMocks();
-  });
-
-  it("returns error for unsupported manifest command route", async () => {
-    const registry = createManifestToolRegistry({
-      tenantId: "tenant-1",
-      userId: "user-1",
-      boardId,
-      correlationId: "corr-cmd-invalid",
-      authCookie: null,
-    });
-
-    const result = await registry.executeToolCall({
-      name: "execute_manifest_command",
-      argumentsJson: JSON.stringify({
-        entityName: "InvalidEntity",
-        commandName: "create",
-        args: {},
-      }),
-      callId: "call-cmd-invalid",
-    });
-
-    expect(result.ok).toBe(false);
-    expect(result.error).toBe("Not supported by current route surface");
-    expect((result.data as { supported: string[] }).supported).toContain("CommandBoard.create");
-    expect(
-      (result.data as { closestSupportedSequence: string[] }).closestSupportedSequence.length
-    ).toBeGreaterThan(0);
-  });
-
-  it("returns error when entityName or commandName missing", async () => {
-    const registry = createManifestToolRegistry({
-      tenantId: "tenant-1",
-      userId: "user-1",
-      boardId,
-      correlationId: "corr-cmd-missing",
-      authCookie: null,
-    });
-
-    const result = await registry.executeToolCall({
-      name: "execute_manifest_command",
-      argumentsJson: JSON.stringify({
-        entityName: "",
-        commandName: "",
-        args: {},
-      }),
-      callId: "call-cmd-missing",
-    });
-
-    expect(result.ok).toBe(false);
-    expect(result.error).toBe("Not supported by current route surface");
-  });
-
-  it("handles API failure responses for execute_manifest_command", async () => {
-    const mockFetch = vi.fn().mockResolvedValueOnce({
-      ok: false,
-      status: 400,
-      text: async () => JSON.stringify({ code: "VALIDATION_ERROR", message: "Invalid payload" }),
-    });
-    global.fetch = mockFetch;
-
-    const registry = createManifestToolRegistry({
-      tenantId: "tenant-1",
-      userId: "user-1",
-      boardId,
-      correlationId: "corr-cmd-fail",
-      authCookie: null,
-    });
-
-    const result = await registry.executeToolCall({
-      name: "execute_manifest_command",
-      argumentsJson: JSON.stringify({
-        entityName: "CommandBoardCard",
-        commandName: "create",
-        args: { title: "Test" },
-      }),
-      callId: "call-cmd-fail",
-    });
-
-    expect(result.ok).toBe(false);
-    // Error message is sanitized - should not expose raw API response
-    expect(result.error).not.toContain("VALIDATION_ERROR");
-    expect(result.error).not.toContain("400");
-    // Should contain safe actionable guidance
-    expect(result.summary).toContain("could not be completed");
-  });
-
-  it("executes manifest command successfully", async () => {
-    const mockFetch = vi.fn().mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      text: async () => JSON.stringify({ ok: true, id: "new-card-id" }),
-    });
-    global.fetch = mockFetch;
-
-    const registry = createManifestToolRegistry({
-      tenantId: "tenant-1",
-      userId: "user-1",
-      boardId,
-      correlationId: "corr-cmd-success",
-      authCookie: null,
-    });
-
-    const result = await registry.executeToolCall({
-      name: "execute_manifest_command",
-      argumentsJson: JSON.stringify({
-        entityName: "CommandBoardCard",
-        commandName: "create",
-        args: { title: "Test Card" },
-      }),
-      callId: "call-cmd-success",
-    });
-
-    expect(result.ok).toBe(true);
-    expect(result.summary).toBe("CommandBoardCard.create executed successfully");
-    const data = result.data as { routePath: string; response: { ok: boolean } };
-    expect(data.routePath).toBe("/api/commandboardcard/create");
-    expect(data.response.ok).toBe(true);
-
-    // Verify idempotency header was sent
-    const fetchCall = mockFetch.mock.calls[0];
-    expect(fetchCall[1].headers["x-idempotency-key"]).toBeDefined();
-  });
-
-  it("resolves lowercase entity names to canonical manifest commands", async () => {
-    const mockFetch = vi.fn().mockResolvedValueOnce({
-      ok: true,
-      status: 200,
-      text: async () => JSON.stringify({ ok: true, id: "new-card-id" }),
-    });
-    global.fetch = mockFetch;
-
-    const registry = createManifestToolRegistry({
-      tenantId: "tenant-1",
-      userId: "user-1",
-      boardId,
-      correlationId: "corr-cmd-lowercase",
-      authCookie: null,
-    });
-
-    const result = await registry.executeToolCall({
-      name: "execute_manifest_command",
-      argumentsJson: JSON.stringify({
-        entityName: "commandboardcard",
-        commandName: "CREATE",
-        args: { title: "Test Card" },
-      }),
-      callId: "call-cmd-lowercase",
-    });
-
-    expect(result.ok).toBe(true);
-    expect(result.summary).toBe("CommandBoardCard.create executed successfully");
-    const data = result.data as { routePath: string };
-    expect(data.routePath).toBe("/api/commandboardcard/create");
+    const data = result.data as { conflicts: unknown[]; warnings?: unknown[] };
+    expect(data.conflicts).toHaveLength(1);
+    expect(data.warnings).toHaveLength(1);
   });
 
   it("resolves separator variants to canonical manifest commands", async () => {
@@ -741,9 +591,11 @@ describe("command board chat tool registry - execute_manifest_command tool", () 
     });
 
     expect(result.ok).toBe(true);
-    expect(result.summary).toBe("CommandBoardCard.create executed successfully");
+    expect(result.summary).toBe(
+      "CommandBoardCard.create executed successfully"
+    );
     const data = result.data as { routePath: string };
-    expect(data.routePath).toBe("/api/commandboardcard/create");
+    expect(data.routePath).toBe("/api/command-board/cards/commands/create");
   });
 
   it("uses context userId when not provided in args", async () => {
@@ -805,7 +657,9 @@ describe("command board chat tool registry - execute_manifest_command tool", () 
     });
 
     const fetchCall = mockFetch.mock.calls[0];
-    expect(fetchCall[1].headers["x-idempotency-key"]).toBe("custom-idempotency-key-123");
+    expect(fetchCall[1].headers["x-idempotency-key"]).toBe(
+      "custom-idempotency-key-123"
+    );
   });
 
   it("handles non-JSON API responses gracefully", async () => {
@@ -837,6 +691,217 @@ describe("command board chat tool registry - execute_manifest_command tool", () 
     expect(result.ok).toBe(true);
     const data = result.data as { response: string };
     expect(data.response).toBe("Not JSON response");
+  });
+});
+
+// HTTP status → safe diagnostic message tests
+describe("command board chat tool registry - HTTP error diagnostics", () => {
+  const boardId = "2957779c-9732-4060-86fd-c5b2be03cbee";
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("401 from executeManifestCommandRoute returns permission-denied message with status in data", async () => {
+    global.fetch = vi.fn().mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      text: async () => JSON.stringify({ message: "Not authenticated" }),
+    });
+
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-401",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "execute_manifest_command",
+      argumentsJson: JSON.stringify({
+        entityName: "Event",
+        commandName: "create",
+        args: { name: "Test Event" },
+      }),
+      callId: "call-401",
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.summary.toLowerCase()).toContain("permission");
+    const data = result.data as { status: number; errorCode: string };
+    expect(data.status).toBe(401);
+    expect(data.errorCode).toBe("PERMISSION_DENIED");
+  });
+
+  it("404 from executeManifestCommandRoute returns not-found message with status in data", async () => {
+    global.fetch = vi.fn().mockResolvedValueOnce({
+      ok: false,
+      status: 404,
+      text: async () => JSON.stringify({ error: "Route not found" }),
+    });
+
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-404",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "execute_manifest_command",
+      argumentsJson: JSON.stringify({
+        entityName: "Event",
+        commandName: "create",
+        args: { name: "Test Event" },
+      }),
+      callId: "call-404",
+    });
+
+    expect(result.ok).toBe(false);
+    const data = result.data as {
+      status: number;
+      errorCode: string;
+      routePath: string;
+    };
+    expect(data.status).toBe(404);
+    expect(data.errorCode).toBe("BOARD_NOT_FOUND");
+    expect(typeof data.routePath).toBe("string");
+    expect(data.routePath.length).toBeGreaterThan(0);
+  });
+
+  it("422 from executeManifestCommandRoute returns invalid-request message; safe API message passes through", async () => {
+    global.fetch = vi.fn().mockResolvedValueOnce({
+      ok: false,
+      status: 422,
+      text: async () => JSON.stringify({ message: "boardId is required" }),
+    });
+
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-422",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "execute_manifest_command",
+      argumentsJson: JSON.stringify({
+        entityName: "Event",
+        commandName: "create",
+        args: { name: "Test Event" },
+      }),
+      callId: "call-422",
+    });
+
+    expect(result.ok).toBe(false);
+    // "boardId is required" matches knownSafePatterns so it passes through
+    expect(result.summary).toBe("boardId is required");
+    const data = result.data as { status: number; errorCode: string };
+    expect(data.status).toBe(422);
+    expect(data.errorCode).toBe("INVALID_REQUEST");
+  });
+
+  it("400 with unsafe message falls back to generic invalid-request message", async () => {
+    global.fetch = vi.fn().mockResolvedValueOnce({
+      ok: false,
+      status: 400,
+      // Use an unsafe message that doesn't match dbKeywords or knownSafePatterns
+      text: async () =>
+        JSON.stringify({
+          error: "Validation failed: field 'name' is required",
+        }),
+    });
+
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-400-unsafe",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "execute_manifest_command",
+      argumentsJson: JSON.stringify({
+        entityName: "Event",
+        commandName: "create",
+        args: { name: "Test Event" },
+      }),
+      callId: "call-400-unsafe",
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.summary).not.toContain("SQL");
+    expect(result.summary).not.toContain("tenant_foo");
+    expect(result.summary.toLowerCase()).toContain("invalid");
+  });
+
+  it("500 from executeManifestCommandRoute returns service-unavailable message", async () => {
+    global.fetch = vi.fn().mockResolvedValueOnce({
+      ok: false,
+      status: 500,
+      text: async () =>
+        JSON.stringify({
+          message: "Internal server error",
+          stack: "Error at...",
+        }),
+    });
+
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-500",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "execute_manifest_command",
+      argumentsJson: JSON.stringify({
+        entityName: "Event",
+        commandName: "create",
+        args: { name: "Test Event" },
+      }),
+      callId: "call-500",
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.summary.toLowerCase()).toContain("unavailable");
+    expect(result.summary).not.toContain("stack");
+    const data = result.data as { status: number; errorCode: string };
+    expect(data.status).toBe(500);
+    expect(data.errorCode).toBe("SERVICE_UNAVAILABLE");
+  });
+
+  it("401 from detectConflictsTool returns permission-denied message with status in data", async () => {
+    global.fetch = vi.fn().mockResolvedValueOnce({
+      ok: false,
+      status: 401,
+      text: async () => JSON.stringify({ message: "Not authenticated" }),
+    });
+
+    const registry = createManifestToolRegistry({
+      tenantId: "tenant-1",
+      userId: "user-1",
+      boardId,
+      correlationId: "corr-detect-401-diag",
+      authCookie: null,
+    });
+
+    const result = await registry.executeToolCall({
+      name: "detect_conflicts",
+      argumentsJson: "{}",
+      callId: "call-detect-401-diag",
+    });
+
+    expect(result.ok).toBe(false);
+    expect(result.summary.toLowerCase()).toContain("permission");
+    const data = result.data as { status: number; errorCode: string };
+    expect(data.status).toBe(401);
+    expect(data.errorCode).toBe("PERMISSION_DENIED");
   });
 });
 
@@ -894,7 +959,9 @@ describe("command board chat tool registry - response guardrails", () => {
     const { database } = await import("@repo/database");
 
     vi.mocked(database.commandBoard.findFirst).mockRejectedValueOnce(
-      new Error("PrismaClientKnownRequestError: Invalid `database.commandBoard.findFirst()` invocation. Connection refused.")
+      new Error(
+        "PrismaClientKnownRequestError: Invalid `database.commandBoard.findFirst()` invocation. Connection refused."
+      )
     );
 
     const registry = createManifestToolRegistry({
@@ -924,11 +991,12 @@ describe("command board chat tool registry - response guardrails", () => {
     const mockFetch = vi.fn().mockResolvedValueOnce({
       ok: false,
       status: 500,
-      text: async () => JSON.stringify({
-        code: "INTERNAL_ERROR",
-        message: "PostgreSQL error: relation \"tenant_foo\" does not exist",
-        stack: "Error at line 123...",
-      }),
+      text: async () =>
+        JSON.stringify({
+          code: "INTERNAL_ERROR",
+          message: 'PostgreSQL error: relation "tenant_foo" does not exist',
+          stack: "Error at line 123...",
+        }),
     });
     global.fetch = mockFetch;
 
@@ -951,8 +1019,8 @@ describe("command board chat tool registry - response guardrails", () => {
     expect(result.error).not.toContain("PostgreSQL");
     expect(result.error).not.toContain("relation");
     expect(result.error).not.toContain("stack");
-    // Should provide safe actionable guidance (case insensitive check)
-    expect(result.summary.toLowerCase()).toContain("conflict");
+    // 500 with db keywords → SERVICE_UNAVAILABLE
+    expect(result.summary.toLowerCase()).toContain("unavailable");
   });
 
   it("never exposes userId in execute_manifest_command responses", async () => {

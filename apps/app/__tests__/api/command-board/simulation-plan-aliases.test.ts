@@ -1,6 +1,6 @@
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
 import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   buildFallbackSimulationPlan,
@@ -8,23 +8,24 @@ import {
 } from "@/app/api/command-board/chat/agent-loop";
 import {
   buildSimulationPlanSchema,
-  loadCommandCatalogFromManifestPath,
   loadCommandCatalog,
-  resolveCanonicalEntityCommandPairFromPair,
+  loadCommandCatalogFromManifestPath,
   resolveAliases,
+  resolveCanonicalEntityCommandPairFromPair,
 } from "@/app/api/command-board/chat/manifest-command-tools";
 
-function collectStrictSchemaViolations(
-  schema: unknown,
-  path = "$"
-): string[] {
+function collectStrictSchemaViolations(schema: unknown, path = "$"): string[] {
   if (!schema || typeof schema !== "object") {
     return [];
   }
 
   const node = schema as Record<string, unknown>;
   const violations: string[] = [];
-  if (node.type === "object" && node.properties && typeof node.properties === "object") {
+  if (
+    node.type === "object" &&
+    node.properties &&
+    typeof node.properties === "object"
+  ) {
     if (node.additionalProperties !== false) {
       violations.push(
         `${path}: object with properties must set additionalProperties=false`
@@ -32,15 +33,15 @@ function collectStrictSchemaViolations(
     }
     const keys = Object.keys(node.properties as Record<string, unknown>);
     const required = node.required;
-    if (!Array.isArray(required)) {
-      violations.push(`${path}: object with properties must define required[]`);
-    } else {
+    if (Array.isArray(required)) {
       const missing = keys.filter((key) => !required.includes(key));
       if (missing.length > 0) {
         violations.push(
           `${path}: required[] missing keys [${missing.join(", ")}]`
         );
       }
+    } else {
+      violations.push(`${path}: object with properties must define required[]`);
     }
   }
 
@@ -52,7 +53,9 @@ function collectStrictSchemaViolations(
         );
       });
     } else {
-      violations.push(...collectStrictSchemaViolations(value, `${path}.${key}`));
+      violations.push(
+        ...collectStrictSchemaViolations(value, `${path}.${key}`)
+      );
     }
   }
 
@@ -74,11 +77,13 @@ describe("simulation plan alias resolution", () => {
     expect(sequence).toContain("Event.create");
     expect(sequence.filter((step) => step === "User.create").length).toBe(2);
     expect(sequence).toContain("Menu.create");
-    expect(sequence.filter((step) => step === "MenuDish.create").length).toBe(2);
-    expect(sequence).toContain("BattleBoard.create");
-    expect(sequence.filter((step) => step === "BattleBoard.addDish").length).toBe(
+    expect(sequence.filter((step) => step === "MenuDish.create").length).toBe(
       2
     );
+    expect(sequence).toContain("BattleBoard.create");
+    expect(
+      sequence.filter((step) => step === "BattleBoard.addDish").length
+    ).toBe(2);
     expect(sequence).toContain("EventBudget.create");
 
     expect(sequence).not.toContain("Venue.create");
@@ -107,8 +112,8 @@ describe("simulation plan alias resolution", () => {
     const catalog = loadCommandCatalog();
     const schema = buildSimulationPlanSchema(catalog);
     const items = (
-      (schema.properties as { commandSequence?: { items?: unknown } }).commandSequence
-        ?.items as {
+      (schema.properties as { commandSequence?: { items?: unknown } })
+        .commandSequence?.items as {
         properties?: {
           entityCommand?: { enum?: string[] };
         };
@@ -128,8 +133,8 @@ describe("simulation plan alias resolution", () => {
     const catalog = loadCommandCatalog();
     const schema = buildSimulationPlanSchema(catalog);
     const items = (
-      (schema.properties as { commandSequence?: { items?: unknown } }).commandSequence
-        ?.items as {
+      (schema.properties as { commandSequence?: { items?: unknown } })
+        .commandSequence?.items as {
         properties?: {
           argsKv?: {
             type?: string;
@@ -200,7 +205,7 @@ describe("simulation plan alias resolution", () => {
     expect(parsed?.commandSequence[0]).toMatchObject({
       entity: "CommandBoardCard",
       command: "create",
-      route: "/api/commandboardcard/create",
+      route: "/api/command-board/cards/commands/create",
     });
   });
 
@@ -272,21 +277,42 @@ describe("simulation plan alias resolution", () => {
                 path: "/api/event/create",
                 method: "POST",
                 source: { kind: "command", entity: "Event", command: "create" },
-                params: [{ name: "name", type: "string", required: true, location: "body" }],
+                params: [
+                  {
+                    name: "name",
+                    type: "string",
+                    required: true,
+                    location: "body",
+                  },
+                ],
               },
               {
                 id: "User.create",
                 path: "/api/user/create",
                 method: "POST",
                 source: { kind: "command", entity: "User", command: "create" },
-                params: [{ name: "firstName", type: "string", required: true, location: "body" }],
+                params: [
+                  {
+                    name: "firstName",
+                    type: "string",
+                    required: true,
+                    location: "body",
+                  },
+                ],
               },
               {
                 id: "Menu.create",
                 path: "/api/menu/create",
                 method: "POST",
                 source: { kind: "command", entity: "Menu", command: "create" },
-                params: [{ name: "name", type: "string", required: true, location: "body" }],
+                params: [
+                  {
+                    name: "name",
+                    type: "string",
+                    required: true,
+                    location: "body",
+                  },
+                ],
               },
             ],
           },

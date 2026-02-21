@@ -346,6 +346,7 @@ function latestUserMessage(messages: UIMessage[]): string {
 }
 
 function buildPlanningInstructions(
+  catalog: CommandCatalog,
   userRequest: string,
   aliases: ReturnType<typeof resolveAliases>
 ): string {
@@ -359,9 +360,31 @@ function buildPlanningInstructions(
           )
           .join("\n");
 
+  const commandRegistry = JSON.stringify(
+    catalog.commands.map((command) => ({
+      entityCommand: `${command.source.entity}.${command.source.command}`,
+      route: command.path,
+      method: command.method,
+      params: command.params.map((param) => ({
+        name: param.name,
+        type: param.type,
+        required: param.required,
+        location: param.location,
+      })),
+    })),
+    null,
+    2
+  );
+
   return [
     "Return only JSON matching the provided schema.",
     "Plan executable manifest commands only from canonical route surface.",
+    "Canonical command registry is included below. Do not invent commands, args, or aliases outside this registry.",
+    "Every commandSequence entry must exactly match entityCommand names from the registry.",
+    "Every argsKv name must exactly match a param.name for that entityCommand in the registry.",
+    "For required params in the registry, include values of the correct type.",
+    "For number params, provide numeric values (no quoted numbers).",
+    "For boolean params, provide true/false booleans (no quoted booleans).",
     "For each commandSequence item, provide entityCommand using canonical 'Entity.command' and argsKv only. Do not provide route; route is derived server-side.",
     "argsKv must be an array of {name,value}; never emit args as an object.",
     "Never emit pseudo entities/commands (Venue, Bill, Staff, create_venue, create_bill, add_staff, create_full_menu).",
@@ -371,6 +394,7 @@ function buildPlanningInstructions(
     "- bill -> EventBudget.create",
     "- full menu -> Menu.create + MenuDish.create[] (+ BattleBoard.* optional)",
     "Ordering guidance: Event.create before EventBudget.create and BattleBoard.create; Menu.create before MenuDish.create; BattleBoard.create before BattleBoard.addDish.",
+    `Canonical command registry:\n${commandRegistry}`,
     `Detected aliases from user request:\n${aliasLines}`,
     `User request: ${userRequest}`,
   ].join("\n");
@@ -429,10 +453,7 @@ export function parseSimulationPlan(
     }
     const step = item as Record<string, unknown>;
     if (
-      !(
-        typeof step.entityCommand === "string" &&
-        Array.isArray(step.argsKv)
-      )
+      !(typeof step.entityCommand === "string" && Array.isArray(step.argsKv))
     ) {
       continue;
     }
@@ -444,7 +465,7 @@ export function parseSimulationPlan(
     const route = canonicalPair
       ? catalog.byEntityCommand.get(canonicalPair)
       : null;
-    if (!canonicalPair || !route) {
+    if (!(canonicalPair && route)) {
       continue;
     }
 
@@ -531,7 +552,10 @@ function validateStepArgs(
   catalog: CommandCatalog
 ): string | null {
   const pair = `${step.entity}.${step.command}`;
-  const canonicalPair = resolveCanonicalEntityCommandPairFromPair(catalog, pair);
+  const canonicalPair = resolveCanonicalEntityCommandPairFromPair(
+    catalog,
+    pair
+  );
   const route = canonicalPair
     ? catalog.byEntityCommand.get(canonicalPair)
     : null;
@@ -626,7 +650,10 @@ function defaultArgsForPair(
   catalog: CommandCatalog,
   pair: string
 ): Record<string, unknown> {
-  const canonicalPair = resolveCanonicalEntityCommandPairFromPair(catalog, pair);
+  const canonicalPair = resolveCanonicalEntityCommandPairFromPair(
+    catalog,
+    pair
+  );
   const command = canonicalPair
     ? catalog.byEntityCommand.get(canonicalPair)
     : null;
@@ -646,7 +673,10 @@ function materializeStepArgs(
   catalog: CommandCatalog
 ): Record<string, unknown> {
   const pair = `${step.entity}.${step.command}`;
-  const canonicalPair = resolveCanonicalEntityCommandPairFromPair(catalog, pair);
+  const canonicalPair = resolveCanonicalEntityCommandPairFromPair(
+    catalog,
+    pair
+  );
   const command = canonicalPair
     ? catalog.byEntityCommand.get(canonicalPair)
     : null;
@@ -758,8 +788,10 @@ export function buildFallbackSimulationPlan(
       (term === "staff" && !catalog.byEntityCommand.has("User.create")) ||
       (term === "bill" && !catalog.byEntityCommand.has("EventBudget.create")) ||
       (term === "full menu" &&
-        (!catalog.byEntityCommand.has("Menu.create") ||
-          !catalog.byEntityCommand.has("MenuDish.create")))
+        !(
+          catalog.byEntityCommand.has("Menu.create") &&
+          catalog.byEntityCommand.has("MenuDish.create")
+        ))
     ) {
       unfulfilledIntents.push({
         requested: term,
@@ -788,10 +820,10 @@ function ensureNonEmptyCommandSequence(
   }
 
   const candidatePairs = [
-    ...plan.unfulfilledIntents.flatMap((intent) => intent.closestSupportedSequence),
-    ...(catalog.byEntityCommand.has("Event.create")
-      ? ["Event.create"]
-      : []),
+    ...plan.unfulfilledIntents.flatMap(
+      (intent) => intent.closestSupportedSequence
+    ),
+    ...(catalog.byEntityCommand.has("Event.create") ? ["Event.create"] : []),
     ...catalog.canonicalEntityCommandPairs,
   ];
 
@@ -833,10 +865,13 @@ async function planSimulation(
     apiKey: params.apiKey,
     model: params.model,
     instructions: `${params.systemPrompt}\n\n${buildPlanningInstructions(
+      commandCatalog,
       userRequest,
       aliases
     )}`,
-    input: [{ role: "user", content: userRequest || "No user request provided." }],
+    input: [
+      { role: "user", content: userRequest || "No user request provided." },
+    ],
     tools: [],
     timeoutMs: API_CALL_TIMEOUT_MS,
     textFormat: {
@@ -888,8 +923,9 @@ async function summarizeExecution(params: {
     model: params.agent.model,
     instructions: [
       "Summarize the simulation outcome in strict JSON matching the schema.",
-      "If unsupported actions were requested, include exactly 'Not supported by current route surface' in errors.",
-      "Use concrete, actionable next steps.",
+      "Copy errors verbatim from toolExecutions[].summary — do not paraphrase or substitute error messages.",
+      "Only include 'Not supported by current route surface' in errors if that exact string appears in a toolExecution summary.",
+      "Use concrete, actionable next steps based on the actual errors reported.",
     ].join("\n"),
     input: [
       {
@@ -933,7 +969,8 @@ export async function runManifestActionAgent(
 
   if (plan.unfulfilledIntents.length > 0 && plan.commandSequence.length === 0) {
     return {
-      summary: "Not all requested actions are supported by the current route surface.",
+      summary:
+        "Not all requested actions are supported by the current route surface.",
       actionsTaken: [],
       errors: ["Not supported by current route surface"],
       nextSteps: plan.unfulfilledIntents.flatMap((missing) =>
