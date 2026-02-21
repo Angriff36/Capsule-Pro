@@ -28,6 +28,7 @@ import {
   createPrismaOutboxWriter,
   PrismaStore,
 } from "@repo/manifest-adapters/prisma-store";
+import { loadPrecompiledIR } from "@repo/manifest-adapters/runtime/loadManifests";
 import { ManifestRuntimeEngine } from "@repo/manifest-adapters/runtime-engine";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
