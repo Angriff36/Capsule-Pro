@@ -1,0 +1,363 @@
+/**
+ * Shared workflow test helpers.
+ *
+ * Every workflow spec uses these to:
+ * - Collect console errors, network failures, and 4xx/5xx responses
+ * - Fail hard with full context (screenshot path, error log) on any issue
+ * - Fill forms with realistic data
+ * - Wait for UI state transitions
+ */
+
+import { mkdirSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import type { Page, TestInfo } from "@playwright/test";
+import { expect } from "@playwright/test";
+
+export const BASE_URL =
+  process.env.PLAYWRIGHT_BASE_URL ?? "http://127.0.0.1:2221";
+
+// ─── Timestamp ────────────────────────────────────────────────────────────────
+
+export const TS = Date.now();
+
+export function ts(): string {
+  return new Date().toTimeString().slice(0, 8);
+}
+
+export const log = {
+  step: (msg: string) => process.stderr.write(`\n[${ts()}] 📋 ${msg}\n`),
+  info: (msg: string) => process.stderr.write(`[${ts()}]    ℹ  ${msg}\n`),
+  ok: (msg: string) => process.stderr.write(`[${ts()}]    ✓  ${msg}\n`),
+  warn: (msg: string) => process.stderr.write(`[${ts()}]    ⚠  ${msg}\n`),
+  err: (msg: string) => process.stderr.write(`[${ts()}]    ✗  ${msg}\n`),
+  pass: (msg: string) => process.stderr.write(`[${ts()}] ✅ ${msg}\n`),
+  fail: (msg: string) => process.stderr.write(`[${ts()}] ❌ ${msg}\n`),
+};
+
+// ─── Error collector ──────────────────────────────────────────────────────────
+
+export interface CollectedError {
+  kind: "console" | "network" | "request-failed";
+  url: string;
+  text: string;
+  status?: number;
+  method?: string;
+}
+
+const IGNORE_PATTERNS = [
+  /Clerk.*development keys/i,
+  /Clerk.*deprecated/i,
+  /Arcjet.*127\.0\.0\.1.*development mode/i,
+  /Download the React DevTools/i,
+  /ERR_ABORTED/i,
+  /Failed to load resource.*ERR_NAME_NOT_RESOLVED/i,
+  /Failed to load resource.*net::/i,
+  /localhost:25002/i, // Vercel toolbar companion (disabled locally)
+  /\[Fast Refresh\]/i,
+  /webpack-hmr/i,
+];
+
+function shouldIgnore(text: string): boolean {
+  return IGNORE_PATTERNS.some((re) => re.test(text));
+}
+
+export function attachErrorCollector(
+  page: Page,
+  errors: CollectedError[],
+  baseURL: string
+): void {
+  page.on("console", (msg) => {
+    if (msg.type() !== "error") return;
+    const text = msg.text();
+    if (shouldIgnore(text)) return;
+    log.err(`Console error: ${text}`);
+    errors.push({ kind: "console", url: page.url(), text });
+  });
+
+  page.on("response", async (response) => {
+    const status = response.status();
+    if (status < 400) return;
+    const url = response.url();
+    if (!url.startsWith(baseURL)) return;
+    let body = "";
+    try {
+      body = (await response.text()).slice(0, 300);
+    } catch {
+      // ignore
+    }
+    const text = `HTTP ${status} ${response.request().method()} ${url} — ${body}`;
+    log.err(text);
+    errors.push({
+      kind: "network",
+      url,
+      text,
+      status,
+      method: response.request().method(),
+    });
+  });
+
+  page.on("requestfailed", (request) => {
+    const url = request.url();
+    if (!url.startsWith(baseURL)) return;
+    const errorText = request.failure()?.errorText ?? "unknown";
+    if (shouldIgnore(errorText)) return;
+    log.err(`Request failed: ${url} — ${errorText}`);
+    errors.push({ kind: "request-failed", url, text: errorText });
+  });
+}
+
+// ─── Fail hard ────────────────────────────────────────────────────────────────
+
+export async function failHard(
+  page: Page,
+  testInfo: TestInfo,
+  errors: CollectedError[],
+  context: string
+): Promise<never> {
+  const reportDir = join(process.cwd(), "e2e", "reports");
+  mkdirSync(reportDir, { recursive: true });
+
+  const reportPath = join(
+    reportDir,
+    `failure-${testInfo.title.replace(/\s+/g, "-")}-${TS}.json`
+  );
+
+  const report = {
+    test: testInfo.title,
+    context,
+    url: page.url(),
+    timestamp: new Date().toISOString(),
+    errors,
+  };
+
+  writeFileSync(reportPath, JSON.stringify(report, null, 2));
+  log.fail(`Failure report written to: ${reportPath}`);
+
+  // Attach screenshot
+  const screenshotPath = join(
+    reportDir,
+    `failure-${testInfo.title.replace(/\s+/g, "-")}-${TS}.png`
+  );
+  await page.screenshot({ path: screenshotPath, fullPage: true });
+  log.fail(`Screenshot: ${screenshotPath}`);
+
+  const summary = errors.map((e) => `[${e.kind}] ${e.text}`).join("\n");
+
+  throw new Error(
+    `WORKFLOW FAILURE at "${context}" on ${page.url()}\n\n${summary}\n\nFull report: ${reportPath}`
+  );
+}
+
+// ─── Assert no errors ─────────────────────────────────────────────────────────
+
+export async function assertNoErrors(
+  page: Page,
+  testInfo: TestInfo,
+  errors: CollectedError[],
+  checkpoint: string
+): Promise<void> {
+  if (errors.length > 0) {
+    await failHard(page, testInfo, errors, checkpoint);
+  }
+  log.ok(`No errors at checkpoint: ${checkpoint}`);
+}
+
+// ─── Navigation helpers ───────────────────────────────────────────────────────
+
+export async function goto(
+  page: Page,
+  path: string,
+  opts?: { waitFor?: string | RegExp }
+): Promise<void> {
+  const url = path.startsWith("http") ? path : `${BASE_URL}${path}`;
+  log.info(`→ ${url}`);
+  await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30_000 });
+  await page
+    .waitForLoadState("networkidle", { timeout: 8000 })
+    .catch(() => undefined);
+  if (opts?.waitFor) {
+    await page.waitForSelector(
+      typeof opts.waitFor === "string" ? opts.waitFor : `text=${opts.waitFor}`,
+      { timeout: 10_000 }
+    );
+  }
+}
+
+// ─── Form helpers ─────────────────────────────────────────────────────────────
+
+/** Fill an input by name attribute */
+export async function fillByName(
+  page: Page,
+  name: string,
+  value: string
+): Promise<void> {
+  const el = page
+    .locator(`input[name="${name}"], textarea[name="${name}"]`)
+    .first();
+  await el.waitFor({ state: "visible", timeout: 5000 });
+  await el.fill(value);
+  log.info(`  fill [name=${name}] = "${value}"`);
+}
+
+/** Fill an input by label text */
+export async function fillByLabel(
+  page: Page,
+  label: string | RegExp,
+  value: string
+): Promise<void> {
+  const el = page.getByLabel(label).first();
+  await el.waitFor({ state: "visible", timeout: 5000 });
+  await el.fill(value);
+  log.info(`  fill [label=${label}] = "${value}"`);
+}
+
+/** Select an option in a <select> by name */
+export async function selectByName(
+  page: Page,
+  name: string,
+  value: string
+): Promise<void> {
+  const el = page.locator(`select[name="${name}"]`).first();
+  await el.waitFor({ state: "visible", timeout: 5000 });
+  await el.selectOption(value);
+  log.info(`  select [name=${name}] = "${value}"`);
+}
+
+/** Click a button by text or role */
+export async function clickButton(
+  page: Page,
+  text: string | RegExp,
+  opts?: { timeout?: number }
+): Promise<void> {
+  const btn = page
+    .getByRole("button", { name: text })
+    .or(page.locator("button").filter({ hasText: text }))
+    .first();
+  await btn.waitFor({ state: "visible", timeout: opts?.timeout ?? 8000 });
+  await btn.click();
+  log.info(`  click button "${text}"`);
+}
+
+/** Click a link by text */
+export async function clickLink(
+  page: Page,
+  text: string | RegExp
+): Promise<void> {
+  const link = page.getByRole("link", { name: text }).first();
+  await link.waitFor({ state: "visible", timeout: 8000 });
+  await link.click();
+  log.info(`  click link "${text}"`);
+}
+
+/** Wait for a toast/success message */
+export async function waitForToast(
+  page: Page,
+  pattern: string | RegExp,
+  timeout = 10_000
+): Promise<void> {
+  await page
+    .locator(`[data-sonner-toast], [role="status"], [role="alert"]`)
+    .filter({ hasText: pattern })
+    .first()
+    .waitFor({ state: "visible", timeout });
+  log.ok(`Toast: "${pattern}"`);
+}
+
+/** Wait for a URL pattern */
+export async function waitForURL(
+  page: Page,
+  pattern: string | RegExp,
+  timeout = 15_000
+): Promise<void> {
+  await page.waitForURL(pattern, { timeout });
+  log.ok(`URL: ${page.url()}`);
+}
+
+/** Assert text is visible on page */
+export async function assertVisible(
+  page: Page,
+  text: string | RegExp,
+  timeout = 8000
+): Promise<void> {
+  await expect(page.getByText(text).first()).toBeVisible({ timeout });
+  log.ok(`Visible: "${text}"`);
+}
+
+/** Assert element exists by selector */
+export async function assertExists(
+  page: Page,
+  selector: string,
+  timeout = 8000
+): Promise<void> {
+  await expect(page.locator(selector).first()).toBeVisible({ timeout });
+  log.ok(`Exists: "${selector}"`);
+}
+
+/** Open a dialog/modal by clicking a trigger button */
+export async function openDialog(
+  page: Page,
+  triggerText: string | RegExp
+): Promise<void> {
+  await clickButton(page, triggerText);
+  await page
+    .locator('[role="dialog"]')
+    .first()
+    .waitFor({ state: "visible", timeout: 8000 });
+  log.ok(`Dialog opened via "${triggerText}"`);
+}
+
+const SUBMIT_RE = /save|submit|create|add/i;
+
+/** Submit a form and wait for network idle */
+export async function submitForm(
+  page: Page,
+  submitText: string | RegExp = SUBMIT_RE
+): Promise<void> {
+  await clickButton(page, submitText);
+  await page
+    .waitForLoadState("networkidle", { timeout: 15_000 })
+    .catch(() => undefined);
+  log.ok(`Form submitted via "${submitText}"`);
+}
+
+/** Fill a Radix/shadcn Select component by trigger text */
+export async function fillSelect(
+  page: Page,
+  triggerLabel: string | RegExp,
+  optionText: string | RegExp
+): Promise<void> {
+  // Click the trigger
+  const trigger = page
+    .locator('[role="combobox"]')
+    .filter({ hasText: triggerLabel })
+    .or(page.getByRole("combobox", { name: triggerLabel }))
+    .first();
+  await trigger.waitFor({ state: "visible", timeout: 5000 });
+  await trigger.click();
+  // Pick the option from the listbox
+  const option = page
+    .locator('[role="option"]')
+    .filter({ hasText: optionText })
+    .first();
+  await option.waitFor({ state: "visible", timeout: 5000 });
+  await option.click();
+  log.info(`  select (radix) "${triggerLabel}" → "${optionText}"`);
+}
+
+// ─── Unique test data ─────────────────────────────────────────────────────────
+
+export function unique(prefix: string): string {
+  return `${prefix} E2E-${TS}`;
+}
+
+export const TEST_EMAIL = `e2e-test-${String(TS)}@capsule-test.example.com`;
+export const TEST_DATE = (() => {
+  const d = new Date();
+  d.setDate(d.getDate() + 30);
+  return d.toISOString().slice(0, 10); // YYYY-MM-DD
+})();
+export const TEST_DATE_FAR = (() => {
+  const d = new Date();
+  d.setDate(d.getDate() + 60);
+  return d.toISOString().slice(0, 10);
+})();
