@@ -6,7 +6,7 @@
  *  2. Create a new board (fill name + description, verify redirect)
  *  3. Board canvas renders after creation
  *  4. Created board appears in list
- *  5. Entity browser — fixme (trigger selector unconfirmed)
+ *  5. Entity browser opens and closes
  *  6. AI chat panel — fixme (requires E2E_EXTERNAL=true)
  */
 
@@ -75,10 +75,10 @@ test.describe("Command Board: Full Workflow", () => {
       timeout: 15_000,
     });
 
-    // Verify canvas area renders (react-flow or board content)
-    const canvas = page
-      .locator('.react-flow, [data-testid*="board"], [aria-label*="board" i]')
-      .first();
+    // Verify canvas area renders — exact aria-label from board-flow.tsx:1128
+    const canvas = page.locator(
+      '[aria-label="Command board canvas - drag entities here to add them"]'
+    );
     await expect(canvas).toBeVisible({ timeout: 10_000 });
 
     await assertNoErrors(page, testInfo, errors, "board canvas");
@@ -90,14 +90,33 @@ test.describe("Command Board: Full Workflow", () => {
     await assertNoErrors(page, testInfo, errors, "board in list");
   });
 
-  // biome-ignore lint/suspicious/noSkippedTests: trigger selector not yet confirmed against live UI
-  test.fixme(
-    "entity browser: add entity to board — selectors need verification",
-    async () => {
-      // Entity browser component exists but trigger button selector not confirmed.
-      // Implement once button aria-label/text is verified against live UI.
-    }
-  );
+  test("entity browser opens and closes", async ({ page }, testInfo) => {
+    await goto(page, "/command-board");
+
+    // Create a board so we land on the board detail page
+    await page.getByRole("button", { name: /new board/i }).click();
+    await expect(page.locator('[role="dialog"]')).toBeVisible({
+      timeout: 10_000,
+    });
+    await page.locator("input#board-name").fill(unique("EntityBrowserE2E"));
+    await page.locator('button[type="submit"]').click();
+    await expect(page).toHaveURL(/command-board\/[a-f0-9-]+/, {
+      timeout: 15_000,
+    });
+
+    // Open entity browser — trigger from board-header.tsx:394
+    await page.locator('button[title="Browse Entities (Ctrl+E)"]').click();
+
+    // Panel should be visible — from entity-browser.tsx:600
+    const panel = page.locator('section[aria-label="Entity Browser"]');
+    await expect(panel).toBeVisible({ timeout: 10_000 });
+
+    // Close by pressing Escape
+    await page.keyboard.press("Escape");
+    await expect(panel).not.toBeVisible({ timeout: 5000 });
+
+    await assertNoErrors(page, testInfo, errors, "entity browser");
+  });
 
   // biome-ignore lint/suspicious/noSkippedTests: requires E2E_EXTERNAL=true to avoid LLM cost in CI
   test.fixme(

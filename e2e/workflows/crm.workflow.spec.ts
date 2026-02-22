@@ -69,15 +69,16 @@ test.describe("CRM: Full Workflow", () => {
       timeout: 10_000,
     });
 
-    // Click through each tab and verify no errors
+    // Click through each tab and assert the tab panel becomes visible
     const tabs = page.locator('[role="tab"]');
     const tabCount = await tabs.count();
     expect(tabCount).toBeGreaterThan(0);
 
     for (let i = 0; i < tabCount; i++) {
       await tabs.nth(i).click();
-      // Brief settle — no arbitrary waits, just let the tab panel render
-      await page.waitForTimeout(300);
+      // Each tab must activate a visible tab panel — hard fail if not
+      const panel = page.locator('[role="tabpanel"]');
+      await expect(panel).toBeVisible({ timeout: 5000 });
     }
 
     await assertNoErrors(page, testInfo, errors, "client detail tabs");
