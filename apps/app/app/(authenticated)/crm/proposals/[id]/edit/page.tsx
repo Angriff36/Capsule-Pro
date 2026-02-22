@@ -72,13 +72,18 @@ export default async function EditProposalPage({
       }
     }
 
+    const toUuid = (v: FormDataEntryValue | null): string | null => {
+      if (!v || v === "__none__" || v === "") return null;
+      return v as string;
+    };
+
     const input = {
       title: formData.get("title") as string,
-      clientId: formData.get("clientId") as string | null,
-      leadId: formData.get("leadId") as string | null,
-      eventId: formData.get("eventId") as string | null,
+      clientId: toUuid(formData.get("clientId")),
+      leadId: toUuid(formData.get("leadId")),
+      eventId: toUuid(formData.get("eventId")),
       eventDate: formData.get("eventDate") as string | null,
-      eventType: formData.get("eventType") as string | null,
+      eventType: (() => { const v = formData.get("eventType") as string | null; return v === "__none__" || v === "" ? null : v; })(),
       guestCount: formData.get("guestCount")
         ? Number(formData.get("guestCount"))
         : null,

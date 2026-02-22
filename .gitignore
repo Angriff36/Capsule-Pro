@@ -347,6 +347,7 @@ IMPLEMENTATION_SUMMARY_BATTLE_BOARD.md
 create_timeline_tasks_table.sql
 test-results/
 e2e/.auth/
+e2e/reports/
 test-*.spec.ts
 **/battle-board/README.md
 nul

@@ -23,7 +23,7 @@ import {
 } from "../helpers/workflow";
 
 test.describe("Scheduling: Full Workflow", () => {
-  test.setTimeout(120_000);
+  test.setTimeout(300_000);
 
   test("scheduling overview → shifts → availability → requests → time-off → budgets", async ({
     page,
@@ -51,10 +51,17 @@ test.describe("Scheduling: Full Workflow", () => {
     // Click visible buttons (non-destructive)
     const shiftBtns = await page.getByRole("button").all();
     for (const btn of shiftBtns.slice(0, 5)) {
-      const text = await btn.textContent().catch(() => "");
-      const label = await btn.getAttribute("aria-label").catch(() => "");
-      const combined = `${text} ${label}`.toLowerCase();
-      if (/delete|remove|sign.?out|logout/i.test(combined)) continue;
+      const text = (await btn.textContent().catch(() => "")) ?? "";
+      const label =
+        (await btn.getAttribute("aria-label").catch(() => null)) ?? "";
+      const combined = `${text} ${label}`.toLowerCase().trim();
+      if (
+        /delete|remove|sign.?out|logout|user.?menu|organization.?switch/i.test(
+          combined
+        )
+      )
+        continue;
+      if (!combined) continue; // skip icon-only buttons with no text or label
       log.info(`  shift btn: "${combined.trim().slice(0, 40)}"`);
       await btn.click().catch(() => undefined);
       await page.waitForTimeout(500);

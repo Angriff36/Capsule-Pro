@@ -19,9 +19,9 @@ export const createEventSchema = z.object({
       "cancelled",
     ])
     .default("confirmed"),
-  venueName: z.string().optional(),
-  venueAddress: z.string().optional(),
-  notes: z.string().optional(),
+  venueName: z.string().optional().nullable(),
+  venueAddress: z.string().optional().nullable(),
+  notes: z.string().optional().nullable(),
   budget: z.coerce
     .number()
     .positive("Budget must be a positive number")
@@ -30,9 +30,10 @@ export const createEventSchema = z.object({
   ticketPrice: z.coerce
     .number()
     .min(0, "Ticket price must be 0 or higher")
-    .optional(),
-  ticketTier: z.string().optional(),
-  eventFormat: z.string().optional(),
+    .optional()
+    .nullable(),
+  ticketTier: z.string().optional().nullable(),
+  eventFormat: z.string().optional().nullable(),
   accessibilityOptions: z.array(z.string()).default([]),
   featuredMediaUrl: z.string().optional().nullable(),
   tags: z.array(z.string()).default([]),

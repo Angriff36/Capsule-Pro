@@ -122,7 +122,7 @@ export function ProposalForm({
   const [templates, setTemplates] = useState<TemplateOption[]>([]);
   const [isLoadingTemplates, setIsLoadingTemplates] = useState(true);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(
-    proposal?.templateId || ""
+    proposal?.templateId || "__none__"
   );
 
   const [lineItems, setLineItems] = useState<LineItem[]>([]);
@@ -156,7 +156,7 @@ export function ProposalForm({
   useEffect(() => {
     async function fetchClients() {
       try {
-        const response = await apiFetch("/api/crm/clients?limit=1000");
+        const response = await apiFetch("/api/crm/clients?limit=100");
         if (!response.ok) {
           throw new Error("Failed to fetch clients");
         }
@@ -247,7 +247,7 @@ export function ProposalForm({
         <input name="proposalId" type="hidden" value={proposal.id} />
       )}
       <input name="lineItems" type="hidden" value={JSON.stringify(lineItems)} />
-      <input name="templateId" type="hidden" value={selectedTemplateId} />
+      <input name="templateId" type="hidden" value={selectedTemplateId === "__none__" ? "" : selectedTemplateId} />
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main Form */}
@@ -271,7 +271,7 @@ export function ProposalForm({
                       <SelectValue placeholder="Select a template (optional)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No template</SelectItem>
+                      <SelectItem value="__none__">No template</SelectItem>
                       {isLoadingTemplates ? (
                         <SelectItem disabled value="loading">
                           Loading templates...
@@ -303,14 +303,14 @@ export function ProposalForm({
                 <div className="space-y-2">
                   <Label htmlFor="clientId">Client</Label>
                   <Select
-                    defaultValue={proposal?.clientId || ""}
+                    defaultValue={proposal?.clientId || "__none__"}
                     name="clientId"
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select a client" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No client selected</SelectItem>
+                      <SelectItem value="__none__">No client selected</SelectItem>
                       {isLoadingClients ? (
                         <SelectItem disabled value="loading">
                           Loading clients...
@@ -329,14 +329,14 @@ export function ProposalForm({
                 <div className="space-y-2">
                   <Label htmlFor="eventType">Event Type</Label>
                   <Select
-                    defaultValue={proposal?.eventType || ""}
+                    defaultValue={proposal?.eventType || "__none__"}
                     name="eventType"
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Select event type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">Not specified</SelectItem>
+                      <SelectItem value="__none__">Not specified</SelectItem>
                       {eventTypes.map((type) => (
                         <SelectItem key={type} value={type}>
                           {type}

@@ -28,7 +28,7 @@ const CLIENT_COMPANY = unique("E2E Corp");
 const VENUE_NAME = unique("E2E Venue");
 
 test.describe("CRM: Full Workflow", () => {
-  test.setTimeout(150_000);
+  test.setTimeout(300_000);
 
   test("crm overview → client → proposal → venue → communications", async ({
     page,

@@ -181,6 +181,12 @@ export async function getProposalById(id: string) {
     where: {
       AND: [{ tenantId }, { id }, { deletedAt: null }],
     },
+    include: {
+      lineItems: {
+        where: { deletedAt: null },
+        orderBy: { sortOrder: "asc" },
+      },
+    },
   });
 
   invariant(proposal, "Proposal not found");
@@ -199,10 +205,6 @@ export async function createProposal(input: CreateProposalInput) {
 
   // Validate input
   invariant(input.title?.trim(), "Title is required");
-  invariant(
-    input.clientId || input.leadId || input.eventId,
-    "At least one of clientId, leadId, or eventId must be provided"
-  );
 
   // Fetch template if provided and apply defaults
   let templateDefaults: {

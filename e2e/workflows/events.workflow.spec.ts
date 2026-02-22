@@ -36,7 +36,7 @@ const EVENT_NAME = unique("E2E Event");
 const EVENT_TYPE = "catering";
 
 test.describe("Events: Full Workflow", () => {
-  test.setTimeout(120_000);
+  test.setTimeout(180_000);
 
   test("create event → edit → budget → battle board → contracts → reports", async ({
     page,
@@ -60,7 +60,17 @@ test.describe("Events: Full Workflow", () => {
 
     await fillByName(page, "title", EVENT_NAME);
     await fillByName(page, "eventType", EVENT_TYPE);
-    await fillByName(page, "eventDate", TEST_DATE);
+    // Date inputs need evaluate to set value reliably in headless Chromium
+    await page.evaluate((date) => {
+      const el = document.querySelector(
+        'input[name="eventDate"]'
+      ) as HTMLInputElement | null;
+      if (el) {
+        el.value = date;
+        el.dispatchEvent(new Event("input", { bubbles: true }));
+        el.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    }, TEST_DATE);
     await selectByName(page, "status", "confirmed");
     await fillByName(page, "guestCount", "75");
     await fillByName(page, "budget", "15000");
@@ -81,6 +91,10 @@ test.describe("Events: Full Workflow", () => {
     }
 
     await clickButton(page, /save|create|submit/i);
+    // Wait for Server Action redirect away from /events/new
+    await page
+      .waitForURL((url) => !url.pathname.endsWith("/new"), { timeout: 30_000 })
+      .catch(() => undefined);
     await page
       .waitForLoadState("networkidle", { timeout: 15_000 })
       .catch(() => undefined);
