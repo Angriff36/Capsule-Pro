@@ -3,133 +3,91 @@
  *
  * Covers:
  *  1. Inventory overview
- *  2. Items list → open create dialog (verify it works)
- *  3. Stock levels page
- *  4. Forecasts page
- *  5. Recipe costs page
- *  6. Assert no errors throughout
+ *  2. Items list loads
+ *  3. Create inventory item via dialog (fill + submit + verify toast + verify list)
+ *  4. Stock levels page
+ *  5. Forecasts page
+ *  6. Recipe costs page
  */
 
-import { test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import type { CollectedError } from "../helpers/workflow";
 import {
   assertNoErrors,
   attachErrorCollector,
-  failHard,
+  BASE_URL,
   goto,
-  log,
   unique,
 } from "../helpers/workflow";
 
-const ITEM_NAME = unique("E2E Inventory Item");
-const ITEM_NUMBER = `E2E-${Date.now()}`;
+const ITEM_NAME = unique("ItemE2E");
+const ITEM_NUMBER = `INV-E2E-${Date.now()}`;
 
 test.describe("Inventory: Full Workflow", () => {
-  test.setTimeout(300_000);
+  let errors: CollectedError[] = [];
 
-  test("inventory overview → create item → stock levels → forecasts → recipe costs", async ({
-    page,
-    baseURL,
-  }, testInfo) => {
-    const errors: CollectedError[] = [];
-    attachErrorCollector(page, errors, baseURL ?? "http://127.0.0.1:2221");
+  test.beforeEach(async ({ page }) => {
+    errors = [];
+    attachErrorCollector(page, errors, BASE_URL);
+  });
 
-    // ── 1. Inventory overview ─────────────────────────────────────────────────
-    log.step("1. Inventory overview");
+  test("inventory overview loads", async ({ page }, testInfo) => {
     await goto(page, "/inventory");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
+    await expect(page).toHaveURL(/\/inventory/);
     await assertNoErrors(page, testInfo, errors, "inventory overview");
+  });
 
-    // ── 2. Items list ─────────────────────────────────────────────────────────
-    log.step("2. Items list");
+  test("items list loads", async ({ page }, testInfo) => {
     await goto(page, "/inventory/items");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
+    await expect(page).toHaveURL(/inventory\/items/);
     await assertNoErrors(page, testInfo, errors, "items list");
+  });
 
-    // ── 3. Create inventory item (open dialog, fill, close) ───────────────────
-    log.step("3. Create inventory item");
-    const addBtn = page
-      .getByRole("button", { name: /add item|create item|new item/i })
-      .first();
+  test("create inventory item via dialog", async ({ page }, testInfo) => {
+    await goto(page, "/inventory/items");
 
-    const addBtnVisible = await addBtn
-      .isVisible({ timeout: 5000 })
-      .catch(() => false);
-    if (addBtnVisible) {
-      await addBtn.click();
-      const dialogVisible = await page
-        .locator('[role="dialog"]')
-        .first()
-        .waitFor({ state: "visible", timeout: 8000 })
-        .then(() => true)
-        .catch(() => false);
+    // Open create dialog
+    await page.getByRole("button", { name: /new item|create item/i }).click();
 
-      if (dialogVisible) {
-        // Fill required fields inside the dialog
-        const nameInput = page
-          .locator(
-            '[role="dialog"] input[placeholder*="name" i], [role="dialog"] input[id*="name" i]'
-          )
-          .first();
-        if (await nameInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-          await nameInput.fill(ITEM_NAME);
-        }
+    // Wait for dialog
+    const dialog = page.locator('[role="dialog"]');
+    await expect(dialog).toBeVisible({ timeout: 10_000 });
 
-        const itemNumInput = page
-          .locator(
-            '[role="dialog"] input[placeholder*="item number" i], [role="dialog"] input[id*="item_number" i]'
-          )
-          .first();
-        if (
-          await itemNumInput.isVisible({ timeout: 3000 }).catch(() => false)
-        ) {
-          await itemNumInput.fill(ITEM_NUMBER);
-        }
+    // Fill required fields — hard fail if missing
+    await page.locator("input#item_number").fill(ITEM_NUMBER);
+    await page.locator("input#name").fill(ITEM_NAME);
+    await page.locator("input#unit_cost").fill("12.50");
+    await page.locator("input#quantity_on_hand").fill("100");
 
-        // Close dialog with Escape (skip submission to avoid slow API call)
-        await page.keyboard.press("Escape");
-        await page.waitForTimeout(500);
-        log.ok("Inventory item dialog opened and closed successfully");
-      } else {
-        log.warn("Dialog did not appear — skipping item creation");
-      }
-    } else {
-      log.warn("Add item button not found — skipping item creation");
-    }
+    // Submit — actually create the item
+    await dialog.locator('button[type="submit"]').click();
+
+    // Verify success toast
+    await expect(page.getByText(/inventory item created/i)).toBeVisible({
+      timeout: 15_000,
+    });
+
+    // Verify item appears in the list
+    await expect(page.getByText(ITEM_NAME)).toBeVisible({ timeout: 10_000 });
+
     await assertNoErrors(page, testInfo, errors, "create inventory item");
+  });
 
-    // ── 4. Stock levels ───────────────────────────────────────────────────────
-    log.step("4. Stock levels");
+  test("stock levels page loads", async ({ page }, testInfo) => {
     await goto(page, "/inventory/levels");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
+    await expect(page).toHaveURL(/inventory\/levels/);
     await assertNoErrors(page, testInfo, errors, "stock levels");
+  });
 
-    // ── 5. Forecasts ──────────────────────────────────────────────────────────
-    log.step("5. Forecasts");
+  test("forecasts page loads", async ({ page }, testInfo) => {
     await goto(page, "/inventory/forecasts");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
+    await expect(page).toHaveURL(/inventory\/forecasts/);
     await assertNoErrors(page, testInfo, errors, "forecasts");
+  });
 
-    // ── 6. Recipe costs ───────────────────────────────────────────────────────
-    log.step("6. Recipe costs");
+  test("recipe costs page loads", async ({ page }, testInfo) => {
     await goto(page, "/inventory/recipe-costs");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
+    await expect(page).toHaveURL(/inventory\/recipe-costs/);
     await assertNoErrors(page, testInfo, errors, "recipe costs");
-
-    // ── Final ─────────────────────────────────────────────────────────────────
-    if (errors.length > 0) {
-      await failHard(page, testInfo, errors, "final error check");
-    }
-    log.pass("Inventory workflow complete — no errors");
   });
 });
