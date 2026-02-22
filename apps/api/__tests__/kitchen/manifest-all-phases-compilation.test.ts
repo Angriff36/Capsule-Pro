@@ -1,7 +1,7 @@
 /**
- * Compilation Test: All 25 Phase Manifest Files
+ * Compilation Test: All 28 Phase Manifest Files
  *
- * Validates that every new manifest file (Phases 1–7):
+ * Validates that every manifest file (Phases 1–7 + Governance):
  * 1. Can be read from disk
  * 2. Compiles to IR via compileToIR() without errors
  * 3. Contains the expected entity names
@@ -120,6 +120,38 @@ const MANIFEST_SPECS: ManifestSpec[] = [
       {
         name: "PrepMethod",
         commands: ["create", "update", "deactivate"],
+      },
+    ],
+  },
+
+  // ── Phase 1 Governance: New entities for plan-step migration ──────────────
+  {
+    manifest: "event-dish-rules",
+    phase: "Phase 1 Gov",
+    entities: [
+      {
+        name: "EventDish",
+        commands: ["create", "remove"],
+      },
+    ],
+  },
+  {
+    manifest: "event-staff-rules",
+    phase: "Phase 1 Gov",
+    entities: [
+      {
+        name: "EventStaff",
+        commands: ["assign", "unassign"],
+      },
+    ],
+  },
+  {
+    manifest: "role-policy-rules",
+    phase: "Phase 1 Gov",
+    entities: [
+      {
+        name: "RolePolicy",
+        commands: ["update", "grant", "revoke"],
       },
     ],
   },
@@ -468,6 +500,10 @@ const EXPECTED_ENTITY_MAPPING: Record<string, string> = {
   Dish: "dish-rules",
   Container: "container-rules",
   PrepMethod: "prep-method-rules",
+  // Phase 1 Governance
+  EventDish: "event-dish-rules",
+  EventStaff: "event-staff-rules",
+  RolePolicy: "role-policy-rules",
   // Phase 2
   Event: "event-rules",
   EventProfitability: "event-rules",
@@ -529,8 +565,8 @@ async function compileManifest(manifestName: string) {
 
 describe("Manifest All-Phases Compilation", () => {
   // Verify we're testing exactly 25 manifests
-  it("should define exactly 25 manifest specs", () => {
-    expect(MANIFEST_SPECS).toHaveLength(25);
+  it("should define exactly 28 manifest specs", () => {
+    expect(MANIFEST_SPECS).toHaveLength(28);
   });
 
   // ── Per-manifest compilation tests ─────────────────────────────────────
