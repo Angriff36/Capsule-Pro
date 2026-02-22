@@ -1,0 +1,84 @@
+// Administration - Role Policy Rules
+// Manifest spec for role-based permission management
+// SECURITY: All commands require admin/owner role (adminOnly policy)
+
+entity RolePolicy {
+  property required id: string
+  property required tenantId: string
+  property required roleId: string
+  property roleName: string = ""
+  property permissions: string = "[]"
+  property description: string = ""
+  property isActive: boolean = true
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isDeleted: boolean = self.deletedAt > 0
+  computed hasPermissions: boolean = self.permissions != "[]" and self.permissions != ""
+
+  constraint requireRole: self.roleId != null and self.roleId != "" "Role ID is required"
+
+  command update(roleName: string, permissions: string, description: string, isActive: boolean) {
+    guard self.deletedAt == 0 "Cannot update a deleted role policy"
+
+    mutate roleName = roleName
+    mutate permissions = permissions
+    mutate description = description
+    mutate isActive = isActive
+    mutate updatedAt = now()
+
+    emit RolePolicyUpdated
+  }
+
+  command grant(permission: string, grantedBy: string) {
+    guard self.deletedAt == 0 "Cannot grant permissions on a deleted role policy"
+    guard permission != null and permission != "" "Permission is required"
+
+    mutate updatedAt = now()
+
+    emit RolePolicyPermissionGranted
+  }
+
+  command revoke(permission: string, revokedBy: string) {
+    guard self.deletedAt == 0 "Cannot revoke permissions on a deleted role policy"
+    guard permission != null and permission != "" "Permission is required"
+
+    mutate updatedAt = now()
+
+    emit RolePolicyPermissionRevoked
+  }
+
+  store RolePolicy in memory
+}
+
+// SECURITY REQUIREMENT: Every RolePolicy command MUST be admin/owner only.
+// This policy applies to ALL commands in this manifest.
+policy adminOnly execute: user.role in ["admin", "owner"] "Only admins and owners can manage role policies"
+
+event RolePolicyUpdated: "admin.role-policy.updated" {
+  rolePolicyId: string
+  tenantId: string
+  roleId: string
+  roleName: string
+  isActive: boolean
+  updatedAt: number
+}
+
+event RolePolicyPermissionGranted: "admin.role-policy.permission_granted" {
+  rolePolicyId: string
+  tenantId: string
+  roleId: string
+  permission: string
+  grantedBy: string
+  grantedAt: number
+}
+
+event RolePolicyPermissionRevoked: "admin.role-policy.permission_revoked" {
+  rolePolicyId: string
+  tenantId: string
+  roleId: string
+  permission: string
+  revokedBy: string
+  revokedAt: number
+}

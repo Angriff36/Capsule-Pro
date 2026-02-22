@@ -1,0 +1,72 @@
+// Events & Catering - Event Dish Rules
+// Manifest spec for event-to-dish associations (event menu composition)
+
+entity EventDish {
+  property required id: string
+  property required tenantId: string
+  property required eventId: string
+  property required dishId: string
+  property quantity: number = 1
+  property notes: string = ""
+  property courseLabel: string = ""
+  property sortOrder: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isDeleted: boolean = self.deletedAt > 0
+
+  constraint requireEvent: self.eventId != null and self.eventId != "" "Event ID is required"
+  constraint requireDish: self.dishId != null and self.dishId != "" "Dish ID is required"
+  constraint positiveQuantity: self.quantity > 0 "Quantity must be positive"
+
+  command create(eventId: string, dishId: string, quantity: number, notes: string, courseLabel: string, sortOrder: number) {
+    guard eventId != null and eventId != "" "Event ID is required"
+    guard dishId != null and dishId != "" "Dish ID is required"
+    guard quantity > 0 "Quantity must be positive"
+
+    mutate eventId = eventId
+    mutate dishId = dishId
+    mutate quantity = quantity
+    mutate notes = notes
+    mutate courseLabel = courseLabel
+    mutate sortOrder = sortOrder
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit EventDishCreated
+  }
+
+  command remove(reason: string, userId: string) {
+    guard self.deletedAt == 0 "Event dish is already removed"
+
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit EventDishRemoved
+  }
+
+  store EventDish in memory
+}
+
+policy EventDishManagement execute: user.role in ["event_coordinator", "manager", "admin"] "Event coordinators and above can manage event dishes"
+
+event EventDishCreated: "events.event-dish.created" {
+  eventDishId: string
+  tenantId: string
+  eventId: string
+  dishId: string
+  quantity: number
+  courseLabel: string
+  createdAt: number
+}
+
+event EventDishRemoved: "events.event-dish.removed" {
+  eventDishId: string
+  tenantId: string
+  eventId: string
+  dishId: string
+  reason: string
+  userId: string
+  removedAt: number
+}
