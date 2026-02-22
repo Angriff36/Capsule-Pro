@@ -62,7 +62,6 @@ interface EventOverviewCardProps {
   };
   isLive: boolean;
   isPast: boolean;
-  isUpcoming: boolean;
   isSoldOut: boolean;
   isLimited: boolean;
   availability: number;
@@ -73,7 +72,6 @@ interface EventOverviewCardProps {
   timeZoneLabel: string;
   eventDate: Date;
   eventStart: Date;
-  now: Date;
   isSaved: boolean;
   saveReady: boolean;
   featuredMediaUrl: string | null;
@@ -88,6 +86,143 @@ interface EventOverviewCardProps {
   missingFields: string[];
 }
 
+function getTimeBadgeClass(isLive: boolean, isPast: boolean): string {
+  if (isLive) {
+    return "border-success/40 bg-success/20 text-success";
+  }
+  if (isPast) {
+    return "border-slate-500/40 bg-slate-500/10 text-foreground";
+  }
+  return "border-info/40 bg-info/10 text-info";
+}
+
+function getAvailabilityLabel(
+  isSoldOut: boolean,
+  isLimited: boolean,
+  capacity: number,
+  availability: number
+): string {
+  if (isSoldOut) {
+    return "Sold out";
+  }
+  if (isLimited) {
+    return "Limited seats";
+  }
+  if (capacity > 0) {
+    return `${Math.max(availability, 0)} seats available`;
+  }
+  return "Availability not set";
+}
+
+function getRsvpProgressLabel(isSoldOut: boolean, isLimited: boolean): string {
+  if (isSoldOut) {
+    return "Guest list is full";
+  }
+  if (isLimited) {
+    return "Seats are nearly full";
+  }
+  return "Guest list still open";
+}
+
+interface OperationsSnapshotProps {
+  rsvpCount: number;
+  capacity: number;
+  prepTasks: PrepTaskSummaryClient[];
+  taskSummary: {
+    pending: number;
+    in_progress: number;
+    completed: number;
+    canceled: number;
+    other: number;
+  };
+  inventoryStats: { tracked: number; low: number };
+  aggregatedIngredientsCount: number;
+  isSoldOut: boolean;
+  isLimited: boolean;
+}
+
+function OperationsSnapshot({
+  rsvpCount,
+  capacity,
+  prepTasks,
+  taskSummary,
+  inventoryStats,
+  aggregatedIngredientsCount,
+  isSoldOut,
+  isLimited,
+}: OperationsSnapshotProps) {
+  return (
+    <Card className="border-border/60 bg-card/70 text-foreground">
+      <CardHeader className="space-y-1">
+        <CardTitle className="flex items-center gap-2 text-lg">
+          <ActivityIcon className="size-5 text-success" />
+          Operations snapshot
+        </CardTitle>
+        <CardDescription className="text-muted-foreground">
+          Live readiness across guests, tasks, and inventory.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="rounded-2xl border border-border/70 bg-muted/40 p-4">
+          <div className="flex items-center justify-between text-xs text-muted-foreground">
+            <span>RSVP progress</span>
+            <span>
+              {capacity > 0 ? `${rsvpCount}/${capacity}` : `${rsvpCount} RSVPs`}
+            </span>
+          </div>
+          <Progress
+            className="mt-2"
+            value={
+              capacity > 0 ? Math.min((rsvpCount / capacity) * 100, 100) : 0
+            }
+          />
+          <div className="mt-2 text-xs text-muted-foreground">
+            {getRsvpProgressLabel(isSoldOut, isLimited)}
+          </div>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded-2xl border border-border/70 bg-muted/40 p-4">
+            <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+              Prep tasks
+            </div>
+            <div className="mt-2 text-2xl font-semibold">
+              {prepTasks.length}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {taskSummary.pending} pending • {taskSummary.in_progress} in
+              progress • {taskSummary.completed} done
+            </div>
+          </div>
+          <div className="rounded-2xl border border-border/70 bg-muted/40 p-4">
+            <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+              Inventory coverage
+            </div>
+            <div className="mt-2 text-2xl font-semibold">
+              {inventoryStats.tracked}/{aggregatedIngredientsCount}
+            </div>
+            <div className="text-xs text-muted-foreground">
+              {inventoryStats.low > 0
+                ? `${inventoryStats.low} low stock alerts`
+                : "All items tracked"}
+            </div>
+          </div>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button asChild size="sm" variant="outline">
+            <a href="#guests">Guest list</a>
+          </Button>
+          <Button asChild size="sm" variant="outline">
+            <a href="#recipes">Menu intelligence</a>
+          </Button>
+          <Button asChild size="sm" variant="outline">
+            <a href="#explore">Explore events</a>
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export function EventOverviewCard({
   event,
   rsvpCount,
@@ -97,7 +232,6 @@ export function EventOverviewCard({
   taskSummary,
   isLive,
   isPast,
-  isUpcoming,
   isSoldOut,
   isLimited,
   availability,
@@ -107,7 +241,6 @@ export function EventOverviewCard({
   ticketPriceLabel,
   timeZoneLabel,
   eventDate,
-  now,
   isSaved,
   saveReady,
   featuredMediaUrl,
@@ -133,12 +266,14 @@ export function EventOverviewCard({
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="flex items-start gap-2">
               <svg
+                aria-hidden="true"
                 className="mt-0.5 size-4 text-amber-600"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
                 viewBox="0 0 24 24"
               >
+                <title>Warning</title>
                 <path
                   d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
                   strokeLinecap="round"
@@ -187,11 +322,7 @@ export function EventOverviewCard({
                 <Badge
                   className={cn(
                     "border text-[11px]",
-                    isLive
-                      ? "border-success/40 bg-success/20 text-success"
-                      : isPast
-                        ? "border-slate-500/40 bg-slate-500/10 text-foreground"
-                        : "border-info/40 bg-info/10 text-info"
+                    getTimeBadgeClass(isLive, isPast)
                   )}
                   variant="outline"
                 >
@@ -234,6 +365,11 @@ export function EventOverviewCard({
                 )}
               </div>
               <div className="space-y-2">
+                {event.eventNumber && (
+                  <p className="font-mono text-xs font-semibold tracking-widest text-muted-foreground uppercase">
+                    {event.eventNumber}
+                  </p>
+                )}
                 <CardTitle className="text-3xl font-semibold tracking-tight">
                   {event.title}
                 </CardTitle>
@@ -327,13 +463,12 @@ export function EventOverviewCard({
                       : "Capacity not set"}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    {isSoldOut
-                      ? "Sold out"
-                      : isLimited
-                        ? "Limited seats"
-                        : capacity > 0
-                          ? `${Math.max(availability, 0)} seats available`
-                          : "Availability not set"}
+                    {getAvailabilityLabel(
+                      isSoldOut,
+                      isLimited,
+                      capacity,
+                      availability
+                    )}
                   </div>
                 </div>
               </div>
@@ -353,6 +488,7 @@ export function EventOverviewCard({
                   variant="outline"
                 >
                   <svg
+                    aria-hidden="true"
                     className={cn("mr-2 size-4", isSaved && "fill-current")}
                     fill="none"
                     stroke="currentColor"
@@ -361,6 +497,7 @@ export function EventOverviewCard({
                     strokeWidth="2"
                     viewBox="0 0 24 24"
                   >
+                    <title>{isSaved ? "Saved" : "Save"}</title>
                     <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
                   </svg>
                   {isSaved ? "Saved" : "Save"}
@@ -447,82 +584,16 @@ export function EventOverviewCard({
               </div>
             </div>
 
-            <Card className="border-border/60 bg-card/70 text-foreground">
-              <CardHeader className="space-y-1">
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <ActivityIcon className="size-5 text-success" />
-                  Operations snapshot
-                </CardTitle>
-                <CardDescription className="text-muted-foreground">
-                  Live readiness across guests, tasks, and inventory.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="rounded-2xl border border-border/70 bg-muted/40 p-4">
-                  <div className="flex items-center justify-between text-xs text-muted-foreground">
-                    <span>RSVP progress</span>
-                    <span>
-                      {capacity > 0
-                        ? `${rsvpCount}/${capacity}`
-                        : `${rsvpCount} RSVPs`}
-                    </span>
-                  </div>
-                  <Progress
-                    className="mt-2"
-                    value={
-                      capacity > 0
-                        ? Math.min((rsvpCount / capacity) * 100, 100)
-                        : 0
-                    }
-                  />
-                  <div className="mt-2 text-xs text-muted-foreground">
-                    {isSoldOut
-                      ? "Guest list is full"
-                      : isLimited
-                        ? "Seats are nearly full"
-                        : "Guest list still open"}
-                  </div>
-                </div>
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-border/70 bg-muted/40 p-4">
-                    <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-                      Prep tasks
-                    </div>
-                    <div className="mt-2 text-2xl font-semibold">
-                      {prepTasks.length}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {taskSummary.pending} pending • {taskSummary.in_progress}{" "}
-                      in progress • {taskSummary.completed} done
-                    </div>
-                  </div>
-                  <div className="rounded-2xl border border-border/70 bg-muted/40 p-4">
-                    <div className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-                      Inventory coverage
-                    </div>
-                    <div className="mt-2 text-2xl font-semibold">
-                      {inventoryStats.tracked}/{aggregatedIngredientsCount}
-                    </div>
-                    <div className="text-xs text-muted-foreground">
-                      {inventoryStats.low > 0
-                        ? `${inventoryStats.low} low stock alerts`
-                        : "All items tracked"}
-                    </div>
-                  </div>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <Button asChild size="sm" variant="outline">
-                    <a href="#guests">Guest list</a>
-                  </Button>
-                  <Button asChild size="sm" variant="outline">
-                    <a href="#recipes">Menu intelligence</a>
-                  </Button>
-                  <Button asChild size="sm" variant="outline">
-                    <a href="#explore">Explore events</a>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+            <OperationsSnapshot
+              aggregatedIngredientsCount={aggregatedIngredientsCount}
+              capacity={capacity}
+              inventoryStats={inventoryStats}
+              isLimited={isLimited}
+              isSoldOut={isSoldOut}
+              prepTasks={prepTasks}
+              rsvpCount={rsvpCount}
+              taskSummary={taskSummary}
+            />
 
             <EventBriefingCard eventId={event.id} eventTitle={event.title} />
           </div>
