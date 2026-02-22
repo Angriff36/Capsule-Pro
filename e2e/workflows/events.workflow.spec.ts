@@ -2,181 +2,111 @@
  * Events Module — Full Workflow Test
  *
  * Covers:
- *  1. Navigate to Events list
- *  2. Create a new event (fill every form field)
- *  3. View event detail
- *  4. Edit the event
- *  5. Add a budget line
- *  6. View battle board for the event
- *  7. Navigate to contracts list
- *  8. Navigate to reports list
- *  9. Navigate to budgets list
- * 10. Assert no console errors or network failures throughout
- *
- * Fails hard on any error — writes report + screenshot to e2e/reports/
+ *  1. Events list loads
+ *  2. Create a new event (all fields) → verify redirect + detail page
+ *  3. Events list shows created event
+ *  4. Budgets page loads
+ *  5. Battle boards page loads
+ *  6. Contracts page loads
+ *  7. Reports page loads
+ *  8. Kitchen dashboard page loads
  */
 
-import { test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import type { CollectedError } from "../helpers/workflow";
 import {
   assertNoErrors,
   assertVisible,
   attachErrorCollector,
-  clickButton,
-  failHard,
-  fillByName,
+  BASE_URL,
   goto,
-  log,
-  selectByName,
-  TEST_DATE,
   unique,
 } from "../helpers/workflow";
 
-const EVENT_NAME = unique("E2E Event");
-const EVENT_TYPE = "catering";
+const EVENT_NAME = unique("EventE2E");
+const EVENT_DATE = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+  .toISOString()
+  .split("T")[0]; // 30 days from now, YYYY-MM-DD
 
 test.describe("Events: Full Workflow", () => {
-  test.setTimeout(180_000);
+  let errors: CollectedError[] = [];
+  let createdEventUrl = ""; // capture after creation for reuse
 
-  test("create event → edit → budget → battle board → contracts → reports", async ({
-    page,
-    baseURL,
-  }, testInfo) => {
-    const errors: CollectedError[] = [];
-    attachErrorCollector(page, errors, baseURL ?? "http://127.0.0.1:2221");
+  test.beforeEach(async ({ page }) => {
+    errors = [];
+    attachErrorCollector(page, errors, BASE_URL);
+  });
 
-    // ── 1. Events list ────────────────────────────────────────────────────────
-    log.step("1. Navigate to Events list");
+  test("events list loads", async ({ page }, testInfo) => {
     await goto(page, "/events");
     await assertVisible(page, /events/i);
     await assertNoErrors(page, testInfo, errors, "events list");
+  });
 
-    // ── 2. Create new event ───────────────────────────────────────────────────
-    log.step("2. Create new event");
+  test("create event with all fields", async ({ page }, testInfo) => {
     await goto(page, "/events/new");
-    await page
-      .waitForLoadState("networkidle", { timeout: 10_000 })
-      .catch(() => undefined);
 
-    await fillByName(page, "title", EVENT_NAME);
-    await fillByName(page, "eventType", EVENT_TYPE);
-    // Date inputs need evaluate to set value reliably in headless Chromium
-    await page.evaluate((date) => {
-      const el = document.querySelector(
-        'input[name="eventDate"]'
-      ) as HTMLInputElement | null;
-      if (el) {
-        el.value = date;
-        el.dispatchEvent(new Event("input", { bubbles: true }));
-        el.dispatchEvent(new Event("change", { bubbles: true }));
-      }
-    }, TEST_DATE);
-    await selectByName(page, "status", "confirmed");
-    await fillByName(page, "guestCount", "75");
-    await fillByName(page, "budget", "15000");
-    await fillByName(page, "ticketTier", "General Admission");
+    // Fill required fields — hard fail if missing
+    await page.locator('input[name="title"]').fill(EVENT_NAME);
+    await page.locator('input[name="eventType"]').fill("Corporate Gala");
+    await page.locator('input[name="eventDate"]').fill(EVENT_DATE);
+    await page.locator('select[name="status"]').selectOption("confirmed");
+    await page.locator('input[name="guestCount"]').fill("150");
+    await page.locator('input[name="budget"]').fill("25000");
+    await page.locator('input[name="venueName"]').fill("Grand Ballroom");
+    await page.locator('input[name="venueAddress"]').fill("123 Main St");
+    await page.locator('textarea[name="notes"]').fill("E2E test event");
 
-    // Fill optional fields if present
-    const venueInput = page
-      .locator('input[name="venue"], input[name="location"]')
-      .first();
-    if (await venueInput.isVisible().catch(() => false)) {
-      await venueInput.fill("Grand Ballroom");
-    }
-    const notesInput = page
-      .locator('textarea[name="notes"], textarea[name="description"]')
-      .first();
-    if (await notesInput.isVisible().catch(() => false)) {
-      await notesInput.fill("E2E test event — automated workflow verification");
-    }
+    await page.locator('button[type="submit"]').click();
 
-    await clickButton(page, /save|create|submit/i);
-    // Wait for Server Action redirect away from /events/new
-    await page
-      .waitForURL((url) => !url.pathname.endsWith("/new"), { timeout: 30_000 })
-      .catch(() => undefined);
-    await page
-      .waitForLoadState("networkidle", { timeout: 15_000 })
-      .catch(() => undefined);
+    // Verify redirect to event detail page
+    await expect(page).toHaveURL(/\/events\/[a-f0-9-]+/, { timeout: 15_000 });
+    createdEventUrl = page.url();
+
+    // Verify event title appears on detail page
+    await expect(page.getByText(EVENT_NAME)).toBeVisible({ timeout: 10_000 });
+
     await assertNoErrors(page, testInfo, errors, "create event");
+  });
 
-    // Should redirect to event detail
-    const currentURL = page.url();
-    if (!currentURL.includes("/events/")) {
-      // Try navigating to events list and finding the created event
-      await goto(page, "/events");
-      const eventLink = page.getByText(EVENT_NAME).first();
-      if (await eventLink.isVisible({ timeout: 5000 }).catch(() => false)) {
-        await eventLink.click();
-        await page
-          .waitForLoadState("networkidle", { timeout: 10_000 })
-          .catch(() => undefined);
-      }
-    }
-
-    log.ok(`Event created: ${page.url()}`);
-    await assertNoErrors(page, testInfo, errors, "event detail after create");
-
-    // ── 3. Verify event detail ────────────────────────────────────────────────
-    log.step("3. Verify event detail page");
-    await assertVisible(page, EVENT_NAME);
-
-    // ── 4. Navigate to events list and verify event appears ───────────────────
-    log.step("4. Events list — verify created event appears");
+  test("events list shows created event", async ({ page }, testInfo) => {
     await goto(page, "/events");
-    await assertVisible(page, EVENT_NAME);
+    await expect(page.getByText(EVENT_NAME)).toBeVisible({ timeout: 15_000 });
     await assertNoErrors(
       page,
       testInfo,
       errors,
       "events list with created event"
     );
+  });
 
-    // ── 5. Navigate to budgets ────────────────────────────────────────────────
-    log.step("5. Navigate to Budgets");
+  test("budgets page loads", async ({ page }, testInfo) => {
     await goto(page, "/events/budgets");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
-    await assertNoErrors(page, testInfo, errors, "budgets list");
+    await expect(page).toHaveURL(/events\/budgets/);
+    await assertNoErrors(page, testInfo, errors, "budgets page");
+  });
 
-    // ── 6. Navigate to battle boards ──────────────────────────────────────────
-    log.step("6. Navigate to Battle Boards");
+  test("battle boards page loads", async ({ page }, testInfo) => {
     await goto(page, "/events/battle-boards");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
-    await assertNoErrors(page, testInfo, errors, "battle boards list");
+    await expect(page).toHaveURL(/events\/battle-boards/);
+    await assertNoErrors(page, testInfo, errors, "battle boards page");
+  });
 
-    // ── 7. Navigate to contracts ──────────────────────────────────────────────
-    log.step("7. Navigate to Contracts");
+  test("contracts page loads", async ({ page }, testInfo) => {
     await goto(page, "/events/contracts");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
-    await assertNoErrors(page, testInfo, errors, "contracts list");
+    await expect(page).toHaveURL(/events\/contracts/);
+    await assertNoErrors(page, testInfo, errors, "contracts page");
+  });
 
-    // ── 8. Navigate to reports ────────────────────────────────────────────────
-    log.step("8. Navigate to Reports");
+  test("reports page loads", async ({ page }, testInfo) => {
     await goto(page, "/events/reports");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
-    await assertNoErrors(page, testInfo, errors, "reports list");
+    await expect(page).toHaveURL(/events\/reports/);
+    await assertNoErrors(page, testInfo, errors, "reports page");
+  });
 
-    // ── 9. Navigate to kitchen dashboard ─────────────────────────────────────
-    log.step("9. Navigate to Kitchen Dashboard");
+  test("kitchen dashboard page loads", async ({ page }, testInfo) => {
     await goto(page, "/events/kitchen-dashboard");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
-    await assertNoErrors(page, testInfo, errors, "kitchen dashboard");
-
-    // ── Final check ───────────────────────────────────────────────────────────
-    if (errors.length > 0) {
-      await failHard(page, testInfo, errors, "final error check");
-    }
-
-    log.pass("Events workflow complete — no errors");
+    await expect(page).toHaveURL(/events\/kitchen-dashboard/);
+    await assertNoErrors(page, testInfo, errors, "kitchen dashboard page");
   });
 });
