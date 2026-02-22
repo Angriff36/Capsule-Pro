@@ -49,6 +49,10 @@
     "./prisma-idempotency-store": {
       "types": "./dist/prisma-idempotency-store.d.ts",
       "import": "./dist/prisma-idempotency-store.js"
+    },
+    "./manifest-runtime-factory": {
+      "types": "./dist/manifest-runtime-factory.d.ts",
+      "import": "./dist/manifest-runtime-factory.js"
     }
   },
   "scripts": {
