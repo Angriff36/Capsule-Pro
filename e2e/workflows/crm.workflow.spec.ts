@@ -69,14 +69,19 @@ test.describe("CRM: Full Workflow", () => {
       timeout: 10_000,
     });
 
-    // Click through each tab and assert the tab panel becomes visible
+    // Click through each tab and assert: (a) tab becomes selected, (b) its panel is visible
     const tabs = page.locator('[role="tab"]');
     const tabCount = await tabs.count();
     expect(tabCount).toBeGreaterThan(0);
 
     for (let i = 0; i < tabCount; i++) {
-      await tabs.nth(i).click();
-      // Each tab must activate a visible tab panel — hard fail if not
+      const tab = tabs.nth(i);
+      await tab.click();
+      // Tab must become aria-selected after click — proves the tab actually switched
+      await expect(tab).toHaveAttribute("aria-selected", "true", {
+        timeout: 5000,
+      });
+      // The controlled tab panel must be visible
       const panel = page.locator('[role="tabpanel"]');
       await expect(panel).toBeVisible({ timeout: 5000 });
     }

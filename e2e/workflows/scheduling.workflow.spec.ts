@@ -58,24 +58,36 @@ test.describe("Scheduling: Full Workflow", () => {
   test("availability page loads", async ({ page }, testInfo) => {
     await goto(page, "/scheduling/availability");
     await expect(page).toHaveURL(/scheduling\/availability/);
+    await expect(
+      page.getByRole("heading", { name: /availability/i })
+    ).toBeVisible({ timeout: 10_000 });
     await assertNoErrors(page, testInfo, errors, "availability page");
   });
 
   test("requests page loads", async ({ page }, testInfo) => {
     await goto(page, "/scheduling/requests");
     await expect(page).toHaveURL(/scheduling\/requests/);
+    await expect(
+      page.getByRole("heading", { name: /request queue/i })
+    ).toBeVisible({ timeout: 10_000 });
     await assertNoErrors(page, testInfo, errors, "requests page");
   });
 
   test("time-off page loads", async ({ page }, testInfo) => {
     await goto(page, "/scheduling/time-off");
     await expect(page).toHaveURL(/scheduling\/time-off/);
+    await expect(page.getByRole("heading", { name: /time.off/i })).toBeVisible({
+      timeout: 10_000,
+    });
     await assertNoErrors(page, testInfo, errors, "time-off page");
   });
 
   test("scheduling budgets page loads", async ({ page }, testInfo) => {
     await goto(page, "/scheduling/budgets");
     await expect(page).toHaveURL(/scheduling\/budgets/);
+    await expect(
+      page.getByRole("heading", { name: /labor budgets/i })
+    ).toBeVisible({ timeout: 10_000 });
     await assertNoErrors(page, testInfo, errors, "scheduling budgets");
   });
 });

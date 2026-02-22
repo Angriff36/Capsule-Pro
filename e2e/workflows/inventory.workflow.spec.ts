@@ -34,12 +34,18 @@ test.describe("Inventory: Full Workflow", () => {
   test("inventory overview loads", async ({ page }, testInfo) => {
     await goto(page, "/inventory");
     await expect(page).toHaveURL(/\/inventory/);
+    await expect(page.getByRole("heading", { name: /inventory/i })).toBeVisible(
+      { timeout: 10_000 }
+    );
     await assertNoErrors(page, testInfo, errors, "inventory overview");
   });
 
   test("items list loads", async ({ page }, testInfo) => {
     await goto(page, "/inventory/items");
     await expect(page).toHaveURL(/inventory\/items/);
+    await expect(
+      page.getByRole("heading", { name: /inventory items/i })
+    ).toBeVisible({ timeout: 10_000 });
     await assertNoErrors(page, testInfo, errors, "items list");
   });
 
@@ -76,18 +82,27 @@ test.describe("Inventory: Full Workflow", () => {
   test("stock levels page loads", async ({ page }, testInfo) => {
     await goto(page, "/inventory/levels");
     await expect(page).toHaveURL(/inventory\/levels/);
+    await expect(
+      page.getByRole("heading", { name: /stock levels/i })
+    ).toBeVisible({ timeout: 10_000 });
     await assertNoErrors(page, testInfo, errors, "stock levels");
   });
 
   test("forecasts page loads", async ({ page }, testInfo) => {
     await goto(page, "/inventory/forecasts");
     await expect(page).toHaveURL(/inventory\/forecasts/);
+    await expect(
+      page.getByRole("heading", { name: /depletion forecasting/i })
+    ).toBeVisible({ timeout: 10_000 });
     await assertNoErrors(page, testInfo, errors, "forecasts");
   });
 
   test("recipe costs page loads", async ({ page }, testInfo) => {
     await goto(page, "/inventory/recipe-costs");
     await expect(page).toHaveURL(/inventory\/recipe-costs/);
+    await expect(page.getByText(/recipe costing/i)).toBeVisible({
+      timeout: 10_000,
+    });
     await assertNoErrors(page, testInfo, errors, "recipe costs");
   });
 });

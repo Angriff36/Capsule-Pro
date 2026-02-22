@@ -41,24 +41,36 @@ test.describe("Settings: Full Workflow", () => {
   test("team settings page loads", async ({ page }, testInfo) => {
     await goto(page, "/settings/team");
     await expect(page).toHaveURL(/settings\/team/);
+    await expect(page.getByRole("heading", { name: /^team$/i })).toBeVisible({
+      timeout: 10_000,
+    });
     await assertNoErrors(page, testInfo, errors, "team settings");
   });
 
   test("security settings page loads", async ({ page }, testInfo) => {
     await goto(page, "/settings/security");
     await expect(page).toHaveURL(/settings\/security/);
+    await expect(page.getByRole("heading", { name: /security/i })).toBeVisible({
+      timeout: 10_000,
+    });
     await assertNoErrors(page, testInfo, errors, "security settings");
   });
 
   test("integrations page loads", async ({ page }, testInfo) => {
     await goto(page, "/settings/integrations");
     await expect(page).toHaveURL(/settings\/integrations/);
+    await expect(
+      page.getByRole("heading", { name: /integrations/i })
+    ).toBeVisible({ timeout: 10_000 });
     await assertNoErrors(page, testInfo, errors, "integrations");
   });
 
   test("email templates list loads", async ({ page }, testInfo) => {
     await goto(page, "/settings/email-templates");
     await expect(page).toHaveURL(/settings\/email-templates/);
+    await expect(
+      page.getByRole("heading", { name: /email templates/i })
+    ).toBeVisible({ timeout: 10_000 });
     await assertNoErrors(page, testInfo, errors, "email templates list");
   });
 
