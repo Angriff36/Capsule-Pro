@@ -117,20 +117,27 @@ export async function PUT(request: Request, context: RouteContext) {
     hourlyRate: { col: "hourly_rate", type: "number" },
   };
 
+  function coerceValue(
+    value: unknown,
+    type: "string" | "number" | "boolean" | "date"
+  ): string | number | boolean | Date | null {
+    if (value === null) {
+      return null;
+    }
+    if (type === "boolean") {
+      return Boolean(value);
+    }
+    if (type === "number") {
+      return Number(value);
+    }
+    return String(value);
+  }
+
   for (const field of allowedFields) {
     if (body[field] !== undefined) {
       const mapping = fieldMap[field];
       updates.push(`${mapping.col} = $${updates.length + 1}`);
-      const value = body[field];
-      values.push(
-        mapping.type === "boolean"
-          ? Boolean(value)
-          : mapping.type === "number"
-            ? Number(value)
-            : value === null
-              ? null
-              : String(value)
-      );
+      values.push(coerceValue(body[field], mapping.type));
     }
   }
 
@@ -214,6 +221,6 @@ export async function PUT(request: Request, context: RouteContext) {
  * PATCH /api/staff/employees/[id]
  * Alias for PUT - partial update
  */
-export async function PATCH(request: Request, context: RouteContext) {
+export function PATCH(request: Request, context: RouteContext) {
   return PUT(request, context);
 }

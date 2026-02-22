@@ -20,7 +20,6 @@ import {
 } from "@repo/design-system/components/ui/table";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../lib/tenant";
-import { AddEmployeeToBoardButton } from "./components/add-employee-to-board-button";
 import { AddStaffForm } from "./components/add-staff-form";
 import { AutoRegisterStaff } from "./components/auto-register-staff";
 import { EditStaffDialog } from "./components/edit-staff-dialog";
@@ -85,7 +84,7 @@ const StaffTeamPage = async () => {
   return (
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
       <AutoRegisterStaff />
-      
+
       <div className="space-y-0.5">
         <h1 className="text-3xl font-bold tracking-tight">Team</h1>
         <p className="text-muted-foreground">
@@ -158,7 +157,7 @@ const StaffTeamPage = async () => {
                             employmentType: employee.employmentType,
                           }}
                         >
-                          <Button variant="outline" size="sm">
+                          <Button size="sm" variant="outline">
                             Edit
                           </Button>
                         </EditStaffDialog>

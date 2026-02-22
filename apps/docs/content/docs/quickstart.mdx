@@ -1,34 +1,106 @@
 ---
-title: 'Quickstart'
-description: 'Get started with your documentation'
+title: Quickstart
+description: Get the Capsule Pro development environment running locally.
 ---
 
-## Getting Started
+## Prerequisites
 
-### Step 1: Clone Your Repository
+- **Node.js** 22.x (LTS)
+- **pnpm** 10.x (package manager)
+- **Docker** (optional, for local Postgres)
+- **Git**
 
-Clone the documentation repository from GitHub following the [GitHub cloning instructions](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository).
-
-### Step 2: Preview Your Changes
-
-Install and run the development server:
+## Clone and Install
 
 ```bash
-npm i -g mintlify
-mintlify dev
+git clone https://github.com/angriff36/capsule-pro.git
+cd capsule-pro
+pnpm install
 ```
 
-Run this command at the root of your documentation (where `mint.json` is located).
+## Environment Setup
 
-### Step 3: Deploy Your Changes
+Copy the example environment file and fill in required values:
 
-Commit and push your changes to Git. The changes will be automatically deployed to your documentation site.
+```bash
+cp .env.example .env.local
+```
 
-## Next Steps
+Key environment variables:
 
-- [Style your documentation](/settings/global) with branding and colors
-- [Configure API endpoints](/api-playground/configuration) 
-- [Add analytics integration](/analytics/supported-integrations)
-- [Host on a custom domain](/settings/custom-domain/subdomain)
+| Variable | Service | Required |
+|----------|---------|----------|
+| `DATABASE_URL` | Neon Postgres | Yes |
+| `CLERK_SECRET_KEY` | Clerk Auth | Yes |
+| `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | Clerk Auth | Yes |
+| `ABLY_API_KEY` | Ably Realtime | Yes |
+| `STRIPE_SECRET_KEY` | Stripe Payments | For payments |
+| `OPENAI_API_KEY` | OpenAI | For AI features |
+| `SENTRY_DSN` | Sentry | For error tracking |
+| `RESEND_API_KEY` | Resend | For email |
 
-For more information, check out the [documentation](https://docs.mintlify.com).
+## Database Setup
+
+Generate the Prisma client and run migrations:
+
+```bash
+pnpm -C packages/database generate
+pnpm -C packages/database migrate
+```
+
+## Run the Development Servers
+
+```bash
+# Main application (port 3000)
+pnpm --filter app dev
+
+# API server (port 3001)
+pnpm --filter api dev
+
+# Both simultaneously
+pnpm dev
+```
+
+## Other Development Servers
+
+| App | Command | Port |
+|-----|---------|------|
+| Docs | `pnpm --filter docs dev` | 2224 |
+| Storybook | `pnpm --filter @repo/storybook dev` | 6006 |
+| Email Preview | `pnpm --filter email dev` | 2225 |
+| Prisma Studio | `pnpm --filter studio dev` | 2226 |
+
+## Build
+
+```bash
+# Build everything
+pnpm build
+
+# Build specific app
+pnpm --filter app build
+pnpm --filter api build
+```
+
+## Monorepo Structure
+
+```
+capsule-pro/
+  apps/
+    app/          # Main Next.js application
+    api/          # API backend (Next.js)
+    docs/         # Documentation (Fumadocs)
+    web/          # Marketing site
+    email/        # Email template preview
+    storybook/    # Component development
+    studio/       # Prisma Studio
+  packages/
+    database/     # Prisma schema + client
+    auth/         # Clerk authentication
+    payments/     # Stripe integration
+    realtime/     # Ably event system
+    email/        # Resend + React Email
+    design-system/ # UI components (shadcn/ui)
+    manifest-runtime/ # Manifest DSL + IR engine
+    manifest-adapters/ # Domain-specific adapters
+    ...20+ more packages
+```

@@ -1,0 +1,3 @@
+// Smoke test moved to apps/api/__tests__/command-board/smoke-board-health.test.ts
+// This placeholder file ensures the directory structure is maintained.
+export {};

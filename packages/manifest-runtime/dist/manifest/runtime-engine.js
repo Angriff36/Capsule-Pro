@@ -148,6 +148,8 @@ export class RuntimeEngine {
     justCreatedInstanceIds = new Set();
     /** Last transition validation error (set by updateInstance, checked by _executeCommandInternal) */
     lastTransitionError = null;
+    /** Last concurrency conflict (set by updateInstance, checked by _executeCommandInternal) */
+    lastConcurrencyConflict = null;
     /** Per-entry-point evaluation budget for bounded complexity enforcement */
     evalBudget = null;
     /**
@@ -213,8 +215,10 @@ export class RuntimeEngine {
                     default: {
                         // Exhaustive check for valid IR store targets
                         const _unsupportedTarget = storeConfig.target;
+                        const isPrisma = _unsupportedTarget === 'prisma';
                         throw new Error(`Unsupported storage target '${_unsupportedTarget}' for entity '${entity.name}'. ` +
-                            `Valid targets are: 'memory', 'localStorage', 'postgres', 'supabase'.`);
+                            `Valid targets are: 'memory', 'localStorage', 'postgres', 'supabase'.` +
+                            (isPrisma ? ` For Prisma, use storeProvider in manifest.config.ts - see docs/proposals/prisma-store-adapter.md` : ''));
                     }
                 }
             }
@@ -403,8 +407,19 @@ export class RuntimeEngine {
                 ...this.ir,
                 provenance: provenanceWithoutIrHash,
             };
-            // Use deterministic JSON serialization (same as compiler)
-            const json = JSON.stringify(canonical, Object.keys(canonical).sort());
+            // Use deterministic JSON serialization with recursive key sorting (same as compiler).
+            // A replacer function sorts object keys at every nesting level to ensure
+            // the recomputed hash matches the compiler's hash for unmodified IR.
+            const json = JSON.stringify(canonical, (_key, value) => {
+                if (value && typeof value === 'object' && !Array.isArray(value)) {
+                    const sorted = {};
+                    for (const k of Object.keys(value).sort()) {
+                        sorted[k] = value[k];
+                    }
+                    return sorted;
+                }
+                return value;
+            });
             const encoder = new TextEncoder();
             const data = encoder.encode(json);
             const hashBuffer = await crypto.subtle.digest('SHA-256', data);
@@ -567,7 +582,14 @@ export class RuntimeEngine {
                 const providedVersion = data[entity.versionProperty];
                 if (existingVersion !== undefined && providedVersion !== undefined) {
                     if (existingVersion !== providedVersion) {
-                        // Concurrency conflict - emit event and return undefined to indicate failure
+                        // Concurrency conflict - store structured details, emit event, and return undefined
+                        this.lastConcurrencyConflict = {
+                            entityType: entityName,
+                            entityId: id,
+                            expectedVersion: providedVersion,
+                            actualVersion: existingVersion,
+                            conflictCode: 'VERSION_MISMATCH',
+                        };
                         await this.emitConcurrencyConflictEvent(entityName, id, providedVersion, existingVersion);
                         return undefined;
                     }
@@ -662,6 +684,8 @@ export class RuntimeEngine {
         this.justCreatedInstanceIds.clear();
         // Clear transition error tracking
         this.lastTransitionError = null;
+        // Clear concurrency conflict tracking
+        this.lastConcurrencyConflict = null;
         // Initialize evaluation budget for bounded complexity enforcement
         const ownsEvalBudget = this.initEvalBudget();
         try {
@@ -692,7 +716,9 @@ export class RuntimeEngine {
                 };
             }
             // vNext: Evaluate command constraints (after policies, before guards)
-            const constraintResult = await this.evaluateCommandConstraints(command, evalContext, options.overrideRequests);
+            // Pass command context so OverrideApplied events include commandName/entityName/instanceId per spec
+            const commandContext = { commandName, entityName: options.entityName, instanceId: options.instanceId };
+            const constraintResult = await this.evaluateCommandConstraints(command, evalContext, options.overrideRequests, commandContext);
             if (!constraintResult.allowed) {
                 // Find the blocking constraint for the error message
                 const blocking = constraintResult.outcomes.find(o => !o.passed && !o.overridden && o.severity === 'block');
@@ -727,9 +753,12 @@ export class RuntimeEngine {
                     };
                 }
             }
-            const emittedEvents = [];
+            // Include any OverrideApplied events from constraint evaluation
+            // Per spec: OverrideApplied events are included in CommandResult.emittedEvents
+            // alongside command-declared events (override events come first)
+            const emittedEvents = [...constraintResult.overrideEvents];
             let result;
-            const emitCounter = { value: 0 };
+            const emitCounter = { value: emittedEvents.length };
             const workflowMeta = {
                 correlationId: options.correlationId,
                 causationId: options.causationId,
@@ -746,12 +775,28 @@ export class RuntimeEngine {
                         emittedEvents: [],
                     };
                 }
+                // Check for concurrency conflict after mutate/compute actions
+                // Per spec: "Commands receiving a ConcurrencyConflict MUST NOT apply mutations"
+                if (this.lastConcurrencyConflict) {
+                    const conflict = this.lastConcurrencyConflict;
+                    this.lastConcurrencyConflict = null;
+                    return {
+                        success: false,
+                        error: `Concurrency conflict on ${conflict.entityType}#${conflict.entityId}: expected version ${conflict.expectedVersion}, actual ${conflict.actualVersion}`,
+                        concurrencyConflict: conflict,
+                        ...(workflowMeta.correlationId !== undefined ? { correlationId: workflowMeta.correlationId } : {}),
+                        ...(workflowMeta.causationId !== undefined ? { causationId: workflowMeta.causationId } : {}),
+                        emittedEvents: [],
+                    };
+                }
                 if ((action.kind === 'mutate' || action.kind === 'compute') && options.instanceId && options.entityName) {
                     const currentInstance = await this.getInstance(options.entityName, options.instanceId);
+                    // Enrich re-fetched instance with _entity for relationship resolution
+                    const enriched = currentInstance ? { ...currentInstance, _entity: options.entityName } : currentInstance;
                     // Refresh both self/this bindings and spread instance properties into evalContext
-                    evalContext.self = currentInstance;
-                    evalContext.this = currentInstance;
-                    Object.assign(evalContext, currentInstance);
+                    evalContext.self = enriched;
+                    evalContext.this = enriched;
+                    Object.assign(evalContext, enriched);
                 }
                 result = actionResult;
             }
@@ -806,28 +851,40 @@ export class RuntimeEngine {
         }
     }
     buildEvalContext(input, instance, entityName) {
+        // Enrich instance with _entity metadata so relationship resolution works
+        // when the member expression handler reads _entity from self/this
+        const enrichedInstance = (instance && entityName)
+            ? { ...instance, _entity: entityName }
+            : instance;
         const baseContext = {
-            ...(instance || {}),
+            ...(enrichedInstance || {}),
             ...input,
-            self: instance ?? null,
-            this: instance ?? null,
+            self: enrichedInstance ?? null,
+            this: enrichedInstance ?? null,
             user: this.context.user ?? null,
             context: this.context ?? {},
         };
-        // Add entity name metadata for relationship resolution
-        if (instance && entityName) {
-            baseContext._entity = entityName;
-        }
         return baseContext;
     }
     async checkPolicies(command, evalContext) {
-        const relevantPolicies = this.ir.policies.filter(p => {
-            if (p.entity && command.entity && p.entity !== command.entity)
-                return false;
-            if (p.action !== 'all' && p.action !== 'execute')
-                return false;
-            return true;
-        });
+        // If command has explicit policies (expanded from entity defaults or declared),
+        // evaluate only those policies by name
+        let relevantPolicies;
+        if (command.policies && command.policies.length > 0) {
+            // Filter by policy names specified on the command
+            const policyNames = new Set(command.policies);
+            relevantPolicies = this.ir.policies.filter(p => policyNames.has(p.name));
+        }
+        else {
+            // Fallback: filter by entity match and action type (legacy behavior)
+            relevantPolicies = this.ir.policies.filter(p => {
+                if (p.entity && command.entity && p.entity !== command.entity)
+                    return false;
+                if (p.action !== 'all' && p.action !== 'execute')
+                    return false;
+                return true;
+            });
+        }
         for (const policy of relevantPolicies) {
             const result = await this.evaluateExpression(policy.expression, evalContext);
             if (!result) {
@@ -873,14 +930,15 @@ export class RuntimeEngine {
      */
     async validateConstraints(entity, instanceData) {
         const outcomes = [];
-        // Build evaluation context with self/this pointing to the instance
+        // Enrich instance with _entity metadata so relationship resolution works
+        // when the member expression handler reads _entity from self/this
+        const enrichedData = { ...instanceData, _entity: entity.name };
         const evalContext = {
-            ...instanceData,
-            self: instanceData,
-            this: instanceData,
+            ...enrichedData,
+            self: enrichedData,
+            this: enrichedData,
             user: this.context.user ?? null,
             context: this.context ?? {},
-            _entity: entity.name,
         };
         // Use evaluateConstraint to build proper ConstraintOutcome objects
         for (const constraint of entity.constraints) {
@@ -1320,14 +1378,16 @@ export class RuntimeEngine {
                 }
             }
         }
+        // Enrich instance with _entity metadata so relationship resolution works
+        // when the member expression handler reads _entity from self/this
+        const enrichedInstance = { ...instance, _entity: entity.name };
         const context = {
-            self: instance,
-            this: instance,
-            ...instance,
+            self: enrichedInstance,
+            this: enrichedInstance,
+            ...enrichedInstance,
             ...computedValues,
             user: this.context.user ?? null,
             context: this.context ?? {},
-            _entity: entity.name,
         };
         return await this.evaluateExpression(computed.expression, context);
     }
@@ -1404,10 +1464,13 @@ export class RuntimeEngine {
     }
     /**
      * vNext: Evaluate command constraints with override support
-     * Returns allowed flag and all constraint outcomes
+     * Returns allowed flag, all constraint outcomes, and any OverrideApplied events.
+     * Per spec (manifest-vnext.md § OverrideApplied Event Shape):
+     * OverrideApplied events MUST be included in CommandResult.emittedEvents.
      */
-    async evaluateCommandConstraints(command, evalContext, overrideRequests) {
+    async evaluateCommandConstraints(command, evalContext, overrideRequests, commandContext) {
         const outcomes = [];
+        const overrideEvents = [];
         for (const constraint of command.constraints || []) {
             const outcome = await this.evaluateConstraint(constraint, evalContext);
             // Check for override if constraint failed and is overrideable
@@ -1420,7 +1483,10 @@ export class RuntimeEngine {
                         if (authorized) {
                             outcome.overridden = true;
                             outcome.overriddenBy = overrideReq.authorizedBy;
-                            await this.emitOverrideAppliedEvent(constraint, overrideReq, outcome);
+                            const event = this.buildOverrideAppliedEvent(constraint, overrideReq, commandContext);
+                            overrideEvents.push(event);
+                            this.eventLog.push(event);
+                            this.notifyListeners(event);
                         }
                     }
                 }
@@ -1440,10 +1506,10 @@ export class RuntimeEngine {
             outcomes.push(outcome);
             // Block execution if non-passing constraint is not overridden
             if (!outcome.passed && !outcome.overridden && outcome.severity === 'block') {
-                return { allowed: false, outcomes };
+                return { allowed: false, outcomes, overrideEvents };
             }
         }
-        return { allowed: true, outcomes };
+        return { allowed: true, outcomes, overrideEvents };
     }
     /**
      * vNext: Validate override authorization via policy or default admin check
@@ -1471,25 +1537,33 @@ export class RuntimeEngine {
         return user?.role === 'admin' || false;
     }
     /**
-     * vNext: Emit OverrideApplied event for auditing
+     * vNext: Build OverrideApplied event for auditing.
+     * Per spec (manifest-vnext.md § OverrideApplied Event Shape):
+     * payload MUST contain: constraintCode, reason, authorizedBy, timestamp, commandName,
+     * and optionally entityName, instanceId.
+     * The event is a runtime-synthesized event included in CommandResult.emittedEvents.
      */
-    async emitOverrideAppliedEvent(constraint, overrideReq, outcome) {
-        const event = {
+    buildOverrideAppliedEvent(constraint, overrideReq, commandContext) {
+        const payload = {
+            constraintCode: constraint.code,
+            reason: overrideReq.reason,
+            authorizedBy: overrideReq.authorizedBy,
+            timestamp: this.getNow(),
+            commandName: commandContext?.commandName || '',
+        };
+        if (commandContext?.entityName) {
+            payload.entityName = commandContext.entityName;
+        }
+        if (commandContext?.instanceId) {
+            payload.instanceId = commandContext.instanceId;
+        }
+        return {
             name: 'OverrideApplied',
             channel: 'system',
-            payload: {
-                constraintCode: constraint.code,
-                constraintName: constraint.name,
-                originalSeverity: outcome.severity,
-                reason: overrideReq.reason,
-                authorizedBy: overrideReq.authorizedBy,
-                timestamp: this.getNow(),
-            },
+            payload,
             timestamp: this.getNow(),
             provenance: this.getProvenanceInfo(),
         };
-        this.eventLog.push(event);
-        this.notifyListeners(event);
     }
     /**
      * vNext: Emit ConcurrencyConflict event

@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { Copy, Check } from 'lucide-react';
-import { copyToClipboard } from './zipExporter';
+import { Check, Copy } from "lucide-react";
+import { useState } from "react";
+import { copyToClipboard } from "./zipExporter";
 
 interface FileViewerProps {
   path: string;
@@ -17,11 +17,19 @@ export function FileViewer({ path, content }: FileViewerProps) {
   };
 
   const getLanguage = (path: string): string => {
-    if (path.endsWith('.ts')) return 'typescript';
-    if (path.endsWith('.json')) return 'json';
-    if (path.endsWith('.md')) return 'markdown';
-    if (path.endsWith('.manifest')) return 'manifest';
-    return 'text';
+    if (path.endsWith(".ts")) {
+      return "typescript";
+    }
+    if (path.endsWith(".json")) {
+      return "json";
+    }
+    if (path.endsWith(".md")) {
+      return "markdown";
+    }
+    if (path.endsWith(".manifest")) {
+      return "manifest";
+    }
+    return "text";
   };
 
   const lang = getLanguage(path);
@@ -31,12 +39,12 @@ export function FileViewer({ path, content }: FileViewerProps) {
       <div className="flex items-center justify-between px-3 py-2 border-b border-gray-800 bg-gray-900/50">
         <span className="text-sm text-gray-400 font-mono">{path}</span>
         <button
-          onClick={handleCopy}
           className="flex items-center gap-2 px-3 py-1 text-xs bg-gray-800 hover:bg-gray-700 rounded transition-colors"
+          onClick={handleCopy}
         >
           {copied ? (
             <>
-              <Check size={12} className="text-emerald-400" />
+              <Check className="text-emerald-400" size={12} />
               <span className="text-emerald-400">Copied!</span>
             </>
           ) : (

@@ -42,14 +42,15 @@ export function generateEventBreadcrumbs(
   const segments = pathname.split("/").filter(Boolean);
 
   // If we're at the root of the module (/events), return empty
-  if (segments.length === 0 || (segments.length === 1 && segments[0] === "events")) {
+  if (
+    segments.length === 0 ||
+    (segments.length === 1 && segments[0] === "events")
+  ) {
     return [];
   }
 
   // Start with the module root
-  const breadcrumbs: BreadcrumbItem[] = [
-    { label: "Events", href: "/events" },
-  ];
+  const breadcrumbs: BreadcrumbItem[] = [{ label: "Events", href: "/events" }];
 
   // Process each segment after /events
   const eventSegments = segments.slice(1);
@@ -88,7 +89,7 @@ export function generateEventBreadcrumbs(
 
   // If there's a currentPageLabel and we haven't added it yet, add it now
   if (currentPageLabel) {
-    const lastBreadcrumb = breadcrumbs[breadcrumbs.length - 1];
+    const lastBreadcrumb = breadcrumbs.at(-1);
     if (lastBreadcrumb?.label !== currentPageLabel && lastBreadcrumb?.href) {
       breadcrumbs.push({ label: currentPageLabel });
     }

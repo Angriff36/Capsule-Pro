@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { syncCurrentUser, type ActionState } from "../actions";
+import { syncCurrentUser } from "../actions";
 
 export const AutoRegisterStaff = () => {
-  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [status, setStatus] = useState<
+    "idle" | "loading" | "success" | "error"
+  >("idle");
   const [message, setMessage] = useState<string>("");
 
   useEffect(() => {
@@ -26,7 +28,11 @@ export const AutoRegisterStaff = () => {
   }
 
   if (status === "loading") {
-    return <div className="text-sm text-muted-foreground">Setting up your account...</div>;
+    return (
+      <div className="text-sm text-muted-foreground">
+        Setting up your account...
+      </div>
+    );
   }
 
   return <div className="text-sm text-red-500">{message}</div>;

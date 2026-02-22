@@ -14,8 +14,10 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 /**
  * Transaction types for inventory transactions
  * When a shipment is delivered, items are added to stock via "purchase" transaction
+ * When a shipment is being prepared for delivery, items are reserved via "transfer" transaction
  */
 const TRANSACTION_TYPE_PURCHASE = "purchase";
+const TRANSACTION_TYPE_TRANSFER = "transfer";
 
 const VALID_STATUS_TRANSITIONS: Record<string, string[]> = {
   draft: ["scheduled", "cancelled"],
@@ -327,6 +329,167 @@ async function updateInventoryQuantity(
 }
 
 /**
+ * Creates an inventory reservation transaction for an outgoing shipment item
+ */
+async function createReservationTransaction(
+  tenantId: string,
+  shipmentId: string,
+  item: ShipmentItem,
+  quantity: number,
+  shipmentNumber: string,
+  locationId: string | null,
+  userId: string | null
+): Promise<void> {
+  await database.$executeRaw`
+    INSERT INTO "tenant_inventory"."inventory_transactions"
+      (tenant_id, item_id, transaction_type, quantity, unit_cost, total_cost,
+       reference, notes, transaction_date, employee_id, reference_type, reference_id,
+       storage_location_id, reason)
+    VALUES (
+      ${tenantId}::uuid,
+      ${item.item_id}::uuid,
+      ${TRANSACTION_TYPE_TRANSFER}::text,
+      ${-quantity}::numeric,
+      ${item.unit_cost}::numeric,
+      ${-quantity * Number(item.unit_cost)}::numeric,
+      ${shipmentNumber}::text,
+      ${
+        `Reserved for outgoing shipment ${shipmentNumber}` +
+        (item.lot_number ? ` (Lot: ${item.lot_number})` : "")
+      }::text,
+      CURRENT_TIMESTAMP,
+      ${userId}::uuid,
+      ${"shipment"}::text,
+      ${shipmentId}::uuid,
+      ${locationId || "00000000-0000-0000-0000-000000000000"}::uuid,
+      ${"shipment_preparation"}::text
+    )
+  `;
+}
+
+/**
+ * Reduces inventory item quantity on hand for outgoing shipments
+ */
+async function reduceInventoryQuantity(
+  tenantId: string,
+  itemId: string,
+  quantity: number
+): Promise<void> {
+  await database.$executeRaw`
+    UPDATE "tenant_inventory"."inventory_items"
+    SET "quantity_on_hand" = "quantity_on_hand" - ${quantity}::numeric,
+        "updated_at" = CURRENT_TIMESTAMP
+    WHERE "tenant_id" = ${tenantId}::uuid
+      AND "id" = ${itemId}::uuid
+      AND "deleted_at" IS NULL
+  `;
+}
+
+/**
+ * Processes inventory reservation when a shipment enters "preparing" status
+ * This is for OUTGOING shipments (to events) - items are removed from inventory
+ */
+async function processPreparationInventory(
+  tenantId: string,
+  shipmentId: string,
+  shipmentNumber: string,
+  locationId: string | null,
+  userId: string | null
+): Promise<void> {
+  const shipmentItems = await fetchShipmentItems(shipmentId);
+
+  for (const item of shipmentItems) {
+    const quantityToReserve = Number(item.quantity_shipped);
+
+    if (quantityToReserve <= 0) {
+      continue;
+    }
+
+    await createReservationTransaction(
+      tenantId,
+      shipmentId,
+      item,
+      quantityToReserve,
+      shipmentNumber,
+      locationId,
+      userId
+    );
+
+    await reduceInventoryQuantity(tenantId, item.item_id, quantityToReserve);
+  }
+}
+
+/**
+ * Creates a reversal transaction when a shipment is cancelled during preparation
+ */
+async function createReversalTransaction(
+  tenantId: string,
+  shipmentId: string,
+  item: ShipmentItem,
+  quantity: number,
+  shipmentNumber: string,
+  locationId: string | null,
+  userId: string | null
+): Promise<void> {
+  await database.$executeRaw`
+    INSERT INTO "tenant_inventory"."inventory_transactions"
+      (tenant_id, item_id, transaction_type, quantity, unit_cost, total_cost,
+       reference, notes, transaction_date, employee_id, reference_type, reference_id,
+       storage_location_id, reason)
+    VALUES (
+      ${tenantId}::uuid,
+      ${item.item_id}::uuid,
+      ${TRANSACTION_TYPE_TRANSFER}::text,
+      ${quantity}::numeric,
+      ${item.unit_cost}::numeric,
+      ${quantity * Number(item.unit_cost)}::numeric,
+      ${shipmentNumber}::text,
+      ${`Reversal: Cancelled shipment ${shipmentNumber}`}::text,
+      CURRENT_TIMESTAMP,
+      ${userId}::uuid,
+      ${"shipment"}::text,
+      ${shipmentId}::uuid,
+      ${locationId || "00000000-0000-0000-0000-000000000000"}::uuid,
+      ${"shipment_cancellation"}::text
+    )
+  `;
+}
+
+/**
+ * Processes inventory reversal when a shipment is cancelled during preparation
+ * This returns the reserved items back to inventory
+ */
+async function processCancellationInventory(
+  tenantId: string,
+  shipmentId: string,
+  shipmentNumber: string,
+  locationId: string | null,
+  userId: string | null
+): Promise<void> {
+  const shipmentItems = await fetchShipmentItems(shipmentId);
+
+  for (const item of shipmentItems) {
+    const quantityToRestore = Number(item.quantity_shipped);
+
+    if (quantityToRestore <= 0) {
+      continue;
+    }
+
+    await createReversalTransaction(
+      tenantId,
+      shipmentId,
+      item,
+      quantityToRestore,
+      shipmentNumber,
+      locationId,
+      userId
+    );
+
+    await updateInventoryQuantity(tenantId, item.item_id, quantityToRestore);
+  }
+}
+
+/**
  * Processes inventory updates when a shipment is delivered
  */
 async function processDeliveryInventory(
@@ -395,6 +558,87 @@ async function handleInventoryOnDelivery(
   }
 }
 
+/**
+ * Handles inventory reservation for shipments entering "preparing" status
+ * Only applies to OUTGOING shipments (those with an event_id set)
+ */
+async function handleInventoryOnPreparation(
+  updated: Shipment,
+  previousStatus: string,
+  tenantId: string,
+  shipmentId: string,
+  userId: string | null
+): Promise<void> {
+  // Only process when entering "preparing" status
+  if (updated.status !== "preparing" || previousStatus === "preparing") {
+    return;
+  }
+
+  // Only process OUTGOING shipments (to events)
+  if (!updated.eventId) {
+    return;
+  }
+
+  try {
+    await processPreparationInventory(
+      tenantId,
+      shipmentId,
+      updated.shipmentNumber,
+      updated.locationId,
+      userId
+    );
+  } catch (inventoryError) {
+    console.error(
+      "Failed to reserve inventory for preparing shipment:",
+      inventoryError
+    );
+    // Continue with the response even if inventory update fails
+  }
+}
+
+/**
+ * Handles inventory reversal for shipments cancelled during preparation
+ * Only applies to OUTGOING shipments that were in "preparing" status
+ */
+async function handleInventoryOnCancellation(
+  updated: Shipment,
+  previousStatus: string,
+  tenantId: string,
+  shipmentId: string,
+  userId: string | null
+): Promise<void> {
+  // Only process when entering "cancelled" status
+  if (updated.status !== "cancelled") {
+    return;
+  }
+
+  // Only process if was in preparing or scheduled status (had reserved inventory)
+  if (previousStatus !== "preparing" && previousStatus !== "scheduled") {
+    return;
+  }
+
+  // Only process OUTGOING shipments (to events)
+  if (!updated.eventId) {
+    return;
+  }
+
+  try {
+    await processCancellationInventory(
+      tenantId,
+      shipmentId,
+      updated.shipmentNumber,
+      updated.locationId,
+      userId
+    );
+  } catch (inventoryError) {
+    console.error(
+      "Failed to reverse inventory for cancelled shipment:",
+      inventoryError
+    );
+    // Continue with the response even if inventory update fails
+  }
+}
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -440,6 +684,24 @@ export async function POST(
 
     // Handle inventory updates on delivery
     await handleInventoryOnDelivery(updated, existing.status, tenantId, id);
+
+    // Handle inventory reservation on preparation (outgoing shipments)
+    await handleInventoryOnPreparation(
+      updated,
+      existing.status,
+      tenantId,
+      id,
+      orgId ?? null
+    );
+
+    // Handle inventory reversal on cancellation
+    await handleInventoryOnCancellation(
+      updated,
+      existing.status,
+      tenantId,
+      id,
+      orgId ?? null
+    );
 
     return NextResponse.json(mapShipmentToResponse(updated));
   } catch (error) {

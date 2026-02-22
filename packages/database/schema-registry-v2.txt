@@ -1,6 +1,6 @@
 SCHEMA REGISTRY v2 (Enterprise Catering Platform)
 ==================================================
-Last updated: 2026-02-11
+Last updated: 2026-02-16
 Canonical source of truth for all database objects.
 Update this file BEFORE generating any migration.
 
@@ -63,6 +63,33 @@ platform.sent_emails
   -- Purpose: Track sent emails for idempotency in background jobs (Inngest)
   -- Note: tenant_id present but this is platform-level tracking table
 
+platform.sentry_fix_jobs
+  id uuid PK DEFAULT gen_random_uuid()
+  sentry_issue_id text NOT NULL UNIQUE  -- Sentry issue identifier
+  sentry_event_id text  -- Sentry event identifier (nullable)
+  organization_slug text NOT NULL  -- Sentry organization
+  project_slug text NOT NULL  -- Sentry project
+  environment text  -- Deployment environment (production, staging, etc.)
+  release text  -- Release version
+  issue_title text NOT NULL  -- Error title from Sentry
+  issue_url text NOT NULL  -- Sentry issue URL
+  status core.SentryFixJobStatus NOT NULL DEFAULT 'queued'
+  payload_snapshot jsonb NOT NULL  -- Full webhook payload for debugging
+  branch_name text  -- Git branch name for fix
+  pr_url text  -- Pull request URL
+  pr_number integer  -- PR number
+  error_message text  -- Error message if failed
+  retry_count integer NOT NULL DEFAULT 0
+  max_retries integer NOT NULL DEFAULT 3
+  started_at timestamptz  -- When processing started
+  completed_at timestamptz  -- When processing completed
+  created_at timestamptz NOT NULL DEFAULT now()
+  updated_at timestamptz NOT NULL DEFAULT now()
+  INDEX: (status, created_at)  -- For job queue queries
+  INDEX: (sentry_issue_id, created_at)  -- For deduplication checks
+  -- Purpose: Track Sentry-to-PR auto-fixer jobs with retry support
+  -- Supports: webhook dedup, rate limiting, PR tracking, Slack notifications
+
 ================================================================================
 CORE SCHEMA (enums, functions, lookups - no tenant-scoped tables)
 ================================================================================
@@ -76,6 +103,7 @@ ENUMS (immutable only):
   core.KitchenTaskStatus: 'open', 'in_progress', 'done', 'canceled'
   core.OutboxStatus: 'pending', 'published', 'failed'
   core.ShipmentStatus: 'draft', 'scheduled', 'preparing', 'in_transit', 'delivered', 'returned', 'cancelled'
+  core.SentryFixJobStatus: 'queued', 'running', 'succeeded', 'failed', 'cancelled'
   core.UserRole: 'owner', 'admin', 'manager', 'staff'
   tenant_accounting.AccountType: 'ASSET', 'LIABILITY', 'EQUITY', 'REVENUE', 'EXPENSE'
   tenant_staff.time_off_status: 'PENDING', 'APPROVED', 'REJECTED', 'CANCELLED'

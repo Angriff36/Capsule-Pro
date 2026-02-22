@@ -1,6 +1,6 @@
 "use server";
 
-import type { OverrideRequest } from "@manifest/runtime/ir";
+import type { OverrideRequest } from "@angriff36/manifest/ir";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import type { OverrideReasonCode } from "@repo/design-system/components/override-reasons";

@@ -14,9 +14,9 @@
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import type { IR } from "@manifest/runtime/ir";
-import { compileToIR } from "@manifest/runtime/ir-compiler";
-import { NextJsProjection } from "@manifest/runtime/projections/nextjs";
+import type { IR } from "@angriff36/manifest/ir";
+import { compileToIR } from "@angriff36/manifest/ir-compiler";
+import { NextJsProjection } from "@angriff36/manifest/projections/nextjs";
 import { describe, expect, it } from "vitest";
 
 const MANIFEST_PATH = join(

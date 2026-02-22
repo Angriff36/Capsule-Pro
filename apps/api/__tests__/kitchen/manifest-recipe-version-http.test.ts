@@ -30,15 +30,75 @@ vi.mock("@repo/database", () => {
       create: vi.fn(),
       findFirst: vi.fn(),
       findMany: vi.fn(),
+      update: vi.fn(),
     },
     outboxEvent: {
       create: vi.fn(),
     },
+    manifestState: {
+      findUnique: vi.fn(),
+      upsert: vi.fn(),
+    },
+    idempotencyKey: {
+      findUnique: vi.fn(),
+      upsert: vi.fn(),
+    },
+    $transaction: vi.fn((fn) => fn(mockDb)),
   };
   return {
     database: mockDb,
+    Prisma: {
+      Decimal: class Decimal {
+        value: string | number;
+        constructor(value: string | number) {
+          this.value = value;
+        }
+      },
+    },
   };
 });
+
+// Mock manifest runtime to avoid complex dependencies
+vi.mock("@/lib/manifest-runtime", () => ({
+  createManifestRuntime: vi.fn(() =>
+    Promise.resolve({
+      runCommand: vi.fn((_command: string, body: Record<string, unknown>) => {
+        // Simulate manifest constraint validation
+        if (
+          typeof body.difficulty === "number" &&
+          (body.difficulty < 1 || body.difficulty > 5)
+        ) {
+          return Promise.resolve({
+            success: false,
+            guardFailure: {
+              index: 0,
+              formatted: "difficulty must be between 1 and 5",
+            },
+          });
+        }
+        if (
+          (body.prepTime as number) < 0 ||
+          (body.cookTime as number) < 0 ||
+          (body.restTime as number) < 0
+        ) {
+          return Promise.resolve({
+            success: false,
+            guardFailure: {
+              index: 0,
+              formatted: "times cannot be negative",
+            },
+          });
+        }
+        // Success case
+        return Promise.resolve({
+          success: true,
+          result: { id: "version-001", ...body },
+          emittedEvents: [],
+        });
+      }),
+    })
+  ),
+}));
 
 // Mock tenant resolution
 vi.mock("@/app/lib/tenant", () => ({

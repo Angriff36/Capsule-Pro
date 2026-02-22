@@ -5,7 +5,7 @@
  * using the existing Prisma schema. It bridges the gap between Manifest's entity
  * model and the Prisma database tables.
  */
-import type { Store } from "@manifest/runtime";
+import type { Store } from "@angriff36/manifest";
 import type { PrismaClient } from "@repo/database";
 export interface EntityInstance {
     id: string;

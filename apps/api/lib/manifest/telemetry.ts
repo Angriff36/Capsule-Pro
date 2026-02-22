@@ -1,10 +1,11 @@
-import type { CommandResult } from "@manifest/runtime";
+import type { CommandResult } from "@angriff36/manifest";
 import type {
   ConstraintOutcome,
   IRCommand,
   IRConstraint,
   OverrideRequest,
-} from "@manifest/runtime/ir";
+} from "@angriff36/manifest/ir";
+// biome-ignore lint/performance/noNamespaceImport: Sentry is designed to use namespace imports
 import * as Sentry from "@sentry/nextjs";
 
 /**

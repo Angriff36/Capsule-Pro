@@ -127,11 +127,15 @@ const getColumnsFromRows = (rows: DataRow[]) => {
 };
 
 const getDateRange = (rows: DataRow[], column: string | null) => {
-  if (!column) return null;
+  if (!column) {
+    return null;
+  }
   const dates = rows
     .map((row) => toDateValue(row[column]))
     .filter((value): value is Date => Boolean(value));
-  if (!dates.length) return null;
+  if (!dates.length) {
+    return null;
+  }
   const times = dates.map((date) => date.getTime());
   return {
     min: new Date(Math.min(...times)),
@@ -174,7 +178,9 @@ const getTopItem = <T extends Record<string, CellValue>>(
         : rawValue === null || rawValue === undefined
           ? Number.NaN
           : Number(rawValue);
-    if (!Number.isFinite(numeric)) continue;
+    if (!Number.isFinite(numeric)) {
+      continue;
+    }
     if (!top || numeric > top.value) {
       const labelValue = item[labelKey];
       top = {
@@ -207,7 +213,9 @@ const findRowLabel = (row: DataRow): string | null => {
           .trim()
           .includes(candidate) && value
     );
-    if (match) return String(match[1]);
+    if (match) {
+      return String(match[1]);
+    }
   }
   const fallback = entries.find(
     ([, value]) => typeof value === "string" && value.trim()
@@ -226,7 +234,7 @@ interface ReportSummary {
   highlights?: string[];
 }
 
-const buildWeeklySummary = (weekly: WeeklyMetrics): ReportSummary => {
+const _buildWeeklySummary = (weekly: WeeklyMetrics): ReportSummary => {
   const highlights: string[] = [];
   const topRevenue = getTopItem(
     weekly.revenueByEventType,
@@ -263,7 +271,7 @@ const buildWeeklySummary = (weekly: WeeklyMetrics): ReportSummary => {
   };
 };
 
-const buildMonthlySummary = (monthly: MonthlyMetrics): ReportSummary => {
+const _buildMonthlySummary = (monthly: MonthlyMetrics): ReportSummary => {
   const highlights: string[] = [];
   const topLead = getTopItem(
     monthly.leadSourceBreakdown,
@@ -313,7 +321,7 @@ const buildMonthlySummary = (monthly: MonthlyMetrics): ReportSummary => {
   };
 };
 
-const buildQuarterlySummary = (quarterly: QuarterlyMetrics): ReportSummary => {
+const _buildQuarterlySummary = (quarterly: QuarterlyMetrics): ReportSummary => {
   const highlights: string[] = [];
   const topVenue = getTopItem(
     quarterly.venuePerformance,
@@ -364,7 +372,7 @@ const buildQuarterlySummary = (quarterly: QuarterlyMetrics): ReportSummary => {
   };
 };
 
-const buildAnnualSummary = (annual: AnnualMetrics): ReportSummary => {
+const _buildAnnualSummary = (annual: AnnualMetrics): ReportSummary => {
   const highlights: string[] = [];
   const topEventType = getTopItem(
     annual.revenueByEventType,
@@ -460,7 +468,9 @@ export function SalesDashboardClient() {
   const handleFileInput = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
-      if (!file) return;
+      if (!file) {
+        return;
+      }
       handleFile(file);
     },
     [handleFile]
@@ -473,20 +483,28 @@ export function SalesDashboardClient() {
   );
 
   const dateColumnOptions = useMemo(() => {
-    if (!salesData) return { detected: [], ratios: {} };
+    if (!salesData) {
+      return { detected: [], ratios: {} };
+    }
     return buildDateColumnOptionsForUI(salesData.masterEvents);
   }, [salesData]);
 
   const columnOptions = useMemo(() => {
-    if (!columns.length) return [];
-    if (showAllColumns) return columns;
+    if (!columns.length) {
+      return [];
+    }
+    if (showAllColumns) {
+      return columns;
+    }
     return dateColumnOptions?.detected.length
       ? dateColumnOptions.detected
       : columns;
   }, [columns, dateColumnOptions?.detected, showAllColumns]);
 
   useEffect(() => {
-    if (!(salesData && columnOptions.length)) return;
+    if (!(salesData && columnOptions.length)) {
+      return;
+    }
     if (!createdChoice) {
       setCreatedChoice(
         getCreatedDateCol(salesData.masterEvents) ?? columnOptions[0]
@@ -500,10 +518,14 @@ export function SalesDashboardClient() {
   }, [salesData, columnOptions, createdChoice, eventChoice]);
 
   useEffect(() => {
-    if (!salesData || dateDefaultsSet) return;
+    if (!salesData || dateDefaultsSet) {
+      return;
+    }
     const createdColumn = createdChoice ?? eventChoice;
     const eventColumn = eventChoice ?? createdChoice;
-    if (!(createdColumn || eventColumn)) return;
+    if (!(createdColumn || eventColumn)) {
+      return;
+    }
 
     const createdRange = getDateRange(
       salesData.masterEvents,
@@ -513,7 +535,9 @@ export function SalesDashboardClient() {
       salesData.masterEvents,
       eventColumn ?? null
     );
-    if (!(createdRange || eventRange)) return;
+    if (!(createdRange || eventRange)) {
+      return;
+    }
 
     const anchor = eventRange?.max ?? createdRange?.max ?? new Date();
     setWeekAnchor(formatDateForInput(anchor));
@@ -529,10 +553,14 @@ export function SalesDashboardClient() {
 
   // Compute metrics
   const metrics = useMemo(() => {
-    if (!salesData) return null;
+    if (!salesData) {
+      return null;
+    }
     const created = createdChoice ?? eventChoice;
     const event = eventChoice ?? createdChoice;
-    if (!(created && event)) return null;
+    if (!(created && event)) {
+      return null;
+    }
     return prepareSalesMetrics({
       salesData,
       createdChoice: created,
@@ -551,10 +579,14 @@ export function SalesDashboardClient() {
   ]);
 
   const validation = useMemo(() => {
-    if (!salesData) return null;
+    if (!salesData) {
+      return null;
+    }
     const created = createdChoice ?? eventChoice;
     const event = eventChoice ?? createdChoice;
-    if (!(created && event)) return null;
+    if (!(created && event)) {
+      return null;
+    }
     const mappedMaster = mapRowsWithDates(
       salesData.masterEvents,
       created,
@@ -565,7 +597,9 @@ export function SalesDashboardClient() {
 
   // Flat data for chart builder
   const flatData = useMemo(() => {
-    if (!salesData) return [];
+    if (!salesData) {
+      return [];
+    }
     return salesData.masterEvents as Record<string, unknown>[];
   }, [salesData]);
 

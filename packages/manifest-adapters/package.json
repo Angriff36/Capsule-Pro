@@ -38,6 +38,10 @@
       "types": "./dist/manifest-runtime.d.ts",
       "import": "./dist/manifest-runtime.js"
     },
+    "./runtime/loadManifests": {
+      "types": "./dist/runtime/loadManifests.d.ts",
+      "import": "./dist/runtime/loadManifests.js"
+    },
     "./prisma-json-store": {
       "types": "./dist/prisma-json-store.d.ts",
       "import": "./dist/prisma-json-store.js"
@@ -54,7 +58,7 @@
   "dependencies": {
     "@repo/database": "workspace:*",
     "@repo/realtime": "workspace:*",
-    "@manifest/runtime": "workspace:*",
+    "@angriff36/manifest": "workspace:*",
     "@sentry/nextjs": "^10.38.0",
     "hono": "^4.10.5"
   },

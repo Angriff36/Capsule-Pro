@@ -97,6 +97,13 @@ export interface ProposalPDFData {
     totalPrice: number;
     category?: string;
   }>;
+  branding?: {
+    logoUrl?: string;
+    primaryColor?: string;
+    secondaryColor?: string;
+    accentColor?: string;
+    fontFamily?: string;
+  };
   metadata: {
     generatedAt: Date;
     generatedBy: string;

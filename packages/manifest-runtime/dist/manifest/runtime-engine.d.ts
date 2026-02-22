@@ -204,6 +204,8 @@ export declare class RuntimeEngine {
     private justCreatedInstanceIds;
     /** Last transition validation error (set by updateInstance, checked by _executeCommandInternal) */
     private lastTransitionError;
+    /** Last concurrency conflict (set by updateInstance, checked by _executeCommandInternal) */
+    private lastConcurrencyConflict;
     /** Per-entry-point evaluation budget for bounded complexity enforcement */
     private evalBudget;
     /**
@@ -342,7 +344,9 @@ export declare class RuntimeEngine {
     private evaluateConstraint;
     /**
      * vNext: Evaluate command constraints with override support
-     * Returns allowed flag and all constraint outcomes
+     * Returns allowed flag, all constraint outcomes, and any OverrideApplied events.
+     * Per spec (manifest-vnext.md § OverrideApplied Event Shape):
+     * OverrideApplied events MUST be included in CommandResult.emittedEvents.
      */
     private evaluateCommandConstraints;
     /**
@@ -350,9 +354,13 @@ export declare class RuntimeEngine {
      */
     private validateOverrideAuthorization;
     /**
-     * vNext: Emit OverrideApplied event for auditing
+     * vNext: Build OverrideApplied event for auditing.
+     * Per spec (manifest-vnext.md § OverrideApplied Event Shape):
+     * payload MUST contain: constraintCode, reason, authorizedBy, timestamp, commandName,
+     * and optionally entityName, instanceId.
+     * The event is a runtime-synthesized event included in CommandResult.emittedEvents.
      */
-    private emitOverrideAppliedEvent;
+    private buildOverrideAppliedEvent;
     /**
      * vNext: Emit ConcurrencyConflict event
      */

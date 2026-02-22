@@ -88,10 +88,10 @@ export async function GET(request: Request) {
  * POST /api/kitchen/tasks
  */
 export async function POST(request: NextRequest) {
-  return executeManifestCommand(request, {
+  return await executeManifestCommand(request, {
     entityName: "KitchenTask",
     commandName: "create",
-    transformBody: (body, ctx) => ({
+    transformBody: (body, _ctx) => ({
       ...body,
       // Provide defaults matching the old direct-Prisma behavior
       summary: body.summary || body.title,

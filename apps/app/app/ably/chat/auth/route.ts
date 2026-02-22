@@ -80,7 +80,7 @@ export async function POST(request: Request) {
     ];
   }
 
-  let tokenRequest;
+  let tokenRequest: Ably.TokenRequest;
   try {
     tokenRequest = await ably.auth.createTokenRequest({
       clientId,
@@ -89,9 +89,24 @@ export async function POST(request: Request) {
   } catch (error) {
     const code = (error as { code?: number } | null)?.code;
     if (code !== 40_160) {
-      throw error;
+      console.error("[ably/chat/auth] createTokenRequest failed:", error);
+      return new NextResponse(
+        JSON.stringify({ error: "Failed to create Ably token" }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
     }
-    tokenRequest = await ably.auth.createTokenRequest({ clientId });
+    try {
+      tokenRequest = await ably.auth.createTokenRequest({ clientId });
+    } catch (fallbackErr) {
+      console.error(
+        "[ably/chat/auth] createTokenRequest fallback failed:",
+        fallbackErr
+      );
+      return new NextResponse(
+        JSON.stringify({ error: "Failed to create Ably token (fallback)" }),
+        { status: 500, headers: { "Content-Type": "application/json" } }
+      );
+    }
   }
 
   return NextResponse.json(tokenRequest);

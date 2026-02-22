@@ -44,9 +44,9 @@ import type {
   EmittedEvent,
   RuntimeContext,
   RuntimeEngine,
-} from "@manifest/runtime";
-import type { IR, IRDiagnostic, OverrideRequest } from "@manifest/runtime/ir";
-import { compileToIR } from "@manifest/runtime/ir-compiler";
+} from "@angriff36/manifest";
+import type { IR, IRDiagnostic, OverrideRequest } from "@angriff36/manifest/ir";
+import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { enforceCommandOwnership } from "./ir-contract.js";
 import { ManifestRuntimeEngine } from "./runtime-engine.js";
 
@@ -232,7 +232,7 @@ async function loadPrepListManifestIR(): Promise<IR> {
   return cachedPrepListIR;
 }
 
-import type { Store } from "@manifest/runtime";
+import type { Store } from "@angriff36/manifest";
 
 /**
  * Kitchen Ops Runtime Context
@@ -343,19 +343,19 @@ export interface KitchenOpsContext extends RuntimeContext {
    */
   telemetry?: {
     onConstraintEvaluated?: (
-      outcome: Readonly<import("@manifest/runtime/ir").ConstraintOutcome>,
+      outcome: Readonly<import("@angriff36/manifest/ir").ConstraintOutcome>,
       commandName: string,
       entityName?: string
     ) => void;
     onOverrideApplied?: (
-      constraint: Readonly<import("@manifest/runtime/ir").IRConstraint>,
-      overrideReq: Readonly<import("@manifest/runtime/ir").OverrideRequest>,
-      outcome: Readonly<import("@manifest/runtime/ir").ConstraintOutcome>,
+      constraint: Readonly<import("@angriff36/manifest/ir").IRConstraint>,
+      overrideReq: Readonly<import("@angriff36/manifest/ir").OverrideRequest>,
+      outcome: Readonly<import("@angriff36/manifest/ir").ConstraintOutcome>,
       commandName: string
     ) => void;
     onCommandExecuted?: (
-      command: Readonly<import("@manifest/runtime/ir").IRCommand>,
-      result: Readonly<import("@manifest/runtime").CommandResult>,
+      command: Readonly<import("@angriff36/manifest/ir").IRCommand>,
+      result: Readonly<import("@angriff36/manifest").CommandResult>,
       entityName?: string
     ) => void;
   };
@@ -487,7 +487,7 @@ export function createPostgresStoreProvider(
     try {
       const {
         PostgresStore: PGStore,
-      } = require("@manifest/runtime/src/manifest/stores.node");
+      } = require("@angriff36/manifest/src/manifest/stores.node");
       return new PGStore({
         connectionString: databaseUrl,
         tableName,
@@ -2892,7 +2892,7 @@ export async function createInventoryItemInstance(
 
 // ============ Override Types and Utilities ============
 
-import type { ConstraintOutcome } from "@manifest/runtime/ir";
+import type { ConstraintOutcome } from "@angriff36/manifest/ir";
 
 /**
  * Override reason codes for constraint overrides

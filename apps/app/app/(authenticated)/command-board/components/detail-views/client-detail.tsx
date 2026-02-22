@@ -26,7 +26,7 @@ export function ClientDetail({ data }: ClientDetailProps) {
     clientTypeConfig[data.clientType as keyof typeof clientTypeConfig] ??
     clientTypeConfig.company;
 
-  const displayName =
+  const _displayName =
     data.companyName ??
     (`${data.firstName ?? ""} ${data.lastName ?? ""}`.trim() ||
       "Unknown Client");

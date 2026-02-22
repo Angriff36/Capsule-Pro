@@ -2,13 +2,13 @@ export interface FileNode {
   name: string;
   path: string;
   content: string;
-  type: 'file';
+  type: "file";
 }
 
 export interface FolderNode {
   name: string;
   path: string;
-  type: 'folder';
+  type: "folder";
   children: (FileNode | FolderNode)[];
 }
 

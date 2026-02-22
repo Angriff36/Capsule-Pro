@@ -38,7 +38,7 @@
 import { readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { compileToIR } from "@manifest/runtime/ir-compiler";
+import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { enforceCommandOwnership } from "./ir-contract.js";
 import { ManifestRuntimeEngine } from "./runtime-engine.js";
 const __filename = fileURLToPath(import.meta.url);
@@ -235,7 +235,7 @@ export function createPostgresStoreProvider(databaseUrl, tenantId) {
         // Dynamically import PostgresStore only when databaseUrl is provided
         // This avoids requiring the pg package in environments that don't need it
         try {
-            const { PostgresStore: PGStore, } = require("@manifest/runtime/src/manifest/stores.node");
+            const { PostgresStore: PGStore, } = require("@angriff36/manifest/src/manifest/stores.node");
             return new PGStore({
                 connectionString: databaseUrl,
                 tableName,

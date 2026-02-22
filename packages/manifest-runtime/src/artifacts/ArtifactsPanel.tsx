@@ -1,11 +1,24 @@
-import { useState, useEffect } from 'react';
-import { Download, Copy, Check, Package, FolderTree, Rocket } from 'lucide-react';
-import { FileTree } from './FileTree';
-import { FileViewer } from './FileViewer';
-import { SmokeTestPanel } from './SmokeTestPanel';
-import { RuntimePanel } from './RuntimePanel';
-import { buildFileMap, exportZip, exportRunnableZip, copyAllFiles, generateProjectName } from './zipExporter';
-import { ProjectFiles } from './types';
+import {
+  Check,
+  Copy,
+  Download,
+  FolderTree,
+  Package,
+  Rocket,
+} from "lucide-react";
+import { useEffect, useState } from "react";
+import { FileTree } from "./FileTree";
+import { FileViewer } from "./FileViewer";
+import { RuntimePanel } from "./RuntimePanel";
+import { SmokeTestPanel } from "./SmokeTestPanel";
+import type { ProjectFiles } from "./types";
+import {
+  buildFileMap,
+  copyAllFiles,
+  exportRunnableZip,
+  exportZip,
+  generateProjectName,
+} from "./zipExporter";
 
 interface ArtifactsPanelProps {
   source: string;
@@ -16,7 +29,7 @@ interface ArtifactsPanelProps {
   hasErrors: boolean;
 }
 
-type PanelMode = 'files' | 'runtime';
+type PanelMode = "files" | "runtime";
 
 export function ArtifactsPanel({
   source,
@@ -24,33 +37,37 @@ export function ArtifactsPanel({
   serverCode,
   testCode,
   ast,
-  hasErrors
+  hasErrors,
 }: ArtifactsPanelProps) {
-  const [selectedFile, setSelectedFile] = useState<string | null>('src/generated/client.ts');
+  const [selectedFile, setSelectedFile] = useState<string | null>(
+    "src/generated/client.ts"
+  );
   const [copiedAll, setCopiedAll] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [exportingRunnable, setExportingRunnable] = useState(false);
-  const [panelMode, setPanelMode] = useState<PanelMode>('files');
+  const [panelMode, setPanelMode] = useState<PanelMode>("files");
 
   const files: ProjectFiles = {
     source,
     clientCode,
     serverCode,
     testCode,
-    ast
+    ast,
   };
 
   const fileMap = buildFileMap(files);
   const projectName = generateProjectName(source);
 
   useEffect(() => {
-    if (!selectedFile || !fileMap[selectedFile]) {
-      setSelectedFile('src/generated/client.ts');
+    if (!(selectedFile && fileMap[selectedFile])) {
+      setSelectedFile("src/generated/client.ts");
     }
   }, [fileMap, selectedFile]);
 
   const handleExport = async () => {
-    if (hasErrors) return;
+    if (hasErrors) {
+      return;
+    }
     setExporting(true);
     try {
       await exportZip(files);
@@ -60,7 +77,9 @@ export function ArtifactsPanel({
   };
 
   const handleExportRunnable = async () => {
-    if (hasErrors) return;
+    if (hasErrors) {
+      return;
+    }
     setExportingRunnable(true);
     try {
       await exportRunnableZip(files);
@@ -80,44 +99,46 @@ export function ArtifactsPanel({
       <div className="flex-shrink-0 px-3 py-3 border-b border-gray-800 bg-gray-900/50">
         <div className="flex items-center justify-between mb-3">
           <div className="flex items-center gap-2">
-            <Package size={16} className="text-sky-400" />
+            <Package className="text-sky-400" size={16} />
             <span className="text-sm font-medium text-gray-200">Artifacts</span>
-            <span className="text-xs text-gray-500 px-2 py-0.5 bg-gray-800 rounded">{projectName}</span>
+            <span className="text-xs text-gray-500 px-2 py-0.5 bg-gray-800 rounded">
+              {projectName}
+            </span>
           </div>
         </div>
         <div className="flex flex-col gap-2">
           <button
-            onClick={handleExportRunnable}
-            disabled={hasErrors || exportingRunnable}
             className={`flex items-center justify-center gap-2 px-3 py-2.5 text-sm rounded transition-colors ${
               hasErrors || exportingRunnable
-                ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
-                : 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white'
+                ? "bg-gray-800 text-gray-600 cursor-not-allowed"
+                : "bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white"
             }`}
+            disabled={hasErrors || exportingRunnable}
+            onClick={handleExportRunnable}
           >
             <Rocket size={14} />
-            {exportingRunnable ? 'Exporting...' : 'Export Runnable Project'}
+            {exportingRunnable ? "Exporting..." : "Export Runnable Project"}
           </button>
           <div className="flex gap-2">
             <button
-              onClick={handleExport}
-              disabled={hasErrors || exporting}
               className={`flex-1 flex items-center justify-center gap-2 px-3 py-2 text-sm rounded transition-colors ${
                 hasErrors || exporting
-                  ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
-                  : 'bg-sky-600 hover:bg-sky-500 text-white'
+                  ? "bg-gray-800 text-gray-600 cursor-not-allowed"
+                  : "bg-sky-600 hover:bg-sky-500 text-white"
               }`}
+              disabled={hasErrors || exporting}
+              onClick={handleExport}
             >
               <Download size={14} />
-              {exporting ? 'Exporting...' : 'Export .zip'}
+              {exporting ? "Exporting..." : "Export .zip"}
             </button>
             <button
-              onClick={handleCopyAll}
               className="flex items-center justify-center gap-2 px-3 py-2 text-sm bg-gray-800 hover:bg-gray-700 rounded transition-colors"
+              onClick={handleCopyAll}
             >
               {copiedAll ? (
                 <>
-                  <Check size={14} className="text-emerald-400" />
+                  <Check className="text-emerald-400" size={14} />
                   <span className="text-emerald-400">Copied!</span>
                 </>
               ) : (
@@ -143,27 +164,27 @@ export function ArtifactsPanel({
             Panels
           </div>
           <button
-            onClick={() => setPanelMode('files')}
             className={`w-full px-2 py-2 text-left text-sm transition-colors ${
-              panelMode === 'files'
-                ? 'bg-gray-800 text-sky-400'
-                : 'text-gray-400 hover:text-gray-300 hover:bg-gray-900/50'
+              panelMode === "files"
+                ? "bg-gray-800 text-sky-400"
+                : "text-gray-400 hover:text-gray-300 hover:bg-gray-900/50"
             }`}
+            onClick={() => setPanelMode("files")}
           >
             Files
           </button>
           <button
-            onClick={() => setPanelMode('runtime')}
             className={`w-full px-2 py-2 text-left text-sm transition-colors ${
-              panelMode === 'runtime'
-                ? 'bg-gray-800 text-sky-400'
-                : 'text-gray-400 hover:text-gray-300 hover:bg-gray-900/50'
+              panelMode === "runtime"
+                ? "bg-gray-800 text-sky-400"
+                : "text-gray-400 hover:text-gray-300 hover:bg-gray-900/50"
             }`}
+            onClick={() => setPanelMode("runtime")}
           >
             Runtime
           </button>
 
-          {panelMode === 'files' && (
+          {panelMode === "files" && (
             <>
               <div className="px-2 py-2 text-xs text-gray-500 uppercase tracking-wider flex items-center gap-1 border-t border-gray-800 mt-2">
                 <FolderTree size={12} />
@@ -171,33 +192,29 @@ export function ArtifactsPanel({
               </div>
               <FileTree
                 files={fileMap}
-                selectedFile={selectedFile}
                 onSelectFile={setSelectedFile}
+                selectedFile={selectedFile}
               />
             </>
           )}
         </div>
 
         <div className="flex-1 flex flex-col overflow-hidden">
-          {panelMode === 'files' ? (
+          {panelMode === "files" ? (
             selectedFile && fileMap[selectedFile] ? (
-              <FileViewer path={selectedFile} content={fileMap[selectedFile]} />
+              <FileViewer content={fileMap[selectedFile]} path={selectedFile} />
             ) : (
               <div className="flex-1 flex items-center justify-center text-gray-500 text-sm">
                 Select a file to view
               </div>
             )
           ) : (
-            <RuntimePanel source={source} disabled={hasErrors} />
+            <RuntimePanel disabled={hasErrors} source={source} />
           )}
         </div>
       </div>
 
-      <SmokeTestPanel
-        clientCode={clientCode}
-        ast={ast}
-        disabled={hasErrors}
-      />
+      <SmokeTestPanel ast={ast} clientCode={clientCode} disabled={hasErrors} />
     </div>
   );
 }

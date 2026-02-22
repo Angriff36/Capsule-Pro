@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { redirect } from "next/navigation";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { autoPopulateBoard } from "../actions/auto-populate";
 import { getCommandBoard, listCommandBoards } from "../actions/boards";
 import { deriveConnections } from "../actions/derive-connections";
@@ -24,6 +25,9 @@ export default async function CommandBoardPage({
   if (!orgId) {
     redirect("/sign-in");
   }
+
+  // Get tenantId for real-time subscriptions
+  const tenantId = await getTenantIdForOrg(orgId);
 
   // Handle "default" board — redirect to first existing board or board list
   if (boardId === "default") {
@@ -96,13 +100,14 @@ export default async function CommandBoardPage({
 
   return (
     <BoardShell
-      boardId={boardId}
-      orgId={orgId}
-      board={board}
-      projections={projections}
-      entitiesArray={entitiesArray}
-      derivedConnections={derivedConnections}
       annotations={[]}
+      board={board}
+      boardId={boardId}
+      derivedConnections={derivedConnections}
+      entitiesArray={entitiesArray}
+      orgId={orgId}
+      projections={projections}
+      tenantId={tenantId}
     />
   );
 }

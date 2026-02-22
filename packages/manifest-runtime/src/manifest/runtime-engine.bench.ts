@@ -5,9 +5,9 @@
  * performance across different scenarios.
  */
 
-import { describe, bench } from 'vitest';
-import { compileToIR } from './ir-compiler';
-import { RuntimeEngine, type RuntimeContext } from './runtime-engine';
+import { bench, describe } from "vitest";
+import { compileToIR } from "./ir-compiler";
+import { type RuntimeContext, RuntimeEngine } from "./runtime-engine";
 
 // Simple source - few constraints
 const simpleSource = `
@@ -119,85 +119,95 @@ store User in memory
 
 // Basic runtime context
 const basicContext: RuntimeContext = {
-  user: { id: 'admin-1', role: 'admin' },
-  context: { timestamp: 1000000000000 },
+  user: { id: "admin-1", role: "admin" },
+  context: { timestamp: 1_000_000_000_000 },
   params: {},
 };
 
-describe('Runtime Engine Benchmarks', () => {
-  describe('Constraint Evaluation', () => {
-    bench('check 3 constraints (simple)', async () => {
+describe("Runtime Engine Benchmarks", () => {
+  describe("Constraint Evaluation", () => {
+    bench("check 3 constraints (simple)", async () => {
       const result = await compileToIR(simpleSource);
       const ir = result.ir!;
       const engine = new RuntimeEngine(ir, basicContext);
-      await engine.checkConstraints('User', { id: 'user-1', name: 'John Doe', email: 'john@example.com' });
+      await engine.checkConstraints("User", {
+        id: "user-1",
+        name: "John Doe",
+        email: "john@example.com",
+      });
     });
 
-    bench('check 13 constraints (medium)', async () => {
+    bench("check 13 constraints (medium)", async () => {
       const result = await compileToIR(mediumSource);
       const ir = result.ir!;
       const engine = new RuntimeEngine(ir, basicContext);
-      await engine.checkConstraints('Order', {
-        id: 'order-1',
-        customerId: 'customer-1',
+      await engine.checkConstraints("Order", {
+        id: "order-1",
+        customerId: "customer-1",
         amount: 100,
-        status: 'pending',
-        createdAt: 1000000000000,
-        updatedAt: 1000000000000,
+        status: "pending",
+        createdAt: 1_000_000_000_000,
+        updatedAt: 1_000_000_000_000,
         discount: 0,
         taxRate: 0.08,
-        shippingAddress: '',
-        billingAddress: '',
-        notes: '',
-        priority: 'normal',
+        shippingAddress: "",
+        billingAddress: "",
+        notes: "",
+        priority: "normal",
       });
     });
 
-    bench('check 11 constraints (complex)', async () => {
+    bench("check 11 constraints (complex)", async () => {
       const result = await compileToIR(complexSource);
       const ir = result.ir!;
       const engine = new RuntimeEngine(ir, basicContext);
-      await engine.checkConstraints('User', {
-        id: 'user-1',
-        name: 'John Doe',
-        email: 'john@example.com',
-        role: 'user',
-        status: 'active',
-        createdAt: 1000000000000,
-        updatedAt: 1000000000000,
+      await engine.checkConstraints("User", {
+        id: "user-1",
+        name: "John Doe",
+        email: "john@example.com",
+        role: "user",
+        status: "active",
+        createdAt: 1_000_000_000_000,
+        updatedAt: 1_000_000_000_000,
       });
     });
   });
 
-  describe('IR Initialization', () => {
-    bench('initialize runtime with simple IR (1 entity)', async () => {
+  describe("IR Initialization", () => {
+    bench("initialize runtime with simple IR (1 entity)", async () => {
       const result = await compileToIR(simpleSource);
       new RuntimeEngine(result.ir!, basicContext);
     });
 
-    bench('initialize runtime with medium IR (1 entity, 13 constraints)', async () => {
-      const result = await compileToIR(mediumSource);
-      new RuntimeEngine(result.ir!, basicContext);
-    });
+    bench(
+      "initialize runtime with medium IR (1 entity, 13 constraints)",
+      async () => {
+        const result = await compileToIR(mediumSource);
+        new RuntimeEngine(result.ir!, basicContext);
+      }
+    );
 
-    bench('initialize runtime with complex IR (1 entity, 11 constraints, 4 commands)', async () => {
-      const result = await compileToIR(complexSource);
-      new RuntimeEngine(result.ir!, basicContext);
-    });
+    bench(
+      "initialize runtime with complex IR (1 entity, 11 constraints, 4 commands)",
+      async () => {
+        const result = await compileToIR(complexSource);
+        new RuntimeEngine(result.ir!, basicContext);
+      }
+    );
   });
 
-  describe('Full Pipeline', () => {
-    bench('compile → initialize runtime (small source)', async () => {
+  describe("Full Pipeline", () => {
+    bench("compile → initialize runtime (small source)", async () => {
       const result = await compileToIR(simpleSource);
       new RuntimeEngine(result.ir!, basicContext);
     });
 
-    bench('compile → initialize runtime (medium source)', async () => {
+    bench("compile → initialize runtime (medium source)", async () => {
       const result = await compileToIR(mediumSource);
       new RuntimeEngine(result.ir!, basicContext);
     });
 
-    bench('compile → initialize runtime (complex source)', async () => {
+    bench("compile → initialize runtime (complex source)", async () => {
       const result = await compileToIR(complexSource);
       new RuntimeEngine(result.ir!, basicContext);
     });

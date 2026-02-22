@@ -1,6 +1,6 @@
 "use client";
 
-import type { ConstraintOutcome } from "@manifest/runtime/ir";
+import type { ConstraintOutcome } from "@angriff36/manifest/ir";
 import {
   OVERRIDE_REASON_CODES,
   type OverrideReasonCode,

@@ -165,6 +165,41 @@ export async function getClientCount() {
 }
 
 /**
+ * Get all unique tags used by clients
+ */
+export async function getAvailableTags(): Promise<
+  { tag: string; count: number }[]
+> {
+  const { orgId } = await auth();
+  invariant(orgId, "Unauthorized");
+
+  const tenantId = await getTenantId();
+
+  // Get all clients with tags
+  const clients = await database.client.findMany({
+    where: {
+      AND: [{ tenantId }, { deletedAt: null }],
+    },
+    select: { tags: true },
+  });
+
+  // Count occurrences of each tag
+  const tagCounts = new Map<string, number>();
+  for (const client of clients) {
+    for (const tag of client.tags) {
+      tagCounts.set(tag, (tagCounts.get(tag) ?? 0) + 1);
+    }
+  }
+
+  // Sort by count descending, then alphabetically
+  const result = Array.from(tagCounts.entries())
+    .map(([tag, count]) => ({ tag, count }))
+    .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
+
+  return result;
+}
+
+/**
  * Get client by ID with full details
  */
 export async function getClientById(id: string) {

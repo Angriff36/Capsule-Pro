@@ -15,17 +15,17 @@ import {
   Loader2Icon,
   PackageIcon,
   StickyNoteIcon,
-  UtensilsIcon,
   UserIcon,
   UsersIcon,
+  UtensilsIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { addProjection } from "../actions/projections";
 import {
-  searchEntities,
   type SearchResultItem,
   type SearchResults,
+  searchEntities,
 } from "../actions/search-entities";
 import type { BoardProjection } from "../types/board";
 import { ENTITY_TYPE_LABELS, type EntityType } from "../types/entities";
@@ -154,7 +154,9 @@ export function EntitySearch({
   // Handle selecting a search result — add it to the board
   const handleSelect = useCallback(
     async (item: SearchResultItem) => {
-      if (isAdding) return;
+      if (isAdding) {
+        return;
+      }
 
       setIsAdding(true);
 
@@ -252,10 +254,11 @@ export function EntitySearch({
         {showResults
           ? SEARCH_GROUPS.map((group) => {
               const items = results[group.key];
-              if (items.length === 0) return null;
+              if (items.length === 0) {
+                return null;
+              }
 
-              const Icon =
-                ENTITY_TYPE_ICONS[group.entityType] ?? CalendarIcon;
+              const Icon = ENTITY_TYPE_ICONS[group.entityType] ?? CalendarIcon;
               const label =
                 ENTITY_TYPE_LABELS[
                   group.entityType as keyof typeof ENTITY_TYPE_LABELS

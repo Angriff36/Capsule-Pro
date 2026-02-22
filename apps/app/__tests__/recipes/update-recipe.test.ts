@@ -11,14 +11,11 @@ import { describe, expect, it, vi } from "vitest";
 import { updateRecipe } from "../../app/(authenticated)/kitchen/recipes/actions";
 
 // Mock the tenant module
-vi.mock(
-  "../../app/(authenticated)/kitchen/recipes/../../../lib/tenant",
-  async () => {
-    return {
-      requireTenantId: vi.fn().mockResolvedValue("test-tenant-id"),
-    };
-  }
-);
+vi.mock("../../app/(authenticated)/kitchen/recipes/../../../lib/tenant", () => {
+  return {
+    requireTenantId: vi.fn().mockResolvedValue("test-tenant-id"),
+  };
+});
 
 // Mock next/cache for revalidatePath
 vi.mock("next/cache", () => ({

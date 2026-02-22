@@ -87,7 +87,9 @@ export function VegaChart({
 
     const render = async () => {
       const el = containerRef.current;
-      if (!el) return;
+      if (!el) {
+        return;
+      }
 
       setIsLoading(true);
       setError(null);
@@ -122,7 +124,9 @@ export function VegaChart({
           ...(parsedData ? { data: { values: parsedData } } : {}),
         } as TopLevelSpec;
 
-        if (cancelled) return;
+        if (cancelled) {
+          return;
+        }
 
         // Clean up previous render
         if (resultRef.current) {
@@ -200,7 +204,9 @@ export function VegaChart({
   /* ---- Export handlers ---- */
 
   const handleExportPng = useCallback(async () => {
-    if (!resultRef.current) return;
+    if (!resultRef.current) {
+      return;
+    }
     try {
       const canvas = await resultRef.current.view.toCanvas(2);
       const url = canvas.toDataURL("image/png");
@@ -214,7 +220,9 @@ export function VegaChart({
   }, [title]);
 
   const handleExportSvg = useCallback(async () => {
-    if (!resultRef.current) return;
+    if (!resultRef.current) {
+      return;
+    }
     try {
       const svg = await resultRef.current.view.toSVG();
       const blob = new Blob([svg], { type: "image/svg+xml" });
@@ -230,11 +238,15 @@ export function VegaChart({
   }, [title]);
 
   const handleCopyToClipboard = useCallback(async () => {
-    if (!resultRef.current) return;
+    if (!resultRef.current) {
+      return;
+    }
     try {
       const canvas = await resultRef.current.view.toCanvas(2);
       canvas.toBlob(async (blob) => {
-        if (!blob) return;
+        if (!blob) {
+          return;
+        }
         await navigator.clipboard.write([
           new ClipboardItem({ "image/png": blob }),
         ]);
@@ -308,7 +320,9 @@ export function VegaChart({
     </div>
   );
 
-  if (!asCard) return chartContent;
+  if (!asCard) {
+    return chartContent;
+  }
 
   return (
     <Card>

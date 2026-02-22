@@ -1,12 +1,6 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-// biome-ignore lint/performance/noBarrelFile: Sentry requires namespace import for logger
-import * as Sentry from "@sentry/nextjs";
-
-const { captureException } = Sentry;
-
-import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import {
   createDish as createDishManifest,
@@ -16,10 +10,12 @@ import {
   updateRecipe as updateRecipeManifest,
 } from "@repo/manifest-adapters";
 import { put } from "@repo/storage";
+// biome-ignore lint/performance/noNamespaceImport: Sentry.logger requires namespace import
+import * as Sentry from "@sentry/nextjs";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { invariant } from "../../../lib/invariant";
-import { requireTenantId } from "../../../lib/tenant";
+import { requireCurrentUser, requireTenantId } from "../../../lib/tenant";
 
 // ============ Helper Functions (from original actions.ts) ============
 
@@ -305,8 +301,10 @@ const ensureIngredientId = async (
   return id;
 };
 
+const INGREDIENT_LINE_RE = /^([\d.]+)\s*([a-zA-Z]+)?\s*(.*)$/;
+
 const parseIngredientLine = (line: string) => {
-  const match = line.match(/^([\d.]+)\s*([a-zA-Z]+)?\s*(.*)$/);
+  const match = line.match(INGREDIENT_LINE_RE);
   if (!match) {
     return { quantity: 1, unit: null, name: line };
   }
@@ -325,21 +323,12 @@ const parseIngredientLine = (line: string) => {
 /**
  * Creates a Manifest runtime context with Prisma store provider
  * for persistent entity storage and constraint checking.
+ *
+ * Uses requireCurrentUser() which auto-provisions the User record
+ * if the Clerk user doesn't have one in this tenant yet.
  */
 async function createRuntimeContext(): Promise<KitchenOpsContext> {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-
-  const tenantId = await requireTenantId();
-
-  // Get current user from database
-  const currentUser = await database.user.findFirst({
-    where: {
-      AND: [{ tenantId }, { authUserId: (await auth()).userId ?? "" }],
-    },
-  });
-
-  invariant(currentUser, "User not found in database");
+  const currentUser = await requireCurrentUser();
 
   // Dynamically import PrismaStore to avoid circular dependencies
   const { createPrismaStoreProvider } = await import(
@@ -347,10 +336,10 @@ async function createRuntimeContext(): Promise<KitchenOpsContext> {
   );
 
   return {
-    tenantId,
+    tenantId: currentUser.tenantId,
     userId: currentUser.id,
     userRole: currentUser.role,
-    storeProvider: createPrismaStoreProvider(database, tenantId),
+    storeProvider: createPrismaStoreProvider(database, currentUser.tenantId),
   };
 }
 

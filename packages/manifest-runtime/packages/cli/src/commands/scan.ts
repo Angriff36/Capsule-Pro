@@ -11,23 +11,34 @@
  * - Property alignment: Manifest properties match Prisma schema (when configured)
  */
 
-import fs from 'fs/promises';
-import path from 'path';
-import { glob } from 'glob';
-import chalk from 'chalk';
-import ora, { Ora } from 'ora';
-import { loadAllConfigs, getStoreBindingsInfo, ManifestRuntimeConfig, hasUserResolver, findPrismaSchemaPath, parsePrismaSchema, getPrismaModel, propertyExistsInModel, getPrismaFieldNames, PrismaSchema, ManifestConfig } from '../utils/config.js';
+import fs from "node:fs/promises";
+import path from "node:path";
+import chalk from "chalk";
+import { glob } from "glob";
+import ora, { type Ora } from "ora";
+import {
+  findPrismaSchemaPath,
+  getPrismaFieldNames,
+  getPrismaModel,
+  getStoreBindingsInfo,
+  loadAllConfigs,
+  type ManifestConfig,
+  type ManifestRuntimeConfig,
+  type PrismaSchema,
+  parsePrismaSchema,
+  propertyExistsInModel,
+} from "../utils/config.js";
 
 // Import compiler from the monorepo root package
 async function loadCompiler() {
   // Resolve relative to this file: packages/cli/src/commands/ -> root dist/
-  const module = await import('../../../../dist/manifest/ir-compiler.js');
+  const module = await import("../../../../dist/manifest/ir-compiler.js");
   return module.compileToIR;
 }
 
 interface ScanOptions {
   glob?: string;
-  format?: 'text' | 'json';
+  format?: "text" | "json";
   strict?: boolean;
 }
 
@@ -78,7 +89,7 @@ function commandRequiresUserContext(
   }
 
   // Check policies for user references
-  const policyMap = new Map(policies.map(p => [p.name, p]));
+  const policyMap = new Map(policies.map((p) => [p.name, p]));
   for (const policyName of command.policies || []) {
     const policy = policyMap.get(policyName);
     if (policy?.expression && expressionReferencesUser(policy.expression)) {
@@ -99,7 +110,7 @@ async function scanRouteFile(
   const warnings: ScanWarning[] = [];
   let routesScanned = 0;
 
-  const content = await fs.readFile(filePath, 'utf-8');
+  const content = await fs.readFile(filePath, "utf-8");
 
   // Check if this is a command route (POST handler that uses createManifestRuntime)
   const isCommandRoute = /createManifestRuntime|runCommand/.test(content);
@@ -112,7 +123,7 @@ async function scanRouteFile(
   // Extract entity and command from the route file path or content
   // Routes typically follow: app/api/{entity}/{command}/route.ts pattern
   const pathParts = filePath.split(/[/\\]/);
-  const apiIndex = pathParts.findIndex(p => p === 'api');
+  const apiIndex = pathParts.indexOf("api");
   let entityName: string | null = null;
   let commandName: string | null = null;
 
@@ -120,7 +131,7 @@ async function scanRouteFile(
     entityName = pathParts[apiIndex + 1];
     // Check if this is a command route (not a list route)
     const possibleCommand = pathParts[apiIndex + 2];
-    if (possibleCommand !== 'list' && possibleCommand !== 'route.ts') {
+    if (possibleCommand !== "list" && possibleCommand !== "route.ts") {
       commandName = possibleCommand;
     }
   }
@@ -129,10 +140,14 @@ async function scanRouteFile(
   const entityMatch = content.match(/entityName:\s*["']([^"']+)["']/);
   const commandMatch = content.match(/runCommand\(\s*["']([^"']+)["']/);
 
-  if (entityMatch) entityName = entityMatch[1];
-  if (commandMatch) commandName = commandMatch[1];
+  if (entityMatch) {
+    entityName = entityMatch[1];
+  }
+  if (commandMatch) {
+    commandName = commandMatch[1];
+  }
 
-  if (!entityName || !commandName) {
+  if (!(entityName && commandName)) {
     return { warnings, routesScanned };
   }
 
@@ -144,13 +159,15 @@ async function scanRouteFile(
   }
 
   // Check if the route passes user context
-  const passesUserContext = /user:\s*\{|user:\s*userId|user:\s*{\s*id:\s*userId/.test(content);
+  const passesUserContext =
+    /user:\s*\{|user:\s*userId|user:\s*{\s*id:\s*userId/.test(content);
 
   if (!passesUserContext) {
     warnings.push({
       file: filePath,
       message: `Route for '${commandKey}' does not pass user context, but command requires it.`,
-      suggestion: `Ensure the route passes user context to createManifestRuntime:\n  const runtime = await createManifestRuntime({ user: { id: userId, ... } });\n\n  Or configure resolveUser in manifest.config.ts for auto-injection.`,
+      suggestion:
+        "Ensure the route passes user context to createManifestRuntime:\n  const runtime = await createManifestRuntime({ user: { id: userId, ... } });\n\n  Or configure resolveUser in manifest.config.ts for auto-injection.",
     });
   }
 
@@ -172,7 +189,9 @@ async function scanRoutes(
   const commandsRequiringUserContext = new Set<string>();
 
   for (const command of ir.commands || []) {
-    if (!command.entity || !command.name) continue;
+    if (!(command.entity && command.name)) {
+      continue;
+    }
 
     if (commandRequiresUserContext(command, ir.policies || [])) {
       commandsRequiringUserContext.add(`${command.entity}.${command.name}`);
@@ -186,20 +205,20 @@ async function scanRoutes(
 
   // Find route files (Next.js App Router pattern)
   const routePatterns = [
-    'app/api/**/route.ts',
-    'app/api/**/route.js',
-    'src/app/api/**/route.ts',
-    'src/app/api/**/route.js',
-    'apps/*/app/api/**/route.ts',
-    'apps/*/app/api/**/route.js',
+    "app/api/**/route.ts",
+    "app/api/**/route.js",
+    "src/app/api/**/route.ts",
+    "src/app/api/**/route.js",
+    "apps/*/app/api/**/route.ts",
+    "apps/*/app/api/**/route.js",
   ];
 
   const routeFiles: string[] = [];
   for (const pattern of routePatterns) {
     const files = await glob(pattern, {
       cwd: projectRoot,
-      ignore: ['**/node_modules/**', '**/.next/**'],
-      absolute: true
+      ignore: ["**/node_modules/**", "**/.next/**"],
+      absolute: true,
     });
     routeFiles.push(...files);
   }
@@ -207,7 +226,9 @@ async function scanRoutes(
   if (routeFiles.length === 0) {
     // No route files found - informational warning
     if (commandsRequiringUserContext.size > 0) {
-      spinner.info(`No route files found. ${commandsRequiringUserContext.size} command(s) require user context.`);
+      spinner.info(
+        `No route files found. ${commandsRequiringUserContext.size} command(s) require user context.`
+      );
     }
     return { warnings, routesScanned: 0 };
   }
@@ -225,17 +246,28 @@ async function scanRoutes(
 /**
  * Known built-in store targets (from runtime-engine.ts)
  */
-const BUILTIN_STORE_TARGETS = ['memory', 'localStorage', 'postgres', 'supabase'];
+const BUILTIN_STORE_TARGETS = [
+  "memory",
+  "localStorage",
+  "postgres",
+  "supabase",
+];
 
 /**
  * Get all manifest files from source pattern
  */
-async function getManifestFiles(source: string, options: ScanOptions): Promise<string[]> {
+async function getManifestFiles(
+  source: string,
+  options: ScanOptions
+): Promise<string[]> {
   // If no source provided, use current directory with glob pattern
   if (!source) {
-    const pattern = options.glob || '**/*.manifest';
-    const files = await glob(pattern, { cwd: process.cwd(), ignore: ['**/node_modules/**'] });
-    return files.map(f => path.resolve(process.cwd(), f));
+    const pattern = options.glob || "**/*.manifest";
+    const files = await glob(pattern, {
+      cwd: process.cwd(),
+      ignore: ["**/node_modules/**"],
+    });
+    return files.map((f) => path.resolve(process.cwd(), f));
   }
 
   const resolved = path.resolve(process.cwd(), source);
@@ -251,9 +283,12 @@ async function getManifestFiles(source: string, options: ScanOptions): Promise<s
   }
 
   // If source is a directory, use glob pattern
-  const pattern = options.glob || '**/*.manifest';
-  const files = await glob(pattern, { cwd: resolved, ignore: ['**/node_modules/**'] });
-  return files.map(f => path.resolve(resolved, f));
+  const pattern = options.glob || "**/*.manifest";
+  const files = await glob(pattern, {
+    cwd: resolved,
+    ignore: ["**/node_modules/**"],
+  });
+  return files.map((f) => path.resolve(resolved, f));
 }
 
 /**
@@ -269,7 +304,7 @@ function isCommandCoveredByPolicy(
 ): boolean {
   for (const policy of policies) {
     // Policy must have execute or all action
-    if (policy.action !== 'execute' && policy.action !== 'all') {
+    if (policy.action !== "execute" && policy.action !== "all") {
       continue;
     }
 
@@ -285,7 +320,10 @@ function isCommandCoveredByPolicy(
 /**
  * Find the line number of a command definition in source
  */
-function findCommandLine(sourceLines: string[], commandName: string): number | undefined {
+function findCommandLine(
+  sourceLines: string[],
+  commandName: string
+): number | undefined {
   const commandPattern = new RegExp(`command\\s+${commandName}\\s*\\(`);
   for (let i = 0; i < sourceLines.length; i++) {
     if (commandPattern.test(sourceLines[i])) {
@@ -298,7 +336,11 @@ function findCommandLine(sourceLines: string[], commandName: string): number | u
 /**
  * Find the line number of a store declaration in source
  */
-function findStoreLine(sourceLines: string[], entityName: string, target: string): number | undefined {
+function findStoreLine(
+  sourceLines: string[],
+  entityName: string,
+  target: string
+): number | undefined {
   const storePattern = new RegExp(`store\\s+${entityName}\\s+in\\s+${target}`);
   for (let i = 0; i < sourceLines.length; i++) {
     if (storePattern.test(sourceLines[i])) {
@@ -315,7 +357,12 @@ async function scanFile(
   filePath: string,
   spinner: Ora,
   runtimeConfig: ManifestRuntimeConfig | null
-): Promise<{ errors: ScanError[]; warnings: ScanWarning[]; commandsChecked: number; ir: any | null }> {
+): Promise<{
+  errors: ScanError[];
+  warnings: ScanWarning[];
+  commandsChecked: number;
+  ir: any | null;
+}> {
   const compileToIR = await loadCompiler();
   const errors: ScanError[] = [];
   const warnings: ScanWarning[] = [];
@@ -325,8 +372,8 @@ async function scanFile(
   spinner.text = `Scanning ${path.relative(process.cwd(), filePath)}`;
 
   // Read source
-  const source = await fs.readFile(filePath, 'utf-8');
-  const sourceLines = source.split('\n');
+  const source = await fs.readFile(filePath, "utf-8");
+  const sourceLines = source.split("\n");
 
   // Compile to IR
   const result = await compileToIR(source);
@@ -334,14 +381,14 @@ async function scanFile(
   // Check for compilation errors first
   if (result.diagnostics && result.diagnostics.length > 0) {
     for (const diagnostic of result.diagnostics) {
-      if (diagnostic.severity === 'error') {
+      if (diagnostic.severity === "error") {
         errors.push({
           file: filePath,
           line: diagnostic.line,
-          entityName: '',
-          commandName: '',
+          entityName: "",
+          commandName: "",
           message: diagnostic.message,
-          suggestion: 'Fix the compilation error before running the scanner.',
+          suggestion: "Fix the compilation error before running the scanner.",
         });
       }
     }
@@ -374,7 +421,7 @@ async function scanFile(
   // Check each command in ir.commands for policy coverage
   for (const command of ir.commands || []) {
     // Skip commands without required fields (shouldn't happen in valid IR)
-    if (!command.entity || !command.name) {
+    if (!(command.entity && command.name)) {
       continue;
     }
 
@@ -405,14 +452,14 @@ async function scanFile(
     const isBuiltin = BUILTIN_STORE_TARGETS.includes(store.target);
     const hasConfigBinding = storeBindingsInfo.hasStore(store.entity);
 
-    if (!isBuiltin && !hasConfigBinding) {
+    if (!(isBuiltin || hasConfigBinding)) {
       // Custom store target without config binding
       const lineNum = findStoreLine(sourceLines, store.entity, store.target);
       warnings.push({
         file: filePath,
         line: lineNum,
         message: `Store target '${store.target}' is not a built-in target and has no config binding.`,
-        suggestion: `Built-in targets: ${BUILTIN_STORE_TARGETS.join(', ')}\n  \n  If using a custom store, bind it in manifest.config.ts:\n    stores: { ${store.entity}: { implementation: YourStoreClass } }`,
+        suggestion: `Built-in targets: ${BUILTIN_STORE_TARGETS.join(", ")}\n  \n  If using a custom store, bind it in manifest.config.ts:\n    stores: { ${store.entity}: { implementation: YourStoreClass } }`,
       });
     } else if (!isBuiltin && hasConfigBinding) {
       // Custom store target WITH config binding - just informational
@@ -439,8 +486,12 @@ function capitalize(str: string): string {
  * Used for "Did you mean X?" suggestions
  */
 function levenshteinDistance(a: string, b: string): number {
-  if (a.length === 0) return b.length;
-  if (b.length === 0) return a.length;
+  if (a.length === 0) {
+    return b.length;
+  }
+  if (b.length === 0) {
+    return a.length;
+  }
 
   const matrix: number[][] = [];
 
@@ -459,8 +510,8 @@ function levenshteinDistance(a: string, b: string): number {
       } else {
         matrix[i][j] = Math.min(
           matrix[i - 1][j - 1] + 1, // substitution
-          matrix[i][j - 1] + 1,     // insertion
-          matrix[i - 1][j] + 1      // deletion
+          matrix[i][j - 1] + 1, // insertion
+          matrix[i - 1][j] + 1 // deletion
         );
       }
     }
@@ -475,12 +526,15 @@ function levenshteinDistance(a: string, b: string): number {
 function findClosestFields(
   propertyName: string,
   fieldNames: string[],
-  maxDistance: number = 3
+  maxDistance = 3
 ): string[] {
   const suggestions: Array<{ name: string; distance: number }> = [];
 
   for (const fieldName of fieldNames) {
-    const distance = levenshteinDistance(propertyName.toLowerCase(), fieldName.toLowerCase());
+    const distance = levenshteinDistance(
+      propertyName.toLowerCase(),
+      fieldName.toLowerCase()
+    );
     if (distance <= maxDistance) {
       suggestions.push({ name: fieldName, distance });
     }
@@ -490,7 +544,7 @@ function findClosestFields(
   return suggestions
     .sort((a, b) => a.distance - b.distance)
     .slice(0, 3)
-    .map(s => s.name);
+    .map((s) => s.name);
 }
 
 /**
@@ -508,9 +562,9 @@ function scanPropertyAlignment(
 
   if (!model) {
     warnings.push({
-      file: '',
+      file: "",
       message: `Entity '${entityName}' references Prisma model '${prismaModelName}' but model not found in schema.`,
-      suggestion: `Available models: ${prismaSchema.models.map(m => m.name).join(', ')}`,
+      suggestion: `Available models: ${prismaSchema.models.map((m) => m.name).join(", ")}`,
     });
     return warnings;
   }
@@ -524,19 +578,20 @@ function scanPropertyAlignment(
       // Find suggestions
       const suggestions = findClosestFields(prop.name, fieldNames);
 
-      let suggestionMsg = '';
+      let suggestionMsg = "";
       if (suggestions.length > 0) {
-        suggestionMsg = `\n  Did you mean: ${suggestions.join(', ')}?`;
+        suggestionMsg = `\n  Did you mean: ${suggestions.join(", ")}?`;
       }
 
       // Check if property might need mapping
-      const hasMapping = propertyMapping && Object.values(propertyMapping).includes(prop.name);
+      const hasMapping =
+        propertyMapping && Object.values(propertyMapping).includes(prop.name);
       if (hasMapping) {
         continue; // Property is mapped, skip warning
       }
 
       warnings.push({
-        file: '',
+        file: "",
         message: `Entity '${entityName}' property '${prop.name}' (${prop.type}) not found in Prisma model '${prismaModelName}'.`,
         suggestion: `Add field to Prisma model or configure property mapping in manifest.config.ts.${suggestionMsg}`,
       });
@@ -579,7 +634,7 @@ async function scanPropertyAlignmentForIR(
   if (prismaSchema.models.length === 0) {
     warnings.push({
       file: schemaPath,
-      message: 'Prisma schema found but contains no models.',
+      message: "Prisma schema found but contains no models.",
     });
     return warnings;
   }
@@ -589,7 +644,9 @@ async function scanPropertyAlignmentForIR(
 
   // Check each entity
   for (const entity of ir.entities || []) {
-    if (!entity.name || !entity.properties) continue;
+    if (!(entity.name && entity.properties)) {
+      continue;
+    }
 
     // Get the Prisma model name from config binding
     const prismaModelName = storeBindingsInfo.getPrismaModel(entity.name);
@@ -632,8 +689,11 @@ function formatPath(filePath: string): string {
 /**
  * Scan command handler
  */
-export async function scanCommand(source: string | undefined, options: ScanOptions = {}): Promise<void> {
-  const spinner = ora('Scanning manifest files').start();
+export async function scanCommand(
+  source: string | undefined,
+  options: ScanOptions = {}
+): Promise<void> {
+  const spinner = ora("Scanning manifest files").start();
 
   try {
     // Load runtime config for store binding validation
@@ -646,12 +706,12 @@ export async function scanCommand(source: string | undefined, options: ScanOptio
     }
 
     // Get manifest files
-    const files = await getManifestFiles(source || '', options);
+    const files = await getManifestFiles(source || "", options);
 
     if (files.length === 0) {
-      spinner.warn('No .manifest files found');
-      console.log('  Create a .manifest file or specify a source pattern');
-      console.log('  Run `manifest init` to get started');
+      spinner.warn("No .manifest files found");
+      console.log("  Create a .manifest file or specify a source pattern");
+      console.log("  Run `manifest init` to get started");
       return;
     }
 
@@ -682,45 +742,65 @@ export async function scanCommand(source: string | undefined, options: ScanOptio
           allIRs.push(fileResult.ir);
         }
 
-        if (fileResult.errors.length === 0 && fileResult.warnings.length === 0) {
+        if (
+          fileResult.errors.length === 0 &&
+          fileResult.warnings.length === 0
+        ) {
           fileSpinner.succeed(`${formatPath(file)} - OK`);
         } else if (fileResult.errors.length > 0) {
-          fileSpinner.fail(`${formatPath(file)} - ${fileResult.errors.length} error(s)`);
+          fileSpinner.fail(
+            `${formatPath(file)} - ${fileResult.errors.length} error(s)`
+          );
         } else {
-          fileSpinner.warn(`${formatPath(file)} - ${fileResult.warnings.length} warning(s)`);
+          fileSpinner.warn(
+            `${formatPath(file)} - ${fileResult.warnings.length} warning(s)`
+          );
         }
       } catch (error: any) {
-        fileSpinner.fail(`Failed to scan ${formatPath(file)}: ${error.message}`);
+        fileSpinner.fail(
+          `Failed to scan ${formatPath(file)}: ${error.message}`
+        );
         result.errors.push({
           file,
-          entityName: '',
-          commandName: '',
+          entityName: "",
+          commandName: "",
           message: error.message,
-          suggestion: 'Check the file for syntax errors.',
+          suggestion: "Check the file for syntax errors.",
         });
       }
     }
 
     // Scan routes for context issues (if no compilation errors)
     if (result.errors.length === 0 && allIRs.length > 0) {
-      const routeSpinner = ora('Scanning routes for context issues').start();
+      const routeSpinner = ora("Scanning routes for context issues").start();
       try {
         // Merge all IRs for route scanning
         const mergedIR = {
-          commands: allIRs.flatMap(ir => ir.commands || []),
-          policies: allIRs.flatMap(ir => ir.policies || []),
+          commands: allIRs.flatMap((ir) => ir.commands || []),
+          policies: allIRs.flatMap((ir) => ir.policies || []),
         };
 
-        const routeResult = await scanRoutes(process.cwd(), mergedIR, routeSpinner);
+        const routeResult = await scanRoutes(
+          process.cwd(),
+          mergedIR,
+          routeSpinner
+        );
         result.warnings.push(...routeResult.warnings);
         result.routesScanned = routeResult.routesScanned;
 
-        if (routeResult.warnings.length === 0 && routeResult.routesScanned > 0) {
-          routeSpinner.succeed(`Scanned ${routeResult.routesScanned} route(s) - OK`);
+        if (
+          routeResult.warnings.length === 0 &&
+          routeResult.routesScanned > 0
+        ) {
+          routeSpinner.succeed(
+            `Scanned ${routeResult.routesScanned} route(s) - OK`
+          );
         } else if (routeResult.warnings.length > 0) {
-          routeSpinner.warn(`Found ${routeResult.warnings.length} route context issue(s)`);
+          routeSpinner.warn(
+            `Found ${routeResult.warnings.length} route context issue(s)`
+          );
         } else {
-          routeSpinner.info('No route files found to scan');
+          routeSpinner.info("No route files found to scan");
         }
       } catch (error: any) {
         routeSpinner.info(`Route scanning skipped: ${error.message}`);
@@ -729,16 +809,18 @@ export async function scanCommand(source: string | undefined, options: ScanOptio
 
     // Scan property alignment (Prisma schema validation) - P1-B
     if (result.errors.length === 0 && allIRs.length > 0) {
-      const propertySpinner = ora('Scanning property alignment with Prisma schema').start();
+      const propertySpinner = ora(
+        "Scanning property alignment with Prisma schema"
+      ).start();
       try {
         // Get build config for schema path
         const configs = await loadAllConfigs(process.cwd());
 
         // Merge all IRs for property scanning
         const mergedIR = {
-          entities: allIRs.flatMap(ir => ir.entities || []),
-          commands: allIRs.flatMap(ir => ir.commands || []),
-          policies: allIRs.flatMap(ir => ir.policies || []),
+          entities: allIRs.flatMap((ir) => ir.entities || []),
+          commands: allIRs.flatMap((ir) => ir.commands || []),
+          policies: allIRs.flatMap((ir) => ir.policies || []),
         };
 
         const propertyWarnings = await scanPropertyAlignmentForIR(
@@ -751,27 +833,31 @@ export async function scanCommand(source: string | undefined, options: ScanOptio
         result.warnings.push(...propertyWarnings);
 
         if (propertyWarnings.length === 0) {
-          propertySpinner.succeed('Property alignment check passed');
+          propertySpinner.succeed("Property alignment check passed");
         } else {
-          propertySpinner.warn(`Found ${propertyWarnings.length} property alignment issue(s)`);
+          propertySpinner.warn(
+            `Found ${propertyWarnings.length} property alignment issue(s)`
+          );
         }
       } catch (error: any) {
-        propertySpinner.info(`Property alignment scanning skipped: ${error.message}`);
+        propertySpinner.info(
+          `Property alignment scanning skipped: ${error.message}`
+        );
       }
     }
 
     // Output results
-    if (options.format === 'json') {
+    if (options.format === "json") {
       console.log(JSON.stringify(result, null, 2));
       return;
     }
 
-    console.log('');
+    console.log("");
 
     // Show errors
     if (result.errors.length > 0) {
-      console.log(chalk.red.bold('ERRORS:'));
-      console.log('');
+      console.log(chalk.red.bold("ERRORS:"));
+      console.log("");
       for (const error of result.errors) {
         const location = error.line
           ? `${formatPath(error.file)}:${error.line}`
@@ -779,22 +865,26 @@ export async function scanCommand(source: string | undefined, options: ScanOptio
         console.log(chalk.red(`  ${location}`));
 
         if (error.entityName && error.commandName) {
-          console.log(`    Command '${error.entityName}.${error.commandName}' has no policy.`);
+          console.log(
+            `    Command '${error.entityName}.${error.commandName}' has no policy.`
+          );
         } else {
           console.log(`    ${error.message}`);
         }
 
         if (error.suggestion) {
-          console.log(chalk.gray(`    → ${error.suggestion.split('\n').join('\n    → ')}`));
+          console.log(
+            chalk.gray(`    → ${error.suggestion.split("\n").join("\n    → ")}`)
+          );
         }
-        console.log('');
+        console.log("");
       }
     }
 
     // Show warnings
     if (result.warnings.length > 0) {
-      console.log(chalk.yellow.bold('WARNINGS:'));
-      console.log('');
+      console.log(chalk.yellow.bold("WARNINGS:"));
+      console.log("");
       for (const warning of result.warnings) {
         const location = warning.line
           ? `${formatPath(warning.file)}:${warning.line}`
@@ -803,14 +893,18 @@ export async function scanCommand(source: string | undefined, options: ScanOptio
         console.log(`    ${warning.message}`);
 
         if (warning.suggestion) {
-          console.log(chalk.gray(`    → ${warning.suggestion.split('\n').join('\n    → ')}`));
+          console.log(
+            chalk.gray(
+              `    → ${warning.suggestion.split("\n").join("\n    → ")}`
+            )
+          );
         }
-        console.log('');
+        console.log("");
       }
     }
 
     // Summary
-    console.log(chalk.bold('SUMMARY:'));
+    console.log(chalk.bold("SUMMARY:"));
     console.log(`  Files scanned: ${result.filesScanned}`);
     console.log(`  Commands checked: ${result.commandsChecked}`);
     if (result.routesScanned > 0) {
@@ -818,18 +912,22 @@ export async function scanCommand(source: string | undefined, options: ScanOptio
     }
 
     if (result.errors.length === 0 && result.warnings.length === 0) {
-      spinner.succeed('Scan passed - no issues found');
-      console.log(chalk.green('\n  If `manifest scan` passes, the code works.'));
+      spinner.succeed("Scan passed - no issues found");
+      console.log(
+        chalk.green("\n  If `manifest scan` passes, the code works.")
+      );
     } else if (result.errors.length === 0) {
       console.log(chalk.yellow(`  Warnings: ${result.warnings.length}`));
       if (options.strict) {
-        spinner.fail('Scan failed with warnings (strict mode)');
+        spinner.fail("Scan failed with warnings (strict mode)");
         process.exit(1);
       } else {
-        spinner.warn('Scan passed with warnings');
+        spinner.warn("Scan passed with warnings");
       }
     } else {
-      spinner.fail(`Scan failed with ${result.errors.length} error(s), ${result.warnings.length} warning(s)`);
+      spinner.fail(
+        `Scan failed with ${result.errors.length} error(s), ${result.warnings.length} warning(s)`
+      );
       process.exit(1);
     }
   } catch (error: any) {

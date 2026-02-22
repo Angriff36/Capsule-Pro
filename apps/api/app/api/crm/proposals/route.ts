@@ -175,7 +175,7 @@ export async function GET(request: Request) {
  * Create a new proposal via manifest command
  */
 export async function POST(request: NextRequest) {
-  return executeManifestCommand(request, {
+  return await executeManifestCommand(request, {
     entityName: "Proposal",
     commandName: "create",
   });

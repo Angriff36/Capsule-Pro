@@ -1,5 +1,15 @@
 "use client";
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@repo/design-system/components/ui/alert-dialog";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   DropdownMenu,
@@ -9,21 +19,33 @@ import {
 } from "@repo/design-system/components/ui/dropdown-menu";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@repo/design-system/components/ui/toggle-group";
+import {
+  AlertTriangleIcon,
+  BotIcon,
   EllipsisIcon,
+  FlaskConicalIcon,
   HomeIcon,
+  KeyboardIcon,
   LayoutGridIcon,
   Loader2Icon,
   PencilIcon,
   PlusIcon,
+  RadioIcon,
   Redo2Icon,
+  SparklesIcon,
+  TerminalSquareIcon,
   TrashIcon,
   Undo2Icon,
+  XIcon,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
+import type { BoardDelta, CommandBoard } from "../actions/boards";
 import { deleteCommandBoard, updateCommandBoard } from "../actions/boards";
-import type { CommandBoard } from "../actions/boards";
 
 interface BoardHeaderProps {
   boardId: string;
@@ -40,6 +62,29 @@ interface BoardHeaderProps {
   // Entity browser toggle
   entityBrowserOpen?: boolean;
   onToggleEntityBrowser?: () => void;
+  // Command palette toggle
+  commandPaletteOpen?: boolean;
+  onToggleCommandPalette?: () => void;
+  // AI chat toggle
+  aiChatOpen?: boolean;
+  onToggleAiChat?: () => void;
+  // Conflict detection
+  conflictCount?: number;
+  onToggleConflicts?: () => void;
+  isLoadingConflicts?: boolean;
+  // AI Suggestions
+  suggestionsOpen?: boolean;
+  onToggleSuggestions?: () => void;
+  suggestionsCount?: number;
+  isLoadingSuggestions?: boolean;
+  // Fullscreen exit
+  onExitFullscreen?: () => void;
+  // Simulation mode
+  boardMode?: "live" | "simulation";
+  onSwitchMode?: (mode: "live" | "simulation") => void;
+  simulationDelta?: BoardDelta | null;
+  isCreatingSimulation?: boolean;
+  onDiscardSimulation?: () => void;
 }
 
 export function BoardHeader({
@@ -55,21 +100,41 @@ export function BoardHeader({
   onRedo,
   entityBrowserOpen = false,
   onToggleEntityBrowser,
+  commandPaletteOpen = false,
+  onToggleCommandPalette,
+  aiChatOpen = false,
+  onToggleAiChat,
+  conflictCount = 0,
+  onToggleConflicts,
+  isLoadingConflicts = false,
+  // AI Suggestions
+  suggestionsOpen = false,
+  onToggleSuggestions,
+  suggestionsCount = 0,
+  isLoadingSuggestions = false,
+  onExitFullscreen,
+  // Simulation mode
+  boardMode = "live",
+  onSwitchMode,
+  simulationDelta,
+  isCreatingSimulation = false,
+  onDiscardSimulation,
 }: BoardHeaderProps) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
-  const [_isDeleting, setIsDeleting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [showEdit, setShowEdit] = useState(false);
   const [editName, setEditName] = useState(boardName);
   const [editDescription, setEditDescription] = useState(
     boardDescription || ""
   );
 
-  const handleSwitchBoard = async () => {
+  const handleSwitchBoard = () => {
     router.push("/command-board");
   };
 
-  const handleCreateNew = async () => {
+  const handleCreateNew = () => {
     router.push("/command-board?create=true");
   };
 
@@ -98,15 +163,11 @@ export function BoardHeader({
     }
   };
 
-  const handleDelete = async () => {
-    if (
-      !confirm(
-        `Are you sure you want to delete "${boardName}"? This action cannot be undone.`
-      )
-    ) {
-      return;
-    }
+  const handleDelete = () => {
+    setDeleteDialogOpen(true);
+  };
 
+  const handleDeleteConfirm = async () => {
     setIsDeleting(true);
 
     try {
@@ -122,6 +183,7 @@ export function BoardHeader({
       toast.error("Failed to delete board");
     } finally {
       setIsDeleting(false);
+      setDeleteDialogOpen(false);
     }
   };
 
@@ -140,6 +202,31 @@ export function BoardHeader({
 
   return (
     <header className="bg-muted/50 border-b px-4 py-3">
+      <AlertDialog onOpenChange={setDeleteDialogOpen} open={deleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Board</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete &quot;{boardName}&quot;? This
+              action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              disabled={isDeleting}
+              onClick={handleDeleteConfirm}
+            >
+              {isDeleting && (
+                <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              Delete Board
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <div className="flex items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-3">
           {/* Home button */}
@@ -221,6 +308,61 @@ export function BoardHeader({
 
         {/* Actions */}
         <div className="flex items-center gap-2">
+          {/* Live/Simulation Mode Toggle */}
+          {onSwitchMode && (
+            <div className="flex items-center gap-1">
+              <ToggleGroup
+                className="border rounded-md"
+                onValueChange={(value) => {
+                  if (value && onSwitchMode) {
+                    onSwitchMode(value as "live" | "simulation");
+                  }
+                }}
+                type="single"
+                value={boardMode}
+              >
+                <ToggleGroupItem
+                  aria-label="Live mode"
+                  className="px-2 h-8 data-[state=on]:bg-green-600 data-[state=on]:text-white"
+                  size="sm"
+                  value="live"
+                >
+                  <RadioIcon className="h-3.5 w-3.5 mr-1" />
+                  Live
+                </ToggleGroupItem>
+                <ToggleGroupItem
+                  aria-label="Simulation mode"
+                  className="px-2 h-8 data-[state=on]:bg-amber-600 data-[state=on]:text-white"
+                  disabled={isCreatingSimulation}
+                  size="sm"
+                  value="simulation"
+                >
+                  {isCreatingSimulation ? (
+                    <Loader2Icon className="h-3.5 w-3.5 mr-1 animate-spin" />
+                  ) : (
+                    <FlaskConicalIcon className="h-3.5 w-3.5 mr-1" />
+                  )}
+                  Sim
+                </ToggleGroupItem>
+              </ToggleGroup>
+              {simulationDelta && simulationDelta.summary.totalChanges > 0 && (
+                <span className="ml-1 px-1.5 py-0.5 text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 rounded">
+                  {simulationDelta.summary.totalChanges}
+                </span>
+              )}
+              {boardMode === "simulation" && onDiscardSimulation && (
+                <Button
+                  className="h-8 text-destructive hover:text-destructive ml-1"
+                  onClick={onDiscardSimulation}
+                  size="sm"
+                  title="Discard simulation"
+                  variant="ghost"
+                >
+                  <XIcon className="h-3.5 w-3.5" />
+                </Button>
+              )}
+            </div>
+          )}
           {/* Undo/Redo buttons */}
           {(onUndo || onRedo) && (
             <>
@@ -256,6 +398,68 @@ export function BoardHeader({
               Entities
             </Button>
           )}
+          {onToggleCommandPalette && (
+            <Button
+              className="hidden sm:flex"
+              onClick={onToggleCommandPalette}
+              size="sm"
+              title="Commands (Ctrl+K)"
+              variant={commandPaletteOpen ? "default" : "outline"}
+            >
+              <TerminalSquareIcon className="mr-1.5 h-4 w-4" />
+              Commands
+            </Button>
+          )}
+          {onToggleAiChat && (
+            <Button
+              className="hidden sm:flex"
+              onClick={onToggleAiChat}
+              size="sm"
+              title="AI Assistant (Ctrl+J)"
+              variant={aiChatOpen ? "default" : "outline"}
+            >
+              <BotIcon className="mr-1.5 h-4 w-4" />
+              AI Assistant
+            </Button>
+          )}
+          {onToggleConflicts && (
+            <Button
+              className="hidden sm:flex"
+              disabled={isLoadingConflicts}
+              onClick={onToggleConflicts}
+              size="sm"
+              title="Check for Conflicts"
+              variant={conflictCount > 0 ? "destructive" : "outline"}
+            >
+              {isLoadingConflicts ? (
+                <Loader2Icon className="mr-1.5 h-4 w-4 animate-spin" />
+              ) : (
+                <AlertTriangleIcon className="mr-1.5 h-4 w-4" />
+              )}
+              {conflictCount > 0
+                ? `${conflictCount} Risk${conflictCount === 1 ? "" : "s"}`
+                : "Check Risks"}
+            </Button>
+          )}
+          {onToggleSuggestions && (
+            <Button
+              className="hidden sm:flex"
+              disabled={isLoadingSuggestions}
+              onClick={onToggleSuggestions}
+              size="sm"
+              title="AI Suggestions (Ctrl+S)"
+              variant={suggestionsOpen ? "default" : "outline"}
+            >
+              {isLoadingSuggestions ? (
+                <Loader2Icon className="mr-1.5 h-4 w-4 animate-spin" />
+              ) : (
+                <SparklesIcon className="mr-1.5 h-4 w-4" />
+              )}
+              {suggestionsCount > 0
+                ? `${suggestionsCount} Suggestion${suggestionsCount === 1 ? "" : "s"}`
+                : "Suggestions"}
+            </Button>
+          )}
 
           <Button
             className="hidden sm:flex"
@@ -277,6 +481,34 @@ export function BoardHeader({
                 <HomeIcon className="mr-2 h-4 w-4" />
                 All Boards
               </DropdownMenuItem>
+              {onToggleEntityBrowser && (
+                <DropdownMenuItem onClick={onToggleEntityBrowser}>
+                  <LayoutGridIcon className="mr-2 h-4 w-4" />
+                  Entities (Ctrl+E)
+                </DropdownMenuItem>
+              )}
+              {onToggleCommandPalette && (
+                <DropdownMenuItem onClick={onToggleCommandPalette}>
+                  <TerminalSquareIcon className="mr-2 h-4 w-4" />
+                  Commands (Ctrl+K)
+                </DropdownMenuItem>
+              )}
+              {onToggleAiChat && (
+                <DropdownMenuItem onClick={onToggleAiChat}>
+                  <BotIcon className="mr-2 h-4 w-4" />
+                  AI Assistant (Ctrl+J)
+                </DropdownMenuItem>
+              )}
+              {onToggleSuggestions && (
+                <DropdownMenuItem onClick={onToggleSuggestions}>
+                  <SparklesIcon className="mr-2 h-4 w-4" />
+                  Suggestions (Ctrl+S)
+                </DropdownMenuItem>
+              )}
+              <DropdownMenuItem disabled>
+                <KeyboardIcon className="mr-2 h-4 w-4" />
+                Undo/Redo: Ctrl+Z / Ctrl+Shift+Z
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={handleCreateNew}>
                 <PlusIcon className="mr-2 h-4 w-4" />
                 New Board
@@ -294,6 +526,21 @@ export function BoardHeader({
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
+
+          {onExitFullscreen && (
+            <>
+              <Separator className="h-6" orientation="vertical" />
+              <Button
+                className="h-8 w-8 shrink-0"
+                onClick={onExitFullscreen}
+                size="icon"
+                title="Exit board (Escape)"
+                variant="ghost"
+              >
+                <XIcon className="h-4 w-4" />
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </header>

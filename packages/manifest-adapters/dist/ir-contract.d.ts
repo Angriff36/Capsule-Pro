@@ -1,4 +1,4 @@
-import type { IR } from "@manifest/runtime/ir";
+import type { IR } from "@angriff36/manifest/ir";
 /**
  * Enforces command ownership invariants required by runtime and projection code.
  *

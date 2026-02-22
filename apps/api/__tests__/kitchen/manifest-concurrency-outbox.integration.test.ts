@@ -23,9 +23,9 @@ import {
   type CommandResult,
   type EmittedEvent,
   RuntimeEngine,
-} from "@manifest/runtime";
-import type { IR, IRCommand } from "@manifest/runtime/ir";
-import { compileToIR } from "@manifest/runtime/ir-compiler";
+} from "@angriff36/manifest";
+import type { IR, IRCommand } from "@angriff36/manifest/ir";
+import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { database } from "@repo/database";
 import {
   createPrismaOutboxWriter,

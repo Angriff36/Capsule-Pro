@@ -1,0 +1,150 @@
+// Kitchen Ops - Allergen Warning Rules
+// Manifest spec for allergen warning tracking, acknowledgment, and resolution
+
+entity AllergenWarning {
+  property required id: string
+  property required tenantId: string
+  property eventId: string = ""
+  property dishId: string = ""
+  property warningType: string = ""
+  property allergens: string = ""
+  property affectedGuests: string = ""
+  property severity: string = "warning"
+  property isAcknowledged: boolean = false
+  property acknowledgedBy: string = ""
+  property acknowledgedAt: number = 0
+  property overrideReason: string = ""
+  property resolved: boolean = false
+  property resolvedAt: number = 0
+  property notes: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isHighSeverity: boolean = self.severity == "critical"
+  computed isPending: boolean = self.isAcknowledged == false and self.resolved == false
+  computed isOverridden: boolean = self.overrideReason != ""
+  computed isDeleted: boolean = self.deletedAt > 0
+
+  constraint requireEvent: self.eventId != "" "Event ID is required"
+  constraint requireWarningType: self.warningType != "" "Warning type is required"
+  constraint requireAllergens: self.allergens != "" "Allergens list is required"
+  constraint cannotAcknowledgeTwice:warn self.isAcknowledged == true "Warning already acknowledged"
+  constraint cannotResolveTwice:warn self.resolved == true "Warning already resolved"
+
+  command create(eventId: string, dishId: string, warningType: string, allergens: string, affectedGuests: string, severity: string, notes: string) {
+    guard eventId != null and eventId != "" "Event ID is required"
+    guard warningType != null and warningType != "" "Warning type is required"
+    guard allergens != null and allergens != "" "Allergens list is required"
+
+    mutate eventId = eventId
+    mutate dishId = dishId
+    mutate warningType = warningType
+    mutate allergens = allergens
+    mutate affectedGuests = affectedGuests
+    mutate severity = severity
+    mutate notes = notes
+    mutate isAcknowledged = false
+    mutate resolved = false
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit AllergenWarningCreated
+  }
+
+  command acknowledge(acknowledgedBy: string, notes: string) {
+    guard self.isAcknowledged == false "Warning is already acknowledged"
+    guard acknowledgedBy != null and acknowledgedBy != "" "Acknowledged by user is required"
+
+    mutate isAcknowledged = true
+    mutate acknowledgedBy = acknowledgedBy
+    mutate acknowledgedAt = now()
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit AllergenWarningAcknowledged
+  }
+
+  command resolve(notes: string) {
+    guard self.resolved == false "Warning is already resolved"
+
+    mutate resolved = true
+    mutate resolvedAt = now()
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit AllergenWarningResolved
+  }
+
+  command applyOverride(overrideReason: string, acknowledgedBy: string) {
+    guard overrideReason != null and overrideReason != "" "Override reason is required"
+    guard acknowledgedBy != null and acknowledgedBy != "" "Acknowledged by user is required"
+
+    mutate overrideReason = overrideReason
+    mutate acknowledgedBy = acknowledgedBy
+    mutate isAcknowledged = true
+    mutate acknowledgedAt = now()
+    mutate updatedAt = now()
+
+    emit AllergenWarningOverridden
+  }
+
+  command softDelete(reason: string, userId: string) {
+    guard self.deletedAt == 0 "Warning is already deleted"
+
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit AllergenWarningDeleted
+  }
+
+  store AllergenWarning in memory
+}
+
+policy AllergenStaffCanView execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can view allergen warnings"
+policy AllergenLeadsCanAcknowledge execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and managers can acknowledge allergen warnings"
+policy AllergenManagersCanOverride execute: user.role in ["manager", "admin"] "Only managers can override allergen warnings"
+
+event AllergenWarningCreated: "kitchen.allergen-warning.created" {
+  allergenWarningId: string
+  tenantId: string
+  eventId: string
+  dishId: string
+  warningType: string
+  allergens: string
+  affectedGuests: string
+  severity: string
+  notes: string
+  createdAt: number
+}
+
+event AllergenWarningAcknowledged: "kitchen.allergen-warning.acknowledged" {
+  allergenWarningId: string
+  tenantId: string
+  acknowledgedBy: string
+  acknowledgedAt: number
+  notes: string
+}
+
+event AllergenWarningResolved: "kitchen.allergen-warning.resolved" {
+  allergenWarningId: string
+  tenantId: string
+  resolvedAt: number
+  notes: string
+}
+
+event AllergenWarningOverridden: "kitchen.allergen-warning.overridden" {
+  allergenWarningId: string
+  tenantId: string
+  overrideReason: string
+  acknowledgedBy: string
+  acknowledgedAt: number
+}
+
+event AllergenWarningDeleted: "kitchen.allergen-warning.deleted" {
+  allergenWarningId: string
+  tenantId: string
+  reason: string
+  userId: string
+  deletedAt: number
+}

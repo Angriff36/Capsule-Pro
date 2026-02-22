@@ -7,9 +7,18 @@
  * are already lazy-loaded at the server runtime level.
  */
 
-// biome-ignore lint/performance/noBarrelFile: Sentry requires namespace import
-import * as Sentry from "@sentry/nextjs";
+import { consoleLoggingIntegration, init } from "@sentry/nextjs";
 import { keys } from "./keys";
+
+const shouldDropDevWebpackCacheError = (event: {
+  message?: string;
+}): boolean => {
+  if (process.env.NODE_ENV === "production") {
+    return false;
+  }
+
+  return event.message?.includes(".next-dev\\cache\\webpack") ?? false;
+};
 
 const getSentryEnvironment = () => {
   const explicit = keys().SENTRY_ENVIRONMENT?.trim();
@@ -30,8 +39,8 @@ const getSentryEnvironment = () => {
   return undefined;
 };
 
-export const initializeSentry = (): ReturnType<typeof Sentry.init> =>
-  Sentry.init({
+export const initializeSentry = (): ReturnType<typeof init> =>
+  init({
     dsn: keys().NEXT_PUBLIC_SENTRY_DSN,
     environment: getSentryEnvironment(),
 
@@ -46,7 +55,13 @@ export const initializeSentry = (): ReturnType<typeof Sentry.init> =>
 
     // Integrations for console logging
     integrations: [
-      // Send console.log, console.error, and console.warn calls as logs to Sentry
-      Sentry.consoleLoggingIntegration({ levels: ["log", "error", "warn"] }),
+      consoleLoggingIntegration({ levels: ["log", "error", "warn"] }),
     ],
+    beforeSend(event) {
+      if (shouldDropDevWebpackCacheError(event)) {
+        return null;
+      }
+
+      return event;
+    },
   });

@@ -9,6 +9,7 @@ import {
   CommandList,
   CommandSeparator,
 } from "@repo/design-system/components/ui/command";
+import { useReactFlow } from "@xyflow/react";
 import {
   BookOpenIcon,
   CalendarIcon,
@@ -20,24 +21,23 @@ import {
   PackageIcon,
   RefreshCwIcon,
   StickyNoteIcon,
-  UtensilsIcon,
   UserIcon,
   UsersIcon,
+  UtensilsIcon,
   ZapIcon,
 } from "lucide-react";
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
-import { useReactFlow } from "@xyflow/react";
-import { executeCommand } from "../actions/execute-command";
 import {
   BOARD_COMMANDS,
   type BoardCommandId,
 } from "../actions/command-definitions";
-import {
-  searchEntities,
-  type SearchResultItem,
-} from "../actions/search-entities";
+import { executeCommand } from "../actions/execute-command";
 import { addProjection } from "../actions/projections";
+import {
+  type SearchResultItem,
+  searchEntities,
+} from "../actions/search-entities";
 import type { BoardProjection } from "../types/board";
 import { ENTITY_TYPE_LABELS, type EntityType } from "../types/entities";
 
@@ -174,7 +174,8 @@ export function CommandPalette({
           // Get viewport center for placement
           const viewport = reactFlow.getViewport();
           const centerX = (-viewport.x + window.innerWidth / 2) / viewport.zoom;
-          const centerY = (-viewport.y + window.innerHeight / 2) / viewport.zoom;
+          const centerY =
+            (-viewport.y + window.innerHeight / 2) / viewport.zoom;
 
           // Add some randomness to avoid stacking
           const offsetX = (Math.random() - 0.5) * 200;
@@ -189,7 +190,9 @@ export function CommandPalette({
 
           if (result.success && result.projection) {
             onProjectionAdded?.(result.projection);
-            toast.success(`Added ${ENTITY_TYPE_LABELS[item.entityType] ?? item.entityType}: ${item.title}`);
+            toast.success(
+              `Added ${ENTITY_TYPE_LABELS[item.entityType] ?? item.entityType}: ${item.title}`
+            );
           } else {
             toast.error(result.error ?? "Failed to add entity");
           }
@@ -201,7 +204,7 @@ export function CommandPalette({
 
       onOpenChange(false);
     },
-    [boardId, onOpenChange, onProjectionAdded, reactFlow, startTransition]
+    [boardId, onOpenChange, onProjectionAdded, reactFlow]
   );
 
   // ---- Handle executing a board command ----
@@ -223,7 +226,7 @@ export function CommandPalette({
         }
       });
     },
-    [boardId, onOpenChange, startTransition]
+    [boardId, onOpenChange]
   );
 
   // ---- Handle view commands (client-side only) ----
@@ -244,7 +247,9 @@ export function CommandPalette({
     Record<string, SearchResultItem[]>
   >((acc, item) => {
     const key = item.entityType;
-    if (!acc[key]) acc[key] = [];
+    if (!acc[key]) {
+      acc[key] = [];
+    }
     acc[key].push(item);
     return acc;
   }, {});
@@ -253,18 +258,20 @@ export function CommandPalette({
   const quickActions = BOARD_COMMANDS.filter((c) => c.group === "quick_action");
 
   return (
-    <CommandDialog open={open} onOpenChange={onOpenChange}>
+    <CommandDialog onOpenChange={onOpenChange} open={open}>
       <CommandInput
+        onValueChange={setQuery}
         placeholder="Search entities, run commands..."
         value={query}
-        onValueChange={setQuery}
       />
       <CommandList>
         <CommandEmpty>
           {isSearching ? (
             <div className="flex items-center justify-center gap-2 py-6">
               <Loader2Icon className="h-4 w-4 animate-spin text-muted-foreground" />
-              <span className="text-muted-foreground text-sm">Searching...</span>
+              <span className="text-muted-foreground text-sm">
+                Searching...
+              </span>
             </div>
           ) : query.length > 0 ? (
             "No results found."
@@ -275,19 +282,18 @@ export function CommandPalette({
 
         {/* Entity Search Results */}
         {Object.entries(groupedResults).map(([entityType, items]) => {
-          const Icon =
-            ENTITY_TYPE_ICONS[entityType] ?? StickyNoteIcon;
+          const Icon = ENTITY_TYPE_ICONS[entityType] ?? StickyNoteIcon;
           const label =
             ENTITY_TYPE_LABELS[entityType as EntityType] ?? entityType;
 
           return (
-            <CommandGroup key={entityType} heading={`${label}s`}>
+            <CommandGroup heading={`${label}s`} key={entityType}>
               {items.map((item) => (
                 <CommandItem
-                  key={`${item.entityType}:${item.id}`}
-                  value={`${item.entityType}:${item.id}:${item.title}`}
-                  onSelect={() => handleAddEntity(item)}
                   disabled={isPending}
+                  key={`${item.entityType}:${item.id}`}
+                  onSelect={() => handleAddEntity(item)}
+                  value={`${item.entityType}:${item.id}:${item.title}`}
                 >
                   <Icon className="mr-2 h-4 w-4 shrink-0 opacity-60" />
                   <div className="flex flex-col">
@@ -309,10 +315,7 @@ export function CommandPalette({
           <>
             {/* View Commands (client-side) */}
             <CommandGroup heading="View">
-              <CommandItem
-                value="fit-to-screen"
-                onSelect={handleFitView}
-              >
+              <CommandItem onSelect={handleFitView} value="fit-to-screen">
                 <MaximizeIcon className="mr-2 h-4 w-4 shrink-0 opacity-60" />
                 <div className="flex flex-col">
                   <span>Fit to Screen</span>
@@ -321,10 +324,7 @@ export function CommandPalette({
                   </span>
                 </div>
               </CommandItem>
-              <CommandItem
-                value="reset-zoom"
-                onSelect={handleZoomToFit}
-              >
+              <CommandItem onSelect={handleZoomToFit} value="reset-zoom">
                 <ZapIcon className="mr-2 h-4 w-4 shrink-0 opacity-60" />
                 <div className="flex flex-col">
                   <span>Reset Zoom</span>
@@ -343,10 +343,10 @@ export function CommandPalette({
                 const Icon = COMMAND_ICONS[cmd.id];
                 return (
                   <CommandItem
-                    key={cmd.id}
-                    value={`command:${cmd.id}:${cmd.label}`}
-                    onSelect={() => handleCommand(cmd.id)}
                     disabled={isPending}
+                    key={cmd.id}
+                    onSelect={() => handleCommand(cmd.id)}
+                    value={`command:${cmd.id}:${cmd.label}`}
                   >
                     <Icon className="mr-2 h-4 w-4 shrink-0 opacity-60" />
                     <div className="flex flex-col">
@@ -368,10 +368,10 @@ export function CommandPalette({
                 const Icon = COMMAND_ICONS[cmd.id];
                 return (
                   <CommandItem
-                    key={cmd.id}
-                    value={`action:${cmd.id}:${cmd.label}`}
-                    onSelect={() => handleCommand(cmd.id)}
                     disabled={isPending}
+                    key={cmd.id}
+                    onSelect={() => handleCommand(cmd.id)}
+                    value={`action:${cmd.id}:${cmd.label}`}
                   >
                     <Icon className="mr-2 h-4 w-4 shrink-0 opacity-60" />
                     <div className="flex flex-col">

@@ -38,9 +38,7 @@ export const ClientNodeCard = memo(function ClientNodeCard({
       <div className="mb-1.5 flex items-center justify-between gap-2">
         <div className="flex items-center gap-1.5">
           <TypeIcon className={cn("size-3.5 shrink-0", colors.icon)} />
-          <span className={cn("font-medium text-xs", colors.text)}>
-            Client
-          </span>
+          <span className={cn("font-medium text-xs", colors.text)}>Client</span>
         </div>
         <Badge className="text-xs" variant="outline">
           {typeConfig.label}

@@ -23,6 +23,7 @@ import { differenceInMinutes, format, isPast } from "date-fns";
 import { ChevronRight, Clock, MoreVertical, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 
 type UserSelect = Pick<
@@ -70,6 +71,13 @@ const priorityConfig = {
 };
 
 const statusConfig = {
+  open: {
+    label: "Open",
+    variant: "secondary" as const,
+    icon: Clock,
+    bgColor: "bg-slate-100",
+    textColor: "text-slate-600",
+  },
   pending: {
     label: "Pending",
     variant: "secondary" as const,
@@ -84,12 +92,26 @@ const statusConfig = {
     bgColor: "bg-blue-100",
     textColor: "text-blue-600",
   },
+  done: {
+    label: "Done",
+    variant: "default" as const,
+    icon: ChevronRight,
+    bgColor: "bg-emerald-100",
+    textColor: "text-emerald-600",
+  },
   completed: {
     label: "Completed",
     variant: "default" as const,
     icon: ChevronRight,
     bgColor: "bg-emerald-100",
     textColor: "text-emerald-600",
+  },
+  cancelled: {
+    label: "Cancelled",
+    variant: "secondary" as const,
+    icon: ChevronRight,
+    bgColor: "bg-slate-100",
+    textColor: "text-slate-400",
   },
   canceled: {
     label: "Canceled",
@@ -120,6 +142,16 @@ function getAvatarColor(name: string): string {
   ];
   const index = name.charCodeAt(0) % colors.length;
   return colors[index];
+}
+
+function getAssignedUserLabel(
+  assignedUsers: Array<{ user: UserSelect | null }>
+): string {
+  if (assignedUsers.length === 1) {
+    const user = assignedUsers[0].user;
+    return user ? `${user.firstName} ${user.lastName}` : "Unknown";
+  }
+  return `${assignedUsers.length} assigned`;
 }
 
 function formatDueStatus(dueDate: Date | null): {
@@ -211,20 +243,27 @@ export function TaskCard({
     setIsLoading(true);
     try {
       // Manifest route: /api/kitchen/kitchen-tasks/commands/claim
-      const response = await apiFetch("/api/kitchen/kitchen-tasks/commands/claim", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: task.id, userId: currentUserId }),
-      });
+      const response = await apiFetch(
+        "/api/kitchen/kitchen-tasks/commands/claim",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: task.id, userId: currentUserId }),
+        }
+      );
       if (!response.ok) {
-        const errBody = await response.json().catch(() => ({ error: "Unknown error" }));
+        const errBody = await response
+          .json()
+          .catch(() => ({ error: "Unknown error" }));
         console.error("[handleClaim] Failed:", response.status, errBody);
-        throw new Error(`Claim failed (${response.status}): ${errBody.error || JSON.stringify(errBody)}`);
+        throw new Error(
+          `Claim failed (${response.status}): ${errBody.error || JSON.stringify(errBody)}`
+        );
       }
       router.refresh();
     } catch (error) {
       captureException(error);
-      alert("Failed to claim task. Please try again.");
+      toast.error("Failed to claim task. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -237,20 +276,31 @@ export function TaskCard({
     setIsLoading(true);
     try {
       // Manifest route: /api/kitchen/kitchen-tasks/commands/release
-      const response = await apiFetch("/api/kitchen/kitchen-tasks/commands/release", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: task.id, userId: currentUserId, reason: "" }),
-      });
+      const response = await apiFetch(
+        "/api/kitchen/kitchen-tasks/commands/release",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: task.id,
+            userId: currentUserId,
+            reason: "",
+          }),
+        }
+      );
       if (!response.ok) {
-        const errBody = await response.json().catch(() => ({ error: "Unknown error" }));
+        const errBody = await response
+          .json()
+          .catch(() => ({ error: "Unknown error" }));
         console.error("[handleRelease] Failed:", response.status, errBody);
-        throw new Error(`Release failed (${response.status}): ${errBody.error || JSON.stringify(errBody)}`);
+        throw new Error(
+          `Release failed (${response.status}): ${errBody.error || JSON.stringify(errBody)}`
+        );
       }
       router.refresh();
     } catch (error) {
       captureException(error);
-      alert("Failed to release task. Please try again.");
+      toast.error("Failed to release task. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -279,7 +329,7 @@ export function TaskCard({
       router.refresh();
     } catch (error) {
       captureException(error);
-      alert("Failed to update task. Please try again.");
+      toast.error("Failed to update task. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -353,21 +403,19 @@ export function TaskCard({
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              {task.status !== "completed" && (
-                <DropdownMenuItem
-                  onClick={() => handleStatusChange("completed")}
-                >
+              {task.status !== "done" && task.status !== "completed" && (
+                <DropdownMenuItem onClick={() => handleStatusChange("done")}>
                   Mark as Completed
                 </DropdownMenuItem>
               )}
               {task.status === "in_progress" && (
-                <DropdownMenuItem onClick={() => handleStatusChange("pending")}>
+                <DropdownMenuItem onClick={() => handleStatusChange("open")}>
                   Reopen Task
                 </DropdownMenuItem>
               )}
-              {task.status !== "canceled" && (
+              {task.status !== "canceled" && task.status !== "cancelled" && (
                 <DropdownMenuItem
-                  onClick={() => handleStatusChange("canceled")}
+                  onClick={() => handleStatusChange("cancelled")}
                 >
                   Cancel Task
                 </DropdownMenuItem>
@@ -425,31 +473,30 @@ export function TaskCard({
               )}
             </div>
             <span className="text-slate-500 text-xs">
-              {assignedUsers.length === 1
-                ? assignedUsers[0].user
-                  ? `${assignedUsers[0].user.firstName} ${assignedUsers[0].user.lastName}`
-                  : "Unknown"
-                : `${assignedUsers.length} assigned`}
+              {getAssignedUserLabel(assignedUsers)}
             </span>
           </div>
         )}
 
         {/* Action button */}
         <div className="mt-3">
-          {task.status === "pending" && !userClaim && (
-            <Button
-              className="w-full gap-2 bg-slate-900 text-white hover:bg-slate-800"
-              disabled={isLoading}
-              onClick={handleClaim}
-              size="sm"
-            >
-              <User className="h-4 w-4" />
-              Claim Task
-            </Button>
-          )}
+          {(task.status === "open" || task.status === "pending") &&
+            !userClaim && (
+              <Button
+                className="w-full gap-2 bg-slate-900 text-white hover:bg-slate-800"
+                disabled={isLoading}
+                onClick={handleClaim}
+                size="sm"
+              >
+                <User className="h-4 w-4" />
+                Claim Task
+              </Button>
+            )}
           {userClaim &&
+            task.status !== "done" &&
             task.status !== "completed" &&
-            task.status !== "canceled" && (
+            task.status !== "canceled" &&
+            task.status !== "cancelled" && (
               <Button
                 className="w-full gap-2"
                 disabled={isLoading}
@@ -465,7 +512,7 @@ export function TaskCard({
             <Button
               className="w-full gap-2 bg-emerald-600 text-white hover:bg-emerald-700"
               disabled={isLoading}
-              onClick={() => handleStatusChange("completed")}
+              onClick={() => handleStatusChange("done")}
               size="sm"
             >
               <ChevronRight className="h-4 w-4" />

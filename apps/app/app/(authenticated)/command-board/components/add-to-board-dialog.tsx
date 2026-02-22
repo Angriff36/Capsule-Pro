@@ -16,9 +16,9 @@ import { Loader2Icon, PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import type { CommandBoard } from "../actions/boards";
 import { createCommandBoard, listCommandBoards } from "../actions/boards";
 import { addProjection } from "../actions/projections";
-import type { CommandBoard } from "../actions/boards";
 import type { EntityType } from "../types/entities";
 
 /** Map legacy entity type names to the new EntityType union */
@@ -117,6 +117,11 @@ export function AddToBoardDialog({
         setOpen(false);
         onAdded?.();
         router.push(`/command-board/${selectedBoardId}`);
+      } else if (result.isDuplicate) {
+        toast.info(`${entityTypeLabel} is already on this board`);
+        setOpen(false);
+        onAdded?.();
+        router.push(`/command-board/${selectedBoardId}`);
       } else {
         toast.error(
           result.error ||
@@ -153,7 +158,7 @@ export function AddToBoardDialog({
       if (result.success && result.board) {
         // Add the entity projection to the new board
         const projectionEntityType = LEGACY_ENTITY_MAP[entityType] ?? "event";
-        await addProjection(result.board.id, {
+        const projectionResult = await addProjection(result.board.id, {
           entityType: projectionEntityType,
           entityId,
           positionX: 100,
@@ -162,9 +167,19 @@ export function AddToBoardDialog({
           height: 180,
         });
 
-        toast.success(
-          `Board created and ${entityTypeLabel.toLowerCase()} added`
-        );
+        if (projectionResult.success) {
+          toast.success(
+            `Board created and ${entityTypeLabel.toLowerCase()} added`
+          );
+        } else if (projectionResult.isDuplicate) {
+          toast.success(
+            `Board created (${entityTypeLabel} was already on board)`
+          );
+        } else {
+          toast.warning(
+            `Board created, but failed to add ${entityTypeLabel.toLowerCase()}`
+          );
+        }
         setOpen(false);
         onAdded?.();
         router.push(`/command-board/${result.board.id}`);

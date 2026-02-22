@@ -1,22 +1,29 @@
-import { describe, it, expect } from 'vitest';
-import { Parser } from './parser';
-import type { BinaryOpNode, MemberAccessNode, CallNode, ConditionalNode, ArrayNode, ObjectNode } from './types';
+import { describe, expect, it } from "vitest";
+import { Parser } from "./parser";
+import type {
+  ArrayNode,
+  BinaryOpNode,
+  CallNode,
+  ConditionalNode,
+  MemberAccessNode,
+  ObjectNode,
+} from "./types";
 
-describe('Parser', () => {
-  describe('Program Structure', () => {
-    it('should parse empty source', () => {
-      const result = new Parser().parse('');
+describe("Parser", () => {
+  describe("Program Structure", () => {
+    it("should parse empty source", () => {
+      const result = new Parser().parse("");
       expect(result.errors).toHaveLength(0);
       expect(result.program.entities).toHaveLength(0);
     });
 
-    it('should parse whitespace-only source', () => {
-      const result = new Parser().parse('   \n\n   \t  ');
+    it("should parse whitespace-only source", () => {
+      const result = new Parser().parse("   \n\n   \t  ");
       expect(result.errors).toHaveLength(0);
       expect(result.program.entities).toHaveLength(0);
     });
 
-    it('should collect multiple errors without throwing', () => {
+    it("should collect multiple errors without throwing", () => {
       const source = `
 entity User {
   property name: string
@@ -35,19 +42,19 @@ entity Bar {
     });
   });
 
-  describe('Entity Parsing', () => {
-    it('should parse empty entity', () => {
-      const source = 'entity Empty {}';
+  describe("Entity Parsing", () => {
+    it("should parse empty entity", () => {
+      const source = "entity Empty {}";
       const result = new Parser().parse(source);
       expect(result.errors).toHaveLength(0);
       expect(result.program.entities).toHaveLength(1);
       const entity = result.program.entities[0];
-      expect(entity.type).toBe('Entity');
-      expect(entity.name).toBe('Empty');
+      expect(entity.type).toBe("Entity");
+      expect(entity.name).toBe("Empty");
       expect(entity.properties).toHaveLength(0);
     });
 
-    it('should parse entity with properties', () => {
+    it("should parse entity with properties", () => {
       const source = `
 entity User {
   property name: string
@@ -57,14 +64,14 @@ entity User {
 `;
       const result = new Parser().parse(source);
       const entity = result.program.entities[0];
-      expect(entity.name).toBe('User');
+      expect(entity.name).toBe("User");
       expect(entity.properties).toHaveLength(3);
-      expect(entity.properties[0].name).toBe('name');
-      expect(entity.properties[1].name).toBe('age');
-      expect(entity.properties[2].name).toBe('active');
+      expect(entity.properties[0].name).toBe("name");
+      expect(entity.properties[1].name).toBe("age");
+      expect(entity.properties[2].name).toBe("active");
     });
 
-    it('should parse entity with required modifier', () => {
+    it("should parse entity with required modifier", () => {
       const source = `
 entity User {
   property required id: string
@@ -73,11 +80,11 @@ entity User {
 `;
       const result = new Parser().parse(source);
       const entity = result.program.entities[0];
-      expect(entity.properties[0].modifiers).toContain('required');
-      expect(entity.properties[1].modifiers).toContain('optional');
+      expect(entity.properties[0].modifiers).toContain("required");
+      expect(entity.properties[1].modifiers).toContain("optional");
     });
 
-    it('should parse entity with property defaults', () => {
+    it("should parse entity with property defaults", () => {
       const source = `
 entity User {
   property name: string = "Anonymous"
@@ -87,12 +94,24 @@ entity User {
 `;
       const result = new Parser().parse(source);
       const entity = result.program.entities[0];
-      expect(entity.properties[0].defaultValue).toEqual({ type: 'Literal', value: 'Anonymous', dataType: 'string' });
-      expect(entity.properties[1].defaultValue).toEqual({ type: 'Literal', value: 0, dataType: 'number' });
-      expect(entity.properties[2].defaultValue).toEqual({ type: 'Literal', value: true, dataType: 'boolean' });
+      expect(entity.properties[0].defaultValue).toEqual({
+        type: "Literal",
+        value: "Anonymous",
+        dataType: "string",
+      });
+      expect(entity.properties[1].defaultValue).toEqual({
+        type: "Literal",
+        value: 0,
+        dataType: "number",
+      });
+      expect(entity.properties[2].defaultValue).toEqual({
+        type: "Literal",
+        value: true,
+        dataType: "boolean",
+      });
     });
 
-    it('should parse entity with computed property', () => {
+    it("should parse entity with computed property", () => {
       const source = `
 entity User {
   property firstName: string
@@ -103,12 +122,12 @@ entity User {
       const result = new Parser().parse(source);
       const entity = result.program.entities[0];
       expect(entity.computedProperties).toHaveLength(1);
-      expect(entity.computedProperties[0].name).toBe('fullName');
+      expect(entity.computedProperties[0].name).toBe("fullName");
       // Dependencies only include non-reserved identifiers, self.* is not tracked
       expect(entity.computedProperties[0].dependencies).toEqual([]);
     });
 
-    it('should parse entity with all relationship types', () => {
+    it("should parse entity with all relationship types", () => {
       const source = `
 entity User {
   hasMany posts: Post
@@ -120,13 +139,13 @@ entity User {
       const result = new Parser().parse(source);
       const entity = result.program.entities[0];
       expect(entity.relationships).toHaveLength(4);
-      expect(entity.relationships[0].kind).toBe('hasMany');
-      expect(entity.relationships[1].kind).toBe('hasOne');
-      expect(entity.relationships[2].kind).toBe('belongsTo');
-      expect(entity.relationships[3].kind).toBe('ref');
+      expect(entity.relationships[0].kind).toBe("hasMany");
+      expect(entity.relationships[1].kind).toBe("hasOne");
+      expect(entity.relationships[2].kind).toBe("belongsTo");
+      expect(entity.relationships[3].kind).toBe("ref");
     });
 
-    it('should parse relationship with through clause', () => {
+    it("should parse relationship with through clause", () => {
       const source = `
 entity User {
   hasMany friends: User through UserFriend
@@ -134,10 +153,10 @@ entity User {
 `;
       const result = new Parser().parse(source);
       const entity = result.program.entities[0];
-      expect(entity.relationships[0].through).toBe('UserFriend');
+      expect(entity.relationships[0].through).toBe("UserFriend");
     });
 
-    it('should parse relationship with foreignKey clause', () => {
+    it("should parse relationship with foreignKey clause", () => {
       const source = `
 entity Post {
   belongsTo author: User with userId
@@ -145,10 +164,10 @@ entity Post {
 `;
       const result = new Parser().parse(source);
       const entity = result.program.entities[0];
-      expect(entity.relationships[0].foreignKey).toBe('userId');
+      expect(entity.relationships[0].foreignKey).toBe("userId");
     });
 
-    it('should parse entity with store declaration', () => {
+    it("should parse entity with store declaration", () => {
       const source = `
 entity User {
   store memory
@@ -156,10 +175,10 @@ entity User {
 `;
       const result = new Parser().parse(source);
       const entity = result.program.entities[0];
-      expect(entity.store).toBe('memory');
+      expect(entity.store).toBe("memory");
     });
 
-    it('should parse multiple entities', () => {
+    it("should parse multiple entities", () => {
       const source = `
 entity User {
   property name: string
@@ -171,13 +190,13 @@ entity Post {
 `;
       const result = new Parser().parse(source);
       expect(result.program.entities).toHaveLength(2);
-      expect(result.program.entities[0].name).toBe('User');
-      expect(result.program.entities[1].name).toBe('Post');
+      expect(result.program.entities[0].name).toBe("User");
+      expect(result.program.entities[1].name).toBe("Post");
     });
   });
 
-  describe('Constraint Parsing', () => {
-    it('should parse inline constraint', () => {
+  describe("Constraint Parsing", () => {
+    it("should parse inline constraint", () => {
       const source = `
 entity User {
   property age: number
@@ -188,12 +207,12 @@ entity User {
       const entity = result.program.entities[0];
       expect(entity.constraints).toHaveLength(1);
       const constraint = entity.constraints[0];
-      expect(constraint.name).toBe('adult');
-      expect(constraint.message).toBe('Must be an adult');
-      expect(constraint.severity).toBe('block'); // default
+      expect(constraint.name).toBe("adult");
+      expect(constraint.message).toBe("Must be an adult");
+      expect(constraint.severity).toBe("block"); // default
     });
 
-    it('should parse constraint with ok severity', () => {
+    it("should parse constraint with ok severity", () => {
       const source = `
 entity User {
   constraint info:ok self.id != null "Info message"
@@ -201,10 +220,10 @@ entity User {
 `;
       const result = new Parser().parse(source);
       const constraint = result.program.entities[0].constraints[0];
-      expect(constraint.severity).toBe('ok');
+      expect(constraint.severity).toBe("ok");
     });
 
-    it('should parse constraint with warn severity', () => {
+    it("should parse constraint with warn severity", () => {
       const source = `
 entity User {
   constraint warning:warn self.age < 13 "Warning message"
@@ -212,10 +231,10 @@ entity User {
 `;
       const result = new Parser().parse(source);
       const constraint = result.program.entities[0].constraints[0];
-      expect(constraint.severity).toBe('warn');
+      expect(constraint.severity).toBe("warn");
     });
 
-    it('should parse constraint with block severity', () => {
+    it("should parse constraint with block severity", () => {
       const source = `
 entity User {
   constraint block:block self.age < 0 "Block message"
@@ -223,10 +242,10 @@ entity User {
 `;
       const result = new Parser().parse(source);
       const constraint = result.program.entities[0].constraints[0];
-      expect(constraint.severity).toBe('block');
+      expect(constraint.severity).toBe("block");
     });
 
-    it('should parse overrideable constraint', () => {
+    it("should parse overrideable constraint", () => {
       const source = `
 entity User {
   constraint overrideable maxAge:self.age <= 100 "Too old"
@@ -238,8 +257,8 @@ entity User {
     });
   });
 
-  describe('Policy Parsing', () => {
-    it('should parse read policy', () => {
+  describe("Policy Parsing", () => {
+    it("should parse read policy", () => {
       const source = `
 entity User {
   policy canRead read: self.user == self.owner
@@ -247,11 +266,11 @@ entity User {
 `;
       const result = new Parser().parse(source);
       const policy = result.program.entities[0].policies[0];
-      expect(policy.name).toBe('canRead');
-      expect(policy.action).toBe('read');
+      expect(policy.name).toBe("canRead");
+      expect(policy.action).toBe("read");
     });
 
-    it('should parse write policy', () => {
+    it("should parse write policy", () => {
       const source = `
 entity User {
   policy canWrite write: self.user.role == "admin"
@@ -259,10 +278,10 @@ entity User {
 `;
       const result = new Parser().parse(source);
       const policy = result.program.entities[0].policies[0];
-      expect(policy.action).toBe('write');
+      expect(policy.action).toBe("write");
     });
 
-    it('should parse delete policy', () => {
+    it("should parse delete policy", () => {
       const source = `
 entity User {
   policy canDelete delete: self.user.role == "admin"
@@ -270,10 +289,10 @@ entity User {
 `;
       const result = new Parser().parse(source);
       const policy = result.program.entities[0].policies[0];
-      expect(policy.action).toBe('delete');
+      expect(policy.action).toBe("delete");
     });
 
-    it('should parse execute policy', () => {
+    it("should parse execute policy", () => {
       const source = `
 entity User {
   policy canExecute execute: self.user.role == "user"
@@ -281,10 +300,10 @@ entity User {
 `;
       const result = new Parser().parse(source);
       const policy = result.program.entities[0].policies[0];
-      expect(policy.action).toBe('execute');
+      expect(policy.action).toBe("execute");
     });
 
-    it('should parse all policy', () => {
+    it("should parse all policy", () => {
       const source = `
 entity User {
   policy allowAll all: true
@@ -292,10 +311,10 @@ entity User {
 `;
       const result = new Parser().parse(source);
       const policy = result.program.entities[0].policies[0];
-      expect(policy.action).toBe('all');
+      expect(policy.action).toBe("all");
     });
 
-    it('should parse override policy', () => {
+    it("should parse override policy", () => {
       const source = `
 entity User {
   policy overridePolicy override: self.user.role == "superadmin"
@@ -303,12 +322,12 @@ entity User {
 `;
       const result = new Parser().parse(source);
       const policy = result.program.entities[0].policies[0];
-      expect(policy.action).toBe('override');
+      expect(policy.action).toBe("override");
     });
   });
 
-  describe('Command Parsing', () => {
-    it('should parse command without parameters', () => {
+  describe("Command Parsing", () => {
+    it("should parse command without parameters", () => {
       const source = `
 entity User {
   command greet() {
@@ -318,11 +337,11 @@ entity User {
 `;
       const result = new Parser().parse(source);
       const command = result.program.entities[0].commands[0];
-      expect(command.name).toBe('greet');
+      expect(command.name).toBe("greet");
       expect(command.parameters).toHaveLength(0);
     });
 
-    it('should parse command with parameters', () => {
+    it("should parse command with parameters", () => {
       const source = `
 entity User {
   command update(name: string, age: number) {
@@ -333,11 +352,11 @@ entity User {
       const result = new Parser().parse(source);
       const command = result.program.entities[0].commands[0];
       expect(command.parameters).toHaveLength(2);
-      expect(command.parameters[0].name).toBe('name');
-      expect(command.parameters[1].name).toBe('age');
+      expect(command.parameters[0].name).toBe("name");
+      expect(command.parameters[1].name).toBe("age");
     });
 
-    it('should parse command with optional parameter', () => {
+    it("should parse command with optional parameter", () => {
       const source = `
 entity User {
   command update(optional title: string) {
@@ -350,7 +369,7 @@ entity User {
       expect(command.parameters[0].required).toBe(false);
     });
 
-    it('should parse command with single guard', () => {
+    it("should parse command with single guard", () => {
       const source = `
 entity User {
   command delete() {
@@ -364,7 +383,7 @@ entity User {
       expect(command.guards).toHaveLength(1);
     });
 
-    it('should parse command with multiple guards', () => {
+    it("should parse command with multiple guards", () => {
       const source = `
 entity User {
   command delete() {
@@ -379,7 +398,7 @@ entity User {
       expect(command.guards).toHaveLength(2);
     });
 
-    it('should parse command with mutate action', () => {
+    it("should parse command with mutate action", () => {
       const source = `
 entity User {
   command setAge(age: number) {
@@ -390,11 +409,11 @@ entity User {
       const result = new Parser().parse(source);
       const command = result.program.entities[0].commands[0];
       expect(command.actions).toHaveLength(1);
-      expect(command.actions[0].kind).toBe('mutate');
-      expect(command.actions[0].target).toBe('age');
+      expect(command.actions[0].kind).toBe("mutate");
+      expect(command.actions[0].target).toBe("age");
     });
 
-    it('should parse command with emit action', () => {
+    it("should parse command with emit action", () => {
       const source = `
 entity User {
   command notify() {
@@ -404,10 +423,10 @@ entity User {
 `;
       const result = new Parser().parse(source);
       const command = result.program.entities[0].commands[0];
-      expect(command.emits).toContain('UserNotified');
+      expect(command.emits).toContain("UserNotified");
     });
 
-    it('should parse command with return type', () => {
+    it("should parse command with return type", () => {
       const source = `
 entity User {
   command getAge() returns number {
@@ -417,10 +436,10 @@ entity User {
 `;
       const result = new Parser().parse(source);
       const command = result.program.entities[0].commands[0];
-      expect(command.returns?.name).toBe('number');
+      expect(command.returns?.name).toBe("number");
     });
 
-    it('should parse command with constraint', () => {
+    it("should parse command with constraint", () => {
       const source = `
 entity User {
   command setAge(age: number) {
@@ -435,8 +454,8 @@ entity User {
     });
   });
 
-  describe('Expression Parsing - Literals', () => {
-    it('should parse string literal', () => {
+  describe("Expression Parsing - Literals", () => {
+    it("should parse string literal", () => {
       const source = `
 entity User {
   constraint test: self.name == "hello"
@@ -445,10 +464,14 @@ entity User {
       const result = new Parser().parse(source);
       const constraint = result.program.entities[0].constraints[0];
       const binOp = constraint.expression as BinaryOpNode;
-      expect(binOp.right).toEqual({ type: 'Literal', value: 'hello', dataType: 'string' });
+      expect(binOp.right).toEqual({
+        type: "Literal",
+        value: "hello",
+        dataType: "string",
+      });
     });
 
-    it('should parse number literal', () => {
+    it("should parse number literal", () => {
       const source = `
 entity User {
   constraint test: self.age == 42
@@ -457,10 +480,14 @@ entity User {
       const result = new Parser().parse(source);
       const constraint = result.program.entities[0].constraints[0];
       const binOp = constraint.expression as BinaryOpNode;
-      expect(binOp.right).toEqual({ type: 'Literal', value: 42, dataType: 'number' });
+      expect(binOp.right).toEqual({
+        type: "Literal",
+        value: 42,
+        dataType: "number",
+      });
     });
 
-    it('should parse decimal number literal', () => {
+    it("should parse decimal number literal", () => {
       const source = `
 entity User {
   constraint test: self.price == 19.99
@@ -469,10 +496,14 @@ entity User {
       const result = new Parser().parse(source);
       const constraint = result.program.entities[0].constraints[0];
       const binOp = constraint.expression as BinaryOpNode;
-      expect(binOp.right).toEqual({ type: 'Literal', value: 19.99, dataType: 'number' });
+      expect(binOp.right).toEqual({
+        type: "Literal",
+        value: 19.99,
+        dataType: "number",
+      });
     });
 
-    it('should parse boolean true literal', () => {
+    it("should parse boolean true literal", () => {
       const source = `
 entity User {
   property active: boolean = true
@@ -480,10 +511,14 @@ entity User {
 `;
       const result = new Parser().parse(source);
       const prop = result.program.entities[0].properties[0];
-      expect(prop.defaultValue).toEqual({ type: 'Literal', value: true, dataType: 'boolean' });
+      expect(prop.defaultValue).toEqual({
+        type: "Literal",
+        value: true,
+        dataType: "boolean",
+      });
     });
 
-    it('should parse boolean false literal', () => {
+    it("should parse boolean false literal", () => {
       const source = `
 entity User {
   property active: boolean = false
@@ -491,10 +526,14 @@ entity User {
 `;
       const result = new Parser().parse(source);
       const prop = result.program.entities[0].properties[0];
-      expect(prop.defaultValue).toEqual({ type: 'Literal', value: false, dataType: 'boolean' });
+      expect(prop.defaultValue).toEqual({
+        type: "Literal",
+        value: false,
+        dataType: "boolean",
+      });
     });
 
-    it('should parse null literal', () => {
+    it("should parse null literal", () => {
       const source = `
 entity User {
   constraint test: self.name == null
@@ -503,12 +542,16 @@ entity User {
       const result = new Parser().parse(source);
       const constraint = result.program.entities[0].constraints[0];
       const binOp = constraint.expression as BinaryOpNode;
-      expect(binOp.right).toEqual({ type: 'Literal', value: null, dataType: 'null' });
+      expect(binOp.right).toEqual({
+        type: "Literal",
+        value: null,
+        dataType: "null",
+      });
     });
   });
 
-  describe('Expression Parsing - Identifiers', () => {
-    it('should parse simple identifier', () => {
+  describe("Expression Parsing - Identifiers", () => {
+    it("should parse simple identifier", () => {
       const source = `
 entity User {
   constraint test: age >= 18
@@ -517,10 +560,10 @@ entity User {
       const result = new Parser().parse(source);
       const constraint = result.program.entities[0].constraints[0];
       const expr = constraint.expression as BinaryOpNode;
-      expect(expr.left).toEqual({ type: 'Identifier', name: 'age' });
+      expect(expr.left).toEqual({ type: "Identifier", name: "age" });
     });
 
-    it('should parse self member access', () => {
+    it("should parse self member access", () => {
       const source = `
 entity User {
   constraint test: self.age >= 18
@@ -529,11 +572,11 @@ entity User {
       const result = new Parser().parse(source);
       const constraint = result.program.entities[0].constraints[0];
       const expr = constraint.expression as BinaryOpNode;
-      expect(expr.left.type).toBe('MemberAccess');
-      expect((expr.left as MemberAccessNode).property).toBe('age');
+      expect(expr.left.type).toBe("MemberAccess");
+      expect((expr.left as MemberAccessNode).property).toBe("age");
     });
 
-    it('should parse user member access', () => {
+    it("should parse user member access", () => {
       const source = `
 entity User {
   policy p read: user.role == "admin"
@@ -542,10 +585,10 @@ entity User {
       const result = new Parser().parse(source);
       const policy = result.program.entities[0].policies[0];
       const expr = policy.expression as BinaryOpNode;
-      expect(expr.left.type).toBe('MemberAccess');
+      expect(expr.left.type).toBe("MemberAccess");
     });
 
-    it('should parse context member access', () => {
+    it("should parse context member access", () => {
       const source = `
 entity User {
   constraint test: context.now > 0
@@ -554,10 +597,10 @@ entity User {
       const result = new Parser().parse(source);
       const constraint = result.program.entities[0].constraints[0];
       const expr = constraint.expression as BinaryOpNode;
-      expect(expr.left.type).toBe('MemberAccess');
+      expect(expr.left.type).toBe("MemberAccess");
     });
 
-    it('should parse nested member access', () => {
+    it("should parse nested member access", () => {
       const source = `
 entity User {
   constraint test: self.profile.age >= 18
@@ -566,13 +609,13 @@ entity User {
       const result = new Parser().parse(source);
       const constraint = result.program.entities[0].constraints[0];
       const expr = constraint.expression as BinaryOpNode;
-      expect(expr.left.type).toBe('MemberAccess');
-      expect((expr.left as MemberAccessNode).object.type).toBe('MemberAccess');
+      expect(expr.left.type).toBe("MemberAccess");
+      expect((expr.left as MemberAccessNode).object.type).toBe("MemberAccess");
     });
   });
 
-  describe('Expression Parsing - Operators', () => {
-    it('should parse arithmetic operators', () => {
+  describe("Expression Parsing - Operators", () => {
+    it("should parse arithmetic operators", () => {
       const source = `
 entity User {
   computed test: number = self.a + self.b - self.c * self.d / self.e % self.f
@@ -582,7 +625,7 @@ entity User {
       expect(result.errors).toHaveLength(0);
     });
 
-    it('should parse comparison operators', () => {
+    it("should parse comparison operators", () => {
       const source = `
 entity User {
   constraint test: self.a == self.b && self.c != self.d && self.e < self.f && self.g > self.h && self.i <= self.j && self.k >= self.l
@@ -592,7 +635,7 @@ entity User {
       expect(result.errors).toHaveLength(0);
     });
 
-    it('should parse logical operators', () => {
+    it("should parse logical operators", () => {
       const source = `
 entity User {
   constraint test: self.a && self.b || self.c
@@ -602,7 +645,7 @@ entity User {
       expect(result.errors).toHaveLength(0);
     });
 
-    it('should parse keyword operators (is, in, contains)', () => {
+    it("should parse keyword operators (is, in, contains)", () => {
       const source = `
 entity User {
   constraint test: self.status is "active" && self.role in ["admin", "user"] && self.name contains "admin"
@@ -612,7 +655,7 @@ entity User {
       expect(result.errors).toHaveLength(0);
     });
 
-    it('should respect operator precedence (multiplication before addition)', () => {
+    it("should respect operator precedence (multiplication before addition)", () => {
       const source = `
 entity User {
   computed test: number = 1 + 2 * 3
@@ -622,11 +665,11 @@ entity User {
       const computed = result.program.entities[0].computedProperties[0];
       const expr = computed.expression as BinaryOpNode;
       // Should be parsed as 1 + (2 * 3), not (1 + 2) * 3
-      expect(expr.operator).toBe('+');
-      expect((expr.right as BinaryOpNode).operator).toBe('*');
+      expect(expr.operator).toBe("+");
+      expect((expr.right as BinaryOpNode).operator).toBe("*");
     });
 
-    it('should respect operator precedence (AND before OR)', () => {
+    it("should respect operator precedence (AND before OR)", () => {
       const source = `
 entity User {
   constraint test: self.a && self.b || self.c && self.d
@@ -636,16 +679,16 @@ entity User {
       const constraint = result.program.entities[0].constraints[0];
       const expr = constraint.expression as BinaryOpNode;
       // Should be parsed as (a && b) || (c && d)
-      expect(expr.operator).toBe('||');
-      expect(expr.left.type).toBe('BinaryOp');
-      expect((expr.left as BinaryOpNode).operator).toBe('&&');
-      expect(expr.right.type).toBe('BinaryOp');
-      expect((expr.right as BinaryOpNode).operator).toBe('&&');
+      expect(expr.operator).toBe("||");
+      expect(expr.left.type).toBe("BinaryOp");
+      expect((expr.left as BinaryOpNode).operator).toBe("&&");
+      expect(expr.right.type).toBe("BinaryOp");
+      expect((expr.right as BinaryOpNode).operator).toBe("&&");
     });
   });
 
-  describe('Expression Parsing - Function Calls', () => {
-    it('should parse simple function call', () => {
+  describe("Expression Parsing - Function Calls", () => {
+    it("should parse simple function call", () => {
       const source = `
 entity User {
   constraint test: now() > 0
@@ -654,10 +697,10 @@ entity User {
       const result = new Parser().parse(source);
       const constraint = result.program.entities[0].constraints[0];
       const expr = constraint.expression as BinaryOpNode;
-      expect(expr.left.type).toBe('Call');
+      expect(expr.left.type).toBe("Call");
     });
 
-    it('should parse function call with arguments', () => {
+    it("should parse function call with arguments", () => {
       const source = `
 entity User {
   constraint test: upper(self.name) == "ADMIN"
@@ -666,11 +709,11 @@ entity User {
       const result = new Parser().parse(source);
       const constraint = result.program.entities[0].constraints[0];
       const expr = constraint.expression as BinaryOpNode;
-      expect(expr.left.type).toBe('Call');
+      expect(expr.left.type).toBe("Call");
       expect((expr.left as CallNode).arguments).toHaveLength(1);
     });
 
-    it('should parse nested function calls', () => {
+    it("should parse nested function calls", () => {
       const source = `
 entity User {
   constraint test: outer(inner(self.value)) > 0
@@ -679,14 +722,14 @@ entity User {
       const result = new Parser().parse(source);
       const constraint = result.program.entities[0].constraints[0];
       const expr = constraint.expression as BinaryOpNode;
-      expect(expr.left.type).toBe('Call');
-      expect((expr.left as CallNode).callee.type).toBe('Identifier');
-      expect((expr.left as CallNode).arguments[0].type).toBe('Call');
+      expect(expr.left.type).toBe("Call");
+      expect((expr.left as CallNode).callee.type).toBe("Identifier");
+      expect((expr.left as CallNode).arguments[0].type).toBe("Call");
     });
   });
 
-  describe('Expression Parsing - Conditionals', () => {
-    it('should parse simple ternary conditional', () => {
+  describe("Expression Parsing - Conditionals", () => {
+    it("should parse simple ternary conditional", () => {
       const source = `
 entity User {
   computed result: string = self.age >= 18 ? "adult" : "minor"
@@ -695,12 +738,20 @@ entity User {
       const result = new Parser().parse(source);
       const computed = result.program.entities[0].computedProperties[0];
       const expr = computed.expression as ConditionalNode;
-      expect(expr.type).toBe('Conditional');
-      expect(expr.consequent).toEqual({ type: 'Literal', value: 'adult', dataType: 'string' });
-      expect(expr.alternate).toEqual({ type: 'Literal', value: 'minor', dataType: 'string' });
+      expect(expr.type).toBe("Conditional");
+      expect(expr.consequent).toEqual({
+        type: "Literal",
+        value: "adult",
+        dataType: "string",
+      });
+      expect(expr.alternate).toEqual({
+        type: "Literal",
+        value: "minor",
+        dataType: "string",
+      });
     });
 
-    it('should parse nested ternary conditional', () => {
+    it("should parse nested ternary conditional", () => {
       const source = `
 entity User {
   computed result: string = self.age >= 65 ? "senior" : (self.age >= 18 ? "adult" : "minor")
@@ -709,11 +760,11 @@ entity User {
       const result = new Parser().parse(source);
       const computed = result.program.entities[0].computedProperties[0];
       const expr = computed.expression as ConditionalNode;
-      expect(expr.type).toBe('Conditional');
-      expect(expr.alternate.type).toBe('Conditional');
+      expect(expr.type).toBe("Conditional");
+      expect(expr.alternate.type).toBe("Conditional");
     });
 
-    it('should parse ternary without alternate', () => {
+    it("should parse ternary without alternate", () => {
       const source = `
 entity User {
   computed result: string = self.active ? "yes" : "no"
@@ -722,12 +773,12 @@ entity User {
       const result = new Parser().parse(source);
       const computed = result.program.entities[0].computedProperties[0];
       const expr = computed.expression as ConditionalNode;
-      expect(expr.type).toBe('Conditional');
+      expect(expr.type).toBe("Conditional");
     });
   });
 
-  describe('Expression Parsing - Arrays', () => {
-    it('should parse empty array', () => {
+  describe("Expression Parsing - Arrays", () => {
+    it("should parse empty array", () => {
       const source = `
 entity User {
   constraint test: self.role in []
@@ -736,11 +787,11 @@ entity User {
       const result = new Parser().parse(source);
       const constraint = result.program.entities[0].constraints[0];
       const expr = constraint.expression as BinaryOpNode;
-      expect(expr.right.type).toBe('Array');
+      expect(expr.right.type).toBe("Array");
       expect((expr.right as ArrayNode).elements).toHaveLength(0);
     });
 
-    it('should parse array with elements', () => {
+    it("should parse array with elements", () => {
       const source = `
 entity User {
   constraint test: self.role in ["admin", "user", "guest"]
@@ -749,11 +800,11 @@ entity User {
       const result = new Parser().parse(source);
       const constraint = result.program.entities[0].constraints[0];
       const expr = constraint.expression as BinaryOpNode;
-      expect(expr.right.type).toBe('Array');
+      expect(expr.right.type).toBe("Array");
       expect((expr.right as ArrayNode).elements).toHaveLength(3);
     });
 
-    it('should parse array with trailing comma', () => {
+    it("should parse array with trailing comma", () => {
       const source = `
 entity User {
   constraint test: self.role in ["admin", "user",]
@@ -763,7 +814,7 @@ entity User {
       expect(result.errors).toHaveLength(0);
     });
 
-    it('should parse nested array', () => {
+    it("should parse nested array", () => {
       const source = `
 entity User {
   constraint test: self.matrix in [[1, 2], [3, 4]]
@@ -772,13 +823,13 @@ entity User {
       const result = new Parser().parse(source);
       const constraint = result.program.entities[0].constraints[0];
       const expr = constraint.expression as BinaryOpNode;
-      expect(expr.right.type).toBe('Array');
-      expect((expr.right as ArrayNode).elements[0].type).toBe('Array');
+      expect(expr.right.type).toBe("Array");
+      expect((expr.right as ArrayNode).elements[0].type).toBe("Array");
     });
   });
 
-  describe('Expression Parsing - Objects', () => {
-    it('should parse empty object', () => {
+  describe("Expression Parsing - Objects", () => {
+    it("should parse empty object", () => {
       const source = `
 entity User {
   property config: object = {}
@@ -787,11 +838,11 @@ entity User {
       const result = new Parser().parse(source);
       const prop = result.program.entities[0].properties[0];
       const expr = prop.defaultValue as ObjectNode;
-      expect(expr.type).toBe('Object');
+      expect(expr.type).toBe("Object");
       expect(expr.properties).toHaveLength(0);
     });
 
-    it('should parse object with properties', () => {
+    it("should parse object with properties", () => {
       const source = `
 entity User {
   property config: object = { name: "John", age: 30 }
@@ -800,11 +851,11 @@ entity User {
       const result = new Parser().parse(source);
       const prop = result.program.entities[0].properties[0];
       const expr = prop.defaultValue as ObjectNode;
-      expect(expr.type).toBe('Object');
+      expect(expr.type).toBe("Object");
       expect(expr.properties).toHaveLength(2);
     });
 
-    it('should parse nested object', () => {
+    it("should parse nested object", () => {
       const source = `
 entity User {
   property config: object = { user: { name: "John" } }
@@ -813,30 +864,30 @@ entity User {
       const result = new Parser().parse(source);
       const prop = result.program.entities[0].properties[0];
       const expr = prop.defaultValue as ObjectNode;
-      expect(expr.type).toBe('Object');
-      expect(expr.properties[0].value.type).toBe('Object');
+      expect(expr.type).toBe("Object");
+      expect(expr.properties[0].value.type).toBe("Object");
     });
   });
 
-  describe('Store Parsing', () => {
-    it('should parse memory store', () => {
-      const source = 'store User in memory';
+  describe("Store Parsing", () => {
+    it("should parse memory store", () => {
+      const source = "store User in memory";
       const result = new Parser().parse(source);
       expect(result.program.stores).toHaveLength(1);
       const store = result.program.stores[0];
-      expect(store.type).toBe('Store');
-      expect(store.entity).toBe('User');
-      expect(store.target).toBe('memory');
+      expect(store.type).toBe("Store");
+      expect(store.entity).toBe("User");
+      expect(store.target).toBe("memory");
     });
 
-    it('should parse Postgres store', () => {
-      const source = 'store User in postgres';
+    it("should parse Postgres store", () => {
+      const source = "store User in postgres";
       const result = new Parser().parse(source);
       const store = result.program.stores[0];
-      expect(store.target).toBe('postgres');
+      expect(store.target).toBe("postgres");
     });
 
-    it('should parse store with config object', () => {
+    it("should parse store with config object", () => {
       const source = `
 store User in memory {
   ttl: 3600
@@ -851,8 +902,8 @@ store User in memory {
     });
   });
 
-  describe('Event Parsing', () => {
-    it('should parse simple outbox event', () => {
+  describe("Event Parsing", () => {
+    it("should parse simple outbox event", () => {
       const source = `
 event UserCreated: "user.created" {
   userId: string
@@ -862,12 +913,12 @@ event UserCreated: "user.created" {
       const result = new Parser().parse(source);
       expect(result.program.events).toHaveLength(1);
       const event = result.program.events[0];
-      expect(event.type).toBe('OutboxEvent');
-      expect(event.name).toBe('UserCreated');
-      expect(event.channel).toBe('user.created');
+      expect(event.type).toBe("OutboxEvent");
+      expect(event.name).toBe("UserCreated");
+      expect(event.channel).toBe("user.created");
     });
 
-    it('should parse event with dot in name', () => {
+    it("should parse event with dot in name", () => {
       const source = `
 event appCreated: "app.created" {
   appId: string
@@ -875,13 +926,13 @@ event appCreated: "app.created" {
 `;
       const result = new Parser().parse(source);
       expect(result.program.events).toHaveLength(1);
-      expect(result.program.events[0].name).toBe('appCreated');
-      expect(result.program.events[0].channel).toBe('app.created');
+      expect(result.program.events[0].name).toBe("appCreated");
+      expect(result.program.events[0].channel).toBe("app.created");
     });
   });
 
-  describe('Module Parsing', () => {
-    it('should parse module with entities', () => {
+  describe("Module Parsing", () => {
+    it("should parse module with entities", () => {
       const source = `
 module Blog {
   entity Post {
@@ -896,12 +947,12 @@ module Blog {
       const result = new Parser().parse(source);
       expect(result.program.modules).toHaveLength(1);
       const module = result.program.modules[0];
-      expect(module.type).toBe('Module');
-      expect(module.name).toBe('Blog');
+      expect(module.type).toBe("Module");
+      expect(module.name).toBe("Blog");
       expect(module.entities).toHaveLength(2);
     });
 
-    it('should parse module with commands', () => {
+    it("should parse module with commands", () => {
       const source = `
 module Admin {
   command reset() {
@@ -914,7 +965,7 @@ module Admin {
       expect(module.commands).toHaveLength(1);
     });
 
-    it('should parse module with policies', () => {
+    it("should parse module with policies", () => {
       const source = `
 module Admin {
   policy adminOnly execute: user.role == "admin"
@@ -926,18 +977,20 @@ module Admin {
     });
   });
 
-  describe('Error Handling', () => {
-    it('should report error for unclosed entity brace', () => {
+  describe("Error Handling", () => {
+    it("should report error for unclosed entity brace", () => {
       const source = `
 entity User {
   property name: string
 `;
       const result = new Parser().parse(source);
       expect(result.errors.length).toBeGreaterThan(0);
-      expect(result.errors.some(e => e.message.includes('Expected }'))).toBe(true);
+      expect(result.errors.some((e) => e.message.includes("Expected }"))).toBe(
+        true
+      );
     });
 
-    it('should report error for missing colon in property', () => {
+    it("should report error for missing colon in property", () => {
       const source = `
 entity User {
   property name string
@@ -945,10 +998,12 @@ entity User {
 `;
       const result = new Parser().parse(source);
       expect(result.errors.length).toBeGreaterThan(0);
-      expect(result.errors.some(e => e.message.includes('Expected :'))).toBe(true);
+      expect(result.errors.some((e) => e.message.includes("Expected :"))).toBe(
+        true
+      );
     });
 
-    it('should report error for incomplete expression', () => {
+    it("should report error for incomplete expression", () => {
       const source = `
 entity User {
   constraint test: self.age +
@@ -958,7 +1013,7 @@ entity User {
       expect(result.errors.length).toBeGreaterThan(0);
     });
 
-    it('should report error for invalid operator sequence', () => {
+    it("should report error for invalid operator sequence", () => {
       const source = `
 entity User {
   constraint test: self.age &&& self.active
@@ -968,7 +1023,7 @@ entity User {
       expect(result.errors.length).toBeGreaterThan(0);
     });
 
-    it('should report error for constraint block without expression', () => {
+    it("should report error for constraint block without expression", () => {
       const source = `
 entity User {
   constraint test {
@@ -978,20 +1033,27 @@ entity User {
 `;
       const result = new Parser().parse(source);
       expect(result.errors.length).toBeGreaterThan(0);
-      expect(result.errors.some(e => e.message.includes('expression'))).toBe(true);
+      expect(result.errors.some((e) => e.message.includes("expression"))).toBe(
+        true
+      );
     });
 
-    it('should report error for reserved word as entity identifier', () => {
+    it("should report error for reserved word as entity identifier", () => {
       const source = `
 entity command {
   property name: string
 }
 `;
       const result = new Parser().parse(source);
-      expect(result.errors.some(e => e.message.includes('Reserved word') && e.message.includes('command'))).toBe(true);
+      expect(
+        result.errors.some(
+          (e) =>
+            e.message.includes("Reserved word") && e.message.includes("command")
+        )
+      ).toBe(true);
     });
 
-    it('should report error for malformed relationship', () => {
+    it("should report error for malformed relationship", () => {
       const source = `
 entity User {
   hasMany orders
@@ -1001,7 +1063,7 @@ entity User {
       expect(result.errors.length).toBeGreaterThan(0);
     });
 
-    it('should report error for unclosed command block', () => {
+    it("should report error for unclosed command block", () => {
       const source = `
 entity User {
   command test() {

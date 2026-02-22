@@ -1,3 +1,5 @@
+import { captureRequestError } from "@sentry/nextjs";
+
 // Only initialize Sentry if DSN is configured
 // This prevents loading the SDK when not in use
 export async function register() {
@@ -14,3 +16,5 @@ export async function register() {
   );
   await initializeSentry();
 }
+
+export const onRequestError = captureRequestError;

@@ -155,6 +155,36 @@ const RAW_SHEETS = [
 ];
 const MAP_SHEET = "MAP_EventType_2025";
 const CALCS_SHEET = "CALCS_Funnel";
+const MASTER_EVENT_ALIASES = [
+  RAW_SHEETS[0],
+  "RAW_MasterEvents",
+  "Master Events",
+  "Events",
+  "Events Export",
+  "Sales Events",
+];
+const DEALS_LOST_ALIASES = [
+  RAW_SHEETS[1],
+  "RAW_Deals_Lost",
+  "Deals Lost",
+  "Lost Deals",
+  "Lost Reasons",
+];
+const LEAD_SOURCE_ALIASES = [
+  RAW_SHEETS[2],
+  "RAW_LeadSource",
+  "Lead Source",
+  "Lead Sources",
+  "Lead Channels",
+  "Channels",
+];
+const EVENT_TYPE_MAP_ALIASES = [
+  MAP_SHEET,
+  "MAP_EventType",
+  "Event Type Map",
+  "Event Type Mapping",
+];
+const CALCS_ALIASES = [CALCS_SHEET, "CALCS Funnel", "Funnel"];
 
 const STATUS_NORMALIZED_COL = "status_normalized";
 const EVENT_TYPE_STANDARD_COL = "event_type_standard";
@@ -170,6 +200,49 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
 const normalizeName = (value: string): string => {
   const text = value.toLowerCase().replace(/[^a-z0-9]+/g, " ");
   return text.replace(/\s+/g, " ").trim();
+};
+
+const normalizeSheetName = (value: string): string =>
+  normalizeName(value).replace(/\b(19|20)\d{2}\b/g, "").replace(/\s+/g, " ").trim();
+
+const resolveSheetName = (
+  sheetNames: string[],
+  aliases: string[],
+  used: Set<string>
+): string | null => {
+  const available = sheetNames.filter((name) => !used.has(name));
+  const normalizedAliases = aliases.map((alias) => normalizeSheetName(alias));
+
+  for (const name of available) {
+    const normalized = normalizeSheetName(name);
+    if (normalizedAliases.includes(normalized)) {
+      return name;
+    }
+  }
+
+  const candidates = available
+    .map((name) => {
+      const normalized = normalizeSheetName(name);
+      let score = 0;
+      for (const alias of normalizedAliases) {
+        if (!alias) {
+          continue;
+        }
+        if (normalized.includes(alias) || alias.includes(normalized)) {
+          score = Math.max(score, alias.split(" ").length);
+          continue;
+        }
+        const tokens = alias.split(" ").filter(Boolean);
+        if (tokens.length > 1 && tokens.every((token) => normalized.includes(token))) {
+          score = Math.max(score, tokens.length);
+        }
+      }
+      return { name, score };
+    })
+    .filter((candidate) => candidate.score > 0)
+    .sort((a, b) => b.score - a.score);
+
+  return candidates[0]?.name ?? null;
 };
 
 const normalizeMappingKey = (value: CellValue): string | null => {
@@ -325,25 +398,29 @@ const parseSheetRows = async (sheet: WorkSheet): Promise<DataRow[]> => {
 
 export const loadSalesData = async (workbook: WorkBook): Promise<SalesData> => {
   const sheetNames = workbook.SheetNames;
-  const rawSheetNames = sheetNames.filter((name) =>
-    normalizeName(name).startsWith("raw ")
-  );
-  const required = [...RAW_SHEETS, MAP_SHEET];
-  const optional = [CALCS_SHEET];
-  const missing = required.filter((sheet) => !sheetNames.includes(sheet));
+  invariant(sheetNames.length > 0, "Workbook must contain at least one worksheet");
 
-  invariant(
-    missing.length === 0,
-    `Missing required sheets: ${missing.join(", ")}`
-  );
+  const used = new Set<string>();
+  const masterSheet =
+    resolveSheetName(sheetNames, MASTER_EVENT_ALIASES, used) ?? sheetNames[0] ?? null;
+  if (masterSheet) {
+    used.add(masterSheet);
+  }
+  const dealsLostSheet = resolveSheetName(sheetNames, DEALS_LOST_ALIASES, used);
+  if (dealsLostSheet) {
+    used.add(dealsLostSheet);
+  }
+  const leadSourceSheet = resolveSheetName(sheetNames, LEAD_SOURCE_ALIASES, used);
+  if (leadSourceSheet) {
+    used.add(leadSourceSheet);
+  }
+  const mapSheet = resolveSheetName(sheetNames, EVENT_TYPE_MAP_ALIASES, used);
+  if (mapSheet) {
+    used.add(mapSheet);
+  }
+  const calcsSheet = resolveSheetName(sheetNames, CALCS_ALIASES, used);
 
-  const toRead = Array.from(
-    new Set([
-      ...rawSheetNames,
-      ...required,
-      ...optional.filter((sheet) => sheetNames.includes(sheet)),
-    ])
-  );
+  const toRead = Array.from(new Set(sheetNames));
 
   const sheetData: Record<string, DataRow[]> = {};
   for (const name of toRead) {
@@ -352,14 +429,17 @@ export const loadSalesData = async (workbook: WorkBook): Promise<SalesData> => {
     sheetData[name] = cleanRows(await parseSheetRows(sheet));
   }
 
-  const mapping = sheetData[MAP_SHEET] ?? [];
-  const master = normalizeMasterEvents(sheetData[RAW_SHEETS[0]] ?? [], mapping);
-  const dealsLost = cleanRows(sheetData[RAW_SHEETS[1]] ?? []);
-  const leadSource = cleanRows(sheetData[RAW_SHEETS[2]] ?? []);
-  const calcsFunnel = sheetData[CALCS_SHEET] ?? [];
+  const mapping = mapSheet ? sheetData[mapSheet] ?? [] : [];
+  const master = normalizeMasterEvents(
+    masterSheet ? sheetData[masterSheet] ?? [] : [],
+    mapping
+  );
+  const dealsLost = dealsLostSheet ? cleanRows(sheetData[dealsLostSheet] ?? []) : [];
+  const leadSource = leadSourceSheet ? cleanRows(sheetData[leadSourceSheet] ?? []) : [];
+  const calcsFunnel = calcsSheet ? sheetData[calcsSheet] ?? [] : [];
   const rawSheets: Record<string, DataRow[]> = {};
 
-  for (const name of rawSheetNames) {
+  for (const name of sheetNames) {
     rawSheets[name] = sheetData[name] ?? [];
   }
 

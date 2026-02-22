@@ -1,0 +1,22 @@
+0a. Study `specs/command-board/*` with up to 500 parallel Sonnet subagents to learn the Command Board OS specifications. Use the Task tool with subagent_type='Explore' to fan out file reads and searches.
+0b. Study @IMPLEMENTATION_PLAN_commandboard_os.md.
+0c. For reference, the application source code is in `apps/app/app/(authenticated)/command-board/`, `apps/api/app/api/command-board/`, `apps/api/app/api/ai/`, `apps/app/app/lib/command-board/`, and `packages/ai/`.
+
+1. Your task is to implement functionality per the specifications using the Task tool with parallel subagents. Follow @IMPLEMENTATION_PLAN_commandboard_os.md and choose the most important item to address that is NOT already marked COMPLETED. If all items are COMPLETED, look for remaining work items, quality gaps, missing tests, or acceptance criteria from the spec that haven't been verified. Before making changes, search the codebase (don't assume not implemented) using the Task tool with subagent_type='Explore' (up to 500 parallel subagents). Use the Task tool with subagent_type='general-purpose' for build/tests (only 1 subagent). Use Opus subagents when complex reasoning is needed (debugging, architectural decisions). IMPORTANT: Always use the Task tool for file operations, searches, and analysis - never use Read/Grep directly unless it's a single quick lookup.
+2. After implementing functionality or resolving problems, run the tests for that unit of code that was improved. If functionality is missing then it's your job to add it as per the application specifications. Ultrathink.
+3. When you discover issues, immediately update @IMPLEMENTATION_PLAN_commandboard_os.md with your findings using a subagent. When resolved, update and remove the item.
+4. When the tests pass, update @IMPLEMENTATION_PLAN_commandboard_os.md, then `git add -A` then `git commit` with a message describing the changes. After the commit, `git push`.
+
+5. CRITICAL: Do NOT make docs-only commits. Every commit MUST include real code changes (new functionality, bug fixes, test additions, or meaningful refactors). If the only changes are to markdown files, IMPLEMENTATION_PLAN, STATUS.md, or other documentation — do NOT commit. Documentation updates should only accompany actual code changes in the same commit.
+6. CRITICAL: If all items in @IMPLEMENTATION_PLAN_commandboard_os.md are COMPLETED and you cannot find real work to do, EXIT cleanly. Do not loop making empty or docs-only commits.
+7. Important: When authoring documentation, capture the why — tests and implementation importance.
+8. Important: Single sources of truth, no migrations/adapters. If tests unrelated to your work fail, resolve them as part of the increment.
+9. As soon as there are no build or test errors create a git tag. If there are no git tags start at 0.0.0 and increment patch by 1 for example 0.0.1 if 0.0.0 does not exist.
+10. You may add extra logging if required to debug issues.
+11. Keep @IMPLEMENTATION_PLAN_commandboard_os.md current with learnings using a subagent — future work depends on this to avoid duplicating efforts. Update especially after finishing your turn.
+12. When you learn something new about how to run the application, update @AGENTS.md using a subagent but keep it brief. For example if you run commands multiple times before learning the correct command then that file should be updated.
+13. For any bugs you notice, resolve them or document them in @IMPLEMENTATION_PLAN_commandboard_os.md using a subagent even if it is unrelated to the current piece of work.
+14. Implement functionality completely. Placeholders and stubs waste efforts and time redoing the same work.
+15. When @IMPLEMENTATION_PLAN_commandboard_os.md becomes large periodically clean out the items that are completed from the file using a subagent.
+16. If you find inconsistencies in the specs/\* then use an Opus 4.5 subagent with 'ultrathink' requested to update the specs.
+17. IMPORTANT: Keep @AGENTS.md operational only — status updates and progress notes belong in `IMPLEMENTATION_PLAN_commandboard_os.md`. A bloated AGENTS.md pollutes every future loop's context.

@@ -5,9 +5,9 @@
  * It orchestrates the flow: Document Import -> Event Creation -> Battle Board/Checklist Generation
  */
 
-import type { EmittedEvent, RuntimeEngine } from "@manifest/runtime";
-import type { IR } from "@manifest/runtime/ir";
-import { compileToIR } from "@manifest/runtime/ir-compiler";
+import type { EmittedEvent, RuntimeEngine } from "@angriff36/manifest";
+import type { IR } from "@angriff36/manifest/ir";
+import { compileToIR } from "@angriff36/manifest/ir-compiler";
 // biome-ignore lint/performance/noBarrelFile: Sentry requires namespace import for logger
 import * as Sentry from "@sentry/nextjs";
 import { enforceCommandOwnership } from "./ir-contract.js";

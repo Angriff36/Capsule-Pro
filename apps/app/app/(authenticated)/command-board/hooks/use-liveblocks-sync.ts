@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  useBroadcastEvent,
-  useEventListener,
-} from "@repo/collaboration/hooks";
+import { useBroadcastEvent, useEventListener } from "@repo/collaboration/hooks";
 import { useEffect, useRef } from "react";
 import type { BoardSyncEvent } from "./use-board-sync";
 

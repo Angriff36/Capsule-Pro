@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { Play, CheckCircle, XCircle, Clock, AlertTriangle } from 'lucide-react';
-import { runSmokeTests } from './smokeTestRunner';
-import { SmokeTestReport } from './types';
+import { AlertTriangle, CheckCircle, Clock, Play, XCircle } from "lucide-react";
+import { useState } from "react";
+import { runSmokeTests } from "./smokeTestRunner";
+import type { SmokeTestReport } from "./types";
 
 interface SmokeTestPanelProps {
   clientCode: string;
@@ -9,7 +9,11 @@ interface SmokeTestPanelProps {
   disabled: boolean;
 }
 
-export function SmokeTestPanel({ clientCode, ast, disabled }: SmokeTestPanelProps) {
+export function SmokeTestPanel({
+  clientCode,
+  ast,
+  disabled,
+}: SmokeTestPanelProps) {
   const [running, setRunning] = useState(false);
   const [report, setReport] = useState<SmokeTestReport | null>(null);
 
@@ -25,13 +29,15 @@ export function SmokeTestPanel({ clientCode, ast, disabled }: SmokeTestPanelProp
         total: 1,
         passed: 0,
         failed: 1,
-        results: [{
-          name: 'Test Runner',
-          passed: false,
-          error: (err as Error).message || String(err),
-          duration: 0
-        }],
-        duration: 0
+        results: [
+          {
+            name: "Test Runner",
+            passed: false,
+            error: (err as Error).message || String(err),
+            duration: 0,
+          },
+        ],
+        duration: 0,
       });
     } finally {
       setRunning(false);
@@ -43,25 +49,33 @@ export function SmokeTestPanel({ clientCode, ast, disabled }: SmokeTestPanelProp
       <div className="flex items-center justify-between px-3 py-2 bg-gray-900/50">
         <span className="text-sm font-medium text-gray-300">Smoke Tests</span>
         <button
-          onClick={handleRun}
-          disabled={disabled || running}
           className={`flex items-center gap-2 px-3 py-1 text-xs rounded transition-colors ${
             disabled || running
-              ? 'bg-gray-800 text-gray-600 cursor-not-allowed'
-              : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+              ? "bg-gray-800 text-gray-600 cursor-not-allowed"
+              : "bg-emerald-600 hover:bg-emerald-500 text-white"
           }`}
+          disabled={disabled || running}
+          onClick={handleRun}
         >
           <Play size={12} />
-          {running ? 'Running...' : 'Run Tests'}
+          {running ? "Running..." : "Run Tests"}
         </button>
       </div>
 
       {report && (
         <div className="p-3 space-y-3">
           <div className="flex items-center gap-4 text-sm">
-            <div className={`flex items-center gap-1 ${report.failed === 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
-              {report.failed === 0 ? <CheckCircle size={14} /> : <XCircle size={14} />}
-              <span>{report.passed}/{report.total} passed</span>
+            <div
+              className={`flex items-center gap-1 ${report.failed === 0 ? "text-emerald-400" : "text-rose-400"}`}
+            >
+              {report.failed === 0 ? (
+                <CheckCircle size={14} />
+              ) : (
+                <XCircle size={14} />
+              )}
+              <span>
+                {report.passed}/{report.total} passed
+              </span>
             </div>
             <div className="flex items-center gap-1 text-gray-500">
               <Clock size={14} />
@@ -72,18 +86,28 @@ export function SmokeTestPanel({ clientCode, ast, disabled }: SmokeTestPanelProp
           <div className="space-y-1">
             {report.results.map((result, i) => (
               <div
-                key={i}
                 className={`flex items-start gap-2 p-2 rounded text-sm ${
-                  result.passed ? 'bg-emerald-900/20' : 'bg-rose-900/20'
+                  result.passed ? "bg-emerald-900/20" : "bg-rose-900/20"
                 }`}
+                key={i}
               >
                 {result.passed ? (
-                  <CheckCircle size={14} className="text-emerald-400 flex-shrink-0 mt-0.5" />
+                  <CheckCircle
+                    className="text-emerald-400 flex-shrink-0 mt-0.5"
+                    size={14}
+                  />
                 ) : (
-                  <XCircle size={14} className="text-rose-400 flex-shrink-0 mt-0.5" />
+                  <XCircle
+                    className="text-rose-400 flex-shrink-0 mt-0.5"
+                    size={14}
+                  />
                 )}
                 <div className="flex-1 min-w-0">
-                  <div className={result.passed ? 'text-emerald-300' : 'text-rose-300'}>
+                  <div
+                    className={
+                      result.passed ? "text-emerald-300" : "text-rose-300"
+                    }
+                  >
                     {result.name}
                   </div>
                   {result.error && (
@@ -92,7 +116,9 @@ export function SmokeTestPanel({ clientCode, ast, disabled }: SmokeTestPanelProp
                     </div>
                   )}
                 </div>
-                <span className="text-xs text-gray-500">{result.duration}ms</span>
+                <span className="text-xs text-gray-500">
+                  {result.duration}ms
+                </span>
               </div>
             ))}
           </div>
@@ -100,7 +126,10 @@ export function SmokeTestPanel({ clientCode, ast, disabled }: SmokeTestPanelProp
           {report.total === 0 && (
             <div className="flex items-center gap-2 p-3 bg-amber-900/20 rounded text-amber-300 text-sm">
               <AlertTriangle size={14} />
-              <span>No tests generated. Add entities or commands to your Manifest source.</span>
+              <span>
+                No tests generated. Add entities or commands to your Manifest
+                source.
+              </span>
             </div>
           )}
         </div>

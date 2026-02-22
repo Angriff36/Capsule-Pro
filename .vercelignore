@@ -4,7 +4,7 @@ node_modules
 __tests__
 test
 test-scripts
-docs
+/docs
 .env.local
 .env*.local
 *.md

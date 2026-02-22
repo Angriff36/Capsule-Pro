@@ -167,7 +167,7 @@ export async function GET(request: Request) {
   });
 }
 
-export async function POST(request: NextRequest) {
+export function POST(request: NextRequest) {
   console.log("[TimeEntry/POST] Delegating to manifest clockIn command");
   return executeManifestCommand(request, {
     entityName: "TimeEntry",

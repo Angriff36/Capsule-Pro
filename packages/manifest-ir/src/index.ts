@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import type { IR } from "@manifest/runtime/ir";
+import type { IR } from "@angriff36/manifest/ir";
 
 export const KITCHEN_IR_PATH =
   "packages/manifest-ir/ir/kitchen/kitchen.ir.json";

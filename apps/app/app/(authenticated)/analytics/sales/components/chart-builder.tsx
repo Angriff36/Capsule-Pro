@@ -73,7 +73,9 @@ function ChartBuilder({ data }: ChartBuilderProps) {
       const autoMappings: Record<string, string> = {};
       const usedColumns = new Set<string>();
       for (const slot of chart.encodings) {
-        if (!slot.required) continue;
+        if (!slot.required) {
+          continue;
+        }
         const match = columns.find(
           (col) =>
             slot.acceptedTypes.includes(col.detectedType) &&
@@ -113,7 +115,9 @@ function ChartBuilder({ data }: ChartBuilderProps) {
 
   // Build the spec when ready
   const renderedSpec: TopLevelSpec | null = useMemo(() => {
-    if (!(selectedChart && allRequiredMapped)) return null;
+    if (!(selectedChart && allRequiredMapped)) {
+      return null;
+    }
     try {
       return buildSpec(selectedChart, mappings, data, {
         title: chartTitle || undefined,

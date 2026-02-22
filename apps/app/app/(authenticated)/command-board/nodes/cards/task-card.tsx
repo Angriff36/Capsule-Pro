@@ -10,7 +10,10 @@ import {
   ClipboardList,
 } from "lucide-react";
 import { memo } from "react";
-import type { ResolvedKitchenTask, ResolvedPrepTask } from "../../types/entities";
+import type {
+  ResolvedKitchenTask,
+  ResolvedPrepTask,
+} from "../../types/entities";
 import { ENTITY_TYPE_COLORS } from "../../types/entities";
 
 interface TaskNodeCardProps {
@@ -66,9 +69,7 @@ export const TaskNodeCard = memo(function TaskNodeCard({
     ? (data as ResolvedPrepTask).dueByDate
     : (data as ResolvedKitchenTask).dueDate;
 
-  const eventTitle = isPrepTask
-    ? (data as ResolvedPrepTask).eventTitle
-    : null;
+  const eventTitle = isPrepTask ? (data as ResolvedPrepTask).eventTitle : null;
 
   const statusItem =
     statusConfig[data.status as keyof typeof statusConfig] ??
@@ -92,9 +93,7 @@ export const TaskNodeCard = memo(function TaskNodeCard({
           </span>
         </div>
         {priorityItem && (
-          <Badge
-            className={cn("border-0 text-xs", priorityItem.color)}
-          >
+          <Badge className={cn("border-0 text-xs", priorityItem.color)}>
             {priorityItem.label}
           </Badge>
         )}
@@ -107,7 +106,10 @@ export const TaskNodeCard = memo(function TaskNodeCard({
 
       {/* Status and due date */}
       <div className="space-y-1">
-        <Badge className={cn("gap-1 text-xs", statusItem.color)} variant="outline">
+        <Badge
+          className={cn("gap-1 text-xs", statusItem.color)}
+          variant="outline"
+        >
           <CheckCircle2 className="size-3" />
           {statusItem.label}
         </Badge>

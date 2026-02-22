@@ -1,0 +1,21 @@
+{
+  "description": "Infrastructure write routes allowed outside Manifest domain command surface.",
+  "rules": [
+    {
+      "prefix": "/api/webhooks/",
+      "methods": ["POST", "PUT", "PATCH", "DELETE"]
+    },
+    {
+      "prefix": "/api/auth/",
+      "methods": ["POST", "PUT", "PATCH", "DELETE"]
+    },
+    {
+      "prefix": "/api/cron/",
+      "methods": ["POST", "PUT", "PATCH", "DELETE"]
+    },
+    {
+      "prefix": "/api/health",
+      "methods": ["POST", "PUT", "PATCH", "DELETE"]
+    }
+  ]
+}

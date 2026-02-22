@@ -2,12 +2,10 @@
  * Generic manifest command handler for Next.js API routes.
  *
  * This module provides a reusable handler that:
- * 1. Authenticates the user via Clerk
- * 2. Resolves the tenant
- * 3. Looks up the internal user record
- * 4. Creates a manifest runtime
- * 5. Executes the command through the runtime (guards, constraints, policies, events)
- * 6. Returns a standardized response
+ * 1. Authenticates + resolves tenant + looks up (or auto-provisions) the user
+ * 2. Creates a manifest runtime
+ * 3. Executes the command through the runtime (guards, constraints, policies, events)
+ * 4. Returns a standardized response
  *
  * All mutations MUST flow through this handler to enforce manifest invariants.
  * Direct Prisma writes bypass guards, policies, and event emission.
@@ -15,15 +13,13 @@
  * @packageDocumentation
  */
 
-import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@repo/manifest-adapters/route-helpers";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { requireCurrentUser } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 /**
@@ -95,28 +91,8 @@ export async function executeManifestCommand(
   const logPrefix = `[${entityName}/${commandName}]`;
 
   try {
-    // 1. Authenticate
-    const { orgId, userId: clerkId } = await auth();
-    if (!(clerkId && orgId)) {
-      return manifestErrorResponse("Unauthorized", 401);
-    }
-
-    // 2. Resolve tenant
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return manifestErrorResponse("Tenant not found", 400);
-    }
-
-    // 3. Look up internal user
-    const currentUser = await database.user.findFirst({
-      where: {
-        AND: [{ tenantId }, { authUserId: clerkId }],
-      },
-    });
-
-    if (!currentUser) {
-      return manifestErrorResponse("User not found in database", 400);
-    }
+    // 1–3. Authenticate, resolve tenant, and look up (or auto-provision) user
+    const currentUser = await requireCurrentUser();
 
     // 4. Parse request body
     let body: Record<string, unknown> = {};
@@ -130,7 +106,7 @@ export async function executeManifestCommand(
     const commandPayload = transformBody
       ? transformBody(body, {
           userId: currentUser.id,
-          tenantId,
+          tenantId: currentUser.tenantId,
           role: currentUser.role,
           params,
         })
@@ -141,12 +117,16 @@ export async function executeManifestCommand(
       command: commandName,
       userId: currentUser.id,
       userRole: currentUser.role,
-      tenantId,
+      tenantId: currentUser.tenantId,
     });
 
     // 6. Create runtime and execute command
     const runtime = await createManifestRuntime({
-      user: { id: currentUser.id, tenantId, role: currentUser.role },
+      user: {
+        id: currentUser.id,
+        tenantId: currentUser.tenantId,
+        role: currentUser.role,
+      },
       entityName,
     });
 
@@ -193,6 +173,12 @@ export async function executeManifestCommand(
       events: result.emittedEvents,
     });
   } catch (error) {
+    // InvariantError from requireCurrentUser means auth or tenant resolution failed
+    if (error instanceof Error && error.name === "InvariantError") {
+      console.error(`${logPrefix} Auth/tenant error:`, error.message);
+      return manifestErrorResponse("Unauthorized", 401);
+    }
+
     console.error(`${logPrefix} Error:`, error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);

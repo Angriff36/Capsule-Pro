@@ -10,15 +10,20 @@
  * All 6 manifests are compiled and merged into packages/manifest-ir/ir/kitchen/kitchen.ir.json
  */
 
-import { readdirSync, readFileSync, writeFileSync, mkdirSync } from "node:fs";
-import { join } from "node:path";
 import { spawnSync } from "node:child_process";
-import { compileToIR } from "@manifest/runtime/ir-compiler";
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { compileToIR } from "@angriff36/manifest/ir-compiler";
+import { enforceCommandOwnership, mergeIrs } from "./ir-utils.mjs";
 
-const MANIFESTS_DIR = join(process.cwd(), "packages/manifest-adapters/manifests");
+const MANIFESTS_DIR = join(
+  process.cwd(),
+  "packages/manifest-adapters/manifests"
+);
 const OUTPUT_DIR = join(process.cwd(), "packages/manifest-ir/ir/kitchen");
 const IR_OUTPUT_FILE = join(OUTPUT_DIR, "kitchen.ir.json");
 const PROVENANCE_OUTPUT_FILE = join(OUTPUT_DIR, "kitchen.provenance.json");
+const MERGE_REPORT_OUTPUT_FILE = join(OUTPUT_DIR, "kitchen.merge-report.json");
 const CODE_OUTPUT_DIR = join(process.cwd(), "apps/api/app/api/kitchen");
 
 async function compileMergedManifests() {
@@ -33,7 +38,7 @@ async function compileMergedManifests() {
     .sort();
 
   // Compile each manifest to IR
-  const compiledIRs = [];
+  const compiledEntries = [];
   for (const manifestFile of manifestFiles) {
     const manifestPath = join(MANIFESTS_DIR, manifestFile);
     const manifestSource = readFileSync(manifestPath, "utf-8");
@@ -48,51 +53,54 @@ async function compileMergedManifests() {
       process.exit(1);
     }
 
-    compiledIRs.push(ir);
+    const manifestName = manifestFile.replace(/\.manifest$/, "");
+    compiledEntries.push({
+      source: manifestFile,
+      ir: enforceCommandOwnership(ir, manifestName),
+    });
   }
 
-  // Merge all IRs
-  const mergedIR = {
-    version: "1.0",
-    provenance: {
-      contentHash: "",
-      irHash: "",
-      compilerVersion: "0.3.8",
-      schemaVersion: "1.0",
-      compiledAt: new Date().toISOString(),
-      sources: manifestFiles,
-    },
-    modules: compiledIRs.flatMap((ir) => ir.modules || []),
-    entities: compiledIRs.flatMap((ir) => ir.entities || []),
-    stores: compiledIRs.flatMap((ir) => ir.stores || []),
-    events: compiledIRs.flatMap((ir) => ir.events || []),
-    commands: compiledIRs.flatMap((ir) => ir.commands || []),
-    policies: compiledIRs.flatMap((ir) => ir.policies || []),
-  };
+  const {
+    ir: mergedIR,
+    duplicateWarnings,
+    mergeReport,
+  } = mergeIrs(compiledEntries, {
+    contentHash: "",
+    irHash: "",
+    compilerVersion: "0.3.8",
+    schemaVersion: "1.0",
+    compiledAt: new Date().toISOString(),
+    sources: manifestFiles,
+  });
+
+  if (duplicateWarnings.length > 0) {
+    console.warn(
+      `[manifest/build] Merge dropped ${duplicateWarnings.length} duplicate definitions`
+    );
+  }
 
   // Write merged IR
   writeFileSync(IR_OUTPUT_FILE, JSON.stringify(mergedIR, null, 2));
-  writeFileSync(PROVENANCE_OUTPUT_FILE, JSON.stringify(mergedIR.provenance, null, 2));
+  writeFileSync(
+    PROVENANCE_OUTPUT_FILE,
+    JSON.stringify(mergedIR.provenance, null, 2)
+  );
+  writeFileSync(MERGE_REPORT_OUTPUT_FILE, JSON.stringify(mergeReport, null, 2));
 
-  console.log(`[manifest/build] Compiled ${mergedIR.entities.length} entities, ${mergedIR.commands.length} commands`);
+  console.log(
+    `[manifest/build] Compiled ${mergedIR.entities.length} entities, ${mergedIR.commands.length} commands`
+  );
+
+  return mergedIR;
 }
 
-async function generateFromIR() {
+function generateFromIR() {
   console.log("[manifest/build] Step 2: Generating code from IR...");
 
+  // Delegate to generate.mjs which uses the installed CLI and applies ENTITY_DOMAIN_MAP
+  // path remapping so routes land in the correct domain directories.
   const bin = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
-  const args = [
-    "exec",
-    "manifest",
-    "generate",
-    IR_OUTPUT_FILE,
-    "--projection",
-    "nextjs",
-    "--surface",
-    "route",
-    "--output",
-    CODE_OUTPUT_DIR,
-  ];
+  const args = ["run", "manifest:generate"];
 
   const result = spawnSync(bin, args, {
     stdio: "inherit",
@@ -107,9 +115,35 @@ async function generateFromIR() {
   console.log("[manifest/build] Code generation complete!");
 }
 
+function generateRouteSurface() {
+  console.log("[manifest/build] Step 3: Generating canonical route surface...");
+  const bin = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
+  const result = spawnSync(
+    bin,
+    [
+      "exec",
+      "tsx",
+      "scripts/manifest/generate-route-manifest.ts",
+      "--format",
+      "summary",
+    ],
+    {
+      stdio: "inherit",
+      shell: process.platform === "win32",
+    }
+  );
+  if (result.status !== 0) {
+    console.error("[manifest/build] Route surface generation failed.");
+    process.exit(1);
+  }
+
+  console.log("[manifest/build] Canonical route surface generated.");
+}
+
 async function main() {
   await compileMergedManifests();
-  await generateFromIR();
+  generateFromIR();
+  generateRouteSurface();
   console.log("[manifest/build] Build complete!");
 }
 

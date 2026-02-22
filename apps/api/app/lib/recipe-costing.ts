@@ -373,6 +373,59 @@ export const updateRecipeIngredientWasteFactor = async (
   );
 };
 
+/**
+ * Recalculate recipe costs when an inventory item price changes.
+ * This finds all recipe ingredients linked to the inventory item (by name match)
+ * and recalculates their costs, then updates the recipe version totals.
+ *
+ * @param tenantId - The tenant ID
+ * @param _inventoryItemId - The inventory item ID whose price changed (unused, kept for API clarity)
+ * @param inventoryItemName - The inventory item name (used for ingredient matching)
+ */
+export const recalculateRecipeCostsForInventoryItem = async (
+  tenantId: string,
+  _inventoryItemId: string,
+  inventoryItemName: string
+): Promise<{ updatedRecipes: number; updatedIngredients: number }> => {
+  // Find all recipe ingredients that use this inventory item (matched by name)
+  const affectedIngredients = await database.$queryRaw<
+    { id: string; recipe_version_id: string }[]
+  >(
+    Prisma.sql`
+      SELECT ri.id, ri.recipe_version_id
+      FROM tenant_kitchen.recipe_ingredients ri
+      JOIN tenant_kitchen.ingredients i ON i.id = ri.ingredient_id
+      WHERE ri.tenant_id = ${tenantId}
+        AND i.name = ${inventoryItemName}
+        AND ri.deleted_at IS NULL
+    `
+  );
+
+  if (affectedIngredients.length === 0) {
+    return { updatedRecipes: 0, updatedIngredients: 0 };
+  }
+
+  // Get unique recipe version IDs
+  const recipeVersionIds = [
+    ...new Set(affectedIngredients.map((ing) => ing.recipe_version_id)),
+  ];
+
+  // Recalculate each affected ingredient's cost
+  for (const ing of affectedIngredients) {
+    await calculateRecipeIngredientCost(tenantId, ing.id);
+  }
+
+  // Recalculate each affected recipe version's total cost
+  for (const recipeVersionId of recipeVersionIds) {
+    await calculateRecipeCost(tenantId, recipeVersionId);
+  }
+
+  return {
+    updatedRecipes: recipeVersionIds.length,
+    updatedIngredients: affectedIngredients.length,
+  };
+};
+
 export const updateEventBudgetsForRecipe = async (
   recipeVersionId: string
 ): Promise<void> => {

@@ -4,5 +4,4 @@ src: "packages/manifest-adapters/manifests/*.manifest"
 output: "packages/manifest-ir/ir/kitchen/kitchen.ir.json"
 projections:
   nextjs:
-    output: apps/api/app/api/kitchen
-
+    output: apps/api/app/api

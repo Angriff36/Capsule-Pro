@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
 import { Header } from "../../../components/header";
 import { getEventStaff, getTimelineTasks } from "./actions/tasks";
+import { BattleBoardExportButton } from "./components/battle-board-export-button";
 import { Timeline } from "./components/timeline";
 
 interface BattleBoardPageProps {
@@ -48,6 +49,7 @@ const BattleBoardPage = async ({ params }: BattleBoardPageProps) => {
           { label: "Battle Board", href: `/events/${eventId}/battle-board` },
         ]}
       >
+        <BattleBoardExportButton eventId={eventId} eventName={event.title} />
         <a
           className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md px-4 py-2 font-medium text-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
           href={`/events/${eventId}`}

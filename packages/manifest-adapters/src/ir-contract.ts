@@ -1,4 +1,4 @@
-import type { IR, IRCommand } from "@manifest/runtime/ir";
+import type { IR, IRCommand } from "@angriff36/manifest/ir";
 
 function toUnique(values: string[]): string[] {
   return [...new Set(values)];

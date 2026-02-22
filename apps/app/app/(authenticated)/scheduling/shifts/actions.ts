@@ -31,11 +31,11 @@ export async function getShifts(params: {
   const offset = (page - 1) * limit;
 
   // Build filters
-  const hasStartDate = params.startDate !== undefined;
-  const hasEndDate = params.endDate !== undefined;
-  const hasEmployeeId = params.employeeId !== undefined;
-  const hasLocationId = params.locationId !== undefined;
-  const hasRole = params.role !== undefined;
+  const hasStartDate = Boolean(params.startDate);
+  const hasEndDate = Boolean(params.endDate);
+  const hasEmployeeId = Boolean(params.employeeId);
+  const hasLocationId = Boolean(params.locationId);
+  const hasRole = Boolean(params.role);
 
   // Fetch shifts and count
   const [shifts, totalCount] = await Promise.all([

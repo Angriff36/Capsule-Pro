@@ -1,5 +1,5 @@
-import { RuntimeEngine } from "@manifest/runtime";
-import type { IRCommand } from "@manifest/runtime/ir";
+import { RuntimeEngine } from "@angriff36/manifest";
+import type { IRCommand } from "@angriff36/manifest/ir";
 /**
  * Compatibility layer until compiler output always includes command owners.
  * This keeps command lookup authoritative on IR root commands.

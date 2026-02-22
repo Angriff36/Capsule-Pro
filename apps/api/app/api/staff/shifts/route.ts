@@ -122,7 +122,7 @@ export async function GET(request: Request) {
  * POST /api/staff/shifts
  * Create a new shift (manifest command)
  */
-export async function POST(request: NextRequest) {
+export function POST(request: NextRequest) {
   console.log("[ScheduleShift/POST] Delegating to manifest create command");
   return executeManifestCommand(request, {
     entityName: "ScheduleShift",

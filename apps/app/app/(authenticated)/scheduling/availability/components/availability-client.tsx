@@ -26,7 +26,7 @@ import {
 } from "@tanstack/react-table";
 import { FilterIcon, Loader2Icon, PlusIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import type { DayOfWeek } from "@/app/lib/staff/availability/types";
 import { getLocations } from "../../shifts/actions";
@@ -96,6 +96,9 @@ export function AvailabilityClient() {
   const [modalOpen, setModalOpen] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
 
+  // Track initial mount to avoid URL push on first render
+  const isMounted = useRef(false);
+
   // Fetch availability entries
   const fetchAvailability = useCallback(async () => {
     setLoading(true);
@@ -129,7 +132,7 @@ export function AvailabilityClient() {
       setEmployees(employeesData.employees || []);
       setLocations(locationsData.locations || []);
     } catch (error) {
-      console.error("Failed to load filter options:", error);
+      console.warn("Failed to load filter options:", error);
     }
   }, []);
 
@@ -139,8 +142,12 @@ export function AvailabilityClient() {
     fetchFilterOptions();
   }, [fetchAvailability, fetchFilterOptions]);
 
-  // Update URL when filters change
+  // Update URL when filters change (skip initial mount)
   useEffect(() => {
+    if (!isMounted.current) {
+      isMounted.current = true;
+      return;
+    }
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
       if (value !== undefined && value !== "") {
@@ -278,14 +285,14 @@ export function AvailabilityClient() {
         <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30">
           <FilterIcon className="size-4 text-muted-foreground" />
           <Select
-            onValueChange={(value) => handleFilterChange("employeeId", value)}
-            value={filters.employeeId}
+            onValueChange={(value) => handleFilterChange("employeeId", value === "__all__" ? "" : value)}
+            value={filters.employeeId || "__all__"}
           >
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Filter by employee" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All employees</SelectItem>
+              <SelectItem value="__all__">All employees</SelectItem>
               {employees.map((emp) => (
                 <SelectItem key={emp.id} value={emp.id}>
                   {emp.first_name} {emp.last_name}
@@ -297,16 +304,16 @@ export function AvailabilityClient() {
             onValueChange={(value) =>
               handleFilterChange(
                 "dayOfWeek",
-                value ? Number.parseInt(value, 10) : undefined
+                value && value !== "__all__" ? Number.parseInt(value, 10) : undefined
               )
             }
-            value={filters.dayOfWeek?.toString() || ""}
+            value={filters.dayOfWeek?.toString() || "__all__"}
           >
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Filter by day" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All days</SelectItem>
+              <SelectItem value="__all__">All days</SelectItem>
               <SelectItem value="0">Sunday</SelectItem>
               <SelectItem value="1">Monday</SelectItem>
               <SelectItem value="2">Tuesday</SelectItem>
@@ -326,14 +333,14 @@ export function AvailabilityClient() {
           />
           <Select
             onValueChange={(value) =>
-              handleFilterChange("isActive", value === "true")
+              handleFilterChange("isActive", value === "__all__" ? undefined : value === "true")
             }
           >
             <SelectTrigger className="w-[150px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All</SelectItem>
+              <SelectItem value="__all__">All</SelectItem>
               <SelectItem value="true">Available</SelectItem>
               <SelectItem value="false">Unavailable</SelectItem>
             </SelectContent>

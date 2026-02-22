@@ -44,11 +44,11 @@ export async function getTimeOffRequests(params: {
   const offset = (page - 1) * limit;
 
   // Build filters
-  const hasEmployeeId = params.employeeId !== undefined;
-  const hasStatus = params.status !== undefined;
-  const hasStartDate = params.startDate !== undefined;
-  const hasEndDate = params.endDate !== undefined;
-  const hasRequestType = params.requestType !== undefined;
+  const hasEmployeeId = Boolean(params.employeeId);
+  const hasStatus = Boolean(params.status);
+  const hasStartDate = Boolean(params.startDate);
+  const hasEndDate = Boolean(params.endDate);
+  const hasRequestType = Boolean(params.requestType);
 
   // Fetch requests and count
   const [requests, totalCount] = await Promise.all([
@@ -69,8 +69,8 @@ export async function getTimeOffRequests(params: {
           tor.request_type,
           tor.created_at,
           tor.updated_at,
-          tor.processed_at,
-          tor.processed_by,
+          tor.reviewed_at AS processed_at,
+          tor.reviewed_by AS processed_by,
           processor.first_name AS processed_by_first_name,
           processor.last_name AS processed_by_last_name,
           tor.rejection_reason
@@ -80,7 +80,7 @@ export async function getTimeOffRequests(params: {
          AND e.id = tor.employee_id
         LEFT JOIN tenant_staff.employees processor
           ON processor.tenant_id = tor.tenant_id
-         AND processor.id = tor.processed_by
+         AND processor.id = tor.reviewed_by
         WHERE tor.tenant_id = ${tenantId}
           AND tor.deleted_at IS NULL
           ${hasEmployeeId ? Prisma.sql`AND tor.employee_id = ${params.employeeId!}` : Prisma.empty}
@@ -151,8 +151,8 @@ export async function getTimeOffRequestById(
         tor.request_type,
         tor.created_at,
         tor.updated_at,
-        tor.processed_at,
-        tor.processed_by,
+        tor.reviewed_at AS processed_at,
+        tor.reviewed_by AS processed_by,
         processor.first_name AS processed_by_first_name,
         processor.last_name AS processed_by_last_name,
         tor.rejection_reason
@@ -162,7 +162,7 @@ export async function getTimeOffRequestById(
        AND e.id = tor.employee_id
       LEFT JOIN tenant_staff.employees processor
         ON processor.tenant_id = tor.tenant_id
-       AND processor.id = tor.processed_by
+       AND processor.id = tor.reviewed_by
       WHERE tor.tenant_id = ${tenantId}
         AND tor.id = ${requestId}
         AND tor.deleted_at IS NULL
@@ -347,8 +347,8 @@ export async function updateTimeOffStatus(
       UPDATE tenant_staff.employee_time_off_requests
       SET
         status = ${input.status},
-        processed_at = now(),
-        processed_by = ${userId},
+        reviewed_at = now(),
+        reviewed_by = ${userId},
         rejection_reason = ${input.status === "REJECTED" ? input.rejectionReason : null},
         updated_at = now()
       WHERE tenant_id = ${tenantId}
@@ -358,10 +358,6 @@ export async function updateTimeOffStatus(
         id,
         tenant_id,
         employee_id,
-        e.first_name AS employee_first_name,
-        e.last_name AS employee_last_name,
-        e.email AS employee_email,
-        e.role AS employee_role,
         start_date,
         end_date,
         reason,
@@ -369,10 +365,8 @@ export async function updateTimeOffStatus(
         request_type,
         created_at,
         updated_at,
-        processed_at,
-        processed_by,
-        processor.first_name AS processed_by_first_name,
-        processor.last_name AS processed_by_last_name,
+        reviewed_at AS processed_at,
+        reviewed_by AS processed_by,
         rejection_reason
     `
   );
@@ -482,16 +476,6 @@ export async function getEmployees() {
 /**
  * Get all time-off types for dropdown
  */
-export const timeOffTypes: TimeOffType[] = [
-  "VACATION",
-  "SICK_LEAVE",
-  "PERSONAL_DAY",
-  "BEREAVEMENT",
-  "MATERNITY_LEAVE",
-  "PATERNITY_LEAVE",
-  "OTHER",
-];
-
 // Helper function to validate status transition (adapted from API validation)
 async function validateStatusTransition(
   currentStatus: TimeOffStatus,

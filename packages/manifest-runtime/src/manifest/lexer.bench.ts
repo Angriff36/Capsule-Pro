@@ -5,8 +5,8 @@
  * across different input sizes and complexity.
  */
 
-import { describe, bench } from 'vitest';
-import { Lexer } from './lexer';
+import { bench, describe } from "vitest";
+import { Lexer } from "./lexer";
 
 // Small source (~100 tokens)
 const smallSource = `
@@ -220,18 +220,18 @@ entity Shipment {
 }
 `;
 
-describe('Lexer Benchmarks', () => {
-  bench('tokenize small source (~100 tokens)', () => {
+describe("Lexer Benchmarks", () => {
+  bench("tokenize small source (~100 tokens)", () => {
     const lexer = new Lexer(smallSource);
     lexer.tokenize();
   });
 
-  bench('tokenize medium source (~500 tokens)', () => {
+  bench("tokenize medium source (~500 tokens)", () => {
     const lexer = new Lexer(mediumSource);
     lexer.tokenize();
   });
 
-  bench('tokenize large source (~2000 tokens)', () => {
+  bench("tokenize large source (~2000 tokens)", () => {
     const lexer = new Lexer(largeSource);
     lexer.tokenize();
   });

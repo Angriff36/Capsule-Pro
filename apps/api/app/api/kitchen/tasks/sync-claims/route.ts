@@ -5,6 +5,8 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
+export const runtime = "nodejs";
+
 interface ClaimAction {
   taskId: string;
   action: string;
@@ -14,6 +16,23 @@ interface ClaimAction {
 interface SyncResult {
   successful: Array<{ taskId: string; action: string }>;
   failed: Array<{ taskId: string; action: string; error: string }>;
+}
+
+interface CommandResult {
+  success: boolean;
+  error?: string;
+  policyDenial?: { policyName: string };
+  guardFailure?: { index: number; formatted: string };
+}
+
+function getErrorMessage(result: CommandResult): string {
+  if (result.policyDenial) {
+    return `Access denied: ${result.policyDenial.policyName}`;
+  }
+  if (result.guardFailure) {
+    return `Guard ${result.guardFailure.index} failed: ${result.guardFailure.formatted}`;
+  }
+  return result.error ?? "Command failed";
 }
 
 /**
@@ -51,11 +70,7 @@ async function processClaimAction(
     );
 
     if (!result.success) {
-      const errorMsg = result.policyDenial
-        ? `Access denied: ${result.policyDenial.policyName}`
-        : result.guardFailure
-          ? `Guard ${result.guardFailure.index} failed: ${result.guardFailure.formatted}`
-          : (result.error ?? "Command failed");
+      const errorMsg = getErrorMessage(result);
 
       console.error("[KitchenTask/sync-claims] Claim command failed:", {
         taskId,
@@ -101,11 +116,7 @@ async function processReleaseAction(
     );
 
     if (!result.success) {
-      const errorMsg = result.policyDenial
-        ? `Access denied: ${result.policyDenial.policyName}`
-        : result.guardFailure
-          ? `Guard ${result.guardFailure.index} failed: ${result.guardFailure.formatted}`
-          : (result.error ?? "Command failed");
+      const errorMsg = getErrorMessage(result);
 
       console.error("[KitchenTask/sync-claims] Release command failed:", {
         taskId,
@@ -131,6 +142,58 @@ async function processReleaseAction(
       error: error instanceof Error ? error.message : "Unknown error",
     };
   }
+}
+
+async function processSingleAction(
+  runtime: Awaited<ReturnType<typeof createManifestRuntime>>,
+  claimAction: ClaimAction,
+  userId: string,
+  results: SyncResult
+): Promise<void> {
+  const { taskId, action } = claimAction;
+
+  if (!(taskId && action)) {
+    results.failed.push({
+      taskId: taskId || "unknown",
+      action: action || "unknown",
+      error: "Missing taskId or action",
+    });
+    return;
+  }
+
+  if (action === "claim") {
+    const result = await processClaimAction(runtime, taskId, userId);
+    if (result.success) {
+      results.successful.push({ taskId, action });
+    } else {
+      results.failed.push({
+        taskId,
+        action,
+        error: result.error || "Unknown error",
+      });
+    }
+    return;
+  }
+
+  if (action === "release") {
+    const result = await processReleaseAction(runtime, taskId, userId);
+    if (result.success) {
+      results.successful.push({ taskId, action });
+    } else {
+      results.failed.push({
+        taskId,
+        action,
+        error: result.error || "Unknown error",
+      });
+    }
+    return;
+  }
+
+  results.failed.push({
+    taskId,
+    action,
+    error: `Unknown action: ${action}`,
+  });
 }
 
 export async function POST(request: Request) {
@@ -207,54 +270,7 @@ export async function POST(request: Request) {
 
     // Process each claim action through the manifest runtime
     for (const claimAction of body.claims as ClaimAction[]) {
-      const { taskId, action } = claimAction;
-
-      if (!(taskId && action)) {
-        results.failed.push({
-          taskId: taskId || "unknown",
-          action: action || "unknown",
-          error: "Missing taskId or action",
-        });
-        continue;
-      }
-
-      if (action === "claim") {
-        const result = await processClaimAction(
-          runtime,
-          taskId,
-          currentUser.id
-        );
-        if (result.success) {
-          results.successful.push({ taskId, action });
-        } else {
-          results.failed.push({
-            taskId,
-            action,
-            error: result.error || "Unknown error",
-          });
-        }
-      } else if (action === "release") {
-        const result = await processReleaseAction(
-          runtime,
-          taskId,
-          currentUser.id
-        );
-        if (result.success) {
-          results.successful.push({ taskId, action });
-        } else {
-          results.failed.push({
-            taskId,
-            action,
-            error: result.error || "Unknown error",
-          });
-        }
-      } else {
-        results.failed.push({
-          taskId,
-          action,
-          error: `Unknown action: ${action}`,
-        });
-      }
+      await processSingleAction(runtime, claimAction, currentUser.id, results);
     }
 
     console.log(`${logPrefix} Sync complete`, {

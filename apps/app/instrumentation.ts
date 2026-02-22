@@ -1,5 +1,7 @@
 // apps/app/instrumentation.ts
 
+import { captureRequestError } from "@sentry/nextjs";
+
 export async function register() {
   // Only initialize Sentry if DSN is configured
   // This prevents loading Sentry SDK when not in use, reducing edge bundle size
@@ -20,3 +22,5 @@ export async function register() {
     await import("./sentry.edge.config");
   }
 }
+
+export const onRequestError = captureRequestError;

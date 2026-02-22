@@ -8,11 +8,16 @@
  * Auth and context setup should be handled at the app level, not in shared packages.
  */
 /**
- * Create a standard error response
+ * Create a standard error response.
+ * Uses the standard Web API Response so this package does not need a
+ * hard dependency on next/server. Next.js accepts plain Response objects
+ * from App Router route handlers.
  */
 export declare function manifestErrorResponse(error: Error | string, statusCode?: number, details?: Record<string, unknown>): Response;
 /**
- * Create a standard success response
+ * Create a standard success response.
+ * Uses the standard Web API Response so this package does not need a
+ * hard dependency on next/server.
  */
 export declare function manifestSuccessResponse<T>(data: T): Response;
 /**

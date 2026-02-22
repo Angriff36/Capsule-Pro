@@ -194,9 +194,23 @@ export const createEvent = async (formData: FormData): Promise<void> => {
   const data = parsed.data;
 
   const created = await database.$transaction(async (tx) => {
+    // Generate sequential event number: EVT-{YEAR}-{NNNN}
+    const year = new Date().getFullYear();
+    const count = await tx.event.count({
+      where: {
+        AND: [
+          { tenantId },
+          { eventNumber: { startsWith: `EVT-${year}` } },
+          { deletedAt: null },
+        ],
+      },
+    });
+    const eventNumber = `EVT-${year}-${String(count + 1).padStart(4, "0")}`;
+
     const event = await tx.event.create({
       data: {
         tenantId,
+        eventNumber,
         title: data.title,
         eventType: data.eventType,
         eventDate: new Date(`${data.eventDate}T00:00:00`),
@@ -277,11 +291,14 @@ export const updateEvent = async (formData: FormData): Promise<void> => {
   });
   const tags = mergeTags(getTags(formData), missingFields);
 
+  const eventNumberInput = getOptionalString(formData, "eventNumber");
+
   await database.event.updateMany({
     where: {
       AND: [{ tenantId }, { id: eventId }],
     },
     data: {
+      ...(eventNumberInput !== undefined && { eventNumber: eventNumberInput }),
       title,
       eventType,
       eventDate,
