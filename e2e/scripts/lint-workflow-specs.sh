@@ -32,13 +32,13 @@ if grep -rn "isVisible.*catch.*false\|isVisible()\.catch" $SPEC_GLOB 2>/dev/null
 fi
 
 # ── Check 2: Zero-assertion specs ────────────────────────────────────────────
-# Every workflow spec must contain at least one real assertion:
-#   expect(...)       — Playwright/Vitest assertion
-#   assertVisible     — project helper (hard assertion)
-#   assertExists      — project helper (hard assertion)
+# Every workflow spec must contain at least one real assertion call site.
+# We exclude import lines and comments to avoid false negatives where a file
+# only imports assertVisible but never calls it.
 for f in $SPEC_GLOB; do
-  if ! grep -qE "expect\(|assertVisible|assertExists" "$f"; then
-    echo "ERROR: $f has no assertions (expect(), assertVisible, or assertExists)"
+  # Strip import lines and comment lines, then check for assertion call sites
+  if ! grep -vE "^\s*(import |//|\*)" "$f" | grep -qE "expect\(|assertVisible\(|assertExists\("; then
+    echo "ERROR: $f has no assertion call sites (expect(), assertVisible(), or assertExists())"
     exit 1
   fi
 done
