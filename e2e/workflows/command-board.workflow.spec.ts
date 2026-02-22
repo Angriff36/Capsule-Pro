@@ -7,7 +7,7 @@
  *  3. Board canvas renders after creation
  *  4. Created board appears in list
  *  5. Entity browser opens and closes
- *  6. AI chat panel — fixme (requires E2E_EXTERNAL=true)
+ *  6. AI chat panel — gated on E2E_EXTERNAL=true (skipped in CI)
  */
 
 import { expect, test } from "@playwright/test";
@@ -118,12 +118,38 @@ test.describe("Command Board: Full Workflow", () => {
     await assertNoErrors(page, testInfo, errors, "entity browser");
   });
 
-  // biome-ignore lint/suspicious/noSkippedTests: requires E2E_EXTERNAL=true to avoid LLM cost in CI
-  test.fixme(
-    "AI chat panel: send message — requires E2E_EXTERNAL=true",
-    async () => {
-      // AI chat panel component exists but hits real LLM providers.
-      // Only enable when E2E_EXTERNAL=true to avoid cost/nondeterminism in CI.
-    }
-  );
+  // AI chat panel: gated on E2E_EXTERNAL=true — skips in CI, runs when opted in
+  test("AI chat panel: send message", async ({ page }, testInfo) => {
+    test.skip(
+      !process.env.E2E_EXTERNAL,
+      "Set E2E_EXTERNAL=true to run AI chat panel tests (avoids LLM cost in CI)"
+    );
+
+    await goto(page, "/command-board");
+    await page.getByRole("button", { name: /new board/i }).click();
+    await expect(page.locator('[role="dialog"]')).toBeVisible({
+      timeout: 10_000,
+    });
+    await page.locator("input#board-name").fill(unique("AIChatE2E"));
+    await page.locator('button[type="submit"]').click();
+    await expect(page).toHaveURL(/command-board\/[a-f0-9-]+/, {
+      timeout: 15_000,
+    });
+
+    // Open AI chat and send a message
+    const chatInput = page
+      .locator('[placeholder*="message" i], [aria-label*="chat" i]')
+      .first();
+    await expect(chatInput).toBeVisible({ timeout: 10_000 });
+    await chatInput.fill("What entities are on this board?");
+    await page.keyboard.press("Enter");
+
+    // Verify a response appears in the chat area
+    const chatArea = page
+      .locator('[aria-label*="chat" i], [data-testid*="chat"]')
+      .first();
+    await expect(chatArea).toBeVisible({ timeout: 30_000 });
+
+    await assertNoErrors(page, testInfo, errors, "AI chat panel");
+  });
 });
