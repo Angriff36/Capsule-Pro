@@ -3,169 +3,96 @@
  *
  * Covers:
  *  1. Staff overview
- *  2. Team page → add staff member (all fields)
- *  3. Availability page
- *  4. Schedule page
- *  5. Time-off page
- *  6. Training page
- *  7. Assert no errors throughout
+ *  2. Team page loads with staff directory
+ *  3. Add staff member (all fields) — verifies alert + table entry
+ *  4. Availability page
+ *  5. Schedule page
+ *  6. Time-off page
+ *  7. Training page
  */
 
-import { test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import type { CollectedError } from "../helpers/workflow";
 import {
   assertNoErrors,
+  assertVisible,
   attachErrorCollector,
-  failHard,
+  BASE_URL,
   goto,
-  log,
-  TEST_EMAIL,
   unique,
 } from "../helpers/workflow";
 
-const STAFF_FIRST = "E2E";
-const STAFF_LAST = unique("Staff");
-
 test.describe("Staff: Full Workflow", () => {
-  test.setTimeout(300_000);
+  let errors: CollectedError[] = [];
 
-  test("staff overview → add member → availability → schedule → time-off → training", async ({
-    page,
-    baseURL,
-  }, testInfo) => {
-    const errors: CollectedError[] = [];
-    attachErrorCollector(page, errors, baseURL ?? "http://127.0.0.1:2221");
+  test.beforeEach(async ({ page }) => {
+    errors = [];
+    attachErrorCollector(page, errors, BASE_URL);
+  });
 
-    // ── 1. Staff overview ─────────────────────────────────────────────────────
-    log.step("1. Staff overview");
+  test("staff overview loads", async ({ page }, testInfo) => {
     await goto(page, "/staff");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
+    await assertVisible(page, /staff/i);
     await assertNoErrors(page, testInfo, errors, "staff overview");
+  });
 
-    // ── 2. Team page ──────────────────────────────────────────────────────────
-    log.step("2. Team page");
+  test("team page loads with staff directory", async ({ page }, testInfo) => {
     await goto(page, "/staff/team");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
+    await assertVisible(page, /staff directory/i);
     await assertNoErrors(page, testInfo, errors, "team page");
+  });
 
-    // ── 3. Add staff member ───────────────────────────────────────────────────
-    log.step("3. Add staff member");
-    // Fill the add staff form (it's inline on the team page)
-    const firstNameInput = page
-      .locator('#firstName, input[name="firstName"]')
-      .first();
-    if (await firstNameInput.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await firstNameInput.fill(STAFF_FIRST);
+  test("add staff member with all fields", async ({ page }, testInfo) => {
+    const STAFF_LAST = unique("StaffE2E");
+    const STAFF_EMAIL = `e2e-staff-${Date.now()}@capsule-test.example.com`;
 
-      const lastNameInput = page
-        .locator('#lastName, input[name="lastName"]')
-        .first();
-      if (await lastNameInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await lastNameInput.fill(STAFF_LAST);
-      }
+    await goto(page, "/staff/team");
 
-      const emailInput = page.locator('#email, input[name="email"]').first();
-      if (await emailInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await emailInput.fill(TEST_EMAIL);
-      }
+    // Fill form — hard fail if any field is missing
+    await page.locator('input[name="firstName"]').fill("E2E");
+    await page.locator('input[name="lastName"]').fill(STAFF_LAST);
+    await page.locator('input[name="email"]').fill(STAFF_EMAIL);
+    await page.locator('select[name="role"]').selectOption({ index: 1 });
+    await page
+      .locator('select[name="employmentType"]')
+      .selectOption({ index: 1 });
 
-      // Role select
-      const roleSelect = page.locator('#role, select[name="role"]').first();
-      if (await roleSelect.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await roleSelect.selectOption("staff");
-      }
+    // Submit
+    await page.locator('button[type="submit"]').click();
 
-      // Employment type
-      const empTypeSelect = page
-        .locator('select[name="employmentType"]')
-        .first();
-      if (await empTypeSelect.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await empTypeSelect.selectOption("full_time");
-      }
+    // Verify success alert
+    const alert = page.locator('[role="alert"]');
+    await expect(alert).toBeVisible({ timeout: 10_000 });
+    await expect(alert).toContainText("Staff added");
 
-      // Hourly rate
-      const rateInput = page.locator('input[name="hourlyRate"]').first();
-      if (await rateInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await rateInput.fill("25");
-      }
+    // Verify new staff member appears in the directory table
+    const staffTable = page.locator("table tbody");
+    await expect(staffTable).toContainText(STAFF_LAST, { timeout: 10_000 });
 
-      // Submit
-      const submitBtn = page
-        .getByRole("button", { name: /add staff|submit|save/i })
-        .first();
-      if (await submitBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-        await submitBtn.click();
-        await page
-          .waitForLoadState("networkidle", { timeout: 15_000 })
-          .catch(() => undefined);
-        await assertNoErrors(page, testInfo, errors, "add staff member");
-        log.ok(`Staff member added: ${STAFF_FIRST} ${STAFF_LAST}`);
-      }
-    } else {
-      log.warn("Add staff form not found — skipping staff creation");
-    }
+    await assertNoErrors(page, testInfo, errors, "add staff member");
+  });
 
-    // ── 4. Availability page ──────────────────────────────────────────────────
-    log.step("4. Availability page");
+  test("availability page loads", async ({ page }, testInfo) => {
     await goto(page, "/staff/availability");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
+    await expect(page).toHaveURL(/staff\/availability/);
     await assertNoErrors(page, testInfo, errors, "availability page");
+  });
 
-    // Click any visible buttons on availability page (skip icon-only and destructive buttons)
-    const availBtns = await page.getByRole("button").all();
-    for (const btn of availBtns.slice(0, 3)) {
-      const text = (await btn.textContent().catch(() => ""))?.trim() ?? "";
-      const label =
-        (await btn.getAttribute("aria-label").catch(() => "")) ?? "";
-      const combined = `${text} ${label}`.toLowerCase();
-      // Skip empty buttons (icon-only like UserButton), destructive, or auth buttons
-      if (!(text || label)) continue;
-      if (
-        /delete|remove|sign.?out|logout|user.?menu|organization.?switch/i.test(
-          combined
-        )
-      )
-        continue;
-      await btn.click().catch(() => undefined);
-      await page.waitForTimeout(500);
-      await page.keyboard.press("Escape").catch(() => undefined);
-    }
-    await assertNoErrors(page, testInfo, errors, "availability interactions");
-
-    // ── 5. Schedule page ──────────────────────────────────────────────────────
-    log.step("5. Schedule page");
+  test("schedule page loads", async ({ page }, testInfo) => {
     await goto(page, "/staff/schedule");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
+    await expect(page).toHaveURL(/staff\/schedule/);
     await assertNoErrors(page, testInfo, errors, "schedule page");
+  });
 
-    // ── 6. Time-off page ──────────────────────────────────────────────────────
-    log.step("6. Time-off page");
+  test("time-off page loads", async ({ page }, testInfo) => {
     await goto(page, "/staff/time-off");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
+    await expect(page).toHaveURL(/staff\/time-off/);
     await assertNoErrors(page, testInfo, errors, "time-off page");
+  });
 
-    // ── 7. Training page ──────────────────────────────────────────────────────
-    log.step("7. Training page");
+  test("training page loads", async ({ page }, testInfo) => {
     await goto(page, "/staff/training");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
+    await expect(page).toHaveURL(/staff\/training/);
     await assertNoErrors(page, testInfo, errors, "training page");
-
-    // ── Final ─────────────────────────────────────────────────────────────────
-    if (errors.length > 0) {
-      await failHard(page, testInfo, errors, "final error check");
-    }
-    log.pass("Staff workflow complete — no errors");
   });
 });

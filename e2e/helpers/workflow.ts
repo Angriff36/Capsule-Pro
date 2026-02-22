@@ -100,6 +100,14 @@ export function attachErrorCollector(
       const urlPath = url.replace(baseURL, "");
       if (!urlPath.startsWith("/api/")) return; // page-level POST 404 = stale action ID
     }
+    // Skip auth endpoints — bodies may contain tokens/PII
+    const sensitivePatterns = [
+      "/api/auth",
+      "/api/clerk",
+      "/api/webhooks",
+      "/__clerk",
+    ];
+    if (sensitivePatterns.some((p) => url.includes(p))) return;
     let body = "";
     try {
       body = (await response.text()).slice(0, 300);
@@ -167,6 +175,24 @@ export async function failHard(
   throw new Error(
     `WORKFLOW FAILURE at "${context}" on ${page.url()}\n\n${summary}\n\nFull report: ${reportPath}`
   );
+}
+
+// ─── Cleanup helpers ──────────────────────────────────────────────────────────
+
+/**
+ * Delete a test-created entity via API. Best-effort — does not throw on failure.
+ * Use in afterAll hooks to clean up test data.
+ */
+export async function cleanupByApi(
+  page: Page,
+  method: "DELETE" | "POST",
+  path: string
+): Promise<void> {
+  try {
+    await page.request.fetch(`${BASE_URL}${path}`, { method });
+  } catch {
+    // Best-effort cleanup — ignore failures
+  }
 }
 
 // ─── Assert no errors ─────────────────────────────────────────────────────────
@@ -244,6 +270,17 @@ export async function fillByName(
   await el.waitFor({ state: "visible", timeout: 5000 });
   await el.fill(value);
   log.info(`  fill [name=${name}] = "${value}"`);
+}
+
+/** Fill an input by id attribute */
+export async function fillById(
+  page: Page,
+  id: string,
+  value: string
+): Promise<void> {
+  const selector = `#${id}`;
+  await page.locator(selector).fill(value);
+  log.info(`  fill [id=${id}] = "${value}"`);
 }
 
 /** Fill an input by label text */
