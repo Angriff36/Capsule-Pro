@@ -576,6 +576,8 @@ export class NextJsProjection implements ProjectionTarget {
       lines.push(authImport);
     }
     lines.push("");
+    lines.push('export const runtime = "nodejs";');
+    lines.push("");
     lines.push("export async function POST(request: NextRequest) {");
     lines.push("  try {");
     lines.push(generateAuthBody(options));

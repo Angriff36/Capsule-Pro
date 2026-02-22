@@ -184,7 +184,7 @@ describe("Manifest Command Constraints - PrepTask Commands", () => {
       } else {
         expect(data).toHaveProperty("success", true);
         // Constraint outcomes should be in the result
-        expect(data.data).toBeDefined();
+        expect(data.result).toBeDefined();
       }
     });
 

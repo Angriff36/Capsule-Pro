@@ -181,7 +181,7 @@ describe("Manifest HTTP Integration - PrepTask Commands", () => {
         expect(data).toHaveProperty("message");
       } else {
         expect(data).toHaveProperty("success", true);
-        expect(data).toHaveProperty("data");
+        expect(data).toHaveProperty("result");
       }
     });
   });

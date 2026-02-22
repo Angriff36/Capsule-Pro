@@ -89,7 +89,7 @@ describe("Manifest-Generated PrepTask.claim Handler", () => {
     expect(content).toContain("new ManifestRuntimeEngine");
 
     // Verify it loads the manifest IR via compiled bundle
-    expect(content).toContain("getCompiledManifestBundle");
+    expect(content).toContain("loadPrecompiledIR");
 
     console.info("✓ Runtime factory verified");
   });
