@@ -202,7 +202,7 @@ entity PrepTask {
   command create(name: string, eventId: string, prepListId: string, taskType: string, priority: number, quantityTotal: number, quantityUnitId: string, servingsTotal: number, startByDate: number, dueByDate: number, notes: string, ingredients: string) {
     guard name != null and name != "" "Task name is required"
     guard eventId != null and eventId != "" "Event ID is required"
-    guard prepListId != null and prepListId != "" "PrepList ID is required"
+    // prepListId is optional — AI-generated tasks may not have a prep list yet
     guard priority >= 1 and priority <= 5 "Priority must be between 1 and 5"
 
     mutate name = name
@@ -221,6 +221,38 @@ entity PrepTask {
     mutate updatedAt = now()
 
     emit PrepTaskCreated
+  }
+
+  command updateStatus(status: string) {
+    guard status in ["open", "pending", "in_progress", "done", "canceled"] "Invalid status"
+
+    mutate status = status
+    mutate updatedAt = now()
+
+    emit PrepTaskStatusUpdated
+  }
+
+  command updatePriority(priority: number) {
+    guard priority >= 1 and priority <= 5 "Priority must be between 1 and 5"
+
+    mutate priority = priority
+    mutate updatedAt = now()
+
+    emit PrepTaskPriorityUpdated
+  }
+
+  command updateAssignment(claimedBy: string) {
+    mutate claimedBy = claimedBy
+    mutate updatedAt = now()
+
+    emit PrepTaskAssignmentUpdated
+  }
+
+  command updateDueDate(dueByDate: number) {
+    mutate dueByDate = dueByDate
+    mutate updatedAt = now()
+
+    emit PrepTaskDueDateUpdated
   }
 
   store PrepTask in memory
@@ -296,4 +328,32 @@ event PrepTaskCanceled: "kitchen.preptask.canceled" {
   reason: string
   canceledBy: string
   canceledAt: number
+}
+
+event PrepTaskStatusUpdated: "kitchen.preptask.status.updated" {
+  taskId: string
+  oldStatus: string
+  newStatus: string
+  updatedAt: number
+}
+
+event PrepTaskPriorityUpdated: "kitchen.preptask.priority.updated" {
+  taskId: string
+  oldPriority: number
+  newPriority: number
+  updatedAt: number
+}
+
+event PrepTaskAssignmentUpdated: "kitchen.preptask.assignment.updated" {
+  taskId: string
+  oldClaimedBy: string
+  newClaimedBy: string
+  updatedAt: number
+}
+
+event PrepTaskDueDateUpdated: "kitchen.preptask.duedate.updated" {
+  taskId: string
+  oldDueByDate: number
+  newDueByDate: number
+  updatedAt: number
 }
