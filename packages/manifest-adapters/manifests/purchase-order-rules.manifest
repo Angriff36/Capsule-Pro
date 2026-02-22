@@ -24,6 +24,7 @@ entity PurchaseOrder {
   property updatedAt: number = 0
   property deletedAt: number = 0
   property itemCount: number = 0
+  property items: string = ""
 
   computed isDraft: boolean = self.status == "draft"
   computed isSubmitted: boolean = self.status == "submitted"
@@ -44,7 +45,8 @@ entity PurchaseOrder {
     }
   }
 
-  command create(poNumber: string, vendorId: string, locationId: string, notes: string) {
+  command create(poNumber: string, vendorId: string, locationId: string, notes: string, items: string) {
+    // items is a JSON-encoded array of line items — PrismaJsonStore preserves it
     guard poNumber != null and poNumber != "" "PO number is required"
     guard vendorId != null and vendorId != "" "Vendor is required"
     guard locationId != null and locationId != "" "Location is required"
@@ -53,6 +55,7 @@ entity PurchaseOrder {
     mutate vendorId = vendorId
     mutate locationId = locationId
     mutate notes = notes
+    mutate items = items
     mutate status = "draft"
     mutate subtotal = 0
     mutate taxAmount = 0

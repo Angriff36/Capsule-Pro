@@ -1,5 +1,5 @@
 /**
- * Compilation Test: All 28 Phase Manifest Files
+ * Compilation Test: All 29 Phase Manifest Files
  *
  * Validates that every manifest file (Phases 1–7 + Governance):
  * 1. Can be read from disk
@@ -120,6 +120,30 @@ const MANIFEST_SPECS: ManifestSpec[] = [
       {
         name: "PrepMethod",
         commands: ["create", "update", "deactivate"],
+      },
+    ],
+  },
+  {
+    manifest: "prep-task-rules",
+    phase: "Phase 1",
+    entities: [
+      {
+        name: "PrepTask",
+        commands: [
+          "claim",
+          "unclaim",
+          "start",
+          "complete",
+          "release",
+          "reassign",
+          "updateQuantity",
+          "cancel",
+          "create",
+          "updateStatus",
+          "updatePriority",
+          "updateAssignment",
+          "updateDueDate",
+        ],
       },
     ],
   },
@@ -500,6 +524,7 @@ const EXPECTED_ENTITY_MAPPING: Record<string, string> = {
   Dish: "dish-rules",
   Container: "container-rules",
   PrepMethod: "prep-method-rules",
+  PrepTask: "prep-task-rules",
   // Phase 1 Governance
   EventDish: "event-dish-rules",
   EventStaff: "event-staff-rules",
@@ -565,8 +590,8 @@ async function compileManifest(manifestName: string) {
 
 describe("Manifest All-Phases Compilation", () => {
   // Verify we're testing exactly 25 manifests
-  it("should define exactly 28 manifest specs", () => {
-    expect(MANIFEST_SPECS).toHaveLength(28);
+  it("should define exactly 29 manifest specs", () => {
+    expect(MANIFEST_SPECS).toHaveLength(29);
   });
 
   // ── Per-manifest compilation tests ─────────────────────────────────────
