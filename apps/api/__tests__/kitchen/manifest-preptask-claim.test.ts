@@ -84,12 +84,11 @@ describe("Manifest-Generated PrepTask.claim Handler", () => {
     expect(content).toContain("@angriff36/manifest");
     expect(content).toContain("RuntimeEngine");
 
-    // Verify it creates runtime
+    // Verify it delegates to the shared factory in @repo/manifest-adapters
     expect(content).toContain("createManifestRuntime");
-    expect(content).toContain("new ManifestRuntimeEngine");
-
-    // Verify it loads the manifest IR via compiled bundle
-    expect(content).toContain("loadPrecompiledIR");
+    expect(content).toContain(
+      "@repo/manifest-adapters/manifest-runtime-factory"
+    );
 
     console.info("✓ Runtime factory verified");
   });

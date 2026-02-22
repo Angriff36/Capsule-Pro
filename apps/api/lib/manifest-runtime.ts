@@ -1,60 +1,23 @@
 /**
- * Manifest runtime factory for generated command handlers.
+ * Manifest runtime factory — API app shim.
  *
- * This module creates Manifest runtime instances with Prisma-based storage
- * and transactional outbox support for reliable event delivery.
- *
- * Key features:
- * - Prisma interactive transactions for atomic state + outbox writes
- * - Optimistic concurrency control via version properties
- * - Proper tenant isolation
- * - Event emission to outbox for reliable Ably publishing
+ * This module is a thin wrapper around the shared factory in
+ * `@repo/manifest-adapters/manifest-runtime-factory`. It injects the
+ * API-specific singletons (database, Sentry, logger) and preserves the
+ * existing export surface so that generated routes keep importing from
+ * `@/lib/manifest-runtime` without changes.
  *
  * @packageDocumentation
  */
 
-import type {
-  CommandResult,
-  EmittedEvent,
-  RuntimeEngine,
-  RuntimeOptions,
-} from "@angriff36/manifest";
-import type { IR, IRCommand } from "@angriff36/manifest/ir";
-import { database, type PrismaClient } from "@repo/database";
-import { PrismaIdempotencyStore } from "@repo/manifest-adapters/prisma-idempotency-store";
-import { PrismaJsonStore } from "@repo/manifest-adapters/prisma-json-store";
-import type { PrismaStoreConfig } from "@repo/manifest-adapters/prisma-store";
-import {
-  createPrismaOutboxWriter,
-  PrismaStore,
-} from "@repo/manifest-adapters/prisma-store";
-import { loadPrecompiledIR } from "@repo/manifest-adapters/runtime/loadManifests";
-import { ManifestRuntimeEngine } from "@repo/manifest-adapters/runtime-engine";
+import type { RuntimeEngine } from "@angriff36/manifest";
+import { database } from "@repo/database";
+import { createManifestRuntime as createSharedRuntime } from "@repo/manifest-adapters/manifest-runtime-factory";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { createSentryTelemetry } from "./manifest/telemetry";
 
-/**
- * Entities that have dedicated Prisma models with hand-written field mappings.
- * All other entities fall back to the generic PrismaJsonStore (JSON blob storage).
- */
-const ENTITIES_WITH_SPECIFIC_STORES = new Set([
-  "PrepTask",
-  "Recipe",
-  "RecipeVersion",
-  "Ingredient",
-  "RecipeIngredient",
-  "Dish",
-  "Menu",
-  "MenuDish",
-  "PrepList",
-  "PrepListItem",
-  "Station",
-  "InventoryItem",
-  "KitchenTask",
-]);
-
-// Singleton Sentry telemetry hooks - created once, reused across all runtimes
+// Singleton Sentry telemetry hooks — created once, reused across all runtimes.
 const sentryTelemetry = createSentryTelemetry();
 
 /**
@@ -69,65 +32,12 @@ interface GeneratedRuntimeContext {
   entityName?: string;
 }
 
-type ManifestIR = IR;
-
-/**
- * Load the precompiled manifest IR from the build artifact.
- *
- * Uses loadPrecompiledIR which anchors to the monorepo root via
- * pnpm-workspace.yaml — safe regardless of what directory Next.js
- * started the server from (e.g. apps/api vs repo root).
- */
-function getManifestIR(): ManifestIR {
-  const { ir, hash } = loadPrecompiledIR(
-    "packages/manifest-ir/ir/kitchen/kitchen.ir.json"
-  );
-
-  if (process.env.DEBUG_MANIFEST_IR === "true") {
-    log.info("[manifest-runtime] Loaded precompiled manifest IR", {
-      hash,
-      entities: ir.entities.length,
-      commands: ir.commands.length,
-    });
-  }
-
-  return ir;
-}
-
-/**
- * Create a Prisma-based store provider for the given tenant and entity.
- *
- * The store provider returns a PrismaStore configured with:
- * - Transactional outbox event writes
- * - Optimistic concurrency control
- * - Proper tenant isolation
- */
-function _createPrismaStoreProvider(
-  tenantId: string,
-  entityName: string
-): RuntimeOptions["storeProvider"] {
-  return () => {
-    const outboxWriter = createPrismaOutboxWriter(entityName, tenantId);
-
-    const config: PrismaStoreConfig = {
-      prisma: database,
-      entityName,
-      tenantId,
-      outboxWriter,
-    };
-
-    return new PrismaStore(config);
-  };
-}
-
 /**
  * Create a manifest runtime with Prisma-based storage and transactional outbox.
  *
- * This factory creates a RuntimeEngine configured to:
- * - Use PrismaStore for entity operations (within Prisma transactions)
- * - Write outbox events transactionally with state mutations
- * - Enforce optimistic concurrency control via version properties
- * - Properly isolate data by tenant
+ * Delegates to the shared factory in `@repo/manifest-adapters`, injecting
+ * API-specific singletons for database access, logging, error capture, and
+ * Sentry telemetry.
  *
  * @example
  * ```typescript
@@ -145,135 +55,20 @@ function _createPrismaStoreProvider(
 export async function createManifestRuntime(
   ctx: GeneratedRuntimeContext
 ): Promise<RuntimeEngine> {
-  if (process.env.NEXT_RUNTIME === "edge") {
-    throw new Error(
-      "Manifest runtime requires Node.js runtime (Edge runtime is unsupported)."
-    );
-  }
-
-  // Resolve role from DB when not provided by the caller.
-  // Generated routes that were created before the template included the user
-  // DB lookup pass only { id, tenantId }. Without role, every policy that
-  // checks `user.role in [...]` evaluates to false → 403 for all users.
-  let resolvedUser = ctx.user;
-  if (!resolvedUser.role) {
-    const record = await database.user.findFirst({
-      where: {
-        id: resolvedUser.id,
-        tenantId: resolvedUser.tenantId,
-        deletedAt: null,
-      },
-      select: { role: true },
-    });
-    if (record?.role) {
-      resolvedUser = { ...resolvedUser, role: record.role };
-    }
-  }
-
-  const ir = getManifestIR();
-
-  // Create a shared event collector for transactional outbox pattern
-  // This array will be populated with events during command execution
-  // and consumed by PrismaStore within the same transaction
-  const eventCollector: EmittedEvent[] = [];
-
-  // Create a store provider for each entity in the manifest.
-  // Entities with dedicated Prisma models use PrismaStore (hand-written field mappings).
-  // All other entities fall back to PrismaJsonStore (generic JSON blob storage).
-  const storeProvider: RuntimeOptions["storeProvider"] = (
-    entityName: string
-  ) => {
-    if (ENTITIES_WITH_SPECIFIC_STORES.has(entityName)) {
-      const outboxWriter = createPrismaOutboxWriter(
-        entityName,
-        resolvedUser.tenantId
-      );
-
-      const config: PrismaStoreConfig = {
-        prisma: database,
-        entityName,
-        tenantId: resolvedUser.tenantId,
-        outboxWriter,
-        eventCollector, // Share the event collector with the store
-      };
-
-      return new PrismaStore(config);
-    }
-
-    // Fall back to generic JSON store for all Phase 1-7 entities
-    // that don't have dedicated Prisma models yet
-    log.info(
-      `[manifest-runtime] Using PrismaJsonStore for entity: ${entityName}`
-    );
-    return new PrismaJsonStore({
+  return createSharedRuntime(
+    {
       prisma: database,
-      tenantId: resolvedUser.tenantId,
-      entityType: entityName,
-    });
-  };
-
-  // Telemetry hooks: Sentry observability + transactional outbox event writes.
-  // onConstraintEvaluated and onOverrideApplied are pure Sentry metrics.
-  // onCommandExecuted combines Sentry metrics with outbox event persistence.
-  const telemetry = {
-    onConstraintEvaluated: sentryTelemetry.onConstraintEvaluated,
-    onOverrideApplied: sentryTelemetry.onOverrideApplied,
-    onCommandExecuted: async (
-      command: Readonly<IRCommand>,
-      result: Readonly<CommandResult>,
-      entityName?: string
-    ) => {
-      // Fire Sentry telemetry (non-blocking, sync)
-      sentryTelemetry.onCommandExecuted?.(command, result, entityName);
-
-      // Write emitted events to outbox for reliable delivery
-      if (
-        result.success &&
-        result.emittedEvents &&
-        result.emittedEvents.length > 0
-      ) {
-        const outboxWriter = createPrismaOutboxWriter(
-          entityName || "unknown",
-          resolvedUser.tenantId
-        );
-
-        const aggregateId = (result.result as { id?: string })?.id || "unknown";
-
-        const eventsToWrite = result.emittedEvents.map((event) => ({
-          eventType: event.name,
-          payload: event.payload,
-          aggregateId,
-        }));
-
-        try {
-          await database.$transaction(async (tx) => {
-            await outboxWriter(tx as PrismaClient, eventsToWrite);
-          });
-        } catch (error) {
-          log.error("[manifest-runtime] Failed to write events to outbox", {
-            error,
-          });
-          captureException(error);
-          throw error;
-        }
-      }
+      log,
+      captureException,
+      telemetry: sentryTelemetry,
     },
-  };
-
-  // Create idempotency store for command deduplication.
-  // When a command is retried with the same idempotency key,
-  // the cached result is returned without re-execution.
-  const idempotencyStore = new PrismaIdempotencyStore({
-    prisma: database,
-    tenantId: resolvedUser.tenantId,
-  });
-
-  return new ManifestRuntimeEngine(
-    ir,
-    { user: resolvedUser, eventCollector, telemetry },
-    { storeProvider, idempotencyStore }
+    ctx
   );
 }
+
+// ---------------------------------------------------------------------------
+// Per-entity convenience helpers (preserve existing export surface)
+// ---------------------------------------------------------------------------
 
 /** Helper to create a runtime specifically for Menu operations */
 export function createMenuRuntime(user: {
@@ -446,9 +241,7 @@ export function createClientInteractionRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({
-    user,
-  });
+  return createManifestRuntime({ user });
 }
 
 // --- Phase 4: Purchasing & Inventory ---
@@ -474,9 +267,7 @@ export function createInventoryTransactionRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({
-    user,
-  });
+  return createManifestRuntime({ user });
 }
 
 /** Helper to create a runtime specifically for InventorySupplier operations */
@@ -484,9 +275,7 @@ export function createInventorySupplierRuntime(user: {
   id: string;
   tenantId: string;
 }): Promise<RuntimeEngine> {
-  return createManifestRuntime({
-    user,
-  });
+  return createManifestRuntime({ user });
 }
 
 /** Helper to create a runtime specifically for CycleCount operations */
