@@ -97,7 +97,9 @@ describe("Command Board Command Route Contracts", () => {
       const mockResult: MockRuntimeResult = {
         success: true,
         result: { id: validCardId, title: "Test Card" },
-        emittedEvents: [{ type: "card.created", payload: { cardId: validCardId } }],
+        emittedEvents: [
+          { type: "card.created", payload: { cardId: validCardId } },
+        ],
       };
 
       vi.mocked(createManifestRuntime).mockResolvedValue({
@@ -128,9 +130,8 @@ describe("Command Board Command Route Contracts", () => {
 
       expect(response.status).toBe(200);
       expect(body).toHaveProperty("success", true);
-      expect(body).toHaveProperty("data");
-      expect(body.data).toHaveProperty("result");
-      expect(body.data).toHaveProperty("events");
+      expect(body).toHaveProperty("result");
+      expect(body).toHaveProperty("events");
     });
 
     it("update command returns success with result and events", async () => {
@@ -139,7 +140,9 @@ describe("Command Board Command Route Contracts", () => {
       const mockResult: MockRuntimeResult = {
         success: true,
         result: { id: validCardId, title: "Updated Card" },
-        emittedEvents: [{ type: "card.updated", payload: { cardId: validCardId } }],
+        emittedEvents: [
+          { type: "card.updated", payload: { cardId: validCardId } },
+        ],
       };
 
       vi.mocked(createManifestRuntime).mockResolvedValue({
@@ -167,8 +170,8 @@ describe("Command Board Command Route Contracts", () => {
 
       expect(response.status).toBe(200);
       expect(body).toHaveProperty("success", true);
-      expect(body.data).toHaveProperty("result");
-      expect(body.data).toHaveProperty("events");
+      expect(body).toHaveProperty("result");
+      expect(body).toHaveProperty("events");
     });
 
     it("move command returns success with result and events", async () => {
@@ -177,7 +180,9 @@ describe("Command Board Command Route Contracts", () => {
       const mockResult: MockRuntimeResult = {
         success: true,
         result: { id: validCardId, positionX: 200, positionY: 200 },
-        emittedEvents: [{ type: "card.moved", payload: { cardId: validCardId } }],
+        emittedEvents: [
+          { type: "card.moved", payload: { cardId: validCardId } },
+        ],
       };
 
       vi.mocked(createManifestRuntime).mockResolvedValue({
@@ -206,7 +211,7 @@ describe("Command Board Command Route Contracts", () => {
 
       expect(response.status).toBe(200);
       expect(body).toHaveProperty("success", true);
-      expect(body.data).toHaveProperty("result");
+      expect(body).toHaveProperty("result");
     });
 
     it("remove command returns success with result and events", async () => {
@@ -215,7 +220,9 @@ describe("Command Board Command Route Contracts", () => {
       const mockResult: MockRuntimeResult = {
         success: true,
         result: { id: validCardId, deletedAt: new Date().toISOString() },
-        emittedEvents: [{ type: "card.removed", payload: { cardId: validCardId } }],
+        emittedEvents: [
+          { type: "card.removed", payload: { cardId: validCardId } },
+        ],
       };
 
       vi.mocked(createManifestRuntime).mockResolvedValue({
@@ -242,7 +249,7 @@ describe("Command Board Command Route Contracts", () => {
 
       expect(response.status).toBe(200);
       expect(body).toHaveProperty("success", true);
-      expect(body.data).toHaveProperty("result");
+      expect(body).toHaveProperty("result");
     });
   });
 
@@ -663,10 +670,22 @@ describe("Command Board Command Route Contracts", () => {
 
   describe("All Command Routes Consistency", () => {
     const commandRoutes = [
-      { name: "create", path: "@/app/api/command-board/cards/commands/create/route" },
-      { name: "update", path: "@/app/api/command-board/cards/commands/update/route" },
-      { name: "move", path: "@/app/api/command-board/cards/commands/move/route" },
-      { name: "remove", path: "@/app/api/command-board/cards/commands/remove/route" },
+      {
+        name: "create",
+        path: "@/app/api/command-board/cards/commands/create/route",
+      },
+      {
+        name: "update",
+        path: "@/app/api/command-board/cards/commands/update/route",
+      },
+      {
+        name: "move",
+        path: "@/app/api/command-board/cards/commands/move/route",
+      },
+      {
+        name: "remove",
+        path: "@/app/api/command-board/cards/commands/remove/route",
+      },
     ];
 
     for (const { name, path } of commandRoutes) {
@@ -724,7 +743,9 @@ describe("Command Board Command Route Contracts", () => {
 
       const response = await route.POST(request as never);
 
-      expect(response.headers.get("content-type")).toContain("application/json");
+      expect(response.headers.get("content-type")).toContain(
+        "application/json"
+      );
     });
 
     it("returns JSON content type for error responses", async () => {
@@ -746,7 +767,9 @@ describe("Command Board Command Route Contracts", () => {
 
       const response = await route.POST(request as never);
 
-      expect(response.headers.get("content-type")).toContain("application/json");
+      expect(response.headers.get("content-type")).toContain(
+        "application/json"
+      );
     });
   });
 });
