@@ -20,7 +20,8 @@ import type {
   CreateTimeOffRequestInput,
   TimeOffType,
 } from "@/app/lib/staff/time-off/types";
-import { createTimeOffRequest, getEmployees, timeOffTypes } from "../actions";
+import { createTimeOffRequest, getEmployees } from "../actions";
+import { timeOffTypes } from "../constants";
 
 interface TimeOffRequest {
   id?: string;

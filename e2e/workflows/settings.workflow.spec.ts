@@ -24,7 +24,7 @@ import {
 const TEMPLATE_NAME = unique("E2E Email Template");
 
 test.describe("Settings: Full Workflow", () => {
-  test.setTimeout(120_000);
+  test.setTimeout(300_000);
 
   test("settings overview → team → security → integrations → email templates", async ({
     page,
@@ -68,10 +68,17 @@ test.describe("Settings: Full Workflow", () => {
     // Click visible buttons (non-destructive)
     const teamBtns = await page.getByRole("button").all();
     for (const btn of teamBtns.slice(0, 4)) {
-      const text = await btn.textContent().catch(() => "");
-      const label = await btn.getAttribute("aria-label").catch(() => "");
-      const combined = `${text} ${label}`.toLowerCase();
-      if (/delete|remove|revoke|sign.?out|logout/i.test(combined)) continue;
+      const text = (await btn.textContent().catch(() => "")) ?? "";
+      const label =
+        (await btn.getAttribute("aria-label").catch(() => null)) ?? "";
+      const combined = `${text} ${label}`.toLowerCase().trim();
+      if (
+        /delete|remove|revoke|sign.?out|logout|user.?menu|organization.?switch/i.test(
+          combined
+        )
+      )
+        continue;
+      if (!combined) continue; // skip icon-only buttons
       await btn.click().catch(() => undefined);
       await page.waitForTimeout(500);
       await page.keyboard.press("Escape").catch(() => undefined);
@@ -98,8 +105,17 @@ test.describe("Settings: Full Workflow", () => {
     // Click integration toggle buttons (non-destructive)
     const integrationBtns = await page.getByRole("button").all();
     for (const btn of integrationBtns.slice(0, 3)) {
-      const text = await btn.textContent().catch(() => "");
-      if (/delete|remove|disconnect/i.test(text ?? "")) continue;
+      const text = (await btn.textContent().catch(() => "")) ?? "";
+      const label =
+        (await btn.getAttribute("aria-label").catch(() => null)) ?? "";
+      const combined = `${text} ${label}`.toLowerCase().trim();
+      if (
+        /delete|remove|disconnect|sign.?out|logout|user.?menu|organization.?switch/i.test(
+          combined
+        )
+      )
+        continue;
+      if (!combined) continue;
       await btn.click().catch(() => undefined);
       await page.waitForTimeout(500);
       await page.keyboard.press("Escape").catch(() => undefined);

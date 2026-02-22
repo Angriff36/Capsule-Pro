@@ -13,6 +13,32 @@ const distDir = process.env.NEXT_DIST_DIR?.trim() || ".next";
 let nextConfig: NextConfig = withLogging({
   ...config,
   distDir,
+  // Allow cross-origin requests from the app server in development
+  async headers() {
+    if (process.env.NODE_ENV !== "production") {
+      return [
+        {
+          source: "/api/:path*",
+          headers: [
+            {
+              key: "Access-Control-Allow-Origin",
+              value: "http://127.0.0.1:2221",
+            },
+            {
+              key: "Access-Control-Allow-Methods",
+              value: "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+            },
+            {
+              key: "Access-Control-Allow-Headers",
+              value: "Content-Type,Authorization,X-Requested-With",
+            },
+            { key: "Access-Control-Allow-Credentials", value: "true" },
+          ],
+        },
+      ];
+    }
+    return [];
+  },
   // Disable type checking during build to avoid React type conflicts
   typescript: {
     ignoreBuildErrors: true,

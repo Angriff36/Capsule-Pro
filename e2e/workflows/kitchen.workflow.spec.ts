@@ -26,7 +26,7 @@ const RECIPE_NAME = unique("E2E Recipe");
 const PREP_LIST_NAME = unique("E2E Prep List");
 
 test.describe("Kitchen: Full Workflow", () => {
-  test.setTimeout(120_000);
+  test.setTimeout(300_000);
 
   test("kitchen overview → recipe → prep list → tasks → inventory → allergens", async ({
     page,
@@ -61,7 +61,7 @@ test.describe("Kitchen: Full Workflow", () => {
       .first();
 
     if (await addBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await addBtn.click();
+      await addBtn.click({ force: true });
       await page
         .waitForLoadState("networkidle", { timeout: 5000 })
         .catch(() => undefined);

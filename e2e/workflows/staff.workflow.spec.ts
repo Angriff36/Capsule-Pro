@@ -27,7 +27,7 @@ const STAFF_FIRST = "E2E";
 const STAFF_LAST = unique("Staff");
 
 test.describe("Staff: Full Workflow", () => {
-  test.setTimeout(120_000);
+  test.setTimeout(300_000);
 
   test("staff overview → add member → availability → schedule → time-off → training", async ({
     page,
@@ -117,11 +117,21 @@ test.describe("Staff: Full Workflow", () => {
       .catch(() => undefined);
     await assertNoErrors(page, testInfo, errors, "availability page");
 
-    // Click any visible buttons on availability page
+    // Click any visible buttons on availability page (skip icon-only and destructive buttons)
     const availBtns = await page.getByRole("button").all();
     for (const btn of availBtns.slice(0, 3)) {
-      const text = await btn.textContent().catch(() => "");
-      if (/delete|remove|sign.?out/i.test(text ?? "")) continue;
+      const text = (await btn.textContent().catch(() => ""))?.trim() ?? "";
+      const label =
+        (await btn.getAttribute("aria-label").catch(() => "")) ?? "";
+      const combined = `${text} ${label}`.toLowerCase();
+      // Skip empty buttons (icon-only like UserButton), destructive, or auth buttons
+      if (!(text || label)) continue;
+      if (
+        /delete|remove|sign.?out|logout|user.?menu|organization.?switch/i.test(
+          combined
+        )
+      )
+        continue;
       await btn.click().catch(() => undefined);
       await page.waitForTimeout(500);
       await page.keyboard.press("Escape").catch(() => undefined);

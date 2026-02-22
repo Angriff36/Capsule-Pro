@@ -84,7 +84,7 @@ export default defineConfig({
         command: process.env.CI
           ? "pnpm --filter ./apps/app start"
           : "pnpm --filter ./apps/app dev",
-        url: baseURL,
+        url: `${baseURL}/sign-in`,
         reuseExistingServer: !process.env.CI,
         timeout: 180_000,
       },

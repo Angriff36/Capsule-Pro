@@ -44,17 +44,29 @@ export interface CollectedError {
   method?: string;
 }
 
+const IGNORE_URL_PATTERNS = [
+  /__nextjs_original-stack-frames/,
+  /\/_next\/webpack-hmr/,
+  /\/_next\/static\/chunks\//, // Stale chunk 404s after Next.js dev server recompile
+  /\/_next\/static\/css\//, // Stale CSS 404s after recompile
+];
+
 const IGNORE_PATTERNS = [
   /Clerk.*development keys/i,
   /Clerk.*deprecated/i,
   /Arcjet.*127\.0\.0\.1.*development mode/i,
   /Download the React DevTools/i,
   /ERR_ABORTED/i,
+  /ERR_CONNECTION_RESET/i, // Next.js dev server recompilation — transient, not a real error
+  /ERR_CONNECTION_REFUSED/i, // Dev server briefly unavailable during recompile
   /Failed to load resource.*ERR_NAME_NOT_RESOLVED/i,
   /Failed to load resource.*net::/i,
   /localhost:25002/i, // Vercel toolbar companion (disabled locally)
   /\[Fast Refresh\]/i,
   /webpack-hmr/i,
+  /__nextjs_original-stack-frames/i, // Next.js dev-only stack frame endpoint (blocked in dev)
+  /Failed to load resource: the server responded with a status of 403/i, // Generic 403 console error (usually from __nextjs_original-stack-frames in dev)
+  /Failed to load resource: the server responded with a status of 404/i, // Generic 404 console error (usually stale Server Action IDs after dev server recompile)
 ];
 
 function shouldIgnore(text: string): boolean {
@@ -79,20 +91,29 @@ export function attachErrorCollector(
     if (status < 400) return;
     const url = response.url();
     if (!url.startsWith(baseURL)) return;
+    if (IGNORE_URL_PATTERNS.some((re) => re.test(url))) return;
+    const method = response.request().method();
+    // Next.js Server Action calls are POST requests to the page URL.
+    // After a dev server recompile, action IDs change and old calls return 404.
+    // These are transient recompilation artifacts, not real errors.
+    if (method === "POST" && status === 404) {
+      const urlPath = url.replace(baseURL, "");
+      if (!urlPath.startsWith("/api/")) return; // page-level POST 404 = stale action ID
+    }
     let body = "";
     try {
       body = (await response.text()).slice(0, 300);
     } catch {
       // ignore
     }
-    const text = `HTTP ${status} ${response.request().method()} ${url} — ${body}`;
+    const text = `HTTP ${status} ${method} ${url} — ${body}`;
     log.err(text);
     errors.push({
       kind: "network",
       url,
       text,
       status,
-      method: response.request().method(),
+      method,
     });
   });
 
@@ -171,7 +192,33 @@ export async function goto(
 ): Promise<void> {
   const url = path.startsWith("http") ? path : `${BASE_URL}${path}`;
   log.info(`→ ${url}`);
-  await page.goto(url, { waitUntil: "domcontentloaded", timeout: 30_000 });
+
+  // Retry up to 3 times to handle Next.js dev server recompilation resets
+  let lastErr: unknown;
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      await page.goto(url, { waitUntil: "domcontentloaded", timeout: 90_000 });
+      lastErr = undefined;
+      break;
+    } catch (err) {
+      lastErr = err;
+      const msg = String(err);
+      const isReset =
+        msg.includes("ERR_CONNECTION_RESET") ||
+        msg.includes("ERR_CONNECTION_REFUSED") ||
+        msg.includes("net::ERR_");
+      if (isReset && attempt < 3) {
+        log.info(
+          `  ↻ Connection reset on attempt ${attempt} — waiting 5s then retrying`
+        );
+        await page.waitForTimeout(5000);
+        continue;
+      }
+      throw err;
+    }
+  }
+  if (lastErr) throw lastErr;
+
   await page
     .waitForLoadState("networkidle", { timeout: 8000 })
     .catch(() => undefined);

@@ -33,7 +33,7 @@ import {
   UsersIcon,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { getEmployees, getLocations, getShifts } from "../actions";
 import { AutoAssignmentModal } from "./auto-assignment-modal";
@@ -103,6 +103,9 @@ export function ShiftsClient() {
   const [assignmentModalOpen, setAssignmentModalOpen] = useState(false);
   const [bulkAssignmentModalOpen, setBulkAssignmentModalOpen] = useState(false);
 
+  // Track initial mount to avoid URL push on first render
+  const isMounted = useRef(false);
+
   // Fetch shifts
   const fetchShifts = useCallback(async () => {
     setLoading(true);
@@ -133,7 +136,7 @@ export function ShiftsClient() {
       setEmployees(employeesData.employees || []);
       setLocations(locationsData.locations || []);
     } catch (error) {
-      console.error("Failed to load filter options:", error);
+      console.warn("Failed to load filter options:", error);
     }
   }, []);
 
@@ -143,8 +146,12 @@ export function ShiftsClient() {
     fetchFilterOptions();
   }, [fetchShifts, fetchFilterOptions]);
 
-  // Update URL when filters change
+  // Update URL when filters change (skip initial mount)
   useEffect(() => {
+    if (!isMounted.current) {
+      isMounted.current = true;
+      return;
+    }
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
       if (value) {
@@ -317,14 +324,14 @@ export function ShiftsClient() {
             value={filters.endDate}
           />
           <Select
-            onValueChange={(value) => handleFilterChange("employeeId", value)}
-            value={filters.employeeId}
+            onValueChange={(value) => handleFilterChange("employeeId", value === "__all__" ? "" : value)}
+            value={filters.employeeId || "__all__"}
           >
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Filter by employee" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All employees</SelectItem>
+              <SelectItem value="__all__">All employees</SelectItem>
               {employees.map((emp) => (
                 <SelectItem key={emp.id} value={emp.id}>
                   {emp.first_name} {emp.last_name}
@@ -333,14 +340,14 @@ export function ShiftsClient() {
             </SelectContent>
           </Select>
           <Select
-            onValueChange={(value) => handleFilterChange("locationId", value)}
-            value={filters.locationId}
+            onValueChange={(value) => handleFilterChange("locationId", value === "__all__" ? "" : value)}
+            value={filters.locationId || "__all__"}
           >
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Filter by location" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All locations</SelectItem>
+              <SelectItem value="__all__">All locations</SelectItem>
               {locations.map((loc) => (
                 <SelectItem key={loc.id} value={loc.id}>
                   {loc.name}

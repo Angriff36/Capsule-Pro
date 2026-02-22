@@ -79,7 +79,7 @@ const StaffTrainingPage = async () => {
       AND tc.module_id = tm.id
     WHERE tm.tenant_id = ${tenantId}
       AND tm.deleted_at IS NULL
-    GROUP BY tm.id
+    GROUP BY tm.id, tm.title, tm.description, tm.content_type, tm.duration_minutes, tm.category, tm.is_required, tm.is_active, tm.created_at
     ORDER BY tm.created_at DESC
   `;
 

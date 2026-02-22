@@ -27,10 +27,10 @@ export async function getAvailability(params: AvailabilityFilters = {}) {
   const offset = (page - 1) * limit;
 
   // Build filters
-  const hasEmployeeId = params.employeeId !== undefined;
-  const hasDayOfWeek = params.dayOfWeek !== undefined;
-  const hasEffectiveDate = params.effectiveDate !== undefined;
-  const hasIsActive = params.isActive !== undefined;
+  const hasEmployeeId = Boolean(params.employeeId);
+  const hasDayOfWeek = params.dayOfWeek !== undefined && params.dayOfWeek !== null;
+  const hasEffectiveDate = Boolean(params.effectiveDate);
+  const hasIsActive = params.isActive !== undefined && params.isActive !== null;
 
   // Fetch availability and count
   const [availability, totalCount] = await Promise.all([
