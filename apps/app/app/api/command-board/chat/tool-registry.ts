@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto";
+import { createHash } from "node:crypto";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
@@ -35,6 +35,72 @@ interface ToolDefinition {
   name: string;
   description: string;
   parameters: Record<string, unknown>;
+}
+
+// ── Deterministic idempotency key helpers ──────────────────────────
+
+function sortDeep(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(sortDeep);
+  }
+  if (value !== null && typeof value === "object") {
+    const obj = value as Record<string, unknown>;
+    const out: Record<string, unknown> = {};
+    for (const key of Object.keys(obj).sort()) {
+      out[key] = sortDeep(obj[key]);
+    }
+    return out;
+  }
+  return value;
+}
+
+/**
+ * Extract the semantic tool-args payload from the wrapper object.
+ * Mirrors the bodyArgs derivation in executeManifestCommandRoute but
+ * is used earlier — before bodyArgs is built — so the idempotency key
+ * hashes only caller-intent fields, not injected meta like userId.
+ */
+function extractSemanticArgs(
+  args: Record<string, unknown>
+): Record<string, unknown> {
+  if (args.args && typeof args.args === "object" && !Array.isArray(args.args)) {
+    return args.args as Record<string, unknown>;
+  }
+  // Flat-args path: strip meta/wrapper fields, keep only semantic payload
+  const META_KEYS = new Set([
+    "entityName",
+    "commandName",
+    "instanceId",
+    "idempotencyKey",
+    "args",
+  ]);
+  return Object.fromEntries(
+    Object.entries(args).filter(([name]) => !META_KEYS.has(name))
+  );
+}
+
+function stableStringify(value: unknown): string {
+  return JSON.stringify(sortDeep(value));
+}
+
+/**
+ * Build a deterministic idempotency key from stable inputs.
+ * Uses SHA-256 so the key is fixed-length (64 hex chars) and collision-resistant.
+ * callId is included because it is stable across retries of the same
+ * logical tool call (the agent-loop reuses functionCall.call_id).
+ *
+ * Exported for unit testing only — not part of the public API surface.
+ */
+export function deterministicIdempotencyKey(
+  correlationId: string,
+  callId: string,
+  toolKey: string,
+  args: Record<string, unknown>
+): string {
+  const semanticArgs = extractSemanticArgs(args);
+  const argsFingerprint = stableStringify(semanticArgs);
+  const input = `${correlationId}|${callId}|${toolKey}|${argsFingerprint}`;
+  return createHash("sha256").update(input).digest("hex");
 }
 
 function tokenize(input: string): string[] {
@@ -140,10 +206,18 @@ type SafeErrorCode =
 
 // Map HTTP status codes to safe error codes
 function httpStatusToErrorCode(status: number): SafeErrorCode {
-  if (status === 401 || status === 403) return "PERMISSION_DENIED";
-  if (status === 404) return "BOARD_NOT_FOUND";
-  if (status >= 500) return "SERVICE_UNAVAILABLE";
-  if (status >= 400) return "INVALID_REQUEST";
+  if (status === 401 || status === 403) {
+    return "PERMISSION_DENIED";
+  }
+  if (status === 404) {
+    return "BOARD_NOT_FOUND";
+  }
+  if (status >= 500) {
+    return "SERVICE_UNAVAILABLE";
+  }
+  if (status >= 400) {
+    return "INVALID_REQUEST";
+  }
   return "UNKNOWN_ERROR";
 }
 
@@ -224,9 +298,12 @@ function sanitizeErrorMessage(
 function extractErrorMessage(parsed: unknown, raw: string): string {
   if (parsed !== null && typeof parsed === "object") {
     const obj = parsed as Record<string, unknown>;
-    if (typeof obj.error === "string" && obj.error.length > 0) return obj.error;
-    if (typeof obj.message === "string" && obj.message.length > 0)
+    if (typeof obj.error === "string" && obj.error.length > 0) {
+      return obj.error;
+    }
+    if (typeof obj.message === "string" && obj.message.length > 0) {
       return obj.message;
+    }
   }
   return raw;
 }
@@ -516,7 +593,7 @@ async function executeManifestCommandRoute(
   const idempotencyKey =
     typeof args.idempotencyKey === "string" && args.idempotencyKey.length > 0
       ? args.idempotencyKey
-      : `${context.correlationId}:${callId}:${randomUUID()}`;
+      : deterministicIdempotencyKey(context.correlationId, callId, key, args);
 
   const bodyArgs =
     args.args && typeof args.args === "object" && !Array.isArray(args.args)
