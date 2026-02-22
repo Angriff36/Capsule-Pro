@@ -121,7 +121,7 @@ test.describe("Command Board: Full Workflow", () => {
   // AI chat panel: gated on E2E_EXTERNAL=true — skips in CI, runs when opted in
   test("AI chat panel: send message", async ({ page }, testInfo) => {
     test.skip(
-      !process.env.E2E_EXTERNAL,
+      process.env.E2E_EXTERNAL !== "true",
       "Set E2E_EXTERNAL=true to run AI chat panel tests (avoids LLM cost in CI)"
     );
 
