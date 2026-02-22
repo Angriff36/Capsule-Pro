@@ -3,175 +3,95 @@
  *
  * Covers:
  *  1. Settings overview
- *  2. Team settings → click all tabs/sections
+ *  2. Team settings
  *  3. Security settings
  *  4. Integrations page
- *  5. Email templates list → create template
- *  6. Assert no errors throughout
+ *  5. Email templates list
+ *  6. Create email template (form fill + submit + toast + redirect)
+ *  7. Created template appears in list
  */
 
-import { test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import type { CollectedError } from "../helpers/workflow";
 import {
   assertNoErrors,
+  assertVisible,
   attachErrorCollector,
-  failHard,
+  BASE_URL,
   goto,
-  log,
   unique,
 } from "../helpers/workflow";
 
-const TEMPLATE_NAME = unique("E2E Email Template");
+const TEMPLATE_NAME = unique("TemplateE2E");
 
 test.describe("Settings: Full Workflow", () => {
-  test.setTimeout(300_000);
+  let errors: CollectedError[] = [];
 
-  test("settings overview → team → security → integrations → email templates", async ({
-    page,
-    baseURL,
-  }, testInfo) => {
-    const errors: CollectedError[] = [];
-    attachErrorCollector(page, errors, baseURL ?? "http://127.0.0.1:2221");
+  test.beforeEach(async ({ page }) => {
+    errors = [];
+    attachErrorCollector(page, errors, BASE_URL);
+  });
 
-    // ── 1. Settings overview ──────────────────────────────────────────────────
-    log.step("1. Settings overview");
+  test("settings overview loads", async ({ page }, testInfo) => {
     await goto(page, "/settings");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
+    await assertVisible(page, /settings/i);
     await assertNoErrors(page, testInfo, errors, "settings overview");
+  });
 
-    // Click all visible tabs/nav items on settings page
-    const settingsTabs = await page.locator('[role="tab"], nav a').all();
-    for (const tab of settingsTabs.slice(0, 6)) {
-      const text = await tab.textContent().catch(() => "");
-      if (!text?.trim()) continue;
-      log.info(`  settings tab: "${text.trim()}"`);
-      await tab.click().catch(() => undefined);
-      await page.waitForTimeout(500);
-      await assertNoErrors(
-        page,
-        testInfo,
-        errors,
-        `settings tab: ${text.trim()}`
-      );
-    }
-
-    // ── 2. Team settings ──────────────────────────────────────────────────────
-    log.step("2. Team settings");
+  test("team settings page loads", async ({ page }, testInfo) => {
     await goto(page, "/settings/team");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
+    await expect(page).toHaveURL(/settings\/team/);
     await assertNoErrors(page, testInfo, errors, "team settings");
+  });
 
-    // Click visible buttons (non-destructive)
-    const teamBtns = await page.getByRole("button").all();
-    for (const btn of teamBtns.slice(0, 4)) {
-      const text = (await btn.textContent().catch(() => "")) ?? "";
-      const label =
-        (await btn.getAttribute("aria-label").catch(() => null)) ?? "";
-      const combined = `${text} ${label}`.toLowerCase().trim();
-      if (
-        /delete|remove|revoke|sign.?out|logout|user.?menu|organization.?switch/i.test(
-          combined
-        )
-      )
-        continue;
-      if (!combined) continue; // skip icon-only buttons
-      await btn.click().catch(() => undefined);
-      await page.waitForTimeout(500);
-      await page.keyboard.press("Escape").catch(() => undefined);
-      await page.waitForTimeout(200);
-    }
-    await assertNoErrors(page, testInfo, errors, "team settings interactions");
-
-    // ── 3. Security settings ──────────────────────────────────────────────────
-    log.step("3. Security settings");
+  test("security settings page loads", async ({ page }, testInfo) => {
     await goto(page, "/settings/security");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
+    await expect(page).toHaveURL(/settings\/security/);
     await assertNoErrors(page, testInfo, errors, "security settings");
+  });
 
-    // ── 4. Integrations ───────────────────────────────────────────────────────
-    log.step("4. Integrations");
+  test("integrations page loads", async ({ page }, testInfo) => {
     await goto(page, "/settings/integrations");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
+    await expect(page).toHaveURL(/settings\/integrations/);
     await assertNoErrors(page, testInfo, errors, "integrations");
+  });
 
-    // Click integration toggle buttons (non-destructive)
-    const integrationBtns = await page.getByRole("button").all();
-    for (const btn of integrationBtns.slice(0, 3)) {
-      const text = (await btn.textContent().catch(() => "")) ?? "";
-      const label =
-        (await btn.getAttribute("aria-label").catch(() => null)) ?? "";
-      const combined = `${text} ${label}`.toLowerCase().trim();
-      if (
-        /delete|remove|disconnect|sign.?out|logout|user.?menu|organization.?switch/i.test(
-          combined
-        )
-      )
-        continue;
-      if (!combined) continue;
-      await btn.click().catch(() => undefined);
-      await page.waitForTimeout(500);
-      await page.keyboard.press("Escape").catch(() => undefined);
-    }
-    await assertNoErrors(page, testInfo, errors, "integrations interactions");
-
-    // ── 5. Email templates list ───────────────────────────────────────────────
-    log.step("5. Email templates list");
+  test("email templates list loads", async ({ page }, testInfo) => {
     await goto(page, "/settings/email-templates");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
+    await expect(page).toHaveURL(/settings\/email-templates/);
     await assertNoErrors(page, testInfo, errors, "email templates list");
+  });
 
-    // ── 6. Create email template ──────────────────────────────────────────────
-    log.step("6. Create email template");
+  test("create email template", async ({ page }, testInfo) => {
     await goto(page, "/settings/email-templates/new");
+
+    await page.locator('input[name="name"]').fill(TEMPLATE_NAME);
+    await page.locator('input[name="subject"]').fill("E2E Test Subject");
     await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
+      .locator('textarea[name="body"]')
+      .fill("Hello {{name}}, this is an E2E test email.");
 
-    const nameInput = page.locator('input[name="name"]').first();
-    if (await nameInput.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await nameInput.fill(TEMPLATE_NAME);
-    }
+    // Submit button is in the PAGE HEADER, not inside the form — click by text
+    await page.getByRole("button", { name: /save template/i }).click();
 
-    const subjectInput = page.locator('input[name="subject"]').first();
-    if (await subjectInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await subjectInput.fill("E2E Test Email Subject");
-    }
+    // Verify success toast
+    await expect(page.getByText(/template created/i)).toBeVisible({
+      timeout: 15_000,
+    });
 
-    const bodyInput = page
-      .locator('textarea[name="body"], [contenteditable="true"]')
-      .first();
-    if (await bodyInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await bodyInput.fill(
-        "Hello {{name}},\n\nThis is an E2E test email template.\n\nBest regards,\nThe Team"
-      );
-    }
+    // Verify redirect to templates list
+    await expect(page).toHaveURL(/settings\/email-templates$/, {
+      timeout: 10_000,
+    });
 
-    const submitBtn = page
-      .getByRole("button", { name: /save|create|submit/i })
-      .first();
-    if (await submitBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await submitBtn.click();
-      await page
-        .waitForLoadState("networkidle", { timeout: 15_000 })
-        .catch(() => undefined);
-      await assertNoErrors(page, testInfo, errors, "create email template");
-      log.ok(`Email template created: ${TEMPLATE_NAME}`);
-    }
+    await assertNoErrors(page, testInfo, errors, "create email template");
+  });
 
-    // ── Final ─────────────────────────────────────────────────────────────────
-    if (errors.length > 0) {
-      await failHard(page, testInfo, errors, "final error check");
-    }
-    log.pass("Settings workflow complete — no errors");
+  test("created template appears in list", async ({ page }, testInfo) => {
+    await goto(page, "/settings/email-templates");
+    await expect(page.getByText(TEMPLATE_NAME)).toBeVisible({
+      timeout: 15_000,
+    });
+    await assertNoErrors(page, testInfo, errors, "template in list");
   });
 });

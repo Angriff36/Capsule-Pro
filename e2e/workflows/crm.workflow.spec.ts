@@ -3,274 +3,145 @@
  *
  * Covers:
  *  1. CRM overview
- *  2. Clients list → create client (all fields) → view detail → all tabs
- *  3. Proposals list → create proposal → add line item
- *  4. Venues list → create venue
- *  5. Communications page
- *  6. Assert no errors throughout
+ *  2. Clients list
+ *  3. Client detail tabs (requires at least one client in DB)
+ *  4. Create proposal with line item → verify redirect
+ *  5. Proposals list shows created proposal
+ *  6. Create venue → verify toast + redirect
+ *  7. Communications page
  */
 
-import { test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import type { CollectedError } from "../helpers/workflow";
 import {
   assertNoErrors,
+  assertVisible,
   attachErrorCollector,
-  failHard,
+  BASE_URL,
+  fillById,
   goto,
-  log,
-  TEST_EMAIL,
   unique,
 } from "../helpers/workflow";
 
-const CLIENT_FIRST = "E2E";
-const CLIENT_LAST = unique("Client");
-const CLIENT_COMPANY = unique("E2E Corp");
-const VENUE_NAME = unique("E2E Venue");
+const PROPOSAL_TITLE = unique("ProposalE2E");
+const VENUE_NAME = unique("VenueE2E");
+const EVENT_DATE = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+  .toISOString()
+  .split("T")[0];
 
 test.describe("CRM: Full Workflow", () => {
-  test.setTimeout(300_000);
+  let errors: CollectedError[] = [];
 
-  test("crm overview → client → proposal → venue → communications", async ({
-    page,
-    baseURL,
-  }, testInfo) => {
-    const errors: CollectedError[] = [];
-    attachErrorCollector(page, errors, baseURL ?? "http://127.0.0.1:2221");
+  test.beforeEach(async ({ page }) => {
+    errors = [];
+    attachErrorCollector(page, errors, BASE_URL);
+  });
 
-    // ── 1. CRM overview ───────────────────────────────────────────────────────
-    log.step("1. CRM overview");
+  test("CRM overview loads", async ({ page }, testInfo) => {
     await goto(page, "/crm");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
+    await assertVisible(page, /crm|clients|proposals/i);
     await assertNoErrors(page, testInfo, errors, "crm overview");
+  });
 
-    // ── 2. Clients list ───────────────────────────────────────────────────────
-    log.step("2. Clients list");
+  test("clients list loads", async ({ page }, testInfo) => {
     await goto(page, "/crm/clients");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
+    await expect(page).toHaveURL(/crm\/clients/);
     await assertNoErrors(page, testInfo, errors, "clients list");
+  });
 
-    // ── 3. Create client ──────────────────────────────────────────────────────
-    log.step("3. Create client");
-    // Look for a create/new client button or link
-    const newClientBtn = page
-      .getByRole("button", { name: /new client|add client|create client/i })
-      .or(page.getByRole("link", { name: /new client|add client/i }))
-      .first();
+  test.fixme(
+    "create client — no UI form exists at /crm/clients/new (returns 404)",
+    async () => {
+      // /crm/clients/new → 404. The [id] route catches "new" and calls notFound().
+      // No client creation form exists in the UI. Skipping until implemented.
+    }
+  );
 
-    if (await newClientBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await newClientBtn.click();
-      await page
-        .waitForLoadState("networkidle", { timeout: 8000 })
-        .catch(() => undefined);
+  test("client detail tabs all render", async ({ page }, testInfo) => {
+    await goto(page, "/crm/clients");
 
-      // Fill client form fields
-      const firstNameInput = page
-        .locator('input[name="first_name"], input[name="firstName"]')
-        .first();
-      if (
-        await firstNameInput.isVisible({ timeout: 5000 }).catch(() => false)
-      ) {
-        await firstNameInput.fill(CLIENT_FIRST);
-      }
+    // Require at least one client row — fail clearly if DB is empty
+    const firstClientRow = page.locator("table tbody tr").first();
+    await expect(firstClientRow).toBeVisible({ timeout: 10_000 });
 
-      const lastNameInput = page
-        .locator('input[name="last_name"], input[name="lastName"]')
-        .first();
-      if (await lastNameInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await lastNameInput.fill(CLIENT_LAST);
-      }
+    await firstClientRow.click();
+    await expect(page).toHaveURL(/crm\/clients\/[a-z0-9-]+/, {
+      timeout: 10_000,
+    });
 
-      const companyInput = page
-        .locator('input[name="company_name"], input[name="company"]')
-        .first();
-      if (await companyInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await companyInput.fill(CLIENT_COMPANY);
-      }
+    // Click through each tab and verify no errors
+    const tabs = page.locator('[role="tab"]');
+    const tabCount = await tabs.count();
+    expect(tabCount).toBeGreaterThan(0);
 
-      const emailInput = page
-        .locator('input[name="email"], input[type="email"]')
-        .first();
-      if (await emailInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await emailInput.fill(TEST_EMAIL);
-      }
-
-      const phoneInput = page
-        .locator('input[name="phone"], input[type="tel"]')
-        .first();
-      if (await phoneInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await phoneInput.fill("555-0100");
-      }
-
-      const notesInput = page.locator('textarea[name="notes"]').first();
-      if (await notesInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await notesInput.fill("E2E test client — automated workflow");
-      }
-
-      const submitBtn = page
-        .getByRole("button", { name: /save|create|submit/i })
-        .first();
-      if (await submitBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-        await submitBtn.click();
-        await page
-          .waitForLoadState("networkidle", { timeout: 15_000 })
-          .catch(() => undefined);
-      }
-
-      await assertNoErrors(page, testInfo, errors, "create client");
-      log.ok(`Client created: ${CLIENT_FIRST} ${CLIENT_LAST}`);
-
-      // ── 4. Client detail tabs ─────────────────────────────────────────────
-      log.step("4. Client detail — click all tabs");
-      const tabs = await page.locator('[role="tab"]').all();
-      for (const tab of tabs) {
-        const tabText = await tab.textContent().catch(() => "");
-        if (!tabText) continue;
-        log.info(`  tab: ${tabText.trim()}`);
-        await tab.click().catch(() => undefined);
-        await page.waitForTimeout(500);
-        await assertNoErrors(
-          page,
-          testInfo,
-          errors,
-          `client tab: ${tabText.trim()}`
-        );
-      }
-    } else {
-      log.warn("New client button not found — skipping client creation");
+    for (let i = 0; i < tabCount; i++) {
+      await tabs.nth(i).click();
+      // Brief settle — no arbitrary waits, just let the tab panel render
+      await page.waitForTimeout(300);
     }
 
-    // ── 5. Proposals list ─────────────────────────────────────────────────────
-    log.step("5. Proposals list");
-    await goto(page, "/crm/proposals");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
-    await assertNoErrors(page, testInfo, errors, "proposals list");
+    await assertNoErrors(page, testInfo, errors, "client detail tabs");
+  });
 
-    // ── 6. Create proposal ────────────────────────────────────────────────────
-    log.step("6. Create proposal");
+  test("create proposal with line item", async ({ page }, testInfo) => {
     await goto(page, "/crm/proposals/new");
-    await page
-      .waitForLoadState("networkidle", { timeout: 10_000 })
-      .catch(() => undefined);
 
-    // Fill proposal form
-    const titleInput = page.locator('input[name="title"]').first();
-    if (await titleInput.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await titleInput.fill(unique("E2E Proposal"));
-    }
+    await page.locator('input[name="title"]').fill(PROPOSAL_TITLE);
+    await page.locator('input[name="eventDate"]').fill(EVENT_DATE);
+    await page.locator('input[name="guestCount"]').fill("50");
+    await page.locator('textarea[name="notes"]').fill("E2E test proposal");
 
-    const eventTypeInput = page
-      .locator('input[name="eventType"], input[name="event_type"]')
-      .first();
-    if (await eventTypeInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await eventTypeInput.fill("catering");
-    }
+    // Add a line item
+    await page.locator("input#new-item-desc").fill("E2E Line Item");
+    await page.locator("input#new-item-qty").fill("2");
+    await page.locator("input#new-item-price").fill("500");
+    await page.getByRole("button", { name: /add item/i }).click();
 
-    const totalInput = page
-      .locator('input[name="totalAmount"], input[name="total"]')
-      .first();
-    if (await totalInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await totalInput.fill("5000");
-    }
+    await page.locator('button[type="submit"]').click();
 
-    const notesInput = page.locator('textarea[name="notes"]').first();
-    if (await notesInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await notesInput.fill("E2E test proposal");
-    }
+    // Success: router.push to /crm/proposals/{id}
+    await expect(page).toHaveURL(/crm\/proposals\/[a-z0-9-]+/, {
+      timeout: 15_000,
+    });
+    await expect(page.getByText(PROPOSAL_TITLE)).toBeVisible({
+      timeout: 10_000,
+    });
 
-    // Add a line item if button exists
-    const addLineBtn = page
-      .getByRole("button", { name: /add line|add item/i })
-      .first();
-    if (await addLineBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await addLineBtn.click();
-      await page.waitForTimeout(500);
-      const lineDesc = page
-        .locator('input[placeholder*="description" i]')
-        .last();
-      if (await lineDesc.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await lineDesc.fill("Catering service");
-      }
-      const lineQty = page
-        .locator('input[placeholder*="qty" i], input[name*="quantity" i]')
-        .last();
-      if (await lineQty.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await lineQty.fill("1");
-      }
-      const linePrice = page
-        .locator('input[placeholder*="price" i], input[name*="price" i]')
-        .last();
-      if (await linePrice.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await linePrice.fill("5000");
-      }
-    }
-
-    const submitBtn = page
-      .getByRole("button", { name: /save|create|submit/i })
-      .first();
-    if (await submitBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await submitBtn.click();
-      await page
-        .waitForLoadState("networkidle", { timeout: 15_000 })
-        .catch(() => undefined);
-    }
     await assertNoErrors(page, testInfo, errors, "create proposal");
+  });
 
-    // ── 7. Venues list ────────────────────────────────────────────────────────
-    log.step("7. Venues list");
-    await goto(page, "/crm/venues");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
-    await assertNoErrors(page, testInfo, errors, "venues list");
+  test("proposals list shows created proposal", async ({ page }, testInfo) => {
+    await goto(page, "/crm/proposals");
+    await expect(page.getByText(PROPOSAL_TITLE)).toBeVisible({
+      timeout: 15_000,
+    });
+    await assertNoErrors(page, testInfo, errors, "proposals list");
+  });
 
-    // Create venue
+  test("create venue", async ({ page }, testInfo) => {
     await goto(page, "/crm/venues/new");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
 
-    const venueNameInput = page.locator('input[name="name"]').first();
-    if (await venueNameInput.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await venueNameInput.fill(VENUE_NAME);
-    }
-    const venueAddrInput = page.locator('input[name="address"]').first();
-    if (await venueAddrInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await venueAddrInput.fill("123 E2E Street, Test City, TC 00000");
-    }
-    const venueCapInput = page.locator('input[name="capacity"]').first();
-    if (await venueCapInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-      await venueCapInput.fill("200");
-    }
+    await fillById(page, "name", VENUE_NAME);
+    await fillById(page, "capacity", "200");
+    await fillById(page, "contactName", "E2E Contact");
+    await fillById(page, "contactEmail", "e2e-venue@capsule-test.example.com");
 
-    const venueSubmit = page
-      .getByRole("button", { name: /save|create|submit/i })
-      .first();
-    if (await venueSubmit.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await venueSubmit.click();
-      await page
-        .waitForLoadState("networkidle", { timeout: 15_000 })
-        .catch(() => undefined);
-    }
+    await page.locator('button[type="submit"]').click();
+
+    // Success: toast then redirect to /crm/venues/{id}
+    await expect(page.getByText(/venue created/i)).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page).toHaveURL(/crm\/venues\/[a-z0-9-]+/, {
+      timeout: 10_000,
+    });
+
     await assertNoErrors(page, testInfo, errors, "create venue");
+  });
 
-    // ── 8. Communications ─────────────────────────────────────────────────────
-    log.step("8. Communications");
+  test("communications page loads", async ({ page }, testInfo) => {
     await goto(page, "/crm/communications");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
+    await expect(page).toHaveURL(/crm\/communications/);
     await assertNoErrors(page, testInfo, errors, "communications");
-
-    // ── Final ─────────────────────────────────────────────────────────────────
-    if (errors.length > 0) {
-      await failHard(page, testInfo, errors, "final error check");
-    }
-    log.pass("CRM workflow complete — no errors");
   });
 });

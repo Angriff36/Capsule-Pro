@@ -3,180 +3,111 @@
  *
  * Covers:
  *  1. Kitchen overview page
- *  2. Recipes list → create recipe (all fields) → view detail
- *  3. Prep lists → create prep list
- *  4. Kitchen tasks list
- *  5. Inventory page
- *  6. Allergens page
- *  7. Assert no errors throughout
+ *  2. Recipes list
+ *  3. Create recipe (all fields) → verify redirect to detail
+ *  4. Recipe appears in list after creation
+ *  5. Prep lists page (AI generator — creation requires existing event, marked fixme)
+ *  6. Kitchen inventory page
+ *  7. Allergens page
  */
 
-import { test } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 import type { CollectedError } from "../helpers/workflow";
 import {
   assertNoErrors,
+  assertVisible,
   attachErrorCollector,
-  failHard,
+  BASE_URL,
   goto,
-  log,
   unique,
 } from "../helpers/workflow";
 
-const RECIPE_NAME = unique("E2E Recipe");
-const PREP_LIST_NAME = unique("E2E Prep List");
+const RECIPE_NAME = unique("RecipeE2E");
 
 test.describe("Kitchen: Full Workflow", () => {
-  test.setTimeout(300_000);
+  let errors: CollectedError[] = [];
 
-  test("kitchen overview → recipe → prep list → tasks → inventory → allergens", async ({
-    page,
-    baseURL,
-  }, testInfo) => {
-    const errors: CollectedError[] = [];
-    attachErrorCollector(page, errors, baseURL ?? "http://127.0.0.1:2221");
+  test.beforeEach(async ({ page }) => {
+    errors = [];
+    attachErrorCollector(page, errors, BASE_URL);
+  });
 
-    // ── 1. Kitchen overview ───────────────────────────────────────────────────
-    log.step("1. Kitchen overview");
+  test("kitchen overview loads", async ({ page }, testInfo) => {
     await goto(page, "/kitchen");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
+    await assertVisible(page, /kitchen/i);
     await assertNoErrors(page, testInfo, errors, "kitchen overview");
+  });
 
-    // ── 2. Recipes list ───────────────────────────────────────────────────────
-    log.step("2. Recipes list");
+  test("recipes list loads", async ({ page }, testInfo) => {
     await goto(page, "/kitchen/recipes");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
+    await expect(page).toHaveURL(/kitchen\/recipes/);
     await assertNoErrors(page, testInfo, errors, "recipes list");
+  });
 
-    // ── 3. Create recipe ──────────────────────────────────────────────────────
-    log.step("3. Create recipe");
+  test("create recipe with all fields", async ({ page }, testInfo) => {
+    await goto(page, "/kitchen/recipes/new");
 
-    // Look for FAB / Add button
-    const addBtn = page
-      .getByRole("button", { name: /add|create|new recipe/i })
-      .or(page.locator('button[aria-label*="Add"]'))
-      .first();
+    await page.locator('input[name="name"]').fill(RECIPE_NAME);
+    await page.locator('input[name="category"]').fill("Main Course");
+    await page.locator('textarea[name="description"]').fill("E2E test recipe");
+    await page.locator('input[name="prepTimeMinutes"]').fill("30");
+    await page.locator('input[name="cookTimeMinutes"]').fill("45");
+    await page.locator('input[name="yieldQuantity"]').fill("4");
+    await page.locator('select[name="yieldUnit"]').selectOption({ index: 1 });
+    await page
+      .locator('textarea[name="ingredients"]')
+      .fill("Ingredient 1\nIngredient 2");
+    await page
+      .locator('textarea[name="steps"]')
+      .fill("Step 1: Prepare\nStep 2: Cook");
 
-    if (await addBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await addBtn.click({ force: true });
-      await page
-        .waitForLoadState("networkidle", { timeout: 5000 })
-        .catch(() => undefined);
+    await page.locator('button[type="submit"]').click();
 
-      // Fill recipe form (modal or page)
-      const nameInput = page
-        .locator(
-          'input[name="name"], input[placeholder*="recipe" i], input[placeholder*="name" i]'
-        )
-        .first();
-      if (await nameInput.isVisible({ timeout: 5000 }).catch(() => false)) {
-        await nameInput.fill(RECIPE_NAME);
-      }
+    // Verify redirect to recipe detail page
+    await expect(page).toHaveURL(/kitchen\/recipes\/[a-z0-9-]+/, {
+      timeout: 15_000,
+    });
+    await expect(page.getByText(RECIPE_NAME)).toBeVisible({ timeout: 10_000 });
 
-      const descInput = page
-        .locator(
-          'textarea[name="description"], textarea[placeholder*="description" i]'
-        )
-        .first();
-      if (await descInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await descInput.fill("E2E automated test recipe");
-      }
+    await assertNoErrors(page, testInfo, errors, "create recipe");
+  });
 
-      const prepTimeInput = page.locator('input[name="prepTime"]').first();
-      if (await prepTimeInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await prepTimeInput.fill("30");
-      }
+  test("recipe appears in list after creation", async ({ page }, testInfo) => {
+    await goto(page, "/kitchen/recipes");
+    // Verify at least one recipe card exists
+    await expect(
+      page.locator('[data-testid="recipe-card"]').first()
+    ).toBeVisible({ timeout: 15_000 });
+    // Verify our created recipe is in the list
+    await expect(page.getByText(RECIPE_NAME)).toBeVisible({ timeout: 10_000 });
+    await assertNoErrors(page, testInfo, errors, "recipe in list");
+  });
 
-      const cookTimeInput = page.locator('input[name="cookTime"]').first();
-      if (await cookTimeInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await cookTimeInput.fill("45");
-      }
-
-      const servingsInput = page
-        .locator('input[name="servings"], input[name="yield"]')
-        .first();
-      if (await servingsInput.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await servingsInput.fill("10");
-      }
-
-      // Submit
-      const submitBtn = page
-        .getByRole("button", { name: /save|create|add recipe/i })
-        .first();
-      if (await submitBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-        await submitBtn.click();
-        await page
-          .waitForLoadState("networkidle", { timeout: 10_000 })
-          .catch(() => undefined);
-      }
-
-      await assertNoErrors(page, testInfo, errors, "create recipe");
-      log.ok(`Recipe created: ${RECIPE_NAME}`);
-    } else {
-      log.warn("Add recipe button not found — skipping recipe creation");
+  // biome-ignore lint/correctness/noEmptyPattern: Playwright fixme signature
+  test.fixme(
+    "prep lists: AI generator requires existing event — cannot test creation standalone",
+    async () => {
+      // /kitchen/prep-lists is an AI-driven generator, not a CRUD form.
+      // It requires ?eventId= query param and an event with dishes.
+      // Implement once a test event with dishes can be reliably seeded.
     }
+  );
 
-    // ── 4. Prep lists ─────────────────────────────────────────────────────────
-    log.step("4. Prep lists");
+  test("prep lists page loads", async ({ page }, testInfo) => {
     await goto(page, "/kitchen/prep-lists");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
-    await assertNoErrors(page, testInfo, errors, "prep lists");
+    await expect(page).toHaveURL(/kitchen\/prep-lists/);
+    await assertNoErrors(page, testInfo, errors, "prep lists page");
+  });
 
-    // Try creating a prep list
-    const createPrepBtn = page
-      .getByRole("button", { name: /create|new|add prep list/i })
-      .first();
-    if (await createPrepBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-      await createPrepBtn.click();
-      await page
-        .waitForLoadState("networkidle", { timeout: 5000 })
-        .catch(() => undefined);
-
-      const prepNameInput = page
-        .locator('input[name="name"], input[placeholder*="name" i]')
-        .first();
-      if (await prepNameInput.isVisible({ timeout: 5000 }).catch(() => false)) {
-        await prepNameInput.fill(PREP_LIST_NAME);
-      }
-
-      const submitBtn = page
-        .getByRole("button", { name: /save|create|submit/i })
-        .first();
-      if (await submitBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
-        await submitBtn.click();
-        await page
-          .waitForLoadState("networkidle", { timeout: 10_000 })
-          .catch(() => undefined);
-      }
-
-      await assertNoErrors(page, testInfo, errors, "create prep list");
-    }
-
-    // ── 5. Kitchen inventory ──────────────────────────────────────────────────
-    log.step("5. Kitchen inventory");
+  test("kitchen inventory page loads", async ({ page }, testInfo) => {
     await goto(page, "/kitchen/inventory");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
+    await expect(page).toHaveURL(/kitchen\/inventory/);
     await assertNoErrors(page, testInfo, errors, "kitchen inventory");
+  });
 
-    // ── 6. Allergens ──────────────────────────────────────────────────────────
-    log.step("6. Allergens");
+  test("allergens page loads", async ({ page }, testInfo) => {
     await goto(page, "/kitchen/allergens");
-    await page
-      .waitForLoadState("networkidle", { timeout: 8000 })
-      .catch(() => undefined);
+    await expect(page).toHaveURL(/kitchen\/allergens/);
     await assertNoErrors(page, testInfo, errors, "allergens");
-
-    // ── Final ─────────────────────────────────────────────────────────────────
-    if (errors.length > 0) {
-      await failHard(page, testInfo, errors, "final error check");
-    }
-    log.pass("Kitchen workflow complete — no errors");
   });
 });
