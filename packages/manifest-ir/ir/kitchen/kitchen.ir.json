@@ -5,7 +5,7 @@
     "irHash": "",
     "compilerVersion": "0.3.8",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-02-23T08:13:20.733Z",
+    "compiledAt": "2026-02-23T08:55:10.229Z",
     "sources": [
       "alerts-config-rules.manifest",
       "allergen-warning-rules.manifest",
@@ -24507,6 +24507,241 @@
       "policies": []
     },
     {
+      "name": "RecipeStep",
+      "properties": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "recipeVersionId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "stepNumber",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "instruction",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "durationMinutes",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "temperatureValue",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "temperatureUnit",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "equipmentNeeded",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "tips",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "videoUrl",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "imageUrl",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "deletedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        }
+      ],
+      "computedProperties": [],
+      "relationships": [],
+      "commands": [
+        "create",
+        "updateInstruction",
+        "remove"
+      ],
+      "constraints": [
+        {
+          "name": "positiveStepNumber",
+          "code": "positiveStepNumber",
+          "expression": {
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "stepNumber"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Step number must be positive",
+          "overrideable": false
+        },
+        {
+          "name": "validInstruction",
+          "code": "validInstruction",
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "instruction"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "instruction"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": ""
+                }
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Instruction is required",
+          "overrideable": false
+        }
+      ],
+      "policies": []
+    },
+    {
       "name": "RolePolicy",
       "properties": [
         {
@@ -29101,6 +29336,11 @@
     },
     {
       "entity": "RecipeIngredient",
+      "target": "memory",
+      "config": {}
+    },
+    {
+      "entity": "RecipeStep",
       "target": "memory",
       "config": {}
     },
@@ -41119,6 +41359,168 @@
         },
         {
           "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "RecipeStepCreated",
+      "channel": "kitchen.recipe.step.created",
+      "payload": [
+        {
+          "name": "recipeStepId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "recipeVersionId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "stepNumber",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "instruction",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "RecipeStepUpdated",
+      "channel": "kitchen.recipe.step.updated",
+      "payload": [
+        {
+          "name": "recipeStepId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "recipeVersionId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "stepNumber",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "oldInstruction",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "newInstruction",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "RecipeStepRemoved",
+      "channel": "kitchen.recipe.step.removed",
+      "payload": [
+        {
+          "name": "recipeStepId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "recipeVersionId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "stepNumber",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "removedAt",
           "type": {
             "name": "number",
             "nullable": false
@@ -87250,6 +87652,429 @@
       ],
       "emits": [
         "RecipeIngredientRemoved"
+      ]
+    },
+    {
+      "name": "create",
+      "entity": "RecipeStep",
+      "parameters": [
+        {
+          "name": "recipeVersionId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "stepNumber",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "instruction",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "durationMinutes",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "temperatureValue",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "temperatureUnit",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "equipmentNeeded",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tips",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "videoUrl",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "imageUrl",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "recipeVersionId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "recipeVersionId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": ">",
+          "left": {
+            "kind": "identifier",
+            "name": "stepNumber"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "instruction"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "instruction"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Recipe version ID is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Step number must be positive"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Instruction is required"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "recipeVersionId",
+          "expression": {
+            "kind": "identifier",
+            "name": "recipeVersionId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "stepNumber",
+          "expression": {
+            "kind": "identifier",
+            "name": "stepNumber"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "instruction",
+          "expression": {
+            "kind": "identifier",
+            "name": "instruction"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "durationMinutes",
+          "expression": {
+            "kind": "identifier",
+            "name": "durationMinutes"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "temperatureValue",
+          "expression": {
+            "kind": "identifier",
+            "name": "temperatureValue"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "temperatureUnit",
+          "expression": {
+            "kind": "identifier",
+            "name": "temperatureUnit"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "equipmentNeeded",
+          "expression": {
+            "kind": "identifier",
+            "name": "equipmentNeeded"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "tips",
+          "expression": {
+            "kind": "identifier",
+            "name": "tips"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "videoUrl",
+          "expression": {
+            "kind": "identifier",
+            "name": "videoUrl"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "imageUrl",
+          "expression": {
+            "kind": "identifier",
+            "name": "imageUrl"
+          }
+        }
+      ],
+      "emits": [
+        "RecipeStepCreated"
+      ]
+    },
+    {
+      "name": "updateInstruction",
+      "entity": "RecipeStep",
+      "parameters": [
+        {
+          "name": "newInstruction",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "newDurationMinutes",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "newTips",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "newInstruction"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "newInstruction"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Instruction is required"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "instruction",
+          "expression": {
+            "kind": "identifier",
+            "name": "newInstruction"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "durationMinutes",
+          "expression": {
+            "kind": "identifier",
+            "name": "newDurationMinutes"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "tips",
+          "expression": {
+            "kind": "identifier",
+            "name": "newTips"
+          }
+        }
+      ],
+      "emits": [
+        "RecipeStepUpdated"
+      ]
+    },
+    {
+      "name": "remove",
+      "entity": "RecipeStep",
+      "parameters": [
+        {
+          "name": "userId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "mutate",
+          "target": "deletedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "RecipeStepRemoved"
       ]
     },
     {

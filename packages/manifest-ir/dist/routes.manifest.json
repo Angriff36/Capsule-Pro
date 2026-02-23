@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-02-23T08:13:22.626Z",
+  "generatedAt": "2026-02-23T08:55:11.781Z",
   "basePath": "/api",
   "routes": [
     {
@@ -1470,6 +1470,36 @@
       "source": {
         "kind": "entity-read",
         "entity": "RecipeIngredient"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RecipeStep.get.list",
+      "path": "/api/recipestep/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "RecipeStep"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RecipeStep.get.detail",
+      "path": "/api/recipestep/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "RecipeStep"
       },
       "auth": true,
       "tenant": true
@@ -9817,6 +9847,132 @@
         "kind": "command",
         "entity": "RecipeIngredient",
         "command": "updateQuantity"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RecipeStep.create",
+      "path": "/api/recipestep/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "recipeVersionId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "stepNumber",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "instruction",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "durationMinutes",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "temperatureValue",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "temperatureUnit",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "equipmentNeeded",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "tips",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "videoUrl",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "imageUrl",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RecipeStep",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RecipeStep.remove",
+      "path": "/api/recipestep/remove",
+      "method": "POST",
+      "params": [
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RecipeStep",
+        "command": "remove"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RecipeStep.updateInstruction",
+      "path": "/api/recipestep/update-instruction",
+      "method": "POST",
+      "params": [
+        {
+          "name": "newInstruction",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "newDurationMinutes",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "newTips",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RecipeStep",
+        "command": "updateInstruction"
       },
       "auth": true,
       "tenant": true

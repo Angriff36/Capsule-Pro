@@ -22,6 +22,7 @@ import type {
   Recipe,
   RecipeIngredient,
   RecipeVersion,
+  recipe_steps,
   Station,
 } from "@repo/database";
 import { Prisma } from "@repo/database";
@@ -724,6 +725,113 @@ export class RecipeIngredientPrismaStore implements Store<EntityInstance> {
 }
 
 /**
+ * Prisma-backed store for RecipeStep entities
+ *
+ * Maps Manifest RecipeStep entities to the Prisma recipe_steps table.
+ * Note: Prisma model uses snake_case (recipe_steps).
+ */
+export class RecipeStepPrismaStore implements Store<EntityInstance> {
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly tenantId: string
+  ) {}
+
+  async getAll(): Promise<EntityInstance[]> {
+    const steps = await this.prisma.recipe_steps.findMany({
+      where: { tenant_id: this.tenantId, deleted_at: null },
+    });
+    return steps.map((step) => this.mapToManifestEntity(step));
+  }
+
+  async getById(id: string): Promise<EntityInstance | undefined> {
+    const step = await this.prisma.recipe_steps.findFirst({
+      where: { tenant_id: this.tenantId, id, deleted_at: null },
+    });
+    return step ? this.mapToManifestEntity(step) : undefined;
+  }
+
+  async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
+    const step = await this.prisma.recipe_steps.create({
+      data: {
+        tenant_id: this.tenantId,
+        id: data.id as string,
+        recipe_version_id: data.recipeVersionId as string,
+        step_number: data.stepNumber as number,
+        instruction: data.instruction as string,
+        duration_minutes: (data.durationMinutes as number) || null,
+        temperature_value: (data.temperatureValue as number) || null,
+        temperature_unit: (data.temperatureUnit as string) || null,
+        equipment_needed: (data.equipmentNeeded as string[])
+          ? ((data.equipmentNeeded as string).split(",").filter(Boolean) as string[])
+          : [],
+        tips: (data.tips as string) || null,
+        video_url: (data.videoUrl as string) || null,
+        image_url: (data.imageUrl as string) || null,
+      },
+    });
+    return this.mapToManifestEntity(step);
+  }
+
+  async update(
+    id: string,
+    data: Partial<EntityInstance>
+  ): Promise<EntityInstance | undefined> {
+    try {
+      const updated = await this.prisma.recipe_steps.update({
+        where: { tenant_id_id: { tenant_id: this.tenantId, id } },
+        data: {
+          instruction: data.instruction as string | undefined,
+          duration_minutes: data.durationMinutes as number | null | undefined,
+          tips: data.tips as string | null | undefined,
+          updated_at: new Date(),
+        },
+      });
+      return this.mapToManifestEntity(updated);
+    } catch {
+      return undefined;
+    }
+  }
+
+  async delete(id: string): Promise<boolean> {
+    try {
+      await this.prisma.recipe_steps.update({
+        where: { tenant_id_id: { tenant_id: this.tenantId, id } },
+        data: { deleted_at: new Date() },
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async clear(): Promise<void> {
+    await this.prisma.recipe_steps.updateMany({
+      where: { tenant_id: this.tenantId },
+      data: { deleted_at: new Date() },
+    });
+  }
+
+  private mapToManifestEntity(step: recipe_steps): EntityInstance {
+    return {
+      id: step.id,
+      tenantId: step.tenant_id,
+      recipeVersionId: step.recipe_version_id,
+      stepNumber: step.step_number,
+      instruction: step.instruction,
+      durationMinutes: step.duration_minutes ?? 0,
+      temperatureValue: step.temperature_value ? Number(step.temperature_value) : 0,
+      temperatureUnit: step.temperature_unit ?? "",
+      equipmentNeeded: step.equipment_needed?.join(",") ?? "",
+      tips: step.tips ?? "",
+      videoUrl: step.video_url ?? "",
+      imageUrl: step.image_url ?? "",
+      createdAt: step.created_at.getTime(),
+      updatedAt: step.updated_at.getTime(),
+    };
+  }
+}
+
+/**
  * Prisma-backed store for Dish entities
  *
  * Maps Manifest Dish entities to the Prisma Dish table.
@@ -992,6 +1100,8 @@ export function createPrismaStoreProvider(
         return new IngredientPrismaStore(prisma, tenantId);
       case "RecipeIngredient":
         return new RecipeIngredientPrismaStore(prisma, tenantId);
+      case "RecipeStep":
+        return new RecipeStepPrismaStore(prisma, tenantId);
       case "Dish":
         return new DishPrismaStore(prisma, tenantId);
       case "Menu":

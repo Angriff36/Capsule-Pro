@@ -71,10 +71,10 @@
 - **What:** POST endpoint for atomic Recipe update with new RecipeVersion creation in single `$transaction`.
 - **Rationale:** High impact — enables safe version-controlled updates. Current `updateRecipe` in actions-manifest-v2.ts lacks atomic version creation.
 
-### [P2-1] Add `RecipeStep` entity to manifest + PrismaStore
+### [P2-1] ✅ COMPLETE — Add `RecipeStep` entity to manifest + PrismaStore
 - **Files:** `recipe-rules.manifest`, `prisma-store.ts`, `manifest-runtime-factory.ts`
-- **What:** New entity with create/update/remove commands. Add `RecipeStepPrismaStore` and register in factory. Note: Prisma model is `recipe_steps` (plural), manifest entity will be `RecipeStep` (singular).
-- **Rationale:** Medium — enables pure-manifest step management. `recipe_steps` Prisma model exists (packages/database/generated/models/recipe_steps.ts) but not wired to manifest.
+- **What:** Added RecipeStep entity with create/update/remove commands. Added `RecipeStepPrismaStore` and registered in factory.
+- **Completed:** 2026-02-23 — Entity defined in manifest, PrismaStore maps to `recipe_steps` table, registered in ENTITIES_WITH_SPECIFIC_STORES.
 
 ### [P2-2] Migrate frontend recipe forms to composite routes
 - **Files:** `new-recipe-form-client.tsx`, `recipe-form-with-constraints.tsx`, `new-dish-form-client.tsx`, `recipe-detail-edit-button.tsx`, `recipe-detail-tabs.tsx`
