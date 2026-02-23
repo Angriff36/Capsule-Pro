@@ -9,12 +9,19 @@ export default defineConfig({
   test: {
     environment: "node",
     globals: true,
+    setupFiles: ["./test/setup.ts"],
     include: ["**/*.test.{ts,tsx}", "**/*.spec.{ts,tsx}"],
-    exclude: ["**/node_modules/**"],
+    exclude: [
+      "**/node_modules/**",
+      // Integration tests run with vitest.config.integration.mts
+      "**/*.integration.test.{ts,tsx}",
+    ],
   },
   resolve: {
     alias: {
       "@": resolve(__dirname, "."),
+      "server-only": resolve(__dirname, "./test/mocks/server-only.ts"),
+      "@repo/database": resolve(__dirname, "./test/mocks/@repo/database.ts"),
     },
   },
 });
