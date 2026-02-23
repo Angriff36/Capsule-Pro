@@ -44,12 +44,13 @@ only the full write-up moves to the archive. This keeps the ledger readable for 
 4. Agent 9 — 13 points
 5. Agent 10 — 13 points (archived)
 6. Agent 11 — 13 points (archived)
-7. Agent 17 — 7 points (verification)
-8. Agent 18 — 7 points (verification)
-9. Agent 12 — 9 points (archived)
-10. Agent 13 — 4 points (archived)
-11. Agent 14 — 4 points (archived)
-12. Agent 15 — 4 points (archived)
+7. Agent 19 — 9 points
+8. Agent 12 — 9 points (archived)
+9. Agent 17 — 7 points (verification)
+10. Agent 18 — 7 points (verification)
+11. Agent 13 — 4 points (archived)
+12. Agent 14 — 4 points (archived)
+13. Agent 15 — 4 points (archived)
 
 # Agent 1 (Example)
 
@@ -281,63 +282,78 @@ nothing to commit, working tree clean
 
 ---
 
-# Agent 14
+# Agent 19
 
-**Agent ID:** 14
-**Date/Time:** 2026-02-23 08:08
-**Base branch/commit:** fix/dev-server-stability @ 5f1ff4cb1
+**Agent ID:** 19
+**Date/Time:** 2026-02-23 09:31
+**Base branch/commit:** fix/dev-server-stability @ 6866dd84d
 
 **Goal:**
-Verify project state — confirm all tests pass, build succeeds, and IMPLEMENTATION_PLAN.md remains complete (13/13 tasks).
+Resolve the manifest-integration spec by confirming the actual canonical manifest location.
 
 **Invariants enforced:**
 
-- All test suites must pass before claiming verification complete.
-- TypeScript must compile with zero errors.
-- Build must succeed for both app and api packages.
+- Documentation must match actual code structure.
+- Specs should not propose migrations for directories that don't exist.
+- No code changes without verification that tests pass.
 
 **Subagents used:**
-None — this was a verification session.
+
+- Explore agent: Found that `packages/manifest-sources/` doesn't exist and `packages/manifest-adapters/manifests/` has 40 files, not 6 as the spec claimed.
+- Senior Engineer agent: Updated the manifest-integration spec to reflect reality and mark it as resolved.
 
 **Reproducer:**
-N/A — verification session, no bugs found.
+N/A — documentation fix, no code changes.
 
 **Root cause:**
-N/A — verification session to confirm project stability at v0.7.6.
+The `specs/manifest/manifest-integration_INPROGRESS/` spec was outdated. It proposed migrating 6 manifests from `manifest-adapters/manifests` to `manifest-sources/kitchen`, but:
+1. `packages/manifest-sources/` directory doesn't exist
+2. There are 40 manifest files, not 6
+3. `manifest.config.yaml` correctly points to `manifest-adapters/manifests`
+4. The migration was never implemented
 
 **Fix strategy:**
-Reviewed IMPLEMENTATION_PLAN.md showing 13/13 tasks complete. Ran full validation suite: TypeScript compiles clean, 379 app tests pass, 567 API tests pass, 667 manifest tests pass, app+api build succeeds. No new work needed.
+Updated the spec to mark it RESOLVED with documentation that:
+- Confirms `packages/manifest-adapters/manifests/` IS the canonical source (40 files)
+- Documents the actual structure and workflow
+- Archives the incorrect migration proposal as historical analysis
+- Renamed directory from `_INPROGRESS` to remove gitignore pattern
+
+Minimal scope: documentation only, no code changes.
 
 **Verification evidence:**
 
 ```
+$ ls packages/manifest-sources/kitchen/
+Directory doesn't exist
+
+$ ls packages/manifest-adapters/manifests/ | wc -l
+40
+
+$ cat manifest.config.yaml | grep src
+src: "packages/manifest-adapters/manifests/*.manifest"
+
 $ pnpm --filter app test --run
 Test Files: 29 passed, Tests: 379 passed
 
 $ pnpm --filter api test --run
 Test Files: 38 passed | 1 skipped, Tests: 567 passed | 1 skipped
 
-$ pnpm --filter @angriff36/manifest test --run
-Test Files: 14 passed, Tests: 667 passed
+$ git add specs/manifest/manifest-integration/ && git commit
+[fix/dev-server-stability f43a85616] docs: resolve manifest-integration spec
 
-$ pnpm turbo build --filter=app --filter=api
-Tasks: 9 successful, 9 total
-
-$ git tag --sort=-v:refname | head -1
-v0.7.6
-
-$ git status
-On branch fix/dev-server-stability
-nothing to commit, working tree clean
+$ git tag v0.7.10 && git push --tags
+ * [new tag] v0.7.10 -> v0.7.10
 ```
 
 **Follow-ups filed:**
-None. All 13 tasks in IMPLEMENTATION_PLAN.md are verified complete. Project is stable at v0.7.6.
+None. The manifest-integration spec is now resolved. The main IMPLEMENTATION_PLAN.md conflict note about this spec can be considered addressed.
 
 **Points tally:**
-+2 improved diagnosability (confirmed stable state with full verification)
-+2 improved diagnosability (updated leaderboard entry)
-= **4 points**
++3 invariant defined before implementation (docs must match reality, no unneeded migrations)
++4 correct subagent delegation (Explore agent for investigation, Senior Engineer for spec update)
++2 improved diagnosability (resolved confusing spec, updated status from INPROGRESS to resolved)
+= **9 points**
 
 ---
 
