@@ -245,6 +245,62 @@ entity RecipeIngredient {
   store RecipeIngredient in memory
 }
 
+entity RecipeStep {
+  property required id: string
+  property required tenantId: string
+  property required recipeVersionId: string
+  property required stepNumber: number
+  property required instruction: string
+  property durationMinutes: number = 0
+  property temperatureValue: number = 0
+  property temperatureUnit: string = ""
+  property equipmentNeeded: string = ""
+  property tips: string = ""
+  property videoUrl: string = ""
+  property imageUrl: string = ""
+  property deletedAt: number = 0
+
+  constraint positiveStepNumber: self.stepNumber > 0 "Step number must be positive"
+  constraint validInstruction: self.instruction != null and self.instruction != "" "Instruction is required"
+
+  command create(recipeVersionId: string, stepNumber: number, instruction: string, durationMinutes: number, temperatureValue: number, temperatureUnit: string, equipmentNeeded: string, tips: string, videoUrl: string, imageUrl: string) {
+    guard recipeVersionId != null and recipeVersionId != "" "Recipe version ID is required"
+    guard stepNumber > 0 "Step number must be positive"
+    guard instruction != null and instruction != "" "Instruction is required"
+
+    mutate recipeVersionId = recipeVersionId
+    mutate stepNumber = stepNumber
+    mutate instruction = instruction
+    mutate durationMinutes = durationMinutes
+    mutate temperatureValue = temperatureValue
+    mutate temperatureUnit = temperatureUnit
+    mutate equipmentNeeded = equipmentNeeded
+    mutate tips = tips
+    mutate videoUrl = videoUrl
+    mutate imageUrl = imageUrl
+
+    emit RecipeStepCreated
+  }
+
+  command updateInstruction(newInstruction: string, newDurationMinutes: number, newTips: string) {
+    guard newInstruction != null and newInstruction != "" "Instruction is required"
+
+    mutate instruction = newInstruction
+    mutate durationMinutes = newDurationMinutes
+    mutate tips = newTips
+
+    emit RecipeStepUpdated
+  }
+
+  command remove(userId: string) {
+    mutate deletedAt = now()
+
+    emit RecipeStepRemoved
+  }
+
+  store RecipeStep in memory
+}
+
 entity Dish {
   property required id: string
   property required tenantId: string
@@ -435,6 +491,33 @@ event RecipeIngredientUpdated: "kitchen.recipe.ingredient.updated" {
   oldQuantity: number
   newQuantity: number
   updatedAt: number
+}
+
+event RecipeStepCreated: "kitchen.recipe.step.created" {
+  recipeStepId: string
+  recipeVersionId: string
+  tenantId: string
+  stepNumber: number
+  instruction: string
+  createdAt: number
+}
+
+event RecipeStepUpdated: "kitchen.recipe.step.updated" {
+  recipeStepId: string
+  recipeVersionId: string
+  tenantId: string
+  stepNumber: number
+  oldInstruction: string
+  newInstruction: string
+  updatedAt: number
+}
+
+event RecipeStepRemoved: "kitchen.recipe.step.removed" {
+  recipeStepId: string
+  recipeVersionId: string
+  tenantId: string
+  stepNumber: number
+  removedAt: number
 }
 
 event DishCreated: "kitchen.dish.created" {

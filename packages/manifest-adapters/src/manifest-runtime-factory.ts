@@ -129,6 +129,7 @@ const ENTITIES_WITH_SPECIFIC_STORES = new Set([
   "RecipeVersion",
   "Ingredient",
   "RecipeIngredient",
+  "RecipeStep",
   "Dish",
   "Menu",
   "MenuDish",
