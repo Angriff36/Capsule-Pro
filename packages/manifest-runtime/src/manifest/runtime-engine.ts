@@ -1998,9 +1998,11 @@ export class RuntimeEngine {
         return (left as number) % (right as number);
       case "==":
       case "is":
-        return left === right; // Loose equality: undefined == null is true
+        // biome-ignore lint/suspicious/noDoubleEquals: Manifest spec requires loose equality semantics (undefined == null is true)
+        return left == right;
       case "!=":
-        return left !== right; // Loose inequality: undefined != null is false
+        // biome-ignore lint/suspicious/noDoubleEquals: Manifest spec requires loose inequality semantics (undefined != null is false)
+        return left != right;
       case "<":
         return (left as number) < (right as number);
       case ">":
