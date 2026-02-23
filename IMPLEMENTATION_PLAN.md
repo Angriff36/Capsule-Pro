@@ -38,14 +38,10 @@
 - **What:** GET endpoint accepting `?from=X&to=Y`, returning field-level diff.
 - **Completed:** 2026-02-23 — Compares base fields, ingredients (by ingredientId), and steps (by stepNumber). Security: both versions must belong to same recipeId AND tenantId.
 
-### [P1-1] Create composite `create-with-version` route
+### [P1-1] ✅ COMPLETE — Create composite `create-with-version` route
 - **File:** `apps/api/app/api/kitchen/recipes/composite/create-with-version/route.ts` (NEW)
 - **What:** POST endpoint wrapping Recipe + RecipeVersion + RecipeIngredients + RecipeSteps in single `$transaction`.
-- **Bug Being Fixed:** In `actions.ts:361-382`, the raw SQL INSERT has column/value mismatch:
-  - Column 5 is `description` but value 5 is `${cuisineType}`
-  - This causes cuisineType to be stored in description column, description stored in tags
-  - Same bug exists in actions-manifest.ts and actions-manifest-v2.ts (lines 542-562)
-- **Rationale:** High impact — replaces raw SQL in `actions.ts:373-381` where `cuisineType` is incorrectly inserted into `description` column (column order mismatch). Composite route uses PrismaStore with correct field mapping.
+- **Completed:** 2026-02-23 — Uses `prismaOverride` for atomic multi-entity writes. Fixes cuisineType bug by using PrismaStore with correct field mapping instead of raw SQL.
 
 ### [P1-2] Create composite `restore-version` route
 - **File:** `apps/api/app/api/kitchen/recipes/composite/restore-version/route.ts` (NEW)
