@@ -5,7 +5,6 @@ import {
   type KitchenTaskClaim,
   type KitchenTaskProgress,
   type KitchenTaskStatus,
-  type Prisma,
   tenantDatabase,
 } from "@repo/database";
 import { revalidatePath } from "next/cache";
@@ -51,24 +50,7 @@ const getDateTime = (formData: FormData, key: string): Date | undefined => {
   return Number.isNaN(dateValue.getTime()) ? undefined : dateValue;
 };
 
-const enqueueOutboxEvent = async (
-  tenantId: string,
-  aggregateType: string,
-  aggregateId: string,
-  eventType: string,
-  payload: Prisma.InputJsonValue
-): Promise<void> => {
-  const client = tenantDatabase(tenantId);
-  await client.outboxEvent.create({
-    data: {
-      tenantId,
-      aggregateType,
-      aggregateId,
-      eventType,
-      payload,
-    },
-  });
-};
+// enqueueOutboxEvent removed — outbox writes are now inlined inside $transaction blocks
 
 // ============================================================================
 // Query Operations
@@ -157,31 +139,37 @@ export const createKitchenTask = async (
   const priority = priorityStr ? Number.parseInt(priorityStr, 10) : undefined;
   const dueDate = getDateTime(formData, "dueDate");
 
-  const task = await client.kitchenTask.create({
-    data: {
-      tenantId,
-      title,
-      summary,
-      priority: priority || 5, // default to medium (5)
-      dueDate,
-    },
+  const task = await client.$transaction(async (tx) => {
+    const created = await tx.kitchenTask.create({
+      data: {
+        tenantId,
+        title,
+        summary,
+        priority: priority || 5, // default to medium (5)
+        dueDate,
+      },
+    });
+
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "kitchen.task",
+        aggregateId: created.id,
+        eventType: "kitchen.task.created",
+        payload: {
+          taskId: created.id,
+          title: created.title,
+          priority: created.priority,
+          status: created.status,
+        },
+        status: "pending" as const,
+      },
+    });
+
+    return created;
   });
 
   revalidatePath("/kitchen/tasks");
-
-  // Enqueue outbox event for real-time sync
-  await enqueueOutboxEvent(
-    tenantId,
-    "kitchen.task",
-    task.id,
-    "kitchen.task.created",
-    {
-      taskId: task.id,
-      title: task.title,
-      priority: task.priority,
-      status: task.status,
-    }
-  );
 
   return task;
 };
@@ -206,31 +194,37 @@ export const updateKitchenTask = async (
   const priority = priorityStr ? Number.parseInt(priorityStr, 10) : undefined;
   const dueDate = getDateTime(formData, "dueDate");
 
-  const task = await client.kitchenTask.update({
-    where: { tenantId_id: { tenantId, id: taskId } },
-    data: {
-      ...(title && { title }),
-      ...(summary !== undefined && { summary: summary || "" }),
-      ...(priority && { priority }),
-      ...(dueDate && { dueDate }),
-    },
+  const task = await client.$transaction(async (tx) => {
+    const updated = await tx.kitchenTask.update({
+      where: { tenantId_id: { tenantId, id: taskId } },
+      data: {
+        ...(title && { title }),
+        ...(summary !== undefined && { summary: summary || "" }),
+        ...(priority && { priority }),
+        ...(dueDate && { dueDate }),
+      },
+    });
+
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "kitchen.task",
+        aggregateId: updated.id,
+        eventType: "kitchen.task.updated",
+        payload: {
+          taskId: updated.id,
+          title: updated.title,
+          priority: updated.priority,
+          status: updated.status,
+        },
+        status: "pending" as const,
+      },
+    });
+
+    return updated;
   });
 
   revalidatePath("/kitchen/tasks");
-
-  // Enqueue outbox event for real-time sync
-  await enqueueOutboxEvent(
-    tenantId,
-    "kitchen.task",
-    task.id,
-    "kitchen.task.updated",
-    {
-      taskId: task.id,
-      title: task.title,
-      priority: task.priority,
-      status: task.status,
-    }
-  );
 
   return task;
 };
@@ -260,25 +254,31 @@ export const updateKitchenTaskStatus = async (
 
   const previousStatus = currentTask.status;
 
-  const task = await client.kitchenTask.update({
-    where: { tenantId_id: { tenantId, id: taskId } },
-    data: { status },
+  const task = await client.$transaction(async (tx) => {
+    const updated = await tx.kitchenTask.update({
+      where: { tenantId_id: { tenantId, id: taskId } },
+      data: { status },
+    });
+
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "kitchen.task",
+        aggregateId: updated.id,
+        eventType: "kitchen.task.status_changed",
+        payload: {
+          taskId: updated.id,
+          status: updated.status,
+          previousStatus,
+        },
+        status: "pending" as const,
+      },
+    });
+
+    return updated;
   });
 
   revalidatePath("/kitchen/tasks");
-
-  // Enqueue outbox event for real-time sync
-  await enqueueOutboxEvent(
-    tenantId,
-    "kitchen.task",
-    task.id,
-    "kitchen.task.status_changed",
-    {
-      taskId: task.id,
-      status: task.status,
-      previousStatus,
-    }
-  );
 
   return task;
 };
@@ -294,22 +294,26 @@ export const deleteKitchenTask = async (taskId: string): Promise<void> => {
     throw new Error("Task id is required.");
   }
 
-  await client.kitchenTask.delete({
-    where: { tenantId_id: { tenantId, id: taskId } },
+  await client.$transaction(async (tx) => {
+    await tx.kitchenTask.delete({
+      where: { tenantId_id: { tenantId, id: taskId } },
+    });
+
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "kitchen.task",
+        aggregateId: taskId,
+        eventType: "kitchen.task.deleted",
+        payload: {
+          taskId,
+        },
+        status: "pending" as const,
+      },
+    });
   });
 
   revalidatePath("/kitchen/tasks");
-
-  // Enqueue outbox event for real-time sync
-  await enqueueOutboxEvent(
-    tenantId,
-    "kitchen.task",
-    taskId,
-    "kitchen.task.deleted",
-    {
-      taskId,
-    }
-  );
 };
 
 // ============================================================================
@@ -330,35 +334,41 @@ export const claimTask = async (
     throw new Error("Task id and employee id are required.");
   }
 
-  // Update task status to in_progress
-  await client.kitchenTask.update({
-    where: { tenantId_id: { tenantId, id: taskId } },
-    data: { status: "in_progress" },
-  });
+  const claim = await client.$transaction(async (tx) => {
+    // Update task status to in_progress
+    await tx.kitchenTask.update({
+      where: { tenantId_id: { tenantId, id: taskId } },
+      data: { status: "in_progress" },
+    });
 
-  // Create claim record
-  const claim = await client.kitchenTaskClaim.create({
-    data: {
-      tenantId,
-      taskId,
-      employeeId,
-    },
+    // Create claim record
+    const created = await tx.kitchenTaskClaim.create({
+      data: {
+        tenantId,
+        taskId,
+        employeeId,
+      },
+    });
+
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "kitchen.task",
+        aggregateId: taskId,
+        eventType: "kitchen.task.claimed",
+        payload: {
+          taskId,
+          employeeId,
+          claimedAt: created.claimedAt.toISOString(),
+        },
+        status: "pending" as const,
+      },
+    });
+
+    return created;
   });
 
   revalidatePath("/kitchen/tasks");
-
-  // Enqueue outbox event for real-time sync
-  await enqueueOutboxEvent(
-    tenantId,
-    "kitchen.task",
-    taskId,
-    "kitchen.task.claimed",
-    {
-      taskId,
-      employeeId,
-      claimedAt: claim.claimedAt.toISOString(),
-    }
-  );
 
   return claim;
 };
@@ -389,35 +399,41 @@ export const releaseTask = async (
     return null;
   }
 
-  // Release the claim
-  const updatedClaim = await client.kitchenTaskClaim.update({
-    where: { tenantId_id: { tenantId, id: activeClaim.id } },
-    data: {
-      releasedAt: new Date(),
-      releaseReason: reason ?? undefined,
-    },
-  });
+  const updatedClaim = await client.$transaction(async (tx) => {
+    // Release the claim
+    const released = await tx.kitchenTaskClaim.update({
+      where: { tenantId_id: { tenantId, id: activeClaim.id } },
+      data: {
+        releasedAt: new Date(),
+        releaseReason: reason ?? undefined,
+      },
+    });
 
-  // Update task status back to open
-  await client.kitchenTask.update({
-    where: { tenantId_id: { tenantId, id: taskId } },
-    data: { status: "open" },
+    // Update task status back to open
+    await tx.kitchenTask.update({
+      where: { tenantId_id: { tenantId, id: taskId } },
+      data: { status: "open" },
+    });
+
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "kitchen.task",
+        aggregateId: taskId,
+        eventType: "kitchen.task.released",
+        payload: {
+          taskId,
+          employeeId: activeClaim.employeeId,
+          reason: reason ?? null,
+        },
+        status: "pending" as const,
+      },
+    });
+
+    return released;
   });
 
   revalidatePath("/kitchen/tasks");
-
-  // Enqueue outbox event for real-time sync
-  await enqueueOutboxEvent(
-    tenantId,
-    "kitchen.task",
-    taskId,
-    "kitchen.task.released",
-    {
-      taskId,
-      employeeId: activeClaim.employeeId,
-      reason: reason ?? null,
-    }
-  );
 
   return updatedClaim;
 };
@@ -488,37 +504,43 @@ export const addTaskProgress = async (
     throw new Error("Task id and employee id are required.");
   }
 
-  const progress = await client.kitchenTaskProgress.create({
-    data: {
-      tenantId,
-      taskId,
-      employeeId,
-      progressType,
-      ...(options?.oldStatus && { oldStatus: options.oldStatus }),
-      ...(options?.newStatus && { newStatus: options.newStatus }),
-      ...(options?.quantityCompleted && {
-        quantityCompleted: options.quantityCompleted,
-      }),
-      ...(options?.notes && { notes: options.notes }),
-    },
+  const progress = await client.$transaction(async (tx) => {
+    const created = await tx.kitchenTaskProgress.create({
+      data: {
+        tenantId,
+        taskId,
+        employeeId,
+        progressType,
+        ...(options?.oldStatus && { oldStatus: options.oldStatus }),
+        ...(options?.newStatus && { newStatus: options.newStatus }),
+        ...(options?.quantityCompleted && {
+          quantityCompleted: options.quantityCompleted,
+        }),
+        ...(options?.notes && { notes: options.notes }),
+      },
+    });
+
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "kitchen.task.progress",
+        aggregateId: taskId,
+        eventType: "kitchen.task.progress",
+        payload: {
+          taskId,
+          employeeId,
+          progressType,
+          ...(options?.newStatus && { newStatus: options.newStatus }),
+          ...(options?.notes && { notes: options.notes }),
+        },
+        status: "pending" as const,
+      },
+    });
+
+    return created;
   });
 
   revalidatePath("/kitchen/tasks");
-
-  // Enqueue outbox event for real-time sync
-  await enqueueOutboxEvent(
-    tenantId,
-    "kitchen.task.progress",
-    taskId,
-    "kitchen.task.progress",
-    {
-      taskId,
-      employeeId,
-      progressType,
-      ...(options?.newStatus && { newStatus: options.newStatus }),
-      ...(options?.notes && { notes: options.notes }),
-    }
-  );
 
   return progress;
 };

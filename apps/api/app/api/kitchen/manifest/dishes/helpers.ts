@@ -264,60 +264,9 @@ export function checkBlockingConstraints(
 }
 
 /**
- * Sync updated dish pricing to database
+ * Sync updated dish pricing to database + outbox atomically
  */
-export async function syncDishPricingToDatabase(
-  tenantId: string,
-  dishId: string,
-  pricePerPerson: number,
-  costPerPerson: number
-): Promise<void> {
-  await database.dish.update({
-    where: { tenantId_id: { tenantId, id: dishId } },
-    data: {
-      pricePerPerson,
-      costPerPerson,
-    },
-  });
-}
-
-/**
- * Create a dish in the database
- */
-export function createDishInDatabase(
-  tenantId: string,
-  dishId: string,
-  data: DishCreateRequest
-): Promise<Awaited<ReturnType<typeof database.dish.create>>> {
-  const dietaryTagsString = data.dietaryTags?.join(",") ?? "";
-  const allergensString = data.allergens?.join(",") ?? "";
-
-  return database.dish.create({
-    data: {
-      tenantId,
-      id: dishId,
-      recipeId: data.recipeId,
-      name: data.name,
-      description: data.description || null,
-      category: data.category || null,
-      serviceStyle: data.serviceStyle || null,
-      presentationImageUrl: data.presentationImageUrl || null,
-      dietaryTags: dietaryTagsString.split(",").filter(Boolean),
-      allergens: allergensString.split(",").filter(Boolean),
-      pricePerPerson: data.pricePerPerson ?? 0,
-      costPerPerson: data.costPerPerson ?? 0,
-      minPrepLeadDays: data.minPrepLeadDays ?? 0,
-      maxPrepLeadDays: data.maxPrepLeadDays ?? 7,
-      portionSizeDescription: data.portionSizeDescription || null,
-      isActive: true,
-    },
-  });
-}
-
-/**
- * Create an outbox event for dish pricing update
- */
-export async function createDishPricingOutboxEvent(
+export async function syncDishPricingWithOutbox(
   tenantId: string,
   dishId: string,
   name: string,
@@ -326,51 +275,90 @@ export async function createDishPricingOutboxEvent(
   constraintOutcomes: unknown[] | undefined,
   emittedEvents: unknown[] | undefined
 ): Promise<void> {
-  await database.outboxEvent.create({
-    data: {
-      tenantId,
-      aggregateType: "Dish",
-      aggregateId: dishId,
-      eventType: "kitchen.dish.pricing.updated",
-      payload: {
-        dishId,
-        name,
+  await database.$transaction(async (tx) => {
+    await tx.dish.update({
+      where: { tenantId_id: { tenantId, id: dishId } },
+      data: {
         pricePerPerson,
         costPerPerson,
-        constraintOutcomes,
-        emittedEvents,
-      } as Prisma.InputJsonValue,
-      status: "pending" as const,
-    },
+      },
+    });
+
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "Dish",
+        aggregateId: dishId,
+        eventType: "kitchen.dish.pricing.updated",
+        payload: {
+          dishId,
+          name,
+          pricePerPerson,
+          costPerPerson,
+          constraintOutcomes,
+          emittedEvents,
+        } as Prisma.InputJsonValue,
+        status: "pending" as const,
+      },
+    });
   });
 }
 
 /**
- * Create an outbox event for dish creation
+ * Create a dish in the database + outbox atomically
  */
-export async function createDishCreatedOutboxEvent(
+export async function createDishWithOutbox(
   tenantId: string,
   dishId: string,
   recipeId: string,
   name: string,
   pricePerPerson: number,
-  costPerPerson: number
-): Promise<void> {
-  await database.outboxEvent.create({
-    data: {
-      tenantId,
-      aggregateType: "Dish",
-      aggregateId: dishId,
-      eventType: "kitchen.dish.created",
-      payload: {
-        dishId,
-        recipeId,
-        name,
-        pricePerPerson,
-        costPerPerson,
+  costPerPerson: number,
+  data: DishCreateRequest
+): Promise<Awaited<ReturnType<typeof database.dish.create>>> {
+  const dietaryTagsString = data.dietaryTags?.join(",") ?? "";
+  const allergensString = data.allergens?.join(",") ?? "";
+
+  return database.$transaction(async (tx) => {
+    const dish = await tx.dish.create({
+      data: {
+        tenantId,
+        id: dishId,
+        recipeId: data.recipeId,
+        name: data.name,
+        description: data.description || null,
+        category: data.category || null,
+        serviceStyle: data.serviceStyle || null,
+        presentationImageUrl: data.presentationImageUrl || null,
+        dietaryTags: dietaryTagsString.split(",").filter(Boolean),
+        allergens: allergensString.split(",").filter(Boolean),
+        pricePerPerson: data.pricePerPerson ?? 0,
+        costPerPerson: data.costPerPerson ?? 0,
+        minPrepLeadDays: data.minPrepLeadDays ?? 0,
+        maxPrepLeadDays: data.maxPrepLeadDays ?? 7,
+        portionSizeDescription: data.portionSizeDescription || null,
+        isActive: true,
       },
-      status: "pending" as const,
-    },
+    });
+
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "Dish",
+        aggregateId: dishId,
+        eventType: "kitchen.dish.created",
+        payload: {
+          dishId,
+          recipeId,
+          name,
+          pricePerPerson,
+          costPerPerson,
+        },
+        status: "pending" as const,
+      },
+    });
+
+    return dish;
   });
 }
 

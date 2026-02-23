@@ -222,24 +222,6 @@ const uploadImage = async (
   return blob.url;
 };
 
-const enqueueOutboxEvent = async (
-  tenantId: string,
-  aggregateType: string,
-  aggregateId: string,
-  eventType: string,
-  payload: Prisma.InputJsonValue
-) => {
-  await database.outboxEvent.create({
-    data: {
-      tenantId,
-      aggregateType,
-      aggregateId,
-      eventType,
-      payload,
-    },
-  });
-};
-
 const loadUnitMap = async (codes: string[]) => {
   if (codes.length === 0) {
     return new Map<string, number>();
@@ -254,12 +236,15 @@ const loadUnitMap = async (codes: string[]) => {
   return new Map(rows.map((row) => [row.code.toLowerCase(), row.id]));
 };
 
+type TxClient = Parameters<Parameters<typeof database.$transaction>[0]>[0];
+
 const ensureIngredientId = async (
+  tx: TxClient,
   tenantId: string,
   name: string,
   defaultUnitId: number
 ) => {
-  const [existing] = await database.$queryRaw<{ id: string }[]>(
+  const [existing] = await tx.$queryRaw<{ id: string }[]>(
     Prisma.sql`
       SELECT id
       FROM tenant_kitchen.ingredients
@@ -275,7 +260,7 @@ const ensureIngredientId = async (
   }
 
   const id = randomUUID();
-  await database.$executeRaw(
+  await tx.$executeRaw(
     Prisma.sql`
       INSERT INTO tenant_kitchen.ingredients (
         tenant_id,
@@ -369,145 +354,158 @@ export const createRecipe = async (formData: FormData) => {
     ? await uploadImage(tenantId, `recipes/${recipeId}/hero`, imageFile)
     : null;
 
-  await database.$executeRaw(
-    Prisma.sql`
-      INSERT INTO tenant_kitchen.recipes (
-        tenant_id,
-        id,
-        name,
-        category,
-        description,
-        tags,
-        is_active
-      )
-      VALUES (
-        ${tenantId},
-        ${recipeId},
-        ${name},
-        ${category},
-        ${cuisineType},
-        ${description},
-        ${tags.length > 0 ? tags : null},
-        true
-      )
-    `
-  );
-
   const safeYieldQuantity =
     yieldQuantity && yieldQuantity > 0 ? yieldQuantity : 1;
 
-  await database.$executeRaw(
-    Prisma.sql`
-      INSERT INTO tenant_kitchen.recipe_versions (
-        tenant_id,
-        id,
-        recipe_id,
-        name,
-        category,
-        cuisine_type,
-        description,
-        tags,
-        version_number,
-        yield_quantity,
-        yield_unit_id,
-        yield_description,
-        prep_time_minutes,
-        cook_time_minutes,
-        rest_time_minutes,
-        difficulty_level,
-        instructions,
-        notes
-      )
-      VALUES (
-        ${tenantId},
-        ${recipeVersionId},
-        ${recipeId},
-        ${name},
-        ${category},
-        ${cuisineType},
-        ${description},
-        ${tags.length > 0 ? tags : null},
-        1,
-        ${safeYieldQuantity},
-        ${unitsMap.get(yieldUnit.toLowerCase()) ?? fallbackUnitId},
-        ${yieldDescription},
-        ${prepTime},
-        ${cookTime},
-        ${restTime},
-        ${difficulty},
-        ${instructionsText},
-        ${notes}
-      )
-    `
-  );
-
-  for (const [index, ingredient] of ingredientInputs.entries()) {
-    const ingredientName = ingredient.name;
-    const unitId =
-      (ingredient.unit ? unitsMap.get(ingredient.unit) : undefined) ??
-      fallbackUnitId;
-    const ingredientId = await ensureIngredientId(
-      tenantId,
-      ingredientName,
-      unitId
-    );
-
-    await database.$executeRaw(
+  await database.$transaction(async (tx) => {
+    await tx.$executeRaw(
       Prisma.sql`
-        INSERT INTO tenant_kitchen.recipe_ingredients (
+        INSERT INTO tenant_kitchen.recipes (
           tenant_id,
           id,
-          recipe_version_id,
-          ingredient_id,
-          quantity,
-          unit_id,
-          preparation_notes,
-          is_optional,
-          sort_order
+          name,
+          category,
+          description,
+          tags,
+          is_active
         )
         VALUES (
           ${tenantId},
-          ${randomUUID()},
-          ${recipeVersionId},
-          ${ingredientId},
-          ${ingredient.quantity},
-          ${unitId},
-          ${ingredient.preparationNotes},
-          ${ingredient.isOptional},
-          ${index + 1}
+          ${recipeId},
+          ${name},
+          ${category},
+          ${cuisineType},
+          ${description},
+          ${tags.length > 0 ? tags : null},
+          true
         )
       `
     );
-  }
 
-  for (const [index, step] of stepInputs.entries()) {
-    await database.$executeRaw(
+    await tx.$executeRaw(
       Prisma.sql`
-        INSERT INTO tenant_kitchen.recipe_steps (
+        INSERT INTO tenant_kitchen.recipe_versions (
           tenant_id,
           id,
-          recipe_version_id,
-          step_number,
-          instruction,
-          image_url
+          recipe_id,
+          name,
+          category,
+          cuisine_type,
+          description,
+          tags,
+          version_number,
+          yield_quantity,
+          yield_unit_id,
+          yield_description,
+          prep_time_minutes,
+          cook_time_minutes,
+          rest_time_minutes,
+          difficulty_level,
+          instructions,
+          notes
         )
         VALUES (
           ${tenantId},
-          ${randomUUID()},
           ${recipeVersionId},
-          ${index + 1},
-          ${step.instruction},
-          ${index === 0 ? imageUrl : null}
+          ${recipeId},
+          ${name},
+          ${category},
+          ${cuisineType},
+          ${description},
+          ${tags.length > 0 ? tags : null},
+          1,
+          ${safeYieldQuantity},
+          ${unitsMap.get(yieldUnit.toLowerCase()) ?? fallbackUnitId},
+          ${yieldDescription},
+          ${prepTime},
+          ${cookTime},
+          ${restTime},
+          ${difficulty},
+          ${instructionsText},
+          ${notes}
         )
       `
     );
-  }
+
+    for (const [index, ingredient] of ingredientInputs.entries()) {
+      const ingredientName = ingredient.name;
+      const unitId =
+        (ingredient.unit ? unitsMap.get(ingredient.unit) : undefined) ??
+        fallbackUnitId;
+      const ingredientId = await ensureIngredientId(
+        tx,
+        tenantId,
+        ingredientName,
+        unitId
+      );
+
+      await tx.$executeRaw(
+        Prisma.sql`
+          INSERT INTO tenant_kitchen.recipe_ingredients (
+            tenant_id,
+            id,
+            recipe_version_id,
+            ingredient_id,
+            quantity,
+            unit_id,
+            preparation_notes,
+            is_optional,
+            sort_order
+          )
+          VALUES (
+            ${tenantId},
+            ${randomUUID()},
+            ${recipeVersionId},
+            ${ingredientId},
+            ${ingredient.quantity},
+            ${unitId},
+            ${ingredient.preparationNotes},
+            ${ingredient.isOptional},
+            ${index + 1}
+          )
+        `
+      );
+    }
+
+    for (const [index, step] of stepInputs.entries()) {
+      await tx.$executeRaw(
+        Prisma.sql`
+          INSERT INTO tenant_kitchen.recipe_steps (
+            tenant_id,
+            id,
+            recipe_version_id,
+            step_number,
+            instruction,
+            image_url
+          )
+          VALUES (
+            ${tenantId},
+            ${randomUUID()},
+            ${recipeVersionId},
+            ${index + 1},
+            ${step.instruction},
+            ${index === 0 ? imageUrl : null}
+          )
+        `
+      );
+    }
+
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "recipe",
+        aggregateId: recipeId,
+        eventType: "recipe.created",
+        payload: {
+          recipeId,
+          imageUrl,
+        },
+        status: "pending" as const,
+      },
+    });
+  });
 
   revalidatePath("/kitchen/recipes");
-  await enqueueOutboxEvent(tenantId, "recipe", recipeId, "recipe.created", {
-    recipeId,
-    imageUrl,
-  });
   redirect("/kitchen/recipes");
 };
 
@@ -543,6 +541,12 @@ export const updateRecipeImage = async (
   );
 
   let versionId = version?.id;
+  let newVersionData: {
+    recipe: { name: string; category: string | null; cuisine_type: string | null; description: string | null; tags: string[] | null };
+    maxVersion: number;
+    fallbackUnitId: number;
+  } | null = null;
+
   if (!versionId) {
     const [maxVersion] = await database.$queryRaw<{ max: number | null }[]>(
       Prisma.sql`
@@ -589,36 +593,11 @@ export const updateRecipeImage = async (
     }
 
     versionId = randomUUID();
-    await database.$executeRaw(
-      Prisma.sql`
-        INSERT INTO tenant_kitchen.recipe_versions (
-          tenant_id,
-          id,
-          recipe_id,
-          name,
-          category,
-          cuisine_type,
-          description,
-          tags,
-          version_number,
-          yield_quantity,
-          yield_unit_id
-        )
-        VALUES (
-          ${tenantId},
-          ${versionId},
-          ${recipeId},
-          ${recipe.name},
-          ${recipe.category},
-          ${recipe.cuisine_type},
-          ${recipe.description},
-          ${recipe.tags ?? null},
-          ${(maxVersion?.max ?? 0) + 1},
-          1,
-          ${fallbackUnit.id}
-        )
-      `
-    );
+    newVersionData = {
+      recipe,
+      maxVersion: maxVersion?.max ?? 0,
+      fallbackUnitId: fallbackUnit.id,
+    };
   }
 
   const [step] = await database.$queryRaw<{ id: string }[]>(
@@ -633,49 +612,88 @@ export const updateRecipeImage = async (
     `
   );
 
-  if (step?.id) {
-    await database.$executeRaw(
-      Prisma.sql`
-        UPDATE tenant_kitchen.recipe_steps
-        SET image_url = ${imageUrl}
-        WHERE tenant_id = ${tenantId}
-          AND id = ${step.id}
-      `
-    );
-  } else {
-    await database.$executeRaw(
-      Prisma.sql`
-        INSERT INTO tenant_kitchen.recipe_steps (
-          tenant_id,
-          id,
-          recipe_version_id,
-          step_number,
-          instruction,
-          image_url
-        )
-        VALUES (
-          ${tenantId},
-          ${randomUUID()},
-          ${versionId},
-          1,
-          'Reference photo',
-          ${imageUrl}
-        )
-      `
-    );
-  }
+  await database.$transaction(async (tx) => {
+    if (newVersionData) {
+      await tx.$executeRaw(
+        Prisma.sql`
+          INSERT INTO tenant_kitchen.recipe_versions (
+            tenant_id,
+            id,
+            recipe_id,
+            name,
+            category,
+            cuisine_type,
+            description,
+            tags,
+            version_number,
+            yield_quantity,
+            yield_unit_id
+          )
+          VALUES (
+            ${tenantId},
+            ${versionId},
+            ${recipeId},
+            ${newVersionData.recipe.name},
+            ${newVersionData.recipe.category},
+            ${newVersionData.recipe.cuisine_type},
+            ${newVersionData.recipe.description},
+            ${newVersionData.recipe.tags ?? null},
+            ${newVersionData.maxVersion + 1},
+            1,
+            ${newVersionData.fallbackUnitId}
+          )
+        `
+      );
+    }
+
+    if (step?.id) {
+      await tx.$executeRaw(
+        Prisma.sql`
+          UPDATE tenant_kitchen.recipe_steps
+          SET image_url = ${imageUrl}
+          WHERE tenant_id = ${tenantId}
+            AND id = ${step.id}
+        `
+      );
+    } else {
+      await tx.$executeRaw(
+        Prisma.sql`
+          INSERT INTO tenant_kitchen.recipe_steps (
+            tenant_id,
+            id,
+            recipe_version_id,
+            step_number,
+            instruction,
+            image_url
+          )
+          VALUES (
+            ${tenantId},
+            ${randomUUID()},
+            ${versionId},
+            1,
+            'Reference photo',
+            ${imageUrl}
+          )
+        `
+      );
+    }
+
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "recipe",
+        aggregateId: recipeId,
+        eventType: "recipe.image.updated",
+        payload: {
+          recipeId,
+          imageUrl,
+        },
+        status: "pending" as const,
+      },
+    });
+  });
 
   revalidatePath("/kitchen/recipes");
-  await enqueueOutboxEvent(
-    tenantId,
-    "recipe",
-    recipeId,
-    "recipe.image.updated",
-    {
-      recipeId,
-      imageUrl,
-    }
-  );
 };
 
 export const createDish = async (formData: FormData) => {
@@ -839,138 +857,151 @@ export const updateRecipe = async (recipeId: string, formData: FormData) => {
     throw new Error("No units configured in core.units.");
   }
 
-  // Update recipe table (name, category, description, tags)
-  await database.$executeRaw(
-    Prisma.sql`
-      UPDATE tenant_kitchen.recipes
-      SET
-        name = ${name},
-        category = ${category},
-        cuisine_type = ${cuisineType},
-        description = ${description},
-        tags = ${tags.length > 0 ? tags : null},
-        updated_at = NOW()
-      WHERE id = ${recipeId}
-        AND tenant_id = ${tenantId}
-    `
-  );
-
   // Create new recipe version
   const newVersionId = randomUUID();
   const safeYieldQuantity =
     yieldQuantity && yieldQuantity > 0 ? yieldQuantity : 1;
 
-  await database.$executeRaw(
-    Prisma.sql`
-      INSERT INTO tenant_kitchen.recipe_versions (
-        tenant_id,
-        id,
-        recipe_id,
-        name,
-        category,
-        cuisine_type,
-        description,
-        tags,
-        version_number,
-        yield_quantity,
-        yield_unit_id,
-        yield_description,
-        prep_time_minutes,
-        cook_time_minutes,
-        rest_time_minutes,
-        difficulty_level,
-        instructions,
-        notes
-      )
-      VALUES (
-        ${tenantId},
-        ${newVersionId},
-        ${recipeId},
-        ${name},
-        ${category},
-        ${cuisineType},
-        ${description},
-        ${tags.length > 0 ? tags : null},
-        ${nextVersionNumber},
-        ${safeYieldQuantity},
-        ${unitsMap.get(yieldUnit.toLowerCase()) ?? fallbackUnitId},
-        ${yieldDescription},
-        ${prepTime},
-        ${cookTime},
-        ${restTime},
-        ${difficulty},
-        ${instructionsText},
-        ${notes}
-      )
-    `
-  );
-
-  // Insert new ingredients for the new version
-  for (const [index, ingredient] of ingredientInputs.entries()) {
-    const ingredientName = ingredient.name;
-    const unitId =
-      (ingredient.unit ? unitsMap.get(ingredient.unit) : undefined) ??
-      fallbackUnitId;
-    const ingredientId = await ensureIngredientId(
-      tenantId,
-      ingredientName,
-      unitId
+  // Persist all writes + outbox atomically
+  await database.$transaction(async (tx) => {
+    // Update recipe table (name, category, description, tags)
+    await tx.$executeRaw(
+      Prisma.sql`
+        UPDATE tenant_kitchen.recipes
+        SET
+          name = ${name},
+          category = ${category},
+          cuisine_type = ${cuisineType},
+          description = ${description},
+          tags = ${tags.length > 0 ? tags : null},
+          updated_at = NOW()
+        WHERE id = ${recipeId}
+          AND tenant_id = ${tenantId}
+      `
     );
 
-    await database.$executeRaw(
+    await tx.$executeRaw(
       Prisma.sql`
-        INSERT INTO tenant_kitchen.recipe_ingredients (
+        INSERT INTO tenant_kitchen.recipe_versions (
           tenant_id,
           id,
-          recipe_version_id,
-          ingredient_id,
-          quantity,
-          unit_id,
-          preparation_notes,
-          is_optional,
-          sort_order
+          recipe_id,
+          name,
+          category,
+          cuisine_type,
+          description,
+          tags,
+          version_number,
+          yield_quantity,
+          yield_unit_id,
+          yield_description,
+          prep_time_minutes,
+          cook_time_minutes,
+          rest_time_minutes,
+          difficulty_level,
+          instructions,
+          notes
         )
         VALUES (
           ${tenantId},
-          ${randomUUID()},
           ${newVersionId},
-          ${ingredientId},
-          ${ingredient.quantity},
-          ${unitId},
-          ${ingredient.preparationNotes},
-          ${ingredient.isOptional},
-          ${index + 1}
+          ${recipeId},
+          ${name},
+          ${category},
+          ${cuisineType},
+          ${description},
+          ${tags.length > 0 ? tags : null},
+          ${nextVersionNumber},
+          ${safeYieldQuantity},
+          ${unitsMap.get(yieldUnit.toLowerCase()) ?? fallbackUnitId},
+          ${yieldDescription},
+          ${prepTime},
+          ${cookTime},
+          ${restTime},
+          ${difficulty},
+          ${instructionsText},
+          ${notes}
         )
       `
     );
-  }
 
-  // Insert new steps for the new version
-  for (const [index, step] of stepInputs.entries()) {
-    await database.$executeRaw(
-      Prisma.sql`
-        INSERT INTO tenant_kitchen.recipe_steps (
-          tenant_id,
-          id,
-          recipe_version_id,
-          step_number,
-          instruction
-        )
-        VALUES (
-          ${tenantId},
-          ${randomUUID()},
-          ${newVersionId},
-          ${index + 1},
-          ${step.instruction}
-        )
-      `
-    );
-  }
+    // Insert new ingredients for the new version
+    for (const [index, ingredient] of ingredientInputs.entries()) {
+      const ingredientName = ingredient.name;
+      const unitId =
+        (ingredient.unit ? unitsMap.get(ingredient.unit) : undefined) ??
+        fallbackUnitId;
+      const ingredientId = await ensureIngredientId(
+        tx,
+        tenantId,
+        ingredientName,
+        unitId
+      );
 
-  // Enqueue outbox event
-  await enqueueOutboxEvent(tenantId, "recipe", recipeId, "recipe.updated", {
-    recipeId,
-    versionNumber: nextVersionNumber,
+      await tx.$executeRaw(
+        Prisma.sql`
+          INSERT INTO tenant_kitchen.recipe_ingredients (
+            tenant_id,
+            id,
+            recipe_version_id,
+            ingredient_id,
+            quantity,
+            unit_id,
+            preparation_notes,
+            is_optional,
+            sort_order
+          )
+          VALUES (
+            ${tenantId},
+            ${randomUUID()},
+            ${newVersionId},
+            ${ingredientId},
+            ${ingredient.quantity},
+            ${unitId},
+            ${ingredient.preparationNotes},
+            ${ingredient.isOptional},
+            ${index + 1}
+          )
+        `
+      );
+    }
+
+    // Insert new steps for the new version
+    for (const [index, step] of stepInputs.entries()) {
+      await tx.$executeRaw(
+        Prisma.sql`
+          INSERT INTO tenant_kitchen.recipe_steps (
+            tenant_id,
+            id,
+            recipe_version_id,
+            step_number,
+            instruction
+          )
+          VALUES (
+            ${tenantId},
+            ${randomUUID()},
+            ${newVersionId},
+            ${index + 1},
+            ${step.instruction}
+          )
+        `
+      );
+    }
+
+    // Enqueue outbox event
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "recipe",
+        aggregateId: recipeId,
+        eventType: "recipe.updated",
+        payload: {
+          recipeId,
+          versionNumber: nextVersionNumber,
+        },
+        status: "pending" as const,
+      },
+    });
   });
 
   revalidatePath("/kitchen/recipes");
@@ -1050,66 +1081,7 @@ export const restoreRecipeVersion = async (
   const nextVersionNumber = (maxVersionRow?.max ?? 0) + 1;
   const newVersionId = randomUUID();
 
-  await database.$executeRaw(
-    Prisma.sql`
-      UPDATE tenant_kitchen.recipes
-      SET
-        name = ${version.name},
-        category = ${version.category},
-        cuisine_type = ${version.cuisine_type},
-        description = ${version.description},
-        tags = ${version.tags ?? null},
-        updated_at = NOW()
-      WHERE tenant_id = ${tenantId}
-        AND id = ${recipeId}
-    `
-  );
-
-  await database.$executeRaw(
-    Prisma.sql`
-      INSERT INTO tenant_kitchen.recipe_versions (
-        tenant_id,
-        id,
-        recipe_id,
-        name,
-        category,
-        cuisine_type,
-        description,
-        tags,
-        version_number,
-        yield_quantity,
-        yield_unit_id,
-        yield_description,
-        prep_time_minutes,
-        cook_time_minutes,
-        rest_time_minutes,
-        difficulty_level,
-        instructions,
-        notes
-      )
-      VALUES (
-        ${tenantId},
-        ${newVersionId},
-        ${recipeId},
-        ${version.name},
-        ${version.category},
-        ${version.cuisine_type},
-        ${version.description},
-        ${version.tags ?? null},
-        ${nextVersionNumber},
-        ${version.yield_quantity},
-        ${version.yield_unit_id},
-        ${version.yield_description},
-        ${version.prep_time_minutes},
-        ${version.cook_time_minutes},
-        ${version.rest_time_minutes},
-        ${version.difficulty_level},
-        ${version.instructions},
-        ${version.notes}
-      )
-    `
-  );
-
+  // Read ingredients and steps from the source version (outside transaction)
   const ingredients = await database.$queryRaw<
     {
       ingredient_id: string;
@@ -1135,35 +1107,6 @@ export const restoreRecipeVersion = async (
       ORDER BY sort_order ASC
     `
   );
-
-  for (const ingredient of ingredients) {
-    await database.$executeRaw(
-      Prisma.sql`
-        INSERT INTO tenant_kitchen.recipe_ingredients (
-          tenant_id,
-          id,
-          recipe_version_id,
-          ingredient_id,
-          quantity,
-          unit_id,
-          preparation_notes,
-          is_optional,
-          sort_order
-        )
-        VALUES (
-          ${tenantId},
-          ${randomUUID()},
-          ${newVersionId},
-          ${ingredient.ingredient_id},
-          ${ingredient.quantity},
-          ${ingredient.unit_id},
-          ${ingredient.preparation_notes},
-          ${ingredient.is_optional},
-          ${ingredient.sort_order}
-        )
-      `
-    );
-  }
 
   const steps = await database.$queryRaw<
     {
@@ -1197,53 +1140,148 @@ export const restoreRecipeVersion = async (
     `
   );
 
-  for (const step of steps) {
-    await database.$executeRaw(
+  // All writes + outbox atomically
+  await database.$transaction(async (tx) => {
+    await tx.$executeRaw(
       Prisma.sql`
-        INSERT INTO tenant_kitchen.recipe_steps (
+        UPDATE tenant_kitchen.recipes
+        SET
+          name = ${version.name},
+          category = ${version.category},
+          cuisine_type = ${version.cuisine_type},
+          description = ${version.description},
+          tags = ${version.tags ?? null},
+          updated_at = NOW()
+        WHERE tenant_id = ${tenantId}
+          AND id = ${recipeId}
+      `
+    );
+
+    await tx.$executeRaw(
+      Prisma.sql`
+        INSERT INTO tenant_kitchen.recipe_versions (
           tenant_id,
           id,
-          recipe_version_id,
-          step_number,
-          instruction,
-          duration_minutes,
-          temperature_value,
-          temperature_unit,
-          equipment_needed,
-          tips,
-          video_url,
-          image_url
+          recipe_id,
+          name,
+          category,
+          cuisine_type,
+          description,
+          tags,
+          version_number,
+          yield_quantity,
+          yield_unit_id,
+          yield_description,
+          prep_time_minutes,
+          cook_time_minutes,
+          rest_time_minutes,
+          difficulty_level,
+          instructions,
+          notes
         )
         VALUES (
           ${tenantId},
-          ${randomUUID()},
           ${newVersionId},
-          ${step.step_number},
-          ${step.instruction},
-          ${step.duration_minutes},
-          ${step.temperature_value},
-          ${step.temperature_unit},
-          ${step.equipment_needed},
-          ${step.tips},
-          ${step.video_url},
-          ${step.image_url}
+          ${recipeId},
+          ${version.name},
+          ${version.category},
+          ${version.cuisine_type},
+          ${version.description},
+          ${version.tags ?? null},
+          ${nextVersionNumber},
+          ${version.yield_quantity},
+          ${version.yield_unit_id},
+          ${version.yield_description},
+          ${version.prep_time_minutes},
+          ${version.cook_time_minutes},
+          ${version.rest_time_minutes},
+          ${version.difficulty_level},
+          ${version.instructions},
+          ${version.notes}
         )
       `
     );
-  }
 
-  await enqueueOutboxEvent(
-    tenantId,
-    "recipe",
-    recipeId,
-    "recipe.version.restored",
-    {
-      recipeId,
-      versionId,
-      newVersionId,
-      versionNumber: nextVersionNumber,
+    for (const ingredient of ingredients) {
+      await tx.$executeRaw(
+        Prisma.sql`
+          INSERT INTO tenant_kitchen.recipe_ingredients (
+            tenant_id,
+            id,
+            recipe_version_id,
+            ingredient_id,
+            quantity,
+            unit_id,
+            preparation_notes,
+            is_optional,
+            sort_order
+          )
+          VALUES (
+            ${tenantId},
+            ${randomUUID()},
+            ${newVersionId},
+            ${ingredient.ingredient_id},
+            ${ingredient.quantity},
+            ${ingredient.unit_id},
+            ${ingredient.preparation_notes},
+            ${ingredient.is_optional},
+            ${ingredient.sort_order}
+          )
+        `
+      );
     }
-  );
+
+    for (const step of steps) {
+      await tx.$executeRaw(
+        Prisma.sql`
+          INSERT INTO tenant_kitchen.recipe_steps (
+            tenant_id,
+            id,
+            recipe_version_id,
+            step_number,
+            instruction,
+            duration_minutes,
+            temperature_value,
+            temperature_unit,
+            equipment_needed,
+            tips,
+            video_url,
+            image_url
+          )
+          VALUES (
+            ${tenantId},
+            ${randomUUID()},
+            ${newVersionId},
+            ${step.step_number},
+            ${step.instruction},
+            ${step.duration_minutes},
+            ${step.temperature_value},
+            ${step.temperature_unit},
+            ${step.equipment_needed},
+            ${step.tips},
+            ${step.video_url},
+            ${step.image_url}
+          )
+        `
+      );
+    }
+
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "recipe",
+        aggregateId: recipeId,
+        eventType: "recipe.version.restored",
+        payload: {
+          recipeId,
+          versionId,
+          newVersionId,
+          versionNumber: nextVersionNumber,
+        },
+        status: "pending" as const,
+      },
+    });
+  });
 
   revalidatePath("/kitchen/recipes");
   revalidatePath(`/kitchen/recipes/${recipeId}`);

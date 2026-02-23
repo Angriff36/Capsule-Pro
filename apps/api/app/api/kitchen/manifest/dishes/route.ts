@@ -6,8 +6,7 @@ import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
-  createDishCreatedOutboxEvent,
-  createDishInDatabase,
+  createDishWithOutbox,
   createRuntimeContext,
   fetchRecipeById,
   getCurrentUser,
@@ -102,15 +101,14 @@ export async function POST(request: Request) {
       updatedAt: Date.now(),
     });
 
-    const dish = await createDishInDatabase(tenantId, dishId, createRequest);
-
-    await createDishCreatedOutboxEvent(
+    const dish = await createDishWithOutbox(
       tenantId,
       dishId,
       createRequest.recipeId,
       createRequest.name,
       pricePerPerson,
-      costPerPerson
+      costPerPerson,
+      createRequest
     );
 
     // Type assertion for the created dish

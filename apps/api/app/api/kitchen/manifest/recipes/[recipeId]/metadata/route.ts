@@ -111,30 +111,9 @@ function checkBlockingConstraints(
 }
 
 /**
- * Sync updated recipe state to Prisma database
+ * Sync updated recipe state to Prisma database + outbox atomically
  */
-async function syncRecipeToDatabase(
-  tenantId: string,
-  recipeId: string,
-  instance: Record<string, unknown>
-) {
-  await database.recipe.update({
-    where: { tenantId_id: { tenantId, id: recipeId } },
-    data: {
-      name: instance.name as string,
-      category: (instance.category as string) || null,
-      cuisineType: (instance.cuisineType as string) || null,
-      description: (instance.description as string) || null,
-      tags: (instance.tags as string).split(",").filter(Boolean),
-      isActive: instance.isActive as boolean,
-    },
-  });
-}
-
-/**
- * Create outbox event for downstream consumers
- */
-async function createOutboxEvent(
+async function syncRecipeToDatabaseWithOutbox(
   tenantId: string,
   recipeId: string,
   instance: Record<string, unknown>,
@@ -142,22 +121,36 @@ async function createOutboxEvent(
     ReturnType<typeof updateRecipe>
   >["constraintOutcomes"]
 ) {
-  await database.outboxEvent.create({
-    data: {
-      tenantId,
-      aggregateType: "Recipe",
-      aggregateId: recipeId,
-      eventType: "kitchen.recipe.updated",
-      payload: {
-        recipeId,
-        name: instance.name,
+  await database.$transaction(async (tx) => {
+    await tx.recipe.update({
+      where: { tenantId_id: { tenantId, id: recipeId } },
+      data: {
+        name: instance.name as string,
         category: (instance.category as string) || null,
         cuisineType: (instance.cuisineType as string) || null,
+        description: (instance.description as string) || null,
         tags: (instance.tags as string).split(",").filter(Boolean),
-        constraintOutcomes,
-      } as Prisma.InputJsonValue,
-      status: "pending" as const,
-    },
+        isActive: instance.isActive as boolean,
+      },
+    });
+
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "Recipe",
+        aggregateId: recipeId,
+        eventType: "kitchen.recipe.updated",
+        payload: {
+          recipeId,
+          name: instance.name,
+          category: (instance.category as string) || null,
+          cuisineType: (instance.cuisineType as string) || null,
+          tags: (instance.tags as string).split(",").filter(Boolean),
+          constraintOutcomes,
+        } as Prisma.InputJsonValue,
+        status: "pending" as const,
+      },
+    });
   });
 }
 
@@ -258,11 +251,10 @@ export async function PATCH(request: Request, context: RouteContext) {
       return constraintError;
     }
 
-    // Sync updated state to database and emit events
+    // Sync updated state to database + outbox atomically
     const instance = await runtime.getInstance("Recipe", recipeId);
     if (instance) {
-      await syncRecipeToDatabase(tenantId, recipeId, instance);
-      await createOutboxEvent(
+      await syncRecipeToDatabaseWithOutbox(
         tenantId,
         recipeId,
         instance,

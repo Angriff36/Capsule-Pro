@@ -14,13 +14,9 @@ import {
   checkExistingClaim,
   createErrorResponse,
   createManifestRuntime,
-  createOutboxEvent,
-  createProgressEntry,
-  createTaskClaim,
   fetchTask,
   loadTaskIntoManifest,
   mapManifestStatusToPrisma,
-  updateTaskStatus,
 } from "../../shared-task-helpers";
 
 export const runtime = "nodejs";
@@ -139,40 +135,59 @@ export async function POST(request: Request, context: RouteContext) {
     return createErrorResponse("Failed to claim task", 500);
   }
 
-  // Step 10: Update task status
-  await updateTaskStatus(
-    tenantId,
-    id,
-    mapManifestStatusToPrisma(instance.status as string)
-  );
+  // Steps 10-13: Atomically update status + create claim + progress + outbox
+  const prismaStatus = mapManifestStatusToPrisma(instance.status as string);
+  const { claim } = await database.$transaction(async (tx) => {
+    // Update task status
+    await tx.prepTask.update({
+      where: { tenantId_id: { tenantId, id } },
+      data: { status: prismaStatus },
+    });
 
-  // Step 11: Create claim record
-  const claim = await createTaskClaim(tenantId, id, userId);
+    // Create claim record
+    const claim = await tx.kitchenTaskClaim.create({
+      data: { tenantId, taskId: id, employeeId: userId },
+    });
 
-  // Step 12: Create progress entry if status changed
-  if (task.status !== "in_progress") {
-    const fullName =
-      `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim();
-    await createProgressEntry(
-      tenantId,
-      id,
-      userId,
-      task.status,
-      "in_progress",
-      `Task claimed by ${fullName}`
-    );
-  }
+    // Create progress entry if status changed
+    if (task.status !== "in_progress") {
+      const fullName =
+        `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim();
+      await tx.kitchenTaskProgress.create({
+        data: {
+          tenantId,
+          taskId: id,
+          employeeId: userId,
+          progressType: "status_change",
+          oldStatus: task.status,
+          newStatus: "in_progress",
+          notes: `Task claimed by ${fullName}`,
+        },
+      });
+    }
 
-  // Step 13: Create outbox event for real-time updates
-  await createOutboxEvent(tenantId, id, "kitchen.task.claimed", {
-    taskId: id,
-    claimId: claim.id,
-    employeeId: userId,
-    status: "in_progress" as const,
-    constraintOutcomes: result.constraintOutcomes,
-  } as Prisma.InputJsonValue);
+    // Create outbox event for real-time updates
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "KitchenTask",
+        aggregateId: id,
+        eventType: "kitchen.task.claimed",
+        payload: {
+          taskId: id,
+          claimId: claim.id,
+          employeeId: userId,
+          status: "in_progress",
+          constraintOutcomes: result.constraintOutcomes,
+        } as Prisma.InputJsonValue,
+        status: "pending" as const,
+      },
+    });
 
-  // Step 14: Return success response
+    return { claim };
+  });
+
+  // Step 14: Return success response (after transaction commits)
   const successResponse: ApiSuccessResponse<{
     claim: typeof claim;
     taskId: string;

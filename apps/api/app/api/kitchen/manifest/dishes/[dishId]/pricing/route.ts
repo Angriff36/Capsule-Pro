@@ -8,12 +8,10 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
   checkBlockingConstraints,
-  createDishPricingOutboxEvent,
   createRuntimeContext,
   fetchDishById,
   getCurrentUser,
   loadDishInstance,
-  syncDishPricingToDatabase,
   validatePricingUpdate,
 } from "../../helpers";
 
@@ -100,14 +98,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     const instance = await runtime.getInstance("Dish", dishId);
     if (instance) {
-      await syncDishPricingToDatabase(
-        tenantId,
-        dishId,
-        instance.pricePerPerson as number,
-        instance.costPerPerson as number
-      );
-
-      await createDishPricingOutboxEvent(
+      await syncDishPricingWithOutbox(
         tenantId,
         dishId,
         instance.name as string,

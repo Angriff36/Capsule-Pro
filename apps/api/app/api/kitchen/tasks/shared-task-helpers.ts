@@ -507,50 +507,50 @@ export async function syncStatusUpdateResults(
   progressEntry?: Prisma.KitchenTaskProgressGetPayload<Record<string, never>>;
   outboxEvent: Prisma.OutboxEventGetPayload<Record<string, never>>;
 }> {
-  // Update task status in database
-  const updatedTask = await database.prepTask.update({
-    where: { tenantId_id: { tenantId, id: taskId } },
-    data: {
-      status:
-        newStatus === "done" ? "done" : mapManifestStatusToPrisma(newStatus),
-    },
-  });
-
-  // Create progress entry for status change
-  let progressEntry:
-    | Prisma.KitchenTaskProgressGetPayload<Record<string, never>>
-    | undefined;
-  if (employeeId && newStatus !== task.status) {
-    progressEntry = await database.kitchenTaskProgress.create({
+  // Atomically: update task status + create progress entry + outbox event
+  return database.$transaction(async (tx) => {
+    const updatedTask = await tx.prepTask.update({
+      where: { tenantId_id: { tenantId, id: taskId } },
       data: {
-        tenantId,
-        taskId,
-        employeeId,
-        progressType: "status_change",
-        oldStatus: task.status,
-        newStatus,
-        notes,
+        status:
+          newStatus === "done" ? "done" : mapManifestStatusToPrisma(newStatus),
       },
     });
-  }
 
-  // Create outbox event for task status change
-  const outboxEvent = await database.outboxEvent.create({
-    data: {
-      tenantId,
-      aggregateType: "KitchenTask",
-      aggregateId: taskId,
-      eventType: `kitchen.task.${newStatus === "done" ? "completed" : newStatus}`,
-      payload: {
-        taskId,
-        status: newStatus as string,
-        constraintOutcomes: result.constraintOutcomes,
-      } as Prisma.InputJsonValue,
-      status: "pending" as const,
-    },
+    let progressEntry:
+      | Prisma.KitchenTaskProgressGetPayload<Record<string, never>>
+      | undefined;
+    if (employeeId && newStatus !== task.status) {
+      progressEntry = await tx.kitchenTaskProgress.create({
+        data: {
+          tenantId,
+          taskId,
+          employeeId,
+          progressType: "status_change",
+          oldStatus: task.status,
+          newStatus,
+          notes,
+        },
+      });
+    }
+
+    const outboxEvent = await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "KitchenTask",
+        aggregateId: taskId,
+        eventType: `kitchen.task.${newStatus === "done" ? "completed" : newStatus}`,
+        payload: {
+          taskId,
+          status: newStatus as string,
+          constraintOutcomes: result.constraintOutcomes,
+        } as Prisma.InputJsonValue,
+        status: "pending" as const,
+      },
+    });
+
+    return { updatedTask, progressEntry, outboxEvent };
   });
-
-  return { updatedTask, progressEntry, outboxEvent };
 }
 
 /**
