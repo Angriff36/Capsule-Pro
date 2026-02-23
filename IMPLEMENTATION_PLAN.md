@@ -23,15 +23,10 @@
 - **What:** Added `restore(sourceId: string, newVersionNum: number)` command to RecipeVersion entity (lines 136-144).
 - **Completed:** 2026-02-23 — Command emits `RecipeVersionRestored` event.
 
-### [P0-2] Add transaction-aware `prismaOverride` to runtime factory
+### [P0-2] ✅ COMPLETE — Add transaction-aware `prismaOverride` to runtime factory
 - **File:** `packages/manifest-adapters/src/manifest-runtime-factory.ts`
-- **What:** Add optional `prismaOverride?: PrismaLike` to `CreateManifestRuntimeDeps`. When provided, use it for ALL Prisma operations (stores, outbox, idempotency, role resolution).
-- **Implementation Details:**
-  1. Add `prismaOverride?: PrismaLike` to interface (line 87-99)
-  2. Compute `const effectivePrisma = deps.prismaOverride ?? deps.prisma` at start
-  3. Replace 5 usages: role resolution (L222), store config (L243), json store (L258), outbox write (L298), idempotency (L324)
-  4. **Critical:** Skip nested `$transaction` in `onCommandExecuted` when `prismaOverride` provided — write directly to override client
-- **Rationale:** Blocking — composite routes require atomic multi-entity writes. Current outbox opens its own transaction (line 298), breaking atomicity.
+- **What:** Added `prismaOverride?: PrismaLike` to `CreateManifestRuntimeDeps`. When provided, ALL Prisma operations use it.
+- **Completed:** 2026-02-23 — Updated 5 usage sites. Outbox skips nested `$transaction` when override provided.
 
 ### [P0-3] Create version detail endpoint `[versionId]/route.ts`
 - **File:** `apps/api/app/api/kitchen/recipes/[recipeId]/versions/[versionId]/route.ts` (NEW)

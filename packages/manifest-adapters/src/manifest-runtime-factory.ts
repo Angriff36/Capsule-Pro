@@ -87,6 +87,13 @@ export interface ManifestTelemetryHooks {
 export interface CreateManifestRuntimeDeps {
   /** Prisma client instance (the app's singleton). */
   prisma: PrismaLike;
+  /**
+   * Optional Prisma override for transaction-aware operations.
+   * When provided (typically a transaction client from $transaction callback),
+   * ALL internal Prisma operations use this client instead of `prisma`.
+   * This enables atomic multi-entity writes in composite routes.
+   */
+  prismaOverride?: PrismaLike;
   /** Structured logger. */
   log: ManifestRuntimeLogger;
   /** Error capture function (e.g. Sentry.captureException). Returns event id. */
@@ -218,8 +225,11 @@ export async function createManifestRuntime(
     );
   }
 
+  // Use override client when provided (for atomic multi-entity writes)
+  const prisma = deps.prismaOverride ?? deps.prisma;
+
   // 1. Resolve role from DB when not provided by the caller.
-  const resolvedUser = await resolveUserRole(deps.prisma, ctx.user);
+  const resolvedUser = await resolveUserRole(prisma, ctx.user);
 
   // 2. Load precompiled IR.
   const ir = getManifestIR();
@@ -240,7 +250,7 @@ export async function createManifestRuntime(
 
       // biome-ignore lint/suspicious/noExplicitAny: PrismaStoreConfig expects the full PrismaClient; callers inject a structurally-compatible superset.
       const config: PrismaStoreConfig = {
-        prisma: deps.prisma as any,
+        prisma: prisma as any,
         entityName,
         tenantId: resolvedUser.tenantId,
         outboxWriter,
@@ -256,7 +266,7 @@ export async function createManifestRuntime(
     );
     // biome-ignore lint/suspicious/noExplicitAny: PrismaJsonStore expects the full PrismaClient; callers inject a structurally-compatible superset.
     return new PrismaJsonStore({
-      prisma: deps.prisma as any,
+      prisma: prisma as any,
       tenantId: resolvedUser.tenantId,
       entityType: entityName,
     });
@@ -295,10 +305,18 @@ export async function createManifestRuntime(
         }));
 
         try {
-          await deps.prisma.$transaction(async (tx) => {
-            // biome-ignore lint/suspicious/noExplicitAny: outboxWriter expects the full PrismaClient; tx is structurally compatible.
-            await outboxWriter(tx as any, eventsToWrite);
-          });
+          // When prismaOverride is provided (composite route transaction),
+          // write directly to the override client - it's already in a transaction.
+          // Otherwise, create a new transaction for atomic outbox writes.
+          if (deps.prismaOverride) {
+            // biome-ignore lint/suspicious/noExplicitAny: outboxWriter expects the full PrismaClient; prismaOverride is structurally compatible.
+            await outboxWriter(deps.prismaOverride as any, eventsToWrite);
+          } else {
+            await deps.prisma.$transaction(async (tx) => {
+              // biome-ignore lint/suspicious/noExplicitAny: outboxWriter expects the full PrismaClient; tx is structurally compatible.
+              await outboxWriter(tx as any, eventsToWrite);
+            });
+          }
         } catch (error) {
           deps.log.error(
             "[manifest-runtime] Failed to write events to outbox",
@@ -321,7 +339,7 @@ export async function createManifestRuntime(
   //    here.
   // biome-ignore lint/suspicious/noExplicitAny: PrismaIdempotencyStore expects the full PrismaClient; callers inject a structurally-compatible superset.
   const idempotencyStore = new PrismaIdempotencyStore({
-    prisma: deps.prisma as any,
+    prisma: prisma as any,
     tenantId: resolvedUser.tenantId,
   });
 
