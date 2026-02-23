@@ -1,5 +1,6 @@
 "use client";
 
+import type { ConstraintOutcome } from "@angriff36/manifest/ir";
 import {
   ConstraintOverrideDialog,
   useConstraintOverride,
@@ -9,14 +10,40 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { captureException } from "@sentry/nextjs";
 import { useRouter } from "next/navigation";
 import { startTransition, useState, useTransition } from "react";
-import type { ManifestActionResult } from "../../actions-manifest-v2";
+import { apiFetch } from "@/app/lib/api";
+import { kitchenRecipeCompositeUpdate } from "@/app/lib/routes";
 import {
   getRecipeForEdit,
   type RecipeForEdit,
-  updateRecipe,
-  updateRecipeWithOverride,
 } from "../../actions-manifest-v2";
 import { RecipeEditModal } from "../../components/recipe-edit-modal";
+
+interface CompositeRouteResponse {
+  success: boolean;
+  message?: string;
+  constraintOutcomes?: ConstraintOutcome[];
+  data?: {
+    version: unknown;
+    ingredients: unknown[];
+    steps: unknown[];
+    newVersionNumber: number;
+    events: unknown[];
+  };
+}
+
+interface ModalIngredient {
+  id?: string;
+  name: string;
+  quantity: string;
+  unit: string;
+  notes?: string;
+}
+
+interface ModalStep {
+  id?: string;
+  instruction: string;
+  step_number: number;
+}
 
 interface RecipeDetailEditButtonProps {
   recipeId: string;
@@ -49,6 +76,77 @@ const buildEditRecipePayload = (recipe: RecipeForEdit) => ({
   difficultyLevel: recipe.version.difficultyLevel ?? undefined,
 });
 
+/**
+ * Converts FormData from RecipeEditModal to JSON payload for composite route.
+ */
+function buildUpdatePayload(formData: FormData) {
+  const ingredientsRaw = formData.get("ingredients") as string;
+  const stepsRaw = formData.get("steps") as string;
+
+  let ingredients: ModalIngredient[] = [];
+  let steps: ModalStep[] = [];
+
+  try {
+    if (ingredientsRaw) {
+      ingredients = JSON.parse(ingredientsRaw) as ModalIngredient[];
+    }
+  } catch {
+    // Ignore parse errors
+  }
+
+  try {
+    if (stepsRaw) {
+      steps = JSON.parse(stepsRaw) as ModalStep[];
+    }
+  } catch {
+    // Ignore parse errors
+  }
+
+  // Convert ingredients to raw format (name + unit code) for server resolution
+  const formattedIngredients = ingredients.map((ing, idx) => ({
+    name: ing.name,
+    quantity: Number.parseFloat(ing.quantity) || 0,
+    unit: ing.unit || null,
+    sortOrder: idx,
+  }));
+
+  // Convert steps to route format
+  const formattedSteps = steps.map((step, idx) => ({
+    stepNumber: idx + 1,
+    instruction: step.instruction,
+  }));
+
+  return {
+    name: (formData.get("name") as string) || undefined,
+    category: (formData.get("category") as string) || undefined,
+    description: (formData.get("description") as string) || undefined,
+    tags: formData.get("tags")
+      ? ((formData.get("tags") as string) || "").split(",").filter(Boolean)
+      : undefined,
+    yieldQuantity: formData.get("yieldQuantity")
+      ? Number.parseInt(formData.get("yieldQuantity") as string, 10)
+      : undefined,
+    // yieldUnit is a code string - route will need to handle this
+    // For now, we skip yieldUnitId as the modal doesn't have the ID
+    yieldDescription: (formData.get("yieldDescription") as string) || undefined,
+    prepTimeMinutes: formData.get("prepTimeMinutes")
+      ? Number.parseInt(formData.get("prepTimeMinutes") as string, 10)
+      : undefined,
+    cookTimeMinutes: formData.get("cookTimeMinutes")
+      ? Number.parseInt(formData.get("cookTimeMinutes") as string, 10)
+      : undefined,
+    restTimeMinutes: formData.get("restTimeMinutes")
+      ? Number.parseInt(formData.get("restTimeMinutes") as string, 10)
+      : undefined,
+    difficultyLevel: formData.get("difficultyLevel")
+      ? Number.parseInt(formData.get("difficultyLevel") as string, 10)
+      : undefined,
+    ingredients:
+      formattedIngredients.length > 0 ? formattedIngredients : undefined,
+    steps: formattedSteps.length > 0 ? formattedSteps : undefined,
+  };
+}
+
 export const RecipeDetailEditButton = ({
   recipeId,
   recipeName,
@@ -61,7 +159,7 @@ export const RecipeDetailEditButton = ({
   );
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<ManifestActionResult | null>(null);
+  const [result, setResult] = useState<CompositeRouteResponse | null>(null);
   const [cachedFormData, setCachedFormData] = useState<FormData | null>(null);
 
   const handleEditClick = () => {
@@ -90,24 +188,37 @@ export const RecipeDetailEditButton = ({
     setResult(null);
     setCachedFormData(formData);
 
+    const payload = buildUpdatePayload(formData);
+
     return new Promise<void>((resolve, reject) => {
       startTransitionAction(async () => {
         try {
-          const actionResult = await updateRecipe(recipeId, formData);
+          const response = await apiFetch(
+            kitchenRecipeCompositeUpdate(recipeId),
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(payload),
+            }
+          );
+
+          const actionResult: CompositeRouteResponse = await response.json();
           setResult(actionResult);
 
           if (actionResult.success) {
             setIsEditModalOpen(false);
             setEditRecipeData(null);
-            if (actionResult.redirectUrl) {
-              router.push(actionResult.redirectUrl);
-            } else {
-              router.refresh();
-            }
+            router.refresh();
             resolve();
-          } else if (actionResult.error) {
-            setError(actionResult.error);
-            reject(new Error(actionResult.error));
+          } else if (actionResult.constraintOutcomes?.length) {
+            // Constraints blocked - dialog will be shown via constraintState
+            // Don't reject, let the override dialog handle it
+          } else if (actionResult.message) {
+            setError(actionResult.message);
+            reject(new Error(actionResult.message));
+          } else {
+            setError("Failed to update recipe.");
+            reject(new Error("Failed to update recipe."));
           }
         } catch (err) {
           captureException(err);
@@ -118,34 +229,39 @@ export const RecipeDetailEditButton = ({
     });
   };
 
-  const handleOverride = async (
-    reason: OverrideReasonCode,
-    details: string
-  ) => {
+  const handleOverride = (reason: OverrideReasonCode, details: string) => {
     if (!cachedFormData) {
       return;
     }
 
+    const payload = {
+      ...buildUpdatePayload(cachedFormData),
+      override: {
+        reasonCode: reason,
+        details,
+      },
+    };
+
     startTransitionAction(async () => {
       try {
-        const actionResult = await updateRecipeWithOverride(
-          recipeId,
-          cachedFormData,
-          reason,
-          details
+        const response = await apiFetch(
+          kitchenRecipeCompositeUpdate(recipeId),
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          }
         );
+
+        const actionResult: CompositeRouteResponse = await response.json();
         setResult(actionResult);
 
         if (actionResult.success) {
           setIsEditModalOpen(false);
           setEditRecipeData(null);
-          if (actionResult.redirectUrl) {
-            router.push(actionResult.redirectUrl);
-          } else {
-            router.refresh();
-          }
-        } else if (actionResult.error) {
-          setError(actionResult.error);
+          router.refresh();
+        } else if (actionResult.message) {
+          setError(actionResult.message);
         }
       } catch (err) {
         captureException(err);

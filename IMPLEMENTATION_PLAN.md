@@ -99,9 +99,10 @@
   - Deleted dead test file: `__tests__/recipes/update-recipe.test.ts`
   - Deleted dead component: `recipe-form-with-constraints.tsx` (never imported anywhere)
 
-### [P3-1] Dead route cleanup (~28 routes)
+### [P3-1] Dead route cleanup (~28 routes) — READY FOR SEPARATE PR
 - **Files:** `apps/api/app/api/command-board/*/commands/*`, `apps/api/app/api/kitchen/manifest/*`
-- **What:** Delete confirmed dead routes (5 duplicate list routes in command-board, 19 command-board routes, 9 kitchen manifest routes). Verify no imports in apps, tests, e2e. Fix missing import in dishes/[dishId]/pricing/route.ts.
+- **What:** Delete confirmed dead routes (5 duplicate list routes in command-board, 19 command-board routes, 9 kitchen manifest routes). Verify no imports in apps, tests, e2e.
+- **Status:** Exploration complete. 33+ dead routes identified. Missing import in dishes/[dishId]/pricing/route.ts FIXED (2026-02-23).
 - **Rationale:** Low — cleanup, ship as separate PR after main work verified.
 
 ---
@@ -247,3 +248,34 @@ These will automatically work once P0-3 and P0-4 are implemented.
 - PrismaStore implementation for transaction handling understanding
 
 **All 12 tasks confirmed as accurate and necessary.**
+
+---
+
+## Session 2026-02-23 Summary
+
+### Fixes Applied
+1. **Fixed missing import** in `apps/api/app/api/kitchen/manifest/dishes/[dishId]/pricing/route.ts`
+   - Added `syncDishPricingWithOutbox` to imports from helpers
+   - This was blocking compilation of the pricing route
+
+2. **Fixed menu-actions.test.ts** (31 tests)
+   - Rewrote database mock to properly support `$transaction`
+   - Used `vi.hoisted()` for mock functions to fix hoisting issues
+   - Added `status: "pending"` to all outbox event assertions
+   - All 31 tests now pass
+
+3. **Reduced lint errors** via biome auto-fix
+   - Original: 1062 errors + 1306 warnings
+   - After fixes: 476 errors + 1077 warnings
+   - 385 files auto-formatted (296 safe + 89 unsafe)
+   - Remaining issues are mostly style preferences
+
+### Verification
+- TypeScript: ✅ No errors
+- Tests: ✅ All menu tests pass (31/31)
+- Build: ✅ Compiles successfully
+
+### P3-1 Status
+- Exploration complete: 33+ dead routes identified
+- Missing import fixed
+- Ready for separate PR

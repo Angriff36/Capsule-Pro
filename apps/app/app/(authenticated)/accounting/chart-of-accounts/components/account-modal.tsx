@@ -228,10 +228,13 @@ export function AccountModal({
             {availableParentAccounts.length > 0 && (
               <div className="space-y-2">
                 <Label htmlFor="parent_id">Parent Account</Label>
-                  <Select
+                <Select
                   disabled={isLoading}
                   onValueChange={(value) =>
-                    setFormData({ ...formData, parent_id: value === "__none__" ? "" : value })
+                    setFormData({
+                      ...formData,
+                      parent_id: value === "__none__" ? "" : value,
+                    })
                   }
                   value={formData.parent_id || "__none__"}
                 >

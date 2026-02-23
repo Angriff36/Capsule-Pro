@@ -40,26 +40,28 @@ export async function POST(
     }
 
     // Get the source version and lock for update to prevent concurrent restores
-    const sourceVersion = await database.$queryRaw<{
-      id: string;
-      recipe_id: string;
-      version_number: number;
-      name: string;
-      category: string | null;
-      cuisine_type: string | null;
-      description: string | null;
-      tags: string[];
-      yield_quantity: bigint;
-      yield_unit_id: number;
-      yield_description: string | null;
-      prep_time_minutes: number | null;
-      cook_time_minutes: number | null;
-      rest_time_minutes: number | null;
-      difficulty_level: number | null;
-      instructions: string | null;
-      notes: string | null;
-      max_version: bigint;
-    }[]>`
+    const sourceVersion = await database.$queryRaw<
+      {
+        id: string;
+        recipe_id: string;
+        version_number: number;
+        name: string;
+        category: string | null;
+        cuisine_type: string | null;
+        description: string | null;
+        tags: string[];
+        yield_quantity: bigint;
+        yield_unit_id: number;
+        yield_description: string | null;
+        prep_time_minutes: number | null;
+        cook_time_minutes: number | null;
+        rest_time_minutes: number | null;
+        difficulty_level: number | null;
+        instructions: string | null;
+        notes: string | null;
+        max_version: bigint;
+      }[]
+    >`
       SELECT v.*, MAX(v.version_number) as max_version
       FROM tenant_kitchen.recipe_versions v
       WHERE v.tenant_id = ${tenantId}::uuid
@@ -131,15 +133,17 @@ export async function POST(
       }
 
       // Copy ingredients from source version
-      const sourceIngredients = await database.$queryRaw<{
-        id: string;
-        ingredient_id: string;
-        quantity: bigint;
-        unit_id: number;
-        preparation_notes: string | null;
-        is_optional: boolean;
-        sort_order: number;
-      }[]>`
+      const sourceIngredients = await database.$queryRaw<
+        {
+          id: string;
+          ingredient_id: string;
+          quantity: bigint;
+          unit_id: number;
+          preparation_notes: string | null;
+          is_optional: boolean;
+          sort_order: number;
+        }[]
+      >`
         SELECT ingredient_id, quantity, unit_id, preparation_notes, is_optional, sort_order
         FROM tenant_kitchen.recipe_ingredients
         WHERE tenant_id = ${tenantId}::uuid
@@ -167,17 +171,19 @@ export async function POST(
       }
 
       // Copy steps from source version
-      const sourceSteps = await database.$queryRaw<{
-        step_number: number;
-        instruction: string;
-        duration_minutes: number | null;
-        temperature_value: number | null;
-        temperature_unit: string | null;
-        equipment_needed: string[] | null;
-        tips: string | null;
-        video_url: string | null;
-        image_url: string | null;
-      }[]>`
+      const sourceSteps = await database.$queryRaw<
+        {
+          step_number: number;
+          instruction: string;
+          duration_minutes: number | null;
+          temperature_value: number | null;
+          temperature_unit: string | null;
+          equipment_needed: string[] | null;
+          tips: string | null;
+          video_url: string | null;
+          image_url: string | null;
+        }[]
+      >`
         SELECT step_number, instruction, duration_minutes, temperature_value,
                temperature_unit, equipment_needed, tips, video_url, image_url
         FROM tenant_kitchen.recipe_steps

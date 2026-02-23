@@ -59,11 +59,11 @@ vi.mock("@sentry/nextjs", () => ({
   captureException: vi.fn(),
 }));
 
+import { auth } from "@repo/auth/server";
 // Import after mocking
 import { database } from "@repo/database";
-import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { POST as conflictDetect } from "@/app/api/conflicts/detect/route";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 const mockAuth = vi.mocked(auth);
 const mockGetTenantIdForOrg = vi.mocked(getTenantIdForOrg);
@@ -82,7 +82,10 @@ describe("Command Board Health Smoke Test", () => {
 
   describe("1. Conflict detection - empty board", () => {
     beforeEach(() => {
-      mockAuth.mockResolvedValue({ orgId: VALID_ORG_ID, userId: VALID_USER_ID });
+      mockAuth.mockResolvedValue({
+        orgId: VALID_ORG_ID,
+        userId: VALID_USER_ID,
+      });
       mockGetTenantIdForOrg.mockResolvedValue(VALID_TENANT_ID);
     });
 
@@ -131,7 +134,10 @@ describe("Command Board Health Smoke Test", () => {
 
   describe("2. Conflict detection - seeded board", () => {
     beforeEach(() => {
-      mockAuth.mockResolvedValue({ orgId: VALID_ORG_ID, userId: VALID_USER_ID });
+      mockAuth.mockResolvedValue({
+        orgId: VALID_ORG_ID,
+        userId: VALID_USER_ID,
+      });
       mockGetTenantIdForOrg.mockResolvedValue(VALID_TENANT_ID);
     });
 
@@ -228,7 +234,10 @@ describe("Command Board Health Smoke Test", () => {
 
   describe("3. Partial results resilience", () => {
     beforeEach(() => {
-      mockAuth.mockResolvedValue({ orgId: VALID_ORG_ID, userId: VALID_USER_ID });
+      mockAuth.mockResolvedValue({
+        orgId: VALID_ORG_ID,
+        userId: VALID_USER_ID,
+      });
       mockGetTenantIdForOrg.mockResolvedValue(VALID_TENANT_ID);
     });
 
@@ -286,7 +295,10 @@ describe("Command Board Health Smoke Test", () => {
 
   describe("4. Correlation ID propagation", () => {
     beforeEach(() => {
-      mockAuth.mockResolvedValue({ orgId: VALID_ORG_ID, userId: VALID_USER_ID });
+      mockAuth.mockResolvedValue({
+        orgId: VALID_ORG_ID,
+        userId: VALID_USER_ID,
+      });
       mockGetTenantIdForOrg.mockResolvedValue(VALID_TENANT_ID);
       mockQueryRaw.mockResolvedValue([]);
       mockPrepTaskFindMany.mockResolvedValue([]);
@@ -347,7 +359,10 @@ describe("Command Board Health Smoke Test", () => {
     });
 
     it("returns safe error for tenant not found", async () => {
-      mockAuth.mockResolvedValue({ orgId: VALID_ORG_ID, userId: VALID_USER_ID });
+      mockAuth.mockResolvedValue({
+        orgId: VALID_ORG_ID,
+        userId: VALID_USER_ID,
+      });
       mockGetTenantIdForOrg.mockResolvedValue(null);
 
       const request = new Request("http://localhost/api/conflicts/detect", {
@@ -365,7 +380,10 @@ describe("Command Board Health Smoke Test", () => {
     });
 
     it("returns safe error for malformed JSON body", async () => {
-      mockAuth.mockResolvedValue({ orgId: VALID_ORG_ID, userId: VALID_USER_ID });
+      mockAuth.mockResolvedValue({
+        orgId: VALID_ORG_ID,
+        userId: VALID_USER_ID,
+      });
       mockGetTenantIdForOrg.mockResolvedValue(VALID_TENANT_ID);
 
       const request = new Request("http://localhost/api/conflicts/detect", {
@@ -385,7 +403,10 @@ describe("Command Board Health Smoke Test", () => {
 
   describe("6. Response shape validation", () => {
     beforeEach(() => {
-      mockAuth.mockResolvedValue({ orgId: VALID_ORG_ID, userId: VALID_USER_ID });
+      mockAuth.mockResolvedValue({
+        orgId: VALID_ORG_ID,
+        userId: VALID_USER_ID,
+      });
       mockGetTenantIdForOrg.mockResolvedValue(VALID_TENANT_ID);
     });
 
@@ -415,7 +436,9 @@ describe("Command Board Health Smoke Test", () => {
       // Required fields
       expect(typeof conflict.id).toBe("string");
       expect(typeof conflict.type).toBe("string");
-      expect(["low", "medium", "high", "critical"]).toContain(conflict.severity);
+      expect(["low", "medium", "high", "critical"]).toContain(
+        conflict.severity
+      );
       expect(typeof conflict.title).toBe("string");
       expect(typeof conflict.description).toBe("string");
       expect(Array.isArray(conflict.affectedEntities)).toBe(true);
@@ -423,7 +446,9 @@ describe("Command Board Health Smoke Test", () => {
       expect(typeof conflict.suggestedAction).toBe("string");
 
       // affectedEntities shape
-      const entity = (conflict.affectedEntities as Record<string, unknown>[])[0];
+      const entity = (
+        conflict.affectedEntities as Record<string, unknown>[]
+      )[0];
       expect(entity).toHaveProperty("type");
       expect(entity).toHaveProperty("id");
       expect(entity).toHaveProperty("name");
@@ -452,7 +477,10 @@ describe("Command Board Health Smoke Test", () => {
 
   describe("7. Time range filtering", () => {
     beforeEach(() => {
-      mockAuth.mockResolvedValue({ orgId: VALID_ORG_ID, userId: VALID_USER_ID });
+      mockAuth.mockResolvedValue({
+        orgId: VALID_ORG_ID,
+        userId: VALID_USER_ID,
+      });
       mockGetTenantIdForOrg.mockResolvedValue(VALID_TENANT_ID);
     });
 
@@ -500,7 +528,10 @@ describe("Command Board Health Smoke Test", () => {
 
   describe("8. Entity type filtering", () => {
     beforeEach(() => {
-      mockAuth.mockResolvedValue({ orgId: VALID_ORG_ID, userId: VALID_USER_ID });
+      mockAuth.mockResolvedValue({
+        orgId: VALID_ORG_ID,
+        userId: VALID_USER_ID,
+      });
       mockGetTenantIdForOrg.mockResolvedValue(VALID_TENANT_ID);
     });
 

@@ -757,7 +757,10 @@ async function suggestManifestPlanTool(
     scope: {
       boardId,
       tenantId: context.tenantId,
-      entities: planInput.scope.entities.length > 0 ? planInput.scope.entities : entities,
+      entities:
+        planInput.scope.entities.length > 0
+          ? planInput.scope.entities
+          : entities,
     },
     prerequisites: planInput.prerequisites ?? [],
     boardPreview: planInput.boardPreview ?? [],
@@ -780,7 +783,9 @@ async function suggestManifestPlanTool(
     });
   } catch (error) {
     const rawMessage =
-      error instanceof Error ? error.message : "Failed to persist manifest plan";
+      error instanceof Error
+        ? error.message
+        : "Failed to persist manifest plan";
     captureException(error, {
       tags: { route: "command-board-chat", toolName: "suggest_manifest_plan" },
       extra: { planId, boardId, correlationId: context.correlationId },
@@ -887,7 +892,10 @@ const BASE_TOOL_DEFINITIONS: ToolDefinition[] = [
             properties: {
               questionId: { type: "string" },
               prompt: { type: "string" },
-              type: { type: "string", enum: ["string", "enum", "date", "number", "select"] },
+              type: {
+                type: "string",
+                enum: ["string", "enum", "date", "number", "select"],
+              },
               options: { type: "array", items: { type: "string" } },
               required: { type: "boolean" },
             },

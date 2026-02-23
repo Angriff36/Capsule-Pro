@@ -5,7 +5,9 @@ export interface LegacyConflictErrorPayload {
   error?: string;
 }
 
-export type ConflictErrorPayload = ConflictApiError | LegacyConflictErrorPayload;
+export type ConflictErrorPayload =
+  | ConflictApiError
+  | LegacyConflictErrorPayload;
 
 /**
  * Check if the payload is a typed API error

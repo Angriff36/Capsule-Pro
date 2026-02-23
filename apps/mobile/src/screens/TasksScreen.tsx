@@ -25,11 +25,11 @@ const MY_STATION_KEY = "mobile-kitchen-my-station";
 
 type BoardMode = "all" | "unclaimed" | "at-risk" | "my-tasks";
 
-type TaskSection = {
+interface TaskSection {
   key: string;
   title: string;
   tasks: Task[];
-};
+}
 
 function isDoneStatus(status: string): boolean {
   return status === "complete" || status === "completed" || status === "done";
@@ -58,7 +58,9 @@ function getTaskGroup(task: Task): string {
 export default function TasksScreen() {
   const [boardMode, setBoardMode] = useState<BoardMode>("unclaimed");
   const [isMultiSelectMode, setIsMultiSelectMode] = useState(false);
-  const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(new Set());
+  const [selectedTaskIds, setSelectedTaskIds] = useState<Set<string>>(
+    new Set()
+  );
   const [error, setError] = useState<string | null>(null);
   const [filters, setFilters] = useState<FilterState>({
     station: null,
@@ -100,7 +102,9 @@ export default function TasksScreen() {
     completeTask.isPending;
 
   const uniqueStations = useMemo(() => {
-    return Array.from(new Set(availableTasks.flatMap((t) => t.tags || []).filter(Boolean)));
+    return Array.from(
+      new Set(availableTasks.flatMap((t) => t.tags || []).filter(Boolean))
+    );
   }, [availableTasks]);
 
   useMemo(() => {
@@ -131,7 +135,9 @@ export default function TasksScreen() {
       return filteredAvailableTasks;
     }
     if (boardMode === "unclaimed") {
-      return filteredAvailableTasks.filter((task) => task.isAvailable !== false);
+      return filteredAvailableTasks.filter(
+        (task) => task.isAvailable !== false
+      );
     }
     if (boardMode === "at-risk") {
       return filteredAvailableTasks.filter(isTaskAtRisk);
@@ -161,7 +167,9 @@ export default function TasksScreen() {
 
   const modeCounts = useMemo(() => {
     const all = filteredAvailableTasks.length;
-    const unclaimed = filteredAvailableTasks.filter((task) => task.isAvailable !== false).length;
+    const unclaimed = filteredAvailableTasks.filter(
+      (task) => task.isAvailable !== false
+    ).length;
     const atRisk = filteredAvailableTasks.filter(isTaskAtRisk).length;
     const mine = myTasks.length;
     return { all, unclaimed, atRisk, mine };
@@ -179,13 +187,16 @@ export default function TasksScreen() {
     });
   }, []);
 
-  const enterMultiSelectMode = useCallback((taskId: string) => {
-    if (boardMode === "my-tasks") {
-      return;
-    }
-    setIsMultiSelectMode(true);
-    setSelectedTaskIds(new Set([taskId]));
-  }, [boardMode]);
+  const enterMultiSelectMode = useCallback(
+    (taskId: string) => {
+      if (boardMode === "my-tasks") {
+        return;
+      }
+      setIsMultiSelectMode(true);
+      setSelectedTaskIds(new Set([taskId]));
+    },
+    [boardMode]
+  );
 
   const exitMultiSelectMode = useCallback(() => {
     setIsMultiSelectMode(false);
@@ -193,7 +204,9 @@ export default function TasksScreen() {
   }, []);
 
   const selectAllVisible = useCallback(() => {
-    const ids = visibleAvailableTasks.filter((task) => task.isAvailable !== false).map((task) => task.id);
+    const ids = visibleAvailableTasks
+      .filter((task) => task.isAvailable !== false)
+      .map((task) => task.id);
     setSelectedTaskIds(new Set(ids));
   }, [visibleAvailableTasks]);
 
@@ -224,7 +237,9 @@ export default function TasksScreen() {
         exitMultiSelectMode();
         setBoardMode("my-tasks");
       } else if (response.alreadyClaimedTaskIds?.length) {
-        setError(`${response.alreadyClaimedTaskIds.length} task(s) were already claimed by others.`);
+        setError(
+          `${response.alreadyClaimedTaskIds.length} task(s) were already claimed by others.`
+        );
       } else {
         setError(response.message || "Failed to claim tasks");
       }
@@ -287,7 +302,10 @@ export default function TasksScreen() {
     });
   }, [filters.myStation]);
 
-  const activeFilterCount = (filters.station ? 1 : 0) + (filters.minPriority ? 1 : 0) + (filters.eventId ? 1 : 0);
+  const activeFilterCount =
+    (filters.station ? 1 : 0) +
+    (filters.minPriority ? 1 : 0) +
+    (filters.eventId ? 1 : 0);
 
   const onRefresh = useCallback(() => {
     if (boardMode === "my-tasks") {
@@ -297,18 +315,21 @@ export default function TasksScreen() {
     }
   }, [boardMode, refetchMyTasks, refetchAvailable]);
 
-  const isLoadingCurrent = boardMode === "my-tasks" ? isLoadingMyTasks : isLoadingAvailable;
-  const isErrorCurrent = boardMode === "my-tasks" ? isErrorMyTasks : isErrorAvailable;
+  const isLoadingCurrent =
+    boardMode === "my-tasks" ? isLoadingMyTasks : isLoadingAvailable;
+  const isErrorCurrent =
+    boardMode === "my-tasks" ? isErrorMyTasks : isErrorAvailable;
   const errorCurrent = boardMode === "my-tasks" ? errorMyTasks : errorAvailable;
-  const isRefreshingCurrent = boardMode === "my-tasks" ? isRefetchingMyTasks : isRefetchingAvailable;
+  const isRefreshingCurrent =
+    boardMode === "my-tasks" ? isRefetchingMyTasks : isRefetchingAvailable;
 
   const statusPill = (task: Task) => {
     if (boardMode !== "my-tasks") {
       return (
         <TouchableOpacity
-          style={[styles.statusPill, styles.statusPillNeutral]}
           disabled={isMutating || task.isAvailable === false}
           onPress={() => handleClaim(task.id)}
+          style={[styles.statusPill, styles.statusPillNeutral]}
         >
           <Text style={styles.statusPillNeutralText}>Unclaimed</Text>
         </TouchableOpacity>
@@ -326,9 +347,9 @@ export default function TasksScreen() {
     if (task.status === "in_progress") {
       return (
         <TouchableOpacity
-          style={[styles.statusPill, styles.statusPillWorking]}
           disabled={isMutating}
           onPress={() => handleComplete(task.id)}
+          style={[styles.statusPill, styles.statusPillWorking]}
         >
           <Text style={styles.statusPillWorkingText}>Working</Text>
         </TouchableOpacity>
@@ -337,9 +358,9 @@ export default function TasksScreen() {
 
     return (
       <TouchableOpacity
-        style={[styles.statusPill, styles.statusPillAssigned]}
         disabled={isMutating}
         onPress={() => handleStart(task.id)}
+        style={[styles.statusPill, styles.statusPillAssigned]}
       >
         <Text style={styles.statusPillAssignedText}>Start</Text>
       </TouchableOpacity>
@@ -358,25 +379,27 @@ export default function TasksScreen() {
 
     return (
       <Pressable
-        key={task.id}
-        style={[styles.taskRow, isSelected && styles.taskRowSelected]}
-        onPress={onPress}
-        onLongPress={() => enterMultiSelectMode(task.id)}
         delayLongPress={500}
+        key={task.id}
+        onLongPress={() => enterMultiSelectMode(task.id)}
+        onPress={onPress}
+        style={[styles.taskRow, isSelected && styles.taskRowSelected]}
       >
         <View style={styles.taskMain}>
           {selectable && (
-            <View style={[styles.selectDot, isSelected && styles.selectDotActive]}>
+            <View
+              style={[styles.selectDot, isSelected && styles.selectDotActive]}
+            >
               {isSelected && <Text style={styles.selectDotMark}>✓</Text>}
             </View>
           )}
 
           <View style={styles.taskTextWrap}>
-            <Text style={styles.taskTitle} numberOfLines={2}>
+            <Text numberOfLines={2} style={styles.taskTitle}>
               {task.title}
             </Text>
             {task.summary ? (
-              <Text style={styles.taskSummary} numberOfLines={2}>
+              <Text numberOfLines={2} style={styles.taskSummary}>
                 {task.summary}
               </Text>
             ) : null}
@@ -386,9 +409,9 @@ export default function TasksScreen() {
         <View style={styles.taskActions}>
           {boardMode !== "my-tasks" ? (
             <TouchableOpacity
-              style={styles.claimCircle}
-              onPress={() => handleClaim(task.id)}
               disabled={isMutating || task.isAvailable === false}
+              onPress={() => handleClaim(task.id)}
+              style={styles.claimCircle}
             >
               <Text style={styles.claimCircleText}>+</Text>
             </TouchableOpacity>
@@ -416,7 +439,7 @@ export default function TasksScreen() {
     if (isLoadingCurrent) {
       return (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#2563eb" />
+          <ActivityIndicator color="#2563eb" size="large" />
           <Text style={styles.loadingText}>Loading tasks...</Text>
         </View>
       );
@@ -434,7 +457,9 @@ export default function TasksScreen() {
     return (
       <View style={styles.emptyState}>
         <Text style={styles.emptyTitle}>No tasks</Text>
-        <Text style={styles.emptySubtitle}>No tasks match your current view.</Text>
+        <Text style={styles.emptySubtitle}>
+          No tasks match your current view.
+        </Text>
       </View>
     );
   };
@@ -462,7 +487,9 @@ export default function TasksScreen() {
     <View style={styles.container}>
       {isMultiSelectMode && (
         <View style={styles.multiSelectHeader}>
-          <Text style={styles.multiSelectCount}>{selectedTaskIds.size} selected</Text>
+          <Text style={styles.multiSelectCount}>
+            {selectedTaskIds.size} selected
+          </Text>
           <View style={styles.multiSelectActions}>
             <TouchableOpacity onPress={selectAllVisible}>
               <Text style={styles.multiSelectActionText}>Select All</Text>
@@ -487,8 +514,8 @@ export default function TasksScreen() {
         contentContainerStyle={styles.content}
         refreshControl={
           <RefreshControl
-            refreshing={isRefreshingCurrent}
             onRefresh={onRefresh}
+            refreshing={isRefreshingCurrent}
             tintColor="#2563eb"
           />
         }
@@ -497,7 +524,10 @@ export default function TasksScreen() {
           <View>
             <Text style={styles.title}>Task Claim Board</Text>
           </View>
-          <TouchableOpacity style={styles.filterIconButton} onPress={() => setShowFilters(true)}>
+          <TouchableOpacity
+            onPress={() => setShowFilters(true)}
+            style={styles.filterIconButton}
+          >
             <Text style={styles.filterIcon}>≡</Text>
             {activeFilterCount > 0 && (
               <View style={styles.filterBadge}>
@@ -509,34 +539,66 @@ export default function TasksScreen() {
 
         <View style={styles.modeChipsRow}>
           <TouchableOpacity
-            style={[styles.modeChip, boardMode === "all" && styles.modeChipActive]}
             onPress={() => setMode("all")}
+            style={[
+              styles.modeChip,
+              boardMode === "all" && styles.modeChipActive,
+            ]}
           >
-            <Text style={[styles.modeChipText, boardMode === "all" && styles.modeChipTextActive]}>
+            <Text
+              style={[
+                styles.modeChipText,
+                boardMode === "all" && styles.modeChipTextActive,
+              ]}
+            >
               All Tasks
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.modeChip, boardMode === "unclaimed" && styles.modeChipActive]}
             onPress={() => setMode("unclaimed")}
+            style={[
+              styles.modeChip,
+              boardMode === "unclaimed" && styles.modeChipActive,
+            ]}
           >
-            <Text style={[styles.modeChipText, boardMode === "unclaimed" && styles.modeChipTextActive]}>
+            <Text
+              style={[
+                styles.modeChipText,
+                boardMode === "unclaimed" && styles.modeChipTextActive,
+              ]}
+            >
               Unclaimed
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.modeChip, boardMode === "at-risk" && styles.modeChipActive]}
             onPress={() => setMode("at-risk")}
+            style={[
+              styles.modeChip,
+              boardMode === "at-risk" && styles.modeChipActive,
+            ]}
           >
-            <Text style={[styles.modeChipText, boardMode === "at-risk" && styles.modeChipTextActive]}>
+            <Text
+              style={[
+                styles.modeChipText,
+                boardMode === "at-risk" && styles.modeChipTextActive,
+              ]}
+            >
               At Risk
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.modeChip, boardMode === "my-tasks" && styles.modeChipActive]}
             onPress={() => setMode("my-tasks")}
+            style={[
+              styles.modeChip,
+              boardMode === "my-tasks" && styles.modeChipActive,
+            ]}
           >
-            <Text style={[styles.modeChipText, boardMode === "my-tasks" && styles.modeChipTextActive]}>
+            <Text
+              style={[
+                styles.modeChipText,
+                boardMode === "my-tasks" && styles.modeChipTextActive,
+              ]}
+            >
               My Tasks
             </Text>
           </TouchableOpacity>
@@ -554,17 +616,26 @@ export default function TasksScreen() {
         {(filters.myStation || filters.station || activeFilterCount > 0) && (
           <View style={styles.filterChipsRow}>
             {filters.myStation && (
-              <TouchableOpacity style={styles.filterChipPrimary} onPress={() => setMyStation(null)}>
-                <Text style={styles.filterChipPrimaryText}>My Task Group: {filters.myStation}</Text>
+              <TouchableOpacity
+                onPress={() => setMyStation(null)}
+                style={styles.filterChipPrimary}
+              >
+                <Text style={styles.filterChipPrimaryText}>
+                  My Task Group: {filters.myStation}
+                </Text>
                 <Text style={styles.filterChipClose}> ×</Text>
               </TouchableOpacity>
             )}
             {filters.station && filters.station !== filters.myStation && (
               <TouchableOpacity
+                onPress={() =>
+                  setFilters((prev) => ({ ...prev, station: null }))
+                }
                 style={styles.filterChip}
-                onPress={() => setFilters((prev) => ({ ...prev, station: null }))}
               >
-                <Text style={styles.filterChipText}>Task Group: {filters.station}</Text>
+                <Text style={styles.filterChipText}>
+                  Task Group: {filters.station}
+                </Text>
                 <Text style={styles.filterChipClose}> ×</Text>
               </TouchableOpacity>
             )}
@@ -576,23 +647,26 @@ export default function TasksScreen() {
           </View>
         )}
 
-        {sections.length === 0 ? (
-          renderEmptyState()
-        ) : (
-          sections.map((section) => (
-            <View key={section.key} style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <Text style={styles.sectionTitle}>{section.title}</Text>
-                <Text style={styles.sectionMeta}>{sectionCountLabel(section.tasks)}</Text>
+        {sections.length === 0
+          ? renderEmptyState()
+          : sections.map((section) => (
+              <View key={section.key} style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>{section.title}</Text>
+                  <Text style={styles.sectionMeta}>
+                    {sectionCountLabel(section.tasks)}
+                  </Text>
+                </View>
+                {section.tasks.map(renderTaskRow)}
               </View>
-              {section.tasks.map(renderTaskRow)}
-            </View>
-          ))
-        )}
+            ))}
       </ScrollView>
 
       {showFilters && (
-        <Pressable style={styles.filterOverlay} onPress={() => setShowFilters(false)}>
+        <Pressable
+          onPress={() => setShowFilters(false)}
+          style={styles.filterOverlay}
+        >
           <View style={styles.filterSheet}>
             <View style={styles.filterSheetHeader}>
               <Text style={styles.filterSheetTitle}>Filter Tasks</Text>
@@ -608,13 +682,22 @@ export default function TasksScreen() {
                   uniqueStations.map((station) => (
                     <TouchableOpacity
                       key={station}
-                      style={[styles.filterButton, filters.myStation === station && styles.filterButtonActive]}
-                      onPress={() => setMyStation(filters.myStation === station ? null : station)}
+                      onPress={() =>
+                        setMyStation(
+                          filters.myStation === station ? null : station
+                        )
+                      }
+                      style={[
+                        styles.filterButton,
+                        filters.myStation === station &&
+                          styles.filterButtonActive,
+                      ]}
                     >
                       <Text
                         style={[
                           styles.filterButtonText,
-                          filters.myStation === station && styles.filterButtonTextActive,
+                          filters.myStation === station &&
+                            styles.filterButtonTextActive,
                         ]}
                       >
                         {station}
@@ -633,16 +716,23 @@ export default function TasksScreen() {
                 {uniqueStations.map((station) => (
                   <TouchableOpacity
                     key={`station-${station}`}
-                    style={[styles.filterButton, filters.station === station && styles.filterButtonActive]}
                     onPress={() =>
                       setFilters((prev) => ({
                         ...prev,
                         station: prev.station === station ? null : station,
                       }))
                     }
+                    style={[
+                      styles.filterButton,
+                      filters.station === station && styles.filterButtonActive,
+                    ]}
                   >
                     <Text
-                      style={[styles.filterButtonText, filters.station === station && styles.filterButtonTextActive]}
+                      style={[
+                        styles.filterButtonText,
+                        filters.station === station &&
+                          styles.filterButtonTextActive,
+                      ]}
                     >
                       {station}
                     </Text>
@@ -657,18 +747,22 @@ export default function TasksScreen() {
                 {[1, 2, 3, 4, 5].map((p) => (
                   <TouchableOpacity
                     key={p}
-                    style={[styles.filterButton, filters.minPriority === p && styles.filterButtonActive]}
                     onPress={() =>
                       setFilters((prev) => ({
                         ...prev,
                         minPriority: prev.minPriority === p ? null : p,
                       }))
                     }
+                    style={[
+                      styles.filterButton,
+                      filters.minPriority === p && styles.filterButtonActive,
+                    ]}
                   >
                     <Text
                       style={[
                         styles.filterButtonText,
-                        filters.minPriority === p && styles.filterButtonTextActive,
+                        filters.minPriority === p &&
+                          styles.filterButtonTextActive,
                       ]}
                     >
                       {`≤${p}`}
@@ -678,26 +772,32 @@ export default function TasksScreen() {
               </View>
             </View>
 
-            <TouchableOpacity style={styles.clearAllButton} onPress={clearAllFilters}>
+            <TouchableOpacity
+              onPress={clearAllFilters}
+              style={styles.clearAllButton}
+            >
               <Text style={styles.clearAllButtonText}>Clear All</Text>
             </TouchableOpacity>
           </View>
         </Pressable>
       )}
 
-      {isMultiSelectMode && selectedTaskIds.size > 0 && boardMode !== "my-tasks" && (
-        <View style={styles.fabContainer}>
-          <TouchableOpacity
-            style={[styles.fab, isMutating && styles.fabDisabled]}
-            onPress={handleBundleClaim}
-            disabled={isMutating}
-          >
-            <Text style={styles.fabText}>
-              CLAIM {selectedTaskIds.size} TASK{selectedTaskIds.size > 1 ? "S" : ""}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      )}
+      {isMultiSelectMode &&
+        selectedTaskIds.size > 0 &&
+        boardMode !== "my-tasks" && (
+          <View style={styles.fabContainer}>
+            <TouchableOpacity
+              disabled={isMutating}
+              onPress={handleBundleClaim}
+              style={[styles.fab, isMutating && styles.fabDisabled]}
+            >
+              <Text style={styles.fabText}>
+                CLAIM {selectedTaskIds.size} TASK
+                {selectedTaskIds.size > 1 ? "S" : ""}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
     </View>
   );
 }

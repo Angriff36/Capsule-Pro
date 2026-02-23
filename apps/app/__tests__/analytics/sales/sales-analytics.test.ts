@@ -3,7 +3,7 @@ import { utils, type WorkBook } from "xlsx";
 import { loadSalesData } from "../../../app/(authenticated)/analytics/sales/lib/sales-analytics";
 
 const buildWorkbook = (
-  sheets: Array<{ name: string; rows: Array<Record<string, unknown>> }>
+  sheets: Array<{ name: string; rows: Record<string, unknown>[] }>
 ): WorkBook => {
   const workbook = utils.book_new();
   for (const sheet of sheets) {

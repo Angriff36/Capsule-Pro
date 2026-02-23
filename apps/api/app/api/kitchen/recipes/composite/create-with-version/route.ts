@@ -1,3 +1,4 @@
+import type { ConstraintOutcome } from "@angriff36/manifest/ir";
 import { auth } from "@repo/auth/server";
 import {
   database,
@@ -6,6 +7,8 @@ import {
 } from "@repo/database";
 import { createManifestRuntime } from "@repo/manifest-adapters/manifest-runtime-factory";
 import {
+  getBlockingConstraints,
+  manifestConstraintBlockedResponse,
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@repo/manifest-adapters/route-helpers";
@@ -89,6 +92,11 @@ interface CreateRecipeRequest {
   }[];
   // Idempotency
   idempotencyKey?: string;
+  // Override support - when provided, constraints will be overridden
+  override?: {
+    reasonCode: string;
+    details: string;
+  };
 }
 
 export async function POST(request: NextRequest) {
@@ -122,6 +130,10 @@ export async function POST(request: NextRequest) {
 
     // Execute everything in a single transaction
     const sentryTelemetry = createSentryTelemetry();
+    const hasOverride = Boolean(body.override);
+
+    // Collect all constraint outcomes for potential override response
+    let allConstraintOutcomes: ConstraintOutcome[] = [];
 
     const result = await database.$transaction(async (tx) => {
       // Create manifest runtime with transaction client override
@@ -135,6 +147,16 @@ export async function POST(request: NextRequest) {
         },
         {
           user: { id: userId, tenantId },
+          // Pass override requests if provided
+          overrideRequests: body.override
+            ? [
+                {
+                  constraintCode: "*", // Override all constraints
+                  reasonCode: body.override.reasonCode,
+                  details: body.override.details,
+                },
+              ]
+            : undefined,
         }
       );
 
@@ -153,7 +175,26 @@ export async function POST(request: NextRequest) {
         { entityName: "Recipe" }
       );
 
-      if (!recipeResult.success) {
+      // Collect constraint outcomes
+      if (recipeResult.constraintOutcomes) {
+        allConstraintOutcomes = [
+          ...allConstraintOutcomes,
+          ...recipeResult.constraintOutcomes,
+        ];
+      }
+
+      // Check for blocking constraints (unless override is provided)
+      if (!hasOverride) {
+        const blocking = getBlockingConstraints(recipeResult);
+        if (blocking) {
+          // Return constraint-blocked response instead of throwing
+          throw Object.assign(new Error("CONSTRAINT_BLOCKED"), {
+            constraintOutcomes: allConstraintOutcomes,
+          });
+        }
+      }
+
+      if (!(recipeResult.success || hasOverride)) {
         throw new Error(
           recipeResult.guardFailure?.formatted ||
             recipeResult.policyDenial?.policyName ||
@@ -187,7 +228,25 @@ export async function POST(request: NextRequest) {
         { entityName: "RecipeVersion" }
       );
 
-      if (!versionResult.success) {
+      // Collect constraint outcomes
+      if (versionResult.constraintOutcomes) {
+        allConstraintOutcomes = [
+          ...allConstraintOutcomes,
+          ...versionResult.constraintOutcomes,
+        ];
+      }
+
+      // Check for blocking constraints (unless override is provided)
+      if (!hasOverride) {
+        const blocking = getBlockingConstraints(versionResult);
+        if (blocking) {
+          throw Object.assign(new Error("CONSTRAINT_BLOCKED"), {
+            constraintOutcomes: allConstraintOutcomes,
+          });
+        }
+      }
+
+      if (!(versionResult.success || hasOverride)) {
         throw new Error(
           versionResult.guardFailure?.formatted ||
             versionResult.policyDenial?.policyName ||
@@ -255,18 +314,27 @@ export async function POST(request: NextRequest) {
               quantity: ingredient.quantity,
               unitId: ingredient.unitId,
               preparationNotes: ingredient.preparationNotes || "",
-              isOptional: ingredient.isOptional || false,
+              isOptional: ingredient.isOptional,
               sortOrder: ingredient.sortOrder,
             },
             { entityName: "RecipeIngredient" }
           );
 
-          if (!ingredientResult.success) {
+          if (ingredientResult.constraintOutcomes) {
+            allConstraintOutcomes = [
+              ...allConstraintOutcomes,
+              ...ingredientResult.constraintOutcomes,
+            ];
+          }
+
+          if (!(ingredientResult.success || hasOverride)) {
             throw new Error(
               `Failed to create ingredient: ${ingredientResult.guardFailure?.formatted || ingredientResult.error}`
             );
           }
-          createdIngredients.push(ingredientResult.result);
+          if (ingredientResult.result) {
+            createdIngredients.push(ingredientResult.result);
+          }
         }
       }
 
@@ -293,12 +361,21 @@ export async function POST(request: NextRequest) {
             { entityName: "RecipeStep" }
           );
 
-          if (!stepResult.success) {
+          if (stepResult.constraintOutcomes) {
+            allConstraintOutcomes = [
+              ...allConstraintOutcomes,
+              ...stepResult.constraintOutcomes,
+            ];
+          }
+
+          if (!(stepResult.success || hasOverride)) {
             throw new Error(
               `Failed to create step ${step.stepNumber}: ${stepResult.guardFailure?.formatted || stepResult.error}`
             );
           }
-          createdSteps.push(stepResult.result);
+          if (stepResult.result) {
+            createdSteps.push(stepResult.result);
+          }
         }
       }
 
@@ -311,6 +388,7 @@ export async function POST(request: NextRequest) {
           ...(recipeResult.emittedEvents || []),
           ...(versionResult.emittedEvents || []),
         ],
+        constraintOutcomes: allConstraintOutcomes,
       };
     });
 
@@ -320,8 +398,22 @@ export async function POST(request: NextRequest) {
       ingredients: result.ingredients,
       steps: result.steps,
       events: result.events,
+      constraintOutcomes: result.constraintOutcomes,
+      recipeId,
     });
   } catch (error) {
+    // Check if this is a constraint-blocked error
+    if (
+      error instanceof Error &&
+      error.message === "CONSTRAINT_BLOCKED" &&
+      "constraintOutcomes" in error
+    ) {
+      return manifestConstraintBlockedResponse(
+        (error as { constraintOutcomes: unknown[] }).constraintOutcomes,
+        "Recipe creation blocked by constraints"
+      );
+    }
+
     console.error("[composite/create-with-version] Error:", error);
     captureException(error);
 

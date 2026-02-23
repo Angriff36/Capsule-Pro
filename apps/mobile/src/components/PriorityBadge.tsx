@@ -8,7 +8,10 @@ interface PriorityBadgeProps {
   size?: "small" | "medium";
 }
 
-export default function PriorityBadge({ priority, size = "medium" }: PriorityBadgeProps) {
+export default function PriorityBadge({
+  priority,
+  size = "medium",
+}: PriorityBadgeProps) {
   const config = priorityConfig[priority] ?? priorityConfig[5];
 
   return (

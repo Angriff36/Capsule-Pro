@@ -1,6 +1,7 @@
 // Offline banner component to show network status
-import { View, Text, StyleSheet, Animated } from "react-native";
+
 import { useEffect, useRef } from "react";
+import { Animated, StyleSheet, Text } from "react-native";
 
 export interface OfflineBannerProps {
   isOnline: boolean;

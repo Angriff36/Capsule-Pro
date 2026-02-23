@@ -69,18 +69,22 @@ export default function EventCard({ event, onPress }: EventCardProps) {
 
   return (
     <TouchableOpacity
-      style={[styles.card, { borderLeftColor: colors.border }]}
-      onPress={() => onPress(event)}
       activeOpacity={0.7}
+      onPress={() => onPress(event)}
+      style={[styles.card, { borderLeftColor: colors.border }]}
     >
-      <View style={[styles.cardContent, { backgroundColor: colors.background }]}>
+      <View
+        style={[styles.cardContent, { backgroundColor: colors.background }]}
+      >
         {/* Header row */}
         <View style={styles.headerRow}>
-          <Text style={styles.eventName} numberOfLines={1}>
+          <Text numberOfLines={1} style={styles.eventName}>
             {event.name}
           </Text>
           <View style={styles.headerRight}>
-            <View style={[styles.urgencyBadge, { backgroundColor: colors.badge }]}>
+            <View
+              style={[styles.urgencyBadge, { backgroundColor: colors.badge }]}
+            >
               <Text style={styles.urgencyText}>{colors.label}</Text>
             </View>
             <Text style={styles.chevron}>{">"}</Text>
@@ -116,11 +120,12 @@ export default function EventCard({ event, onPress }: EventCardProps) {
               </Text>
             </View>
           )}
-          {event.unclaimedPrepCount === 0 && event.incompleteItemsCount === 0 && (
-            <View style={styles.completeBadge}>
-              <Text style={styles.completeText}>All prep complete</Text>
-            </View>
-          )}
+          {event.unclaimedPrepCount === 0 &&
+            event.incompleteItemsCount === 0 && (
+              <View style={styles.completeBadge}>
+                <Text style={styles.completeText}>All prep complete</Text>
+              </View>
+            )}
         </View>
       </View>
     </TouchableOpacity>

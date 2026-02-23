@@ -38,7 +38,9 @@ async function fetchSentryIssues(): Promise<
     `https://sentry.io/api/0/projects/${SENTRY_ORG}/capsule-pro/issues/?query=is:unresolved&limit=100`,
     { headers: { Authorization: `Bearer ${SENTRY_TOKEN}` } }
   );
-  if (!res.ok) throw new Error(`Sentry API ${res.status}: ${await res.text()}`);
+  if (!res.ok) {
+    throw new Error(`Sentry API ${res.status}: ${await res.text()}`);
+  }
   return res.json();
 }
 
@@ -52,7 +54,9 @@ async function fetchIssueEvent(
     `https://sentry.io/api/0/organizations/${SENTRY_ORG}/issues/${issueId}/events/latest/`,
     { headers: { Authorization: `Bearer ${SENTRY_TOKEN}` } }
   );
-  if (!res.ok) return null;
+  if (!res.ok) {
+    return null;
+  }
   const evt = await res.json();
 
   let exceptionType: string | null = null;
@@ -121,8 +125,10 @@ describe("Live Sentry → AI Fixer (real repo)", () => {
       const target = issues.find((i) => i.shortId === "CAPSULE-PRO-S");
       expect(target).toBeDefined();
 
-      const issue = await fetchIssueEvent(target!.id);
-      if (!issue) throw new Error("Failed to fetch issue event");
+      const issue = await fetchIssueEvent(target?.id);
+      if (!issue) {
+        throw new Error("Failed to fetch issue event");
+      }
 
       console.log("Issue:", issue.title);
       console.log(
@@ -140,7 +146,9 @@ describe("Live Sentry → AI Fixer (real repo)", () => {
 
       console.log("AI analysis:", result.analysis);
       console.log("Success:", result.success);
-      if (result.error) console.log("Error:", result.error);
+      if (result.error) {
+        console.log("Error:", result.error);
+      }
       if (result.edits.length > 0) {
         console.log("Edits applied:");
         for (const edit of result.edits) {
@@ -168,8 +176,10 @@ describe("Live Sentry → AI Fixer (real repo)", () => {
       const target = issues.find((i) => i.shortId === "CAPSULE-PRO-H");
       expect(target).toBeDefined();
 
-      const issue = await fetchIssueEvent(target!.id);
-      if (!issue) throw new Error("Failed to fetch issue event");
+      const issue = await fetchIssueEvent(target?.id);
+      if (!issue) {
+        throw new Error("Failed to fetch issue event");
+      }
 
       console.log("Issue:", issue.title);
       console.log(
@@ -187,7 +197,9 @@ describe("Live Sentry → AI Fixer (real repo)", () => {
 
       console.log("AI analysis:", result.analysis);
       console.log("Success:", result.success);
-      if (result.error) console.log("Error:", result.error);
+      if (result.error) {
+        console.log("Error:", result.error);
+      }
       if (result.edits.length > 0) {
         console.log("Edits applied:");
         for (const edit of result.edits) {
@@ -211,8 +223,10 @@ describe("Live Sentry → AI Fixer (real repo)", () => {
       const target = issues.find((i) => i.shortId === "CAPSULE-PRO-6");
       expect(target).toBeDefined();
 
-      const issue = await fetchIssueEvent(target!.id);
-      if (!issue) throw new Error("Failed to fetch issue event");
+      const issue = await fetchIssueEvent(target?.id);
+      if (!issue) {
+        throw new Error("Failed to fetch issue event");
+      }
 
       console.log("Issue:", issue.title);
       console.log(
@@ -229,7 +243,9 @@ describe("Live Sentry → AI Fixer (real repo)", () => {
 
       console.log("AI analysis:", result.analysis);
       console.log("Success:", result.success);
-      if (result.error) console.log("Error:", result.error);
+      if (result.error) {
+        console.log("Error:", result.error);
+      }
       if (result.edits.length > 0) {
         console.log("Edits applied:");
         for (const edit of result.edits) {

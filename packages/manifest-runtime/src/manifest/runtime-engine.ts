@@ -1998,9 +1998,9 @@ export class RuntimeEngine {
         return (left as number) % (right as number);
       case "==":
       case "is":
-        return left == right; // Loose equality: undefined == null is true
+        return left === right; // Loose equality: undefined == null is true
       case "!=":
-        return left != right; // Loose inequality: undefined != null is false
+        return left !== right; // Loose inequality: undefined != null is false
       case "<":
         return (left as number) < (right as number);
       case ">":

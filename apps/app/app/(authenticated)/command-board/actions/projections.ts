@@ -1,7 +1,6 @@
 "use server";
 
-import { database } from "@repo/database";
-import { Prisma } from "@repo/database";
+import { database, Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { requireTenantId } from "../../../lib/tenant";
 import type { BoardProjection } from "../types/board";

@@ -342,26 +342,17 @@ describe("Shared Group Detection Logic", () => {
   });
 
   it("returns null when projections have different groupIds", () => {
-    const projections = [
-      { groupId: "group-1" },
-      { groupId: "group-2" },
-    ];
+    const projections = [{ groupId: "group-1" }, { groupId: "group-2" }];
     expect(getSharedGroupId(projections)).toBeNull();
   });
 
   it("returns null when some projections have null groupId", () => {
-    const projections = [
-      { groupId: "group-1" },
-      { groupId: null },
-    ];
+    const projections = [{ groupId: "group-1" }, { groupId: null }];
     expect(getSharedGroupId(projections)).toBeNull();
   });
 
   it("returns null when all projections have null groupId", () => {
-    const projections = [
-      { groupId: null },
-      { groupId: null },
-    ];
+    const projections = [{ groupId: null }, { groupId: null }];
     expect(getSharedGroupId(projections)).toBeNull();
   });
 
@@ -384,8 +375,13 @@ describe("Group Bounds Calculation", () => {
    * Simulates the bounding box calculation in createGroup
    */
   function calculateGroupBounds(
-    projections: Array<{ positionX: number; positionY: number; width: number; height: number }>,
-    padding: number = 40
+    projections: Array<{
+      positionX: number;
+      positionY: number;
+      width: number;
+      height: number;
+    }>,
+    padding = 40
   ): { positionX: number; positionY: number; width: number; height: number } {
     if (projections.length === 0) {
       return { positionX: 100, positionY: 100, width: 400, height: 300 };
@@ -393,8 +389,10 @@ describe("Group Bounds Calculation", () => {
 
     const minX = Math.min(...projections.map((p) => p.positionX)) - padding;
     const minY = Math.min(...projections.map((p) => p.positionY)) - padding;
-    const maxX = Math.max(...projections.map((p) => p.positionX + p.width)) + padding;
-    const maxY = Math.max(...projections.map((p) => p.positionY + p.height)) + padding;
+    const maxX =
+      Math.max(...projections.map((p) => p.positionX + p.width)) + padding;
+    const maxY =
+      Math.max(...projections.map((p) => p.positionY + p.height)) + padding;
 
     return {
       positionX: Math.round(minX),
@@ -406,7 +404,12 @@ describe("Group Bounds Calculation", () => {
 
   it("returns default bounds for empty projections", () => {
     const bounds = calculateGroupBounds([]);
-    expect(bounds).toEqual({ positionX: 100, positionY: 100, width: 400, height: 300 });
+    expect(bounds).toEqual({
+      positionX: 100,
+      positionY: 100,
+      width: 400,
+      height: 300,
+    });
   });
 
   it("calculates bounds for single projection", () => {

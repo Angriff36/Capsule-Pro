@@ -96,7 +96,7 @@ const parseJsonArray = (value: string): unknown[] | null => {
   }
 };
 
-const parseIngredientInput = (
+const _parseIngredientInput = (
   value: FormDataEntryValue | null
 ): IngredientInput[] => {
   if (typeof value !== "string") {
@@ -161,7 +161,7 @@ const parseIngredientInput = (
   });
 };
 
-const parseStepInput = (value: FormDataEntryValue | null): StepInput[] => {
+const _parseStepInput = (value: FormDataEntryValue | null): StepInput[] => {
   if (typeof value !== "string") {
     return [];
   }
@@ -196,7 +196,7 @@ const parseStepInput = (value: FormDataEntryValue | null): StepInput[] => {
   return parseLines(trimmed).map((line) => ({ instruction: line }));
 };
 
-const buildInstructionsText = (steps: StepInput[]): string | null =>
+const _buildInstructionsText = (steps: StepInput[]): string | null =>
   steps.length > 0 ? steps.map((step) => step.instruction).join("\n") : null;
 
 const readImageFile = (formData: FormData, key: string) => {
@@ -231,7 +231,7 @@ const uploadImage = async (
   return blob.url;
 };
 
-const loadUnitMap = async (codes: string[]) => {
+const _loadUnitMap = async (codes: string[]) => {
   if (codes.length === 0) {
     return new Map<string, number>();
   }
@@ -247,7 +247,7 @@ const loadUnitMap = async (codes: string[]) => {
 
 type TxClient = Parameters<Parameters<typeof database.$transaction>[0]>[0];
 
-const ensureIngredientId = async (
+const _ensureIngredientId = async (
   tx: TxClient,
   tenantId: string,
   name: string,

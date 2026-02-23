@@ -70,7 +70,9 @@ function delay(ms: number): Promise<void> {
  * Determines if an error is retryable (transient failures).
  */
 function isRetryableError(error: unknown): boolean {
-  if (!(error instanceof Error)) return false;
+  if (!(error instanceof Error)) {
+    return false;
+  }
 
   const message = error.message.toLowerCase();
   return RETRYABLE_ERROR_PATTERNS.some((pattern) => pattern.test(message));
@@ -541,8 +543,12 @@ function isTypedValueMatch(
   value: unknown,
   type: "string" | "number" | "boolean"
 ): boolean {
-  if (type === "string") return typeof value === "string";
-  if (type === "number") return typeof value === "number";
+  if (type === "string") {
+    return typeof value === "string";
+  }
+  if (type === "number") {
+    return typeof value === "number";
+  }
   return typeof value === "boolean";
 }
 
@@ -589,8 +595,12 @@ function validateStepArgs(
 }
 
 function defaultArgValue(type: "string" | "number" | "boolean"): unknown {
-  if (type === "number") return 1;
-  if (type === "boolean") return false;
+  if (type === "number") {
+    return 1;
+  }
+  if (type === "boolean") {
+    return false;
+  }
   return "TBD";
 }
 
@@ -763,7 +773,7 @@ export function buildFallbackSimulationPlan(
   }
 
   const unfulfilledIntents: SimulationUnfulfilledIntent[] = [];
-  const unsupported: Array<[string, string[]]> = [
+  const unsupported: [string, string[]][] = [
     ["venue", ["Event.create"]],
     ["staff", ["User.create"]],
     ["bill", ["EventBudget.create"]],

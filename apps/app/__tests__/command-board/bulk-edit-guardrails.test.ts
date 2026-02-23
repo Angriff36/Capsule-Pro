@@ -9,11 +9,11 @@
 import { describe, expect, it } from "vitest";
 import {
   BULK_EDITABLE_PROPERTIES,
+  type BulkEditChanges,
   ENTITY_STATUS_OPTIONS,
   PRIORITY_LEVELS,
   validateBulkEditBatch,
   validateBulkEditChanges,
-  type BulkEditChanges,
 } from "../../app/(authenticated)/command-board/actions/bulk-edit-utils";
 import type { EntityType } from "../../app/(authenticated)/command-board/types/entities";
 
@@ -71,9 +71,13 @@ describe("validateBulkEditChanges", () => {
     });
 
     it("rejects financial_projection entities", () => {
-      const result = validateBulkEditChanges("financial_projection", "entity-1", {
-        status: "active",
-      });
+      const result = validateBulkEditChanges(
+        "financial_projection",
+        "entity-1",
+        {
+          status: "active",
+        }
+      );
       expect(result.valid).toBe(false);
     });
   });
@@ -381,7 +385,9 @@ describe("BULK_EDITABLE_PROPERTIES consistency", () => {
 describe("ENTITY_STATUS_OPTIONS validation coverage", () => {
   it("covers all editable entity types with status options", () => {
     // Every entity type with "status" in BULK_EDITABLE_PROPERTIES should have status options
-    for (const [entityType, props] of Object.entries(BULK_EDITABLE_PROPERTIES)) {
+    for (const [entityType, props] of Object.entries(
+      BULK_EDITABLE_PROPERTIES
+    )) {
       if (props.includes("status")) {
         expect(
           ENTITY_STATUS_OPTIONS[entityType],

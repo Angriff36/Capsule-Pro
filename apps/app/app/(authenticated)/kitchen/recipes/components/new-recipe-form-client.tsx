@@ -1,5 +1,6 @@
 "use client";
 
+import type { ConstraintOutcome } from "@angriff36/manifest/ir";
 import {
   ConstraintOverrideDialog,
   useConstraintOverride,
@@ -12,39 +13,176 @@ import {
 import { AlertCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
-import type { ManifestActionResult } from "../actions-manifest-v2";
-import { createRecipe, createRecipeWithOverride } from "../actions-manifest-v2";
+import { apiFetch } from "@/app/lib/api";
+import { kitchenRecipeCompositeCreate } from "@/app/lib/routes";
+
+interface CompositeRouteResponse {
+  success: boolean;
+  message?: string;
+  constraintOutcomes?: ConstraintOutcome[];
+  data?: {
+    recipe: unknown;
+    version: unknown;
+    ingredients: unknown[];
+    steps: unknown[];
+    events: unknown[];
+    recipeId: string;
+  };
+}
 
 interface NewRecipeFormProps {
   units: Array<{ id: number; code: string; name: string }>;
 }
 
+/** Regex to parse ingredient lines like "2 lb lamb rack" or "1 cup flour" */
+const INGREDIENT_LINE_REGEX = /^(\d+(?:\.\d+)?)\s*(\w+)?\s*(.+)$/;
+
+/**
+ * Parses a text block of ingredients (one per line) into structured format.
+ * Format: "quantity unit name" or just "name"
+ */
+function parseIngredientsText(text: string): Array<{
+  name: string;
+  quantity: number;
+  unit: string | null;
+  sortOrder: number;
+}> {
+  const lines = text.split("\n").filter((line) => line.trim());
+  return lines.map((line, idx) => {
+    const trimmed = line.trim();
+    const match = trimmed.match(INGREDIENT_LINE_REGEX);
+    if (match) {
+      const [, qty, unit, name] = match;
+      return {
+        name: name.trim(),
+        quantity: Number.parseFloat(qty),
+        unit: unit || null,
+        sortOrder: idx,
+      };
+    }
+    return {
+      name: trimmed,
+      quantity: 1,
+      unit: null,
+      sortOrder: idx,
+    };
+  });
+}
+
+/**
+ * Parses a text block of steps (one per line) into structured format.
+ */
+function parseStepsText(text: string): Array<{
+  stepNumber: number;
+  instruction: string;
+}> {
+  const lines = text.split("\n").filter((line) => line.trim());
+  return lines.map((line, idx) => ({
+    stepNumber: idx + 1,
+    instruction: line.trim(),
+  }));
+}
+
 export function NewRecipeForm({ units }: NewRecipeFormProps) {
   const router = useRouter();
   const [isPending, startTransitionAction] = useTransition();
-  const [result, setResult] = useState<ManifestActionResult | null>(null);
+  const [result, setResult] = useState<CompositeRouteResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [formData, setFormData] = useState<FormData | null>(null);
+  const [cachedFormData, setCachedFormData] = useState<FormData | null>(null);
+
+  // Create a lookup map from unit code to ID
+  const unitCodeToId = new Map(units.map((u) => [u.code.toLowerCase(), u.id]));
+
+  /** Helper to get trimmed string from FormData */
+  const getString = (fd: FormData, key: string): string =>
+    String(fd.get(key) || "").trim();
+
+  /** Helper to get optional trimmed string (undefined if empty) */
+  const getOptionalString = (fd: FormData, key: string): string | undefined => {
+    const val = getString(fd, key);
+    return val || undefined;
+  };
+
+  /** Helper to get optional number from FormData */
+  const getOptionalNumber = (fd: FormData, key: string): number | undefined => {
+    const val = Number.parseInt(String(fd.get(key) || "0"), 10);
+    return val || undefined;
+  };
+
+  /** Helper to get tags array from comma-separated string */
+  const getTags = (fd: FormData): string[] | undefined => {
+    const tags = getString(fd, "tags")
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
+    return tags.length > 0 ? tags : undefined;
+  };
+
+  /**
+   * Converts FormData to JSON payload for composite create route.
+   */
+  const buildCreatePayload = (
+    formData: FormData,
+    override?: { reasonCode: string; details: string }
+  ) => {
+    const yieldUnitCode =
+      getString(formData, "yieldUnit").toLowerCase() || "ea";
+    const yieldUnitId = unitCodeToId.get(yieldUnitCode) ?? units[0]?.id ?? 1;
+
+    const ingredientsText = getString(formData, "ingredients");
+    const stepsText = getString(formData, "steps");
+
+    return {
+      name: getString(formData, "name"),
+      category: getOptionalString(formData, "category"),
+      description: getOptionalString(formData, "description"),
+      tags: getTags(formData),
+      yieldQuantity:
+        Number.parseInt(getString(formData, "yieldQuantity") || "1", 10) || 1,
+      yieldUnitId,
+      yieldDescription: getOptionalString(formData, "yieldDescription"),
+      prepTimeMinutes: getOptionalNumber(formData, "prepTimeMinutes"),
+      cookTimeMinutes: getOptionalNumber(formData, "cookTimeMinutes"),
+      restTimeMinutes: getOptionalNumber(formData, "restTimeMinutes"),
+      difficultyLevel: getOptionalNumber(formData, "difficultyLevel"),
+      notes: getOptionalString(formData, "notes"),
+      ingredients: ingredientsText
+        ? parseIngredientsText(ingredientsText)
+        : undefined,
+      steps: stepsText ? parseStepsText(stepsText) : undefined,
+      override,
+    };
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const form = e.currentTarget;
     const data = new FormData(form);
-    setFormData(data);
+    setCachedFormData(data);
     setError(null);
     setResult(null);
 
+    const payload = buildCreatePayload(data);
+
     startTransitionAction(async () => {
       try {
-        const actionResult = await createRecipe(data);
+        const response = await apiFetch(kitchenRecipeCompositeCreate(), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const actionResult: CompositeRouteResponse = await response.json();
         setResult(actionResult);
 
-        if (actionResult.success) {
-          if (actionResult.redirectUrl) {
-            router.push(actionResult.redirectUrl);
-          }
-        } else if (actionResult.error) {
-          setError(actionResult.error);
+        if (actionResult.success && actionResult.data?.recipeId) {
+          router.push(`/kitchen/recipes/${actionResult.data.recipeId}`);
+        } else if (actionResult.constraintOutcomes?.length) {
+          // Constraints blocked - dialog will be shown via constraintState
+        } else if (actionResult.message) {
+          setError(actionResult.message);
+        } else {
+          setError("Failed to create recipe.");
         }
       } catch (err) {
         const message =
@@ -54,29 +192,31 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
     });
   };
 
-  const handleOverride = async (
-    reason: OverrideReasonCode,
-    details: string
-  ) => {
-    if (!formData) {
+  const handleOverride = (reason: OverrideReasonCode, details: string) => {
+    if (!cachedFormData) {
       return;
     }
 
+    const payload = buildCreatePayload(cachedFormData, {
+      reasonCode: reason,
+      details,
+    });
+
     startTransitionAction(async () => {
       try {
-        const actionResult = await createRecipeWithOverride(
-          formData,
-          reason,
-          details
-        );
+        const response = await apiFetch(kitchenRecipeCompositeCreate(), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const actionResult: CompositeRouteResponse = await response.json();
         setResult(actionResult);
 
-        if (actionResult.success) {
-          if (actionResult.redirectUrl) {
-            router.push(actionResult.redirectUrl);
-          }
-        } else if (actionResult.error) {
-          setError(actionResult.error);
+        if (actionResult.success && actionResult.data?.recipeId) {
+          router.push(`/kitchen/recipes/${actionResult.data.recipeId}`);
+        } else if (actionResult.message) {
+          setError(actionResult.message);
         }
       } catch (err) {
         const message =

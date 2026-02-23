@@ -288,7 +288,9 @@ export function processUsers(users) {
       console.log("AI analysis:", result.analysis);
       console.log("Success:", result.success);
       console.log("Edits:", result.edits.length);
-      if (result.error) console.log("Error:", result.error);
+      if (result.error) {
+        console.log("Error:", result.error);
+      }
 
       expect(result.success).toBe(true);
       expect(result.edits.length).toBeGreaterThan(0);
@@ -357,7 +359,9 @@ export async function getAnalytics(tenantId: string) {
 
       console.log("AI analysis:", result.analysis);
       console.log("Success:", result.success);
-      if (result.error) console.log("Reason:", result.error);
+      if (result.error) {
+        console.log("Reason:", result.error);
+      }
 
       // This should NOT be fixable — it's a missing database column
       // The AI should recognize this requires a migration, not a code change

@@ -324,7 +324,9 @@ export function ShiftsClient() {
             value={filters.endDate}
           />
           <Select
-            onValueChange={(value) => handleFilterChange("employeeId", value === "__all__" ? "" : value)}
+            onValueChange={(value) =>
+              handleFilterChange("employeeId", value === "__all__" ? "" : value)
+            }
             value={filters.employeeId || "__all__"}
           >
             <SelectTrigger className="w-[200px]">
@@ -340,7 +342,9 @@ export function ShiftsClient() {
             </SelectContent>
           </Select>
           <Select
-            onValueChange={(value) => handleFilterChange("locationId", value === "__all__" ? "" : value)}
+            onValueChange={(value) =>
+              handleFilterChange("locationId", value === "__all__" ? "" : value)
+            }
             value={filters.locationId || "__all__"}
           >
             <SelectTrigger className="w-[200px]">

@@ -62,7 +62,9 @@ describe("manifest repo-root path resolution", () => {
         break;
       }
       const parent = resolve(dir, "..");
-      if (parent === dir) break;
+      if (parent === dir) {
+        break;
+      }
       dir = parent;
     }
     expect(found).toBe(true);

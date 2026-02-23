@@ -1,16 +1,16 @@
 // Offline sync hook to process queued actions when online
-import { useState, useEffect, useRef, useCallback } from "react";
+
 import { useQueryClient } from "@tanstack/react-query";
-import { useNetworkStatus } from "./useNetworkStatus";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { apiClient } from "../api/client";
+import { queryKeys } from "../api/queries";
+import { getAuthToken } from "../store/auth";
 import {
   getOfflineQueue,
   removeFromOfflineQueue,
-  clearOfflineQueue,
 } from "../store/offline-queue";
-import { apiClient } from "../api/client";
-import { getAuthToken } from "../store/auth";
-import { queryKeys } from "../api/queries";
 import type { OfflineQueueItem } from "../types";
+import { useNetworkStatus } from "./useNetworkStatus";
 
 export interface SyncStatus {
   isSyncing: boolean;
@@ -19,7 +19,7 @@ export interface SyncStatus {
   error: string | null;
 }
 
-const SYNC_INTERVAL_MS = 30000; // Try sync every 30 seconds when online
+const SYNC_INTERVAL_MS = 30_000; // Try sync every 30 seconds when online
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 1000;
 
@@ -83,7 +83,10 @@ async function processQueueItem(item: OfflineQueueItem): Promise<boolean> {
     });
     return true;
   } catch (error) {
-    console.error(`Failed to process ${item.action} for ${item.taskId}:`, error);
+    console.error(
+      `Failed to process ${item.action} for ${item.taskId}:`,
+      error
+    );
     return false;
   }
 }
@@ -155,9 +158,12 @@ export function useOfflineSync(): {
     // Handle retry logic for failures
     if (failCount > 0 && retryCountRef.current < MAX_RETRIES) {
       retryCountRef.current++;
-      setTimeout(() => {
-        processQueue();
-      }, RETRY_DELAY_MS * Math.pow(2, retryCountRef.current));
+      setTimeout(
+        () => {
+          processQueue();
+        },
+        RETRY_DELAY_MS * 2 ** retryCountRef.current
+      );
     } else if (failCount === 0) {
       retryCountRef.current = 0;
     }
@@ -176,7 +182,9 @@ export function useOfflineSync(): {
 
   // Periodic sync attempt when online
   useEffect(() => {
-    if (!isOnline) return;
+    if (!isOnline) {
+      return;
+    }
 
     const interval = setInterval(() => {
       processQueue();

@@ -1,0 +1,26 @@
+{
+  "name": "@repo/mcp-server",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "tsx --require ./src/preload.cts src/index.ts",
+    "start:admin": "MCP_SERVER_MODE=admin tsx --require ./src/preload.cts src/index.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.26.0",
+    "@repo/database": "workspace:*",
+    "@repo/manifest-adapters": "workspace:*",
+    "@sentry/node": "^10.38.0",
+    "dotenv": "^17.2.4",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "25.2.0",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}

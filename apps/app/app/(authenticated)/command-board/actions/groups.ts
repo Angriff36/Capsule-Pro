@@ -304,7 +304,10 @@ export async function toggleGroupCollapse(
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to toggle group collapse",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to toggle group collapse",
     };
   }
 }
@@ -442,7 +445,10 @@ export async function addProjectionsToGroup(
     return {
       success: false,
       count: 0,
-      error: error instanceof Error ? error.message : "Failed to add projections to group",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to add projections to group",
     };
   }
 }
@@ -475,7 +481,10 @@ export async function removeProjectionsFromGroup(
     return {
       success: false,
       count: 0,
-      error: error instanceof Error ? error.message : "Failed to remove projections from group",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to remove projections from group",
     };
   }
 }
@@ -586,7 +595,10 @@ export async function cleanupOrphanProjections(
     return {
       success: false,
       cleanedCount: 0,
-      error: error instanceof Error ? error.message : "Failed to cleanup orphan projections",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to cleanup orphan projections",
     };
   }
 }

@@ -208,7 +208,12 @@ export function ProposalsClient({
       setPagination(data.pagination);
     } catch (error) {
       // Ignore abort errors (navigation away from page cancels in-flight fetches)
-      if (error instanceof Error && (error.name === "AbortError" || error.message === "Failed to fetch")) return;
+      if (
+        error instanceof Error &&
+        (error.name === "AbortError" || error.message === "Failed to fetch")
+      ) {
+        return;
+      }
       console.error("Error fetching proposals:", error);
       toast.error("Failed to load proposals", {
         description: error instanceof Error ? error.message : "Unknown error",

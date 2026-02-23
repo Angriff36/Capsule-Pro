@@ -286,7 +286,9 @@ export function TimeOffClient() {
             value={filters.endDate}
           />
           <Select
-            onValueChange={(value) => handleFilterChange("employeeId", value === "__all__" ? "" : value)}
+            onValueChange={(value) =>
+              handleFilterChange("employeeId", value === "__all__" ? "" : value)
+            }
             value={filters.employeeId || "__all__"}
           >
             <SelectTrigger className="w-[200px]">
@@ -302,7 +304,9 @@ export function TimeOffClient() {
             </SelectContent>
           </Select>
           <Select
-            onValueChange={(value) => handleFilterChange("locationId", value === "__all__" ? "" : value)}
+            onValueChange={(value) =>
+              handleFilterChange("locationId", value === "__all__" ? "" : value)
+            }
             value={filters.locationId || "__all__"}
           >
             <SelectTrigger className="w-[200px]">
@@ -318,7 +322,9 @@ export function TimeOffClient() {
             </SelectContent>
           </Select>
           <Select
-            onValueChange={(value) => handleFilterChange("status", value === "__all__" ? "" : value)}
+            onValueChange={(value) =>
+              handleFilterChange("status", value === "__all__" ? "" : value)
+            }
             value={filters.status || "__all__"}
           >
             <SelectTrigger className="w-[150px]">
@@ -333,7 +339,9 @@ export function TimeOffClient() {
             </SelectContent>
           </Select>
           <Select
-            onValueChange={(value) => handleFilterChange("type", value === "__all__" ? "" : value)}
+            onValueChange={(value) =>
+              handleFilterChange("type", value === "__all__" ? "" : value)
+            }
             value={filters.type || "__all__"}
           >
             <SelectTrigger className="w-[150px]">

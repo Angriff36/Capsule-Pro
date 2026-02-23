@@ -22,9 +22,9 @@ export default function LoadingSkeleton({
       style={[
         styles.skeleton,
         {
-          width: width,
-          height: height,
-          borderRadius: borderRadius,
+          width,
+          height,
+          borderRadius,
         },
         style,
       ]}
@@ -39,23 +39,31 @@ interface LoadingCardProps {
   showHeader?: boolean;
 }
 
-export function LoadingCard({ lines = 3, showHeader = true }: LoadingCardProps) {
+export function LoadingCard({
+  lines = 3,
+  showHeader = true,
+}: LoadingCardProps) {
   return (
     <View style={styles.card}>
       {showHeader && (
         <View style={styles.headerRow}>
-          <LoadingSkeleton width={80} height={24} borderRadius={4} />
-          <LoadingSkeleton width={60} height={24} borderRadius={4} />
+          <LoadingSkeleton borderRadius={4} height={24} width={80} />
+          <LoadingSkeleton borderRadius={4} height={24} width={60} />
         </View>
       )}
-      <LoadingSkeleton width="90%" height={20} borderRadius={4} style={styles.titleGap} />
+      <LoadingSkeleton
+        borderRadius={4}
+        height={20}
+        style={styles.titleGap}
+        width="90%"
+      />
       {Array.from({ length: lines }).map((_, index) => (
         <LoadingSkeleton
-          key={index}
-          width={`${Math.random() * 30 + 60}%`}
-          height={14}
           borderRadius={4}
+          height={14}
+          key={index}
           style={styles.lineGap}
+          width={`${Math.random() * 30 + 60}%`}
         />
       ))}
     </View>

@@ -1,10 +1,10 @@
 // React Query mutations with optimistic UI and offline queue support
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiClient, ApiError } from "./client";
 import { getAuthToken } from "../store/auth";
 import { addToOfflineQueue } from "../store/offline-queue";
+import type { BundleClaimResponse, OfflineQueueItem, Task } from "../types";
+import { type ApiError, apiClient } from "./client";
 import { queryKeys } from "./queries";
-import type { BundleClaimResponse, Task, OfflineQueueItem } from "../types";
 
 // Request/Response types
 interface ClaimTaskRequest {
@@ -102,13 +102,15 @@ export function useClaimTask() {
         throw error;
       }
     },
-    onMutate: async (taskId) => {
+    onMutate: async (_taskId) => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: queryKeys.availableTasks });
       await queryClient.cancelQueries({ queryKey: queryKeys.myTasks });
 
       // Snapshot previous values
-      const previousAvailable = queryClient.getQueryData(queryKeys.availableTasks);
+      const previousAvailable = queryClient.getQueryData(
+        queryKeys.availableTasks
+      );
       const previousMyTasks = queryClient.getQueryData(queryKeys.myTasks);
 
       // Optimistically update - move task from available to my tasks
@@ -119,7 +121,10 @@ export function useClaimTask() {
     onError: (_err, _taskId, context) => {
       // Rollback on error
       if (context?.previousAvailable) {
-        queryClient.setQueryData(queryKeys.availableTasks, context.previousAvailable);
+        queryClient.setQueryData(
+          queryKeys.availableTasks,
+          context.previousAvailable
+        );
       }
       if (context?.previousMyTasks) {
         queryClient.setQueryData(queryKeys.myTasks, context.previousMyTasks);
@@ -143,10 +148,13 @@ export function useBundleClaimTasks() {
   return useMutation({
     mutationFn: async (taskIds: string[]) => {
       try {
-        return await authRequest<BundleClaimResponse>("/api/kitchen/tasks/bundle-claim", {
-          method: "POST",
-          body: { taskIds } as BundleClaimRequest,
-        });
+        return await authRequest<BundleClaimResponse>(
+          "/api/kitchen/tasks/bundle-claim",
+          {
+            method: "POST",
+            body: { taskIds } as BundleClaimRequest,
+          }
+        );
       } catch (error) {
         // If network error, queue each task individually
         if (error instanceof TypeError && error.message.includes("Network")) {
@@ -210,7 +218,10 @@ export function useStartTask() {
         const updatedTasks = tasks.tasks.map((task) =>
           task.id === taskId ? { ...task, status: "in_progress" } : task
         );
-        queryClient.setQueryData(queryKeys.myTasks, { ...tasks, tasks: updatedTasks });
+        queryClient.setQueryData(queryKeys.myTasks, {
+          ...tasks,
+          tasks: updatedTasks,
+        });
       }
 
       return { previousMyTasks };
@@ -236,10 +247,13 @@ export function useCompleteTask() {
   return useMutation({
     mutationFn: async (taskId: string) => {
       try {
-        return await authRequest<{ success: boolean }>(`/api/kitchen/tasks/${taskId}`, {
-          method: "PATCH",
-          body: { status: "done" },
-        });
+        return await authRequest<{ success: boolean }>(
+          `/api/kitchen/tasks/${taskId}`,
+          {
+            method: "PATCH",
+            body: { status: "done" },
+          }
+        );
       } catch (error) {
         if (error instanceof TypeError && error.message.includes("Network")) {
           await queueAction("complete", taskId);
@@ -252,7 +266,9 @@ export function useCompleteTask() {
       await queryClient.cancelQueries({ queryKey: queryKeys.myTasks });
       await queryClient.cancelQueries({ queryKey: queryKeys.availableTasks });
       const previousMyTasks = queryClient.getQueryData(queryKeys.myTasks);
-      const previousAvailable = queryClient.getQueryData(queryKeys.availableTasks);
+      const previousAvailable = queryClient.getQueryData(
+        queryKeys.availableTasks
+      );
 
       // Optimistically update task status to done
       if (previousMyTasks) {
@@ -260,7 +276,10 @@ export function useCompleteTask() {
         const updatedTasks = tasks.tasks.map((task) =>
           task.id === taskId ? { ...task, status: "done" } : task
         );
-        queryClient.setQueryData(queryKeys.myTasks, { ...tasks, tasks: updatedTasks });
+        queryClient.setQueryData(queryKeys.myTasks, {
+          ...tasks,
+          tasks: updatedTasks,
+        });
       }
 
       return { previousMyTasks, previousAvailable };
@@ -270,7 +289,10 @@ export function useCompleteTask() {
         queryClient.setQueryData(queryKeys.myTasks, context.previousMyTasks);
       }
       if (context?.previousAvailable) {
-        queryClient.setQueryData(queryKeys.availableTasks, context.previousAvailable);
+        queryClient.setQueryData(
+          queryKeys.availableTasks,
+          context.previousAvailable
+        );
       }
     },
     onSettled: () => {
@@ -309,13 +331,18 @@ export function useReleaseTask() {
       await queryClient.cancelQueries({ queryKey: queryKeys.myTasks });
       await queryClient.cancelQueries({ queryKey: queryKeys.availableTasks });
       const previousMyTasks = queryClient.getQueryData(queryKeys.myTasks);
-      const previousAvailable = queryClient.getQueryData(queryKeys.availableTasks);
+      const previousAvailable = queryClient.getQueryData(
+        queryKeys.availableTasks
+      );
 
       // Optimistically remove task from my tasks
       if (previousMyTasks) {
         const tasks = previousMyTasks as { tasks: Task[] };
         const updatedTasks = tasks.tasks.filter((task) => task.id !== taskId);
-        queryClient.setQueryData(queryKeys.myTasks, { ...tasks, tasks: updatedTasks });
+        queryClient.setQueryData(queryKeys.myTasks, {
+          ...tasks,
+          tasks: updatedTasks,
+        });
       }
 
       return { previousMyTasks, previousAvailable };
@@ -325,7 +352,10 @@ export function useReleaseTask() {
         queryClient.setQueryData(queryKeys.myTasks, context.previousMyTasks);
       }
       if (context?.previousAvailable) {
-        queryClient.setQueryData(queryKeys.availableTasks, context.previousAvailable);
+        queryClient.setQueryData(
+          queryKeys.availableTasks,
+          context.previousAvailable
+        );
       }
     },
     onSettled: () => {
@@ -343,7 +373,13 @@ export function useMarkPrepItemComplete() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ itemId, completed }: { itemId: string; completed: boolean }) => {
+    mutationFn: async ({
+      itemId,
+      completed,
+    }: {
+      itemId: string;
+      completed: boolean;
+    }) => {
       try {
         return await authRequest<{ success: boolean }>(
           "/api/kitchen/prep-lists/items/commands/mark-completed",
@@ -373,7 +409,7 @@ export function useMarkPrepItemComplete() {
         queryClient.setQueryData(["prepListDetail"], context.previousDetail);
       }
     },
-    onSettled: (_, __, variables) => {
+    onSettled: (_, __, _variables) => {
       queryClient.invalidateQueries({ queryKey: ["prepLists"] });
       queryClient.invalidateQueries({ queryKey: ["prepListDetail"] });
       queryClient.invalidateQueries({ queryKey: queryKeys.eventsToday });
@@ -389,7 +425,13 @@ export function useUpdatePrepItemNotes() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ itemId, notes }: { itemId: string; notes: string }) => {
+    mutationFn: async ({
+      itemId,
+      notes,
+    }: {
+      itemId: string;
+      notes: string;
+    }) => {
       try {
         return await authRequest<{ success: boolean }>(
           "/api/kitchen/prep-lists/items/commands/update-prep-notes",

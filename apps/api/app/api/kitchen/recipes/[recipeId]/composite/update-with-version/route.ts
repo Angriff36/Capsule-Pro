@@ -1,3 +1,4 @@
+import type { ConstraintOutcome } from "@angriff36/manifest/ir";
 import { auth } from "@repo/auth/server";
 import {
   database,
@@ -6,6 +7,8 @@ import {
 } from "@repo/database";
 import { createManifestRuntime } from "@repo/manifest-adapters/manifest-runtime-factory";
 import {
+  getBlockingConstraints,
+  manifestConstraintBlockedResponse,
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@repo/manifest-adapters/route-helpers";
@@ -85,6 +88,11 @@ interface UpdateRecipeRequest {
     videoUrl?: string;
     imageUrl?: string;
   }[];
+  // Override support - when provided, constraints will be overridden
+  override?: {
+    reasonCode: string;
+    details: string;
+  };
 }
 
 export async function POST(
@@ -124,6 +132,10 @@ export async function POST(
 
     // Execute update in a transaction
     const sentryTelemetry = createSentryTelemetry();
+    const hasOverride = Boolean(body.override);
+
+    // Collect all constraint outcomes for potential override response
+    let allConstraintOutcomes: ConstraintOutcome[] = [];
 
     const result = await database.$transaction(async (tx) => {
       // Create manifest runtime with transaction client
@@ -137,19 +149,37 @@ export async function POST(
         },
         {
           user: { id: userId, tenantId },
+          // Pass override requests if provided
+          overrideRequests: body.override
+            ? [
+                {
+                  constraintCode: "*", // Override all constraints
+                  reasonCode: body.override.reasonCode,
+                  details: body.override.details,
+                },
+              ]
+            : undefined,
         }
       );
 
       // 1. Update Recipe if fields provided
-      if (body.name || body.category || body.cuisineType || body.description || body.tags) {
+      if (
+        body.name ||
+        body.category ||
+        body.cuisineType ||
+        body.description ||
+        body.tags
+      ) {
         // Get current recipe data
-        const currentRecipe = await database.$queryRaw<{
-          name: string;
-          category: string | null;
-          cuisine_type: string | null;
-          description: string | null;
-          tags: string[];
-        }[]>`
+        const currentRecipe = await database.$queryRaw<
+          {
+            name: string;
+            category: string | null;
+            cuisine_type: string | null;
+            description: string | null;
+            tags: string[];
+          }[]
+        >`
           SELECT name, category, cuisine_type, description, tags
           FROM tenant_kitchen.recipes
           WHERE tenant_id = ${tenantId}::uuid
@@ -162,7 +192,7 @@ export async function POST(
         }
 
         const recipe = currentRecipe[0];
-        await runtime.runCommand(
+        const updateResult = await runtime.runCommand(
           "update",
           {
             id: recipeId,
@@ -174,25 +204,45 @@ export async function POST(
           },
           { entityName: "Recipe" }
         );
+
+        // Collect constraint outcomes
+        if (updateResult.constraintOutcomes) {
+          allConstraintOutcomes = [
+            ...allConstraintOutcomes,
+            ...updateResult.constraintOutcomes,
+          ];
+        }
+
+        // Check for blocking constraints (unless override is provided)
+        if (!hasOverride) {
+          const blocking = getBlockingConstraints(updateResult);
+          if (blocking) {
+            throw Object.assign(new Error("CONSTRAINT_BLOCKED"), {
+              constraintOutcomes: allConstraintOutcomes,
+            });
+          }
+        }
       }
 
       // 2. Get latest version data for defaults
-      const latestVersion = await database.$queryRaw<{
-        name: string;
-        category: string | null;
-        cuisine_type: string | null;
-        description: string | null;
-        tags: string[];
-        yield_quantity: bigint;
-        yield_unit_id: number;
-        yield_description: string | null;
-        prep_time_minutes: number | null;
-        cook_time_minutes: number | null;
-        rest_time_minutes: number | null;
-        difficulty_level: number | null;
-        instructions: string | null;
-        notes: string | null;
-      }[]>`
+      const latestVersion = await database.$queryRaw<
+        {
+          name: string;
+          category: string | null;
+          cuisine_type: string | null;
+          description: string | null;
+          tags: string[];
+          yield_quantity: bigint;
+          yield_unit_id: number;
+          yield_description: string | null;
+          prep_time_minutes: number | null;
+          cook_time_minutes: number | null;
+          rest_time_minutes: number | null;
+          difficulty_level: number | null;
+          instructions: string | null;
+          notes: string | null;
+        }[]
+      >`
         SELECT name, category, cuisine_type, description, tags,
                yield_quantity, yield_unit_id, yield_description,
                prep_time_minutes, cook_time_minutes, rest_time_minutes,
@@ -225,7 +275,8 @@ export async function POST(
           versionNumber: newVersionNumber,
           yieldQuantity: body.yieldQuantity ?? Number(prev.yield_quantity),
           yieldUnitId: body.yieldUnitId ?? prev.yield_unit_id,
-          yieldDescription: body.yieldDescription ?? prev.yield_description ?? "",
+          yieldDescription:
+            body.yieldDescription ?? prev.yield_description ?? "",
           prepTimeMinutes: body.prepTimeMinutes ?? prev.prep_time_minutes ?? 0,
           cookTimeMinutes: body.cookTimeMinutes ?? prev.cook_time_minutes ?? 0,
           restTimeMinutes: body.restTimeMinutes ?? prev.rest_time_minutes ?? 0,
@@ -236,7 +287,25 @@ export async function POST(
         { entityName: "RecipeVersion" }
       );
 
-      if (!versionResult.success) {
+      // Collect constraint outcomes
+      if (versionResult.constraintOutcomes) {
+        allConstraintOutcomes = [
+          ...allConstraintOutcomes,
+          ...versionResult.constraintOutcomes,
+        ];
+      }
+
+      // Check for blocking constraints (unless override is provided)
+      if (!hasOverride) {
+        const blocking = getBlockingConstraints(versionResult);
+        if (blocking) {
+          throw Object.assign(new Error("CONSTRAINT_BLOCKED"), {
+            constraintOutcomes: allConstraintOutcomes,
+          });
+        }
+      }
+
+      if (!(versionResult.success || hasOverride)) {
         throw new Error(
           versionResult.guardFailure?.formatted ||
             versionResult.policyDenial?.policyName ||
@@ -304,18 +373,27 @@ export async function POST(
               quantity: ingredient.quantity,
               unitId: ingredient.unitId,
               preparationNotes: ingredient.preparationNotes || "",
-              isOptional: ingredient.isOptional || false,
+              isOptional: ingredient.isOptional,
               sortOrder: ingredient.sortOrder,
             },
             { entityName: "RecipeIngredient" }
           );
 
-          if (!ingredientResult.success) {
+          if (ingredientResult.constraintOutcomes) {
+            allConstraintOutcomes = [
+              ...allConstraintOutcomes,
+              ...ingredientResult.constraintOutcomes,
+            ];
+          }
+
+          if (!(ingredientResult.success || hasOverride)) {
             throw new Error(
               `Failed to create ingredient: ${ingredientResult.guardFailure?.formatted || ingredientResult.error}`
             );
           }
-          createdIngredients.push(ingredientResult.result);
+          if (ingredientResult.result) {
+            createdIngredients.push(ingredientResult.result);
+          }
         }
       }
 
@@ -343,12 +421,21 @@ export async function POST(
           { entityName: "RecipeStep" }
         );
 
-        if (!stepResult.success) {
+        if (stepResult.constraintOutcomes) {
+          allConstraintOutcomes = [
+            ...allConstraintOutcomes,
+            ...stepResult.constraintOutcomes,
+          ];
+        }
+
+        if (!(stepResult.success || hasOverride)) {
           throw new Error(
             `Failed to create step ${step.stepNumber}: ${stepResult.guardFailure?.formatted || stepResult.error}`
           );
         }
-        createdSteps.push(stepResult.result);
+        if (stepResult.result) {
+          createdSteps.push(stepResult.result);
+        }
       }
 
       return {
@@ -357,6 +444,7 @@ export async function POST(
         steps: createdSteps,
         newVersionNumber,
         events: versionResult.emittedEvents || [],
+        constraintOutcomes: allConstraintOutcomes,
       };
     });
 
@@ -366,8 +454,21 @@ export async function POST(
       steps: result.steps,
       newVersionNumber: result.newVersionNumber,
       events: result.events,
+      constraintOutcomes: result.constraintOutcomes,
     });
   } catch (error) {
+    // Check if this is a constraint-blocked error
+    if (
+      error instanceof Error &&
+      error.message === "CONSTRAINT_BLOCKED" &&
+      "constraintOutcomes" in error
+    ) {
+      return manifestConstraintBlockedResponse(
+        (error as { constraintOutcomes: unknown[] }).constraintOutcomes,
+        "Recipe update blocked by constraints"
+      );
+    }
+
     console.error("[composite/update-with-version] Error:", error);
     captureException(error);
 

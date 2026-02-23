@@ -1,3 +1,4 @@
+import { isClerkAPIResponseError, useSignIn, useSSO } from "@clerk/clerk-expo";
 import { useState } from "react";
 import {
   ActivityIndicator,
@@ -8,7 +9,6 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { isClerkAPIResponseError, useSSO, useSignIn } from "@clerk/clerk-expo";
 
 function getErrorMessage(error: unknown): string {
   if (isClerkAPIResponseError(error) && error.errors[0]?.longMessage) {
@@ -68,7 +68,9 @@ export function SignInScreen() {
         if (activate) {
           await activate({ session: createdSessionId });
         } else {
-          setErrorText("Session activation is unavailable. Please restart the app.");
+          setErrorText(
+            "Session activation is unavailable. Please restart the app."
+          );
         }
       } else {
         setErrorText("Google sign in did not complete. Please try again.");
@@ -84,7 +86,9 @@ export function SignInScreen() {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <Text style={styles.title}>Sign in</Text>
-        <Text style={styles.subtitle}>Use your Capsule account to continue.</Text>
+        <Text style={styles.subtitle}>
+          Use your Capsule account to continue.
+        </Text>
 
         <TextInput
           autoCapitalize="none"

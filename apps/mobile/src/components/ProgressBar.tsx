@@ -1,4 +1,4 @@
-import { StyleSheet, View, Text } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 
 interface ProgressBarProps {
   /** Current progress value (0-100) */

@@ -1,3 +1,4 @@
+import { useCallback, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -6,15 +7,14 @@ import {
   Text,
   View,
 } from "react-native";
-import { useState, useCallback, useMemo } from "react";
-import { useMyTasks } from "../api/queries";
 import {
-  useStartTask,
   useCompleteTask,
   useReleaseTask,
+  useStartTask,
 } from "../api/mutations";
-import TaskCard from "../components/TaskCard";
+import { useMyTasks } from "../api/queries";
 import ErrorState from "../components/ErrorState";
+import TaskCard from "../components/TaskCard";
 import type { Task } from "../types";
 
 export default function MyWorkScreen() {
@@ -26,7 +26,7 @@ export default function MyWorkScreen() {
     isLoading,
     error,
     refetch,
-  } = useMyTasks({ refetchInterval: 30000 });
+  } = useMyTasks({ refetchInterval: 30_000 });
 
   // Mutations
   const startTaskMutation = useStartTask();
@@ -87,7 +87,7 @@ export default function MyWorkScreen() {
   if (isLoading && tasks.length === 0) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#2563eb" />
+        <ActivityIndicator color="#2563eb" size="large" />
         <Text style={styles.loadingText}>Loading your work...</Text>
       </View>
     );
@@ -97,7 +97,9 @@ export default function MyWorkScreen() {
   if (error) {
     return (
       <ErrorState
-        message={error instanceof Error ? error.message : "Failed to load your work"}
+        message={
+          error instanceof Error ? error.message : "Failed to load your work"
+        }
         onRetry={() => void refetch()}
       />
     );
@@ -113,7 +115,7 @@ export default function MyWorkScreen() {
     <View style={styles.sectionHeader}>
       <Text style={styles.sectionIcon}>{icon}</Text>
       <Text style={[styles.sectionTitle, { color }]}>{title}</Text>
-      <View style={[styles.countBadge, { backgroundColor: color + "20" }]}>
+      <View style={[styles.countBadge, { backgroundColor: `${color}20` }]}>
         <Text style={[styles.countText, { color }]}>{count}</Text>
       </View>
     </View>
@@ -121,7 +123,14 @@ export default function MyWorkScreen() {
 
   // Create list data with sections
   const listData: Array<
-    | { type: "header"; key: string; title: string; count: number; icon: string; color: string }
+    | {
+        type: "header";
+        key: string;
+        title: string;
+        count: number;
+        icon: string;
+        color: string;
+      }
     | { type: "task"; key: string; task: Task; section: "active" | "claimed" }
   > = [];
 
@@ -168,8 +177,21 @@ export default function MyWorkScreen() {
 
       {/* Task list with sections */}
       <FlatList
+        contentContainerStyle={styles.listContent}
         data={listData}
         keyExtractor={(item) => item.key}
+        ListEmptyComponent={
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyIcon}>💼</Text>
+            <Text style={styles.emptyTitle}>No work claimed</Text>
+            <Text style={styles.emptySubtitle}>
+              Claim tasks from the Tasks tab to see them here.
+            </Text>
+          </View>
+        }
+        refreshControl={
+          <RefreshControl onRefresh={onRefresh} refreshing={refreshing} />
+        }
         renderItem={({ item }) => {
           if (item.type === "header") {
             return renderSectionHeader(
@@ -182,29 +204,16 @@ export default function MyWorkScreen() {
           return (
             <View style={styles.taskCardContainer}>
               <TaskCard
-                task={item.task}
-                type="my-tasks"
                 isLoading={isMutating}
-                onStart={handleStart}
                 onComplete={handleComplete}
                 onRelease={handleRelease}
+                onStart={handleStart}
+                task={item.task}
+                type="my-tasks"
               />
             </View>
           );
         }}
-        contentContainerStyle={styles.listContent}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyIcon}>💼</Text>
-            <Text style={styles.emptyTitle}>No work claimed</Text>
-            <Text style={styles.emptySubtitle}>
-              Claim tasks from the Tasks tab to see them here.
-            </Text>
-          </View>
-        }
       />
     </View>
   );

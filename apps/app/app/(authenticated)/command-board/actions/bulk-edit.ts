@@ -8,8 +8,8 @@ import {
   BULK_EDITABLE_PROPERTIES,
   getPriorityLabel,
   PRIORITY_LEVELS,
-  validateBulkEditBatch,
   type ValidationError,
+  validateBulkEditBatch,
 } from "./bulk-edit-utils";
 
 // ============================================================================

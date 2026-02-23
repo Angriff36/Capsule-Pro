@@ -549,7 +549,9 @@ export function PrepListClient({
                 <Select
                   onValueChange={(value) =>
                     setDietaryRestrictions(
-                      value && value !== "__none__" ? value.split(",").map((s) => s.trim()) : []
+                      value && value !== "__none__"
+                        ? value.split(",").map((s) => s.trim())
+                        : []
                     )
                   }
                   value={dietaryRestrictions.join(",") || "__none__"}

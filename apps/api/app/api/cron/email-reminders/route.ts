@@ -166,7 +166,7 @@ async function processTaskReminders() {
         const task = taskMap.get(claim.taskId);
         const employee = employeeMap.get(claim.employeeId);
 
-        if (!task || !employee?.email) {
+        if (!(task && employee?.email)) {
           continue;
         }
 
