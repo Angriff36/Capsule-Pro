@@ -1,9 +1,9 @@
-# Manifest Alignment Implementation Plan
+# Manifest Implementation Plan
 
-> **Status:** ALL WORK COMPLETE (13/13 tasks done) - 2026-02-23
+> **Status:** Phase 1 COMPLETE (13/13) — Phase 2 pending (2 tasks)
 > **Created:** 2026-02-22
 > **Last Updated:** 2026-02-23
-> **Source:** Synthesized from specs/manifest/composite-routes/manifest-alignment-plan.md + codebase exploration
+> **Source:** specs/manifest/composite-routes/manifest-alignment-plan.md + specs/manifest/prisma-adapter/
 
 ---
 
@@ -16,7 +16,38 @@
 
 ---
 
-## Unfinished Tasks (Max 12)
+## Phase 2: Remaining Work (2 tasks)
+
+### [NEXT-1] Prisma Adapter v1 Tests
+- **Status:** NOT STARTED
+- **Spec:** `specs/manifest/prisma-adapter/prisma-adapter.md`
+- **What:** Add conformance tests for `PrismaJsonStore` and `PrismaIdempotencyStore`
+- **Files to create:**
+  - `packages/manifest-adapters/__tests__/prisma-json-store.test.ts`
+  - `packages/manifest-adapters/__tests__/prisma-idempotency-store.test.ts`
+- **Acceptance Criteria:**
+  1. PrismaJsonStore passes same conformance tests as MemoryStore
+  2. Transactional outbox writes are atomic (rollback on failure)
+  3. Tenant isolation enforced — tenant A cannot read/write tenant B
+  4. Version-based optimistic concurrency rejects stale updates
+  5. PrismaIdempotencyStore deduplicates repeated commands
+- **Rationale:** Code exists but lacks test coverage. High risk without verification.
+
+### [NEXT-2] Kitchen Ops Rules & Overrides Spec (Draft)
+- **Status:** DRAFT (not started)
+- **Spec:** `specs/manifest/manifest-kitchen-ops-rules-overrides_TODO/manifest-kitchen-ops-rules-overrides.md`
+- **What:** Implement constraint severity model (OK/WARN/BLOCK), override workflow, and audit events
+- **Scope:** PrepTask, Station, Shift, InventoryItem, Event, BattleBoard entities
+- **Phases:**
+  - Phase 0: Containment (define manifest-only mutation boundary)
+  - Phase 1: Constraints + Overrides implementation
+  - Phase 2: Workflows (event import, task generation)
+  - Phase 3: Expand coverage (shift scheduling, station capacity)
+- **Rationale:** High impact — enables business rules enforcement. Blocked on architectural decision.
+
+---
+
+## Phase 1: Completed Tasks (13/13)
 
 ### [P0-1] ✅ COMPLETE — Add `restore` command to RecipeVersion entity (DSL)
 - **File:** `packages/manifest-adapters/manifests/recipe-rules.manifest`
