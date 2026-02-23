@@ -416,3 +416,29 @@ Systematically deleted all confirmed dead routes after thorough verification:
 - App tests: ✅ 379/379 pass (29 files)
 - API tests: ✅ 567/567 pass, 1 skipped (38 files - 1 less due to deleted test)
 - Build: ✅ app + api build successfully
+
+
+### Known Issues (Non-Blocking)
+
+#### Command Board AI Validation Errors
+**Status:** UX Issue — Generic error messages hide missing required fields
+**Root Cause:**
+1. AI generates commands without all required fields (e.g., Event.create needs 11 fields)
+2. The ALIAS_RULES only map "venue" → venueName + venueAddress, not all required fields
+3. Error sanitization in `tool-registry.ts:sanitizeErrorMessage()` converts specific validation errors to generic "The request format was invalid"
+
+**Location:** `apps/app/app/api/command-board/chat/tool-registry.ts:243-296`
+
+**Fix Options:**
+1. Update AI system prompt to ask for required fields before executing commands
+2. Preserve safe validation errors (e.g., "Missing required field: clientId") instead of sanitizing all 400 errors
+3. Pre-validate command args against manifest schema before API call
+
+#### Task Claiming Consistency
+**Status:** Minor Issue — Multiple claim endpoint implementations
+**Details:**
+- Main claim route: `apps/api/app/api/kitchen/tasks/[id]/claim/route.ts` (manual transaction)
+- Generated claim route: `apps/api/app/api/kitchen/prep-tasks/commands/claim/route.ts` (manifest only)
+- Bundle claim route: `apps/api/app/api/kitchen/tasks/bundle-claim/route.ts` (comprehensive)
+
+**Impact:** Low — both work, but different implementations could diverge in behavior
