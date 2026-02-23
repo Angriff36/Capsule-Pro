@@ -1,6 +1,6 @@
 # Manifest Alignment Implementation Plan
 
-> **Status:** Core work complete (9/12 tasks done) - 2026-02-23
+> **Status:** Core work complete (9.5/12 tasks done) - 2026-02-23
 > **Created:** 2026-02-22
 > **Last Updated:** 2026-02-23
 > **Source:** Synthesized from specs/manifest/composite-routes/manifest-alignment-plan.md + codebase exploration
@@ -44,9 +44,9 @@
 - **Completed:** 2026-02-23 — Uses `prismaOverride` for atomic multi-entity writes. Fixes cuisineType bug by using PrismaStore with correct field mapping instead of raw SQL.
 
 ### [P1-2] ✅ COMPLETE — Create composite `restore-version` route
-- **File:** `apps/api/app/api/kitchen/recipes/composite/restore-version/route.ts` (NEW)
+- **File:** `apps/api/app/api/kitchen/recipes/[recipeId]/composite/restore-version/route.ts` (MOVED from composite/restore-version)
 - **What:** POST endpoint using new `restore` command with `FOR UPDATE` lock on version sequence.
-- **Completed:** 2026-02-23 — Uses `FOR UPDATE` lock to prevent concurrent restores, copies ingredients and steps from source version, creates new version through Manifest with constraints and outbox events. Replaces legacy raw SQL implementation.
+- **Completed:** 2026-02-23 — Uses `FOR UPDATE` lock to prevent concurrent restores, copies ingredients and steps from source version, creates new version through Manifest with constraints and outbox events. Replaces legacy raw SQL implementation. Route helper `kitchenRecipeCompositeRestore(recipeId)` added to routes.ts.
 
 ### [P1-3] ✅ COMPLETE — Register `suggest_manifest_plan` tool server-side
 - **File:** `apps/app/app/api/command-board/chat/tool-registry.ts`
@@ -54,18 +54,26 @@
 - **Completed:** 2026-02-23 — Tool definition added to `BASE_TOOL_DEFINITIONS`, `suggestManifestPlanTool` handler queries `boardProjection` to populate `scope.entities`, generates `planId`, persists plan via `createPendingManifestPlan` before returning.
 
 ### [P1-4] ✅ COMPLETE — Create composite `update-with-version` route
-- **File:** `apps/api/app/api/kitchen/recipes/composite/update-with-version/route.ts` (NEW)
+- **File:** `apps/api/app/api/kitchen/recipes/[recipeId]/composite/update-with-version/route.ts` (MOVED from composite/update-with-version)
 - **What:** POST endpoint for atomic Recipe update with new RecipeVersion creation in single `$transaction`.
-- **Completed:** 2026-02-23 — Uses FOR UPDATE lock on version sequence, creates new version with provided or inherited fields, replaces ingredients/steps if provided. Enables safe version-controlled updates.
+- **Completed:** 2026-02-23 — Uses FOR UPDATE lock on version sequence, creates new version with provided or inherited fields, replaces ingredients/steps if provided. Enables safe version-controlled updates. Route helper `kitchenRecipeCompositeUpdate(recipeId)` added to routes.ts.
 
 ### [P2-1] ✅ COMPLETE — Add `RecipeStep` entity to manifest + PrismaStore
 - **Files:** `recipe-rules.manifest`, `prisma-store.ts`, `manifest-runtime-factory.ts`
 - **What:** Added RecipeStep entity with create/update/remove commands. Added `RecipeStepPrismaStore` and registered in factory.
 - **Completed:** 2026-02-23 — Entity defined in manifest, PrismaStore maps to `recipe_steps` table, registered in ENTITIES_WITH_SPECIFIC_STORES.
 
-### [P2-2] Migrate frontend recipe forms to composite routes
+### [P2-2] 🔄 PARTIAL — Migrate frontend recipe forms to composite routes
 - **Files:** `new-recipe-form-client.tsx`, `recipe-form-with-constraints.tsx`, `new-dish-form-client.tsx`, `recipe-detail-edit-button.tsx`, `recipe-detail-tabs.tsx`
-- **What:** Replace server action imports with `apiFetch()` calls to composite endpoints. Four components import from actions-manifest-v2.ts. `recipe-detail-tabs.tsx` imports `restoreRecipeVersion` from actions.ts.
+- **What:** Replace server action imports with `apiFetch()` calls to composite endpoints.
+- **Completed (partial):**
+  - `recipe-detail-tabs.tsx` — Migrated `restoreRecipeVersion` to use `apiFetch(kitchenRecipeCompositeRestore(recipeId))`
+  - Route helpers added to `routes.ts`: `kitchenRecipeCompositeCreate()`, `kitchenRecipeCompositeUpdate(recipeId)`, `kitchenRecipeCompositeRestore(recipeId)`
+- **Remaining:**
+  - `new-recipe-form-client.tsx` — Requires form UI changes (free-text ingredients → structured ingredient selection with IDs) OR composite route modification to accept free-text
+  - `recipe-form-with-constraints.tsx` — Same ingredient resolution challenge
+  - `new-dish-form-client.tsx`, `recipe-detail-edit-button.tsx` — Similar migration needed
+- **Blocker:** Server actions do ingredient resolution (parsing free-text, looking up/creating ingredients). Composite routes expect pre-resolved `ingredientId`. Requires either UI changes or backend changes.
 - **Rationale:** Medium — enables transaction safety. Must complete before deleting legacy actions.
 
 ### [P2-3] Delete legacy recipe server actions

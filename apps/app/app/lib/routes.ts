@@ -60,6 +60,18 @@ export const kitchenRecipeCost = (recipeId: string): string =>
 export const kitchenRecipeUpdateBudgets = (recipeId: string): string =>
   `/api/kitchen/recipes/${encodeURIComponent(recipeId)}/update-budgets`;
 
+/** POST /api/kitchen/recipes/composite/create-with-version */
+export const kitchenRecipeCompositeCreate = (): string =>
+  "/api/kitchen/recipes/composite/create-with-version";
+
+/** POST /api/kitchen/recipes/:recipeId/composite/update-with-version */
+export const kitchenRecipeCompositeUpdate = (recipeId: string): string =>
+  `/api/kitchen/recipes/${encodeURIComponent(recipeId)}/composite/update-with-version`;
+
+/** POST /api/kitchen/recipes/:recipeId/composite/restore-version */
+export const kitchenRecipeCompositeRestore = (recipeId: string): string =>
+  `/api/kitchen/recipes/${encodeURIComponent(recipeId)}/composite/restore-version`;
+
 // ---------------------------------------------------------------------------
 // Kitchen — Tasks
 // ---------------------------------------------------------------------------
