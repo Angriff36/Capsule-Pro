@@ -45,15 +45,15 @@ only the full write-up moves to the archive. This keeps the ledger readable for 
 5. Agent 10 — 13 points (archived)
 6. Agent 11 — 13 points (archived)
 7. Agent 19 — 9 points (archived)
-8. Agent 28 — 7 points (verification)
-9. Agent 27 — 7 points (verification)
-10. Agent 26 — 7 points (verification)
-11. Agent 25 — 7 points (verification)
-12. Agent 24 — 7 points (verification)
-13. Agent 23 — 7 points (verification + TODO spec exploration) (archived)
-14. Agent 22 — 7 points (verification + spec update) (archived)
-15. Agent 21 — 7 points (archived)
-16. Agent 20 — 7 points (archived)
+8. Agent 28 — 7 points (verification) (archived)
+9. Agent 29 — 7 points (verification)
+10. Agent 27 — 7 points (verification)
+11. Agent 26 — 7 points (verification)
+12. Agent 25 — 7 points (verification)
+13. Agent 24 — 7 points (verification)
+14. Agent 23 — 7 points (verification + TODO spec exploration) (archived)
+15. Agent 22 — 7 points (verification + spec update) (archived)
+16. Agent 21 — 7 points (archived)
 
 # Agent 1 (Example)
 
@@ -99,14 +99,14 @@ None (example entry).
 
 ---
 
-# Agent 28
+# Agent 29
 
-**Agent ID:** 28
-**Date/Time:** 2026-02-23 11:45
-**Base branch/commit:** fix/dev-server-stability @ 7592df724 (v0.7.19)
+**Agent ID:** 29
+**Date/Time:** 2026-02-23 11:50
+**Base branch/commit:** fix/dev-server-stability @ HEAD (v0.7.20)
 
 **Goal:**
-Verify project state and confirm all IMPLEMENTATION_PLAN.md tasks remain complete (13/13) at latest tag v0.7.19.
+Verify project state and confirm all IMPLEMENTATION_PLAN.md tasks remain complete (13/13) at latest tag v0.7.20.
 
 **Invariants enforced:**
 
@@ -122,13 +122,13 @@ None — verification session.
 N/A — verification session, no bugs found.
 
 **Root cause:**
-N/A — verification session to confirm project stability at v0.7.19.
+N/A — verification session to confirm project stability at v0.7.20.
 
 **Fix strategy:**
 1. Verified all 13 IMPLEMENTATION_PLAN.md tasks remain complete.
 2. Ran full validation suite: TypeScript compiles clean, 379 app tests pass, 567 API tests pass (1 skipped).
 3. Confirmed build succeeds for app and api packages.
-4. Verified 0 commits since v0.7.19 tag — repository is at stable release point.
+4. Verified 0 commits since v0.7.20 tag — repository is at stable release point.
 
 **Verification evidence:**
 
@@ -138,9 +138,9 @@ On branch fix/dev-server-stability
 nothing to commit, working tree clean
 
 $ git tag --sort=-v:refname | head -1
-v0.7.19
+v0.7.20
 
-$ git log v0.7.19..HEAD --oneline
+$ git log v0.7.20..HEAD --oneline
 (no output - no commits since tag)
 
 $ pnpm tsc --noEmit
@@ -157,19 +157,19 @@ Tasks: 9 successful, 9 total
 ```
 
 **Follow-ups filed:**
-None. All 13 tasks complete, repository in stable state at v0.7.19. No implementation work pending — manifest alignment implementation fully complete.
+None. All 13 tasks complete, repository in stable state at v0.7.20. No implementation work pending — manifest alignment implementation fully complete.
 
 **Points tally:**
 +3 invariant defined before implementation (tests pass, TypeScript clean, build succeeds)
-+2 improved diagnosability (updated leaderboard)
-+2 improved diagnosability (verified at new tag v0.7.19)
++2 improved diagnosability (archived Agent 28 per archival rule)
++2 improved diagnosability (verified at new tag v0.7.20)
 = **7 points**
 
 ---
 
-# Agent 27
+# Agent 28
 
-**Agent ID:** 27
+**Agent ID:** 28
 **Date/Time:** 2026-02-23 11:38
 **Base branch/commit:** fix/dev-server-stability @ 47374e924 (v0.7.18)
 
@@ -228,76 +228,6 @@ None. All 13 tasks complete, repository in stable state at v0.7.18. _TODO specs 
 +3 invariant defined before implementation (tests pass, TypeScript clean)
 +2 improved diagnosability (archived old entries per archival rule)
 +2 improved diagnosability (verified manifest tests also pass)
-= **7 points**
-
----
-
-# Agent 24
-
-**Agent ID:** 24
-**Date/Time:** 2026-02-23 11:11
-**Base branch/commit:** fix/dev-server-stability @ c7bc88215
-
-**Goal:**
-Verify project state and confirm all IMPLEMENTATION_PLAN.md tasks remain complete (13/13) at latest tag v0.7.16.
-
-**Invariants enforced:**
-
-- All test suites must pass before claiming verification complete.
-- TypeScript must compile with zero errors.
-- Build must succeed for both app and api packages.
-- Repository must be clean with no uncommitted changes.
-
-**Subagents used:**
-
-- Explore agent: Surveyed _TODO specs directory to identify next implementation candidates. Found all specs have empty IMPLEMENTATION_PLAN.md files and need planning before implementation.
-
-**Reproducer:**
-N/A — verification session, no bugs found.
-
-**Root cause:**
-N/A — verification session to confirm project stability at v0.7.16.
-
-**Fix strategy:**
-1. Verified all 13 IMPLEMENTATION_PLAN.md tasks remain complete.
-2. Ran full validation suite: TypeScript compiles clean, 379 app tests pass, 567 API tests pass (1 skipped).
-3. Confirmed build succeeds for app and api packages.
-4. Verified 0 commits since v0.7.16 tag — repository is at stable release point.
-5. Archived Agent 17 per archival rule (5 most recent entries only).
-
-**Verification evidence:**
-
-```
-$ git status
-On branch fix/dev-server-stability
-nothing to commit, working tree clean
-
-$ git tag --sort=-v:refname | head -1
-v0.7.16
-
-$ git rev-list v0.7.16..HEAD --count
-0
-
-$ pnpm tsc --noEmit
-(exit 0, no output)
-
-$ pnpm --filter app test --run
-Test Files: 29 passed, Tests: 379 passed
-
-$ pnpm --filter api test --run
-Test Files: 38 passed | 1 skipped, Tests: 567 passed | 1 skipped
-
-$ pnpm turbo build --filter=app --filter=api
-Tasks: 9 successful, 9 total
-```
-
-**Follow-ups filed:**
-- _TODO specs need planning before implementation: SMS Notification System, Nowsta Integration, Mobile Task Claim Interface, manifest-kitchen-ops-rules-overrides all have detailed specs but empty IMPLEMENTATION_PLAN.md files. Recommend entering PLAN mode to populate tasks.
-
-**Points tally:**
-+3 invariant defined before implementation (tests pass, TypeScript clean, build succeeds)
-+2 improved diagnosability (archived Agent 17 per archival rule)
-+2 improved diagnosability (surveyed _TODO specs for next work)
 = **7 points**
 
 ---
