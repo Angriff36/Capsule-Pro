@@ -227,6 +227,16 @@ export function eventContractDetailPath(id: string): string {
   return "/api/eventcontract/" + encodeURIComponent(id);
 }
 
+/** GET /api/eventdish/list */
+export function eventDishListPath(): string {
+  return "/api/eventdish/list";
+}
+
+/** GET /api/eventdish/:id */
+export function eventDishDetailPath(id: string): string {
+  return "/api/eventdish/" + encodeURIComponent(id);
+}
+
 /** GET /api/eventguest/list */
 export function eventGuestListPath(): string {
   return "/api/eventguest/list";
@@ -255,6 +265,16 @@ export function eventReportListPath(): string {
 /** GET /api/eventreport/:id */
 export function eventReportDetailPath(id: string): string {
   return "/api/eventreport/" + encodeURIComponent(id);
+}
+
+/** GET /api/eventstaff/list */
+export function eventStaffListPath(): string {
+  return "/api/eventstaff/list";
+}
+
+/** GET /api/eventstaff/:id */
+export function eventStaffDetailPath(id: string): string {
+  return "/api/eventstaff/" + encodeURIComponent(id);
 }
 
 /** GET /api/eventsummary/list */
@@ -485,6 +505,16 @@ export function recipeVersionListPath(): string {
 /** GET /api/recipeversion/:id */
 export function recipeVersionDetailPath(id: string): string {
   return "/api/recipeversion/" + encodeURIComponent(id);
+}
+
+/** GET /api/rolepolicy/list */
+export function rolePolicyListPath(): string {
+  return "/api/rolepolicy/list";
+}
+
+/** GET /api/rolepolicy/:id */
+export function rolePolicyDetailPath(id: string): string {
+  return "/api/rolepolicy/" + encodeURIComponent(id);
 }
 
 /** GET /api/schedule/list */
@@ -1076,6 +1106,16 @@ export function eventContractUpdatePath(): string {
   return "/api/eventcontract/update";
 }
 
+/** POST /api/eventdish/create */
+export function eventDishCreatePath(): string {
+  return "/api/eventdish/create";
+}
+
+/** POST /api/eventdish/remove */
+export function eventDishRemovePath(): string {
+  return "/api/eventdish/remove";
+}
+
 /** POST /api/eventguest/create */
 export function eventGuestCreatePath(): string {
   return "/api/eventguest/create";
@@ -1124,6 +1164,16 @@ export function eventReportCreatePath(): string {
 /** POST /api/eventreport/submit */
 export function eventReportSubmitPath(): string {
   return "/api/eventreport/submit";
+}
+
+/** POST /api/eventstaff/assign */
+export function eventStaffAssignPath(): string {
+  return "/api/eventstaff/assign";
+}
+
+/** POST /api/eventstaff/unassign */
+export function eventStaffUnassignPath(): string {
+  return "/api/eventstaff/unassign";
 }
 
 /** POST /api/eventsummary/create */
@@ -1521,9 +1571,29 @@ export function prepTaskUnclaimPath(): string {
   return "/api/preptask/unclaim";
 }
 
+/** POST /api/preptask/update-assignment */
+export function prepTaskUpdateAssignmentPath(): string {
+  return "/api/preptask/update-assignment";
+}
+
+/** POST /api/preptask/update-due-date */
+export function prepTaskUpdateDueDatePath(): string {
+  return "/api/preptask/update-due-date";
+}
+
+/** POST /api/preptask/update-priority */
+export function prepTaskUpdatePriorityPath(): string {
+  return "/api/preptask/update-priority";
+}
+
 /** POST /api/preptask/update-quantity */
 export function prepTaskUpdateQuantityPath(): string {
   return "/api/preptask/update-quantity";
+}
+
+/** POST /api/preptask/update-status */
+export function prepTaskUpdateStatusPath(): string {
+  return "/api/preptask/update-status";
 }
 
 /** POST /api/proposal/accept */
@@ -1664,6 +1734,26 @@ export function recipeIngredientUpdateQuantityPath(): string {
 /** POST /api/recipeversion/create */
 export function recipeVersionCreatePath(): string {
   return "/api/recipeversion/create";
+}
+
+/** POST /api/recipeversion/restore */
+export function recipeVersionRestorePath(): string {
+  return "/api/recipeversion/restore";
+}
+
+/** POST /api/rolepolicy/grant */
+export function rolePolicyGrantPath(): string {
+  return "/api/rolepolicy/grant";
+}
+
+/** POST /api/rolepolicy/revoke */
+export function rolePolicyRevokePath(): string {
+  return "/api/rolepolicy/revoke";
+}
+
+/** POST /api/rolepolicy/update */
+export function rolePolicyUpdatePath(): string {
+  return "/api/rolepolicy/update";
 }
 
 /** POST /api/schedule/close */
@@ -1944,12 +2034,16 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "EventBudget.get.detail", path: "/api/eventbudget/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EventContract.get.list", path: "/api/eventcontract/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EventContract.get.detail", path: "/api/eventcontract/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "EventDish.get.list", path: "/api/eventdish/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "EventDish.get.detail", path: "/api/eventdish/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EventGuest.get.list", path: "/api/eventguest/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EventGuest.get.detail", path: "/api/eventguest/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EventProfitability.get.list", path: "/api/eventprofitability/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EventProfitability.get.detail", path: "/api/eventprofitability/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EventReport.get.list", path: "/api/eventreport/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EventReport.get.detail", path: "/api/eventreport/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "EventStaff.get.list", path: "/api/eventstaff/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "EventStaff.get.detail", path: "/api/eventstaff/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EventSummary.get.list", path: "/api/eventsummary/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EventSummary.get.detail", path: "/api/eventsummary/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Ingredient.get.list", path: "/api/ingredient/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -1996,6 +2090,8 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "RecipeIngredient.get.detail", path: "/api/recipeingredient/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "RecipeVersion.get.list", path: "/api/recipeversion/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "RecipeVersion.get.detail", path: "/api/recipeversion/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "RolePolicy.get.list", path: "/api/rolepolicy/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "RolePolicy.get.detail", path: "/api/rolepolicy/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Schedule.get.list", path: "/api/schedule/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Schedule.get.detail", path: "/api/schedule/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "ScheduleShift.get.list", path: "/api/scheduleshift/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -2113,6 +2209,8 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "EventContract.sign", path: "/api/eventcontract/sign", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventContract.softDelete", path: "/api/eventcontract/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventContract.update", path: "/api/eventcontract/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventDish.create", path: "/api/eventdish/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventDish.remove", path: "/api/eventdish/remove", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventGuest.create", path: "/api/eventguest/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventGuest.softDelete", path: "/api/eventguest/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventGuest.update", path: "/api/eventguest/update", method: "POST", source: "command", auth: true, tenant: true },
@@ -2123,6 +2221,8 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "EventReport.complete", path: "/api/eventreport/complete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventReport.create", path: "/api/eventreport/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventReport.submit", path: "/api/eventreport/submit", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventStaff.assign", path: "/api/eventstaff/assign", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventStaff.unassign", path: "/api/eventstaff/unassign", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventSummary.create", path: "/api/eventsummary/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventSummary.refresh", path: "/api/eventsummary/refresh", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventSummary.update", path: "/api/eventsummary/update", method: "POST", source: "command", auth: true, tenant: true },
@@ -2202,7 +2302,11 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "PrepTask.release", path: "/api/preptask/release", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PrepTask.start", path: "/api/preptask/start", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PrepTask.unclaim", path: "/api/preptask/unclaim", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepTask.updateAssignment", path: "/api/preptask/update-assignment", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepTask.updateDueDate", path: "/api/preptask/update-due-date", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepTask.updatePriority", path: "/api/preptask/update-priority", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PrepTask.updateQuantity", path: "/api/preptask/update-quantity", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepTask.updateStatus", path: "/api/preptask/update-status", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Proposal.accept", path: "/api/proposal/accept", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Proposal.create", path: "/api/proposal/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Proposal.markViewed", path: "/api/proposal/mark-viewed", method: "POST", source: "command", auth: true, tenant: true },
@@ -2231,6 +2335,10 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "RecipeIngredient.remove", path: "/api/recipeingredient/remove", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RecipeIngredient.updateQuantity", path: "/api/recipeingredient/update-quantity", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RecipeVersion.create", path: "/api/recipeversion/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RecipeVersion.restore", path: "/api/recipeversion/restore", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RolePolicy.grant", path: "/api/rolepolicy/grant", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RolePolicy.revoke", path: "/api/rolepolicy/revoke", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RolePolicy.update", path: "/api/rolepolicy/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Schedule.close", path: "/api/schedule/close", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Schedule.create", path: "/api/schedule/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Schedule.release", path: "/api/schedule/release", method: "POST", source: "command", auth: true, tenant: true },

@@ -133,6 +133,16 @@ entity RecipeVersion {
     emit RecipeVersionCreated
   }
 
+  command restore(sourceId: string, newVersionNum: number) {
+    guard sourceId != null and sourceId != "" "Source version ID is required"
+    guard newVersionNum != null and newVersionNum > 0 "Version number must be positive"
+
+    mutate versionNumber = newVersionNum
+    mutate createdAt = now()
+
+    emit RecipeVersionRestored
+  }
+
   store RecipeVersion in memory
 }
 
