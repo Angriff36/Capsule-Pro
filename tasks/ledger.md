@@ -246,6 +246,9 @@ Full `vitest run` in apps/api: 35 files pass (567 tests), 9 files fail (all pre-
 - `shared-task-helpers.ts` contains 4 dead helper functions (`updateTaskStatus`, `createTaskClaim`, `createProgressEntry`, `createOutboxEvent`) with zero callers. Safe to remove in a cleanup pass.
 - An untracked aspirational test `idempotency-failure-ttl.test.ts` was removed — it tested an unimplemented `failureTtlMs` feature in `PrismaIdempotencyStore`. Noted in plan doc.
 
+**Manifest route coverage audit (post-Phase 5a):**
+Audited all 59 manifest domain entities against filesystem write routes. 43 entities (73%) are fully manifest — zero legacy write routes. 16 entities (27%) are hybrid — manifest commands coexist with legacy CRUD/specialized endpoints. Full breakdown added to plan doc. Domains with zero manifest presence identified (accounting, payroll, training, integrations, etc.).
+
 **Points tally:**
 +3 invariant defined before implementation (atomic transaction boundary: every domain-write + outbox in same `$transaction`; side effects after commit; reads outside)
 +4 correct subagent delegation (3 CoderAgents for Groups A/B/C in parallel, non-overlapping file scopes, synthesized results verified by typecheck + grep)
