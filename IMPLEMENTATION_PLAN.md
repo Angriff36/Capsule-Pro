@@ -420,19 +420,12 @@ Systematically deleted all confirmed dead routes after thorough verification:
 
 ### Known Issues (Non-Blocking)
 
-#### Command Board AI Validation Errors
-**Status:** UX Issue — Generic error messages hide missing required fields
-**Root Cause:**
-1. AI generates commands without all required fields (e.g., Event.create needs 11 fields)
-2. The ALIAS_RULES only map "venue" → venueName + venueAddress, not all required fields
-3. Error sanitization in `tool-registry.ts:sanitizeErrorMessage()` converts specific validation errors to generic "The request format was invalid"
-
-**Location:** `apps/app/app/api/command-board/chat/tool-registry.ts:243-296`
-
-**Fix Options:**
-1. Update AI system prompt to ask for required fields before executing commands
-2. Preserve safe validation errors (e.g., "Missing required field: clientId") instead of sanitizing all 400 errors
-3. Pre-validate command args against manifest schema before API call
+#### ~~Command Board AI Validation Errors~~ ✅ FIXED (2026-02-23)
+**Status:** RESOLVED by commit b301ca47f
+**Fix Applied:**
+1. Updated `sanitizeErrorMessage()` in `tool-registry.ts` to pass through safe validation error patterns (e.g., "Missing required field: clientId")
+2. Added validation patterns for common error formats while blocking sensitive data like tenantId, userId
+3. Updated AI system prompt in `route.ts` to ask users for required fields before attempting command execution
 
 #### Task Claiming Consistency
 **Status:** Minor Issue — Multiple claim endpoint implementations
