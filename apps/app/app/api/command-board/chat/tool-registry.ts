@@ -1,9 +1,11 @@
-import { createHash } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 // Use the shared helper: server-side → direct API URL; client-side → "" (rewrite proxy)
 import { getApiBaseUrl } from "@/app/lib/api";
+import { createPendingManifestPlan } from "@/app/lib/command-board/manifest-plans";
+import { suggestManifestPlanInputSchema } from "../../../(authenticated)/command-board/types/manifest-plan";
 import {
   loadCommandCatalog,
   resolveCanonicalEntityCommandPair,
@@ -685,6 +687,123 @@ async function executeManifestCommandRoute(
   };
 }
 
+async function suggestManifestPlanTool(
+  args: Record<string, unknown>,
+  context: ManifestAgentContext
+): Promise<AgentToolResult> {
+  const boardId = resolveBoardId(args, context);
+
+  if (!boardId) {
+    return {
+      ok: false,
+      summary: "boardId is required",
+      error: "boardId is required",
+    };
+  }
+
+  // Extract the plan input from args (AI provides all fields except planId and scope.entities)
+  const parseResult = suggestManifestPlanInputSchema.safeParse(args);
+  if (!parseResult.success) {
+    return {
+      ok: false,
+      summary: "Invalid plan input",
+      error: `Invalid plan input: ${parseResult.error.issues.map((i: { message: string }) => i.message).join(", ")}`,
+    };
+  }
+
+  const planInput = parseResult.data;
+
+  // Query boardProjection to populate scope.entities from current board state
+  const projections = await database.boardProjection.findMany({
+    where: {
+      tenantId: context.tenantId,
+      boardId,
+      deletedAt: null,
+    },
+    select: {
+      entityType: true,
+      entityId: true,
+    },
+  });
+
+  // Build entities array from projections
+  const entities = projections.map((p) => ({
+    entityType: p.entityType as
+      | "event"
+      | "client"
+      | "prep_task"
+      | "kitchen_task"
+      | "employee"
+      | "inventory_item"
+      | "recipe"
+      | "dish"
+      | "proposal"
+      | "shipment"
+      | "note"
+      | "risk"
+      | "financial_projection",
+    entityId: p.entityId,
+  }));
+
+  // Generate planId
+  const planId = randomUUID();
+
+  // Construct full SuggestedManifestPlan
+  const fullPlan = {
+    planId,
+    title: planInput.title,
+    summary: planInput.summary,
+    confidence: planInput.confidence,
+    scope: {
+      boardId,
+      tenantId: context.tenantId,
+      entities: planInput.scope.entities.length > 0 ? planInput.scope.entities : entities,
+    },
+    prerequisites: planInput.prerequisites ?? [],
+    boardPreview: planInput.boardPreview ?? [],
+    domainPlan: planInput.domainPlan ?? [],
+    execution: planInput.execution,
+    trace: planInput.trace,
+    executionStrategy: planInput.executionStrategy,
+    rollbackStrategy: planInput.rollbackStrategy,
+    riskAssessment: planInput.riskAssessment,
+    costImpact: planInput.costImpact,
+  };
+
+  // Persist to outboxEvent BEFORE returning
+  try {
+    await createPendingManifestPlan({
+      tenantId: context.tenantId,
+      boardId,
+      plan: fullPlan,
+      requestedBy: context.userId,
+    });
+  } catch (error) {
+    const rawMessage =
+      error instanceof Error ? error.message : "Failed to persist manifest plan";
+    captureException(error, {
+      tags: { route: "command-board-chat", toolName: "suggest_manifest_plan" },
+      extra: { planId, boardId, correlationId: context.correlationId },
+    });
+    const sanitized = sanitizeErrorMessage(rawMessage, "COMMAND_FAILED");
+    return {
+      ok: false,
+      summary: sanitized.message,
+      error: sanitized.message,
+    };
+  }
+
+  return {
+    ok: true,
+    summary: `Manifest plan created with ${fullPlan.scope.entities.length} entities`,
+    data: redactSensitiveFields({
+      planId,
+      title: fullPlan.title,
+      entityCount: fullPlan.scope.entities.length,
+    }),
+  };
+}
+
 const BASE_TOOL_DEFINITIONS: ToolDefinition[] = [
   {
     type: "function",
@@ -749,6 +868,93 @@ const BASE_TOOL_DEFINITIONS: ToolDefinition[] = [
       additionalProperties: false,
     },
   },
+  {
+    type: "function",
+    name: "suggest_manifest_plan",
+    description:
+      "Suggest a manifest execution plan based on AI analysis. The plan is persisted to the database for approval and tracking. Use this to propose structured, executable changes to the board.",
+    parameters: {
+      type: "object",
+      properties: {
+        boardId: { type: "string" },
+        title: { type: "string" },
+        summary: { type: "string" },
+        confidence: { type: "number" },
+        prerequisites: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              questionId: { type: "string" },
+              prompt: { type: "string" },
+              type: { type: "string", enum: ["string", "enum", "date", "number", "select"] },
+              options: { type: "array", items: { type: "string" } },
+              required: { type: "boolean" },
+            },
+            required: ["questionId", "prompt", "type"],
+          },
+        },
+        boardPreview: {
+          type: "array",
+          items: { type: "object", additionalProperties: true },
+        },
+        domainPlan: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              stepId: { type: "string" },
+              entityType: { type: "string" },
+              entityId: { type: "string" },
+              commandName: { type: "string" },
+              args: { type: "object", additionalProperties: true },
+              expectedEvents: { type: "array", items: { type: "string" } },
+              failureModes: { type: "array", items: { type: "string" } },
+            },
+            required: ["stepId", "commandName"],
+          },
+        },
+        execution: {
+          type: "object",
+          properties: {
+            mode: { type: "string", enum: ["dry_run", "execute"] },
+            idempotencyKey: { type: "string" },
+          },
+          required: ["mode", "idempotencyKey"],
+        },
+        trace: {
+          type: "object",
+          properties: {
+            reasoningSummary: { type: "string" },
+            citations: { type: "array", items: { type: "string" } },
+          },
+          required: ["reasoningSummary"],
+        },
+        scope: {
+          type: "object",
+          properties: {
+            entities: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  entityType: { type: "string" },
+                  entityId: { type: "string" },
+                },
+                required: ["entityType", "entityId"],
+              },
+            },
+          },
+        },
+        executionStrategy: { type: "object", additionalProperties: true },
+        rollbackStrategy: { type: "object", additionalProperties: true },
+        riskAssessment: { type: "object", additionalProperties: true },
+        costImpact: { type: "object", additionalProperties: true },
+      },
+      required: ["title", "summary", "confidence", "execution", "trace"],
+      additionalProperties: false,
+    },
+  },
 ];
 
 export function createManifestToolRegistry(context: ManifestAgentContext) {
@@ -778,6 +984,10 @@ export function createManifestToolRegistry(context: ManifestAgentContext) {
             context,
             call.callId
           );
+        }
+
+        if (call.name === "suggest_manifest_plan") {
+          return await suggestManifestPlanTool(parsedArgs, context);
         }
 
         const entityCommand = commandCatalog.toolToEntityCommand.get(call.name);
