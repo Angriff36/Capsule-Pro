@@ -270,9 +270,17 @@ These will automatically work once P0-3 and P0-4 are implemented.
    - 385 files auto-formatted (296 safe + 89 unsafe)
    - Remaining issues are mostly style preferences
 
+4. **Fixed biome lint regression** in `packages/manifest-runtime/src/manifest/runtime-engine.ts`
+   - Commit 23ae765a7's biome auto-fix inadvertently changed `==` to `===` and `!=` to `!==`
+   - This broke manifest spec's loose equality semantics (`undefined == null` must be `true`)
+   - Added biome-ignore comments to prevent future auto-reversion
+   - Fixed 10 failing conformance tests (2 default-policies, 7 operator-equality, 1 evaluation-context)
+   - Commit: 9484d907d
+
 ### Verification
 - TypeScript: ✅ No errors
 - Tests: ✅ All menu tests pass (31/31)
+- Manifest tests: ✅ 667/667 pass (was 657/667 before fix)
 - Build: ✅ Compiles successfully
 
 ### P3-1 Status
