@@ -292,6 +292,33 @@ function sanitizeErrorMessage(
     return { code: fallbackCode, message: rawMessage };
   }
 
+  // Validation error patterns - these are safe to pass through as they only reference
+  // field names and don't expose internal IDs, queries, or sensitive data
+  const validationPatterns = [
+    /^missing required (field|parameter|property)[:.]?\s*\w+$/i,
+    /^field\s+['"]?\w+['"]?\s+(is required|cannot be empty|must be provided)/i,
+    /^invalid\s+(value|type|format)\s+(for\s+)?['"]?\w+['"]?/i,
+    /^['"]?\w+['"]?\s+(is required|cannot be null|must be a valid)/i,
+    /^required\s+(field|parameter|property)\s+['"]?\w+['"]?\s+is\s+missing$/i,
+    /^property\s+['"]?\w+['"]?\s+is\s+required$/i,
+  ];
+
+  // Only allow validation messages if they don't contain sensitive data
+  const containsSensitiveData =
+    UUID_REGEX.test(rawMessage) ||
+    /\btenant[_-]?id\b/i.test(rawMessage) ||
+    /\buser[_-]?id\b/i.test(rawMessage) ||
+    /\borganization[_-]?id\b/i.test(rawMessage) ||
+    rawMessage.includes("tenant_") ||
+    rawMessage.includes("auth_");
+
+  if (
+    !containsSensitiveData &&
+    validationPatterns.some((pattern) => pattern.test(rawMessage))
+  ) {
+    return { code: fallbackCode, message: rawMessage };
+  }
+
   // Default: use safe generic message
   return { code: fallbackCode, message: SAFE_ERROR_MESSAGES[fallbackCode] };
 }
