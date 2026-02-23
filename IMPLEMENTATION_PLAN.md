@@ -428,10 +428,17 @@ Systematically deleted all confirmed dead routes after thorough verification:
 3. Updated AI system prompt in `route.ts` to ask users for required fields before attempting command execution
 
 #### Task Claiming Consistency
-**Status:** Minor Issue — Multiple claim endpoint implementations
+**Status:** Architectural Difference — Two entities with different persistence models
 **Details:**
-- Main claim route: `apps/api/app/api/kitchen/tasks/[id]/claim/route.ts` (manual transaction)
-- Generated claim route: `apps/api/app/api/kitchen/prep-tasks/commands/claim/route.ts` (manifest only)
-- Bundle claim route: `apps/api/app/api/kitchen/tasks/bundle-claim/route.ts` (comprehensive)
+- **KitchenTask** (frontend uses `kitchen-tasks/commands/claim`): Stored `in memory` per manifest. Claims update status + emit Manifest event only. **No persistent audit trail.**
+- **PrepTask** (`tasks/[id]/claim`): Creates full audit trail via `$transaction`:
+  - `KitchenTaskClaim` database record
+  - `KitchenTaskProgress` entry for status changes
+  - `OutboxEvent` for real-time sync
+- **Bundle claim** (`tasks/bundle-claim`): Atomic multi-task claim with full audit trail (PrepTask pattern)
 
-**Impact:** Low — both work, but different implementations could diverge in behavior
+**Entities involved:**
+- `KitchenTask` entity (kitchen-task-rules.manifest): General tasks, in-memory storage
+- `PrepTask` entity (prep-task-rules.manifest): Event-driven prep work, Prisma-backed
+
+**Impact:** Medium — KitchenTask claims are ephemeral (no persistent history). If audit trail is required for KitchenTask, the manifest would need PrismaStore and the route would need transaction handling.

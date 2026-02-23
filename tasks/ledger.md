@@ -358,32 +358,37 @@ None. The manifest-integration spec is now resolved. The main IMPLEMENTATION_PLA
 
 ---
 
-# Agent 20
+# Agent 21
 
-**Agent ID:** 20
-**Date/Time:** 2026-02-23 09:43
-**Base branch/commit:** fix/dev-server-stability @ 7fe6b88bb
+**Agent ID:** 21
+**Date/Time:** 2026-02-23 09:52
+**Base branch/commit:** fix/dev-server-stability @ ffcd11216
 
 **Goal:**
-Verify project state — confirm all tests pass, build succeeds, and IMPLEMENTATION_PLAN.md remains complete (13/13 tasks).
+Verify project state and investigate Task Claiming Consistency issue documented in IMPLEMENTATION_PLAN.md.
 
 **Invariants enforced:**
 
 - All test suites must pass before claiming verification complete.
-- TypeScript must compile with zero errors.
-- Git state must be clean before claiming verification.
+- Documentation must accurately reflect code behavior.
+- Known issues must have correct impact assessment.
 
 **Subagents used:**
-None — this was a verification session.
+None — verification and investigation session.
 
 **Reproducer:**
 N/A — verification session, no bugs found.
 
 **Root cause:**
-N/A — verification session to confirm project stability at v0.7.11.
+N/A — verification session with documentation improvement.
 
 **Fix strategy:**
-Reviewed IMPLEMENTATION_PLAN.md showing 13/13 tasks complete. Ran full validation suite: TypeScript compiles clean, 379 app tests pass, 567 API tests pass. Git state clean, latest tag v0.7.11.
+1. Verified all 13 IMPLEMENTATION_PLAN.md tasks remain complete.
+2. Ran full validation suite: TypeScript compiles clean, 379 app tests pass, 567 API tests pass.
+3. Investigated Task Claiming Consistency issue - discovered it's an architectural difference between two entities:
+   - `KitchenTask`: In-memory storage, no persistent audit trail
+   - `PrepTask`: Prisma-backed with full transaction handling
+4. Updated IMPLEMENTATION_PLAN.md with accurate impact assessment (Medium, not Low) and detailed explanation.
 
 **Verification evidence:**
 
@@ -398,7 +403,7 @@ $ pnpm --filter api test --run
 Test Files: 38 passed | 1 skipped, Tests: 567 passed | 1 skipped
 
 $ git tag --sort=-v:refname | head -1
-v0.7.11
+v0.7.12
 
 $ git status
 On branch fix/dev-server-stability
@@ -406,10 +411,14 @@ nothing to commit, working tree clean
 ```
 
 **Follow-ups filed:**
-None. All 13 tasks in IMPLEMENTATION_PLAN.md are verified complete. Project is stable at v0.7.11.
+None. Task Claiming Consistency is now properly documented as an architectural difference. If persistent audit trail is needed for KitchenTask, it would require manifest changes (PrismaStore) and route updates.
 
 **Points tally:**
-+3 invariant defined before implementation (tests pass, TypeScript clean, git clean)
-+2 improved diagnosability (confirmed stable state with full verification)
++3 invariant defined before implementation (tests pass, docs accurate)
++2 improved diagnosability (corrected impact assessment, documented entities involved)
 +2 improved diagnosability (recorded ledger entry)
 = **7 points**
+
+---
+
+# Agent 20
