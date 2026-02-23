@@ -1,9 +1,40 @@
 # Manifest Alignment Plan — Recipe Versioning, Entity Resolution, Dead Route Cleanup
 
 > **Created:** 2026-02-22
-> **Status:** Plan mode (not yet executing)
+> **Status:** ✅ COMPLETE (2026-02-23) — All 13 tasks implemented
 > **Prerequisite reading:** `specs/manifest/PATTERNS.md`, this investigation report
-> **Branch:** TBD (create from main before executing)
+> **Branch:** `fix/dev-server-stability`
+> **Implementation tracking:** `IMPLEMENTATION_PLAN.md` (root)
+
+---
+
+## Completion Summary (2026-02-23)
+
+All 13 tasks from this plan were implemented on 2026-02-23. See `IMPLEMENTATION_PLAN.md` in the repo root for detailed task-by-task completion notes.
+
+### Files Created
+- `apps/api/app/api/kitchen/recipes/[recipeId]/versions/[versionId]/route.ts` — version detail endpoint
+- `apps/api/app/api/kitchen/recipes/[recipeId]/versions/compare/route.ts` — version compare endpoint
+- `apps/api/app/api/kitchen/recipes/composite/create-with-version/route.ts` — atomic recipe creation
+- `apps/api/app/api/kitchen/recipes/[recipeId]/composite/restore-version/route.ts` — version restore with lock
+- `apps/api/app/api/kitchen/recipes/[recipeId]/composite/update-with-version/route.ts` — atomic recipe update
+
+### Files Modified
+- `packages/manifest-adapters/manifests/recipe-rules.manifest` — added `restore` command, RecipeStep entity
+- `packages/manifest-adapters/src/manifest-runtime-factory.ts` — added `prismaOverride` for transactions
+- `packages/manifest-adapters/src/prisma-store.ts` — added RecipeStepPrismaStore
+- `apps/app/app/api/command-board/chat/tool-registry.ts` — registered `suggest_manifest_plan` tool
+- Frontend recipe forms — migrated to composite API routes
+
+### Files Deleted (P3-1 cleanup)
+- 43 dead route files (command-board commands, kitchen manifest routes, dead tests/components)
+
+### Key Invariants Verified
+1. All recipe writes flow through `runtime.runCommand()` — no raw SQL
+2. Multi-entity operations are atomic via `$transaction`
+3. `RecipeVersionRestored` event emitted on restore
+4. Version detail/compare endpoints functional
+5. `suggest_manifest_plan` populates `scope.entities` from board context
 
 ---
 
