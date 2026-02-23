@@ -28,10 +28,10 @@
 - **What:** Added `prismaOverride?: PrismaLike` to `CreateManifestRuntimeDeps`. When provided, ALL Prisma operations use it.
 - **Completed:** 2026-02-23 — Updated 5 usage sites. Outbox skips nested `$transaction` when override provided.
 
-### [P0-3] Create version detail endpoint `[versionId]/route.ts`
+### [P0-3] ✅ COMPLETE — Create version detail endpoint `[versionId]/route.ts`
 - **File:** `apps/api/app/api/kitchen/recipes/[recipeId]/versions/[versionId]/route.ts` (NEW)
 - **What:** GET endpoint returning `RecipeVersionDetail` with ingredients + steps.
-- **Rationale:** Blocking — frontend helper `kitchenRecipeVersionDetail()` exists (routes.ts), used in recipe-detail-tabs.tsx:441, but route returns 404.
+- **Completed:** 2026-02-23 — Returns version data with joined ingredients and steps.
 
 ### [P0-4] Create version compare endpoint `compare/route.ts`
 - **File:** `apps/api/app/api/kitchen/recipes/[recipeId]/versions/compare/route.ts` (NEW)
