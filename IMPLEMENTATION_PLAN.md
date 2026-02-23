@@ -1,6 +1,6 @@
 # Manifest Alignment Implementation Plan
 
-> **Status:** Core work complete (12/12 tasks done) - 2026-02-23
+> **Status:** ALL WORK COMPLETE (13/13 tasks done) - 2026-02-23
 > **Created:** 2026-02-22
 > **Last Updated:** 2026-02-23
 > **Source:** Synthesized from specs/manifest/composite-routes/manifest-alignment-plan.md + codebase exploration
@@ -99,11 +99,16 @@
   - Deleted dead test file: `__tests__/recipes/update-recipe.test.ts`
   - Deleted dead component: `recipe-form-with-constraints.tsx` (never imported anywhere)
 
-### [P3-1] Dead route cleanup (~28 routes) — READY FOR SEPARATE PR
-- **Files:** `apps/api/app/api/command-board/*/commands/*`, `apps/api/app/api/kitchen/manifest/*`
-- **What:** Delete confirmed dead routes (5 duplicate list routes in command-board, 19 command-board routes, 9 kitchen manifest routes). Verify no imports in apps, tests, e2e.
-- **Status:** Exploration complete. 33+ dead routes identified. Missing import in dishes/[dishId]/pricing/route.ts FIXED (2026-02-23).
-- **Rationale:** Low — cleanup, ship as separate PR after main work verified.
+### [P3-1] ✅ COMPLETE — Dead route cleanup (42 routes)
+- **Files:** `apps/api/app/api/command-board/*/commands/*`, `apps/api/app/api/command-board/*/list/*`, `apps/api/app/api/command-board/[boardId]/*`, `apps/api/app/api/kitchen/manifest/*`
+- **What:** Deleted confirmed dead routes:
+  - **Command-board command routes (17):** `boards/commands/*`, `cards/commands/*`, `connections/commands/*`, `groups/commands/*`, `layouts/commands/*`
+  - **Command-board list routes (5):** `boards/list`, `cards/list`, `connections/list`, `groups/list`, `layouts/list`
+  - **Command-board [boardId] routes (8):** `cards`, `cards/[cardId]`, `connections`, `connections/[connectionId]`, `draft`, `groups`, `groups/[groupId]`, `groups/[groupId]/cards`
+  - **Kitchen manifest routes (10):** Entire `apps/api/app/api/kitchen/manifest/` directory (9 routes + 1 helper)
+  - **Dead tests/components (3):** `command-route-contracts.test.ts`, `draft-recovery-dialog.tsx`, `draft-recovery-dialog-props.ts`
+- **Completed:** 2026-02-23 — All dead routes verified via grep (no frontend imports, no test references). Build and all tests pass.
+- **Rationale:** Low — cleanup to reduce code bloat and maintenance burden.
 
 ---
 
@@ -365,3 +370,49 @@ Pre-existing test failures in API tests were blocking CI verification:
 - TypeScript: ✅ No errors
 - Build: ✅ Successful
 - Git tag: `v0.7.2` created
+
+---
+
+## Session 2026-02-23 (Agent 11) — Dead Route Cleanup (P3-1)
+
+### Problem
+The codebase contained 42+ dead routes across command-board and kitchen/manifest directories that had no callers in the frontend, tests, or any other code. These routes represented code bloat and maintenance burden.
+
+### Solution
+Systematically deleted all confirmed dead routes after thorough verification:
+
+1. **Command-board command routes (17 files)**
+   - `boards/commands/*` (activate, create, deactivate, update)
+   - `cards/commands/*` (create, move, remove, resize, update)
+   - `connections/commands/*` (create, remove)
+   - `groups/commands/*` (create, remove, update)
+   - `layouts/commands/*` (create, remove, update)
+
+2. **Command-board list routes (5 files)**
+   - `boards/list`, `cards/list`, `connections/list`, `groups/list`, `layouts/list`
+
+3. **Command-board [boardId] routes (8 files)**
+   - `cards`, `cards/[cardId]`, `connections`, `connections/[connectionId]`
+   - `draft` (old draft system removed per spec)
+   - `groups`, `groups/[groupId]`, `groups/[groupId]/cards`
+
+4. **Kitchen manifest routes (10 files)**
+   - Entire `apps/api/app/api/kitchen/manifest/` directory
+   - `prep-lists/route.ts`, `recipes/route.ts`, `dishes/route.ts`
+   - `recipes/[recipeId]/activate`, `deactivate`, `metadata`, `restore`, `versions`
+   - `dishes/[dishId]/pricing/route.ts`, `dishes/helpers.ts`
+
+5. **Dead tests/components (3 files)**
+   - `command-route-contracts.test.ts` (tested dead routes)
+   - `draft-recovery-dialog.tsx` (unused component)
+   - `draft-recovery-dialog-props.ts` (unused types)
+
+### Files Changed
+- 43 files deleted via `git rm`
+- `IMPLEMENTATION_PLAN.md` updated to mark P3-1 complete
+
+### Verification
+- TypeScript: ✅ No errors
+- App tests: ✅ 379/379 pass (29 files)
+- API tests: ✅ 567/567 pass, 1 skipped (38 files - 1 less due to deleted test)
+- Build: ✅ app + api build successfully
