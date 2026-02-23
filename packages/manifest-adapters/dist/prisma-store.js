@@ -667,7 +667,9 @@ export class RecipeStepPrismaStore {
                 temperature_value: data.temperatureValue || null,
                 temperature_unit: data.temperatureUnit || null,
                 equipment_needed: data.equipmentNeeded
-                    ? data.equipmentNeeded.split(",").filter(Boolean)
+                    ? data.equipmentNeeded
+                        .split(",")
+                        .filter(Boolean)
                     : [],
                 tips: data.tips || null,
                 video_url: data.videoUrl || null,
@@ -719,7 +721,9 @@ export class RecipeStepPrismaStore {
             stepNumber: step.step_number,
             instruction: step.instruction,
             durationMinutes: step.duration_minutes ?? 0,
-            temperatureValue: step.temperature_value ? Number(step.temperature_value) : 0,
+            temperatureValue: step.temperature_value
+                ? Number(step.temperature_value)
+                : 0,
             temperatureUnit: step.temperature_unit ?? "",
             equipmentNeeded: step.equipment_needed?.join(",") ?? "",
             tips: step.tips ?? "",
