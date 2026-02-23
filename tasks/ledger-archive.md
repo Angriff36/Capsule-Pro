@@ -1101,3 +1101,137 @@ None. The manifest-integration spec is now resolved. The main IMPLEMENTATION_PLA
 +4 correct subagent delegation (Explore agent for investigation, Senior Engineer for spec update)
 +2 improved diagnosability (resolved confusing spec, updated status from INPROGRESS to resolved)
 = **9 points**
+
+---
+
+# Agent 21
+
+**Agent ID:** 21
+**Date/Time:** 2026-02-23 09:52
+**Base branch/commit:** fix/dev-server-stability @ ffcd11216
+
+**Goal:**
+Verify project state and investigate Task Claiming Consistency issue documented in IMPLEMENTATION_PLAN.md.
+
+**Invariants enforced:**
+
+- All test suites must pass before claiming verification complete.
+- Documentation must accurately reflect code behavior.
+- Known issues must have correct impact assessment.
+
+**Subagents used:**
+None — verification and investigation session.
+
+**Reproducer:**
+N/A — verification session, no bugs found.
+
+**Root cause:**
+N/A — verification session with documentation improvement.
+
+**Fix strategy:**
+1. Verified all 13 IMPLEMENTATION_PLAN.md tasks remain complete.
+2. Ran full validation suite: TypeScript compiles clean, 379 app tests pass, 567 API tests pass.
+3. Investigated Task Claiming Consistency issue - discovered it's an architectural difference between two entities:
+   - `KitchenTask`: In-memory storage, no persistent audit trail
+   - `PrepTask`: Prisma-backed with full transaction handling
+4. Updated IMPLEMENTATION_PLAN.md with accurate impact assessment (Medium, not Low) and detailed explanation.
+
+**Verification evidence:**
+
+```
+$ pnpm tsc --noEmit
+(exit 0, no output)
+
+$ pnpm --filter app test --run
+Test Files: 29 passed, Tests: 379 passed
+
+$ pnpm --filter api test --run
+Test Files: 38 passed | 1 skipped, Tests: 567 passed | 1 skipped
+
+$ git tag --sort=-v:refname | head -1
+v0.7.12
+
+$ git status
+On branch fix/dev-server-stability
+nothing to commit, working tree clean
+```
+
+**Follow-ups filed:**
+None. Task Claiming Consistency is now properly documented as an architectural difference. If persistent audit trail is needed for KitchenTask, it would require manifest changes (PrismaStore) and route updates.
+
+**Points tally:**
++3 invariant defined before implementation (tests pass, docs accurate)
++2 improved diagnosability (corrected impact assessment, documented entities involved)
++2 improved diagnosability (recorded ledger entry)
+= **7 points**
+
+---
+
+# Agent 22
+
+**Agent ID:** 22
+**Date/Time:** 2026-02-23 10:01
+**Base branch/commit:** fix/dev-server-stability @ e18469797
+
+**Goal:**
+Verify project state and update outdated spec document to reflect completed work.
+
+**Invariants enforced:**
+
+- All test suites must pass before claiming verification complete.
+- Documentation must accurately reflect implementation status.
+- Spec documents must not claim work is "in progress" when it's complete.
+
+**Subagents used:**
+
+- Explore agent: Searched specs/manifest/ directory to identify remaining work and found that composite-routes spec was outdated (claimed "Plan mode" when all work was done).
+
+**Reproducer:**
+N/A — verification session with documentation fix.
+
+**Root cause:**
+The `specs/manifest/composite-routes/manifest-alignment-plan.md` spec document had status "Plan mode (not yet executing)" but all 13 tasks described in it were implemented according to `IMPLEMENTATION_PLAN.md`. The spec was never updated to reflect completion.
+
+**Fix strategy:**
+1. Verified project state: TypeScript compiles clean, 379 app tests pass, 567 API tests pass, build succeeds.
+2. Confirmed all 13 IMPLEMENTATION_PLAN.md tasks remain complete.
+3. Updated spec header from "Plan mode" to "✅ COMPLETE (2026-02-23)".
+4. Added completion summary section documenting files created/modified/deleted.
+Minimal scope: documentation only, no code changes.
+
+**Verification evidence:**
+
+```
+$ pnpm tsc --noEmit
+(exit 0, no output)
+
+$ pnpm --filter app test --run
+Test Files: 29 passed, Tests: 379 passed
+
+$ pnpm --filter api test --run
+Test Files: 38 passed | 1 skipped, Tests: 567 passed | 1 skipped
+
+$ pnpm turbo build --filter=app --filter=api
+Tasks: 9 successful, 9 total
+
+$ git tag --sort=-v:refname | head -1
+v0.7.13
+
+$ ls apps/api/app/api/kitchen/recipes/*/versions/*/route.ts
+apps/api/app/api/kitchen/recipes/[recipeId]/versions/[versionId]/route.ts
+apps/api/app/api/kitchen/recipes/[recipeId]/versions/compare/route.ts
+
+$ ls apps/api/app/api/kitchen/recipes/*/composite/*/route.ts
+apps/api/app/api/kitchen/recipes/[recipeId]/composite/restore-version/route.ts
+apps/api/app/api/kitchen/recipes/[recipeId]/composite/update-with-version/route.ts
+apps/api/app/api/kitchen/recipes/composite/create-with-version/route.ts
+```
+
+**Follow-ups filed:**
+None. All 13 tasks complete, spec document updated to reflect completion.
+
+**Points tally:**
++3 invariant defined before implementation (tests pass, docs accurate)
++2 improved diagnosability (updated outdated spec to show completion)
++2 improved diagnosability (added completion summary to spec)
+= **7 points**
