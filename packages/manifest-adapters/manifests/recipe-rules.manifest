@@ -90,6 +90,8 @@ entity RecipeVersion {
   property notes: string = ""
   property ingredientCount: number = 0
   property stepCount: number = 0
+  property totalCost: number = 0
+  property costPerYield: number = 0
   property createdAt: number = 0
 
   computed totalTimeMinutes: number = self.prepTimeMinutes + self.cookTimeMinutes + self.restTimeMinutes
@@ -100,6 +102,7 @@ entity RecipeVersion {
   constraint positiveYield: self.yieldQuantity > 0 "Yield quantity must be positive"
   constraint validDifficulty: self.difficultyLevel >= 1 and self.difficultyLevel <= 5 "Difficulty must be between 1 (easy) and 5 (expert)"
   constraint validTimes: self.prepTimeMinutes >= 0 and self.cookTimeMinutes >= 0 and self.restTimeMinutes >= 0 "Time values must be non-negative"
+  constraint nonNegativeCost: self.totalCost >= 0 "Total cost cannot be negative"
 
   constraint warnLongRecipe:warn self.totalTimeMinutes > 480 {
     messageTemplate: "Recipe takes {totalHours}+ hours to complete"
@@ -141,6 +144,23 @@ entity RecipeVersion {
     mutate createdAt = now()
 
     emit RecipeVersionRestored
+  }
+
+  command updateCosts(newTotalCost: number, newCostPerYield: number) {
+    guard newTotalCost != null and newTotalCost >= 0 "Total cost cannot be negative"
+
+    constraint warnHighCost:warn newTotalCost > 1000 {
+      messageTemplate: "Recipe total cost is high (${cost}) — verify ingredient pricing"
+      details: {
+        totalCost: newTotalCost
+        costPerYield: newCostPerYield
+      }
+    }
+
+    mutate totalCost = newTotalCost
+    mutate costPerYield = newCostPerYield
+
+    emit RecipeVersionCostUpdated
   }
 
   store RecipeVersion in memory
@@ -196,10 +216,12 @@ entity RecipeIngredient {
   property required sortOrder: number
   property preparationNotes: string = ""
   property isOptional: boolean = false
+  property wasteFactor: number = 1.0
   property deletedAt: number = 0
 
   constraint positiveQuantity: self.quantity > 0 "Ingredient quantity must be positive"
   constraint validOrder: self.sortOrder > 0 "Sort order must be positive"
+  constraint validWasteFactor: self.wasteFactor > 0 "Waste factor must be greater than 0"
 
   command updateQuantity(newQuantity: number, newUnit: number) {
     guard newQuantity != null and newQuantity > 0 "Quantity must be positive"
@@ -217,6 +239,22 @@ entity RecipeIngredient {
     mutate unitId = newUnit
 
     emit RecipeIngredientUpdated
+  }
+
+  command updateWasteFactor(newWasteFactor: number) {
+    guard newWasteFactor != null and newWasteFactor > 0 "Waste factor must be greater than 0"
+
+    constraint warnHighWasteFactor:warn newWasteFactor > 1.5 {
+      messageTemplate: "Waste factor is high ({factor}) — verify this is intended"
+      details: {
+        oldWasteFactor: self.wasteFactor
+        newWasteFactor: newWasteFactor
+      }
+    }
+
+    mutate wasteFactor = newWasteFactor
+
+    emit RecipeIngredientWasteFactorUpdated
   }
 
   command create(recipeVersionId: string, ingredientId: string, quantity: number, unitId: number, sortOrder: number, preparationNotes: string, isOptional: boolean) {
@@ -458,6 +496,15 @@ event RecipeVersionRestored: "kitchen.recipe.version.restored" {
   restoredAt: number
 }
 
+event RecipeVersionCostUpdated: "kitchen.recipe.version.cost.updated" {
+  recipeVersionId: string
+  recipeId: string
+  tenantId: string
+  totalCost: number
+  costPerYield: number
+  updatedAt: number
+}
+
 event IngredientAllergensUpdated: "kitchen.ingredient.allergens.updated" {
   ingredientId: string
   tenantId: string
@@ -545,6 +592,15 @@ event RecipeIngredientRemoved: "kitchen.recipeingredient.removed" {
   tenantId: string
   userId: string
   removedAt: number
+}
+
+event RecipeIngredientWasteFactorUpdated: "kitchen.recipe.ingredient.wastefactor.updated" {
+  recipeIngredientId: string
+  recipeVersionId: string
+  tenantId: string
+  oldWasteFactor: number
+  newWasteFactor: number
+  updatedAt: number
 }
 
 event DishLeadTimeUpdated: "kitchen.dish.leadtime.updated" {

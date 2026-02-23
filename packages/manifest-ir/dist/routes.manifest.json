@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-02-23T08:55:11.781Z",
+  "generatedAt": "2026-02-23T22:45:24.608Z",
   "basePath": "/api",
   "routes": [
     {
@@ -9852,6 +9852,26 @@
       "tenant": true
     },
     {
+      "id": "RecipeIngredient.updateWasteFactor",
+      "path": "/api/kitchen/recipe-ingredients/commands/update-waste-factor",
+      "method": "POST",
+      "params": [
+        {
+          "name": "newWasteFactor",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RecipeIngredient",
+        "command": "updateWasteFactor"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "RecipeStep.create",
       "path": "/api/recipestep/create",
       "method": "POST",
@@ -10061,6 +10081,32 @@
         "kind": "command",
         "entity": "RecipeVersion",
         "command": "restore"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RecipeVersion.updateCosts",
+      "path": "/api/kitchen/recipe-versions/commands/update-costs",
+      "method": "POST",
+      "params": [
+        {
+          "name": "newTotalCost",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "newCostPerYield",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RecipeVersion",
+        "command": "updateCosts"
       },
       "auth": true,
       "tenant": true

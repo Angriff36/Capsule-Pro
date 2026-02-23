@@ -1,6 +1,6 @@
 # Manifest Implementation Plan
 
-> **Status:** Phase 1 COMPLETE (13/13) — Phase 2 (1/2 tasks)
+> **Status:** Phase 1 COMPLETE (13/13) — Phase 2 (NEXT-2 core infrastructure complete, 3 sub-tasks remaining)
 > **Created:** 2026-02-22
 > **Last Updated:** 2026-02-23
 > **Source:** specs/manifest/composite-routes/manifest-alignment-plan.md + specs/manifest/prisma-adapter/
@@ -31,17 +31,62 @@
   - Factory functions for both stores
   - cleanupExpiredIdempotencyEntries utility
 
-### [NEXT-2] Kitchen Ops Rules & Overrides Spec (Draft)
-- **Status:** DRAFT (not started)
+### [NEXT-2] Kitchen Ops Rules & Overrides — PARTIALLY COMPLETE
+- **Status:** Core infrastructure COMPLETE — Routes migration IN PROGRESS
 - **Spec:** `specs/manifest/manifest-kitchen-ops-rules-overrides_TODO/manifest-kitchen-ops-rules-overrides.md`
-- **What:** Implement constraint severity model (OK/WARN/BLOCK), override workflow, and audit events
+- **What:** Constraint severity model (OK/WARN/BLOCK), override workflow, and audit events
 - **Scope:** PrepTask, Station, Shift, InventoryItem, Event, BattleBoard entities
-- **Phases:**
-  - Phase 0: Containment (define manifest-only mutation boundary)
-  - Phase 1: Constraints + Overrides implementation
-  - Phase 2: Workflows (event import, task generation)
-  - Phase 3: Expand coverage (shift scheduling, station capacity)
-- **Rationale:** High impact — enables business rules enforcement. Blocked on architectural decision.
+
+#### Already Implemented (Core Infrastructure)
+- [x] Constraint severity model (OK/WARN/BLOCK) in manifest-runtime
+- [x] ConstraintOutcome interface (code, severity, message, details, overridden)
+- [x] OverrideRequest interface (constraintCode, reason, authorizedBy, timestamp)
+- [x] Override authorization via policies (`validateOverrideAuthorization` in runtime-engine.ts)
+- [x] OverrideApplied event emission (`buildOverrideAppliedEvent`)
+- [x] OverrideAudit entity manifest (`override-audit-rules.manifest`)
+- [x] OverrideAudit database schema (schema.prisma)
+- [x] UI component for constraint override dialog (`constraint-override-dialog.tsx`)
+- [x] Telemetry hooks (`apps/api/lib/manifest/telemetry.ts`)
+- [x] Conformance test fixtures (36, 52, 53)
+- [x] Entity manifests with constraints: PrepTask, Station, InventoryItem, Event, BattleBoard, ScheduleShift
+
+#### Remaining Work — Sub-tasks
+
+**[NEXT-2a] Phase 0: Containment — Fix Routes Bypassing Manifest**
+- **Status:** IN PROGRESS (4/7 routes migrated)
+- **What:** Migrate routes that bypass manifest runtime to use `runtime.runCommand()`
+- **Completed Routes (2026-02-23):**
+  - ✅ `allergens/update-dish/route.ts` — Now uses Dish.update command via manifest runtime
+  - ✅ `recipes/[recipeId]/scale/route.ts` — Now uses RecipeIngredient.updateWasteFactor command
+  - ✅ `recipes/[recipeId]/cost/route.ts` — Now uses RecipeVersion.updateCosts command
+  - ✅ `prep-lists/save-db/route.ts` — Was already migrated (confirmed)
+- **Remaining Routes:**
+  - `ai/bulk-generate/prep-tasks/service.ts` — PrepTask.create bypasses runtime (bulk creation pattern)
+  - `allergens/detect-conflicts/route.ts` — AllergenWarning.create bypasses runtime (data type mismatch: manifest uses string, Prisma uses array for allergens/affectedGuests)
+  - `waste/entries` routes — Already partially integrated with manifest runtime for constraint validation
+- **Manifest Additions (2026-02-23):**
+  - Added `wasteFactor` property and `updateWasteFactor` command to RecipeIngredient entity
+  - Added `totalCost`, `costPerYield` properties and `updateCosts` command to RecipeVersion entity
+  - Added events: `RecipeIngredientWasteFactorUpdated`, `RecipeVersionCostUpdated`
+  - Updated PrismaStore mappers for RecipeIngredient and RecipeVersion to handle new fields
+- **Priority:** P1 — Required for full constraint enforcement
+
+**[NEXT-2b] Phase 2: Workflows — Missing Entities**
+- **Status:** NOT STARTED
+- **What:** Implement workflow entities for complex operations
+- **Missing Entities:**
+  - `EventImportWorkflow` — Multi-step event import with validation
+  - `PrepTaskPlanWorkflow` — Task generation with constraint checking
+- **Priority:** P2 — Enables advanced automation
+
+**[NEXT-2c] Phase 3: Expansion — Additional Scheduling Constraints**
+- **Status:** NOT STARTED
+- **What:** Add constraint enforcement for scheduling edge cases
+- **Missing Constraints:**
+  - ScheduleShift: overlap constraints not enforced at manifest level
+  - Certification requirements for shifts not implemented
+  - Overtime limits not implemented
+- **Priority:** P2 — Business rule enforcement
 
 ---
 

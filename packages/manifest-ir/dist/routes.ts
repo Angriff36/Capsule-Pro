@@ -1741,6 +1741,11 @@ export function recipeIngredientUpdateQuantityPath(): string {
   return "/api/recipeingredient/update-quantity";
 }
 
+/** POST /api/recipeingredient/update-waste-factor */
+export function recipeIngredientUpdateWasteFactorPath(): string {
+  return "/api/recipeingredient/update-waste-factor";
+}
+
 /** POST /api/recipestep/create */
 export function recipeStepCreatePath(): string {
   return "/api/recipestep/create";
@@ -1764,6 +1769,11 @@ export function recipeVersionCreatePath(): string {
 /** POST /api/recipeversion/restore */
 export function recipeVersionRestorePath(): string {
   return "/api/recipeversion/restore";
+}
+
+/** POST /api/recipeversion/update-costs */
+export function recipeVersionUpdateCostsPath(): string {
+  return "/api/recipeversion/update-costs";
 }
 
 /** POST /api/rolepolicy/grant */
@@ -2361,11 +2371,13 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "RecipeIngredient.create", path: "/api/recipeingredient/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RecipeIngredient.remove", path: "/api/recipeingredient/remove", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RecipeIngredient.updateQuantity", path: "/api/recipeingredient/update-quantity", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RecipeIngredient.updateWasteFactor", path: "/api/recipeingredient/update-waste-factor", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RecipeStep.create", path: "/api/recipestep/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RecipeStep.remove", path: "/api/recipestep/remove", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RecipeStep.updateInstruction", path: "/api/recipestep/update-instruction", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RecipeVersion.create", path: "/api/recipeversion/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RecipeVersion.restore", path: "/api/recipeversion/restore", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RecipeVersion.updateCosts", path: "/api/recipeversion/update-costs", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RolePolicy.grant", path: "/api/rolepolicy/grant", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RolePolicy.revoke", path: "/api/rolepolicy/revoke", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RolePolicy.update", path: "/api/rolepolicy/update", method: "POST", source: "command", auth: true, tenant: true },
