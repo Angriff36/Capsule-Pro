@@ -25,9 +25,9 @@ describe("FinancialNodeCard", () => {
     title: "Q1 2026 Projection",
     period: "Q1 2026",
     healthStatus: "healthy" as FinancialHealthStatus,
-    projectedRevenue: 100000,
-    projectedCosts: 60000,
-    grossProfit: 40000,
+    projectedRevenue: 100_000,
+    projectedCosts: 60_000,
+    grossProfit: 40_000,
     grossProfitMargin: 40,
     eventCount: 25,
     totalGuests: 500,
@@ -35,7 +35,9 @@ describe("FinancialNodeCard", () => {
   };
 
   it("renders complete data without crashing", () => {
-    const { container } = render(<FinancialNodeCard data={baseData} stale={false} />);
+    const { container } = render(
+      <FinancialNodeCard data={baseData} stale={false} />
+    );
     expect(container).toBeTruthy();
     expect(screen.getByText("Q1 2026 Projection")).toBeTruthy();
   });
@@ -120,7 +122,9 @@ describe("FinancialNodeCard", () => {
     const { container } = render(
       <FinancialNodeCard data={baseData} stale={true} />
     );
-    expect((container.firstChild as HTMLElement)?.className).toContain("opacity-50");
+    expect((container.firstChild as HTMLElement)?.className).toContain(
+      "opacity-50"
+    );
   });
 });
 
@@ -143,7 +147,9 @@ describe("RiskNodeCard", () => {
   };
 
   it("renders complete data without crashing", () => {
-    const { container } = render(<RiskNodeCard data={baseData} stale={false} />);
+    const { container } = render(
+      <RiskNodeCard data={baseData} stale={false} />
+    );
     expect(container).toBeTruthy();
     expect(screen.getByText("Staff Shortage Risk")).toBeTruthy();
   });
@@ -215,6 +221,8 @@ describe("RiskNodeCard", () => {
 
   it("applies stale styling when stale is true", () => {
     const { container } = render(<RiskNodeCard data={baseData} stale={true} />);
-    expect((container.firstChild as HTMLElement)?.className).toContain("opacity-50");
+    expect((container.firstChild as HTMLElement)?.className).toContain(
+      "opacity-50"
+    );
   });
 });

@@ -1,8 +1,8 @@
 // React Query hooks for read operations
 import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "./client";
 import { getAuthToken } from "../store/auth";
-import type { TodayEvent, Task, PrepList, PrepListItem } from "../types";
+import type { PrepList, Task, TodayEvent } from "../types";
+import { apiClient } from "./client";
 
 // Response types
 interface EventsTodayResponse {
@@ -50,7 +50,8 @@ async function authRequest<T>(endpoint: string): Promise<T> {
 export function useEventsToday() {
   return useQuery({
     queryKey: queryKeys.eventsToday,
-    queryFn: () => authRequest<EventsTodayResponse>("/api/kitchen/events/today"),
+    queryFn: () =>
+      authRequest<EventsTodayResponse>("/api/kitchen/events/today"),
     select: (data) => data.events,
     staleTime: 1000 * 60 * 2, // 2 minutes - events change frequently
   });

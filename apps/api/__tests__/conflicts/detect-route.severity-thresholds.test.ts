@@ -8,6 +8,8 @@
 import { describe, expect, it } from "vitest";
 import {
   CONFLICT_SEVERITY_THRESHOLDS,
+  EQUIPMENT_THRESHOLDS,
+  FINANCIAL_THRESHOLDS,
   getEquipmentSeverity,
   getFinancialSeverity,
   getInventorySeverity,
@@ -15,8 +17,6 @@ import {
   getStaffSeverity,
   getTimelineSeverity,
   getVenueSeverity,
-  EQUIPMENT_THRESHOLDS,
-  FINANCIAL_THRESHOLDS,
   INVENTORY_THRESHOLDS,
   SCHEDULING_THRESHOLDS,
   STAFF_THRESHOLDS,
@@ -169,33 +169,39 @@ describe("Severity threshold constants", () => {
 
 describe("getSchedulingSeverity", () => {
   it("returns critical for 3+ overlapping shifts (triple-booked)", () => {
-    expect(getSchedulingSeverity(schedulingFixtures.tripleBooked.shiftCount)).toBe(
-      schedulingFixtures.tripleBooked.expected
-    );
-    expect(getSchedulingSeverity(schedulingFixtures.quadrupleBooked.shiftCount)).toBe(
-      schedulingFixtures.quadrupleBooked.expected
-    );
+    expect(
+      getSchedulingSeverity(schedulingFixtures.tripleBooked.shiftCount)
+    ).toBe(schedulingFixtures.tripleBooked.expected);
+    expect(
+      getSchedulingSeverity(schedulingFixtures.quadrupleBooked.shiftCount)
+    ).toBe(schedulingFixtures.quadrupleBooked.expected);
   });
 
   it("returns high for exactly 2 overlapping shifts (double-booked)", () => {
-    expect(getSchedulingSeverity(schedulingFixtures.doubleBooked.shiftCount)).toBe(
-      schedulingFixtures.doubleBooked.expected
-    );
+    expect(
+      getSchedulingSeverity(schedulingFixtures.doubleBooked.shiftCount)
+    ).toBe(schedulingFixtures.doubleBooked.expected);
   });
 
   it("returns medium for single shift (no conflict scenario)", () => {
-    expect(getSchedulingSeverity(schedulingFixtures.singleShift.shiftCount)).toBe(
-      schedulingFixtures.singleShift.expected
-    );
+    expect(
+      getSchedulingSeverity(schedulingFixtures.singleShift.shiftCount)
+    ).toBe(schedulingFixtures.singleShift.expected);
   });
 
   it("uses threshold constants consistently", () => {
     // At critical threshold
-    expect(getSchedulingSeverity(SCHEDULING_THRESHOLDS.criticalShiftCount)).toBe("critical");
+    expect(
+      getSchedulingSeverity(SCHEDULING_THRESHOLDS.criticalShiftCount)
+    ).toBe("critical");
     // Just below critical threshold
-    expect(getSchedulingSeverity(SCHEDULING_THRESHOLDS.criticalShiftCount - 1)).toBe("high");
+    expect(
+      getSchedulingSeverity(SCHEDULING_THRESHOLDS.criticalShiftCount - 1)
+    ).toBe("high");
     // At high threshold
-    expect(getSchedulingSeverity(SCHEDULING_THRESHOLDS.highShiftCount)).toBe("high");
+    expect(getSchedulingSeverity(SCHEDULING_THRESHOLDS.highShiftCount)).toBe(
+      "high"
+    );
   });
 });
 
@@ -220,7 +226,9 @@ describe("getStaffSeverity", () => {
   });
 
   it("uses threshold constants consistently", () => {
-    expect(getStaffSeverity(STAFF_THRESHOLDS.criticalShiftCount)).toBe("critical");
+    expect(getStaffSeverity(STAFF_THRESHOLDS.criticalShiftCount)).toBe(
+      "critical"
+    );
     expect(getStaffSeverity(STAFF_THRESHOLDS.criticalShiftCount - 1)).toBe(
       STAFF_THRESHOLDS.defaultSeverity
     );
@@ -233,21 +241,21 @@ describe("getStaffSeverity", () => {
 
 describe("getInventorySeverity", () => {
   it("returns critical for critical alert type", () => {
-    expect(getInventorySeverity(inventoryFixtures.criticalAlert.alertType)).toBe(
-      inventoryFixtures.criticalAlert.expected
-    );
+    expect(
+      getInventorySeverity(inventoryFixtures.criticalAlert.alertType)
+    ).toBe(inventoryFixtures.criticalAlert.expected);
   });
 
   it("returns medium for warning/low/out_of_stock alert types", () => {
     expect(getInventorySeverity(inventoryFixtures.warningAlert.alertType)).toBe(
       inventoryFixtures.warningAlert.expected
     );
-    expect(getInventorySeverity(inventoryFixtures.lowStockAlert.alertType)).toBe(
-      inventoryFixtures.lowStockAlert.expected
-    );
-    expect(getInventorySeverity(inventoryFixtures.outOfStockAlert.alertType)).toBe(
-      inventoryFixtures.outOfStockAlert.expected
-    );
+    expect(
+      getInventorySeverity(inventoryFixtures.lowStockAlert.alertType)
+    ).toBe(inventoryFixtures.lowStockAlert.expected);
+    expect(
+      getInventorySeverity(inventoryFixtures.outOfStockAlert.alertType)
+    ).toBe(inventoryFixtures.outOfStockAlert.expected);
   });
 
   it("returns medium for unknown alert types", () => {
@@ -262,9 +270,9 @@ describe("getInventorySeverity", () => {
 
 describe("getVenueSeverity", () => {
   it("returns critical for 3+ events at same venue", () => {
-    expect(getVenueSeverity(venueFixtures.threeEventsSameVenue.eventCount)).toBe(
-      venueFixtures.threeEventsSameVenue.expected
-    );
+    expect(
+      getVenueSeverity(venueFixtures.threeEventsSameVenue.eventCount)
+    ).toBe(venueFixtures.threeEventsSameVenue.expected);
     expect(getVenueSeverity(venueFixtures.fourEventsSameVenue.eventCount)).toBe(
       venueFixtures.fourEventsSameVenue.expected
     );
@@ -283,7 +291,9 @@ describe("getVenueSeverity", () => {
   });
 
   it("uses threshold constants consistently", () => {
-    expect(getVenueSeverity(VENUE_THRESHOLDS.criticalEventCount)).toBe("critical");
+    expect(getVenueSeverity(VENUE_THRESHOLDS.criticalEventCount)).toBe(
+      "critical"
+    );
     expect(getVenueSeverity(VENUE_THRESHOLDS.highEventCount)).toBe("high");
   });
 });
@@ -294,18 +304,20 @@ describe("getVenueSeverity", () => {
 
 describe("getEquipmentSeverity", () => {
   it("returns critical for 3+ events needing same equipment", () => {
-    expect(getEquipmentSeverity(equipmentFixtures.threeEventsSameEquipment.eventCount)).toBe(
-      equipmentFixtures.threeEventsSameEquipment.expected
-    );
-    expect(getEquipmentSeverity(equipmentFixtures.fourEventsSameEquipment.eventCount)).toBe(
-      equipmentFixtures.fourEventsSameEquipment.expected
-    );
+    expect(
+      getEquipmentSeverity(
+        equipmentFixtures.threeEventsSameEquipment.eventCount
+      )
+    ).toBe(equipmentFixtures.threeEventsSameEquipment.expected);
+    expect(
+      getEquipmentSeverity(equipmentFixtures.fourEventsSameEquipment.eventCount)
+    ).toBe(equipmentFixtures.fourEventsSameEquipment.expected);
   });
 
   it("returns high for exactly 2 events needing same equipment", () => {
-    expect(getEquipmentSeverity(equipmentFixtures.twoEventsSameEquipment.eventCount)).toBe(
-      equipmentFixtures.twoEventsSameEquipment.expected
-    );
+    expect(
+      getEquipmentSeverity(equipmentFixtures.twoEventsSameEquipment.eventCount)
+    ).toBe(equipmentFixtures.twoEventsSameEquipment.expected);
   });
 
   it("returns medium for single event (no conflict)", () => {
@@ -315,8 +327,12 @@ describe("getEquipmentSeverity", () => {
   });
 
   it("uses threshold constants consistently", () => {
-    expect(getEquipmentSeverity(EQUIPMENT_THRESHOLDS.criticalEventCount)).toBe("critical");
-    expect(getEquipmentSeverity(EQUIPMENT_THRESHOLDS.highEventCount)).toBe("high");
+    expect(getEquipmentSeverity(EQUIPMENT_THRESHOLDS.criticalEventCount)).toBe(
+      "critical"
+    );
+    expect(getEquipmentSeverity(EQUIPMENT_THRESHOLDS.highEventCount)).toBe(
+      "high"
+    );
   });
 });
 
@@ -347,8 +363,12 @@ describe("getTimelineSeverity", () => {
   });
 
   it("uses threshold constants consistently", () => {
-    expect(getTimelineSeverity(TIMELINE_THRESHOLDS.criticalPriorityMax)).toBe("critical");
-    expect(getTimelineSeverity(TIMELINE_THRESHOLDS.highPriorityMax)).toBe("high");
+    expect(getTimelineSeverity(TIMELINE_THRESHOLDS.criticalPriorityMax)).toBe(
+      "critical"
+    );
+    expect(getTimelineSeverity(TIMELINE_THRESHOLDS.highPriorityMax)).toBe(
+      "high"
+    );
   });
 });
 
@@ -457,13 +477,23 @@ describe("getFinancialSeverity", () => {
 
   it("handles edge cases at threshold boundaries", () => {
     // Exactly at high margin variance = medium (not < -5)
-    expect(getFinancialSeverity(15, FINANCIAL_THRESHOLDS.highMarginVariance, 100, 1000)).toBe(
-      "medium"
-    );
+    expect(
+      getFinancialSeverity(
+        15,
+        FINANCIAL_THRESHOLDS.highMarginVariance,
+        100,
+        1000
+      )
+    ).toBe("medium");
 
     // Just below high margin variance = high
     expect(
-      getFinancialSeverity(15, FINANCIAL_THRESHOLDS.highMarginVariance - 0.1, 100, 1000)
+      getFinancialSeverity(
+        15,
+        FINANCIAL_THRESHOLDS.highMarginVariance - 0.1,
+        100,
+        1000
+      )
     ).toBe("high");
 
     // Exactly at 25% cost overrun = medium (not > 0.25)
@@ -510,8 +540,12 @@ describe("Domain threshold alignment", () => {
   it("aligns equipment thresholds with kitchen operations domain", () => {
     // Kitchen domain: Equipment conflicts are as serious as venue conflicts
     // Same thresholds apply
-    expect(EQUIPMENT_THRESHOLDS.highEventCount).toBe(VENUE_THRESHOLDS.highEventCount);
-    expect(EQUIPMENT_THRESHOLDS.criticalEventCount).toBe(VENUE_THRESHOLDS.criticalEventCount);
+    expect(EQUIPMENT_THRESHOLDS.highEventCount).toBe(
+      VENUE_THRESHOLDS.highEventCount
+    );
+    expect(EQUIPMENT_THRESHOLDS.criticalEventCount).toBe(
+      VENUE_THRESHOLDS.criticalEventCount
+    );
   });
 
   it("aligns timeline thresholds with prep task domain", () => {

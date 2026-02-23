@@ -6,11 +6,7 @@
  * `no-restricted-syntax`, which Biome does not support.
  *
  * Install:  pnpm add -D eslint
- * Run:      pnpm eslint --no-eslintrc -c eslint.config.mjs "apps/app/**/ *.
-{
-  ts, tsx;
-}
-"
+ * Run:      pnpm eslint --no-eslintrc -c eslint.config.mjs "apps/app/**/*.{ts,tsx}"
  *
  * The CI scan script (scripts/check-hardcoded-routes.mjs) provides the same
  * check without requiring ESLint to be installed.
@@ -25,8 +21,8 @@ export default [
     files: [
       "apps/app/**/*.ts",
       "apps/app/**/*.tsx",
-      "packages/ui/**/*.ts",
-      "packages/ui/**/*.tsx",
+      "packages/design-system/**/*.ts",
+      "packages/design-system/**/*.tsx",
     ],
     ignores: [
       // Allowlisted files that ARE permitted to contain /api/ strings:

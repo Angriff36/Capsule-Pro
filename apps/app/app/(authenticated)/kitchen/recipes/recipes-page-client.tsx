@@ -183,11 +183,14 @@ export const RecipesPageClient = () => {
     const payload = buildUpdatePayload(formData);
 
     try {
-      const response = await apiFetch(kitchenRecipeCompositeUpdate(editRecipeId), {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+      const response = await apiFetch(
+        kitchenRecipeCompositeUpdate(editRecipeId),
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
 
       const result: CompositeRouteResponse = await response.json();
 

@@ -1,3 +1,4 @@
+import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -9,15 +10,17 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useState, useCallback } from "react";
-import { usePrepListDetail } from "../api/queries";
 import {
   useMarkPrepItemComplete,
   useUpdatePrepItemNotes,
 } from "../api/mutations";
-import PrepListItem from "../components/PrepListItem";
+import { usePrepListDetail } from "../api/queries";
 import ErrorState from "../components/ErrorState";
-import type { PrepListItem as PrepListItemType, PrepListDetailParams } from "../types";
+import PrepListItem from "../components/PrepListItem";
+import type {
+  PrepListDetailParams,
+  PrepListItem as PrepListItemType,
+} from "../types";
 
 type FilterType = "incomplete" | "all" | "complete";
 
@@ -41,12 +44,7 @@ export default function PrepListDetailScreen({ route }: Props) {
   const [isSavingNote, setIsSavingNote] = useState(false);
 
   // API hooks
-  const {
-    data: prepList,
-    isLoading,
-    error,
-    refetch,
-  } = usePrepListDetail(id);
+  const { data: prepList, isLoading, error, refetch } = usePrepListDetail(id);
 
   const markCompleteMutation = useMarkPrepItemComplete();
   const updateNotesMutation = useUpdatePrepItemNotes();
@@ -74,7 +72,7 @@ export default function PrepListDetailScreen({ route }: Props) {
   }, []);
 
   const handleSaveNote = useCallback(async () => {
-    if (!selectedItem || !noteText.trim()) {
+    if (!(selectedItem && noteText.trim())) {
       setNoteModalVisible(false);
       setSelectedItem(null);
       setNoteText("");
@@ -119,7 +117,7 @@ export default function PrepListDetailScreen({ route }: Props) {
   if (isLoading && !prepList) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#2563eb" />
+        <ActivityIndicator color="#2563eb" size="large" />
         <Text style={styles.loadingText}>Loading prep list...</Text>
       </View>
     );
@@ -129,7 +127,9 @@ export default function PrepListDetailScreen({ route }: Props) {
   if (error) {
     return (
       <ErrorState
-        message={error instanceof Error ? error.message : "Failed to load prep list"}
+        message={
+          error instanceof Error ? error.message : "Failed to load prep list"
+        }
         onRetry={() => void refetch()}
       />
     );
@@ -153,8 +153,11 @@ export default function PrepListDetailScreen({ route }: Props) {
       {/* Filter bar */}
       <View style={styles.filterBar}>
         <TouchableOpacity
-          style={[styles.filterButton, filter === "incomplete" && styles.filterButtonActive]}
           onPress={() => setFilter("incomplete")}
+          style={[
+            styles.filterButton,
+            filter === "incomplete" && styles.filterButtonActive,
+          ]}
         >
           <Text
             style={[
@@ -166,8 +169,11 @@ export default function PrepListDetailScreen({ route }: Props) {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.filterButton, filter === "all" && styles.filterButtonActive]}
           onPress={() => setFilter("all")}
+          style={[
+            styles.filterButton,
+            filter === "all" && styles.filterButtonActive,
+          ]}
         >
           <Text
             style={[
@@ -179,8 +185,11 @@ export default function PrepListDetailScreen({ route }: Props) {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.filterButton, filter === "complete" && styles.filterButtonActive]}
           onPress={() => setFilter("complete")}
+          style={[
+            styles.filterButton,
+            filter === "complete" && styles.filterButtonActive,
+          ]}
         >
           <Text
             style={[
@@ -194,23 +203,15 @@ export default function PrepListDetailScreen({ route }: Props) {
       </View>
 
       {/* Swipe hint */}
-      <Text style={styles.swipeHint}>← Swipe left to complete, right for notes →</Text>
+      <Text style={styles.swipeHint}>
+        ← Swipe left to complete, right for notes →
+      </Text>
 
       {/* Items list */}
       <FlatList
+        contentContainerStyle={styles.listContent}
         data={filteredItems}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <PrepListItem
-            item={item}
-            onToggleComplete={handleToggleComplete}
-            onAddNote={handleAddNote}
-          />
-        )}
-        contentContainerStyle={styles.listContent}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <Text style={styles.emptyIcon}>
@@ -223,14 +224,24 @@ export default function PrepListDetailScreen({ route }: Props) {
             </Text>
           </View>
         }
+        refreshControl={
+          <RefreshControl onRefresh={onRefresh} refreshing={refreshing} />
+        }
+        renderItem={({ item }) => (
+          <PrepListItem
+            item={item}
+            onAddNote={handleAddNote}
+            onToggleComplete={handleToggleComplete}
+          />
+        )}
       />
 
       {/* Note Modal */}
       <Modal
-        visible={noteModalVisible}
         animationType="slide"
-        transparent={true}
         onRequestClose={handleCloseNoteModal}
+        transparent={true}
+        visible={noteModalVisible}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
@@ -239,26 +250,26 @@ export default function PrepListDetailScreen({ route }: Props) {
               <Text style={styles.modalSubtitle}>{selectedItem.name}</Text>
             )}
             <TextInput
-              style={styles.noteInput}
-              placeholder="Enter prep notes or flag an issue..."
-              placeholderTextColor="#94a3b8"
-              value={noteText}
-              onChangeText={setNoteText}
               multiline
               numberOfLines={4}
+              onChangeText={setNoteText}
+              placeholder="Enter prep notes or flag an issue..."
+              placeholderTextColor="#94a3b8"
+              style={styles.noteInput}
               textAlignVertical="top"
+              value={noteText}
             />
             <View style={styles.modalButtons}>
               <TouchableOpacity
-                style={[styles.modalButton, styles.modalButtonCancel]}
                 onPress={handleCloseNoteModal}
+                style={[styles.modalButton, styles.modalButtonCancel]}
               >
                 <Text style={styles.modalButtonCancelText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={[styles.modalButton, styles.modalButtonSave]}
-                onPress={handleSaveNote}
                 disabled={isSavingNote}
+                onPress={handleSaveNote}
+                style={[styles.modalButton, styles.modalButtonSave]}
               >
                 <Text style={styles.modalButtonSaveText}>
                   {isSavingNote ? "Saving..." : "Save Note"}

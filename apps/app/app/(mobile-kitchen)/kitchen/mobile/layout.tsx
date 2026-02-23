@@ -67,7 +67,9 @@ export default function MobileShell({ children }: MobileShellProperties) {
   }, []);
 
   const isActiveRoute = (href: string) => {
-    if (!pathname) return false;
+    if (!pathname) {
+      return false;
+    }
     if (href === "/kitchen/mobile") {
       return pathname === "/kitchen/mobile" || pathname === "/kitchen/mobile/";
     }

@@ -1,13 +1,13 @@
 import {
+  Animated,
   StyleSheet,
   Text,
-  View,
   TouchableOpacity,
-  Animated,
+  View,
 } from "react-native";
 import Swipeable from "react-native-gesture-handler/Swipeable";
-import type { PrepListItem as PrepListItemType } from "../types";
 import { useHaptics } from "../hooks";
+import type { PrepListItem as PrepListItemType } from "../types";
 
 interface PrepListItemProps {
   item: PrepListItemType;
@@ -33,11 +33,7 @@ export default function PrepListItem({
 
     return (
       <Animated.View
-        style={[
-          styles.swipeAction,
-          styles.completeAction,
-          { opacity: trans },
-        ]}
+        style={[styles.swipeAction, styles.completeAction, { opacity: trans }]}
       >
         <Text style={styles.swipeActionIcon}>✓</Text>
         <Text style={styles.swipeActionText}>Complete</Text>
@@ -57,11 +53,7 @@ export default function PrepListItem({
 
     return (
       <Animated.View
-        style={[
-          styles.swipeAction,
-          styles.noteAction,
-          { opacity: trans },
-        ]}
+        style={[styles.swipeAction, styles.noteAction, { opacity: trans }]}
       >
         <Text style={styles.swipeActionIcon}>📝</Text>
         <Text style={styles.swipeActionText}>Note</Text>
@@ -86,28 +78,22 @@ export default function PrepListItem({
 
   return (
     <Swipeable
-      renderLeftActions={renderLeftActions}
-      renderRightActions={renderRightActions}
+      friction={2}
       onSwipeableLeftOpen={handleSwipeLeftOpen}
       onSwipeableRightOpen={handleSwipeRightOpen}
       overshootLeft={false}
       overshootRight={false}
-      friction={2}
+      renderLeftActions={renderLeftActions}
+      renderRightActions={renderRightActions}
     >
       <TouchableOpacity
-        style={[
-          styles.container,
-          item.completed && styles.containerCompleted,
-        ]}
-        onPress={handleToggle}
         activeOpacity={0.7}
+        onPress={handleToggle}
+        style={[styles.container, item.completed && styles.containerCompleted]}
       >
         {/* Checkbox */}
         <View
-          style={[
-            styles.checkbox,
-            item.completed && styles.checkboxCompleted,
-          ]}
+          style={[styles.checkbox, item.completed && styles.checkboxCompleted]}
         >
           {item.completed && <Text style={styles.checkmark}>✓</Text>}
         </View>
@@ -116,11 +102,11 @@ export default function PrepListItem({
         <View style={styles.content}>
           <View style={styles.headerRow}>
             <Text
+              numberOfLines={2}
               style={[
                 styles.itemName,
                 item.completed && styles.itemNameCompleted,
               ]}
-              numberOfLines={2}
             >
               {item.name}
             </Text>
@@ -137,7 +123,7 @@ export default function PrepListItem({
             )}
           </View>
           {item.notes && (
-            <Text style={styles.notePreview} numberOfLines={2}>
+            <Text numberOfLines={2} style={styles.notePreview}>
               📝 {item.notes}
             </Text>
           )}

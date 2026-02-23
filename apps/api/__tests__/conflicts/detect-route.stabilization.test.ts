@@ -56,11 +56,11 @@ vi.mock("@/app/lib/tenant", () => ({
   getTenantIdForOrg: vi.fn(),
 }));
 
+import { auth } from "@repo/auth/server";
 // Import after mocking
 import { database } from "@repo/database";
-import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { POST } from "@/app/api/conflicts/detect/route";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 const mockAuth = vi.mocked(auth);
 const mockGetTenantIdForOrg = vi.mocked(getTenantIdForOrg);
@@ -100,7 +100,10 @@ describe("Conflict Detection API Route Stabilization", () => {
     });
 
     it("returns 404 with typed message when tenant not found", async () => {
-      mockAuth.mockResolvedValue({ orgId: validOrgId, userId: "user_123" } as never);
+      mockAuth.mockResolvedValue({
+        orgId: validOrgId,
+        userId: "user_123",
+      } as never);
       mockGetTenantIdForOrg.mockResolvedValue(null as unknown as string);
 
       const request = new Request("http://localhost/api/conflicts/detect", {
@@ -124,7 +127,10 @@ describe("Conflict Detection API Route Stabilization", () => {
 
   describe("Empty/new board handling", () => {
     beforeEach(() => {
-      mockAuth.mockResolvedValue({ orgId: validOrgId, userId: "user_123" } as never);
+      mockAuth.mockResolvedValue({
+        orgId: validOrgId,
+        userId: "user_123",
+      } as never);
       mockGetTenantIdForOrg.mockResolvedValue(validTenantId);
     });
 
@@ -472,7 +478,9 @@ describe("Conflict Detection API Route Stabilization", () => {
       // All detectors fail - should still return 200 with empty conflicts and warnings
       // Timeline detector uses Prisma ORM, others use $queryRaw
       mockQueryRaw.mockRejectedValue(new Error("Database connection failed"));
-      mockPrepTaskFindMany.mockRejectedValue(new Error("Database connection failed"));
+      mockPrepTaskFindMany.mockRejectedValue(
+        new Error("Database connection failed")
+      );
 
       const request = new Request("http://localhost/api/conflicts/detect", {
         method: "POST",
@@ -527,15 +535,22 @@ describe("Conflict Detection API Route Stabilization", () => {
       expect(body.conflicts).toHaveLength(1);
       // Should have warning from failed detector
       expect(body).toHaveProperty("warnings");
-      const warnings = body.warnings as Array<{ detectorType: string; message: string }>;
+      const warnings = body.warnings as Array<{
+        detectorType: string;
+        message: string;
+      }>;
       expect(warnings.length).toBeGreaterThan(0);
       expect(warnings[0].detectorType).toBe("staff");
       expect(warnings[0].message).toContain("Unable to check");
     });
 
     it("returns partial results with warnings for SQL syntax errors", async () => {
-      mockQueryRaw.mockRejectedValue(new Error('syntax error at or near "SELECT"'));
-      mockPrepTaskFindMany.mockRejectedValue(new Error('syntax error at or near "SELECT"'));
+      mockQueryRaw.mockRejectedValue(
+        new Error('syntax error at or near "SELECT"')
+      );
+      mockPrepTaskFindMany.mockRejectedValue(
+        new Error('syntax error at or near "SELECT"')
+      );
 
       const request = new Request("http://localhost/api/conflicts/detect", {
         method: "POST",
@@ -555,8 +570,12 @@ describe("Conflict Detection API Route Stabilization", () => {
     });
 
     it("returns partial results with warnings for permission denied errors", async () => {
-      mockQueryRaw.mockRejectedValue(new Error("permission denied for table employees"));
-      mockPrepTaskFindMany.mockRejectedValue(new Error("permission denied for table prep_tasks"));
+      mockQueryRaw.mockRejectedValue(
+        new Error("permission denied for table employees")
+      );
+      mockPrepTaskFindMany.mockRejectedValue(
+        new Error("permission denied for table prep_tasks")
+      );
 
       const request = new Request("http://localhost/api/conflicts/detect", {
         method: "POST",
@@ -793,7 +812,10 @@ describe("Conflict Detection API Route Stabilization", () => {
     });
 
     it("correctly counts conflicts by type", async () => {
-      mockAuth.mockResolvedValue({ orgId: validOrgId, userId: "user_123" } as never);
+      mockAuth.mockResolvedValue({
+        orgId: validOrgId,
+        userId: "user_123",
+      } as never);
       mockGetTenantIdForOrg.mockResolvedValue(validTenantId);
 
       // 2 scheduling conflicts (uses $queryRaw)
@@ -886,14 +908,18 @@ describe("Conflict Detection API Route Stabilization", () => {
       // Required fields
       expect(typeof conflict.id).toBe("string");
       expect(typeof conflict.type).toBe("string");
-      expect(["low", "medium", "high", "critical"]).toContain(conflict.severity);
+      expect(["low", "medium", "high", "critical"]).toContain(
+        conflict.severity
+      );
       expect(typeof conflict.title).toBe("string");
       expect(typeof conflict.description).toBe("string");
       expect(Array.isArray(conflict.affectedEntities)).toBe(true);
       expect(conflict.createdAt).toBeDefined();
 
       // affectedEntities shape
-      const entity = (conflict.affectedEntities as Record<string, unknown>[])[0];
+      const entity = (
+        conflict.affectedEntities as Record<string, unknown>[]
+      )[0];
       expect(entity).toHaveProperty("type");
       expect(entity).toHaveProperty("id");
       expect(entity).toHaveProperty("name");

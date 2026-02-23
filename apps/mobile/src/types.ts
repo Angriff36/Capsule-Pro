@@ -31,7 +31,13 @@ export interface ApiResponse {
 export interface OfflineQueueItem {
   id: string;
   taskId: string;
-  action: "claim" | "release" | "start" | "complete" | "markPrepComplete" | "updatePrepNotes";
+  action:
+    | "claim"
+    | "release"
+    | "start"
+    | "complete"
+    | "markPrepComplete"
+    | "updatePrepNotes";
   payload?: Record<string, unknown>;
   timestamp: string;
 }
@@ -83,18 +89,19 @@ export interface TodayEvent {
   prepListIds: string[];
 }
 
-export const priorityConfig: Record<number, { label: string; color: string }> = {
-  1: { label: "CRITICAL", color: "#f43f5e" },
-  2: { label: "URGENT", color: "#ef4444" },
-  3: { label: "HIGH", color: "#f97316" },
-  4: { label: "MED-HIGH", color: "#f59e0b" },
-  5: { label: "MEDIUM", color: "#eab308" },
-  6: { label: "MED-LOW", color: "#84cc16" },
-  7: { label: "LOW", color: "#22c55e" },
-  8: { label: "VERY LOW", color: "#10b981" },
-  9: { label: "MINIMAL", color: "#14b8a6" },
-  10: { label: "NONE", color: "#64748b" },
-};
+export const priorityConfig: Record<number, { label: string; color: string }> =
+  {
+    1: { label: "CRITICAL", color: "#f43f5e" },
+    2: { label: "URGENT", color: "#ef4444" },
+    3: { label: "HIGH", color: "#f97316" },
+    4: { label: "MED-HIGH", color: "#f59e0b" },
+    5: { label: "MEDIUM", color: "#eab308" },
+    6: { label: "MED-LOW", color: "#84cc16" },
+    7: { label: "LOW", color: "#22c55e" },
+    8: { label: "VERY LOW", color: "#10b981" },
+    9: { label: "MINIMAL", color: "#14b8a6" },
+    10: { label: "NONE", color: "#64748b" },
+  };
 
 // Bundle claim types
 export interface BundleClaimRequest {
@@ -131,20 +138,20 @@ export interface FilterState {
 }
 
 // Navigation types
-export type RootTabParamList = {
+export interface RootTabParamList {
   TodayTab: undefined;
   TasksTab: undefined;
   PrepListsTab: undefined;
   MyWorkTab: undefined;
-};
+}
 
-export type PrepListDetailParams = {
+export interface PrepListDetailParams {
   id: string;
   eventId?: string;
-};
+}
 
 // Stack navigation types
-export type PrepListStackParamList = {
+export interface PrepListStackParamList {
   PrepListsIndex: undefined;
   PrepListDetail: PrepListDetailParams;
-};
+}

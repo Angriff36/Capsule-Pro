@@ -127,17 +127,11 @@ export function validateBulkEditChanges(
 
   // Validate status
   if (changes.status !== undefined) {
-    if (!editableProps.includes("status")) {
-      errors.push({
-        entityType,
-        entityId,
-        field: "status",
-        message: `status cannot be edited for ${entityType} entities`,
-      });
-      valid = false;
-    } else {
+    if (editableProps.includes("status")) {
       const validStatuses = ENTITY_STATUS_OPTIONS[entityType] ?? [];
-      if (!validStatuses.includes(changes.status)) {
+      if (validStatuses.includes(changes.status)) {
+        normalizedChanges.status = changes.status;
+      } else {
         errors.push({
           entityType,
           entityId,
@@ -145,23 +139,21 @@ export function validateBulkEditChanges(
           message: `Invalid status "${changes.status}". Valid values for ${entityType}: ${validStatuses.join(", ")}`,
         });
         valid = false;
-      } else {
-        normalizedChanges.status = changes.status;
       }
+    } else {
+      errors.push({
+        entityType,
+        entityId,
+        field: "status",
+        message: `status cannot be edited for ${entityType} entities`,
+      });
+      valid = false;
     }
   }
 
   // Validate priority
   if (changes.priority !== undefined) {
-    if (!editableProps.includes("priority")) {
-      errors.push({
-        entityType,
-        entityId,
-        field: "priority",
-        message: `priority cannot be edited for ${entityType} entities`,
-      });
-      valid = false;
-    } else {
+    if (editableProps.includes("priority")) {
       const priorityValue = PRIORITY_LEVELS[changes.priority];
       if (priorityValue === undefined) {
         const validPriorities = Object.keys(PRIORITY_LEVELS);
@@ -175,13 +167,23 @@ export function validateBulkEditChanges(
       } else {
         normalizedChanges.priority = changes.priority;
       }
+    } else {
+      errors.push({
+        entityType,
+        entityId,
+        field: "priority",
+        message: `priority cannot be edited for ${entityType} entities`,
+      });
+      valid = false;
     }
   }
 
   // Validate assignedTo (just check it's editable for this entity type)
   // Note: Employee existence check happens server-side in bulk-edit.ts
   if (changes.assignedTo !== undefined) {
-    if (!editableProps.includes("assignedTo")) {
+    if (editableProps.includes("assignedTo")) {
+      normalizedChanges.assignedTo = changes.assignedTo;
+    } else {
       errors.push({
         entityType,
         entityId,
@@ -189,8 +191,6 @@ export function validateBulkEditChanges(
         message: `assignedTo cannot be edited for ${entityType} entities`,
       });
       valid = false;
-    } else {
-      normalizedChanges.assignedTo = changes.assignedTo;
     }
   }
 
@@ -213,7 +213,11 @@ export function validateBulkEditBatch(
   const validItems: Array<{ entityType: EntityType; entityId: string }> = [];
 
   for (const item of items) {
-    const result = validateBulkEditChanges(item.entityType, item.entityId, changes);
+    const result = validateBulkEditChanges(
+      item.entityType,
+      item.entityId,
+      changes
+    );
     if (result.valid && Object.keys(result.normalizedChanges).length > 0) {
       validItems.push(item);
     }

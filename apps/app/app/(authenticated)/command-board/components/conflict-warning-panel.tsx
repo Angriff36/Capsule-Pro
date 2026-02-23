@@ -98,7 +98,9 @@ function useSimulationConflicts(simulationBoardId?: string) {
   const [simulationConflicts, setSimulationConflicts] = useState<Conflict[]>(
     []
   );
-  const [simulationWarnings, setSimulationWarnings] = useState<DetectorWarning[]>([]);
+  const [simulationWarnings, setSimulationWarnings] = useState<
+    DetectorWarning[]
+  >([]);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -280,8 +282,11 @@ export function ConflictWarningPanel({
   const [expandedConflicts, setExpandedConflicts] = useState<Set<string>>(
     new Set()
   );
-  const { simulationConflicts, simulationWarnings, isLoading: isLoadingSimulation } =
-    useSimulationConflicts(simulationBoardId);
+  const {
+    simulationConflicts,
+    simulationWarnings,
+    isLoading: isLoadingSimulation,
+  } = useSimulationConflicts(simulationBoardId);
 
   const toggleExpand = (id: string) => {
     setExpandedConflicts((prev) => {
@@ -299,7 +304,9 @@ export function ConflictWarningPanel({
   const conflicts = simulationBoardId ? simulationConflicts : liveConflicts;
 
   // Use appropriate warnings based on mode
-  const activeDetectorWarnings = simulationBoardId ? simulationWarnings : liveDetectorWarnings;
+  const activeDetectorWarnings = simulationBoardId
+    ? simulationWarnings
+    : liveDetectorWarnings;
 
   // Compute delta between live and simulation
   const liveConflictIds = new Set(liveConflicts.map((c) => c.id));
@@ -318,7 +325,10 @@ export function ConflictWarningPanel({
 
   // Early returns for empty states
   const hasNoContent =
-    conflicts.length === 0 && !errorMessage && !simulationBoardId && activeDetectorWarnings.length === 0;
+    conflicts.length === 0 &&
+    !errorMessage &&
+    !simulationBoardId &&
+    activeDetectorWarnings.length === 0;
   const simulationHasNoChanges =
     simulationBoardId &&
     simulationConflicts.length === 0 &&
@@ -395,7 +405,9 @@ export function ConflictWarningPanel({
           {activeDetectorWarnings.length > 0 && !isLoadingSimulation && (
             <Alert className="border-amber-500 bg-amber-50">
               <AlertCircle className="h-4 w-4 text-amber-600" />
-              <AlertTitle className="text-amber-800">Partial conflict check</AlertTitle>
+              <AlertTitle className="text-amber-800">
+                Partial conflict check
+              </AlertTitle>
               <AlertDescription className="text-amber-700">
                 <ul className="list-disc pl-4 space-y-1">
                   {activeDetectorWarnings.map((warning, index) => (

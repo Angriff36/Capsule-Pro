@@ -37,11 +37,11 @@ export interface ResolvedIngredient {
 /**
  * Transaction client interface compatible with Prisma.
  */
-type TxClient = {
+interface TxClient {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   $queryRaw<T = any>(query: PrismaNamespace.Sql): Promise<T>;
   $executeRaw(query: PrismaNamespace.Sql): Promise<number>;
-};
+}
 
 /**
  * Parse a JSON array from a string, returning null if invalid.
@@ -185,7 +185,12 @@ export const loadUnitMap = async (
       WHERE code IN (${PrismaNamespace.join(codes)})
     `
   );
-  return new Map(rows.map((row: { id: number; code: string }) => [row.code.toLowerCase(), row.id]));
+  return new Map(
+    rows.map((row: { id: number; code: string }) => [
+      row.code.toLowerCase(),
+      row.id,
+    ])
+  );
 };
 
 /**

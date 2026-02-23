@@ -1,13 +1,13 @@
 import {
+  Pressable,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Pressable,
 } from "react-native";
+import { useHaptics } from "../hooks";
 import type { Task } from "../types";
 import { priorityConfig } from "../types";
-import { useHaptics } from "../hooks";
 
 interface TaskCardProps {
   task: Task;
@@ -139,10 +139,10 @@ export default function TaskCard({
     if (task.isAvailable && onClaim) {
       return (
         <TouchableOpacity
-          style={[styles.claimButton, isLoading && styles.buttonDisabled]}
-          onPress={handleClaim}
-          disabled={isLoading}
           activeOpacity={0.7}
+          disabled={isLoading}
+          onPress={handleClaim}
+          style={[styles.claimButton, isLoading && styles.buttonDisabled]}
         >
           <Text style={styles.claimButtonText}>CLAIM TASK</Text>
         </TouchableOpacity>
@@ -161,10 +161,10 @@ export default function TaskCard({
       <View style={styles.actionsRow}>
         {onRelease && (
           <TouchableOpacity
-            style={[styles.releaseButton, isLoading && styles.buttonDisabled]}
-            onPress={handleRelease}
-            disabled={isLoading}
             activeOpacity={0.7}
+            disabled={isLoading}
+            onPress={handleRelease}
+            style={[styles.releaseButton, isLoading && styles.buttonDisabled]}
           >
             <Text style={styles.releaseButtonText}>RELEASE</Text>
           </TouchableOpacity>
@@ -172,10 +172,10 @@ export default function TaskCard({
 
         {task.status === "pending" && onStart && (
           <TouchableOpacity
-            style={[styles.startButton, isLoading && styles.buttonDisabled]}
-            onPress={handleStart}
-            disabled={isLoading}
             activeOpacity={0.7}
+            disabled={isLoading}
+            onPress={handleStart}
+            style={[styles.startButton, isLoading && styles.buttonDisabled]}
           >
             <Text style={styles.startButtonText}>START</Text>
           </TouchableOpacity>
@@ -183,10 +183,10 @@ export default function TaskCard({
 
         {task.status === "in_progress" && onComplete && (
           <TouchableOpacity
-            style={[styles.completeButton, isLoading && styles.buttonDisabled]}
-            onPress={handleComplete}
-            disabled={isLoading}
             activeOpacity={0.7}
+            disabled={isLoading}
+            onPress={handleComplete}
+            style={[styles.completeButton, isLoading && styles.buttonDisabled]}
           >
             <Text style={styles.completeButtonText}>DONE</Text>
           </TouchableOpacity>
@@ -204,10 +204,10 @@ export default function TaskCard({
 
   return (
     <Pressable
-      style={cardStyle}
-      onPress={handlePress}
-      onLongPress={handleLongPress}
       delayLongPress={500}
+      onLongPress={handleLongPress}
+      onPress={handlePress}
+      style={cardStyle}
     >
       {/* Multi-select checkbox indicator */}
       {isMultiSelectMode && (
@@ -221,12 +221,16 @@ export default function TaskCard({
 
       {/* Priority and Due Status Row */}
       <View style={styles.headerRow}>
-        <View style={[styles.priorityBadge, { backgroundColor: priority.color }]}>
+        <View
+          style={[styles.priorityBadge, { backgroundColor: priority.color }]}
+        >
           <Text style={styles.priorityText}>{priority.label}</Text>
         </View>
 
         {dueStatus && dueColors && (
-          <View style={[styles.dueBadge, { backgroundColor: dueColors.background }]}>
+          <View
+            style={[styles.dueBadge, { backgroundColor: dueColors.background }]}
+          >
             <Text style={[styles.dueText, { color: dueColors.text }]}>
               {dueStatus.label}
             </Text>
@@ -235,13 +239,13 @@ export default function TaskCard({
       </View>
 
       {/* Task Title */}
-      <Text style={styles.title} numberOfLines={2}>
+      <Text numberOfLines={2} style={styles.title}>
         {task.title}
       </Text>
 
       {/* Task Summary */}
       {task.summary && (
-        <Text style={styles.summary} numberOfLines={2}>
+        <Text numberOfLines={2} style={styles.summary}>
           {task.summary}
         </Text>
       )}
@@ -261,13 +265,15 @@ export default function TaskCard({
       )}
 
       {/* Claimed by others indicator */}
-      {type === "available" && task.isClaimedByOthers && task.claims.length > 0 && (
-        <View style={styles.claimedByRow}>
-          <Text style={styles.claimedByText}>
-            Claimed by {task.claims[0].user?.firstName || "Someone"}
-          </Text>
-        </View>
-      )}
+      {type === "available" &&
+        task.isClaimedByOthers &&
+        task.claims.length > 0 && (
+          <View style={styles.claimedByRow}>
+            <Text style={styles.claimedByText}>
+              Claimed by {task.claims[0].user?.firstName || "Someone"}
+            </Text>
+          </View>
+        )}
 
       {/* Action Buttons */}
       {type === "available" && renderAvailableActions()}

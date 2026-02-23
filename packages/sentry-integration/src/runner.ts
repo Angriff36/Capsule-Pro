@@ -95,7 +95,7 @@ export class SentryJobRunner {
     try {
       // Step 1: Create a branch
       const branchName = this.generateBranchName(issue);
-      const gitResult = await this.createBranch(branchName);
+      const _gitResult = await this.createBranch(branchName);
 
       // Step 2: Check if any stack trace files are in blocked paths
       const stackFiles = (issue.stackFrames ?? [])

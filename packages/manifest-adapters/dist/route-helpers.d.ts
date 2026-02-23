@@ -79,4 +79,25 @@ export declare function checkCommandResult(result: {
     success: boolean;
     constraintOutcomes?: unknown[];
 }): void;
+/**
+ * Create a response for constraint-blocked operations.
+ * Returns HTTP 200 with success: false and constraint outcomes.
+ * This allows the frontend to show the override dialog.
+ */
+export declare function manifestConstraintBlockedResponse(constraintOutcomes: unknown[], message?: string): Response;
+/**
+ * Check if a command result has blocking constraints.
+ * Returns the blocking constraints or null if none.
+ */
+export declare function getBlockingConstraints(result: {
+    success: boolean;
+    constraintOutcomes?: unknown[];
+}): unknown[] | null;
+/**
+ * Get warning constraints from a successful result.
+ */
+export declare function getWarningConstraints(result: {
+    success: boolean;
+    constraintOutcomes?: unknown[];
+}): unknown[];
 //# sourceMappingURL=route-helpers.d.ts.map

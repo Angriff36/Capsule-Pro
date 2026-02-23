@@ -438,7 +438,7 @@ export function BulkActionToolbar({
                     onValueChange={(value) =>
                       handleChangesUpdate({
                         ...pendingChanges,
-                          status:
+                        status:
                           value === CLEAR_SELECT_VALUE ? undefined : value,
                       })
                     }

@@ -228,3 +228,67 @@ export function checkCommandResult(result: {
     throw new Error("Command blocked by constraint");
   }
 }
+
+/**
+ * Create a response for constraint-blocked operations.
+ * Returns HTTP 200 with success: false and constraint outcomes.
+ * This allows the frontend to show the override dialog.
+ */
+export function manifestConstraintBlockedResponse(
+  constraintOutcomes: unknown[],
+  message = "Operation blocked by constraints"
+): Response {
+  const body = {
+    success: false,
+    message,
+    constraintOutcomes,
+  };
+
+  return new Response(JSON.stringify(body), {
+    status: 200, // Return 200 so the frontend can parse the response
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+/**
+ * Check if a command result has blocking constraints.
+ * Returns the blocking constraints or null if none.
+ */
+export function getBlockingConstraints(result: {
+  success: boolean;
+  constraintOutcomes?: unknown[];
+}): unknown[] | null {
+  if (result.success) {
+    return null;
+  }
+
+  const blocking = result.constraintOutcomes?.filter((outcome: unknown) => {
+    const o = outcome as {
+      passed?: boolean;
+      severity?: string;
+      overridden?: boolean;
+    };
+    return (
+      !o.passed &&
+      (o.severity === "block" || o.severity === "error") &&
+      !o.overridden
+    );
+  });
+
+  return blocking && blocking.length > 0 ? blocking : null;
+}
+
+/**
+ * Get warning constraints from a successful result.
+ */
+export function getWarningConstraints(result: {
+  success: boolean;
+  constraintOutcomes?: unknown[];
+}): unknown[] {
+  const warnings = result.constraintOutcomes?.filter((outcome: unknown) => {
+    const o = outcome as { passed?: boolean; severity?: string };
+    return !o.passed && o.severity === "warn";
+  });
+
+  return warnings || [];
+}

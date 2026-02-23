@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 
 interface ErrorStateProps {
   message?: string;
@@ -16,7 +16,11 @@ export default function ErrorState({
       <Text style={styles.icon}>⚠️</Text>
       <Text style={styles.message}>{message}</Text>
       {onRetry && (
-        <TouchableOpacity style={styles.retryButton} onPress={onRetry} activeOpacity={0.7}>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={onRetry}
+          style={styles.retryButton}
+        >
           <Text style={styles.retryText}>{retryText}</Text>
         </TouchableOpacity>
       )}
@@ -34,16 +38,24 @@ export function ErrorBanner({ message, onDismiss, onRetry }: ErrorBannerProps) {
   return (
     <View style={styles.banner}>
       <Text style={styles.bannerIcon}>⚠️</Text>
-      <Text style={styles.bannerMessage} numberOfLines={2}>
+      <Text numberOfLines={2} style={styles.bannerMessage}>
         {message}
       </Text>
       {onRetry && (
-        <TouchableOpacity style={styles.bannerRetry} onPress={onRetry} activeOpacity={0.7}>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={onRetry}
+          style={styles.bannerRetry}
+        >
           <Text style={styles.bannerRetryText}>Retry</Text>
         </TouchableOpacity>
       )}
       {onDismiss && (
-        <TouchableOpacity style={styles.bannerDismiss} onPress={onDismiss} activeOpacity={0.7}>
+        <TouchableOpacity
+          activeOpacity={0.7}
+          onPress={onDismiss}
+          style={styles.bannerDismiss}
+        >
           <Text style={styles.bannerDismissText}>✕</Text>
         </TouchableOpacity>
       )}

@@ -213,7 +213,9 @@ describe("Priority Normalization Logic", () => {
    * Note: priority is stored as Int in DB, but converted to string for display.
    * The key fix: null priority should remain null, NOT become "null" string.
    */
-  function normalizePriority(priority: number | null | undefined): string | null {
+  function normalizePriority(
+    priority: number | null | undefined
+  ): string | null {
     return priority != null ? String(priority) : null;
   }
 

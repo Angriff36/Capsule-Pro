@@ -203,7 +203,10 @@ const normalizeName = (value: string): string => {
 };
 
 const normalizeSheetName = (value: string): string =>
-  normalizeName(value).replace(/\b(19|20)\d{2}\b/g, "").replace(/\s+/g, " ").trim();
+  normalizeName(value)
+    .replace(/\b(19|20)\d{2}\b/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
 
 const resolveSheetName = (
   sheetNames: string[],
@@ -233,7 +236,10 @@ const resolveSheetName = (
           continue;
         }
         const tokens = alias.split(" ").filter(Boolean);
-        if (tokens.length > 1 && tokens.every((token) => normalized.includes(token))) {
+        if (
+          tokens.length > 1 &&
+          tokens.every((token) => normalized.includes(token))
+        ) {
           score = Math.max(score, tokens.length);
         }
       }
@@ -398,11 +404,16 @@ const parseSheetRows = async (sheet: WorkSheet): Promise<DataRow[]> => {
 
 export const loadSalesData = async (workbook: WorkBook): Promise<SalesData> => {
   const sheetNames = workbook.SheetNames;
-  invariant(sheetNames.length > 0, "Workbook must contain at least one worksheet");
+  invariant(
+    sheetNames.length > 0,
+    "Workbook must contain at least one worksheet"
+  );
 
   const used = new Set<string>();
   const masterSheet =
-    resolveSheetName(sheetNames, MASTER_EVENT_ALIASES, used) ?? sheetNames[0] ?? null;
+    resolveSheetName(sheetNames, MASTER_EVENT_ALIASES, used) ??
+    sheetNames[0] ??
+    null;
   if (masterSheet) {
     used.add(masterSheet);
   }
@@ -410,7 +421,11 @@ export const loadSalesData = async (workbook: WorkBook): Promise<SalesData> => {
   if (dealsLostSheet) {
     used.add(dealsLostSheet);
   }
-  const leadSourceSheet = resolveSheetName(sheetNames, LEAD_SOURCE_ALIASES, used);
+  const leadSourceSheet = resolveSheetName(
+    sheetNames,
+    LEAD_SOURCE_ALIASES,
+    used
+  );
   if (leadSourceSheet) {
     used.add(leadSourceSheet);
   }
@@ -429,14 +444,18 @@ export const loadSalesData = async (workbook: WorkBook): Promise<SalesData> => {
     sheetData[name] = cleanRows(await parseSheetRows(sheet));
   }
 
-  const mapping = mapSheet ? sheetData[mapSheet] ?? [] : [];
+  const mapping = mapSheet ? (sheetData[mapSheet] ?? []) : [];
   const master = normalizeMasterEvents(
-    masterSheet ? sheetData[masterSheet] ?? [] : [],
+    masterSheet ? (sheetData[masterSheet] ?? []) : [],
     mapping
   );
-  const dealsLost = dealsLostSheet ? cleanRows(sheetData[dealsLostSheet] ?? []) : [];
-  const leadSource = leadSourceSheet ? cleanRows(sheetData[leadSourceSheet] ?? []) : [];
-  const calcsFunnel = calcsSheet ? sheetData[calcsSheet] ?? [] : [];
+  const dealsLost = dealsLostSheet
+    ? cleanRows(sheetData[dealsLostSheet] ?? [])
+    : [];
+  const leadSource = leadSourceSheet
+    ? cleanRows(sheetData[leadSourceSheet] ?? [])
+    : [];
+  const calcsFunnel = calcsSheet ? (sheetData[calcsSheet] ?? []) : [];
   const rawSheets: Record<string, DataRow[]> = {};
 
   for (const name of sheetNames) {

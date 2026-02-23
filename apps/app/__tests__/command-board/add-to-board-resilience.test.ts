@@ -10,14 +10,17 @@
  * 4. Board state remains intact after failures
  */
 
-import { describe, expect, it, vi, beforeAll } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 // Mock Prisma before any imports that use it
 vi.mock("@repo/database", () => ({
   Prisma: {
     PrismaClientKnownRequestError: class PrismaClientKnownRequestError extends Error {
       code: string;
-      constructor(message: string, options: { code: string; clientVersion: string; meta?: unknown }) {
+      constructor(
+        message: string,
+        options: { code: string; clientVersion: string; meta?: unknown }
+      ) {
         super(message);
         this.code = options.code;
         this.name = "PrismaClientKnownRequestError";
@@ -52,10 +55,11 @@ describe("P2002 Unique Constraint Error Detection", () => {
   });
 
   it("does not identify non-P2002 Prisma errors as unique constraint", () => {
-    const error = new Prisma.PrismaClientKnownRequestError(
-      "Record not found",
-      { code: "P2025", clientVersion: "1.0.0", meta: {} }
-    );
+    const error = new Prisma.PrismaClientKnownRequestError("Record not found", {
+      code: "P2025",
+      clientVersion: "1.0.0",
+      meta: {},
+    });
     expect(isUniqueConstraintError(error)).toBe(false);
   });
 
@@ -123,7 +127,8 @@ describe("AddProjectionResult Interface Behavior", () => {
     const result: AddProjectionResult = {
       success: false,
       isDuplicate: true,
-      error: "A prep_task projection for this entity already exists on this board",
+      error:
+        "A prep_task projection for this entity already exists on this board",
     };
     expect(result.success).toBe(false);
     expect(result.isDuplicate).toBe(true);
@@ -208,7 +213,9 @@ describe("Toast Message Logic for Add Flow", () => {
     }
     return {
       type: "error",
-      message: result.error || `Failed to add ${entityTypeLabel.toLowerCase()} to board`,
+      message:
+        result.error ||
+        `Failed to add ${entityTypeLabel.toLowerCase()} to board`,
     };
   }
 

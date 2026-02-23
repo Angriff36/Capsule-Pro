@@ -5,10 +5,11 @@
 - Monorepo with pnpm (ONLY — no npm, no yarn)
 - Primary folders: `apps/`, `packages/`, `specs/`
 
+## Session Start
+- Read `tasks/ledger.md` before starting work (know the scoring system, know the leaderboard)
+
 ## Validation
-
 Run these after implementing to get immediate feedback:
-
 - Tests (targeted): `pnpm --filter @capsule/app test [specific-test]`
 - Typecheck: `pnpm tsc --noEmit`
 - Lint: `pnpm biome check`

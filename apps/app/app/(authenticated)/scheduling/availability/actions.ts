@@ -28,7 +28,8 @@ export async function getAvailability(params: AvailabilityFilters = {}) {
 
   // Build filters
   const hasEmployeeId = Boolean(params.employeeId);
-  const hasDayOfWeek = params.dayOfWeek !== undefined && params.dayOfWeek !== null;
+  const hasDayOfWeek =
+    params.dayOfWeek !== undefined && params.dayOfWeek !== null;
   const hasEffectiveDate = Boolean(params.effectiveDate);
   const hasIsActive = params.isActive !== undefined && params.isActive !== null;
 

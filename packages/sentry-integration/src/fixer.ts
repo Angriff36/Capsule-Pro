@@ -125,7 +125,9 @@ export function resolveFramePath(
   workingDir: string
 ): string | null {
   const raw = frame.absPath ?? frame.filename;
-  if (!raw) return null;
+  if (!raw) {
+    return null;
+  }
 
   // Skip node_modules, node internals, and webpack runtime
   if (
@@ -241,13 +243,19 @@ async function readSourceFiles(
   const reversedFrames = [...frames].reverse();
 
   for (const frame of reversedFrames) {
-    if (sources.size >= maxFiles) break;
+    if (sources.size >= maxFiles) {
+      break;
+    }
 
     const absPath = resolveFramePath(frame, workingDir);
-    if (!absPath) continue;
+    if (!absPath) {
+      continue;
+    }
 
     const relPath = relative(workingDir, absPath);
-    if (sources.has(relPath)) continue;
+    if (sources.has(relPath)) {
+      continue;
+    }
 
     try {
       const content = await readFile(absPath, "utf-8");
@@ -367,8 +375,12 @@ function buildUserPrompt(
 
   // Environment context
   sections.push("## Context");
-  if (issue.environment) sections.push(`Environment: ${issue.environment}`);
-  if (issue.release) sections.push(`Release: ${issue.release}`);
+  if (issue.environment) {
+    sections.push(`Environment: ${issue.environment}`);
+  }
+  if (issue.release) {
+    sections.push(`Release: ${issue.release}`);
+  }
   if (issue.tags && Object.keys(issue.tags).length > 0) {
     sections.push(`Tags: ${JSON.stringify(issue.tags)}`);
   }
@@ -470,7 +482,9 @@ export async function revertEdits(
 ): Promise<void> {
   for (const edit of edits) {
     const absPath = resolve(workingDir, edit.filePath);
-    if (!existsSync(absPath)) continue;
+    if (!existsSync(absPath)) {
+      continue;
+    }
 
     const currentContent = await readFile(absPath, "utf-8");
     const reverted = currentContent.replace(

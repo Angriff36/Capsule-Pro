@@ -14,11 +14,11 @@
 
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { log } from "@repo/observability/log";
 import {
   CORRELATION_ID_HEADER,
   generateCorrelationId,
 } from "@repo/observability/correlation";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -76,7 +76,7 @@ function apiError(
   code: ConflictApiError["code"],
   message: string,
   guidance?: string,
-  status: number = 400,
+  status = 400,
   correlationId?: string
 ): NextResponse<ConflictApiError> {
   return NextResponse.json(
@@ -536,7 +536,10 @@ async function detectTimelineConflicts(
   for (const task of overdueTasks) {
     const daysOverdue = calculateDaysOverdue(task.dueByDate, now);
     const severity = getTimelineSeverity(task.priority);
-    const priorityLabel = task.priority <= TIMELINE_THRESHOLDS.criticalPriorityMax ? "urgent" : "high";
+    const priorityLabel =
+      task.priority <= TIMELINE_THRESHOLDS.criticalPriorityMax
+        ? "urgent"
+        : "high";
     conflicts.push({
       id: `timeline-overdue-${task.id}`,
       type: "timeline",

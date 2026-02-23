@@ -762,7 +762,9 @@ export class RecipeStepPrismaStore implements Store<EntityInstance> {
         temperature_value: (data.temperatureValue as number) || null,
         temperature_unit: (data.temperatureUnit as string) || null,
         equipment_needed: (data.equipmentNeeded as string[])
-          ? ((data.equipmentNeeded as string).split(",").filter(Boolean) as string[])
+          ? ((data.equipmentNeeded as string)
+              .split(",")
+              .filter(Boolean) as string[])
           : [],
         tips: (data.tips as string) || null,
         video_url: (data.videoUrl as string) || null,
@@ -819,7 +821,9 @@ export class RecipeStepPrismaStore implements Store<EntityInstance> {
       stepNumber: step.step_number,
       instruction: step.instruction,
       durationMinutes: step.duration_minutes ?? 0,
-      temperatureValue: step.temperature_value ? Number(step.temperature_value) : 0,
+      temperatureValue: step.temperature_value
+        ? Number(step.temperature_value)
+        : 0,
       temperatureUnit: step.temperature_unit ?? "",
       equipmentNeeded: step.equipment_needed?.join(",") ?? "",
       tips: step.tips ?? "",

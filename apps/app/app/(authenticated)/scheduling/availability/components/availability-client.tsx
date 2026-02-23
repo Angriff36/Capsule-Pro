@@ -285,7 +285,9 @@ export function AvailabilityClient() {
         <div className="flex items-center gap-4 p-4 border rounded-lg bg-muted/30">
           <FilterIcon className="size-4 text-muted-foreground" />
           <Select
-            onValueChange={(value) => handleFilterChange("employeeId", value === "__all__" ? "" : value)}
+            onValueChange={(value) =>
+              handleFilterChange("employeeId", value === "__all__" ? "" : value)
+            }
             value={filters.employeeId || "__all__"}
           >
             <SelectTrigger className="w-[200px]">
@@ -304,7 +306,9 @@ export function AvailabilityClient() {
             onValueChange={(value) =>
               handleFilterChange(
                 "dayOfWeek",
-                value && value !== "__all__" ? Number.parseInt(value, 10) : undefined
+                value && value !== "__all__"
+                  ? Number.parseInt(value, 10)
+                  : undefined
               )
             }
             value={filters.dayOfWeek?.toString() || "__all__"}
@@ -333,7 +337,10 @@ export function AvailabilityClient() {
           />
           <Select
             onValueChange={(value) =>
-              handleFilterChange("isActive", value === "__all__" ? undefined : value === "true")
+              handleFilterChange(
+                "isActive",
+                value === "__all__" ? undefined : value === "true"
+              )
             }
           >
             <SelectTrigger className="w-[150px]">

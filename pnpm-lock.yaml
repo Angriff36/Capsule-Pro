@@ -1335,6 +1335,40 @@ importers:
         specifier: ^2.97.0
         version: 2.97.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
 
+  packages/mcp-server:
+    dependencies:
+      '@modelcontextprotocol/sdk':
+        specifier: ^1.26.0
+        version: 1.26.0(@cfworker/json-schema@4.1.1)(zod@4.3.6)
+      '@repo/database':
+        specifier: workspace:*
+        version: link:../database
+      '@repo/manifest-adapters':
+        specifier: workspace:*
+        version: link:../manifest-adapters
+      '@sentry/node':
+        specifier: ^10.38.0
+        version: 10.38.0
+      dotenv:
+        specifier: ^17.2.4
+        version: 17.2.4
+      zod:
+        specifier: ^4.3.6
+        version: 4.3.6
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: 25.2.0
+        version: 25.2.0
+      tsx:
+        specifier: ^4.21.0
+        version: 4.21.0
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   packages/next-config:
     dependencies:
       '@next/bundle-analyzer':
@@ -1441,7 +1475,7 @@ importers:
     dependencies:
       '@stripe/agent-toolkit':
         specifier: ^0.7.12
-        version: 0.7.12(@langchain/core@0.3.80(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@2.5.0(@opentelemetry/api@1.9.0))(openai@4.104.0(ws@8.19.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))(zod@4.3.6)))(@modelcontextprotocol/sdk@1.25.2(@cfworker/json-schema@4.1.1)(hono@4.11.4)(zod@4.3.6))(agents@0.0.84(@cfworker/json-schema@4.1.1)(@cloudflare/workers-types@4.20260118.0)(hono@4.11.4)(react@19.2.4))(ai@6.0.86(zod@4.3.6))(openai@4.104.0(ws@8.19.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))(zod@4.3.6))
+        version: 0.7.12(@langchain/core@0.3.80(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@2.5.0(@opentelemetry/api@1.9.0))(openai@4.104.0(ws@8.19.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))(zod@4.3.6)))(@modelcontextprotocol/sdk@1.26.0(@cfworker/json-schema@4.1.1)(zod@4.3.6))(agents@0.0.84(@cfworker/json-schema@4.1.1)(@cloudflare/workers-types@4.20260118.0)(react@19.2.4))(ai@6.0.86(zod@4.3.6))(openai@4.104.0(ws@8.19.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))(zod@4.3.6))
       '@t3-oss/env-nextjs':
         specifier: ^0.13.10
         version: 0.13.10(typescript@5.9.3)(valibot@1.2.0(typescript@5.9.3))(zod@4.3.6)
@@ -3915,8 +3949,8 @@ packages:
   '@mdx-js/mdx@3.1.1':
     resolution: {integrity: sha512-f6ZO2ifpwAQIpzGWaBQT2TXxPv6z3RBzQKpVftEWN78Vl/YweF1uwussDx8ECAXVtr3Rs89fKyG9YlzUs9DyGQ==}
 
-  '@modelcontextprotocol/sdk@1.25.2':
-    resolution: {integrity: sha512-LZFeo4F9M5qOhC/Uc1aQSrBHxMrvxett+9KLHt7OhcExtoiRN9DKgbZffMP/nxjutWDQpfMDfP3nkHI4X9ijww==}
+  '@modelcontextprotocol/sdk@1.26.0':
+    resolution: {integrity: sha512-Y5RmPncpiDtTXDbLKswIJzTqu2hyBKxTNsgKqKclDbhIgg1wgtf1fRuvxgTnRfcnxtvvgbIEcqUOzZrJ6iSReg==}
     engines: {node: '>=18'}
     peerDependencies:
       '@cfworker/json-schema': ^4.1.1
@@ -9724,8 +9758,8 @@ packages:
   exponential-backoff@3.1.3:
     resolution: {integrity: sha512-ZgEeZXj30q+I0EN+CbSSpIyPaJ5HVQD18Z1m+u1FXbAeT94mr1zw50q4q6jiiC447Nl/YTcIYSAftiGqetwXCA==}
 
-  express-rate-limit@7.5.1:
-    resolution: {integrity: sha512-7iN8iPMDzOMHPUYllBEsQdWVB6fPDMPqwjBaFrgr4Jgr/+okjvzAy+UHlYYL/Vs0OsOrMkwS6PJDkFlJwoxUnw==}
+  express-rate-limit@8.2.1:
+    resolution: {integrity: sha512-PCZEIEIxqwhzw4KF0n7QF4QqruVTcF73O5kFKUnGOyjbCCgizBBiFaYpd/fnBLUMPw/BWw9OsiN7GgrNYr7j6g==}
     engines: {node: '>= 16'}
     peerDependencies:
       express: '>= 4.11'
@@ -10612,6 +10646,10 @@ packages:
     resolution: {integrity: sha512-FHCCztTkHoV9mdBsHpocLpdTAfh956ZQcIkWQxxS0U5HT53vtrcuYdQneEJKH6xILaLNzXVl2Cvwtoy8XNN0AA==}
     peerDependencies:
       fp-ts: ^2.5.0
+
+  ip-address@10.0.1:
+    resolution: {integrity: sha512-NWv9YLW4PoW2B7xtzaS3NCot75m6nK7Icdv0o3lfMceJVRfSoQwqD4wEH5rLwoKJwUiZ/rfpiVBhnaF0FK4HoA==}
+    engines: {node: '>= 12'}
 
   ip-address@10.1.0:
     resolution: {integrity: sha512-XXADHxXmvT9+CRxhXg56LJovE+bmWnEWB78LB83VZTprKTmaC5QfruXocxzTZ2Kl0DNwKuBdlIhjL8LeY8Sf8Q==}
@@ -18088,7 +18126,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@modelcontextprotocol/sdk@1.25.2(@cfworker/json-schema@4.1.1)(hono@4.11.4)(zod@3.25.76)':
+  '@modelcontextprotocol/sdk@1.26.0(@cfworker/json-schema@4.1.1)(zod@3.25.76)':
     dependencies:
       '@hono/node-server': 1.19.9(hono@4.11.4)
       ajv: 8.17.1
@@ -18099,7 +18137,8 @@ snapshots:
       eventsource: 3.0.7
       eventsource-parser: 3.0.6
       express: 5.2.1
-      express-rate-limit: 7.5.1(express@5.2.1)
+      express-rate-limit: 8.2.1(express@5.2.1)
+      hono: 4.11.4
       jose: 6.1.3
       json-schema-typed: 8.0.2
       pkce-challenge: 5.0.1
@@ -18109,10 +18148,9 @@ snapshots:
     optionalDependencies:
       '@cfworker/json-schema': 4.1.1
     transitivePeerDependencies:
-      - hono
       - supports-color
 
-  '@modelcontextprotocol/sdk@1.25.2(@cfworker/json-schema@4.1.1)(hono@4.11.4)(zod@4.3.6)':
+  '@modelcontextprotocol/sdk@1.26.0(@cfworker/json-schema@4.1.1)(zod@4.3.6)':
     dependencies:
       '@hono/node-server': 1.19.9(hono@4.11.4)
       ajv: 8.17.1
@@ -18123,7 +18161,8 @@ snapshots:
       eventsource: 3.0.7
       eventsource-parser: 3.0.6
       express: 5.2.1
-      express-rate-limit: 7.5.1(express@5.2.1)
+      express-rate-limit: 8.2.1(express@5.2.1)
+      hono: 4.11.4
       jose: 6.1.3
       json-schema-typed: 8.0.2
       pkce-challenge: 5.0.1
@@ -18133,7 +18172,6 @@ snapshots:
     optionalDependencies:
       '@cfworker/json-schema': 4.1.1
     transitivePeerDependencies:
-      - hono
       - supports-color
 
   '@mrleebo/prisma-ast@0.13.1':
@@ -21156,7 +21194,7 @@ snapshots:
 
   '@slack/logger@4.0.0':
     dependencies:
-      '@types/node': 20.19.33
+      '@types/node': 25.2.3
 
   '@slack/types@2.20.0': {}
 
@@ -21164,7 +21202,7 @@ snapshots:
     dependencies:
       '@slack/logger': 4.0.0
       '@slack/types': 2.20.0
-      '@types/node': 20.19.33
+      '@types/node': 25.2.3
       '@types/retry': 0.12.0
       axios: 1.13.5
       eventemitter3: 5.0.1
@@ -21567,11 +21605,11 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@stripe/agent-toolkit@0.7.12(@langchain/core@0.3.80(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@2.5.0(@opentelemetry/api@1.9.0))(openai@4.104.0(ws@8.19.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))(zod@4.3.6)))(@modelcontextprotocol/sdk@1.25.2(@cfworker/json-schema@4.1.1)(hono@4.11.4)(zod@4.3.6))(agents@0.0.84(@cfworker/json-schema@4.1.1)(@cloudflare/workers-types@4.20260118.0)(hono@4.11.4)(react@19.2.4))(ai@6.0.86(zod@4.3.6))(openai@4.104.0(ws@8.19.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))(zod@4.3.6))':
+  '@stripe/agent-toolkit@0.7.12(@langchain/core@0.3.80(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@2.5.0(@opentelemetry/api@1.9.0))(openai@4.104.0(ws@8.19.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))(zod@4.3.6)))(@modelcontextprotocol/sdk@1.26.0(@cfworker/json-schema@4.1.1)(zod@4.3.6))(agents@0.0.84(@cfworker/json-schema@4.1.1)(@cloudflare/workers-types@4.20260118.0)(react@19.2.4))(ai@6.0.86(zod@4.3.6))(openai@4.104.0(ws@8.19.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))(zod@4.3.6))':
     dependencies:
       '@langchain/core': 0.3.80(@opentelemetry/api@1.9.0)(@opentelemetry/sdk-trace-base@2.5.0(@opentelemetry/api@1.9.0))(openai@4.104.0(ws@8.19.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))(zod@4.3.6))
-      '@modelcontextprotocol/sdk': 1.25.2(@cfworker/json-schema@4.1.1)(hono@4.11.4)(zod@4.3.6)
-      agents: 0.0.84(@cfworker/json-schema@4.1.1)(@cloudflare/workers-types@4.20260118.0)(hono@4.11.4)(react@19.2.4)
+      '@modelcontextprotocol/sdk': 1.26.0(@cfworker/json-schema@4.1.1)(zod@4.3.6)
+      agents: 0.0.84(@cfworker/json-schema@4.1.1)(@cloudflare/workers-types@4.20260118.0)(react@19.2.4)
       ai: 6.0.86(zod@4.3.6)
       openai: 4.104.0(ws@8.19.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))(zod@4.3.6)
       stripe: 17.7.0
@@ -22885,9 +22923,9 @@ snapshots:
     dependencies:
       humanize-ms: 1.2.1
 
-  agents@0.0.84(@cfworker/json-schema@4.1.1)(@cloudflare/workers-types@4.20260118.0)(hono@4.11.4)(react@19.2.4):
+  agents@0.0.84(@cfworker/json-schema@4.1.1)(@cloudflare/workers-types@4.20260118.0)(react@19.2.4):
     dependencies:
-      '@modelcontextprotocol/sdk': 1.25.2(@cfworker/json-schema@4.1.1)(hono@4.11.4)(zod@3.25.76)
+      '@modelcontextprotocol/sdk': 1.26.0(@cfworker/json-schema@4.1.1)(zod@3.25.76)
       ai: 4.3.19(react@19.2.4)(zod@3.25.76)
       cron-schedule: 5.0.4
       nanoid: 5.1.6
@@ -22898,7 +22936,6 @@ snapshots:
     transitivePeerDependencies:
       - '@cfworker/json-schema'
       - '@cloudflare/workers-types'
-      - hono
       - supports-color
 
   aggregate-error@3.1.0:
@@ -25138,9 +25175,10 @@ snapshots:
 
   exponential-backoff@3.1.3: {}
 
-  express-rate-limit@7.5.1(express@5.2.1):
+  express-rate-limit@8.2.1(express@5.2.1):
     dependencies:
       express: 5.2.1
+      ip-address: 10.0.1
 
   express@5.2.1:
     dependencies:
@@ -26230,6 +26268,8 @@ snapshots:
   io-ts@2.2.22(fp-ts@2.16.11):
     dependencies:
       fp-ts: 2.16.11
+
+  ip-address@10.0.1: {}
 
   ip-address@10.1.0: {}
 

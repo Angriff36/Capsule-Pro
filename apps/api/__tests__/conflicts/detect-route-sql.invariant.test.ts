@@ -2,7 +2,10 @@ import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
-const ROUTE_PATH = resolve(import.meta.dirname, "../../app/api/conflicts/detect/route.ts");
+const ROUTE_PATH = resolve(
+  import.meta.dirname,
+  "../../app/api/conflicts/detect/route.ts"
+);
 
 describe("conflicts detect SQL wiring", () => {
   it("uses tenant_staff.employees name fields instead of public.users.name", async () => {
@@ -50,10 +53,12 @@ describe("conflicts detect SQL wiring", () => {
     // All queries should filter by tenant - patterns can be:
     // - tenant_id::text = ${tenantId}
     // - tenant_id = ${tenantId}::uuid
-    const textPattern = (content.match(/tenant_id::text\s*=\s*\$\{tenantId\}/g) || [])
-      .length;
-    const uuidPattern = (content.match(/tenant_id\s*=\s*\$\{tenantId\}::uuid/g) || [])
-      .length;
+    const textPattern = (
+      content.match(/tenant_id::text\s*=\s*\$\{tenantId\}/g) || []
+    ).length;
+    const uuidPattern = (
+      content.match(/tenant_id\s*=\s*\$\{tenantId\}::uuid/g) || []
+    ).length;
     const totalTenantFilters = textPattern + uuidPattern;
 
     // Should have tenant filtering in all raw SQL queries

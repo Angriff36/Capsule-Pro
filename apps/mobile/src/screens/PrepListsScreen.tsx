@@ -1,3 +1,6 @@
+import { useNavigation } from "@react-navigation/native";
+import type { StackNavigationProp } from "@react-navigation/stack";
+import { useCallback, useMemo } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -6,14 +9,14 @@ import {
   Text,
   View,
 } from "react-native";
-import { useCallback, useMemo } from "react";
-import { useNavigation } from "@react-navigation/native";
-import type { StackNavigationProp } from "@react-navigation/stack";
 import { usePrepLists } from "../api/queries";
-import { PrepListCard, ErrorState } from "../components";
+import { ErrorState, PrepListCard } from "../components";
 import type { PrepList, PrepListStackParamList } from "../types";
 
-type NavigationProp = StackNavigationProp<PrepListStackParamList, "PrepListsIndex">;
+type NavigationProp = StackNavigationProp<
+  PrepListStackParamList,
+  "PrepListsIndex"
+>;
 
 // Group prep lists by event
 interface EventGroup {
@@ -56,41 +59,63 @@ function formatEventDate(dateString: string | null): string {
 
 export default function PrepListsScreen() {
   const navigation = useNavigation<NavigationProp>();
-  const { data: prepLists, isLoading, error, refetch, isRefetching } = usePrepLists({ status: "active" });
+  const {
+    data: prepLists,
+    isLoading,
+    error,
+    refetch,
+    isRefetching,
+  } = usePrepLists({ status: "active" });
 
   // Group prep lists by event
   const groupedData = useMemo((): EventGroup[] => {
-    if (!prepLists) return [];
+    if (!prepLists) {
+      return [];
+    }
 
-    const grouped = prepLists.reduce<Record<string, EventGroup>>((acc, list) => {
-      const eventKey = list.event?.id || "no-event";
-      if (!acc[eventKey]) {
-        acc[eventKey] = {
-          eventKey,
-          event: list.event,
-          lists: [],
-        };
-      }
-      acc[eventKey].lists.push(list);
-      return acc;
-    }, {});
+    const grouped = prepLists.reduce<Record<string, EventGroup>>(
+      (acc, list) => {
+        const eventKey = list.event?.id || "no-event";
+        if (!acc[eventKey]) {
+          acc[eventKey] = {
+            eventKey,
+            event: list.event,
+            lists: [],
+          };
+        }
+        acc[eventKey].lists.push(list);
+        return acc;
+      },
+      {}
+    );
 
     // Sort: events with dates first, then no-event items
     return Object.values(grouped).sort((a, b) => {
       // No-event items go last
-      if (a.eventKey === "no-event") return 1;
-      if (b.eventKey === "no-event") return -1;
+      if (a.eventKey === "no-event") {
+        return 1;
+      }
+      if (b.eventKey === "no-event") {
+        return -1;
+      }
 
       // Sort by event start time
-      const aTime = a.event?.startTime ? new Date(a.event.startTime).getTime() : 0;
-      const bTime = b.event?.startTime ? new Date(b.event.startTime).getTime() : 0;
+      const aTime = a.event?.startTime
+        ? new Date(a.event.startTime).getTime()
+        : 0;
+      const bTime = b.event?.startTime
+        ? new Date(b.event.startTime).getTime()
+        : 0;
       return aTime - bTime;
     });
   }, [prepLists]);
 
   const handlePrepListPress = useCallback(
     (prepList: PrepList) => {
-      navigation.navigate("PrepListDetail", { id: prepList.id, eventId: prepList.eventId ?? undefined });
+      navigation.navigate("PrepListDetail", {
+        id: prepList.id,
+        eventId: prepList.eventId ?? undefined,
+      });
     },
     [navigation]
   );
@@ -103,7 +128,7 @@ export default function PrepListsScreen() {
   if (isLoading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#2563eb" />
+        <ActivityIndicator color="#2563eb" size="large" />
         <Text style={styles.loadingText}>Loading prep lists...</Text>
       </View>
     );
@@ -113,7 +138,9 @@ export default function PrepListsScreen() {
   if (error) {
     return (
       <ErrorState
-        message={error instanceof Error ? error.message : "Failed to load prep lists"}
+        message={
+          error instanceof Error ? error.message : "Failed to load prep lists"
+        }
         onRetry={() => void refetch()}
       />
     );
@@ -152,14 +179,16 @@ export default function PrepListsScreen() {
       <View style={styles.sectionHeader}>
         <Text style={styles.eventCalendarIcon}>📅</Text>
         <Text style={styles.eventName}>{group.event.name}</Text>
-        <Text style={styles.eventDate}>{formatEventDate(group.event.startTime)}</Text>
+        <Text style={styles.eventDate}>
+          {formatEventDate(group.event.startTime)}
+        </Text>
       </View>
     );
   };
 
   // Render prep list item
-  const renderPrepListItem = ({ item }: { item: PrepList }) => (
-    <PrepListCard prepList={item} onPress={handlePrepListPress} />
+  const _renderPrepListItem = ({ item }: { item: PrepList }) => (
+    <PrepListCard onPress={handlePrepListPress} prepList={item} />
   );
 
   // Render event group section
@@ -168,7 +197,7 @@ export default function PrepListsScreen() {
       {renderSectionHeader(group)}
       {group.lists.map((list) => (
         <View key={list.id} style={styles.cardWrapper}>
-          <PrepListCard prepList={list} onPress={handlePrepListPress} />
+          <PrepListCard onPress={handlePrepListPress} prepList={list} />
         </View>
       ))}
     </View>
@@ -180,13 +209,9 @@ export default function PrepListsScreen() {
   return (
     <View style={styles.container}>
       <FlatList
+        contentContainerStyle={styles.listContent}
         data={groupedData}
         keyExtractor={(item) => item.eventKey}
-        renderItem={renderSection}
-        contentContainerStyle={styles.listContent}
-        refreshControl={
-          <RefreshControl refreshing={isRefetching} onRefresh={onRefresh} />
-        }
         ListHeaderComponent={
           <View style={styles.header}>
             <Text style={styles.title}>Prep Lists</Text>
@@ -195,6 +220,10 @@ export default function PrepListsScreen() {
             </Text>
           </View>
         }
+        refreshControl={
+          <RefreshControl onRefresh={onRefresh} refreshing={isRefetching} />
+        }
+        renderItem={renderSection}
       />
     </View>
   );

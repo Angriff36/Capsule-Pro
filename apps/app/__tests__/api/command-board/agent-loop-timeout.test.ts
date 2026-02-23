@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock dependencies before importing
 vi.mock("@repo/observability/log", () => ({
@@ -79,7 +79,9 @@ describe("agent-loop timeout and retry policy", () => {
     });
 
     it("does not identify validation errors as retryable", async () => {
-      const validationError = new Error("Invalid request: missing required field");
+      const validationError = new Error(
+        "Invalid request: missing required field"
+      );
       expect(validationError.message).not.toContain("timeout");
       expect(validationError.message).not.toContain("ETIMEDOUT");
     });

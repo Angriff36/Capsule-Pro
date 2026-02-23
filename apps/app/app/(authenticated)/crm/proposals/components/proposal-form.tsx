@@ -247,7 +247,11 @@ export function ProposalForm({
         <input name="proposalId" type="hidden" value={proposal.id} />
       )}
       <input name="lineItems" type="hidden" value={JSON.stringify(lineItems)} />
-      <input name="templateId" type="hidden" value={selectedTemplateId === "__none__" ? "" : selectedTemplateId} />
+      <input
+        name="templateId"
+        type="hidden"
+        value={selectedTemplateId === "__none__" ? "" : selectedTemplateId}
+      />
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Main Form */}
@@ -310,7 +314,9 @@ export function ProposalForm({
                       <SelectValue placeholder="Select a client" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="__none__">No client selected</SelectItem>
+                      <SelectItem value="__none__">
+                        No client selected
+                      </SelectItem>
                       {isLoadingClients ? (
                         <SelectItem disabled value="loading">
                           Loading clients...

@@ -76,7 +76,7 @@ export async function GET(
   const fromId = searchParams.get("from");
   const toId = searchParams.get("to");
 
-  if (!fromId || !toId) {
+  if (!(fromId && toId)) {
     return NextResponse.json(
       { error: "Both 'from' and 'to' query parameters are required" },
       { status: 400 }
@@ -260,7 +260,11 @@ export async function GET(
 
     compareField("name", fromVersion.name, toVersion.name);
     compareField("category", fromVersion.category, toVersion.category);
-    compareField("cuisineType", fromVersion.cuisine_type, toVersion.cuisine_type);
+    compareField(
+      "cuisineType",
+      fromVersion.cuisine_type,
+      toVersion.cuisine_type
+    );
     compareField("description", fromVersion.description, toVersion.description);
     compareField("tags", fromVersion.tags, toVersion.tags);
     compareField(
@@ -298,7 +302,11 @@ export async function GET(
       fromVersion.difficulty_level,
       toVersion.difficulty_level
     );
-    compareField("instructions", fromVersion.instructions, toVersion.instructions);
+    compareField(
+      "instructions",
+      fromVersion.instructions,
+      toVersion.instructions
+    );
     compareField("notes", fromVersion.notes, toVersion.notes);
 
     // Compute ingredient changes
@@ -311,9 +319,7 @@ export async function GET(
       [];
 
     for (const ing of toIngredients) {
-      if (!fromIngMap.has(ing.ingredientId)) {
-        addedIngredients.push(ing);
-      } else {
+      if (fromIngMap.has(ing.ingredientId)) {
         const fromIng = fromIngMap.get(ing.ingredientId)!;
         if (
           fromIng.quantity !== ing.quantity ||
@@ -328,6 +334,8 @@ export async function GET(
             to: ing,
           });
         }
+      } else {
+        addedIngredients.push(ing);
       }
     }
 
@@ -343,12 +351,11 @@ export async function GET(
 
     const addedSteps: StepSnapshot[] = [];
     const removedSteps: StepSnapshot[] = [];
-    const changedSteps: RecipeVersionCompare["changes"]["steps"]["changed"] = [];
+    const changedSteps: RecipeVersionCompare["changes"]["steps"]["changed"] =
+      [];
 
     for (const step of toSteps) {
-      if (!fromStepMap.has(step.stepNumber)) {
-        addedSteps.push(step);
-      } else {
+      if (fromStepMap.has(step.stepNumber)) {
         const fromStep = fromStepMap.get(step.stepNumber)!;
         if (fromStep.instruction !== step.instruction) {
           changedSteps.push({
@@ -357,6 +364,8 @@ export async function GET(
             to: step,
           });
         }
+      } else {
+        addedSteps.push(step);
       }
     }
 

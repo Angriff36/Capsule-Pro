@@ -28,17 +28,20 @@ vi.mock("../../app/(authenticated)/command-board/actions/groups", () => ({
   removeProjectionsFromGroup: vi.fn(),
 }));
 
-vi.mock("../../app/(authenticated)/command-board/actions/bulk-edit-utils", () => ({
-  BULK_EDITABLE_PROPERTIES: {
-    EVENT: ["status", "priority"],
-    TASK: ["status", "priority"],
-  },
-  ENTITY_STATUS_OPTIONS: {
-    EVENT: ["DRAFT", "CONFIRMED", "CANCELLED"],
-    TASK: ["PENDING", "IN_PROGRESS", "COMPLETED"],
-  },
-  PRIORITY_OPTIONS: ["LOW", "MEDIUM", "HIGH", "URGENT"],
-}));
+vi.mock(
+  "../../app/(authenticated)/command-board/actions/bulk-edit-utils",
+  () => ({
+    BULK_EDITABLE_PROPERTIES: {
+      EVENT: ["status", "priority"],
+      TASK: ["status", "priority"],
+    },
+    ENTITY_STATUS_OPTIONS: {
+      EVENT: ["DRAFT", "CONFIRMED", "CANCELLED"],
+      TASK: ["PENDING", "IN_PROGRESS", "COMPLETED"],
+    },
+    PRIORITY_OPTIONS: ["LOW", "MEDIUM", "HIGH", "URGENT"],
+  })
+);
 
 // Mock sonner
 vi.mock("sonner", () => ({
@@ -120,7 +123,7 @@ describe("BulkActionToolbar Select safety", () => {
   });
 
   describe("No empty value SelectItem", () => {
-    it("should not have SelectItem with value=\"\" in status select", () => {
+    it('should not have SelectItem with value="" in status select', () => {
       const projections = [createMockProjection("EVENT")];
 
       const { container } = render(
@@ -141,7 +144,7 @@ describe("BulkActionToolbar Select safety", () => {
       expect(emptyValueOptions).toHaveLength(0);
     });
 
-    it("should not have SelectItem with value=\"\" in priority select", () => {
+    it('should not have SelectItem with value="" in priority select', () => {
       const projections = [createMockProjection("TASK")];
 
       const { container } = render(

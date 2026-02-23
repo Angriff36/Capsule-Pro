@@ -1,42 +1,34 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import { Text, View, StyleSheet } from "react-native";
-import type { RootTabParamList, PrepListStackParamList } from "../types";
+import { StyleSheet, Text } from "react-native";
 import {
   MyWorkScreen,
-  PrepListsScreen,
   PrepListDetailScreen,
+  PrepListsScreen,
   TasksScreen,
   TodayScreen,
 } from "../screens";
+import type { PrepListStackParamList, RootTabParamList } from "../types";
 
 const Tab = createBottomTabNavigator<RootTabParamList>();
 const PrepListStack = createStackNavigator<PrepListStackParamList>();
 
 // Simple icon components using Text (we can replace with proper icons later)
 function CalendarIcon({ focused }: { focused: boolean }) {
-  return (
-    <Text style={[styles.icon, focused && styles.iconActive]}>📅</Text>
-  );
+  return <Text style={[styles.icon, focused && styles.iconActive]}>📅</Text>;
 }
 
 function ClipboardIcon({ focused }: { focused: boolean }) {
-  return (
-    <Text style={[styles.icon, focused && styles.iconActive]}>📋</Text>
-  );
+  return <Text style={[styles.icon, focused && styles.iconActive]}>📋</Text>;
 }
 
 function ListChecksIcon({ focused }: { focused: boolean }) {
-  return (
-    <Text style={[styles.icon, focused && styles.iconActive]}>✅</Text>
-  );
+  return <Text style={[styles.icon, focused && styles.iconActive]}>✅</Text>;
 }
 
 function BriefcaseIcon({ focused }: { focused: boolean }) {
-  return (
-    <Text style={[styles.icon, focused && styles.iconActive]}>💼</Text>
-  );
+  return <Text style={[styles.icon, focused && styles.iconActive]}>💼</Text>;
 }
 
 // Stack navigator for Prep Lists tab (to handle detail screen)
@@ -44,13 +36,13 @@ function PrepListStackNavigator() {
   return (
     <PrepListStack.Navigator>
       <PrepListStack.Screen
-        name="PrepListsIndex"
         component={PrepListsScreen}
+        name="PrepListsIndex"
         options={{ title: "Prep Lists" }}
       />
       <PrepListStack.Screen
-        name="PrepListDetail"
         component={PrepListDetailScreen}
+        name="PrepListDetail"
         options={{ title: "Prep List" }}
       />
     </PrepListStack.Navigator>
@@ -72,8 +64,8 @@ export default function AppNavigator() {
         }}
       >
         <Tab.Screen
-          name="TodayTab"
           component={TodayScreen}
+          name="TodayTab"
           options={{
             title: "Today",
             tabBarLabel: "Today",
@@ -81,8 +73,8 @@ export default function AppNavigator() {
           }}
         />
         <Tab.Screen
-          name="TasksTab"
           component={TasksScreen}
+          name="TasksTab"
           options={{
             title: "Task Board",
             tabBarLabel: "Task Board",
@@ -90,8 +82,8 @@ export default function AppNavigator() {
           }}
         />
         <Tab.Screen
-          name="PrepListsTab"
           component={PrepListStackNavigator}
+          name="PrepListsTab"
           options={{
             title: "Prep Lists",
             headerShown: false,
@@ -100,8 +92,8 @@ export default function AppNavigator() {
           }}
         />
         <Tab.Screen
-          name="MyWorkTab"
           component={MyWorkScreen}
+          name="MyWorkTab"
           options={{
             title: "My Work",
             tabBarLabel: "My Work",

@@ -12,6 +12,7 @@ import {
   fetchDishById,
   getCurrentUser,
   loadDishInstance,
+  syncDishPricingWithOutbox,
   validatePricingUpdate,
 } from "../../helpers";
 

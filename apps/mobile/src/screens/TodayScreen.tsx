@@ -1,3 +1,5 @@
+import { useNavigation } from "@react-navigation/native";
+import { useCallback } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -6,21 +8,26 @@ import {
   Text,
   View,
 } from "react-native";
-import { useCallback } from "react";
-import { useNavigation } from "@react-navigation/native";
 import { useEventsToday } from "../api/queries";
-import EventCard from "../components/EventCard";
 import ErrorState from "../components/ErrorState";
+import EventCard from "../components/EventCard";
 import type { TodayEvent } from "../types";
 
 export default function TodayScreen() {
   // Use the tab navigation to switch to PrepListsTab, which will navigate internally
   const navigation = useNavigation();
 
-  const { data: events, isLoading, isError, error, refetch, isRefetching } = useEventsToday();
+  const {
+    data: events,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isRefetching,
+  } = useEventsToday();
 
   const handleEventPress = useCallback(
-    (event: TodayEvent) => {
+    (_event: TodayEvent) => {
       // Navigate to the Prep Lists tab, which has the stack navigator
       // The PrepListsScreen will handle showing the list filtered by eventId
       // For now, we navigate to the tab - future enhancement: pass params to auto-open detail
@@ -43,7 +50,7 @@ export default function TodayScreen() {
     if (isLoading) {
       return (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color="#2563eb" />
+          <ActivityIndicator color="#2563eb" size="large" />
           <Text style={styles.loadingText}>Loading events...</Text>
         </View>
       );
@@ -79,25 +86,25 @@ export default function TodayScreen() {
   return (
     <View style={styles.container}>
       <FlatList
+        contentContainerStyle={styles.listContent}
         data={events ?? []}
         keyExtractor={(item) => item.id}
-        renderItem={renderEvent}
-        contentContainerStyle={styles.listContent}
-        showsVerticalScrollIndicator={false}
-        refreshControl={
-          <RefreshControl
-            refreshing={isRefetching}
-            onRefresh={() => void refetch()}
-            tintColor="#2563eb"
-          />
-        }
+        ListEmptyComponent={renderEmpty}
         ListHeaderComponent={
           <View style={styles.header}>
             <Text style={styles.title}>Today</Text>
             <Text style={styles.subtitle}>{dateStr}</Text>
           </View>
         }
-        ListEmptyComponent={renderEmpty}
+        refreshControl={
+          <RefreshControl
+            onRefresh={() => void refetch()}
+            refreshing={isRefetching}
+            tintColor="#2563eb"
+          />
+        }
+        renderItem={renderEvent}
+        showsVerticalScrollIndicator={false}
       />
     </View>
   );

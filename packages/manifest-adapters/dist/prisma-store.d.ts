@@ -106,6 +106,24 @@ export declare class RecipeIngredientPrismaStore implements Store<EntityInstance
     private mapToManifestEntity;
 }
 /**
+ * Prisma-backed store for RecipeStep entities
+ *
+ * Maps Manifest RecipeStep entities to the Prisma recipe_steps table.
+ * Note: Prisma model uses snake_case (recipe_steps).
+ */
+export declare class RecipeStepPrismaStore implements Store<EntityInstance> {
+    private readonly prisma;
+    private readonly tenantId;
+    constructor(prisma: PrismaClient, tenantId: string);
+    getAll(): Promise<EntityInstance[]>;
+    getById(id: string): Promise<EntityInstance | undefined>;
+    create(data: Partial<EntityInstance>): Promise<EntityInstance>;
+    update(id: string, data: Partial<EntityInstance>): Promise<EntityInstance | undefined>;
+    delete(id: string): Promise<boolean>;
+    clear(): Promise<void>;
+    private mapToManifestEntity;
+}
+/**
  * Prisma-backed store for Dish entities
  *
  * Maps Manifest Dish entities to the Prisma Dish table.

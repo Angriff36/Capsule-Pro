@@ -1,9 +1,4 @@
-import {
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import type { PrepList } from "../types";
 
 interface PrepListCardProps {
@@ -35,14 +30,14 @@ export default function PrepListCard({ prepList, onPress }: PrepListCardProps) {
 
   return (
     <TouchableOpacity
-      style={styles.card}
-      onPress={() => onPress(prepList)}
       activeOpacity={0.7}
+      onPress={() => onPress(prepList)}
+      style={styles.card}
     >
       {/* Header: Name and Station */}
       <View style={styles.headerRow}>
         <View style={styles.titleContainer}>
-          <Text style={styles.name} numberOfLines={1}>
+          <Text numberOfLines={1} style={styles.name}>
             {prepList.name}
           </Text>
           {prepList.station && (
@@ -51,9 +46,7 @@ export default function PrepListCard({ prepList, onPress }: PrepListCardProps) {
             </View>
           )}
         </View>
-        {isComplete && (
-          <Text style={styles.checkIcon}>✓</Text>
-        )}
+        {isComplete && <Text style={styles.checkIcon}>✓</Text>}
       </View>
 
       {/* Progress bar */}
@@ -68,7 +61,10 @@ export default function PrepListCard({ prepList, onPress }: PrepListCardProps) {
           <View
             style={[
               styles.progressBarFill,
-              { width: `${completionPercentage}%`, backgroundColor: completionColor },
+              {
+                width: `${completionPercentage}%`,
+                backgroundColor: completionColor,
+              },
             ]}
           />
         </View>

@@ -9,7 +9,7 @@
  * - Logs include correlation IDs (via mock assertions)
  */
 
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock dependencies before imports
 const mockAuth = vi.fn();
@@ -72,9 +72,7 @@ describe("Conflict Detection API - Correlation ID", () => {
 
   describe("Correlation ID generation and extraction", () => {
     it("should generate a correlation ID when not provided in request", async () => {
-      const { POST } = await import(
-        "@/app/api/conflicts/detect/route"
-      );
+      const { POST } = await import("@/app/api/conflicts/detect/route");
 
       const request = new Request("http://localhost/api/conflicts/detect", {
         method: "POST",
@@ -102,9 +100,7 @@ describe("Conflict Detection API - Correlation ID", () => {
     });
 
     it("should use provided correlation ID from x-correlation-id header", async () => {
-      const { POST } = await import(
-        "@/app/api/conflicts/detect/route"
-      );
+      const { POST } = await import("@/app/api/conflicts/detect/route");
 
       const providedCorrelationId = "provided-correlation-id-12345";
       const request = new Request("http://localhost/api/conflicts/detect", {
@@ -133,9 +129,7 @@ describe("Conflict Detection API - Correlation ID", () => {
     });
 
     it("should include correlation ID in start and completion logs", async () => {
-      const { POST } = await import(
-        "@/app/api/conflicts/detect/route"
-      );
+      const { POST } = await import("@/app/api/conflicts/detect/route");
 
       const request = new Request("http://localhost/api/conflicts/detect", {
         method: "POST",
@@ -162,9 +156,7 @@ describe("Conflict Detection API - Correlation ID", () => {
     it("should include correlation ID in unauthorized error response", async () => {
       mockAuth.mockResolvedValue({ orgId: null, userId: null });
 
-      const { POST } = await import(
-        "@/app/api/conflicts/detect/route"
-      );
+      const { POST } = await import("@/app/api/conflicts/detect/route");
 
       const request = new Request("http://localhost/api/conflicts/detect", {
         method: "POST",
@@ -192,9 +184,7 @@ describe("Conflict Detection API - Correlation ID", () => {
     it("should include correlation ID in tenant not found error response", async () => {
       mockGetTenantIdForOrg.mockResolvedValue(null);
 
-      const { POST } = await import(
-        "@/app/api/conflicts/detect/route"
-      );
+      const { POST } = await import("@/app/api/conflicts/detect/route");
 
       const request = new Request("http://localhost/api/conflicts/detect", {
         method: "POST",
@@ -211,9 +201,7 @@ describe("Conflict Detection API - Correlation ID", () => {
     });
 
     it("should include correlation ID in validation error response", async () => {
-      const { POST } = await import(
-        "@/app/api/conflicts/detect/route"
-      );
+      const { POST } = await import("@/app/api/conflicts/detect/route");
 
       const request = new Request("http://localhost/api/conflicts/detect", {
         method: "POST",
@@ -232,9 +220,7 @@ describe("Conflict Detection API - Correlation ID", () => {
     });
 
     it("should include correlation ID in invalid JSON error response", async () => {
-      const { POST } = await import(
-        "@/app/api/conflicts/detect/route"
-      );
+      const { POST } = await import("@/app/api/conflicts/detect/route");
 
       const request = new Request("http://localhost/api/conflicts/detect", {
         method: "POST",
@@ -253,9 +239,7 @@ describe("Conflict Detection API - Correlation ID", () => {
 
   describe("Correlation ID propagation with provided ID", () => {
     it("should propagate client-provided correlation ID through entire request lifecycle", async () => {
-      const { POST } = await import(
-        "@/app/api/conflicts/detect/route"
-      );
+      const { POST } = await import("@/app/api/conflicts/detect/route");
 
       const clientCorrelationId = "client-request-abc-123";
       const request = new Request("http://localhost/api/conflicts/detect", {
@@ -268,10 +252,12 @@ describe("Conflict Detection API - Correlation ID", () => {
       });
 
       const response = await POST(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const _body = (await response.json()) as Record<string, unknown>;
 
       // Response header should have the same correlation ID
-      expect(response.headers.get("x-correlation-id")).toBe(clientCorrelationId);
+      expect(response.headers.get("x-correlation-id")).toBe(
+        clientCorrelationId
+      );
 
       // All logs should use the same correlation ID
       const allCalls = [
@@ -282,10 +268,7 @@ describe("Conflict Detection API - Correlation ID", () => {
 
       for (const call of allCalls) {
         if (call[1] && typeof call[1] === "object") {
-          expect(call[1]).toHaveProperty(
-            "correlationId",
-            clientCorrelationId
-          );
+          expect(call[1]).toHaveProperty("correlationId", clientCorrelationId);
         }
       }
     });
@@ -295,9 +278,7 @@ describe("Conflict Detection API - Correlation ID", () => {
     it("should use AUTH_REQUIRED for missing auth", async () => {
       mockAuth.mockResolvedValue({ orgId: null, userId: null });
 
-      const { POST } = await import(
-        "@/app/api/conflicts/detect/route"
-      );
+      const { POST } = await import("@/app/api/conflicts/detect/route");
 
       const request = new Request("http://localhost/api/conflicts/detect", {
         method: "POST",
@@ -314,9 +295,7 @@ describe("Conflict Detection API - Correlation ID", () => {
     it("should use TENANT_NOT_FOUND for missing tenant", async () => {
       mockGetTenantIdForOrg.mockResolvedValue(null);
 
-      const { POST } = await import(
-        "@/app/api/conflicts/detect/route"
-      );
+      const { POST } = await import("@/app/api/conflicts/detect/route");
 
       const request = new Request("http://localhost/api/conflicts/detect", {
         method: "POST",
@@ -331,9 +310,7 @@ describe("Conflict Detection API - Correlation ID", () => {
     });
 
     it("should use VALIDATION_ERROR for invalid timeRange", async () => {
-      const { POST } = await import(
-        "@/app/api/conflicts/detect/route"
-      );
+      const { POST } = await import("@/app/api/conflicts/detect/route");
 
       const request = new Request("http://localhost/api/conflicts/detect", {
         method: "POST",
@@ -350,9 +327,7 @@ describe("Conflict Detection API - Correlation ID", () => {
     });
 
     it("should use INVALID_REQUEST for malformed JSON", async () => {
-      const { POST } = await import(
-        "@/app/api/conflicts/detect/route"
-      );
+      const { POST } = await import("@/app/api/conflicts/detect/route");
 
       const request = new Request("http://localhost/api/conflicts/detect", {
         method: "POST",

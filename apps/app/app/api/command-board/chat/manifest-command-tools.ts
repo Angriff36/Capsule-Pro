@@ -145,8 +145,12 @@ function resolveManifestPath(): string {
 }
 
 function mapJsonType(input: unknown): "string" | "number" | "boolean" {
-  if (input === "number") return "number";
-  if (input === "boolean") return "boolean";
+  if (input === "number") {
+    return "number";
+  }
+  if (input === "boolean") {
+    return "boolean";
+  }
   return "string";
 }
 
@@ -163,7 +167,10 @@ function normalizeEntityCommandKey(key: string): string {
 }
 
 function normalizeLooseSegment(segment: string): string {
-  return segment.trim().toLowerCase().replace(/[^a-z0-9]/g, "");
+  return segment
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "");
 }
 
 function normalizeLooseEntityCommandKey(key: string): string {
@@ -171,13 +178,15 @@ function normalizeLooseEntityCommandKey(key: string): string {
   return `${normalizeLooseSegment(entity)}.${normalizeLooseSegment(command)}`;
 }
 
-function extractEntityCommandPair(text: string): { entity: string; command: string } | null {
+function extractEntityCommandPair(
+  text: string
+): { entity: string; command: string } | null {
   const match = text.match(/([A-Za-z0-9_]+)\s*\.\s*([A-Za-z0-9_-]+)/);
   if (!match) {
     return null;
   }
   const [, entity, command] = match;
-  if (!entity || !command) {
+  if (!(entity && command)) {
     return null;
   }
   return { entity, command };
@@ -210,7 +219,9 @@ function parseCommandRoute(route: RouteSurfaceEntry): CommandRoute | null {
     command?: unknown;
   };
 
-  if (!(typeof source.entity === "string" && typeof source.command === "string")) {
+  if (
+    !(typeof source.entity === "string" && typeof source.command === "string")
+  ) {
     return null;
   }
 
@@ -255,7 +266,9 @@ function buildToolDescription(route: CommandRoute): string {
   const key = `${route.source.entity}.${route.source.command}`;
   const aliasNotes: string[] = [];
   if (key === "Event.create") {
-    aliasNotes.push("Alias: 'venue' maps to venueName + venueAddress fields on Event.create.");
+    aliasNotes.push(
+      "Alias: 'venue' maps to venueName + venueAddress fields on Event.create."
+    );
     aliasNotes.push("Run before dependent commands that need eventId.");
   }
   if (key === "User.create") {
@@ -266,10 +279,14 @@ function buildToolDescription(route: CommandRoute): string {
     aliasNotes.push("Run after Event.create because eventId is required.");
   }
   if (key === "Menu.create") {
-    aliasNotes.push("Alias: 'full menu' starts with Menu.create then MenuDish.create for each dish.");
+    aliasNotes.push(
+      "Alias: 'full menu' starts with Menu.create then MenuDish.create for each dish."
+    );
   }
   if (key === "MenuDish.create") {
-    aliasNotes.push("Alias: 'full menu' includes one MenuDish.create per dish after Menu.create.");
+    aliasNotes.push(
+      "Alias: 'full menu' includes one MenuDish.create per dish after Menu.create."
+    );
   }
   if (key === "BattleBoard.create") {
     aliasNotes.push("Create board before BattleBoard.addDish commands.");
@@ -310,7 +327,10 @@ function buildToolParameters(route: CommandRoute): Record<string, unknown> {
   };
 }
 
-function logCatalogDiagnostics(manifestPath: string, manifest: RouteSurfaceManifest) {
+function logCatalogDiagnostics(
+  manifestPath: string,
+  manifest: RouteSurfaceManifest
+) {
   if (hasLoggedCatalogDiagnostics) {
     return;
   }
@@ -358,7 +378,9 @@ function loadCatalogInternal(manifestPathInput?: string): CommandCatalog {
   const manifestPath = manifestPathInput
     ? resolve(manifestPathInput)
     : resolveManifestPath();
-  const manifest = JSON.parse(readFileSync(manifestPath, "utf8")) as RouteSurfaceManifest;
+  const manifest = JSON.parse(
+    readFileSync(manifestPath, "utf8")
+  ) as RouteSurfaceManifest;
   logCatalogDiagnostics(manifestPath, manifest);
 
   const generatedAt =

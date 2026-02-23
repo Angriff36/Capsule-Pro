@@ -26,6 +26,16 @@
       "pattern": "^/api/kitchen/recipes/[^/]+/composite/",
       "methods": ["POST"],
       "comment": "Recipe-scoped composite routes (update-with-version, restore-version)"
+    },
+    {
+      "prefix": "/api/kitchen/manifest/",
+      "methods": ["POST", "PUT", "PATCH", "DELETE"],
+      "comment": "Legacy infrastructure routes using Manifest runtime (to be migrated)"
+    },
+    {
+      "prefix": "/api/conflicts/",
+      "methods": ["POST", "PUT", "PATCH", "DELETE"],
+      "comment": "Conflict detection infrastructure"
     }
   ]
 }
