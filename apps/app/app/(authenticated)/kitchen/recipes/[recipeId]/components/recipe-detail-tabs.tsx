@@ -40,6 +40,7 @@ import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import {
+  kitchenRecipeCompositeRestore,
   kitchenRecipeVersionDetail,
   kitchenRecipeVersions,
   kitchenRecipeVersionsCompare,
@@ -49,7 +50,6 @@ import {
   type IngredientCostBreakdown,
   type RecipeCostBreakdown,
 } from "@/app/lib/use-recipe-costing";
-import { restoreRecipeVersion } from "../../actions-manifest";
 
 interface RecipeDetailRow {
   id: string;
@@ -481,7 +481,7 @@ function HistoryTabContent({
     }
   };
 
-  const handleRestore = async () => {
+  const handleRestore = () => {
     if (!viewingDetail) {
       return;
     }
@@ -497,7 +497,20 @@ function HistoryTabContent({
 
     startRestore(async () => {
       try {
-        await restoreRecipeVersion(recipeId, viewingDetail.id);
+        const response = await apiFetch(
+          kitchenRecipeCompositeRestore(recipeId),
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sourceVersionId: viewingDetail.id }),
+          }
+        );
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || "Failed to restore version");
+        }
+
         toast.success("Recipe version restored.");
         setViewingVersion(null);
         setViewingDetail(null);
