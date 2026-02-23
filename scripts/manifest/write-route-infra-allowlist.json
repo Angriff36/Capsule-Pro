@@ -16,6 +16,11 @@
     {
       "prefix": "/api/health",
       "methods": ["POST", "PUT", "PATCH", "DELETE"]
+    },
+    {
+      "prefix": "/api/kitchen/recipes/composite/",
+      "methods": ["POST"],
+      "comment": "Composite routes wrap multiple Manifest commands in atomic transactions"
     }
   ]
 }
