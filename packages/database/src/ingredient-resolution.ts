@@ -4,7 +4,7 @@
  */
 
 import { randomUUID } from "node:crypto";
-import { Prisma as PrismaNamespace } from "@prisma/client";
+import { Prisma as PrismaNamespace } from "../generated/client";
 
 /** Regex for parsing ingredient lines like "2 cups flour" */
 const INGREDIENT_LINE_REGEX = /^([\d.]+)\s*([a-zA-Z]+)?\s*(.*)$/;
@@ -37,10 +37,11 @@ export interface ResolvedIngredient {
 /**
  * Transaction client interface compatible with Prisma.
  */
-interface TxClient {
-  $queryRaw: typeof PrismaNamespace.prototype.$queryRaw;
-  $executeRaw: typeof PrismaNamespace.prototype.$executeRaw;
-}
+type TxClient = {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  $queryRaw<T = any>(query: PrismaNamespace.Sql): Promise<T>;
+  $executeRaw(query: PrismaNamespace.Sql): Promise<number>;
+};
 
 /**
  * Parse a JSON array from a string, returning null if invalid.
@@ -184,7 +185,7 @@ export const loadUnitMap = async (
       WHERE code IN (${PrismaNamespace.join(codes)})
     `
   );
-  return new Map(rows.map((row) => [row.code.toLowerCase(), row.id]));
+  return new Map(rows.map((row: { id: number; code: string }) => [row.code.toLowerCase(), row.id]));
 };
 
 /**
@@ -239,16 +240,18 @@ export const getEachUnitId = async (tx: TxClient): Promise<number> => {
     return cachedEachUnitId;
   }
 
-  const [row] = await tx.$queryRaw<{ id: number }[]>`
-    SELECT id FROM core.units WHERE code = 'each' LIMIT 1
-  `;
+  const [row] = await tx.$queryRaw<{ id: number }[]>(
+    PrismaNamespace.sql`
+      SELECT id FROM core.units WHERE code = 'each' LIMIT 1
+    `
+  );
 
   if (!row) {
     throw new Error("Default 'each' unit not found in database");
   }
 
   cachedEachUnitId = row.id;
-  return cachedEachUnitId;
+  return row.id;
 };
 
 /**
