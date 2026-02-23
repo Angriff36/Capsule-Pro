@@ -1,6 +1,6 @@
 # Manifest Alignment Implementation Plan
 
-> **Status:** Core work complete (10/12 tasks done) - 2026-02-23
+> **Status:** Core work complete (12/12 tasks done) - 2026-02-23
 > **Created:** 2026-02-22
 > **Last Updated:** 2026-02-23
 > **Source:** Synthesized from specs/manifest/composite-routes/manifest-alignment-plan.md + codebase exploration
@@ -63,29 +63,41 @@
 - **What:** Added RecipeStep entity with create/update/remove commands. Added `RecipeStepPrismaStore` and registered in factory.
 - **Completed:** 2026-02-23 — Entity defined in manifest, PrismaStore maps to `recipe_steps` table, registered in ENTITIES_WITH_SPECIFIC_STORES.
 
-### [P2-2] 🔄 PARTIAL — Migrate frontend recipe forms to composite routes
-- **Files:** `new-recipe-form-client.tsx`, `recipe-form-with-constraints.tsx`, `new-dish-form-client.tsx`, `recipe-detail-edit-button.tsx`, `recipe-detail-tabs.tsx`
+### [P2-2] ✅ COMPLETE — Migrate frontend recipe forms to composite routes
+- **Files:** `new-recipe-form-client.tsx`, `recipe-form-with-constraints.tsx`, `new-dish-form-client.tsx`, `recipe-detail-edit-button.tsx`, `recipe-detail-tabs.tsx`, `recipes-page-client.tsx`
 - **What:** Replace server action imports with `apiFetch()` calls to composite endpoints.
-- **Completed (partial):**
+- **Completed (2026-02-23):**
   - `recipe-detail-tabs.tsx` — Migrated `restoreRecipeVersion` to use `apiFetch(kitchenRecipeCompositeRestore(recipeId))`
+  - `new-recipe-form-client.tsx` — Migrated `createRecipe`/`createRecipeWithOverride` to use `apiFetch(kitchenRecipeCompositeCreate())`
+    - Added helper functions for FormData → JSON conversion
+    - Unit code to ID lookup for yieldUnit field
+    - Ingredient and steps text parsing
+    - Constraint override support via `override` payload property
+  - `recipe-detail-edit-button.tsx` — Migrated `updateRecipe`/`updateRecipeWithOverride` to use `apiFetch(kitchenRecipeCompositeUpdate(recipeId))`
+    - Added `buildUpdatePayload()` for FormData → JSON conversion
+    - Uses raw ingredient format (name + unit code) for server-side resolution
+    - Constraint override support preserved
+  - `recipes-page-client.tsx` — Migrated `createRecipe`/`updateRecipe` to use composite routes
+    - Added `buildCreatePayload()` and `buildUpdatePayload()` for FormData → JSON conversion
+    - Maps `RecipeEditorModal` form fields to composite route payload format
+    - Still uses `getRecipeForEdit` from `actions-manifest-v2` for read operations (not a mutation)
   - Route helpers added to `routes.ts`: `kitchenRecipeCompositeCreate()`, `kitchenRecipeCompositeUpdate(recipeId)`, `kitchenRecipeCompositeRestore(recipeId)`
-  - **Backend blocker resolved (2026-02-23):** Composite routes now accept raw ingredients (name + unit code) in addition to pre-resolved IDs
-  - Added `packages/database/src/ingredient-resolution.ts` with `resolveIngredients()` function
-  - Updated `create-with-version/route.ts` to accept both `ResolvedIngredientInput` (with IDs) and `RawIngredientInput` (with name/unit)
-  - Updated `update-with-version/route.ts` with same dual-format support
-- **Remaining:**
-  - Frontend migration from server actions to `apiFetch()` calls
-  - FormData → JSON conversion (file uploads need separate handling)
-  - Response handling changes (server action `ManifestActionResult` → HTTP response)
-  - Constraint override flow adaptation
-  - Revalidation strategy (server actions use `revalidatePath()`)
-- **Blocker (RESOLVED):** ~~Server actions do ingredient resolution~~ — Composite routes now handle ingredient resolution server-side in the same transaction.
+  - **Backend:** Composite routes accept raw ingredients (name + unit code) for server-side resolution
+- **Not migrated:**
+  - `recipe-form-with-constraints.tsx` — Generic wrapper component, not actively used
+  - `new-dish-form-client.tsx` — No composite route for dish creation (kept server action)
+  - `getRecipeForEdit` — Read operation, kept as server action (not in scope for deletion)
 - **Rationale:** Medium — enables transaction safety. Must complete before deleting legacy actions.
 
-### [P2-3] Delete legacy recipe server actions
+### [P2-3] ✅ COMPLETE — Delete legacy recipe server actions
 - **Files:** `actions-manifest-v2.ts`, `actions-manifest.ts`, `actions.ts`
-- **What:** Remove `createRecipe`, `updateRecipe`, `restoreRecipeVersion` exports. Keep `createDish`. Three files have overlapping exports.
-- **Rationale:** Medium — cleanup after frontend migration. Separate commit.
+- **What:** Removed `createRecipe`, `updateRecipe`, `restoreRecipeVersion` function definitions (and override variants). Kept `createDish`, `createDishWithOverride`, `getRecipeForEdit`, `updateRecipeImage`.
+- **Completed:** 2026-02-23
+  - `actions.ts` — Removed `createRecipe`, `updateRecipe`, `restoreRecipeVersion` (~550 lines)
+  - `actions-manifest.ts` — Removed `createRecipe`, `updateRecipe`, `restoreRecipeVersion` re-export
+  - `actions-manifest-v2.ts` — Removed `createRecipe`, `createRecipeWithOverride`, `updateRecipe`, `updateRecipeWithOverride`, `restoreRecipeVersion`
+  - Deleted dead test file: `__tests__/recipes/update-recipe.test.ts`
+  - Deleted dead component: `recipe-form-with-constraints.tsx` (never imported anywhere)
 
 ### [P3-1] Dead route cleanup (~28 routes)
 - **Files:** `apps/api/app/api/command-board/*/commands/*`, `apps/api/app/api/kitchen/manifest/*`
