@@ -29,8 +29,11 @@ require.cache[serverOnlyPath] = {
 // 2. Pre-load @prisma/client with the generated client so CJS resolution works.
 //    This ensures `require('@prisma/client')` returns the generated client exports
 //    instead of trying to load `.prisma/client/default` which doesn't exist.
+//    Use __dirname in CJS context (import.meta.dirname is ESM-only)
+declare const __dirname: string;
+const preloadDir = typeof __dirname !== "undefined" ? __dirname : process.cwd();
 const generatedClientPath = nodePath.resolve(
-  import.meta.dirname,
+  preloadDir,
   "../../../database/generated/client.ts"
 );
 try {
@@ -53,5 +56,5 @@ try {
 // 3. Load .env from monorepo root
 //    __dirname = packages/mcp-server/src/ → three levels up to monorepo root
 require("dotenv").config({
-  path: nodePath.resolve(import.meta.dirname, "../../../.env"),
+  path: nodePath.resolve(preloadDir, "../../../.env"),
 });
