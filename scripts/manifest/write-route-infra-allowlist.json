@@ -48,6 +48,11 @@
       "comment": "Prep list save route using PrepList/PrepListItem manifest commands"
     },
     {
+      "prefix": "/api/kitchen/ai/bulk-generate/prep-tasks",
+      "methods": ["POST"],
+      "comment": "AI-generated prep task bulk creation using PrepTask.create command"
+    },
+    {
       "prefix": "/api/kitchen/manifest/",
       "methods": ["POST", "PUT", "PATCH", "DELETE"],
       "comment": "Legacy infrastructure routes using Manifest runtime (to be migrated)"

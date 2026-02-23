@@ -5,10 +5,11 @@
  * Generates prep tasks for an event using AI analysis
  */
 
+import { auth } from "@repo/auth/server";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { invariant } from "@/app/lib/invariant";
-import { requireTenantId } from "@/app/lib/tenant";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { generateBulkPrepTasks } from "./service";
 import type { BulkGenerateRequest, BulkGenerateResponse } from "./types";
 
@@ -102,13 +103,23 @@ function buildResponse(
 
 export async function POST(request: Request): Promise<NextResponse> {
   try {
-    const tenantId = await requireTenantId();
+    const { orgId, userId } = await auth();
+
+    if (!(orgId && userId)) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const tenantId = await getTenantIdForOrg(orgId);
+    if (!tenantId) {
+      return NextResponse.json({ message: "Tenant not found" }, { status: 404 });
+    }
+
     const body = (await request.json()) as BulkGenerateRequest;
     invariant(body.eventId, "eventId is required");
 
     validateRequestOptions(body);
 
-    const result = await generateBulkPrepTasks(tenantId, body);
+    const result = await generateBulkPrepTasks(tenantId, userId, body);
     const response = buildResponse(result);
 
     return NextResponse.json(response, { status: 200 });

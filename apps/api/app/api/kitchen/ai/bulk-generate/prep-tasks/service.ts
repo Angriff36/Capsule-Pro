@@ -5,6 +5,8 @@
 
 import { openai } from "@ai-sdk/openai";
 import { database } from "@repo/database";
+import { createManifestRuntime } from "@repo/manifest-adapters/manifest-runtime-factory";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { generateText } from "ai";
 import { v4 as uuidv4 } from "uuid";
@@ -321,6 +323,7 @@ function convertTasksToDbFormat(
  */
 export async function generateBulkPrepTasks(
   tenantId: string,
+  userId: string,
   request: BulkGenerateRequest
 ): Promise<{
   batchId: string;
@@ -395,68 +398,70 @@ export async function generateBulkPrepTasks(
 }
 
 /**
- * Saves generated tasks to database
+ * Saves generated tasks to database via manifest runtime
  */
 export async function saveGeneratedTasks(
   tenantId: string,
+  userId: string,
   eventId: string,
   tasks: GeneratedPrepTask[]
 ): Promise<{ created: number; errors: string[] }> {
   const errors: string[] = [];
   let created = 0;
 
-  // Get location ID for tenant (default location)
-  const locations = await database.location.findMany({
-    where: { tenantId, deletedAt: null },
-    take: 1,
-  });
-
-  const locationId = locations[0]?.id;
-
-  if (!locationId) {
-    return {
-      created: 0,
-      errors: ["No location found for tenant. Please create a location first."],
-    };
-  }
-
   try {
-    // Create tasks in bulk
-    for (const task of tasks) {
-      try {
-        await database.prepTask.create({
-          data: {
-            tenantId,
-            eventId,
-            dishId: task.dishId,
-            recipeVersionId: task.recipeVersionId,
-            methodId: null,
-            containerId: null,
-            locationId,
-            taskType: task.taskType,
-            name: task.name,
-            quantityTotal: task.quantityTotal,
-            quantityUnitId: task.quantityUnitId,
-            quantityCompleted: 0,
-            servingsTotal: task.servingsTotal,
-            startByDate: task.startByDate,
-            dueByDate: task.dueByDate,
-            dueByTime: task.dueByTime,
-            isEventFinish: task.isEventFinish,
-            status: "pending",
-            priority: task.priority,
-            estimatedMinutes: task.estimatedMinutes,
-            actualMinutes: null,
-            notes: task.notes,
-          },
-        });
-        created++;
-      } catch (error: unknown) {
-        errors.push(
-          `Failed to create task "${task.name}": ${error instanceof Error ? error.message : "Unknown error"}`
-        );
+    // Create tasks via manifest runtime for constraint validation and event emission
+    await database.$transaction(async (tx) => {
+      const runtime = await createManifestRuntime(
+        {
+          prisma: database,
+          prismaOverride: tx,
+          log,
+          captureException,
+        },
+        {
+          user: { id: userId, tenantId },
+        }
+      );
+
+      for (const task of tasks) {
+        try {
+          const result = await runtime.runCommand(
+            "create",
+            {
+              name: task.name,
+              eventId,
+              prepListId: "", // AI-generated tasks don't have prep lists
+              taskType: task.taskType || "prep",
+              priority: task.priority,
+              quantityTotal: task.quantityTotal || 0,
+              quantityUnitId: task.quantityUnitId || "",
+              servingsTotal: task.servingsTotal || 0,
+              startByDate: task.startByDate?.getTime() || 0,
+              dueByDate: task.dueByDate?.getTime() || 0,
+              notes: task.notes || "",
+              ingredients: "", // AI-generated tasks don't have ingredients
+            },
+            { entityName: "PrepTask" }
+          );
+
+          if (result.success) {
+            created++;
+          } else {
+            const errorMsg =
+              result.guardFailure?.formatted ||
+              result.policyDenial?.policyName ||
+              result.error ||
+              "Unknown error";
+            errors.push(`Failed to create task "${task.name}": ${errorMsg}`);
+          }
+        } catch (error: unknown) {
+          errors.push(
+            `Failed to create task "${task.name}": ${error instanceof Error ? error.message : "Unknown error"}`
+          );
+        }
       }
-    }
+    });
   } catch (error: unknown) {
     errors.push(
       `Database error: ${error instanceof Error ? error.message : "Unknown error"}`
