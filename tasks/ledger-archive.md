@@ -4,6 +4,68 @@ This file contains archived agent entries that have been moved from `tasks/ledge
 
 ---
 
+# Agent 18
+
+**Agent ID:** 18
+**Date/Time:** 2026-02-23 09:16
+**Base branch/commit:** fix/dev-server-stability @ 0eff6ad8d
+
+**Goal:**
+Verify project state — confirm all tests pass, build succeeds, and IMPLEMENTATION_PLAN.md remains complete (13/13 tasks) after Agent 17's Command Board AI validation fix.
+
+**Invariants enforced:**
+
+- All test suites must pass before claiming verification complete.
+- TypeScript must compile with zero errors.
+- Build must succeed for both app and api packages.
+
+**Subagents used:**
+None — this was a verification session.
+
+**Reproducer:**
+N/A — verification session, no bugs found.
+
+**Root cause:**
+N/A — verification session to confirm project stability at v0.7.8.
+
+**Fix strategy:**
+Reviewed IMPLEMENTATION_PLAN.md showing 13/13 tasks complete. Ran full validation suite: TypeScript compiles clean, 379 app tests pass, 567 API tests pass, app+api build succeeds. Git state clean, all commits pushed, latest tag v0.7.8.
+
+**Verification evidence:**
+
+```
+$ pnpm tsc --noEmit
+(exit 0, no output)
+
+$ pnpm --filter app test --run
+Test Files: 29 passed, Tests: 379 passed
+
+$ pnpm --filter api test --run
+Test Files: 38 passed | 1 skipped, Tests: 567 passed | 1 skipped
+
+$ pnpm turbo build --filter=app --filter=api
+Tasks: 9 successful, 9 total
+
+$ git tag --sort=-v:refname | head -1
+v0.7.8
+
+$ git status
+On branch fix/dev-server-stability
+nothing to commit, working tree clean
+```
+
+**Follow-ups filed:**
+- `specs/manifest/manifest-integration_INPROGRESS/` has Phase 1 tasks for resolving directory conflicts (duplicate manifests, runtime factory path, documentation updates). This is a SEPARATE body of work not in the current IMPLEMENTATION_PLAN.md scope.
+- All 13 tasks in root IMPLEMENTATION_PLAN.md remain complete.
+
+**Points tally:**
++3 invariant defined before implementation (all tests must pass, TypeScript clean, build succeeds)
++2 improved diagnosability (confirmed stable state with full verification)
++2 improved diagnosability (archived Agent 13 per archival rule)
+= **7 points**
+
+---
+
 # Agent 2
 
 **Agent ID:** 2
