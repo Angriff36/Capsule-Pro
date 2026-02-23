@@ -1026,3 +1026,78 @@ None. All 13 tasks complete, one known issue resolved. Task Claiming Consistency
 +2 improved diagnosability (archived Agent 12 per archival rule)
 = **7 points**
 
+
+---
+
+# Agent 19
+
+**Agent ID:** 19
+**Date/Time:** 2026-02-23 09:31
+**Base branch/commit:** fix/dev-server-stability @ 6866dd84d
+
+**Goal:**
+Resolve the manifest-integration spec by confirming the actual canonical manifest location.
+
+**Invariants enforced:**
+
+- Documentation must match actual code structure.
+- Specs should not propose migrations for directories that don't exist.
+- No code changes without verification that tests pass.
+
+**Subagents used:**
+
+- Explore agent: Found that `packages/manifest-sources/` doesn't exist and `packages/manifest-adapters/manifests/` has 40 files, not 6 as the spec claimed.
+- Senior Engineer agent: Updated the manifest-integration spec to reflect reality and mark it as resolved.
+
+**Reproducer:**
+N/A — documentation fix, no code changes.
+
+**Root cause:**
+The `specs/manifest/manifest-integration_INPROGRESS/` spec was outdated. It proposed migrating 6 manifests from `manifest-adapters/manifests` to `manifest-sources/kitchen`, but:
+1. `packages/manifest-sources/` directory doesn't exist
+2. There are 40 manifest files, not 6
+3. `manifest.config.yaml` correctly points to `manifest-adapters/manifests`
+4. The migration was never implemented
+
+**Fix strategy:**
+Updated the spec to mark it RESOLVED with documentation that:
+- Confirms `packages/manifest-adapters/manifests/` IS the canonical source (40 files)
+- Documents the actual structure and workflow
+- Archives the incorrect migration proposal as historical analysis
+- Renamed directory from `_INPROGRESS` to remove gitignore pattern
+
+Minimal scope: documentation only, no code changes.
+
+**Verification evidence:**
+
+```
+$ ls packages/manifest-sources/kitchen/
+Directory doesn't exist
+
+$ ls packages/manifest-adapters/manifests/ | wc -l
+40
+
+$ cat manifest.config.yaml | grep src
+src: "packages/manifest-adapters/manifests/*.manifest"
+
+$ pnpm --filter app test --run
+Test Files: 29 passed, Tests: 379 passed
+
+$ pnpm --filter api test --run
+Test Files: 38 passed | 1 skipped, Tests: 567 passed | 1 skipped
+
+$ git add specs/manifest/manifest-integration/ && git commit
+[fix/dev-server-stability f43a85616] docs: resolve manifest-integration spec
+
+$ git tag v0.7.10 && git push --tags
+ * [new tag] v0.7.10 -> v0.7.10
+```
+
+**Follow-ups filed:**
+None. The manifest-integration spec is now resolved. The main IMPLEMENTATION_PLAN.md conflict note about this spec can be considered addressed.
+
+**Points tally:**
++3 invariant defined before implementation (docs must match reality, no unneeded migrations)
++4 correct subagent delegation (Explore agent for investigation, Senior Engineer for spec update)
++2 improved diagnosability (resolved confusing spec, updated status from INPROGRESS to resolved)
+= **9 points**
