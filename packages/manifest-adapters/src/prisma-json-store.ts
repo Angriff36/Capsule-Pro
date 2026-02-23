@@ -28,6 +28,13 @@ interface PrismaJsonStoreConfig {
   entityType: string;
 }
 
+/** Type for ManifestEntity database row */
+interface ManifestEntityRow {
+  id: string;
+  data: unknown;
+  version: number;
+}
+
 /**
  * Generic JSON-backed Prisma store for Manifest entities.
  *
@@ -62,7 +69,7 @@ export class PrismaJsonStore implements Store<EntityInstance> {
         orderBy: { createdAt: "asc" },
       });
 
-      return rows.map((row) => this.deserialize(row));
+      return rows.map((row: ManifestEntityRow) => this.deserialize(row));
     } catch (error) {
       console.error(
         `[PrismaJsonStore] getAll failed for entityType="${this.entityType}", tenant="${this.tenantId}":`,

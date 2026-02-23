@@ -287,3 +287,40 @@ These will automatically work once P0-3 and P0-4 are implemented.
 - Exploration complete: 33+ dead routes identified
 - Missing import fixed
 - Ready for separate PR
+
+---
+
+## Session 2026-02-23 (Agent 9) — Build Fix for ESM/moduleResolution
+
+### Problem
+The previous commit (66ddddd40) added `"type": "module"` to `@repo/database` to fix MCP server ESM imports, but this broke the Next.js build:
+- TypeScript with `NodeNext` moduleResolution requires `.js` extensions for relative imports
+- Next.js bundler doesn't understand `.js` extensions in TypeScript source files
+
+### Solution
+1. **Removed `"type": "module"`** from `@repo/database/package.json`
+   - MCP server uses tsx which handles both ESM and CJS
+   - preload.cts already handles Prisma client resolution via require.cache
+
+2. **Changed manifest-adapters tsconfig** to use `Bundler` moduleResolution
+   - `"module": "ESNext"` and `"moduleResolution": "Bundler"`
+   - Compatible with Next.js bundler and handles ESM-style imports
+
+3. **Added explicit types** in `database/tenant.ts`
+   - `createTenantClient` callback parameters now explicitly typed
+   - Prevents implicit any errors with strict mode
+
+4. **Added ManifestEntityRow type** in `prisma-json-store.ts`
+   - Explicit type for database row to prevent implicit any
+
+### Files Changed
+- `packages/database/package.json` — removed `"type": "module"`
+- `packages/database/tenant.ts` — added explicit parameter types
+- `packages/manifest-adapters/tsconfig.json` — use Bundler resolution
+- `packages/manifest-adapters/src/prisma-json-store.ts` — added ManifestEntityRow type
+
+### Verification
+- TypeScript: ✅ No errors
+- Build: ✅ app and api build successfully
+- App tests: ✅ 379/379 pass
+- Manifest tests: ✅ 667/667 pass

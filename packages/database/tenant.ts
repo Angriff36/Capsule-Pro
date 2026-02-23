@@ -52,7 +52,17 @@ export const createTenantClient = (tenantId: string, client: PrismaClient) =>
   client.$extends({
     query: {
       $allModels: {
-        async $allOperations({ model, operation, args, query }) {
+        async $allOperations({
+          model,
+          operation,
+          args,
+          query,
+        }: {
+          model: string | undefined;
+          operation: string;
+          args: PrismaArgs;
+          query: (args: PrismaArgs) => Promise<unknown>;
+        }) {
           if (!(model && tenantScopedModels.has(model))) {
             return query(args);
           }

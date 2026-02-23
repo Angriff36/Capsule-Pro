@@ -25,9 +25,9 @@ export declare function createOrUpdateEvent(engine: RuntimeEngine, eventId: stri
     deniedBy?: string;
     guardFailure?: import("@angriff36/manifest").GuardFailure;
     policyDenial?: import("@angriff36/manifest").PolicyDenial;
-    constraintOutcomes?: ConstraintOutcome[];
-    overrideRequests?: OverrideRequest[];
-    concurrencyConflict?: ConcurrencyConflict;
+    constraintOutcomes?: import("@angriff36/manifest/ir").ConstraintOutcome[];
+    overrideRequests?: import("@angriff36/manifest/ir").OverrideRequest[];
+    concurrencyConflict?: import("@angriff36/manifest/ir").ConcurrencyConflict;
     correlationId?: string;
     causationId?: string;
     emittedEvents: EmittedEvent[];

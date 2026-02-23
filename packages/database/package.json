@@ -1,7 +1,6 @@
 {
   "name": "@repo/database",
   "version": "0.0.0",
-  "type": "module",
   "dependencies": {
     "@neondatabase/serverless": "^1.0.2",
     "@prisma/adapter-neon": "7.3.0",
