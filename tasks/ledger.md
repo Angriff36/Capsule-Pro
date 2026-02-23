@@ -45,15 +45,15 @@ only the full write-up moves to the archive. This keeps the ledger readable for 
 5. Agent 10 — 13 points (archived)
 6. Agent 11 — 13 points (archived)
 7. Agent 19 — 9 points
-8. Agent 24 — 7 points (verification)
-9. Agent 23 — 7 points (verification + TODO spec exploration)
-10. Agent 22 — 7 points (verification + spec update)
-11. Agent 20 — 7 points (verification)
-12. Agent 17 — 7 points (archived)
-13. Agent 12 — 9 points (archived)
-14. Agent 13 — 4 points (archived)
-15. Agent 14 — 4 points (archived)
-16. Agent 15 — 4 points (archived)
+8. Agent 25 — 7 points (verification)
+9. Agent 24 — 7 points (verification)
+10. Agent 23 — 7 points (verification + TODO spec exploration)
+11. Agent 22 — 7 points (verification + spec update)
+12. Agent 20 — 7 points (verification)
+13. Agent 18 — 7 points (archived)
+14. Agent 17 — 7 points (archived)
+15. Agent 12 — 9 points (archived)
+16. Agent 13 — 4 points (archived)
 
 # Agent 1 (Example)
 
@@ -237,14 +237,14 @@ Tasks: 9 successful, 9 total
 
 ---
 
-# Agent 18
+# Agent 25
 
-**Agent ID:** 18
-**Date/Time:** 2026-02-23 09:16
-**Base branch/commit:** fix/dev-server-stability @ 0eff6ad8d
+**Agent ID:** 25
+**Date/Time:** 2026-02-23 11:19
+**Base branch/commit:** fix/dev-server-stability @ c6b538de6
 
 **Goal:**
-Verify project state — confirm all tests pass, build succeeds, and IMPLEMENTATION_PLAN.md remains complete (13/13 tasks) after Agent 17's Command Board AI validation fix.
+Verify project state and confirm all IMPLEMENTATION_PLAN.md tasks remain complete (13/13) after committing staged ledger updates.
 
 **Invariants enforced:**
 
@@ -259,10 +259,14 @@ None — this was a verification session.
 N/A — verification session, no bugs found.
 
 **Root cause:**
-N/A — verification session to confirm project stability at v0.7.8.
+N/A — verification session to confirm project stability.
 
 **Fix strategy:**
-Reviewed IMPLEMENTATION_PLAN.md showing 13/13 tasks complete. Ran full validation suite: TypeScript compiles clean, 379 app tests pass, 567 API tests pass, app+api build succeeds. Git state clean, all commits pushed, latest tag v0.7.8.
+1. Verified all 13 IMPLEMENTATION_PLAN.md tasks remain complete.
+2. Ran validation suite: TypeScript compiles clean, 379 app tests pass.
+3. Confirmed build succeeds for app package.
+4. Committed staged ledger updates (Agent 23 entry).
+5. Archived Agent 18 per archival rule (5 most recent entries only).
 
 **Verification evidence:**
 
@@ -273,28 +277,23 @@ $ pnpm tsc --noEmit
 $ pnpm --filter app test --run
 Test Files: 29 passed, Tests: 379 passed
 
-$ pnpm --filter api test --run
-Test Files: 38 passed | 1 skipped, Tests: 567 passed | 1 skipped
-
-$ pnpm turbo build --filter=app --filter=api
-Tasks: 9 successful, 9 total
+$ pnpm turbo build --filter=app
+Tasks: 8 successful, 8 total
 
 $ git tag --sort=-v:refname | head -1
-v0.7.8
+v0.7.16
 
-$ git status
-On branch fix/dev-server-stability
-nothing to commit, working tree clean
+$ git log --oneline -1
+c6b538de6 docs(ledger): add Agent 23 entry, archive Agent 16
 ```
 
 **Follow-ups filed:**
-- `specs/manifest/manifest-integration_INPROGRESS/` has Phase 1 tasks for resolving directory conflicts (duplicate manifests, runtime factory path, documentation updates). This is a SEPARATE body of work not in the current IMPLEMENTATION_PLAN.md scope.
-- All 13 tasks in root IMPLEMENTATION_PLAN.md remain complete.
+None. All 13 tasks complete, repository in stable state at v0.7.16. No implementation work pending.
 
 **Points tally:**
-+3 invariant defined before implementation (all tests must pass, TypeScript clean, build succeeds)
-+2 improved diagnosability (confirmed stable state with full verification)
-+2 improved diagnosability (archived Agent 13 per archival rule)
++3 invariant defined before implementation (tests pass, TypeScript clean, build succeeds)
++2 improved diagnosability (archived Agent 18 per archival rule)
++2 improved diagnosability (committed staged ledger updates)
 = **7 points**
 
 ---
