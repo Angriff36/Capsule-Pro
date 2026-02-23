@@ -1,6 +1,6 @@
 # Manifest Alignment Implementation Plan
 
-> **Status:** Core work complete (9.5/12 tasks done) - 2026-02-23
+> **Status:** Core work complete (10/12 tasks done) - 2026-02-23
 > **Created:** 2026-02-22
 > **Last Updated:** 2026-02-23
 > **Source:** Synthesized from specs/manifest/composite-routes/manifest-alignment-plan.md + codebase exploration
@@ -69,11 +69,17 @@
 - **Completed (partial):**
   - `recipe-detail-tabs.tsx` — Migrated `restoreRecipeVersion` to use `apiFetch(kitchenRecipeCompositeRestore(recipeId))`
   - Route helpers added to `routes.ts`: `kitchenRecipeCompositeCreate()`, `kitchenRecipeCompositeUpdate(recipeId)`, `kitchenRecipeCompositeRestore(recipeId)`
+  - **Backend blocker resolved (2026-02-23):** Composite routes now accept raw ingredients (name + unit code) in addition to pre-resolved IDs
+  - Added `packages/database/src/ingredient-resolution.ts` with `resolveIngredients()` function
+  - Updated `create-with-version/route.ts` to accept both `ResolvedIngredientInput` (with IDs) and `RawIngredientInput` (with name/unit)
+  - Updated `update-with-version/route.ts` with same dual-format support
 - **Remaining:**
-  - `new-recipe-form-client.tsx` — Requires form UI changes (free-text ingredients → structured ingredient selection with IDs) OR composite route modification to accept free-text
-  - `recipe-form-with-constraints.tsx` — Same ingredient resolution challenge
-  - `new-dish-form-client.tsx`, `recipe-detail-edit-button.tsx` — Similar migration needed
-- **Blocker:** Server actions do ingredient resolution (parsing free-text, looking up/creating ingredients). Composite routes expect pre-resolved `ingredientId`. Requires either UI changes or backend changes.
+  - Frontend migration from server actions to `apiFetch()` calls
+  - FormData → JSON conversion (file uploads need separate handling)
+  - Response handling changes (server action `ManifestActionResult` → HTTP response)
+  - Constraint override flow adaptation
+  - Revalidation strategy (server actions use `revalidatePath()`)
+- **Blocker (RESOLVED):** ~~Server actions do ingredient resolution~~ — Composite routes now handle ingredient resolution server-side in the same transaction.
 - **Rationale:** Medium — enables transaction safety. Must complete before deleting legacy actions.
 
 ### [P2-3] Delete legacy recipe server actions
@@ -113,6 +119,7 @@ Phase 7 (Cleanup) → P2-3, P3-1 (separate PR)
 | New | `composite/create-with-version/route.ts` | API (write) |
 | New | `composite/restore-version/route.ts` | API (write) |
 | New | `composite/update-with-version/route.ts` | API (write) |
+| New | `ingredient-resolution.ts` | Database (shared) |
 | Edit | `tool-registry.ts` | Command Board |
 | Edit | Frontend recipe components (5 files) | UI |
 | Delete | Legacy actions (3 files) + dead routes (~28) | Cleanup |
