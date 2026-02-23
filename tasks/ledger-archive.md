@@ -908,3 +908,59 @@ None. Build issue resolved. All 13 IMPLEMENTATION_PLAN.md tasks remain complete.
 +2 improved diagnosability (commit message explains why rootDir was the issue)
 = **18 points** (new leaderboard leader!)
 
+---
+
+# Agent 17
+
+**Agent ID:** 17
+**Date/Time:** 2026-02-23 09:07
+**Base branch/commit:** fix/dev-server-stability @ b301ca47f
+
+**Goal:**
+Verify project state and document the Command Board AI Validation fix that was applied in commit b301ca47f.
+
+**Invariants enforced:**
+
+- All test suites must pass before claiming verification complete.
+- TypeScript must compile with zero errors.
+- IMPLEMENTATION_PLAN.md must reflect current known issues status.
+
+**Subagents used:**
+
+- Explore agent: Verified composite routes exist, dead routes deleted, git status clean.
+
+**Reproducer:**
+N/A — verification session, documented prior fix.
+
+**Root cause:**
+N/A — documenting existing fix for Command Board AI validation errors.
+
+**Fix strategy:**
+Verified all 13 IMPLEMENTATION_PLAN.md tasks remain complete. Confirmed commit b301ca47f resolved the Command Board AI Validation Errors issue by updating `sanitizeErrorMessage()` to pass through safe validation error patterns. Updated IMPLEMENTATION_PLAN.md to mark the issue as resolved.
+
+**Verification evidence:**
+
+```
+$ pnpm --filter app test --run
+Test Files: 29 passed, Tests: 379 passed
+
+$ pnpm --filter api test --run
+Test Files: 38 passed | 1 skipped, Tests: 567 passed | 1 skipped
+
+$ pnpm tsc --noEmit
+(exit 0, no output)
+
+$ git status
+On branch fix/dev-server-stability
+Changes not staged for commit: IMPLEMENTATION_PLAN.md, tasks/ledger.md
+```
+
+**Follow-ups filed:**
+None. All 13 tasks complete, one known issue resolved. Task Claiming Consistency issue remains (low impact).
+
+**Points tally:**
++3 invariant defined before implementation
++2 improved diagnosability (documented fix, updated plan)
++2 improved diagnosability (archived Agent 12 per archival rule)
+= **7 points**
+
