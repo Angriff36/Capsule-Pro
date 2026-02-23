@@ -62,10 +62,10 @@
   4. Import `createPendingManifestPlan` from `@/app/lib/command-board/manifest-plans`
 - **Rationale:** High impact — UI renders tool output but `entities: []` because only 3 base tools registered (read_board_state, detect_conflicts, execute_manifest_command). `createPendingManifestPlan` exists in manifest-plans.ts but unwired.
 
-### [P1-4] Create composite `update-with-version` route
+### [P1-4] ✅ COMPLETE — Create composite `update-with-version` route
 - **File:** `apps/api/app/api/kitchen/recipes/composite/update-with-version/route.ts` (NEW)
 - **What:** POST endpoint for atomic Recipe update with new RecipeVersion creation in single `$transaction`.
-- **Rationale:** High impact — enables safe version-controlled updates. Current `updateRecipe` in actions-manifest-v2.ts lacks atomic version creation.
+- **Completed:** 2026-02-23 — Uses FOR UPDATE lock on version sequence, creates new version with provided or inherited fields, replaces ingredients/steps if provided. Enables safe version-controlled updates.
 
 ### [P2-1] ✅ COMPLETE — Add `RecipeStep` entity to manifest + PrismaStore
 - **Files:** `recipe-rules.manifest`, `prisma-store.ts`, `manifest-runtime-factory.ts`
