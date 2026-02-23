@@ -26,7 +26,6 @@ export async function GET(_request: NextRequest) {
     const overrideAudits = await database.overrideAudit.findMany({
       where: {
         tenantId,
-        deletedAt: null,
       },
       orderBy: {
         createdAt: "desc",

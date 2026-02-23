@@ -33,23 +33,32 @@ import { ManifestRuntimeEngine } from "./runtime-engine.js";
 // ---------------------------------------------------------------------------
 
 /**
- * Minimal structural type for the Prisma client.
- *
- * The factory must NOT import `@repo/database` — callers inject their own
- * Prisma singleton. This type captures only the surface area the factory
- * actually uses: `user.findFirst` (for role resolution) and `$transaction`
- * (for outbox writes).
+ * Base Prisma interface for operations used by the manifest runtime.
+ * Works with both full PrismaClient and transaction clients.
  */
-export interface PrismaLike {
+interface PrismaBase {
   user: {
     findFirst: (args: {
       where: { id: string; tenantId: string; deletedAt: null };
       select: { role: true };
     }) => Promise<{ role: string | null } | null>;
   };
-  // biome-ignore lint/suspicious/noExplicitAny: Must accept Prisma's overloaded $transaction signature (array form + function form).
+}
+
+/**
+ * Minimal structural type for the full Prisma client.
+ * Includes $transaction for outbox writes when no override is provided.
+ */
+export interface PrismaLike extends PrismaBase {
+  // biome-ignore lint/suspicious/noExplicitAny: Prisma has overloaded $transaction signatures.
   $transaction: (fn: (tx: any) => Promise<any>) => Promise<any>;
 }
+
+/**
+ * Type for transaction client passed as prismaOverride.
+ * Transaction clients omit $transaction since nesting is not allowed.
+ */
+export type PrismaTransactionClient = PrismaBase;
 
 /** Minimal structured logger the factory needs. */
 export interface ManifestRuntimeLogger {
@@ -93,7 +102,7 @@ export interface CreateManifestRuntimeDeps {
    * ALL internal Prisma operations use this client instead of `prisma`.
    * This enables atomic multi-entity writes in composite routes.
    */
-  prismaOverride?: PrismaLike;
+  prismaOverride?: PrismaTransactionClient;
   /** Structured logger. */
   log: ManifestRuntimeLogger;
   /** Error capture function (e.g. Sentry.captureException). Returns event id. */
@@ -167,7 +176,7 @@ function getManifestIR(irPath?: string): IR {
  * checks `user.role in [...]` evaluates to false → 403 for all users.
  */
 async function resolveUserRole(
-  prisma: PrismaLike,
+  prisma: PrismaBase,
   user: ManifestRuntimeContext["user"]
 ): Promise<ManifestRuntimeContext["user"]> {
   if (user.role) {

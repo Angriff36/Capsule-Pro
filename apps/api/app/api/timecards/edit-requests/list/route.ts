@@ -26,7 +26,6 @@ export async function GET(_request: NextRequest) {
     const timecardEditRequests = await database.timecardEditRequest.findMany({
       where: {
         tenantId,
-        deletedAt: null,
       },
       orderBy: {
         createdAt: "desc",
