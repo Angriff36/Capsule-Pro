@@ -5,7 +5,7 @@
     "irHash": "",
     "compilerVersion": "0.3.8",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-02-23T08:55:10.229Z",
+    "compiledAt": "2026-02-23T22:45:23.042Z",
     "sources": [
       "alerts-config-rules.manifest",
       "allergen-warning-rules.manifest",
@@ -24018,6 +24018,30 @@
           "modifiers": []
         },
         {
+          "name": "totalCost",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "costPerYield",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
           "name": "createdAt",
           "type": {
             "name": "number",
@@ -24129,7 +24153,8 @@
       "relationships": [],
       "commands": [
         "create",
-        "restore"
+        "restore",
+        "updateCosts"
       ],
       "constraints": [
         {
@@ -24306,6 +24331,32 @@
           "overrideable": false
         },
         {
+          "name": "nonNegativeCost",
+          "code": "nonNegativeCost",
+          "expression": {
+            "kind": "binary",
+            "operator": ">=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "totalCost"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Total cost cannot be negative",
+          "overrideable": false
+        },
+        {
           "name": "warnLongRecipe",
           "code": "warnLongRecipe",
           "expression": {
@@ -24431,6 +24482,18 @@
           "modifiers": []
         },
         {
+          "name": "wasteFactor",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 1
+          },
+          "modifiers": []
+        },
+        {
           "name": "deletedAt",
           "type": {
             "name": "number",
@@ -24447,6 +24510,7 @@
       "relationships": [],
       "commands": [
         "updateQuantity",
+        "updateWasteFactor",
         "create",
         "remove"
       ],
@@ -24501,6 +24565,32 @@
           },
           "severity": "block",
           "message": "Sort order must be positive",
+          "overrideable": false
+        },
+        {
+          "name": "validWasteFactor",
+          "code": "validWasteFactor",
+          "expression": {
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "wasteFactor"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Waste factor must be greater than 0",
           "overrideable": false
         }
       ],
@@ -41260,6 +41350,60 @@
       ]
     },
     {
+      "name": "RecipeVersionCostUpdated",
+      "channel": "kitchen.recipe.version.cost.updated",
+      "payload": [
+        {
+          "name": "recipeVersionId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "recipeId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "totalCost",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "costPerYield",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
       "name": "RecipeIngredientCreated",
       "channel": "kitchen.recipe.ingredient.created",
       "payload": [
@@ -41575,6 +41719,60 @@
         },
         {
           "name": "removedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "RecipeIngredientWasteFactorUpdated",
+      "channel": "kitchen.recipe.ingredient.wastefactor.updated",
+      "payload": [
+        {
+          "name": "recipeIngredientId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "recipeVersionId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "oldWasteFactor",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "newWasteFactor",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "updatedAt",
           "type": {
             "name": "number",
             "nullable": false
@@ -86684,6 +86882,157 @@
       ]
     },
     {
+      "name": "updateCosts",
+      "entity": "RecipeVersion",
+      "parameters": [
+        {
+          "name": "newTotalCost",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "newCostPerYield",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "newTotalCost"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": ">=",
+            "left": {
+              "kind": "identifier",
+              "name": "newTotalCost"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "name": "warnHighCost",
+          "code": "warnHighCost",
+          "expression": {
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "identifier",
+              "name": "newTotalCost"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 1000
+              }
+            }
+          },
+          "severity": "warn",
+          "overrideable": false
+        }
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Total cost cannot be negative"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "object",
+            "properties": [
+              {
+                "key": "messageTemplate",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "Recipe total cost is high (${cost}) — verify ingredient pricing"
+                  }
+                }
+              },
+              {
+                "key": "details",
+                "value": {
+                  "kind": "object",
+                  "properties": [
+                    {
+                      "key": "totalCost",
+                      "value": {
+                        "kind": "identifier",
+                        "name": "newTotalCost"
+                      }
+                    },
+                    {
+                      "key": "costPerYield",
+                      "value": {
+                        "kind": "identifier",
+                        "name": "newCostPerYield"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "totalCost",
+          "expression": {
+            "kind": "identifier",
+            "name": "newTotalCost"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "costPerYield",
+          "expression": {
+            "kind": "identifier",
+            "name": "newCostPerYield"
+          }
+        }
+      ],
+      "emits": [
+        "RecipeVersionCostUpdated"
+      ]
+    },
+    {
       "name": "update",
       "entity": "Recipe",
       "parameters": [
@@ -87357,6 +87706,145 @@
       ],
       "emits": [
         "RecipeIngredientUpdated"
+      ]
+    },
+    {
+      "name": "updateWasteFactor",
+      "entity": "RecipeIngredient",
+      "parameters": [
+        {
+          "name": "newWasteFactor",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "newWasteFactor"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "identifier",
+              "name": "newWasteFactor"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "name": "warnHighWasteFactor",
+          "code": "warnHighWasteFactor",
+          "expression": {
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "identifier",
+              "name": "newWasteFactor"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 1.5
+              }
+            }
+          },
+          "severity": "warn",
+          "overrideable": false
+        }
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Waste factor must be greater than 0"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "object",
+            "properties": [
+              {
+                "key": "messageTemplate",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "Waste factor is high ({factor}) — verify this is intended"
+                  }
+                }
+              },
+              {
+                "key": "details",
+                "value": {
+                  "kind": "object",
+                  "properties": [
+                    {
+                      "key": "oldWasteFactor",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "wasteFactor"
+                      }
+                    },
+                    {
+                      "key": "newWasteFactor",
+                      "value": {
+                        "kind": "identifier",
+                        "name": "newWasteFactor"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "wasteFactor",
+          "expression": {
+            "kind": "identifier",
+            "name": "newWasteFactor"
+          }
+        }
+      ],
+      "emits": [
+        "RecipeIngredientWasteFactorUpdated"
       ]
     },
     {

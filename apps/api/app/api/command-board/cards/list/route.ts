@@ -1,4 +1,4 @@
-// Auto-generated Next.js API route for CycleCountRecord
+// Auto-generated Next.js API route for CommandBoardCard
 // Generated from Manifest IR - DO NOT EDIT
 
 import type { NextRequest } from "next/server";
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     return manifestErrorResponse("Tenant not found", 400);
   }
 
-const cycleCountRecords = await database.cycleCountRecord.findMany({
+const commandBoardCards = await database.commandBoardCard.findMany({
     where: {
         tenantId,
         deletedAt: null
@@ -30,9 +30,9 @@ const cycleCountRecords = await database.cycleCountRecord.findMany({
     },
   });
 
-    return manifestSuccessResponse({ cycleCountRecords });
+    return manifestSuccessResponse({ commandBoardCards });
   } catch (error) {
-    console.error("Error fetching cycleCountRecords:", error);
+    console.error("Error fetching commandBoardCards:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

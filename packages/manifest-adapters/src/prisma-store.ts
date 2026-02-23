@@ -467,6 +467,9 @@ export class RecipeVersionPrismaStore implements Store<EntityInstance> {
           difficultyLevel: data.difficultyLevel as number | null | undefined,
           instructions: data.instructions as string | null | undefined,
           notes: data.notes as string | null | undefined,
+          totalCost: data.totalCost as number | undefined,
+          costPerYield: data.costPerYield as number | undefined,
+          costCalculatedAt: data.totalCost !== undefined ? new Date() : undefined,
           updatedAt: new Date(),
         },
       });
@@ -521,6 +524,8 @@ export class RecipeVersionPrismaStore implements Store<EntityInstance> {
       notes: version.notes ?? "",
       ingredientCount: 0, // Would need to query recipe_ingredients table
       stepCount: 0, // Would need to query recipe_steps table
+      totalCost: Number(version.totalCost) || 0,
+      costPerYield: Number(version.costPerYield) || 0,
       createdAt: version.createdAt.getTime(),
       totalTimeMinutes: prepTime + cookTime + restTime,
       isVersion1: version.versionNumber === 1,
@@ -664,6 +669,7 @@ export class RecipeIngredientPrismaStore implements Store<EntityInstance> {
         preparationNotes: (data.preparationNotes as string) || null,
         isOptional: data.isOptional as boolean,
         sortOrder: (data.sortOrder as number) || 0,
+        wasteFactor: (data.wasteFactor as number) ?? 1.0,
       },
     });
     return this.mapToManifestEntity(ingredient);
@@ -679,6 +685,7 @@ export class RecipeIngredientPrismaStore implements Store<EntityInstance> {
         data: {
           quantity: data.quantity as number | undefined,
           unitId: data.unitId as number | undefined,
+          wasteFactor: data.wasteFactor as number | undefined,
           updatedAt: new Date(),
         },
       });
@@ -717,6 +724,7 @@ export class RecipeIngredientPrismaStore implements Store<EntityInstance> {
       unitId: ingredient.unitId,
       preparationNotes: ingredient.preparationNotes ?? "",
       isOptional: ingredient.isOptional,
+      wasteFactor: Number(ingredient.wasteFactor),
       sortOrder: ingredient.sortOrder,
       createdAt: ingredient.createdAt.getTime(),
       updatedAt: ingredient.updatedAt.getTime(),

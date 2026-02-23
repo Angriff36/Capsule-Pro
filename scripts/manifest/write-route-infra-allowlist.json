@@ -28,6 +28,26 @@
       "comment": "Recipe-scoped composite routes (update-with-version, restore-version)"
     },
     {
+      "pattern": "^/api/kitchen/recipes/[^/]+/cost$",
+      "methods": ["POST"],
+      "comment": "Recipe cost calculation route using RecipeVersion.updateCosts command"
+    },
+    {
+      "pattern": "^/api/kitchen/recipes/[^/]+/scale$",
+      "methods": ["POST", "PATCH"],
+      "comment": "Recipe scaling routes using RecipeIngredient.updateWasteFactor command"
+    },
+    {
+      "prefix": "/api/kitchen/allergens/update-dish",
+      "methods": ["POST"],
+      "comment": "Allergen update route using Dish.update command"
+    },
+    {
+      "prefix": "/api/kitchen/prep-lists/save-db",
+      "methods": ["POST"],
+      "comment": "Prep list save route using PrepList/PrepListItem manifest commands"
+    },
+    {
       "prefix": "/api/kitchen/manifest/",
       "methods": ["POST", "PUT", "PATCH", "DELETE"],
       "comment": "Legacy infrastructure routes using Manifest runtime (to be migrated)"
