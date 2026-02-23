@@ -1,5 +1,9 @@
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import {
+  database,
+  type IngredientInput,
+  resolveIngredients,
+} from "@repo/database";
 import { createManifestRuntime } from "@repo/manifest-adapters/manifest-runtime-factory";
 import {
   manifestErrorResponse,
@@ -12,6 +16,46 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { createSentryTelemetry } from "@/lib/manifest/telemetry";
 
 export const runtime = "nodejs";
+
+/**
+ * Ingredient in resolved format (with pre-resolved IDs).
+ * Used when frontend has already resolved ingredient and unit IDs.
+ */
+interface ResolvedIngredientInput {
+  ingredientId: string;
+  quantity: number;
+  unitId: number;
+  preparationNotes?: string;
+  isOptional?: boolean;
+  sortOrder: number;
+}
+
+/**
+ * Ingredient in raw format (with name and unit code).
+ * Used for backward compatibility with frontend forms that send free-text.
+ */
+interface RawIngredientInput {
+  name: string;
+  quantity: number;
+  unit?: string | null;
+  preparationNotes?: string | null;
+  isOptional?: boolean;
+  sortOrder: number;
+}
+
+/**
+ * Union type accepting either resolved or raw ingredient format.
+ */
+type IngredientInputItem = ResolvedIngredientInput | RawIngredientInput;
+
+/**
+ * Type guard to check if ingredient is in resolved format.
+ */
+function isResolvedIngredient(
+  item: IngredientInputItem
+): item is ResolvedIngredientInput {
+  return typeof (item as ResolvedIngredientInput).ingredientId === "string";
+}
 
 interface CreateRecipeRequest {
   // Recipe fields
@@ -30,15 +74,8 @@ interface CreateRecipeRequest {
   difficultyLevel?: number;
   instructions?: string;
   notes?: string;
-  // Related entities
-  ingredients?: {
-    ingredientId: string;
-    quantity: number;
-    unitId: number;
-    preparationNotes?: string;
-    isOptional?: boolean;
-    sortOrder: number;
-  }[];
+  // Related entities - supports both resolved and raw formats
+  ingredients?: IngredientInputItem[];
   steps?: {
     stepNumber: number;
     instruction: string;
@@ -159,15 +196,60 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // 3. Create RecipeIngredients
+      // 3. Resolve and create RecipeIngredients
       const createdIngredients = [];
       if (body.ingredients && body.ingredients.length > 0) {
-        for (const ingredient of body.ingredients) {
-          const ingredientId = crypto.randomUUID();
+        // Separate resolved and raw ingredients
+        const resolvedIngredients: ResolvedIngredientInput[] = [];
+        const rawIngredients: IngredientInput[] = [];
+
+        for (const item of body.ingredients) {
+          if (isResolvedIngredient(item)) {
+            resolvedIngredients.push(item);
+          } else {
+            rawIngredients.push({
+              name: item.name,
+              quantity: item.quantity,
+              unit: item.unit,
+              preparationNotes: item.preparationNotes,
+              isOptional: item.isOptional ?? false,
+            });
+          }
+        }
+
+        // Resolve raw ingredients to IDs within the same transaction
+        const newlyResolved =
+          rawIngredients.length > 0
+            ? await resolveIngredients(tx, tenantId, rawIngredients)
+            : [];
+
+        // Combine all resolved ingredients with their sort orders
+        const allIngredients = [
+          ...resolvedIngredients.map((r) => ({
+            ingredientId: r.ingredientId,
+            quantity: r.quantity,
+            unitId: r.unitId,
+            preparationNotes: r.preparationNotes || null,
+            isOptional: r.isOptional ?? false,
+            sortOrder: r.sortOrder,
+          })),
+          ...newlyResolved.map((r, idx) => ({
+            ingredientId: r.ingredientId,
+            quantity: r.quantity,
+            unitId: r.unitId,
+            preparationNotes: r.preparationNotes,
+            isOptional: r.isOptional,
+            sortOrder: rawIngredients[idx]?.sortOrder ?? idx,
+          })),
+        ];
+
+        // Create RecipeIngredient records
+        for (const ingredient of allIngredients) {
+          const recipeIngredientId = crypto.randomUUID();
           const ingredientResult = await runtime.runCommand(
             "create",
             {
-              id: ingredientId,
+              id: recipeIngredientId,
               recipeVersionId: versionId,
               ingredientId: ingredient.ingredientId,
               quantity: ingredient.quantity,
