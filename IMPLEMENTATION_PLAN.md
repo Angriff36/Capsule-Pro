@@ -43,10 +43,10 @@
 - **What:** POST endpoint wrapping Recipe + RecipeVersion + RecipeIngredients + RecipeSteps in single `$transaction`.
 - **Completed:** 2026-02-23 — Uses `prismaOverride` for atomic multi-entity writes. Fixes cuisineType bug by using PrismaStore with correct field mapping instead of raw SQL.
 
-### [P1-2] Create composite `restore-version` route
+### [P1-2] ✅ COMPLETE — Create composite `restore-version` route
 - **File:** `apps/api/app/api/kitchen/recipes/composite/restore-version/route.ts` (NEW)
 - **What:** POST endpoint using new `restore` command with `FOR UPDATE` lock on version sequence.
-- **Rationale:** High impact — replaces legacy `restoreRecipeVersion` in actions.ts (raw SQL, bypasses Manifest), adds constraint validation + outbox events.
+- **Completed:** 2026-02-23 — Uses `FOR UPDATE` lock to prevent concurrent restores, copies ingredients and steps from source version, creates new version through Manifest with constraints and outbox events. Replaces legacy raw SQL implementation.
 
 ### [P1-3] Register `suggest_manifest_plan` tool server-side
 - **File:** `apps/app/app/api/command-board/chat/tool-registry.ts`
