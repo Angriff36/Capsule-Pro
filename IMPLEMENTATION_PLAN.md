@@ -33,10 +33,10 @@
 - **What:** GET endpoint returning `RecipeVersionDetail` with ingredients + steps.
 - **Completed:** 2026-02-23 — Returns version data with joined ingredients and steps.
 
-### [P0-4] Create version compare endpoint `compare/route.ts`
+### [P0-4] ✅ COMPLETE — Create version compare endpoint `compare/route.ts`
 - **File:** `apps/api/app/api/kitchen/recipes/[recipeId]/versions/compare/route.ts` (NEW)
 - **What:** GET endpoint accepting `?from=X&to=Y`, returning field-level diff.
-- **Rationale:** Blocking — frontend helper `kitchenRecipeVersionsCompare()` exists (routes.ts), used in recipe-detail-tabs.tsx:467, but route returns 404.
+- **Completed:** 2026-02-23 — Compares base fields, ingredients (by ingredientId), and steps (by stepNumber). Security: both versions must belong to same recipeId AND tenantId.
 
 ### [P1-1] Create composite `create-with-version` route
 - **File:** `apps/api/app/api/kitchen/recipes/composite/create-with-version/route.ts` (NEW)
