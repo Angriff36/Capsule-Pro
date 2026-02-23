@@ -1,12 +1,12 @@
 import { randomUUID } from "node:crypto";
+import type { Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { NextResponse } from "next/server";
 import {
   buildRestoreResponse,
   copyIngredientsFromVersion,
   copyStepsFromVersion,
-  createOutboxEvent,
   createRuntimeContext,
-  createVersionRecord,
   createVersionViaManifest,
   fetchAndValidateRecipe,
   fetchSourceVersion,
@@ -110,50 +110,55 @@ export async function POST(request: Request, context: RouteContext) {
     tags: sourceVersion.tags ?? [],
   });
 
-  // Create the new version record in Prisma
-  await createVersionRecord(
-    tenantId,
-    newVersionId,
-    recipeId,
-    nextVersionNumber,
-    {
-      name: sourceVersion.name,
-      category: sourceVersion.category,
-      cuisineType: sourceVersion.cuisine_type,
-      description: sourceVersion.description,
-      tags: sourceVersion.tags ?? [],
-      yieldQuantity: sourceVersion.yield_quantity,
-      yieldUnitId: sourceVersion.yield_unit_id,
-      yieldDescription: sourceVersion.yield_description,
-      prepTimeMinutes: sourceVersion.prep_time_minutes,
-      cookTimeMinutes: sourceVersion.cook_time_minutes,
-      restTimeMinutes: sourceVersion.rest_time_minutes,
-      difficultyLevel: sourceVersion.difficulty_level,
-      instructions: sourceVersion.instructions,
-      notes: sourceVersion.notes,
-    }
-  );
+  // Create the new version record + outbox event atomically, then copy data
+  await database.$transaction(async (tx) => {
+    await tx.recipeVersion.create({
+      data: {
+        tenantId,
+        id: newVersionId,
+        recipeId,
+        name: sourceVersion.name,
+        versionNumber: nextVersionNumber,
+        category: sourceVersion.category,
+        cuisineType: sourceVersion.cuisine_type,
+        description: sourceVersion.description,
+        tags: sourceVersion.tags ?? [],
+        yieldQuantity: sourceVersion.yield_quantity,
+        yieldUnitId: sourceVersion.yield_unit_id,
+        yieldDescription: sourceVersion.yield_description,
+        prepTimeMinutes: sourceVersion.prep_time_minutes,
+        cookTimeMinutes: sourceVersion.cook_time_minutes,
+        restTimeMinutes: sourceVersion.rest_time_minutes,
+        difficultyLevel: sourceVersion.difficulty_level,
+        instructions: sourceVersion.instructions,
+        notes: sourceVersion.notes,
+      },
+    });
 
-  // Copy ingredients and steps from source version
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "RecipeVersion",
+        aggregateId: newVersionId,
+        eventType: "kitchen.recipe.version.restored",
+        payload: {
+          newVersionId,
+          sourceVersionId: body.sourceVersionId,
+          recipeId,
+          versionNumber: nextVersionNumber,
+        } as Prisma.InputJsonValue,
+        status: "pending" as const,
+      },
+    });
+  });
+
+  // Copy ingredients and steps from source version (after commit)
   await copyIngredientsFromVersion(
     tenantId,
     body.sourceVersionId,
     newVersionId
   );
   await copyStepsFromVersion(tenantId, body.sourceVersionId, newVersionId);
-
-  // Create outbox event for downstream consumers
-  await createOutboxEvent(
-    tenantId,
-    newVersionId,
-    "kitchen.recipe.version.restored",
-    {
-      newVersionId,
-      sourceVersionId: body.sourceVersionId,
-      recipeId,
-      versionNumber: nextVersionNumber,
-    }
-  );
 
   return buildRestoreResponse({
     versionId: newVersionId,

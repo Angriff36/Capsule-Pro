@@ -118,32 +118,33 @@ export async function POST(request: Request, context: RouteContext) {
       );
     }
 
-    // Sync the updated state back to Prisma
+    // Sync the updated state back to Prisma + outbox atomically
     const instance = await runtime.getInstance("Recipe", recipeId);
     if (instance) {
-      await database.recipe.update({
-        where: { tenantId_id: { tenantId, id: recipeId } },
-        data: {
-          isActive: instance.isActive as boolean,
-        },
-      });
-
-      // Create outbox event for downstream consumers
-      await database.outboxEvent.create({
-        data: {
-          tenantId,
-          aggregateType: "Recipe",
-          aggregateId: recipeId,
-          eventType: "kitchen.recipe.deactivated",
-          payload: {
-            recipeId,
-            name: instance.name as string,
+      await database.$transaction(async (tx) => {
+        await tx.recipe.update({
+          where: { tenantId_id: { tenantId, id: recipeId } },
+          data: {
             isActive: instance.isActive as boolean,
-            reason,
-            constraintOutcomes: result.constraintOutcomes,
-          } as Prisma.InputJsonValue,
-          status: "pending" as const,
-        },
+          },
+        });
+
+        await tx.outboxEvent.create({
+          data: {
+            tenantId,
+            aggregateType: "Recipe",
+            aggregateId: recipeId,
+            eventType: "kitchen.recipe.deactivated",
+            payload: {
+              recipeId,
+              name: instance.name as string,
+              isActive: instance.isActive as boolean,
+              reason,
+              constraintOutcomes: result.constraintOutcomes,
+            } as Prisma.InputJsonValue,
+            status: "pending" as const,
+          },
+        });
       });
 
       return NextResponse.json(

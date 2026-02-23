@@ -3,7 +3,6 @@ import type { Prisma } from "@repo/database";
 import {
   buildVersionResponse,
   type CreateVersionRequest,
-  createOutboxEvent,
   createRuntimeContext,
   executeVersionCreationWorkflow,
   fetchAndValidateRecipe,
@@ -52,33 +51,28 @@ export async function POST(request: Request, context: RouteContext) {
   // Normalize request data
   const normalizedData = normalizeCreateVersionRequest(body, recipe);
 
-  // Execute version creation workflow
+  // Execute version creation workflow with atomic outbox
   const workflowResult = await executeVersionCreationWorkflow(
     tenantId,
     recipeId,
     recipeVersionId,
     nextVersionNumber,
     runtimeContext,
-    normalizedData
+    normalizedData,
+    {
+      eventType: "kitchen.recipe.version.created",
+      payload: {
+        versionId: recipeVersionId,
+        recipeId,
+        versionNumber: nextVersionNumber,
+        yieldQuantity: Number(normalizedData.yieldQuantity),
+      } as Prisma.InputJsonValue,
+    }
   );
 
   if (!workflowResult.success) {
     return workflowResult.response;
   }
-
-  // Create outbox event for downstream consumers
-  await createOutboxEvent(
-    tenantId,
-    recipeVersionId,
-    "kitchen.recipe.version.created",
-    {
-      versionId: recipeVersionId,
-      recipeId,
-      versionNumber: nextVersionNumber,
-      yieldQuantity: Number(normalizedData.yieldQuantity),
-      constraintOutcomes: workflowResult.result.constraintOutcomes,
-    } as Prisma.InputJsonValue
-  );
 
   return buildVersionResponse({
     versionId: recipeVersionId,

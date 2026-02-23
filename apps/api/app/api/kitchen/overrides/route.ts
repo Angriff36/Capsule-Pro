@@ -91,48 +91,47 @@ export async function POST(request: Request) {
     timestamp: Date.now(),
   };
 
-  // Record the override in the audit table
+  // Record the override in the audit table + outbox event atomically
   try {
-    await database.overrideAudit.create({
-      data: {
-        tenantId,
-        entityType,
-        entityId,
-        constraintId: constraintCode,
-        guardExpression: "", // Would be populated from constraint outcome
-        overriddenBy: currentUser.id,
-        overrideReason: details ? `${reason}: ${details}` : reason,
-        authorizedBy: currentUser.id,
-        authorizedAt: new Date(),
-      },
-    });
-  } catch (error) {
-    // If the table doesn't exist yet, just log and continue
-    logger.warn("Override audit table not available", { error: String(error) });
-  }
-
-  // Create outbox event for the override
-  try {
-    await database.outboxEvent.create({
-      data: {
-        tenantId,
-        aggregateType: entityType,
-        aggregateId: entityId,
-        eventType: "kitchen.constraint.overridden",
-        payload: {
-          constraintCode,
-          reason: details ? `${reason}: ${details}` : reason,
+    await database.$transaction(async (tx) => {
+      await tx.overrideAudit.create({
+        data: {
+          tenantId,
+          entityType,
+          entityId,
+          constraintId: constraintCode,
+          guardExpression: "", // Would be populated from constraint outcome
+          overriddenBy: currentUser.id,
+          overrideReason: details ? `${reason}: ${details}` : reason,
           authorizedBy: currentUser.id,
-          authorizedByName:
-            `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim(),
-          command,
-          timestamp: overrideRequest.timestamp,
+          authorizedAt: new Date(),
         },
-        status: "pending" as const,
-      },
+      });
+
+      await tx.outboxEvent.create({
+        data: {
+          tenantId,
+          aggregateType: entityType,
+          aggregateId: entityId,
+          eventType: "kitchen.constraint.overridden",
+          payload: {
+            constraintCode,
+            reason: details ? `${reason}: ${details}` : reason,
+            authorizedBy: currentUser.id,
+            authorizedByName:
+              `${currentUser.firstName || ""} ${currentUser.lastName || ""}`.trim(),
+            command,
+            timestamp: overrideRequest.timestamp,
+          },
+          status: "pending" as const,
+        },
+      });
     });
   } catch (error) {
-    logger.warn("Outbox event creation failed", { error: String(error) });
+    // If the audit table doesn't exist yet, log and continue
+    logger.warn("Override audit + outbox transaction failed", {
+      error: String(error),
+    });
   }
 
   return NextResponse.json({

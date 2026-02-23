@@ -593,22 +593,67 @@ export async function copyStepsFromVersion(
   }
 }
 
-// Helper: Create outbox event
-export async function createOutboxEvent(
+// Helper: Create version record + outbox event atomically
+export async function createVersionRecordWithOutbox(
   tenantId: string,
   versionId: string,
-  eventType: string,
-  payload: unknown
+  recipeId: string,
+  versionNumber: number,
+  data: {
+    name: string;
+    category?: string | null;
+    cuisineType?: string | null;
+    description?: string | null;
+    tags?: string[];
+    yieldQuantity: number;
+    yieldUnitId: number;
+    yieldDescription?: string | null;
+    prepTimeMinutes?: number | null;
+    cookTimeMinutes?: number | null;
+    restTimeMinutes?: number | null;
+    difficultyLevel?: number | null;
+    instructions?: string | null;
+    notes?: string | null;
+  },
+  outbox: {
+    eventType: string;
+    payload: unknown;
+  }
 ): Promise<void> {
-  await database.outboxEvent.create({
-    data: {
-      tenantId,
-      aggregateType: "RecipeVersion",
-      aggregateId: versionId,
-      eventType,
-      payload: payload as Prisma.InputJsonValue,
-      status: "pending" as const,
-    },
+  await database.$transaction(async (tx) => {
+    await tx.recipeVersion.create({
+      data: {
+        tenantId,
+        id: versionId,
+        recipeId,
+        name: data.name,
+        versionNumber,
+        category: data.category,
+        cuisineType: data.cuisineType,
+        description: data.description,
+        tags: data.tags ?? [],
+        yieldQuantity: data.yieldQuantity,
+        yieldUnitId: data.yieldUnitId,
+        yieldDescription: data.yieldDescription,
+        prepTimeMinutes: data.prepTimeMinutes,
+        cookTimeMinutes: data.cookTimeMinutes,
+        restTimeMinutes: data.restTimeMinutes,
+        difficultyLevel: data.difficultyLevel,
+        instructions: data.instructions,
+        notes: data.notes,
+      },
+    });
+
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "RecipeVersion",
+        aggregateId: versionId,
+        eventType: outbox.eventType,
+        payload: outbox.payload as Prisma.InputJsonValue,
+        status: "pending" as const,
+      },
+    });
   });
 }
 
@@ -689,7 +734,11 @@ export async function executeVersionCreationWorkflow(
   versionId: string,
   versionNumber: number,
   runtimeContext: KitchenOpsContext,
-  normalizedData: NormalizedVersionData
+  normalizedData: NormalizedVersionData,
+  outbox?: {
+    eventType: string;
+    payload: unknown;
+  }
 ): Promise<
   | {
       success: true;
@@ -724,8 +773,7 @@ export async function executeVersionCreationWorkflow(
     return manifestResult;
   }
 
-  // Sync to Prisma - create the version record
-  await createVersionRecord(tenantId, versionId, recipeId, versionNumber, {
+  const versionData = {
     name: normalizedData.name,
     category: normalizedData.category || null,
     cuisineType: normalizedData.cuisineType || null,
@@ -740,7 +788,27 @@ export async function executeVersionCreationWorkflow(
     difficultyLevel: normalizedData.difficultyLevel || null,
     instructions: normalizedData.instructions || null,
     notes: normalizedData.notes || null,
-  });
+  };
+
+  // Sync to Prisma - create the version record (+ outbox atomically if provided)
+  if (outbox) {
+    await createVersionRecordWithOutbox(
+      tenantId,
+      versionId,
+      recipeId,
+      versionNumber,
+      versionData,
+      outbox
+    );
+  } else {
+    await createVersionRecord(
+      tenantId,
+      versionId,
+      recipeId,
+      versionNumber,
+      versionData
+    );
+  }
 
   return manifestResult;
 }

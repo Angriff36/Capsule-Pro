@@ -134,35 +134,36 @@ export async function createMenuManifest(
     };
   }
 
-  // Persist to Prisma
-  await database.menu.create({
-    data: {
-      tenantId,
-      id: menuId,
-      name,
-      description,
-      category,
-      isActive: true,
-      basePrice: basePrice > 0 ? basePrice : null,
-      pricePerPerson: pricePerPerson > 0 ? pricePerPerson : null,
-      minGuests: minGuests > 0 ? minGuests : null,
-      maxGuests: maxGuests > 0 ? maxGuests : null,
-    },
-  });
-
-  // Emit events to outbox
-  for (const event of result.emittedEvents) {
-    await database.outboxEvent.create({
+  // Persist to Prisma + emit outbox events atomically
+  await database.$transaction(async (tx) => {
+    await tx.menu.create({
       data: {
         tenantId,
-        id: randomUUID(),
-        eventType: event.name,
-        payload: event.payload as Prisma.InputJsonValue,
-        aggregateId: menuId,
-        aggregateType: "Menu",
+        id: menuId,
+        name,
+        description,
+        category,
+        isActive: true,
+        basePrice: basePrice > 0 ? basePrice : null,
+        pricePerPerson: pricePerPerson > 0 ? pricePerPerson : null,
+        minGuests: minGuests > 0 ? minGuests : null,
+        maxGuests: maxGuests > 0 ? maxGuests : null,
       },
     });
-  }
+
+    for (const event of result.emittedEvents) {
+      await tx.outboxEvent.create({
+        data: {
+          tenantId,
+          id: randomUUID(),
+          eventType: event.name,
+          payload: event.payload as Prisma.InputJsonValue,
+          aggregateId: menuId,
+          aggregateType: "Menu",
+        },
+      });
+    }
+  });
 
   revalidatePath("/kitchen/menus");
 
@@ -319,34 +320,35 @@ export async function updateMenuManifest(
     };
   }
 
-  // Persist to Prisma
-  await database.menu.update({
-    where: { tenantId_id: { tenantId, id: menuId } },
-    data: {
-      name,
-      description,
-      category,
-      isActive,
-      basePrice: basePrice > 0 ? basePrice : null,
-      pricePerPerson: pricePerPerson > 0 ? pricePerPerson : null,
-      minGuests: minGuests > 0 ? minGuests : null,
-      maxGuests: maxGuests > 0 ? maxGuests : null,
-    },
-  });
-
-  // Emit events to outbox
-  for (const event of result.emittedEvents) {
-    await database.outboxEvent.create({
+  // Persist to Prisma + emit outbox events atomically
+  await database.$transaction(async (tx) => {
+    await tx.menu.update({
+      where: { tenantId_id: { tenantId, id: menuId } },
       data: {
-        tenantId,
-        id: randomUUID(),
-        eventType: event.name,
-        payload: event.payload as Prisma.InputJsonValue,
-        aggregateId: menuId,
-        aggregateType: "Menu",
+        name,
+        description,
+        category,
+        isActive,
+        basePrice: basePrice > 0 ? basePrice : null,
+        pricePerPerson: pricePerPerson > 0 ? pricePerPerson : null,
+        minGuests: minGuests > 0 ? minGuests : null,
+        maxGuests: maxGuests > 0 ? maxGuests : null,
       },
     });
-  }
+
+    for (const event of result.emittedEvents) {
+      await tx.outboxEvent.create({
+        data: {
+          tenantId,
+          id: randomUUID(),
+          eventType: event.name,
+          payload: event.payload as Prisma.InputJsonValue,
+          aggregateId: menuId,
+          aggregateType: "Menu",
+        },
+      });
+    }
+  });
 
   revalidatePath("/kitchen/menus");
   revalidatePath(`/kitchen/menus/${menuId}`);
@@ -484,25 +486,26 @@ export async function activateMenuManifest(
     };
   }
 
-  // Persist to Prisma
-  await database.menu.update({
-    where: { tenantId_id: { tenantId, id: menuId } },
-    data: { isActive: true },
-  });
-
-  // Emit events to outbox
-  for (const event of result.emittedEvents) {
-    await database.outboxEvent.create({
-      data: {
-        tenantId,
-        id: randomUUID(),
-        eventType: event.name,
-        payload: event.payload as Prisma.InputJsonValue,
-        aggregateId: menuId,
-        aggregateType: "Menu",
-      },
+  // Persist to Prisma + emit outbox events atomically
+  await database.$transaction(async (tx) => {
+    await tx.menu.update({
+      where: { tenantId_id: { tenantId, id: menuId } },
+      data: { isActive: true },
     });
-  }
+
+    for (const event of result.emittedEvents) {
+      await tx.outboxEvent.create({
+        data: {
+          tenantId,
+          id: randomUUID(),
+          eventType: event.name,
+          payload: event.payload as Prisma.InputJsonValue,
+          aggregateId: menuId,
+          aggregateType: "Menu",
+        },
+      });
+    }
+  });
 
   revalidatePath("/kitchen/menus");
   revalidatePath(`/kitchen/menus/${menuId}`);
@@ -559,25 +562,26 @@ export async function deactivateMenuManifest(
     };
   }
 
-  // Persist to Prisma
-  await database.menu.update({
-    where: { tenantId_id: { tenantId, id: menuId } },
-    data: { isActive: false },
-  });
-
-  // Emit events to outbox
-  for (const event of result.emittedEvents) {
-    await database.outboxEvent.create({
-      data: {
-        tenantId,
-        id: randomUUID(),
-        eventType: event.name,
-        payload: event.payload as Prisma.InputJsonValue,
-        aggregateId: menuId,
-        aggregateType: "Menu",
-      },
+  // Persist to Prisma + emit outbox events atomically
+  await database.$transaction(async (tx) => {
+    await tx.menu.update({
+      where: { tenantId_id: { tenantId, id: menuId } },
+      data: { isActive: false },
     });
-  }
+
+    for (const event of result.emittedEvents) {
+      await tx.outboxEvent.create({
+        data: {
+          tenantId,
+          id: randomUUID(),
+          eventType: event.name,
+          payload: event.payload as Prisma.InputJsonValue,
+          aggregateId: menuId,
+          aggregateType: "Menu",
+        },
+      });
+    }
+  });
 
   revalidatePath("/kitchen/menus");
   revalidatePath(`/kitchen/menus/${menuId}`);

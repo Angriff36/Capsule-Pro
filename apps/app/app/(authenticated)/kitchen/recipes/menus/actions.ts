@@ -14,24 +14,6 @@ const parseNumber = (value: FormDataEntryValue | null) => {
   return Number.isFinite(parsed) ? parsed : null;
 };
 
-const enqueueOutboxEvent = async (
-  tenantId: string,
-  aggregateType: string,
-  aggregateId: string,
-  eventType: string,
-  payload: Prisma.InputJsonValue
-) => {
-  await database.outboxEvent.create({
-    data: {
-      tenantId,
-      aggregateType,
-      aggregateId,
-      eventType,
-      payload,
-    },
-  });
-};
-
 export const createMenu = async (formData: FormData) => {
   const tenantId = await requireTenantId();
 
@@ -49,40 +31,49 @@ export const createMenu = async (formData: FormData) => {
 
   const menuId = randomUUID();
 
-  await database.$executeRaw(
-    Prisma.sql`
-      INSERT INTO tenant_kitchen.menus (
-        tenant_id,
-        id,
-        name,
-        description,
-        category,
-        base_price,
-        price_per_person,
-        min_guests,
-        max_guests,
-        is_active
-      )
-      VALUES (
-        ${tenantId},
-        ${menuId},
-        ${name},
-        ${description},
-        ${category},
-        ${basePrice},
-        ${pricePerPerson},
-        ${minGuests},
-        ${maxGuests},
-        true
-      )
-    `
-  );
+  await database.$transaction(async (tx) => {
+    await tx.$executeRaw(
+      Prisma.sql`
+        INSERT INTO tenant_kitchen.menus (
+          tenant_id,
+          id,
+          name,
+          description,
+          category,
+          base_price,
+          price_per_person,
+          min_guests,
+          max_guests,
+          is_active
+        )
+        VALUES (
+          ${tenantId},
+          ${menuId},
+          ${name},
+          ${description},
+          ${category},
+          ${basePrice},
+          ${pricePerPerson},
+          ${minGuests},
+          ${maxGuests},
+          true
+        )
+      `
+    );
+
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "menu",
+        aggregateId: menuId,
+        eventType: "menu.created",
+        payload: { menuId, name },
+        status: "pending" as const,
+      },
+    });
+  });
 
   revalidatePath("/kitchen/recipes/menus");
-  await enqueueOutboxEvent(tenantId, "menu", menuId, "menu.created", {
-    menuId,
-    name,
-  });
   redirect("/kitchen/recipes?tab=menus");
 };
 
@@ -124,27 +115,35 @@ export const updateMenu = async (menuId: string, formData: FormData) => {
   const maxGuests = parseNumber(formData.get("maxGuests"));
   const isActive = formData.get("isActive") === "on";
 
-  await database.$executeRaw(
-    Prisma.sql`
-      UPDATE tenant_kitchen.menus
-      SET
-        name = ${name},
-        description = ${description},
-        category = ${category},
-        base_price = ${basePrice},
-        price_per_person = ${pricePerPerson},
-        min_guests = ${minGuests},
-        max_guests = ${maxGuests},
-        is_active = ${isActive},
-        updated_at = NOW()
-      WHERE id = ${menuId}
-        AND tenant_id = ${tenantId}
-    `
-  );
+  await database.$transaction(async (tx) => {
+    await tx.$executeRaw(
+      Prisma.sql`
+        UPDATE tenant_kitchen.menus
+        SET
+          name = ${name},
+          description = ${description},
+          category = ${category},
+          base_price = ${basePrice},
+          price_per_person = ${pricePerPerson},
+          min_guests = ${minGuests},
+          max_guests = ${maxGuests},
+          is_active = ${isActive},
+          updated_at = NOW()
+        WHERE id = ${menuId}
+          AND tenant_id = ${tenantId}
+      `
+    );
 
-  await enqueueOutboxEvent(tenantId, "menu", menuId, "menu.updated", {
-    menuId,
-    name,
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "menu",
+        aggregateId: menuId,
+        eventType: "menu.updated",
+        payload: { menuId, name },
+        status: "pending" as const,
+      },
+    });
   });
 
   revalidatePath("/kitchen/recipes/menus");
@@ -176,19 +175,27 @@ export const deleteMenu = async (menuId: string) => {
     throw new Error("Menu not found or access denied.");
   }
 
-  // Soft delete the menu
-  await database.$executeRaw(
-    Prisma.sql`
-      UPDATE tenant_kitchen.menus
-      SET deleted_at = NOW()
-      WHERE id = ${menuId}
-        AND tenant_id = ${tenantId}
-    `
-  );
+  // Soft delete the menu + emit outbox event atomically
+  await database.$transaction(async (tx) => {
+    await tx.$executeRaw(
+      Prisma.sql`
+        UPDATE tenant_kitchen.menus
+        SET deleted_at = NOW()
+        WHERE id = ${menuId}
+          AND tenant_id = ${tenantId}
+      `
+    );
 
-  await enqueueOutboxEvent(tenantId, "menu", menuId, "menu.deleted", {
-    menuId,
-    name: existingMenu.name,
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "menu",
+        aggregateId: menuId,
+        eventType: "menu.deleted",
+        payload: { menuId, name: existingMenu.name },
+        status: "pending" as const,
+      },
+    });
   });
 
   revalidatePath("/kitchen/recipes/menus");
@@ -499,34 +506,40 @@ export const addDishToMenu = async (
   const nextSortOrder = (maxSortOrder?.max_sort_order ?? 0) + 1;
   const menuDishId = randomUUID();
 
-  await database.$executeRaw(
-    Prisma.sql`
-      INSERT INTO tenant_kitchen.menu_dishes (
-        tenant_id,
-        id,
-        menu_id,
-        dish_id,
-        course,
-        sort_order,
-        is_optional
-      )
-      VALUES (
-        ${tenantId},
-        ${menuDishId},
-        ${menuId},
-        ${dishId},
-        ${course || null},
-        ${nextSortOrder},
-        false
-      )
-    `
-  );
+  await database.$transaction(async (tx) => {
+    await tx.$executeRaw(
+      Prisma.sql`
+        INSERT INTO tenant_kitchen.menu_dishes (
+          tenant_id,
+          id,
+          menu_id,
+          dish_id,
+          course,
+          sort_order,
+          is_optional
+        )
+        VALUES (
+          ${tenantId},
+          ${menuDishId},
+          ${menuId},
+          ${dishId},
+          ${course || null},
+          ${nextSortOrder},
+          false
+        )
+      `
+    );
 
-  await enqueueOutboxEvent(tenantId, "menu", menuId, "menu.dish_added", {
-    menuId,
-    dishId,
-    menuDishId,
-    course: course || null,
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "menu",
+        aggregateId: menuId,
+        eventType: "menu.dish_added",
+        payload: { menuId, dishId, menuDishId, course: course || null },
+        status: "pending" as const,
+      },
+    });
   });
 
   revalidatePath("/kitchen/recipes/menus");
@@ -563,21 +576,28 @@ export const removeDishFromMenu = async (menuId: string, dishId: string) => {
     throw new Error("Dish is not in the menu or access denied.");
   }
 
-  // Soft delete the menu-dish relationship
-  await database.$executeRaw(
-    Prisma.sql`
-      UPDATE tenant_kitchen.menu_dishes
-      SET deleted_at = NOW()
-      WHERE menu_id = ${menuId}
-        AND dish_id = ${dishId}
-        AND tenant_id = ${tenantId}
-    `
-  );
+  // Soft delete the menu-dish relationship + emit outbox event atomically
+  await database.$transaction(async (tx) => {
+    await tx.$executeRaw(
+      Prisma.sql`
+        UPDATE tenant_kitchen.menu_dishes
+        SET deleted_at = NOW()
+        WHERE menu_id = ${menuId}
+          AND dish_id = ${dishId}
+          AND tenant_id = ${tenantId}
+      `
+    );
 
-  await enqueueOutboxEvent(tenantId, "menu", menuId, "menu.dish_removed", {
-    menuId,
-    dishId,
-    menuDishId: menuDish.id,
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "menu",
+        aggregateId: menuId,
+        eventType: "menu.dish_removed",
+        payload: { menuId, dishId, menuDishId: menuDish.id },
+        status: "pending" as const,
+      },
+    });
   });
 
   revalidatePath("/kitchen/recipes/menus");
@@ -627,23 +647,31 @@ export const reorderMenuDishes = async (menuId: string, dishIds: string[]) => {
     throw new Error("One or more dishes not found in menu or access denied.");
   }
 
-  // Update sort order for all dishes
-  for (let i = 0; i < dishIds.length; i++) {
-    await database.$executeRaw(
-      Prisma.sql`
-        UPDATE tenant_kitchen.menu_dishes
-        SET sort_order = ${i + 1},
-            updated_at = NOW()
-        WHERE menu_id = ${menuId}
-          AND dish_id = ${dishIds[i]}
-          AND tenant_id = ${tenantId}
-      `
-    );
-  }
+  // Update sort order for all dishes + emit outbox event atomically
+  await database.$transaction(async (tx) => {
+    for (let i = 0; i < dishIds.length; i++) {
+      await tx.$executeRaw(
+        Prisma.sql`
+          UPDATE tenant_kitchen.menu_dishes
+          SET sort_order = ${i + 1},
+              updated_at = NOW()
+          WHERE menu_id = ${menuId}
+            AND dish_id = ${dishIds[i]}
+            AND tenant_id = ${tenantId}
+        `
+      );
+    }
 
-  await enqueueOutboxEvent(tenantId, "menu", menuId, "menu.dishes_reordered", {
-    menuId,
-    dishIds,
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "menu",
+        aggregateId: menuId,
+        eventType: "menu.dishes_reordered",
+        payload: { menuId, dishIds },
+        status: "pending" as const,
+      },
+    });
   });
 
   revalidatePath("/kitchen/recipes/menus");
