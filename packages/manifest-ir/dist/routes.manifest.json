@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-02-22T10:08:52.698Z",
+  "generatedAt": "2026-02-23T08:13:22.626Z",
   "basePath": "/api",
   "routes": [
     {
@@ -665,6 +665,36 @@
       "tenant": true
     },
     {
+      "id": "EventDish.get.list",
+      "path": "/api/eventdish/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "EventDish"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventDish.get.detail",
+      "path": "/api/eventdish/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "EventDish"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "EventGuest.get.list",
       "path": "/api/eventguest/list",
       "method": "GET",
@@ -750,6 +780,36 @@
       "source": {
         "kind": "entity-read",
         "entity": "EventReport"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventStaff.get.list",
+      "path": "/api/eventstaff/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "EventStaff"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventStaff.get.detail",
+      "path": "/api/eventstaff/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "EventStaff"
       },
       "auth": true,
       "tenant": true
@@ -1440,6 +1500,36 @@
       "source": {
         "kind": "entity-read",
         "entity": "RecipeVersion"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RolePolicy.get.list",
+      "path": "/api/rolepolicy/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "RolePolicy"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RolePolicy.get.detail",
+      "path": "/api/rolepolicy/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "RolePolicy"
       },
       "auth": true,
       "tenant": true
@@ -5387,6 +5477,82 @@
       "tenant": true
     },
     {
+      "id": "EventDish.create",
+      "path": "/api/eventdish/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "eventId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "dishId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "quantity",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "courseLabel",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "sortOrder",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EventDish",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventDish.remove",
+      "path": "/api/eventdish/remove",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EventDish",
+        "command": "remove"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "EventGuest.create",
       "path": "/api/events/guests/commands/create",
       "method": "POST",
@@ -5804,6 +5970,76 @@
         "kind": "command",
         "entity": "EventReport",
         "command": "submit"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventStaff.assign",
+      "path": "/api/eventstaff/assign",
+      "method": "POST",
+      "params": [
+        {
+          "name": "eventId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "role",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "shiftStart",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "shiftEnd",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EventStaff",
+        "command": "assign"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventStaff.unassign",
+      "path": "/api/eventstaff/unassign",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EventStaff",
+        "command": "unassign"
       },
       "auth": true,
       "tenant": true
@@ -8521,6 +8757,66 @@
       "tenant": true
     },
     {
+      "id": "PrepTask.updateAssignment",
+      "path": "/api/kitchen/prep-tasks/commands/update-assignment",
+      "method": "POST",
+      "params": [
+        {
+          "name": "claimedBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PrepTask",
+        "command": "updateAssignment"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PrepTask.updateDueDate",
+      "path": "/api/kitchen/prep-tasks/commands/update-due-date",
+      "method": "POST",
+      "params": [
+        {
+          "name": "dueByDate",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PrepTask",
+        "command": "updateDueDate"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PrepTask.updatePriority",
+      "path": "/api/kitchen/prep-tasks/commands/update-priority",
+      "method": "POST",
+      "params": [
+        {
+          "name": "priority",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PrepTask",
+        "command": "updatePriority"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "PrepTask.updateQuantity",
       "path": "/api/kitchen/prep-tasks/commands/update-quantity",
       "method": "POST",
@@ -8542,6 +8838,26 @@
         "kind": "command",
         "entity": "PrepTask",
         "command": "updateQuantity"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PrepTask.updateStatus",
+      "path": "/api/kitchen/prep-tasks/commands/update-status",
+      "method": "POST",
+      "params": [
+        {
+          "name": "status",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PrepTask",
+        "command": "updateStatus"
       },
       "auth": true,
       "tenant": true
@@ -9078,6 +9394,12 @@
           "type": "string",
           "location": "body",
           "required": true
+        },
+        {
+          "name": "items",
+          "type": "string",
+          "location": "body",
+          "required": true
         }
       ],
       "source": {
@@ -9557,6 +9879,122 @@
         "kind": "command",
         "entity": "RecipeVersion",
         "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RecipeVersion.restore",
+      "path": "/api/kitchen/recipe-versions/commands/restore",
+      "method": "POST",
+      "params": [
+        {
+          "name": "sourceId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "newVersionNum",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RecipeVersion",
+        "command": "restore"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RolePolicy.grant",
+      "path": "/api/rolepolicy/grant",
+      "method": "POST",
+      "params": [
+        {
+          "name": "permission",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "grantedBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RolePolicy",
+        "command": "grant"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RolePolicy.revoke",
+      "path": "/api/rolepolicy/revoke",
+      "method": "POST",
+      "params": [
+        {
+          "name": "permission",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "revokedBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RolePolicy",
+        "command": "revoke"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RolePolicy.update",
+      "path": "/api/rolepolicy/update",
+      "method": "POST",
+      "params": [
+        {
+          "name": "roleName",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "permissions",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RolePolicy",
+        "command": "update"
       },
       "auth": true,
       "tenant": true
