@@ -1,6 +1,6 @@
 # Manifest Alignment Implementation Plan
 
-> **Status:** Core work complete (8/12 tasks done) - 2026-02-23
+> **Status:** Core work complete (9/12 tasks done) - 2026-02-23
 > **Created:** 2026-02-22
 > **Last Updated:** 2026-02-23
 > **Source:** Synthesized from specs/manifest/composite-routes/manifest-alignment-plan.md + codebase exploration
@@ -48,19 +48,10 @@
 - **What:** POST endpoint using new `restore` command with `FOR UPDATE` lock on version sequence.
 - **Completed:** 2026-02-23 — Uses `FOR UPDATE` lock to prevent concurrent restores, copies ingredients and steps from source version, creates new version through Manifest with constraints and outbox events. Replaces legacy raw SQL implementation.
 
-### [P1-3] Register `suggest_manifest_plan` tool server-side
+### [P1-3] ✅ COMPLETE — Register `suggest_manifest_plan` tool server-side
 - **File:** `apps/app/app/api/command-board/chat/tool-registry.ts`
-- **What:** Register tool with entity resolution logic. Wire `createPendingManifestPlan()` call after plan generation.
-- **Implementation Details:**
-  1. Add tool definition to `BASE_TOOL_DEFINITIONS` array (line 688+)
-  2. Create async handler `suggestManifestPlanTool()` that:
-     - Queries `boardProjection` table to populate `scope.entities`
-     - Generates `planId` using `crypto.randomUUID()`
-     - Constructs full `SuggestedManifestPlan` object
-     - Calls `createPendingManifestPlan()` to persist BEFORE returning
-  3. Add execution case in `executeToolCall()` (line 763-841)
-  4. Import `createPendingManifestPlan` from `@/app/lib/command-board/manifest-plans`
-- **Rationale:** High impact — UI renders tool output but `entities: []` because only 3 base tools registered (read_board_state, detect_conflicts, execute_manifest_command). `createPendingManifestPlan` exists in manifest-plans.ts but unwired.
+- **What:** Registered tool with entity resolution logic. Wired `createPendingManifestPlan()` call after plan generation.
+- **Completed:** 2026-02-23 — Tool definition added to `BASE_TOOL_DEFINITIONS`, `suggestManifestPlanTool` handler queries `boardProjection` to populate `scope.entities`, generates `planId`, persists plan via `createPendingManifestPlan` before returning.
 
 ### [P1-4] ✅ COMPLETE — Create composite `update-with-version` route
 - **File:** `apps/api/app/api/kitchen/recipes/composite/update-with-version/route.ts` (NEW)
