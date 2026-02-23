@@ -1,6 +1,6 @@
 # Manifest Implementation Plan
 
-> **Status:** Phase 1 COMPLETE (13/13) — Phase 2 pending (2 tasks)
+> **Status:** Phase 1 COMPLETE (13/13) — Phase 2 (1/2 tasks)
 > **Created:** 2026-02-22
 > **Last Updated:** 2026-02-23
 > **Source:** specs/manifest/composite-routes/manifest-alignment-plan.md + specs/manifest/prisma-adapter/
@@ -16,22 +16,20 @@
 
 ---
 
-## Phase 2: Remaining Work (2 tasks)
+## Phase 2: Remaining Work (1 task remaining)
 
-### [NEXT-1] Prisma Adapter v1 Tests
-- **Status:** NOT STARTED
+### [NEXT-1] ✅ COMPLETE — Prisma Adapter v1 Tests
 - **Spec:** `specs/manifest/prisma-adapter/prisma-adapter.md`
-- **What:** Add conformance tests for `PrismaJsonStore` and `PrismaIdempotencyStore`
-- **Files to create:**
-  - `packages/manifest-adapters/__tests__/prisma-json-store.test.ts`
-  - `packages/manifest-adapters/__tests__/prisma-idempotency-store.test.ts`
-- **Acceptance Criteria:**
-  1. PrismaJsonStore passes same conformance tests as MemoryStore
-  2. Transactional outbox writes are atomic (rollback on failure)
-  3. Tenant isolation enforced — tenant A cannot read/write tenant B
-  4. Version-based optimistic concurrency rejects stale updates
-  5. PrismaIdempotencyStore deduplicates repeated commands
-- **Rationale:** Code exists but lacks test coverage. High risk without verification.
+- **What:** Added conformance tests for `PrismaJsonStore` and `PrismaIdempotencyStore`
+- **Files created:**
+  - `packages/manifest-adapters/__tests__/prisma-json-store.test.ts` (25 tests)
+  - `packages/manifest-adapters/__tests__/prisma-idempotency-store.test.ts` (23 tests)
+  - `packages/manifest-adapters/vitest.config.ts`
+- **Completed:** 2026-02-23 — 48 tests total covering:
+  - PrismaJsonStore: CRUD operations, tenant isolation, optimistic concurrency (version-based updates)
+  - PrismaIdempotencyStore: has/set/get operations, TTL/expiration handling, tenant isolation, deduplication flow
+  - Factory functions for both stores
+  - cleanupExpiredIdempotencyEntries utility
 
 ### [NEXT-2] Kitchen Ops Rules & Overrides Spec (Draft)
 - **Status:** DRAFT (not started)
