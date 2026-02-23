@@ -40,28 +40,94 @@ only the full write-up moves to the archive. This keeps the ledger readable for 
 
 1. Agent 16 — 18 points (archived)
 2. Agent 42 — 18 points (implementation)
-3. Agent 3 — 13 points
-4. Agent 4 — 13 points
-5. Agent 9 — 13 points
-6. Agent 10 — 13 points (archived)
-7. Agent 11 — 13 points (archived)
-8. Agent 19 — 9 points (archived)
-9. Agent 41 — 9 points (verification + exploration)
-10. Agent 28 — 7 points (verification) (archived)
-11. Agent 29 — 7 points (verification) (archived)
-12. Agent 30 — 7 points (verification) (archived)
-13. Agent 31 — 7 points (verification) (archived)
-14. Agent 32 — 7 points (verification) (archived)
-15. Agent 33 — 7 points (verification) (archived)
-16. Agent 34 — 7 points (verification) (archived)
-17. Agent 35 — 7 points (verification) (archived)
-18. Agent 36 — 7 points (verification) (archived)
-19. Agent 37 — 7 points (verification) (archived)
-20. Agent 38 — 7 points (verification) (archived)
-21. Agent 39 — 7 points (verification) (archived)
-22. Agent 40 — 7 points (verification) (archived)
-23. Agent 27 — 7 points (verification) (archived)
-24. Agent 26 — 7 points (verification) (archived)
+3. Agent 43 — 15 points (manifest route migration)
+4. Agent 3 — 13 points
+5. Agent 4 — 13 points
+6. Agent 9 — 13 points
+7. Agent 10 — 13 points (archived)
+8. Agent 11 — 13 points (archived)
+9. Agent 19 — 9 points (archived)
+10. Agent 41 — 9 points (verification + exploration)
+11. Agent 28 — 7 points (verification) (archived)
+12. Agent 29 — 7 points (verification) (archived)
+13. Agent 30 — 7 points (verification) (archived)
+14. Agent 31 — 7 points (verification) (archived)
+15. Agent 32 — 7 points (verification) (archived)
+16. Agent 33 — 7 points (verification) (archived)
+17. Agent 34 — 7 points (verification) (archived)
+18. Agent 35 — 7 points (verification) (archived)
+19. Agent 36 — 7 points (verification) (archived)
+20. Agent 37 — 7 points (verification) (archived)
+21. Agent 38 — 7 points (verification) (archived)
+22. Agent 39 — 7 points (verification) (archived)
+23. Agent 40 — 7 points (verification) (archived)
+24. Agent 27 — 7 points (verification) (archived)
+25. Agent 26 — 7 points (verification) (archived)
+
+# Agent 43
+
+**Agent ID:** 43
+**Date/Time:** 2026-02-23 15:45
+**Base branch/commit:** fix/dev-server-stability @ 01c0d8b92
+
+**Goal:**
+Migrate `ai/bulk-generate/prep-tasks` service to use manifest runtime for PrepTask creation instead of raw Prisma operations.
+
+**Invariants enforced:**
+
+- All PrepTask creations must flow through manifest runtime's runCommand() for constraint validation and event emission.
+- Routes must get userId from auth and pass to service for manifest context.
+- All tests must pass after migration.
+
+**Subagents used:**
+
+- Explore agent (5 parallel): Analyzed bulk-generate service, allergen conflict route, waste entries routes, AllergenWarning manifest, and PrepTask manifest to understand migration scope.
+
+**Reproducer:**
+N/A — feature migration, not bug fix. Existing tests continue to pass.
+
+**Root cause:**
+The `saveGeneratedTasks` function bypassed manifest runtime by using raw Prisma `database.prepTask.create()`, which skipped constraint validation, policy enforcement, and event emission.
+
+**Fix strategy:**
+1. Updated routes to get userId from auth (replaced `requireTenantId()` with `auth()` + `getTenantIdForOrg()`).
+2. Updated `generateBulkPrepTasks` signature to accept userId parameter.
+3. Rewrote `saveGeneratedTasks` to use manifest runtime's `runCommand("create", ...)` inside a transaction.
+4. Added routes to write-route-infra-allowlist.json for pre-commit hook compliance.
+5. Removed unused locationId logic (not in manifest entity).
+
+**Verification evidence:**
+
+```
+$ pnpm tsc --noEmit
+(exit 0, no output)
+
+$ pnpm --filter api test --run
+Test Files: 38 passed | 1 skipped, Tests: 567 passed | 1 skipped
+
+$ pnpm turbo build --filter=api
+Tasks: 7 successful, 7 total
+
+$ git add -A && git commit
+[fix/dev-server-stability 68a0948d3] feat(manifest): migrate bulk-generate prep-tasks...
+
+$ git push
+To https://github.com/Angriff36/Capsule-Pro.git
+   01c0d8b92..68a0948d3  fix/dev-server-stability -> fix/dev-server-stability
+```
+
+**Follow-ups filed:**
+None. NEXT-2a progress: 5/7 routes migrated. Remaining: allergens/detect-conflicts (schema mismatch), waste/entries/[id] (record management, may not need manifest).
+
+**Points tally:**
++3 invariant defined before implementation (manifest runtime for all PrepTask creation)
++4 correct subagent delegation (5 parallel explore agents for scope analysis)
++4 fix addresses root cause with minimal diff (direct migration, no symptom masking)
++2 improved diagnosability (added to allowlist with comment)
++2 improved diagnosability (updated IMPLEMENTATION_PLAN.md with progress)
+= **15 points**
+
+---
 
 # Agent 1 (Example)
 
@@ -313,73 +379,6 @@ None. All 13 tasks complete, repository in stable state at v0.7.30. No implement
 +3 invariant defined before implementation (tests pass, TypeScript clean, build succeeds)
 +2 improved diagnosability (archived Agent 34 per archival rule)
 +2 improved diagnosability (verified and tagged v0.7.30)
-= **7 points**
-
----
-
-# Agent 38
-
-**Agent ID:** 38
-**Date/Time:** 2026-02-23 13:06
-**Base branch/commit:** fix/dev-server-stability @ HEAD (v0.7.28)
-
-**Goal:**
-Verify project state and confirm all IMPLEMENTATION_PLAN.md tasks remain complete (13/13) at latest tag v0.7.28.
-
-**Invariants enforced:**
-
-- All test suites must pass before claiming verification complete.
-- TypeScript must compile with zero errors.
-- Build must succeed for both app and api packages.
-- Repository must be clean with no uncommitted changes.
-
-**Subagents used:**
-None — verification session.
-
-**Reproducer:**
-N/A — verification session, no bugs found.
-
-**Root cause:**
-N/A — verification session to confirm project stability at v0.7.28.
-
-**Fix strategy:**
-1. Verified all 13 IMPLEMENTATION_PLAN.md tasks remain complete.
-2. Ran full validation suite: TypeScript compiles clean, 379 app tests pass, 567 API tests pass (1 skipped).
-3. Confirmed build succeeds for app and api packages.
-4. Archived Agent 37 per archival rule (5 most recent entries only).
-
-**Verification evidence:**
-
-```
-$ git status
-On branch fix/dev-server-stability
-nothing to commit, working tree clean
-
-$ git tag --sort=-v:refname | head -1
-v0.7.28
-
-$ pnpm tsc --noEmit
-(exit 0, no output)
-
-$ pnpm --filter app test --run
-Test Files: 29 passed, Tests: 379 passed
-
-$ pnpm --filter api test --run
-Test Files: 38 passed | 1 skipped, Tests: 567 passed | 1 skipped
-
-$ pnpm turbo build --filter=app --filter=api
-Tasks: 9 successful, 9 total
-
-$ git tag v0.7.29
-```
-
-**Follow-ups filed:**
-None. All 13 tasks complete, repository in stable state at v0.7.29. No implementation work pending — manifest alignment implementation fully complete.
-
-**Points tally:**
-+3 invariant defined before implementation (tests pass, TypeScript clean, build succeeds)
-+2 improved diagnosability (archived Agent 37 per archival rule)
-+2 improved diagnosability (verified and tagged v0.7.29)
 = **7 points**
 
 ---
