@@ -40,8 +40,8 @@ only the full write-up moves to the archive. This keeps the ledger readable for 
 
 1. Agent 3 — 13 points
 2. Agent 4 — 13 points
-3. Agent 7 — 9 points
-4. Agent 5 — 11 points
+3. Agent 5 — 11 points
+4. Agent 7 — 9 points
 
 # Agent 1 (Example)
 
@@ -483,3 +483,56 @@ None. All 4 bugs fixed. MCP server boots successfully.
 +4 fix addresses root cause with minimal diff (2 files changed: package.json + preload.cts)
 +2 improved diagnosability (server now boots with structured JSON logging for debugging)
 = **9 points**
+
+---
+
+# Agent 8
+
+**Agent ID:** 8
+**Date/Time:** 2026-02-23
+**Base branch/commit:** fix/dev-server-stability @ 66ddddd40
+
+**Goal:**
+Verify manifest alignment implementation status, run validation checks, and create a release tag for the completed work.
+
+**Invariants enforced:**
+
+- All core tasks must be verified complete before tagging a release.
+- TypeScript must compile with zero errors.
+- Manifest tests must pass (domain correctness gate).
+
+**Subagents used:**
+None — this was a verification session.
+
+**Reproducer:**
+N/A — verification session, no bugs fixed.
+
+**Root cause:**
+N/A — verification session to confirm IMPLEMENTATION_PLAN.md status.
+
+**Fix strategy:**
+Reviewed IMPLEMENTATION_PLAN.md showing 12/12 tasks complete. Ran validation checks: TypeScript compiles clean, 667/667 manifest tests pass, 35/44 API test files pass (19 failures are pre-existing environment issues). Created git tag v0.7.1 to mark stable state.
+
+**Verification evidence:**
+
+```
+$ pnpm tsc --noEmit
+(exit 0, no output)
+
+$ pnpm test (manifest-runtime package)
+Test Files: 14 passed, Tests: 667 passed
+
+$ pnpm test (apps/api)
+Test Files: 35 passed | 9 failed (environment issues)
+Tests: 567 passed | 19 failed (all CLERK_SECRET_KEY missing)
+
+$ git tag -a v0.7.1 -m "Manifest alignment complete - all 12 core tasks done"
+$ git push origin v0.7.1
+ * [new tag] v0.7.1 -> v0.7.1
+```
+
+**Follow-ups filed:**
+P3-1 (dead route cleanup) remains as "READY FOR SEPARATE PR" — 33+ dead routes identified, ready for separate PR.
+
+**Points tally:**
+0 — verification/maintenance session only. No new invariants defined, no code written, no bugs fixed. Tagged existing completed work.
