@@ -5,10 +5,11 @@
  * Saves AI-generated prep tasks to the database
  */
 
+import { auth } from "@repo/auth/server";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { invariant } from "@/app/lib/invariant";
-import { requireTenantId } from "@/app/lib/tenant";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { saveGeneratedTasks } from "../service";
 import type { GeneratedPrepTask } from "../types";
 
@@ -26,8 +27,17 @@ interface SaveTasksResponse {
 
 export async function POST(request: Request) {
   try {
-    // Auth check and get tenant ID
-    const tenantId = await requireTenantId();
+    // Auth check and get tenant/user IDs
+    const { orgId, userId } = await auth();
+
+    if (!(orgId && userId)) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    const tenantId = await getTenantIdForOrg(orgId);
+    if (!tenantId) {
+      return NextResponse.json({ message: "Tenant not found" }, { status: 404 });
+    }
 
     // Parse request body
     const body = (await request.json()) as SaveTasksRequest;
@@ -73,9 +83,10 @@ export async function POST(request: Request) {
           : new Date(task.dueByDate as unknown as string),
     }));
 
-    // Save tasks to database
+    // Save tasks to database via manifest runtime
     const result = await saveGeneratedTasks(
       tenantId,
+      userId,
       body.eventId,
       normalizedTasks
     );

@@ -53,17 +53,17 @@
 #### Remaining Work — Sub-tasks
 
 **[NEXT-2a] Phase 0: Containment — Fix Routes Bypassing Manifest**
-- **Status:** IN PROGRESS (4/7 routes migrated)
+- **Status:** IN PROGRESS (5/7 routes migrated)
 - **What:** Migrate routes that bypass manifest runtime to use `runtime.runCommand()`
 - **Completed Routes (2026-02-23):**
   - ✅ `allergens/update-dish/route.ts` — Now uses Dish.update command via manifest runtime
   - ✅ `recipes/[recipeId]/scale/route.ts` — Now uses RecipeIngredient.updateWasteFactor command
   - ✅ `recipes/[recipeId]/cost/route.ts` — Now uses RecipeVersion.updateCosts command
   - ✅ `prep-lists/save-db/route.ts` — Was already migrated (confirmed)
+  - ✅ `ai/bulk-generate/prep-tasks/service.ts` — Now uses PrepTask.create command via manifest runtime (constraint validation, event emission)
 - **Remaining Routes:**
-  - `ai/bulk-generate/prep-tasks/service.ts` — PrepTask.create bypasses runtime (bulk creation pattern)
   - `allergens/detect-conflicts/route.ts` — AllergenWarning.create bypasses runtime (data type mismatch: manifest uses string, Prisma uses array for allergens/affectedGuests)
-  - `waste/entries` routes — Already partially integrated with manifest runtime for constraint validation
+  - `waste/entries/[id]/route.ts` — PUT/DELETE bypass manifest (NOTE: analysis shows PUT/DELETE are record management operations, not inventory operations; may be intentional)
 - **Manifest Additions (2026-02-23):**
   - Added `wasteFactor` property and `updateWasteFactor` command to RecipeIngredient entity
   - Added `totalCost`, `costPerYield` properties and `updateCosts` command to RecipeVersion entity
