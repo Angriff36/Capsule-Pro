@@ -21,6 +21,7 @@ export interface IngredientInput {
   unit: string | null;
   preparationNotes: string | null;
   isOptional: boolean;
+  sortOrder?: number;
 }
 
 /**

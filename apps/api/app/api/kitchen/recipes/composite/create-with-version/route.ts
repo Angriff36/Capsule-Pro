@@ -269,8 +269,8 @@ export async function POST(request: NextRequest) {
             rawIngredients.push({
               name: item.name,
               quantity: item.quantity,
-              unit: item.unit,
-              preparationNotes: item.preparationNotes,
+              unit: item.unit ?? null,
+              preparationNotes: item.preparationNotes ?? null,
               isOptional: item.isOptional ?? false,
             });
           }

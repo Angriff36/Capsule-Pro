@@ -16,14 +16,10 @@
 import type { CommandResult, RuntimeEngine } from "@angriff36/manifest";
 import type { IRCommand } from "@angriff36/manifest/ir";
 /**
- * Minimal structural type for the Prisma client.
- *
- * The factory must NOT import `@repo/database` — callers inject their own
- * Prisma singleton. This type captures only the surface area the factory
- * actually uses: `user.findFirst` (for role resolution) and `$transaction`
- * (for outbox writes).
+ * Base Prisma interface for operations used by the manifest runtime.
+ * Works with both full PrismaClient and transaction clients.
  */
-export interface PrismaLike {
+interface PrismaBase {
     user: {
         findFirst: (args: {
             where: {
@@ -38,8 +34,19 @@ export interface PrismaLike {
             role: string | null;
         } | null>;
     };
+}
+/**
+ * Minimal structural type for the full Prisma client.
+ * Includes $transaction for outbox writes when no override is provided.
+ */
+export interface PrismaLike extends PrismaBase {
     $transaction: (fn: (tx: any) => Promise<any>) => Promise<any>;
 }
+/**
+ * Type for transaction client passed as prismaOverride.
+ * Transaction clients omit $transaction since nesting is not allowed.
+ */
+export type PrismaTransactionClient = PrismaBase;
 /** Minimal structured logger the factory needs. */
 export interface ManifestRuntimeLogger {
     info: (message: string, meta?: Record<string, unknown>) => void;
@@ -67,7 +74,7 @@ export interface CreateManifestRuntimeDeps {
      * ALL internal Prisma operations use this client instead of `prisma`.
      * This enables atomic multi-entity writes in composite routes.
      */
-    prismaOverride?: PrismaLike;
+    prismaOverride?: PrismaTransactionClient;
     /** Structured logger. */
     log: ManifestRuntimeLogger;
     /** Error capture function (e.g. Sentry.captureException). Returns event id. */
