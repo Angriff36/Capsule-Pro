@@ -26,6 +26,16 @@ const TEST_USER_ID = "00000000-0000-0000-0000-000000000002";
 const TEST_INVALID_TENANT_ID = "invalid-tenant-id";
 const ABLY_API_KEY = "test_ably_key:secret_key";
 
+// Mock the env module BEFORE any imports that use it
+// This is required because @t3-oss/env-nextjs validates env vars at module load time
+vi.mock("@/env", () => ({
+  env: {
+    ABLY_API_KEY: "test_ably_key:secret_key",
+    ABLY_AUTH_CORS_ORIGINS:
+      "http://localhost:2221,http://localhost:2222,http://localhost:3000",
+  },
+}));
+
 // Mock auth to provide authenticated user context
 vi.mock("@repo/auth/server", () => ({
   auth: vi.fn(() =>
@@ -37,11 +47,6 @@ vi.mock("@repo/auth/server", () => ({
     })
   ),
 }));
-
-// Mock environment variables for testing
-process.env.ABLY_API_KEY = ABLY_API_KEY;
-process.env.ABLY_AUTH_CORS_ORIGINS =
-  "http://localhost:2221,http://localhost:2222,http://localhost:3000";
 
 describe("Ably Authentication - Integration Tests", () => {
   beforeEach(() => {
@@ -217,7 +222,7 @@ describe("Ably Authentication - Integration Tests", () => {
       const response = await POST(request);
 
       expect(response.status).toBe(401);
-      expect(await response.text()).toBe("Unauthorized");
+      expect(await response.json()).toEqual({ error: "Unauthorized" });
 
       // Verify CORS headers are still present on error
       expect(response.headers.get("Access-Control-Allow-Origin")).toBe(
@@ -247,7 +252,9 @@ describe("Ably Authentication - Integration Tests", () => {
       const response = await POST(request);
 
       expect(response.status).toBe(400);
-      expect(await response.text()).toBe("tenantId required");
+      expect(await response.json()).toEqual({
+        error: "tenantId is required (body or session claim)",
+      });
     });
 
     it("should return 400 when request body is malformed JSON", async () => {
@@ -272,7 +279,9 @@ describe("Ably Authentication - Integration Tests", () => {
       const response = await POST(request);
 
       expect(response.status).toBe(400);
-      expect(await response.text()).toBe("tenantId required");
+      expect(await response.json()).toEqual({
+        error: "tenantId is required (body or session claim)",
+      });
     });
 
     it("should handle invalid tenantId format (still passes through)", async () => {
