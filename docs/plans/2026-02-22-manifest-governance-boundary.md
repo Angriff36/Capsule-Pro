@@ -1113,6 +1113,50 @@ Server actions (7 files):
 
 ---
 
+### Manifest Route Coverage Audit (as of Phase 5a)
+
+**59 domain entities** have manifest command routes in `routes.manifest.json`.
+
+**43 entities (73%) are fully manifest** — all write operations go through `/commands/` routes, zero legacy CRUD endpoints:
+
+| Area | Entities | Commands |
+|------|----------|----------|
+| Kitchen | dishes, ingredients, containers, inventory, kitchen-tasks, menus, menu-dishes, prep-tasks, prep-list-items, prep-comments, prep-methods, recipe-ingredients, recipe-versions, stations, alerts-config, allergen-warnings, override-audits, waste-entries | 88 |
+| Events | event, catering-orders, budget-line-items, contract-signatures, profitability, summaries | 27 |
+| CRM | leads, client-contacts, client-interactions, client-preferences, proposal-line-items | 18 |
+| Command Board | boards, cards, connections, groups | 14 |
+| Inventory | suppliers, transactions, purchase-order-items, cycle-count/variance-reports | 10 |
+| Shipments | shipment, shipment-items | 9 |
+| Staff | schedules | 4 |
+| Timecards | edit-requests, entries | 6 |
+| Collaboration | workflows | 4 |
+
+**16 entities (27%) are hybrid** — manifest commands exist but legacy write routes coexist:
+
+| Entity | Commands | Legacy Routes | Legacy Purpose |
+|--------|----------|---------------|----------------|
+| kitchen/prep-lists | 16 | 8 | autogenerate, save, save-db, item complete, CRUD |
+| events/contracts | 8 | 7 | document, send, signature, status, CRUD |
+| crm/clients | 4 | 6 | nested contacts/interactions/preferences, CRUD |
+| collaboration/notifications | 4 | 8 | email/sms send, preferences, webhooks |
+| crm/proposals | 7 | 3 | CRUD + send |
+| events/battle-boards | 7 | 2 | CRUD |
+| inventory/purchase-orders | 7 | 4 | quickbooks export, complete, item quality/quantity |
+| inventory/cycle-count/sessions | 5 | 4 | finalize, records, CRUD |
+| events/budgets | 4 | 4 | line-items CRUD |
+| staff/shifts | 3 | 4 | bulk assignment, suggestions |
+| kitchen/recipes | 5 | 3 | cost, scale, update-budgets |
+| events/reports | 4 | 2 | CRUD |
+| command-board/layouts | 3 | 2 | CRUD |
+| events/guests | 3 | 1 | CRUD |
+| staff/employees | 5 | 1 | CRUD |
+| inventory/cycle-count/records | 3 | 1 | CRUD |
+
+**Domains with zero manifest presence** (entirely legacy, not yet modeled):
+accounting, administrative/chat, administrative/tasks, integrations (goodshuffle, nowsta, webhooks), inventory/items, inventory/stock-levels, inventory/reorder-suggestions, payroll, public (contract signing, proposal response), sales-reporting, staff/availability, staff/budgets, staff/certifications, staff/time-off, training, user-preferences.
+
+---
+
 ## Exceptions (UI-Layer Only — Not Domain State)
 
 These direct writes are acceptable because they are UI-layer state, not domain mutations:
