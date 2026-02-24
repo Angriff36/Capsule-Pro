@@ -8,6 +8,7 @@
 
 import type { Store } from "@angriff36/manifest";
 import type {
+  AllergenWarning,
   Dish,
   Ingredient,
   InventoryItem,
@@ -1091,6 +1092,161 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
 }
 
 /**
+ * Prisma-backed store for AllergenWarning entities
+ *
+ * Maps Manifest AllergenWarning entities to the Prisma AllergenWarning table.
+ * Handles the conversion between Manifest string properties (allergens, affectedGuests)
+ * and Prisma array types.
+ */
+export class AllergenWarningPrismaStore implements Store<EntityInstance> {
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly tenantId: string
+  ) {}
+
+  async getAll(): Promise<EntityInstance[]> {
+    const warnings = await this.prisma.allergenWarning.findMany({
+      where: { tenantId: this.tenantId, deletedAt: null },
+    });
+    return warnings.map((warning) => this.mapToManifestEntity(warning));
+  }
+
+  async getById(id: string): Promise<EntityInstance | undefined> {
+    const warning = await this.prisma.allergenWarning.findFirst({
+      where: { tenantId: this.tenantId, id, deletedAt: null },
+    });
+    return warning ? this.mapToManifestEntity(warning) : undefined;
+  }
+
+  async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
+    const warning = await this.prisma.allergenWarning.create({
+      data: {
+        tenantId: this.tenantId,
+        id: data.id as string,
+        eventId: data.eventId as string,
+        dishId: (data.dishId as string) || null,
+        warningType: data.warningType as string,
+        allergens: this.stringToArray(data.allergens),
+        affectedGuests: this.stringToArray(data.affectedGuests),
+        severity: (data.severity as string) || "warning",
+        isAcknowledged: (data.isAcknowledged as boolean) ?? false,
+        acknowledgedBy: (data.acknowledgedBy as string) || null,
+        acknowledgedAt: data.acknowledgedAt
+          ? new Date(data.acknowledgedAt as number)
+          : null,
+        overrideReason: (data.overrideReason as string) || null,
+        resolved: (data.resolved as boolean) ?? false,
+        resolvedAt: data.resolvedAt
+          ? new Date(data.resolvedAt as number)
+          : null,
+        notes: (data.notes as string) || null,
+      },
+    });
+    return this.mapToManifestEntity(warning);
+  }
+
+  async update(
+    id: string,
+    data: Partial<EntityInstance>
+  ): Promise<EntityInstance | undefined> {
+    try {
+      const updated = await this.prisma.allergenWarning.update({
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
+        data: {
+          isAcknowledged: data.isAcknowledged as boolean | undefined,
+          acknowledgedBy: data.acknowledgedBy as string | null | undefined,
+          acknowledgedAt: data.acknowledgedAt
+            ? new Date(data.acknowledgedAt as number)
+            : undefined,
+          overrideReason: data.overrideReason as string | null | undefined,
+          resolved: data.resolved as boolean | undefined,
+          resolvedAt: data.resolvedAt
+            ? new Date(data.resolvedAt as number)
+            : undefined,
+          notes: data.notes as string | null | undefined,
+          updatedAt: new Date(),
+        },
+      });
+      return this.mapToManifestEntity(updated);
+    } catch {
+      return undefined;
+    }
+  }
+
+  async delete(id: string): Promise<boolean> {
+    try {
+      await this.prisma.allergenWarning.update({
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
+        data: { deletedAt: new Date() },
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async clear(): Promise<void> {
+    await this.prisma.allergenWarning.updateMany({
+      where: { tenantId: this.tenantId },
+      data: { deletedAt: new Date() },
+    });
+  }
+
+  /**
+   * Convert Manifest string property to Prisma array
+   * Manifest stores arrays as comma-separated strings
+   */
+  private stringToArray(value: unknown): string[] {
+    if (Array.isArray(value)) {
+      return value as string[];
+    }
+    if (typeof value === "string" && value.length > 0) {
+      return value.split(",").filter(Boolean);
+    }
+    return [];
+  }
+
+  /**
+   * Convert Prisma array to Manifest string property
+   */
+  private arrayToString(arr: string[] | null | undefined): string {
+    if (!arr || !Array.isArray(arr) || arr.length === 0) {
+      return "";
+    }
+    return arr.join(",");
+  }
+
+  private mapToManifestEntity(warning: AllergenWarning): EntityInstance {
+    return {
+      id: warning.id,
+      tenantId: warning.tenantId,
+      eventId: warning.eventId,
+      dishId: warning.dishId ?? "",
+      warningType: warning.warningType,
+      allergens: this.arrayToString(warning.allergens),
+      affectedGuests: this.arrayToString(warning.affectedGuests),
+      severity: warning.severity,
+      isAcknowledged: warning.isAcknowledged,
+      acknowledgedBy: warning.acknowledgedBy ?? "",
+      acknowledgedAt: warning.acknowledgedAt
+        ? warning.acknowledgedAt.getTime()
+        : 0,
+      overrideReason: warning.overrideReason ?? "",
+      resolved: warning.resolved,
+      resolvedAt: warning.resolvedAt ? warning.resolvedAt.getTime() : 0,
+      notes: warning.notes ?? "",
+      createdAt: warning.createdAt.getTime(),
+      updatedAt: warning.updatedAt.getTime(),
+      deletedAt: warning.deletedAt ? warning.deletedAt.getTime() : 0,
+      isHighSeverity: warning.severity === "critical",
+      isPending: !warning.isAcknowledged && !warning.resolved,
+      isOverridden: !!warning.overrideReason,
+      isDeleted: !!warning.deletedAt,
+    };
+  }
+}
+
+/**
  * Create a Prisma store provider for Kitchen-Ops entities
  *
  * This returns a function that provides the appropriate Store implementation
@@ -1102,6 +1258,8 @@ export function createPrismaStoreProvider(
 ): (entityName: string) => Store<EntityInstance> | undefined {
   return (entityName: string) => {
     switch (entityName) {
+      case "AllergenWarning":
+        return new AllergenWarningPrismaStore(prisma, tenantId);
       case "PrepTask":
         return new PrepTaskPrismaStore(prisma, tenantId);
       case "Recipe":
