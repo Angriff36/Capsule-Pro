@@ -161,6 +161,34 @@ export declare class KitchenTaskPrismaStore implements Store<EntityInstance> {
     private mapToManifestEntity;
 }
 /**
+ * Prisma-backed store for AllergenWarning entities
+ *
+ * Maps Manifest AllergenWarning entities to the Prisma AllergenWarning table.
+ * Handles the conversion between Manifest string properties (allergens, affectedGuests)
+ * and Prisma array types.
+ */
+export declare class AllergenWarningPrismaStore implements Store<EntityInstance> {
+    private readonly prisma;
+    private readonly tenantId;
+    constructor(prisma: PrismaClient, tenantId: string);
+    getAll(): Promise<EntityInstance[]>;
+    getById(id: string): Promise<EntityInstance | undefined>;
+    create(data: Partial<EntityInstance>): Promise<EntityInstance>;
+    update(id: string, data: Partial<EntityInstance>): Promise<EntityInstance | undefined>;
+    delete(id: string): Promise<boolean>;
+    clear(): Promise<void>;
+    /**
+     * Convert Manifest string property to Prisma array
+     * Manifest stores arrays as comma-separated strings
+     */
+    private stringToArray;
+    /**
+     * Convert Prisma array to Manifest string property
+     */
+    private arrayToString;
+    private mapToManifestEntity;
+}
+/**
  * Create a Prisma store provider for Kitchen-Ops entities
  *
  * This returns a function that provides the appropriate Store implementation

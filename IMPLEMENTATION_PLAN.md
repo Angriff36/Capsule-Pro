@@ -1,6 +1,6 @@
 # Manifest Implementation Plan
 
-> **Status:** Phase 1 COMPLETE (13/13) — Phase 2 (NEXT-2a COMPLETE, NEXT-2b COMPLETE, 1 sub-task remaining: NEXT-2c)
+> **Status:** Phase 1 COMPLETE (13/13) — Phase 2 COMPLETE (NEXT-2a, NEXT-2b, NEXT-2c)
 > **Created:** 2026-02-22
 > **Last Updated:** 2026-02-23
 > **Source:** specs/manifest/composite-routes/manifest-alignment-plan.md + specs/manifest/prisma-adapter/
@@ -16,7 +16,7 @@
 
 ---
 
-## Phase 2: Remaining Work (2 sub-tasks remaining)
+## Phase 2: COMPLETE
 
 ### [NEXT-1] ✅ COMPLETE — Prisma Adapter v1 Tests
 - **Spec:** `specs/manifest/prisma-adapter/prisma-adapter.md`
@@ -31,8 +31,8 @@
   - Factory functions for both stores
   - cleanupExpiredIdempotencyEntries utility
 
-### [NEXT-2] Kitchen Ops Rules & Overrides — PARTIALLY COMPLETE
-- **Status:** Core infrastructure COMPLETE — Routes migration COMPLETE — Workflows COMPLETE
+### [NEXT-2] Kitchen Ops Rules & Overrides — COMPLETE
+- **Status:** All phases COMPLETE — Core infrastructure, routes migration, workflows, and scheduling constraints
 - **Spec:** `specs/manifest/manifest-kitchen-ops-rules-overrides_TODO/manifest-kitchen-ops-rules-overrides.md`
 - **What:** Constraint severity model (OK/WARN/BLOCK), override workflow, and audit events
 - **Scope:** PrepTask, Station, Shift, InventoryItem, Event, BattleBoard entities
@@ -96,12 +96,33 @@
 - **Priority:** P2 — Enables advanced automation
 
 **[NEXT-2c] Phase 3: Expansion — Additional Scheduling Constraints**
-- **Status:** NOT STARTED
+- **Status:** COMPLETE
 - **What:** Add constraint enforcement for scheduling edge cases
-- **Missing Constraints:**
-  - ScheduleShift: overlap constraints not enforced at manifest level
-  - Certification requirements for shifts not implemented
-  - Overtime limits not implemented
+- **Completed (2026-02-23):**
+  - ✅ **Shift Validation Module** (`apps/api/app/api/staff/shifts/validation.ts`):
+    - `checkOverlappingShifts()` — Detects conflicting shifts for same employee
+    - `checkOvertimeHours()` — WARN at 40h, BLOCK at 60h per week
+    - `checkCertificationRequirements()` — Role-based cert validation (food_safety, alcohol_service, etc.)
+    - `validateShift()` — Orchestrator running all validations with OK/WARN/BLOCK severity model
+  - ✅ **Validated API Routes**:
+    - `apps/api/app/api/staff/shifts/commands/create-validated/route.ts` — Pre-validation + manifest runtime
+    - `apps/api/app/api/staff/shifts/commands/update-validated/route.ts` — Pre-validation + manifest runtime
+    - Returns warnings array in response (e.g., overtime approaching)
+  - ✅ **Frontend Integration**:
+    - Added route helpers to `apps/app/app/lib/routes.ts`: `staffShiftsCreateValidated()`, `staffShiftsUpdateValidated()`
+    - Updated `apps/app/app/(authenticated)/scheduling/shifts/components/shift-form.tsx` to use validated routes via `apiFetch()`
+    - Displays validation warnings to users via toast notifications
+  - ✅ **Test Coverage** (16 tests):
+    - `apps/api/app/api/staff/shifts/validation.test.ts`
+    - Tests for overtime (OK/WARN/BLOCK), certifications (valid/missing/expired), and combined validation
+- **Constraint Types Implemented:**
+  | Constraint | Severity | Behavior |
+  |------------|----------|----------|
+  | Overlap detection | BLOCK | Prevents double-booking employees |
+  | Overtime >60h | BLOCK | Hard limit on weekly hours |
+  | Overtime >40h | WARN | Warning about approaching limit |
+  | Missing cert | BLOCK | Role-specific certifications required |
+  | Expired cert | BLOCK | Cannot work with expired certifications |
 - **Priority:** P2 — Business rule enforcement
 
 ---
