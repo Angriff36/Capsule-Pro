@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-02-23T22:45:24.608Z",
+  "generatedAt": "2026-02-24T01:06:08.572Z",
   "basePath": "/api",
   "routes": [
     {
@@ -725,6 +725,36 @@
       "tenant": true
     },
     {
+      "id": "EventImportWorkflow.get.list",
+      "path": "/api/eventimportworkflow/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "EventImportWorkflow"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventImportWorkflow.get.detail",
+      "path": "/api/eventimportworkflow/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "EventImportWorkflow"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "EventProfitability.get.list",
       "path": "/api/eventprofitability/list",
       "method": "GET",
@@ -1290,6 +1320,36 @@
       "source": {
         "kind": "entity-read",
         "entity": "PrepTask"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PrepTaskPlanWorkflow.get.list",
+      "path": "/api/preptaskplanworkflow/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "PrepTaskPlanWorkflow"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PrepTaskPlanWorkflow.get.detail",
+      "path": "/api/preptaskplanworkflow/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "PrepTaskPlanWorkflow"
       },
       "auth": true,
       "tenant": true
@@ -5775,6 +5835,334 @@
       "tenant": true
     },
     {
+      "id": "EventImportWorkflow.cancel",
+      "path": "/api/eventimportworkflow/cancel",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reasonList",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EventImportWorkflow",
+        "command": "cancel"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventImportWorkflow.completeActivating",
+      "path": "/api/eventimportworkflow/complete-activating",
+      "method": "POST",
+      "params": [
+        {
+          "name": "eventId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EventImportWorkflow",
+        "command": "completeActivating"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventImportWorkflow.completeExtraction",
+      "path": "/api/eventimportworkflow/complete-extraction",
+      "method": "POST",
+      "params": [
+        {
+          "name": "eventData",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EventImportWorkflow",
+        "command": "completeExtraction"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventImportWorkflow.completeParsing",
+      "path": "/api/eventimportworkflow/complete-parsing",
+      "method": "POST",
+      "params": [
+        {
+          "name": "extractedData",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "confidence",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EventImportWorkflow",
+        "command": "completeParsing"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventImportWorkflow.completeProposing",
+      "path": "/api/eventimportworkflow/complete-proposing",
+      "method": "POST",
+      "params": [
+        {
+          "name": "proposedTasks",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EventImportWorkflow",
+        "command": "completeProposing"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventImportWorkflow.completeReserving",
+      "path": "/api/eventimportworkflow/complete-reserving",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reservationResults",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EventImportWorkflow",
+        "command": "completeReserving"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventImportWorkflow.completeValidation",
+      "path": "/api/eventimportworkflow/complete-validation",
+      "method": "POST",
+      "params": [
+        {
+          "name": "validationErrors",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "validationWarnings",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EventImportWorkflow",
+        "command": "completeValidation"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventImportWorkflow.create",
+      "path": "/api/eventimportworkflow/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "idempotencyKey",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "inputData",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EventImportWorkflow",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventImportWorkflow.fail",
+      "path": "/api/eventimportworkflow/fail",
+      "method": "POST",
+      "params": [
+        {
+          "name": "errorList",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "step",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EventImportWorkflow",
+        "command": "fail"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventImportWorkflow.pause",
+      "path": "/api/eventimportworkflow/pause",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reasonList",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EventImportWorkflow",
+        "command": "pause"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventImportWorkflow.resume",
+      "path": "/api/eventimportworkflow/resume",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "EventImportWorkflow",
+        "command": "resume"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventImportWorkflow.retry",
+      "path": "/api/eventimportworkflow/retry",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "EventImportWorkflow",
+        "command": "retry"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventImportWorkflow.startActivating",
+      "path": "/api/eventimportworkflow/start-activating",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "EventImportWorkflow",
+        "command": "startActivating"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventImportWorkflow.startExtracting",
+      "path": "/api/eventimportworkflow/start-extracting",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "EventImportWorkflow",
+        "command": "startExtracting"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventImportWorkflow.startParsing",
+      "path": "/api/eventimportworkflow/start-parsing",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "EventImportWorkflow",
+        "command": "startParsing"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventImportWorkflow.startProposing",
+      "path": "/api/eventimportworkflow/start-proposing",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "EventImportWorkflow",
+        "command": "startProposing"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventImportWorkflow.startReserving",
+      "path": "/api/eventimportworkflow/start-reserving",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "EventImportWorkflow",
+        "command": "startReserving"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EventImportWorkflow.startValidating",
+      "path": "/api/eventimportworkflow/start-validating",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "EventImportWorkflow",
+        "command": "startValidating"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "EventProfitability.create",
       "path": "/api/events/profitability/commands/create",
       "method": "POST",
@@ -8888,6 +9276,357 @@
         "kind": "command",
         "entity": "PrepTask",
         "command": "updateStatus"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PrepTaskPlanWorkflow.approvePlan",
+      "path": "/api/preptaskplanworkflow/approve-plan",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "PrepTaskPlanWorkflow",
+        "command": "approvePlan"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PrepTaskPlanWorkflow.cancel",
+      "path": "/api/preptaskplanworkflow/cancel",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reasonList",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PrepTaskPlanWorkflow",
+        "command": "cancel"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PrepTaskPlanWorkflow.completeGeneration",
+      "path": "/api/preptaskplanworkflow/complete-generation",
+      "method": "POST",
+      "params": [
+        {
+          "name": "generatedTasks",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "generatedCount",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "constraintOutcomes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PrepTaskPlanWorkflow",
+        "command": "completeGeneration"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PrepTaskPlanWorkflow.completeInstantiation",
+      "path": "/api/preptaskplanworkflow/complete-instantiation",
+      "method": "POST",
+      "params": [
+        {
+          "name": "instantiatedIds",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "instantiatedCount",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "instantiationErrors",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PrepTaskPlanWorkflow",
+        "command": "completeInstantiation"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PrepTaskPlanWorkflow.completeReview",
+      "path": "/api/preptaskplanworkflow/complete-review",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reviewedTasks",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "approvedIds",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "rejectedIds",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "approvedCount",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "reviewWarnings",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PrepTaskPlanWorkflow",
+        "command": "completeReview"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PrepTaskPlanWorkflow.completeScheduling",
+      "path": "/api/preptaskplanworkflow/complete-scheduling",
+      "method": "POST",
+      "params": [
+        {
+          "name": "scheduledWindows",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PrepTaskPlanWorkflow",
+        "command": "completeScheduling"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PrepTaskPlanWorkflow.create",
+      "path": "/api/preptaskplanworkflow/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "eventId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "idempotencyKey",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "generationOptions",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PrepTaskPlanWorkflow",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PrepTaskPlanWorkflow.fail",
+      "path": "/api/preptaskplanworkflow/fail",
+      "method": "POST",
+      "params": [
+        {
+          "name": "errorList",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "step",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PrepTaskPlanWorkflow",
+        "command": "fail"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PrepTaskPlanWorkflow.quickApprove",
+      "path": "/api/preptaskplanworkflow/quick-approve",
+      "method": "POST",
+      "params": [
+        {
+          "name": "approverId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PrepTaskPlanWorkflow",
+        "command": "quickApprove"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PrepTaskPlanWorkflow.rejectPlan",
+      "path": "/api/preptaskplanworkflow/reject-plan",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reasonList",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PrepTaskPlanWorkflow",
+        "command": "rejectPlan"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PrepTaskPlanWorkflow.retry",
+      "path": "/api/preptaskplanworkflow/retry",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "PrepTaskPlanWorkflow",
+        "command": "retry"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PrepTaskPlanWorkflow.startApproving",
+      "path": "/api/preptaskplanworkflow/start-approving",
+      "method": "POST",
+      "params": [
+        {
+          "name": "approverId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PrepTaskPlanWorkflow",
+        "command": "startApproving"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PrepTaskPlanWorkflow.startGenerating",
+      "path": "/api/preptaskplanworkflow/start-generating",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "PrepTaskPlanWorkflow",
+        "command": "startGenerating"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PrepTaskPlanWorkflow.startInstantiating",
+      "path": "/api/preptaskplanworkflow/start-instantiating",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "PrepTaskPlanWorkflow",
+        "command": "startInstantiating"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PrepTaskPlanWorkflow.startReviewing",
+      "path": "/api/preptaskplanworkflow/start-reviewing",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reviewerId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PrepTaskPlanWorkflow",
+        "command": "startReviewing"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PrepTaskPlanWorkflow.startScheduling",
+      "path": "/api/preptaskplanworkflow/start-scheduling",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "PrepTaskPlanWorkflow",
+        "command": "startScheduling"
       },
       "auth": true,
       "tenant": true

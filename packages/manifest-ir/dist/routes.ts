@@ -247,6 +247,16 @@ export function eventGuestDetailPath(id: string): string {
   return "/api/eventguest/" + encodeURIComponent(id);
 }
 
+/** GET /api/eventimportworkflow/list */
+export function eventImportWorkflowListPath(): string {
+  return "/api/eventimportworkflow/list";
+}
+
+/** GET /api/eventimportworkflow/:id */
+export function eventImportWorkflowDetailPath(id: string): string {
+  return "/api/eventimportworkflow/" + encodeURIComponent(id);
+}
+
 /** GET /api/eventprofitability/list */
 export function eventProfitabilityListPath(): string {
   return "/api/eventprofitability/list";
@@ -435,6 +445,16 @@ export function prepTaskListPath(): string {
 /** GET /api/preptask/:id */
 export function prepTaskDetailPath(id: string): string {
   return "/api/preptask/" + encodeURIComponent(id);
+}
+
+/** GET /api/preptaskplanworkflow/list */
+export function prepTaskPlanWorkflowListPath(): string {
+  return "/api/preptaskplanworkflow/list";
+}
+
+/** GET /api/preptaskplanworkflow/:id */
+export function prepTaskPlanWorkflowDetailPath(id: string): string {
+  return "/api/preptaskplanworkflow/" + encodeURIComponent(id);
 }
 
 /** GET /api/proposal/list */
@@ -1141,6 +1161,96 @@ export function eventGuestUpdatePath(): string {
   return "/api/eventguest/update";
 }
 
+/** POST /api/eventimportworkflow/cancel */
+export function eventImportWorkflowCancelPath(): string {
+  return "/api/eventimportworkflow/cancel";
+}
+
+/** POST /api/eventimportworkflow/complete-activating */
+export function eventImportWorkflowCompleteActivatingPath(): string {
+  return "/api/eventimportworkflow/complete-activating";
+}
+
+/** POST /api/eventimportworkflow/complete-extraction */
+export function eventImportWorkflowCompleteExtractionPath(): string {
+  return "/api/eventimportworkflow/complete-extraction";
+}
+
+/** POST /api/eventimportworkflow/complete-parsing */
+export function eventImportWorkflowCompleteParsingPath(): string {
+  return "/api/eventimportworkflow/complete-parsing";
+}
+
+/** POST /api/eventimportworkflow/complete-proposing */
+export function eventImportWorkflowCompleteProposingPath(): string {
+  return "/api/eventimportworkflow/complete-proposing";
+}
+
+/** POST /api/eventimportworkflow/complete-reserving */
+export function eventImportWorkflowCompleteReservingPath(): string {
+  return "/api/eventimportworkflow/complete-reserving";
+}
+
+/** POST /api/eventimportworkflow/complete-validation */
+export function eventImportWorkflowCompleteValidationPath(): string {
+  return "/api/eventimportworkflow/complete-validation";
+}
+
+/** POST /api/eventimportworkflow/create */
+export function eventImportWorkflowCreatePath(): string {
+  return "/api/eventimportworkflow/create";
+}
+
+/** POST /api/eventimportworkflow/fail */
+export function eventImportWorkflowFailPath(): string {
+  return "/api/eventimportworkflow/fail";
+}
+
+/** POST /api/eventimportworkflow/pause */
+export function eventImportWorkflowPausePath(): string {
+  return "/api/eventimportworkflow/pause";
+}
+
+/** POST /api/eventimportworkflow/resume */
+export function eventImportWorkflowResumePath(): string {
+  return "/api/eventimportworkflow/resume";
+}
+
+/** POST /api/eventimportworkflow/retry */
+export function eventImportWorkflowRetryPath(): string {
+  return "/api/eventimportworkflow/retry";
+}
+
+/** POST /api/eventimportworkflow/start-activating */
+export function eventImportWorkflowStartActivatingPath(): string {
+  return "/api/eventimportworkflow/start-activating";
+}
+
+/** POST /api/eventimportworkflow/start-extracting */
+export function eventImportWorkflowStartExtractingPath(): string {
+  return "/api/eventimportworkflow/start-extracting";
+}
+
+/** POST /api/eventimportworkflow/start-parsing */
+export function eventImportWorkflowStartParsingPath(): string {
+  return "/api/eventimportworkflow/start-parsing";
+}
+
+/** POST /api/eventimportworkflow/start-proposing */
+export function eventImportWorkflowStartProposingPath(): string {
+  return "/api/eventimportworkflow/start-proposing";
+}
+
+/** POST /api/eventimportworkflow/start-reserving */
+export function eventImportWorkflowStartReservingPath(): string {
+  return "/api/eventimportworkflow/start-reserving";
+}
+
+/** POST /api/eventimportworkflow/start-validating */
+export function eventImportWorkflowStartValidatingPath(): string {
+  return "/api/eventimportworkflow/start-validating";
+}
+
 /** POST /api/eventprofitability/create */
 export function eventProfitabilityCreatePath(): string {
   return "/api/eventprofitability/create";
@@ -1604,6 +1714,86 @@ export function prepTaskUpdateQuantityPath(): string {
 /** POST /api/preptask/update-status */
 export function prepTaskUpdateStatusPath(): string {
   return "/api/preptask/update-status";
+}
+
+/** POST /api/preptaskplanworkflow/approve-plan */
+export function prepTaskPlanWorkflowApprovePlanPath(): string {
+  return "/api/preptaskplanworkflow/approve-plan";
+}
+
+/** POST /api/preptaskplanworkflow/cancel */
+export function prepTaskPlanWorkflowCancelPath(): string {
+  return "/api/preptaskplanworkflow/cancel";
+}
+
+/** POST /api/preptaskplanworkflow/complete-generation */
+export function prepTaskPlanWorkflowCompleteGenerationPath(): string {
+  return "/api/preptaskplanworkflow/complete-generation";
+}
+
+/** POST /api/preptaskplanworkflow/complete-instantiation */
+export function prepTaskPlanWorkflowCompleteInstantiationPath(): string {
+  return "/api/preptaskplanworkflow/complete-instantiation";
+}
+
+/** POST /api/preptaskplanworkflow/complete-review */
+export function prepTaskPlanWorkflowCompleteReviewPath(): string {
+  return "/api/preptaskplanworkflow/complete-review";
+}
+
+/** POST /api/preptaskplanworkflow/complete-scheduling */
+export function prepTaskPlanWorkflowCompleteSchedulingPath(): string {
+  return "/api/preptaskplanworkflow/complete-scheduling";
+}
+
+/** POST /api/preptaskplanworkflow/create */
+export function prepTaskPlanWorkflowCreatePath(): string {
+  return "/api/preptaskplanworkflow/create";
+}
+
+/** POST /api/preptaskplanworkflow/fail */
+export function prepTaskPlanWorkflowFailPath(): string {
+  return "/api/preptaskplanworkflow/fail";
+}
+
+/** POST /api/preptaskplanworkflow/quick-approve */
+export function prepTaskPlanWorkflowQuickApprovePath(): string {
+  return "/api/preptaskplanworkflow/quick-approve";
+}
+
+/** POST /api/preptaskplanworkflow/reject-plan */
+export function prepTaskPlanWorkflowRejectPlanPath(): string {
+  return "/api/preptaskplanworkflow/reject-plan";
+}
+
+/** POST /api/preptaskplanworkflow/retry */
+export function prepTaskPlanWorkflowRetryPath(): string {
+  return "/api/preptaskplanworkflow/retry";
+}
+
+/** POST /api/preptaskplanworkflow/start-approving */
+export function prepTaskPlanWorkflowStartApprovingPath(): string {
+  return "/api/preptaskplanworkflow/start-approving";
+}
+
+/** POST /api/preptaskplanworkflow/start-generating */
+export function prepTaskPlanWorkflowStartGeneratingPath(): string {
+  return "/api/preptaskplanworkflow/start-generating";
+}
+
+/** POST /api/preptaskplanworkflow/start-instantiating */
+export function prepTaskPlanWorkflowStartInstantiatingPath(): string {
+  return "/api/preptaskplanworkflow/start-instantiating";
+}
+
+/** POST /api/preptaskplanworkflow/start-reviewing */
+export function prepTaskPlanWorkflowStartReviewingPath(): string {
+  return "/api/preptaskplanworkflow/start-reviewing";
+}
+
+/** POST /api/preptaskplanworkflow/start-scheduling */
+export function prepTaskPlanWorkflowStartSchedulingPath(): string {
+  return "/api/preptaskplanworkflow/start-scheduling";
 }
 
 /** POST /api/proposal/accept */
@@ -2073,6 +2263,8 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "EventDish.get.detail", path: "/api/eventdish/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EventGuest.get.list", path: "/api/eventguest/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EventGuest.get.detail", path: "/api/eventguest/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "EventImportWorkflow.get.list", path: "/api/eventimportworkflow/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "EventImportWorkflow.get.detail", path: "/api/eventimportworkflow/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EventProfitability.get.list", path: "/api/eventprofitability/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EventProfitability.get.detail", path: "/api/eventprofitability/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EventReport.get.list", path: "/api/eventreport/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -2111,6 +2303,8 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "PrepMethod.get.detail", path: "/api/prepmethod/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "PrepTask.get.list", path: "/api/preptask/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "PrepTask.get.detail", path: "/api/preptask/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "PrepTaskPlanWorkflow.get.list", path: "/api/preptaskplanworkflow/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "PrepTaskPlanWorkflow.get.detail", path: "/api/preptaskplanworkflow/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Proposal.get.list", path: "/api/proposal/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Proposal.get.detail", path: "/api/proposal/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "ProposalLineItem.get.list", path: "/api/proposallineitem/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -2251,6 +2445,24 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "EventGuest.create", path: "/api/eventguest/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventGuest.softDelete", path: "/api/eventguest/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventGuest.update", path: "/api/eventguest/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventImportWorkflow.cancel", path: "/api/eventimportworkflow/cancel", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventImportWorkflow.completeActivating", path: "/api/eventimportworkflow/complete-activating", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventImportWorkflow.completeExtraction", path: "/api/eventimportworkflow/complete-extraction", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventImportWorkflow.completeParsing", path: "/api/eventimportworkflow/complete-parsing", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventImportWorkflow.completeProposing", path: "/api/eventimportworkflow/complete-proposing", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventImportWorkflow.completeReserving", path: "/api/eventimportworkflow/complete-reserving", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventImportWorkflow.completeValidation", path: "/api/eventimportworkflow/complete-validation", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventImportWorkflow.create", path: "/api/eventimportworkflow/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventImportWorkflow.fail", path: "/api/eventimportworkflow/fail", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventImportWorkflow.pause", path: "/api/eventimportworkflow/pause", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventImportWorkflow.resume", path: "/api/eventimportworkflow/resume", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventImportWorkflow.retry", path: "/api/eventimportworkflow/retry", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventImportWorkflow.startActivating", path: "/api/eventimportworkflow/start-activating", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventImportWorkflow.startExtracting", path: "/api/eventimportworkflow/start-extracting", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventImportWorkflow.startParsing", path: "/api/eventimportworkflow/start-parsing", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventImportWorkflow.startProposing", path: "/api/eventimportworkflow/start-proposing", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventImportWorkflow.startReserving", path: "/api/eventimportworkflow/start-reserving", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EventImportWorkflow.startValidating", path: "/api/eventimportworkflow/start-validating", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventProfitability.create", path: "/api/eventprofitability/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventProfitability.recalculate", path: "/api/eventprofitability/recalculate", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EventProfitability.update", path: "/api/eventprofitability/update", method: "POST", source: "command", auth: true, tenant: true },
@@ -2344,6 +2556,22 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "PrepTask.updatePriority", path: "/api/preptask/update-priority", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PrepTask.updateQuantity", path: "/api/preptask/update-quantity", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PrepTask.updateStatus", path: "/api/preptask/update-status", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepTaskPlanWorkflow.approvePlan", path: "/api/preptaskplanworkflow/approve-plan", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepTaskPlanWorkflow.cancel", path: "/api/preptaskplanworkflow/cancel", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepTaskPlanWorkflow.completeGeneration", path: "/api/preptaskplanworkflow/complete-generation", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepTaskPlanWorkflow.completeInstantiation", path: "/api/preptaskplanworkflow/complete-instantiation", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepTaskPlanWorkflow.completeReview", path: "/api/preptaskplanworkflow/complete-review", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepTaskPlanWorkflow.completeScheduling", path: "/api/preptaskplanworkflow/complete-scheduling", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepTaskPlanWorkflow.create", path: "/api/preptaskplanworkflow/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepTaskPlanWorkflow.fail", path: "/api/preptaskplanworkflow/fail", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepTaskPlanWorkflow.quickApprove", path: "/api/preptaskplanworkflow/quick-approve", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepTaskPlanWorkflow.rejectPlan", path: "/api/preptaskplanworkflow/reject-plan", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepTaskPlanWorkflow.retry", path: "/api/preptaskplanworkflow/retry", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepTaskPlanWorkflow.startApproving", path: "/api/preptaskplanworkflow/start-approving", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepTaskPlanWorkflow.startGenerating", path: "/api/preptaskplanworkflow/start-generating", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepTaskPlanWorkflow.startInstantiating", path: "/api/preptaskplanworkflow/start-instantiating", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepTaskPlanWorkflow.startReviewing", path: "/api/preptaskplanworkflow/start-reviewing", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PrepTaskPlanWorkflow.startScheduling", path: "/api/preptaskplanworkflow/start-scheduling", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Proposal.accept", path: "/api/proposal/accept", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Proposal.create", path: "/api/proposal/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Proposal.markViewed", path: "/api/proposal/mark-viewed", method: "POST", source: "command", auth: true, tenant: true },

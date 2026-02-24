@@ -1,0 +1,399 @@
+// Prep Task Plan Workflow - Task generation with constraint checking
+// Implements the workflow pattern from spec: generate → review → approve → instantiate tasks → schedule windows
+// Provides structured workflow for AI-assisted task generation with human review
+
+entity PrepTaskPlanWorkflow {
+  property required id: string
+  property required tenantId: string
+  property eventId: string = ""
+  property idempotencyKey: string = ""
+  property status: string = "created"
+  property currentStep: number = 0
+  property totalSteps: number = 5
+  property generationOptions: string = "{}"
+  property generatedTasks: string = "[]"
+  property reviewedTasks: string = "[]"
+  property approvedTaskIds: string = "[]"
+  property rejectedTaskIds: string = "[]"
+  property instantiatedTaskIds: string = "[]"
+  property scheduledWindows: string = "{}"
+  property constraintOutcomes: string = "[]"
+  property errors: string = "[]"
+  property warnings: string = "[]"
+  property generatedCount: number = 0
+  property approvedCount: number = 0
+  property instantiatedCount: number = 0
+  property reviewedBy: string = ""
+  property reviewedAt: number = 0
+  property approvedBy: string = ""
+  property approvedAt: number = 0
+  property startedAt: number = 0
+  property completedAt: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+
+  // Computed properties for state checks
+  computed isActive: boolean = self.status in ["generating", "reviewing", "approving", "instantiating", "scheduling"]
+  computed isCompleted: boolean = self.status == "completed"
+  computed isFailed: boolean = self.status == "failed"
+  computed isAwaitingReview: boolean = self.status == "awaiting_review"
+  computed isAwaitingApproval: boolean = self.status == "awaiting_approval"
+  computed canReview: boolean = self.status == "awaiting_review"
+  computed canApprove: boolean = self.status == "awaiting_approval"
+  computed canRetry: boolean = self.status == "failed"
+  computed progress: number = self.totalSteps > 0 ? (self.currentStep / self.totalSteps) * 100 : 0
+
+  // Constraints
+  constraint validStatus: self.status in ["created", "generating", "awaiting_review", "reviewing", "awaiting_approval", "approving", "instantiating", "scheduling", "completed", "failed", "cancelled"]
+  constraint validStep: self.currentStep >= 0 and self.currentStep <= self.totalSteps
+  constraint hasIdempotencyKey: self.idempotencyKey != "" "Idempotency key is required for workflow tracking"
+  constraint hasEventId: self.eventId != "" "Event ID is required for task generation"
+
+  // Commands
+
+  // Step 0: Initialize workflow with event and options
+  command create(eventId: string, idempotencyKey: string, generationOptions: string) {
+    guard self.status == "" or self.status == null "Workflow already initialized"
+    guard eventId != "" "Event ID is required"
+    guard idempotencyKey != "" "Idempotency key is required"
+
+    mutate status = "created"
+    mutate eventId = eventId
+    mutate idempotencyKey = idempotencyKey
+    mutate generationOptions = generationOptions
+    mutate currentStep = 0
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit PrepTaskPlanWorkflowCreated
+  }
+
+  // Step 1: Start task generation
+  command startGenerating() {
+    guard self.status == "created" or self.status == "failed"
+
+    mutate status = "generating"
+    mutate currentStep = 1
+    mutate startedAt = now() == 0 ? now() : self.startedAt
+    mutate updatedAt = now()
+
+    emit PrepTaskPlanWorkflowGeneratingStarted
+  }
+
+  command completeGeneration(generatedTasks: string, generatedCount: number, constraintOutcomes: string) {
+    guard self.status == "generating"
+
+    mutate generatedTasks = generatedTasks
+    mutate generatedCount = generatedCount
+    mutate constraintOutcomes = constraintOutcomes
+    mutate status = "awaiting_review"
+    mutate currentStep = 2
+    mutate updatedAt = now()
+
+    constraint warnNoTasksGenerated:warn generatedCount == 0 {
+      messageTemplate: "No tasks were generated for this event"
+      details: { eventId: self.eventId }
+    }
+
+    emit PrepTaskPlanWorkflowGenerationCompleted
+  }
+
+  // Step 2: Review generated tasks
+  command startReviewing(reviewerId: string) {
+    guard self.status == "awaiting_review"
+    guard self.generatedCount > 0 "No tasks to review"
+
+    mutate status = "reviewing"
+    mutate reviewedBy = reviewerId
+    mutate updatedAt = now()
+
+    emit PrepTaskPlanWorkflowReviewingStarted
+  }
+
+  command completeReview(reviewedTasks: string, approvedIds: string, rejectedIds: string, approvedCount: number, reviewWarnings: string) {
+    guard self.status == "reviewing"
+
+    mutate reviewedTasks = reviewedTasks
+    mutate approvedTaskIds = approvedIds
+    mutate rejectedTaskIds = rejectedIds
+    mutate approvedCount = approvedCount
+    mutate warnings = reviewWarnings
+    mutate status = "awaiting_approval"
+    mutate reviewedAt = now()
+    mutate currentStep = 3
+    mutate updatedAt = now()
+
+    constraint warnAllRejected:warn approvedCount == 0 and self.generatedCount > 0 {
+      messageTemplate: "All {total} tasks were rejected during review"
+      details: { total: self.generatedCount }
+    }
+
+    emit PrepTaskPlanWorkflowReviewingCompleted
+  }
+
+  // Step 3: Approve or reject the plan
+  command startApproving(approverId: string) {
+    guard self.status == "awaiting_approval"
+    guard self.approvedCount > 0 "No tasks approved for instantiation"
+
+    mutate status = "approving"
+    mutate approvedBy = approverId
+    mutate updatedAt = now()
+
+    emit PrepTaskPlanWorkflowApprovingStarted
+  }
+
+  command approvePlan() {
+    guard self.status == "approving"
+    guard self.approvedCount > 0 "No tasks to approve"
+
+    mutate status = "instantiating"
+    mutate approvedAt = now()
+    mutate currentStep = 4
+    mutate updatedAt = now()
+
+    emit PrepTaskPlanWorkflowApproved
+  }
+
+  command rejectPlan(reasonList: string) {
+    guard self.status == "awaiting_approval" or self.status == "approving"
+
+    mutate status = "cancelled"
+    mutate errors = reasonList
+    mutate updatedAt = now()
+
+    emit PrepTaskPlanWorkflowRejected
+  }
+
+  // Step 4: Instantiate approved tasks
+  command startInstantiating() {
+    guard self.status == "instantiating"
+
+    mutate updatedAt = now()
+
+    emit PrepTaskPlanWorkflowInstantiatingStarted
+  }
+
+  command completeInstantiation(instantiatedIds: string, instantiatedCount: number, instantiationErrors: string) {
+    guard self.status == "instantiating"
+
+    mutate instantiatedTaskIds = instantiatedIds
+    mutate instantiatedCount = instantiatedCount
+    mutate status = "scheduling"
+    mutate currentStep = 5
+    mutate errors = instantiationErrors
+    mutate updatedAt = now()
+
+    constraint warnPartialInstantiation:warn instantiatedCount < self.approvedCount {
+      messageTemplate: "Only {instantiated} of {approved} tasks were successfully instantiated"
+      details: { instantiated: instantiatedCount, approved: self.approvedCount }
+    }
+
+    emit PrepTaskPlanWorkflowInstantiatingCompleted
+  }
+
+  // Step 5: Schedule time windows
+  command startScheduling() {
+    guard self.status == "scheduling"
+
+    mutate updatedAt = now()
+
+    emit PrepTaskPlanWorkflowSchedulingStarted
+  }
+
+  command completeScheduling(scheduledWindows: string) {
+    guard self.status == "scheduling"
+
+    mutate scheduledWindows = scheduledWindows
+    mutate status = "completed"
+    mutate completedAt = now()
+    mutate updatedAt = now()
+
+    emit PrepTaskPlanWorkflowCompleted
+  }
+
+  // Failure handling
+  command fail(errorList: string, step: number) {
+    guard self.status in ["generating", "reviewing", "approving", "instantiating", "scheduling"]
+
+    mutate status = "failed"
+    mutate errors = errorList
+    mutate currentStep = step
+    mutate updatedAt = now()
+
+    emit PrepTaskPlanWorkflowFailed
+  }
+
+  // Cancel workflow
+  command cancel(reasonList: string) {
+    guard self.status in ["created", "awaiting_review", "awaiting_approval", "failed"]
+
+    mutate status = "cancelled"
+    mutate errors = reasonList
+    mutate updatedAt = now()
+
+    emit PrepTaskPlanWorkflowCancelled
+  }
+
+  // Retry from failed state
+  command retry() {
+    guard self.status == "failed"
+    guard self.currentStep > 0
+
+    mutate currentStep = self.currentStep > 1 ? self.currentStep - 1 : 1
+    mutate status = self.currentStep == 1 ? "generating" : self.currentStep == 2 ? "awaiting_review" : self.currentStep == 3 ? "awaiting_approval" : self.currentStep == 4 ? "instantiating" : "scheduling"
+    mutate errors = "[]"
+    mutate updatedAt = now()
+
+    emit PrepTaskPlanWorkflowRetried
+  }
+
+  // Quick approve - skip review step
+  command quickApprove(approverId: string) {
+    guard self.status == "awaiting_review"
+    guard self.generatedCount > 0 "No tasks to approve"
+
+    // Auto-approve all generated tasks
+    mutate approvedCount = self.generatedCount
+    mutate reviewedBy = approverId
+    mutate reviewedAt = now()
+    mutate approvedBy = approverId
+    mutate approvedAt = now()
+    mutate status = "instantiating"
+    mutate currentStep = 4
+    mutate updatedAt = now()
+
+    constraint warnQuickApprove:warn true {
+      messageTemplate: "Quick approve used - {count} tasks approved without individual review"
+      details: { count: self.generatedCount }
+    }
+
+    emit PrepTaskPlanWorkflowQuickApproved
+  }
+
+  store PrepTaskPlanWorkflow in memory
+}
+
+// Policy definitions
+policy PrepTaskPlanWorkflowCreate execute: user.role in ["staff", "manager", "admin"] "Staff can create task plan workflows"
+policy PrepTaskPlanWorkflowReview execute: user.role in ["manager", "admin"] "Managers can review task plans"
+policy PrepTaskPlanWorkflowApprove execute: user.role in ["manager", "admin"] "Managers can approve task plans"
+policy PrepTaskPlanWorkflowQuickApprove execute: user.role in ["admin"] "Only admins can quick approve without review"
+
+// Event definitions
+event PrepTaskPlanWorkflowCreated: "prep.task.plan.workflow.created" {
+  workflowId: string
+  tenantId: string
+  eventId: string
+  idempotencyKey: string
+  createdAt: number
+}
+
+event PrepTaskPlanWorkflowGeneratingStarted: "prep.task.plan.workflow.generating.started" {
+  workflowId: string
+  tenantId: string
+  eventId: string
+  currentStep: number
+}
+
+event PrepTaskPlanWorkflowGenerationCompleted: "prep.task.plan.workflow.generating.completed" {
+  workflowId: string
+  tenantId: string
+  generatedCount: number
+  currentStep: number
+}
+
+event PrepTaskPlanWorkflowReviewingStarted: "prep.task.plan.workflow.reviewing.started" {
+  workflowId: string
+  tenantId: string
+  reviewedBy: string
+  generatedCount: number
+}
+
+event PrepTaskPlanWorkflowReviewingCompleted: "prep.task.plan.workflow.reviewing.completed" {
+  workflowId: string
+  tenantId: string
+  approvedCount: number
+  rejectedCount: number
+  reviewedBy: string
+  reviewedAt: number
+}
+
+event PrepTaskPlanWorkflowApprovingStarted: "prep.task.plan.workflow.approving.started" {
+  workflowId: string
+  tenantId: string
+  approvedBy: string
+  approvedCount: number
+}
+
+event PrepTaskPlanWorkflowApproved: "prep.task.plan.workflow.approved" {
+  workflowId: string
+  tenantId: string
+  approvedBy: string
+  approvedAt: number
+  approvedCount: number
+}
+
+event PrepTaskPlanWorkflowRejected: "prep.task.plan.workflow.rejected" {
+  workflowId: string
+  tenantId: string
+  reasons: string
+  rejectedAt: number
+}
+
+event PrepTaskPlanWorkflowInstantiatingStarted: "prep.task.plan.workflow.instantiating.started" {
+  workflowId: string
+  tenantId: string
+  approvedCount: number
+}
+
+event PrepTaskPlanWorkflowInstantiatingCompleted: "prep.task.plan.workflow.instantiating.completed" {
+  workflowId: string
+  tenantId: string
+  instantiatedCount: number
+  currentStep: number
+}
+
+event PrepTaskPlanWorkflowSchedulingStarted: "prep.task.plan.workflow.scheduling.started" {
+  workflowId: string
+  tenantId: string
+  instantiatedCount: number
+}
+
+event PrepTaskPlanWorkflowCompleted: "prep.task.plan.workflow.completed" {
+  workflowId: string
+  tenantId: string
+  eventId: string
+  instantiatedCount: number
+  completedAt: number
+}
+
+event PrepTaskPlanWorkflowFailed: "prep.task.plan.workflow.failed" {
+  workflowId: string
+  tenantId: string
+  errors: string
+  failedAtStep: number
+  failedAt: number
+}
+
+event PrepTaskPlanWorkflowCancelled: "prep.task.plan.workflow.cancelled" {
+  workflowId: string
+  tenantId: string
+  reasons: string
+  cancelledAt: number
+}
+
+event PrepTaskPlanWorkflowRetried: "prep.task.plan.workflow.retried" {
+  workflowId: string
+  tenantId: string
+  retryFromStep: number
+}
+
+event PrepTaskPlanWorkflowQuickApproved: "prep.task.plan.workflow.quick.approved" {
+  workflowId: string
+  tenantId: string
+  eventId: string
+  approvedBy: string
+  approvedCount: number
+  approvedAt: number
+}

@@ -1,6 +1,6 @@
 # Manifest Implementation Plan
 
-> **Status:** Phase 1 COMPLETE (13/13) — Phase 2 (NEXT-2a COMPLETE, 2 sub-tasks remaining: NEXT-2b, NEXT-2c)
+> **Status:** Phase 1 COMPLETE (13/13) — Phase 2 (NEXT-2a COMPLETE, NEXT-2b COMPLETE, 1 sub-task remaining: NEXT-2c)
 > **Created:** 2026-02-22
 > **Last Updated:** 2026-02-23
 > **Source:** specs/manifest/composite-routes/manifest-alignment-plan.md + specs/manifest/prisma-adapter/
@@ -32,7 +32,7 @@
   - cleanupExpiredIdempotencyEntries utility
 
 ### [NEXT-2] Kitchen Ops Rules & Overrides — PARTIALLY COMPLETE
-- **Status:** Core infrastructure COMPLETE — Routes migration IN PROGRESS
+- **Status:** Core infrastructure COMPLETE — Routes migration COMPLETE — Workflows COMPLETE
 - **Spec:** `specs/manifest/manifest-kitchen-ops-rules-overrides_TODO/manifest-kitchen-ops-rules-overrides.md`
 - **What:** Constraint severity model (OK/WARN/BLOCK), override workflow, and audit events
 - **Scope:** PrepTask, Station, Shift, InventoryItem, Event, BattleBoard entities
@@ -75,11 +75,24 @@
 - **Priority:** P1 — Required for full constraint enforcement
 
 **[NEXT-2b] Phase 2: Workflows — Missing Entities**
-- **Status:** NOT STARTED
-- **What:** Implement workflow entities for complex operations
-- **Missing Entities:**
-  - `EventImportWorkflow` — Multi-step event import with validation
-  - `PrepTaskPlanWorkflow` — Task generation with constraint checking
+- **Status:** COMPLETE
+- **What:** Implemented workflow entities for complex operations
+- **Completed Entities (2026-02-23):**
+  - ✅ `EventImportWorkflow` — Multi-step event import with validation
+    - Created `packages/manifest-adapters/manifests/event-import-workflow.manifest`
+    - Steps: parse → extract → validate → propose → reserve → activate
+    - Commands: create, startParsing, completeParsing, startExtracting, completeExtraction, startValidating, completeValidation, startProposing, completeProposing, startReserving, completeReserving, startActivating, completeActivating, fail, pause, resume, cancel, retry
+    - State transitions: created → parsing → extracting → validating → proposing → reserving → activating → completed/failed/paused/cancelled
+    - Idempotency key support for replay safety
+    - 16 event types emitted for audit trail
+  - ✅ `PrepTaskPlanWorkflow` — Task generation with constraint checking
+    - Created `packages/manifest-adapters/manifests/prep-task-plan-workflow.manifest`
+    - Steps: generate → review → approve → instantiate → schedule
+    - Commands: create, startGenerating, completeGeneration, startReviewing, completeReview, startApproving, approvePlan, rejectPlan, startInstantiating, completeInstantiation, startScheduling, completeScheduling, fail, cancel, retry, quickApprove
+    - State transitions: created → generating → awaiting_review → reviewing → awaiting_approval → approving → instantiating → scheduling → completed/failed/cancelled
+    - Human review workflow with approve/reject
+    - Quick approve option for admins to skip review
+    - 16 event types emitted for audit trail
 - **Priority:** P2 — Enables advanced automation
 
 **[NEXT-2c] Phase 3: Expansion — Additional Scheduling Constraints**
