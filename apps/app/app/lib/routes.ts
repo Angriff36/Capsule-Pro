@@ -194,3 +194,15 @@ export const collaborationAuth = (): string => "/api/collaboration/auth";
 
 /** POST /api/command-board/chat (lives in apps/app) */
 export const commandBoardChat = (): string => "/api/command-board/chat";
+
+// ---------------------------------------------------------------------------
+// Staff — Shifts
+// ---------------------------------------------------------------------------
+
+/** POST /api/staff/shifts/commands/create-validated */
+export const staffShiftsCreateValidated = (): string =>
+  "/api/staff/shifts/commands/create-validated";
+
+/** POST /api/staff/shifts/commands/update-validated */
+export const staffShiftsUpdateValidated = (): string =>
+  "/api/staff/shifts/commands/update-validated";

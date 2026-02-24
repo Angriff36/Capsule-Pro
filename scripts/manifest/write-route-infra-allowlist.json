@@ -66,6 +66,16 @@
       "prefix": "/api/conflicts/",
       "methods": ["POST", "PUT", "PATCH", "DELETE"],
       "comment": "Conflict detection infrastructure"
+    },
+    {
+      "prefix": "/api/staff/shifts/commands/create-validated",
+      "methods": ["POST"],
+      "comment": "Validated shift creation with overlap/overtime/certification checks using ScheduleShift.create command"
+    },
+    {
+      "prefix": "/api/staff/shifts/commands/update-validated",
+      "methods": ["POST"],
+      "comment": "Validated shift update with overlap/overtime/certification checks using ScheduleShift.update command"
     }
   ]
 }
