@@ -43,6 +43,11 @@
       "comment": "Allergen update route using Dish.update command"
     },
     {
+      "prefix": "/api/kitchen/allergens/detect-conflicts",
+      "methods": ["POST"],
+      "comment": "Allergen conflict detection using AllergenWarning.create command"
+    },
+    {
       "prefix": "/api/kitchen/prep-lists/save-db",
       "methods": ["POST"],
       "comment": "Prep list save route using PrepList/PrepListItem manifest commands"

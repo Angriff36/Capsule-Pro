@@ -9,10 +9,15 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { createManifestRuntime } from "@repo/manifest-adapters/manifest-runtime-factory";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+
+// Required for manifest runtime - must use Node.js runtime (not Edge)
+export const runtime = "nodejs";
 
 interface DetectConflictsRequest {
   eventId: string;
@@ -89,51 +94,49 @@ function findDietaryConflicts(guest: GuestData, dish: DishData): string[] {
 }
 
 /**
- * Create an allergen warning in the database
+ * Create an allergen warning via manifest runtime
+ * Note: allergens and affectedGuests are passed as arrays; AllergenWarningPrismaStore.stringToArray() handles the conversion
  */
-async function createAllergenWarning(
-  tenantId: string,
+async function createWarningViaManifest(
+  runtime: Awaited<ReturnType<typeof createManifestRuntime>>,
   eventId: string,
   guest: GuestData,
   dish: DishData,
-  conflictingAllergens: string[]
-): Promise<void> {
-  await database.allergenWarning.create({
-    data: {
-      tenantId,
-      eventId,
-      dishId: dish.id,
-      warningType: "allergen_conflict",
-      allergens: conflictingAllergens,
-      affectedGuests: [guest.id],
-      severity: "critical",
-      notes: `Guest "${guest.guestName}" has allergen restrictions: ${conflictingAllergens.join(", ")}. Dish "${dish.name}" contains these allergens.`,
-    },
-  });
-}
+  warningType: "allergen_conflict" | "dietary_conflict",
+  conflictingItems: string[],
+  severity: "critical" | "warning"
+): Promise<{ success: boolean; error?: string }> {
+  const notes =
+    warningType === "allergen_conflict"
+      ? `Guest "${guest.guestName}" has allergen restrictions: ${conflictingItems.join(", ")}. Dish "${dish.name}" contains these allergens.`
+      : `Guest "${guest.guestName}" has dietary restrictions: ${conflictingItems.join(", ")}. Dish "${dish.name}" conflicts with these restrictions.`;
 
-/**
- * Create a dietary warning in the database
- */
-async function createDietaryWarning(
-  tenantId: string,
-  eventId: string,
-  guest: GuestData,
-  dish: DishData,
-  conflictingDietaryTags: string[]
-): Promise<void> {
-  await database.allergenWarning.create({
-    data: {
-      tenantId,
+  const result = await runtime.runCommand(
+    "create",
+    {
       eventId,
       dishId: dish.id,
-      warningType: "dietary_conflict",
-      allergens: conflictingDietaryTags,
-      affectedGuests: [guest.id],
-      severity: "warning",
-      notes: `Guest "${guest.guestName}" has dietary restrictions: ${conflictingDietaryTags.join(", ")}. Dish "${dish.name}" conflicts with these restrictions.`,
+      warningType,
+      // Pass arrays directly - AllergenWarningPrismaStore.stringToArray() handles both strings and arrays
+      allergens: conflictingItems as unknown as string,
+      affectedGuests: [guest.id] as unknown as string,
+      severity,
+      notes,
     },
-  });
+    { entityName: "AllergenWarning" }
+  );
+
+  if (!result.success) {
+    return {
+      success: false,
+      error:
+        result.guardFailure?.formatted ||
+        result.policyDenial?.policyName ||
+        result.error ||
+        "Unknown error",
+    };
+  }
+  return { success: true };
 }
 
 /**
@@ -149,7 +152,7 @@ async function createDietaryWarning(
  */
 export async function POST(request: Request) {
   try {
-    const { orgId } = await auth();
+    const { orgId, userId } = await auth();
     if (!orgId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -234,38 +237,70 @@ export async function POST(request: Request) {
     });
 
     let warningsCreated = 0;
+    const creationErrors: string[] = [];
 
-    // Check for conflicts and create warnings
-    for (const guest of guests) {
-      for (const dish of dishes) {
-        const conflictingAllergens = findAllergenConflicts(guest, dish);
-        const conflictingDietaryTags = findDietaryConflicts(guest, dish);
-
-        // Create warning for allergen conflicts (critical severity)
-        if (conflictingAllergens.length > 0) {
-          await createAllergenWarning(
-            tenantId,
-            body.eventId,
-            guest,
-            dish,
-            conflictingAllergens
-          );
-          warningsCreated++;
+    // Create warnings via manifest runtime with transaction for constraint validation and event emission
+    await database.$transaction(async (tx) => {
+      const runtime = await createManifestRuntime(
+        {
+          prisma: database,
+          prismaOverride: tx,
+          log,
+          captureException,
+        },
+        {
+          user: { id: userId, tenantId },
         }
+      );
 
-        // Create warning for dietary conflicts (warning severity)
-        if (conflictingDietaryTags.length > 0) {
-          await createDietaryWarning(
-            tenantId,
-            body.eventId,
-            guest,
-            dish,
-            conflictingDietaryTags
-          );
-          warningsCreated++;
+      // Check for conflicts and create warnings
+      for (const guest of guests) {
+        for (const dish of dishes) {
+          const conflictingAllergens = findAllergenConflicts(guest, dish);
+          const conflictingDietaryTags = findDietaryConflicts(guest, dish);
+
+          // Create warning for allergen conflicts (critical severity)
+          if (conflictingAllergens.length > 0) {
+            const result = await createWarningViaManifest(
+              runtime,
+              body.eventId,
+              guest,
+              dish,
+              "allergen_conflict",
+              conflictingAllergens,
+              "critical"
+            );
+            if (result.success) {
+              warningsCreated++;
+            } else {
+              creationErrors.push(
+                `Allergen warning for ${guest.guestName}/${dish.name}: ${result.error}`
+              );
+            }
+          }
+
+          // Create warning for dietary conflicts (warning severity)
+          if (conflictingDietaryTags.length > 0) {
+            const result = await createWarningViaManifest(
+              runtime,
+              body.eventId,
+              guest,
+              dish,
+              "dietary_conflict",
+              conflictingDietaryTags,
+              "warning"
+            );
+            if (result.success) {
+              warningsCreated++;
+            } else {
+              creationErrors.push(
+                `Dietary warning for ${guest.guestName}/${dish.name}: ${result.error}`
+              );
+            }
+          }
         }
       }
-    }
+    });
 
     return NextResponse.json({
       success: true,
@@ -273,6 +308,7 @@ export async function POST(request: Request) {
       warningsCreated,
       guestsProcessed: guests.length,
       dishesProcessed: dishes.length,
+      errors: creationErrors.length > 0 ? creationErrors : undefined,
     });
   } catch (error) {
     if (error instanceof InvariantError) {

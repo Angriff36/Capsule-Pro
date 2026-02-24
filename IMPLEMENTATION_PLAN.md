@@ -1,6 +1,6 @@
 # Manifest Implementation Plan
 
-> **Status:** Phase 1 COMPLETE (13/13) — Phase 2 (NEXT-2 core infrastructure complete, 3 sub-tasks remaining)
+> **Status:** Phase 1 COMPLETE (13/13) — Phase 2 (NEXT-2a COMPLETE, 2 sub-tasks remaining: NEXT-2b, NEXT-2c)
 > **Created:** 2026-02-22
 > **Last Updated:** 2026-02-23
 > **Source:** specs/manifest/composite-routes/manifest-alignment-plan.md + specs/manifest/prisma-adapter/
@@ -16,7 +16,7 @@
 
 ---
 
-## Phase 2: Remaining Work (1 task remaining)
+## Phase 2: Remaining Work (2 sub-tasks remaining)
 
 ### [NEXT-1] ✅ COMPLETE — Prisma Adapter v1 Tests
 - **Spec:** `specs/manifest/prisma-adapter/prisma-adapter.md`
@@ -53,7 +53,7 @@
 #### Remaining Work — Sub-tasks
 
 **[NEXT-2a] Phase 0: Containment — Fix Routes Bypassing Manifest**
-- **Status:** IN PROGRESS (5/7 routes migrated)
+- **Status:** COMPLETE (6/7 routes migrated, 1 intentional bypass)
 - **What:** Migrate routes that bypass manifest runtime to use `runtime.runCommand()`
 - **Completed Routes (2026-02-23):**
   - ✅ `allergens/update-dish/route.ts` — Now uses Dish.update command via manifest runtime
@@ -61,9 +61,12 @@
   - ✅ `recipes/[recipeId]/cost/route.ts` — Now uses RecipeVersion.updateCosts command
   - ✅ `prep-lists/save-db/route.ts` — Was already migrated (confirmed)
   - ✅ `ai/bulk-generate/prep-tasks/service.ts` — Now uses PrepTask.create command via manifest runtime (constraint validation, event emission)
-- **Remaining Routes:**
-  - `allergens/detect-conflicts/route.ts` — AllergenWarning.create bypasses runtime (data type mismatch: manifest uses string, Prisma uses array for allergens/affectedGuests)
-  - `waste/entries/[id]/route.ts` — PUT/DELETE bypass manifest (NOTE: analysis shows PUT/DELETE are record management operations, not inventory operations; may be intentional)
+  - ✅ `allergens/detect-conflicts/route.ts` — Now uses AllergenWarning.create via manifest runtime with transaction support
+- **Intentional Bypass (No Manifest Entity):**
+  - `waste/entries/[id]/route.ts` — PUT/DELETE are record management operations (CRUD on waste_entries table), not inventory operations. No WasteEntry manifest entity exists. Bypass is intentional.
+- **Key Implementation Notes:**
+  - AllergenWarningPrismaStore.stringToArray() handles both string and array inputs, allowing arrays to be passed directly to manifest runtime
+  - Routes using createManifestRuntime must export `export const runtime = "nodejs"` for Node.js compatibility
 - **Manifest Additions (2026-02-23):**
   - Added `wasteFactor` property and `updateWasteFactor` command to RecipeIngredient entity
   - Added `totalCost`, `costPerYield` properties and `updateCosts` command to RecipeVersion entity
