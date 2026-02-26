@@ -56,7 +56,15 @@ export async function POST(request: NextRequest) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    console.error("Error executing KitchenTask.claim:", error);
-    return manifestErrorResponse("Internal server error", 500);
+    console.error("Error executing KitchenTask.claim:", {
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      name: error instanceof Error ? error.name : undefined,
+      error,
+    });
+    return manifestErrorResponse(
+      `Internal server error: ${error instanceof Error ? error.message : "Unknown error"}`,
+      500
+    );
   }
 }
