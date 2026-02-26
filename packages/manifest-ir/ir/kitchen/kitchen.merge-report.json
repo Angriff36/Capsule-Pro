@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.dev/merge-report.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-02-26T15:24:52.127Z",
+  "generatedAt": "2026-02-26T16:22:26.702Z",
   "sources": [
     "alerts-config-rules.manifest",
     "allergen-warning-rules.manifest",

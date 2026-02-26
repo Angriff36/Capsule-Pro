@@ -978,7 +978,29 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
       where: { tenantId: this.tenantId, deletedAt: null },
     })) as KitchenTask[];
 
-    return tasks.map((task) => this.mapToManifestEntity(task));
+    const taskIds = tasks.map((t) => t.id);
+    const claims =
+      taskIds.length > 0
+        ? await this.prisma.kitchenTaskClaim.findMany({
+            where: {
+              tenantId: this.tenantId,
+              taskId: { in: taskIds },
+              releasedAt: null,
+            },
+            orderBy: { claimedAt: "desc" },
+          })
+        : [];
+
+    const claimsByTaskId = new Map<string, KitchenTaskClaim[]>();
+    for (const claim of claims) {
+      const existing = claimsByTaskId.get(claim.taskId) || [];
+      existing.push(claim);
+      claimsByTaskId.set(claim.taskId, existing);
+    }
+
+    return tasks.map((task) =>
+      this.mapToManifestEntity(task, claimsByTaskId.get(task.id) || [])
+    );
   }
 
   async getById(id: string): Promise<EntityInstance | undefined> {
@@ -993,7 +1015,13 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
       return undefined;
     }
 
-    return this.mapToManifestEntity(task);
+    const claims = await this.prisma.kitchenTaskClaim.findMany({
+      where: { tenantId: this.tenantId, taskId: id, releasedAt: null },
+      orderBy: { claimedAt: "desc" },
+      take: 1,
+    });
+
+    return this.mapToManifestEntity(task, claims);
   }
 
   async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
@@ -1014,7 +1042,18 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
       },
     });
 
-    return this.mapToManifestEntity(task);
+    if (data.claimedBy && data.claimedAt) {
+      await this.prisma.kitchenTaskClaim.create({
+        data: {
+          tenantId: this.tenantId,
+          taskId: task.id,
+          employeeId: data.claimedBy as string,
+          claimedAt: new Date(data.claimedAt as number),
+        },
+      });
+    }
+
+    return this.mapToManifestEntity(task, []);
   }
 
   async update(
@@ -1049,7 +1088,60 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
       },
     });
 
-    return this.mapToManifestEntity(updated);
+    const activeClaim = await this.prisma.kitchenTaskClaim.findFirst({
+      where: { tenantId: this.tenantId, taskId: id, releasedAt: null },
+    });
+
+    const newClaimedBy = data.claimedBy as string | undefined;
+
+    if (newClaimedBy && !activeClaim) {
+      await this.prisma.kitchenTaskClaim.create({
+        data: {
+          tenantId: this.tenantId,
+          taskId: id,
+          employeeId: newClaimedBy,
+          claimedAt: data.claimedAt
+            ? new Date(data.claimedAt as number)
+            : new Date(),
+        },
+      });
+    } else if (!newClaimedBy && activeClaim) {
+      await this.prisma.kitchenTaskClaim.update({
+        where: { tenantId_id: { tenantId: this.tenantId, id: activeClaim.id } },
+        data: {
+          releasedAt: new Date(),
+          releaseReason: data.releaseReason as string | undefined,
+        },
+      });
+    } else if (
+      newClaimedBy &&
+      activeClaim &&
+      newClaimedBy !== activeClaim.employeeId
+    ) {
+      await this.prisma.kitchenTaskClaim.update({
+        where: { tenantId_id: { tenantId: this.tenantId, id: activeClaim.id } },
+        data: { releasedAt: new Date() },
+      });
+
+      await this.prisma.kitchenTaskClaim.create({
+        data: {
+          tenantId: this.tenantId,
+          taskId: id,
+          employeeId: newClaimedBy,
+          claimedAt: data.claimedAt
+            ? new Date(data.claimedAt as number)
+            : new Date(),
+        },
+      });
+    }
+
+    const claims = await this.prisma.kitchenTaskClaim.findMany({
+      where: { tenantId: this.tenantId, taskId: id, releasedAt: null },
+      orderBy: { claimedAt: "desc" },
+      take: 1,
+    });
+
+    return this.mapToManifestEntity(updated, claims);
   }
 
   async delete(id: string): Promise<boolean> {
@@ -1073,7 +1165,12 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
     // No-op for Prisma stores — we don't bulk-delete production data
   }
 
-  private mapToManifestEntity(task: KitchenTask): EntityInstance {
+  private mapToManifestEntity(
+    task: KitchenTask,
+    claims: KitchenTaskClaim[] = []
+  ): EntityInstance {
+    const activeClaim = claims[0];
+
     return {
       id: task.id,
       tenantId: task.tenantId,
@@ -1085,6 +1182,8 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
       tags: Array.isArray(task.tags) ? task.tags.join(",") : "",
       dueDate: task.dueDate ? task.dueDate.getTime() : 0,
       completedAt: task.completedAt ? task.completedAt.getTime() : 0,
+      claimedBy: activeClaim?.employeeId ?? "",
+      claimedAt: activeClaim?.claimedAt.getTime() ?? 0,
       createdAt: task.createdAt.getTime(),
       updatedAt: task.updatedAt.getTime(),
     };
