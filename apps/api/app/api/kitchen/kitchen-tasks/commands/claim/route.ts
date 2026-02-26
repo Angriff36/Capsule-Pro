@@ -1,50 +1,94 @@
 // Auto-generated Next.js command handler for KitchenTask.claim
 // Generated from Manifest IR - DO NOT EDIT
-// Writes MUST flow through runtime to enforce guards, policies, and constraints
+// Writes MUST flow through runtime.runCommand() to enforce guards, policies, and constraints
 
 import { auth } from "@repo/auth/server";
-import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { database } from "@repo/database";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
-} from "@/lib/manifest-response";
+} from "@repo/manifest-adapters/route-helpers";
+import { captureException } from "@sentry/nextjs";
+import type { NextRequest } from "next/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
-
-export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
   try {
-    const { orgId, userId } = await auth();
-    if (!(userId && orgId)) {
+    const { orgId, userId: clerkId } = await auth();
+    if (!(clerkId && orgId)) {
       return manifestErrorResponse("Unauthorized", 401);
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
-
     if (!tenantId) {
       return manifestErrorResponse("Tenant not found", 400);
     }
 
+    // Fetch user's role for policy evaluation
+    const currentUser = await database.user.findFirst({
+      where: {
+        AND: [{ tenantId }, { authUserId: clerkId }],
+      },
+    });
+
+    if (!currentUser) {
+      return manifestErrorResponse("User not found in database", 400);
+    }
+
     const body = await request.json();
+    const { id, userId: bodyUserId, ...commandArgs } = body;
+
+    if (!id) {
+      return manifestErrorResponse("Task ID is required", 400);
+    }
+
+    const effectiveUserId = bodyUserId || currentUser.id;
 
     const runtime = await createManifestRuntime({
-      user: { id: userId, tenantId },
-    });
-    const result = await runtime.runCommand("claim", body, {
+      user: { id: currentUser.id, tenantId, role: currentUser.role },
       entityName: "KitchenTask",
     });
 
+    // Log state before running command for debugging
+    const taskRecord = await database.kitchenTask.findFirst({
+      where: { tenantId, id },
+    });
+    console.log("[kitchen-task/claim] Pre-command state:", {
+      taskId: id,
+      taskStatus: taskRecord?.status,
+      effectiveUserId,
+      userRole: currentUser.role,
+      tenantId,
+    });
+
+    const result = await runtime.runCommand(
+      "claim",
+      { userId: effectiveUserId, ...commandArgs },
+      {
+        entityName: "KitchenTask",
+        instanceId: id,
+      }
+    );
+
     if (!result.success) {
+      console.error("[kitchen-task/claim] Command failed:", {
+        policyDenial: result.policyDenial,
+        guardFailure: result.guardFailure,
+        error: result.error,
+        taskStatus: taskRecord?.status,
+        userRole: currentUser.role,
+      });
+
       if (result.policyDenial) {
         return manifestErrorResponse(
-          `Access denied: ${result.policyDenial.policyName}`,
+          `Access denied: ${result.policyDenial.policyName} (role=${currentUser.role})`,
           403
         );
       }
       if (result.guardFailure) {
         return manifestErrorResponse(
-          `Guard ${result.guardFailure.index} failed: ${result.guardFailure.formatted}`,
+          `Guard ${result.guardFailure.index} failed: ${result.guardFailure.formatted} (task.status=${taskRecord?.status}, userId=${effectiveUserId})`,
           422
         );
       }
@@ -56,15 +100,8 @@ export async function POST(request: NextRequest) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    console.error("Error executing KitchenTask.claim:", {
-      message: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined,
-      name: error instanceof Error ? error.name : undefined,
-      error,
-    });
-    return manifestErrorResponse(
-      `Internal server error: ${error instanceof Error ? error.message : "Unknown error"}`,
-      500
-    );
+    console.error("[kitchen-task/claim] Error:", error);
+    captureException(error);
+    return manifestErrorResponse("Internal server error", 500);
   }
 }
