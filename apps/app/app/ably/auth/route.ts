@@ -42,6 +42,7 @@ const getClientId = (tenantId: string, userId: string) =>
   `tenant:${tenantId}:user:${userId}`;
 
 export async function POST(request: Request) {
+  try {
   // ── 1. Clerk authentication ──────────────────────────────────────────────
   // auth() throws if Clerk middleware is not configured; wrap defensively.
   let userId: string | null;
@@ -156,4 +157,11 @@ export async function POST(request: Request) {
   // Shape: { keyName, ttl, timestamp, capability, clientId, nonce, mac }
   // https://ably.com/docs/api/rest-sdk/types#token-request
   return NextResponse.json(tokenRequest);
+  } catch (outerErr) {
+    console.error("[ably/auth] Unhandled error in POST handler:", outerErr);
+    return NextResponse.json(
+      { error: "Internal server error in ably/auth" },
+      { status: 500 }
+    );
+  }
 }
