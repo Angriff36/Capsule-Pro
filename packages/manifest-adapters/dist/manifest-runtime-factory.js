@@ -68,16 +68,39 @@ async function resolveUserRole(prisma, user) {
     if (user.role) {
         return user;
     }
-    const record = await prisma.user.findFirst({
+    try {
+        const record = await prisma.user.findFirst({
+            where: {
+                id: user.id,
+                tenantId: user.tenantId,
+                deletedAt: null,
+            },
+            select: { role: true },
+        });
+        if (record?.role) {
+            return { ...user, role: record.role };
+        }
+    }
+    catch (error) {
+        // Clerk user IDs (e.g. user_...) are not UUIDs. Some callers still pass
+        // auth IDs instead of internal DB UUIDs; fallback below resolves role by
+        // authUserId when UUID lookup fails.
+        const msg = error instanceof Error ? error.message : String(error);
+        if (!msg.includes("invalid input syntax for type uuid")) {
+            throw error;
+        }
+    }
+    // Fallback lookup by authUserId for Clerk-style IDs.
+    const byAuthUser = await prisma.user.findFirst({
         where: {
-            id: user.id,
+            authUserId: user.id,
             tenantId: user.tenantId,
             deletedAt: null,
         },
         select: { role: true },
     });
-    if (record?.role) {
-        return { ...user, role: record.role };
+    if (byAuthUser?.role) {
+        return { ...user, role: byAuthUser.role };
     }
     return user;
 }
@@ -186,17 +209,21 @@ export async function createManifestRuntime(deps, ctx) {
             }
         },
     };
-    // 6. Create idempotency store for command deduplication.
-    //    Phase 2: deps.idempotency.failureTtlMs is plumbed through the type
-    //    signature but NOT mapped into the constructor yet — the original
-    //    apps/api implementation never passed ttlMs, so we preserve that
-    //    behavior. When Phase 2 lands, add `ttlMs: deps.idempotency?.failureTtlMs`
-    //    here.
+    // 6. Idempotency store for command deduplication.
+    //    IMPORTANT: The runtime engine REJECTS commands when an idempotency store
+    //    is configured but no idempotencyKey is provided. Since generated routes
+    //    do NOT pass idempotencyKey, we must NOT create the store by default.
+    //    Only create it when the caller explicitly opts in via deps.idempotency.
+    //
+    //    Phase 2: When generated routes are updated to pass idempotencyKey,
+    //    re-enable the default store creation.
     // biome-ignore lint/suspicious/noExplicitAny: PrismaIdempotencyStore expects the full PrismaClient; callers inject a structurally-compatible superset.
-    const idempotencyStore = new PrismaIdempotencyStore({
-        prisma: prisma,
-        tenantId: resolvedUser.tenantId,
-    });
+    const idempotencyStore = deps.idempotency
+        ? new PrismaIdempotencyStore({
+            prisma: prisma,
+            tenantId: resolvedUser.tenantId,
+        })
+        : undefined;
     // 7. Assemble and return the runtime engine.
     return new ManifestRuntimeEngine(ir, { user: resolvedUser, eventCollector, telemetry }, { storeProvider, idempotencyStore });
 }

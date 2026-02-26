@@ -21,7 +21,10 @@ function findRepoRoot(startDir) {
         }
         const parent = resolve(dir, "..");
         if (parent === dir) {
-            throw new Error(`[loadManifests] Could not find repo root (pnpm-workspace.yaml). Started from: ${startDir}`);
+            // In serverless bundles (e.g. Vercel), pnpm-workspace.yaml is often not
+            // present in /var/task even though compiled assets are available. Fall
+            // back to startDir and let downstream path resolution try common roots.
+            return startDir;
         }
         dir = parent;
     }
@@ -233,13 +236,19 @@ let cachedPrecompiledPath = "";
  */
 export function loadPrecompiledIR(irPath) {
     const repoRoot = findRepoRoot(process.cwd());
-    const absPath = resolve(repoRoot, irPath);
-    if (cachedPrecompiledBundle && cachedPrecompiledPath === absPath) {
+    const candidates = [
+        resolve(repoRoot, irPath),
+        resolve(process.cwd(), irPath),
+        resolve("/var/task", irPath),
+    ];
+    const absPath = candidates.find((p) => existsSync(p));
+    if (cachedPrecompiledBundle && absPath && cachedPrecompiledPath === absPath) {
         return cachedPrecompiledBundle;
     }
-    if (!existsSync(absPath)) {
-        throw new Error(`[loadManifests] Precompiled IR not found at: ${absPath}\n` +
-            `  irPath: ${irPath}\n` +
+    if (!absPath) {
+        throw new Error(`[loadManifests] Precompiled IR not found. Tried:\n` +
+            candidates.map((c) => `  - ${c}`).join("\n") +
+            `\n  irPath: ${irPath}\n` +
             `  repoRoot: ${repoRoot}\n` +
             `  process.cwd(): ${process.cwd()}`);
     }
