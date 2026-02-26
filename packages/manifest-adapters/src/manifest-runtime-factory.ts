@@ -183,17 +183,41 @@ async function resolveUserRole(
     return user;
   }
 
-  const record = await prisma.user.findFirst({
+  try {
+    const record = await prisma.user.findFirst({
+      where: {
+        id: user.id,
+        tenantId: user.tenantId,
+        deletedAt: null,
+      },
+      select: { role: true },
+    });
+
+    if (record?.role) {
+      return { ...user, role: record.role };
+    }
+  } catch (error) {
+    // Clerk user IDs (e.g. user_...) are not UUIDs. Some callers still pass
+    // auth IDs instead of internal DB UUIDs; fallback below resolves role by
+    // authUserId when UUID lookup fails.
+    const msg = error instanceof Error ? error.message : String(error);
+    if (!msg.includes("invalid input syntax for type uuid")) {
+      throw error;
+    }
+  }
+
+  // Fallback lookup by authUserId for Clerk-style IDs.
+  const byAuthUser = await (prisma.user.findFirst as unknown as (args: unknown) => Promise<{ role: string | null } | null>)({
     where: {
-      id: user.id,
+      authUserId: user.id,
       tenantId: user.tenantId,
       deletedAt: null,
     },
     select: { role: true },
   });
 
-  if (record?.role) {
-    return { ...user, role: record.role };
+  if (byAuthUser?.role) {
+    return { ...user, role: byAuthUser.role };
   }
 
   return user;
