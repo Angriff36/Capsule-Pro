@@ -20,10 +20,12 @@ Run these after implementing to get immediate feedback:
 - Routes from IR: `pnpm manifest:routes:ir -- --format summary`
 - Lint routes: `pnpm manifest:lint-routes`
 - After .manifest edits: `pnpm manifest:build`
+- Manifest CLI must run from the installed/published `@angriff36/manifest` package (`pnpm exec manifest ...`), not from `packages/manifest-runtime/...` source paths
 
 ## Operational Notes
 
 - IR is authority — filesystem is not source of truth for routes
+- `@angriff36/manifest` must be consumed as the published package version (currently pinned), not `workspace:*` in `apps/*` or `packages/*`
 - All mutations compile to Manifest domain commands
 - New/changed API write handlers (`POST`/`PUT`/`PATCH`/`DELETE`) under `apps/api/app/api` must exist in canonical route surface (`packages/manifest-ir/dist/routes.manifest.json`) unless explicitly infrastructure-allowlisted (`webhooks`/`auth`/`cron`/`health`)
 - Generated code is projection — never edit generated files

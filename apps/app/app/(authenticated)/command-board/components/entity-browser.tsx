@@ -646,9 +646,10 @@ export function EntityBrowser({
                 key={type}
                 onOpenChange={(isOpen) => handleOpenChange(type, isOpen)}
               >
+              <div className="flex items-center gap-1">
                 <CollapsibleTrigger
                   className={cn(
-                    "flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium transition-colors group",
+                    "group flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium transition-colors",
                     isCategoryFocused
                       ? "bg-primary/10 ring-2 ring-primary/50"
                       : "hover:bg-muted/50"
@@ -659,22 +660,9 @@ export function EntityBrowser({
                   <span className="flex-1 text-left">{label}s</span>
                   {/* Show count: loaded count takes precedence, then pre-loaded count */}
                   {state?.loaded ? (
-                    <>
-                      <span className="text-xs text-muted-foreground tabular-nums">
-                        {state.items.length}
-                      </span>
-                      <button
-                        className="h-4 w-4 shrink-0 flex items-center justify-center rounded hover:bg-muted-foreground/10 transition-colors"
-                        disabled={state.refreshing}
-                        onClick={(e) => handleRefresh(type, e)}
-                        title={`Refresh ${label.toLowerCase()}s`}
-                        type="button"
-                      >
-                        <RefreshCwIcon
-                          className={`h-3 w-3 text-muted-foreground ${state.refreshing ? "animate-spin" : ""}`}
-                        />
-                      </button>
-                    </>
+                    <span className="text-xs text-muted-foreground tabular-nums">
+                      {state.items.length}
+                    </span>
                   ) : (
                     entityCounts[type] !== undefined && (
                       <span className="text-xs text-muted-foreground tabular-nums">
@@ -683,6 +671,21 @@ export function EntityBrowser({
                     )
                   )}
                 </CollapsibleTrigger>
+                {state?.loaded ? (
+                  <button
+                    aria-label={`Refresh ${label.toLowerCase()}s`}
+                    className="h-6 w-6 shrink-0 flex items-center justify-center rounded hover:bg-muted-foreground/10 transition-colors"
+                    disabled={state.refreshing}
+                    onClick={(e) => handleRefresh(type, e)}
+                    title={`Refresh ${label.toLowerCase()}s`}
+                    type="button"
+                  >
+                    <RefreshCwIcon
+                      className={`h-3 w-3 text-muted-foreground ${state.refreshing ? "animate-spin" : ""}`}
+                    />
+                  </button>
+                ) : null}
+              </div>
 
                 <CollapsibleContent>
                   <div className="ml-5 mt-0.5 mb-1 space-y-px">

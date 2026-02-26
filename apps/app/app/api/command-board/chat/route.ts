@@ -14,6 +14,7 @@ import {
   runManifestActionAgentSafe,
   type StructuredAgentResponse,
 } from "./agent-loop";
+import { formatStructuredAgentResponseForDisplay } from "./response-format";
 
 const AI_MODEL = process.env.COMMAND_BOARD_AI_MODEL ?? "gpt-4o-mini";
 const NEWLINE_REGEX = /\r?\n/;
@@ -86,7 +87,7 @@ function toStreamResponse(
   messages: UIMessage[],
   payload: StructuredAgentResponse
 ): Response {
-  const text = JSON.stringify(payload, null, 2);
+  const text = formatStructuredAgentResponseForDisplay(payload);
 
   const stream = createUIMessageStream({
     execute: ({ writer }) => {
