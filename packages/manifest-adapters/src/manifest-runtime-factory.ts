@@ -341,17 +341,21 @@ export async function createManifestRuntime(
     },
   };
 
-  // 6. Create idempotency store for command deduplication.
-  //    Phase 2: deps.idempotency.failureTtlMs is plumbed through the type
-  //    signature but NOT mapped into the constructor yet — the original
-  //    apps/api implementation never passed ttlMs, so we preserve that
-  //    behavior. When Phase 2 lands, add `ttlMs: deps.idempotency?.failureTtlMs`
-  //    here.
+  // 6. Idempotency store for command deduplication.
+  //    IMPORTANT: The runtime engine REJECTS commands when an idempotency store
+  //    is configured but no idempotencyKey is provided. Since generated routes
+  //    do NOT pass idempotencyKey, we must NOT create the store by default.
+  //    Only create it when the caller explicitly opts in via deps.idempotency.
+  //
+  //    Phase 2: When generated routes are updated to pass idempotencyKey,
+  //    re-enable the default store creation.
   // biome-ignore lint/suspicious/noExplicitAny: PrismaIdempotencyStore expects the full PrismaClient; callers inject a structurally-compatible superset.
-  const idempotencyStore = new PrismaIdempotencyStore({
-    prisma: prisma as any,
-    tenantId: resolvedUser.tenantId,
-  });
+  const idempotencyStore = deps.idempotency
+    ? new PrismaIdempotencyStore({
+        prisma: prisma as any,
+        tenantId: resolvedUser.tenantId,
+      })
+    : undefined;
 
   // 7. Assemble and return the runtime engine.
   return new ManifestRuntimeEngine(
