@@ -140,10 +140,57 @@ function generateRouteSurface() {
   console.log("[manifest/build] Canonical route surface generated.");
 }
 
+/**
+ * Step 4: Audit route boundaries after all routes are materialized on disk.
+ *
+ * Runs immediately after route generation + surface generation so the audit
+ * checks the actual output, not stale state.
+ *
+ * Ownership rules (WRITE_OUTSIDE_COMMANDS_NAMESPACE, COMMAND_ROUTE_MISSING_RUNTIME_CALL,
+ * COMMAND_ROUTE_ORPHAN) are enabled via --commands-manifest. Per the rollout strategy
+ * in tasks/manifest-route-ownership-plan.md §3, new rules ship as warnings (no --strict)
+ * in the first PR. A follow-up PR flips to --strict after burn-down.
+ *
+ * See: docs/spec/manifest-vnext.md § "Canonical Routes (Normative)" — Enforcement
+ */
+function auditRouteBoundaries() {
+  console.log("[manifest/build] Step 4: Auditing route boundaries...");
+  const bin = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
+  const result = spawnSync(
+    bin,
+    [
+      "exec",
+      "manifest",
+      "audit-routes",
+      "--root",
+      "apps/api",
+      "--commands-manifest",
+      "packages/manifest-ir/ir/kitchen/kitchen.commands.json",
+      "--exemptions",
+      "packages/manifest-runtime/packages/cli/src/commands/audit-routes-exemptions.json",
+    ],
+    {
+      stdio: "inherit",
+      shell: process.platform === "win32",
+    }
+  );
+  if (result.status !== 0) {
+    // Rollout mode: audit findings are informational, not blocking.
+    // A follow-up PR will flip to --strict after burn-down.
+    // See: tasks/manifest-route-ownership-plan.md §3 Rollout Strategy
+    console.warn(
+      "[manifest/build] Route boundary audit found issues (non-blocking in rollout mode)."
+    );
+  } else {
+    console.log("[manifest/build] Route boundary audit passed.");
+  }
+}
+
 async function main() {
   await compileMergedManifests();
   generateFromIR();
   generateRouteSurface();
+  auditRouteBoundaries();
   console.log("[manifest/build] Build complete!");
 }
 

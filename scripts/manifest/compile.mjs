@@ -21,6 +21,7 @@ const MANIFESTS_DIR = join(
 );
 const OUTPUT_DIR = join(process.cwd(), "packages/manifest-ir/ir/kitchen");
 const OUTPUT_FILE = join(OUTPUT_DIR, "kitchen.ir.json");
+const COMMANDS_FILE = join(OUTPUT_DIR, "kitchen.commands.json");
 const MERGE_REPORT_FILE = join(OUTPUT_DIR, "kitchen.merge-report.json");
 
 async function compileMergedManifests() {
@@ -91,6 +92,25 @@ async function compileMergedManifests() {
 
   // Write merged IR
   writeFileSync(OUTPUT_FILE, JSON.stringify(mergedIR, null, 2));
+
+  // Derive and emit kitchen.commands.json — projection-agnostic command manifest.
+  // Source: ir.commands[] only. No filesystem reads, no URL paths, no Next.js logic.
+  // Fields: entity, command (name), commandId (entity.name). Sorted: entity ASC, command ASC.
+  const commandsManifest = (mergedIR.commands ?? [])
+    .map((cmd) => ({
+      entity: cmd.entity,
+      command: cmd.name,
+      commandId: `${cmd.entity}.${cmd.name}`,
+    }))
+    .sort((a, b) => {
+      const entityCmp = a.entity.localeCompare(b.entity);
+      if (entityCmp !== 0) return entityCmp;
+      return a.command.localeCompare(b.command);
+    });
+  writeFileSync(COMMANDS_FILE, JSON.stringify(commandsManifest, null, 2));
+  console.log(
+    `[manifest/compile] Emitted ${commandsManifest.length} entries to kitchen.commands.json`
+  );
 
   // Also write provenance file
   const provenanceFile = join(OUTPUT_DIR, "kitchen.provenance.json");

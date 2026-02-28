@@ -320,6 +320,14 @@ program
   .option("--tenant-field <name>", "Tenant scope field name", "tenantId")
   .option("--deleted-field <name>", "Soft-delete field name", "deletedAt")
   .option("--location-field <name>", "Location scope field name", "locationId")
+  .option(
+    "--commands-manifest <path>",
+    "Path to kitchen.commands.json (auto-detected from repo root)"
+  )
+  .option(
+    "--exemptions <path>",
+    "Path to audit-routes-exemptions.json (auto-detected from repo root)"
+  )
   .action(async (options = {}) => {
     await auditRoutesCommand(options);
   });

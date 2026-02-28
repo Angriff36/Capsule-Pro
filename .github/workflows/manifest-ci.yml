@@ -6,6 +6,9 @@ on:
     paths:
       - 'packages/manifest-adapters/manifests/**'
       - 'apps/api/app/api/kitchen/**'
+      - 'apps/api/app/api/**/route.ts'
+      - 'packages/manifest-ir/ir/**'
+      - 'packages/manifest-runtime/packages/cli/src/commands/audit-routes-exemptions.json'
       - '.github/workflows/manifest-ci.yml'
   workflow_dispatch:
     inputs:
@@ -235,6 +238,56 @@ jobs:
           path: |
             apps/api/coverage/
             apps/api/.vitest/
+
+  manifest-route-audit:
+    name: Route Boundary Audit
+    runs-on: ubuntu-latest
+    # Non-blocking during rollout. Flip continue-on-error to false after burn-down.
+    # See: tasks/manifest-route-ownership-plan.md §3 Rollout Strategy
+    continue-on-error: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: '.nvmrc'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.22.0
+
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - name: Setup pnpm cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+        env:
+          GITHUB_PACKAGES_TOKEN: ${{ secrets.GITHUB_PACKAGES_TOKEN }}
+
+      - name: Run route boundary audit
+        run: |
+          echo "Running route boundary audit..."
+          pnpm exec manifest audit-routes \
+            --root apps/api \
+            --commands-manifest packages/manifest-ir/ir/kitchen/kitchen.commands.json \
+            --exemptions packages/manifest-runtime/packages/cli/src/commands/audit-routes-exemptions.json
+          echo "Route boundary audit complete"
 
   snapshot-check:
     name: Snapshot Check

@@ -6,7 +6,7 @@
     "@capsule-pro/sales-reporting": "workspace:*",
     "@clerk/nextjs": "^6.37.2",
     "@clerk/themes": "^2.2.68",
-    "@angriff36/manifest": "0.3.25",
+    "@angriff36/manifest": "0.3.28",
     "@neondatabase/serverless": "^1.0.2",
     "@plasmicapp/loader-nextjs": "^1.0.451",
     "@plasmicapp/react-web": "^0.2.415",

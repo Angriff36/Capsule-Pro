@@ -20,6 +20,19 @@ export interface RouteAuditFileResult {
   findings: RouteAuditFinding[];
 }
 
+export interface ExemptionEntry {
+  path: string;
+  methods: string[];
+  reason: string;
+  category: string;
+}
+
+export interface CommandManifestEntry {
+  entity: string;
+  command: string;
+  commandId: string;
+}
+
 export interface AuditRoutesOptions {
   root?: string;
   format?: "text" | "json";
@@ -27,6 +40,8 @@ export interface AuditRoutesOptions {
   tenantField?: string;
   deletedField?: string;
   locationField?: string;
+  commandsManifest?: string;
+  exemptions?: string;
 }
 
 const READ_METHODS = new Set(["GET"]);
@@ -170,12 +185,54 @@ function hasLocationFilterInDirectQueryWhere(
   return found;
 }
 
+/**
+ * Normalize a file path to use forward slashes and extract the route-relative
+ * portion (e.g. "app/api/kitchen/prep-tasks/commands/create/route.ts").
+ */
+function normalizeRoutePath(filePath: string): string {
+  return filePath.replace(/\\/g, "/");
+}
+
+/**
+ * Check if a normalized route path is inside the commands namespace.
+ */
+function isInCommandsNamespace(normalizedPath: string): boolean {
+  return normalizedPath.includes("/commands/");
+}
+
+/**
+ * Check if a route file path matches an exemption entry.
+ * Matches if the normalized path ends with the exemption path.
+ */
+function isExempted(
+  normalizedPath: string,
+  method: string,
+  exemptions: ExemptionEntry[]
+): boolean {
+  for (const exemption of exemptions) {
+    const exemptionNormalized = exemption.path.replace(/\\/g, "/");
+    if (
+      normalizedPath.endsWith(exemptionNormalized) &&
+      exemption.methods.includes(method)
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export interface OwnershipAuditContext {
+  commandManifestPaths: Set<string>;
+  exemptions: ExemptionEntry[];
+}
+
 export function auditRouteFileContent(
   content: string,
   file: string,
   options: Required<
     Pick<AuditRoutesOptions, "tenantField" | "deletedField" | "locationField">
-  >
+  >,
+  ownershipContext?: OwnershipAuditContext
 ): RouteAuditFileResult {
   const findings: RouteAuditFinding[] = [];
   const methods = detectExportedMethods(content);
@@ -258,6 +315,81 @@ export function auditRouteFileContent(
     }
   }
 
+  // --- Ownership rules (require ownershipContext) ---
+  if (ownershipContext) {
+    const normalizedFile = normalizeRoutePath(file);
+    const inCommandsNs = isInCommandsNamespace(normalizedFile);
+    const hasWriteMethod = methods.some((m) => WRITE_METHODS.has(m));
+
+    // Rule: WRITE_OUTSIDE_COMMANDS_NAMESPACE
+    // Write routes outside /commands/ must be exempted or they fail.
+    if (hasWriteMethod && !inCommandsNs) {
+      for (const method of methods) {
+        if (
+          WRITE_METHODS.has(method) &&
+          !isExempted(normalizedFile, method, ownershipContext.exemptions)
+        ) {
+          findings.push({
+            file,
+            severity: "warning",
+            code: "WRITE_OUTSIDE_COMMANDS_NAMESPACE",
+            message: `${method} route is outside the commands namespace and not in the exemption registry.`,
+            suggestion:
+              "Move this route to commands/<command>/route.ts or register an explicit exemption in audit-routes-exemptions.json.",
+          });
+        }
+      }
+    }
+
+    // Rule: COMMAND_ROUTE_MISSING_RUNTIME_CALL
+    // Routes inside /commands/ must call runCommand.
+    if (inCommandsNs && !hasRunCommand) {
+      findings.push({
+        file,
+        severity: "warning",
+        code: "COMMAND_ROUTE_MISSING_RUNTIME_CALL",
+        message:
+          "Command route does not call runCommand — all command routes must execute through runtime.",
+        suggestion:
+          "All command routes must execute through runtime.runCommand.",
+      });
+    }
+
+    // Rule: COMMAND_ROUTE_ORPHAN
+    // Routes inside /commands/ must have a backing entry in commands.json.
+    if (inCommandsNs && ownershipContext.commandManifestPaths.size > 0) {
+      // Extract the domain-relative path from the full file path.
+      // We need to match against paths like "kitchen/prep-tasks/commands/create/route.ts"
+      const apiDirPatterns = [
+        "/apps/api/app/api/",
+        "/app/api/",
+        "/src/app/api/",
+      ];
+      let routeRelative = "";
+      for (const pattern of apiDirPatterns) {
+        const idx = normalizedFile.indexOf(pattern);
+        if (idx >= 0) {
+          routeRelative = normalizedFile.slice(idx + pattern.length);
+          break;
+        }
+      }
+
+      if (
+        routeRelative &&
+        !ownershipContext.commandManifestPaths.has(routeRelative)
+      ) {
+        findings.push({
+          file,
+          severity: "warning",
+          code: "COMMAND_ROUTE_ORPHAN",
+          message: `Command route "${routeRelative}" has no backing entry in kitchen.commands.json.`,
+          suggestion:
+            "This command route has no IR backing. Delete it or add the command to your manifest.",
+        });
+      }
+    }
+  }
+
   return { methods, findings };
 }
 
@@ -279,6 +411,119 @@ async function discoverRouteFiles(root: string): Promise<string[]> {
   return Array.from(new Set(files.flat()));
 }
 
+// Entity-to-domain mapping for building expected command route paths.
+// Must stay in sync with ENTITY_DOMAIN_MAP in scripts/manifest/generate.mjs.
+const ENTITY_DOMAIN_MAP: Record<string, string> = {
+  AlertsConfig: "kitchen/alerts-config",
+  AllergenWarning: "kitchen/allergen-warnings",
+  BattleBoard: "events/battle-boards",
+  BudgetLineItem: "events/budget-line-items",
+  CateringOrder: "events/catering-orders",
+  Client: "crm/clients",
+  ClientContact: "crm/client-contacts",
+  ClientInteraction: "crm/client-interactions",
+  ClientPreference: "crm/client-preferences",
+  CommandBoard: "command-board/boards",
+  CommandBoardCard: "command-board/cards",
+  CommandBoardConnection: "command-board/connections",
+  CommandBoardGroup: "command-board/groups",
+  CommandBoardLayout: "command-board/layouts",
+  Container: "kitchen/containers",
+  ContractSignature: "events/contract-signatures",
+  CycleCountRecord: "inventory/cycle-count/records",
+  CycleCountSession: "inventory/cycle-count/sessions",
+  Dish: "kitchen/dishes",
+  Event: "events/event",
+  EventBudget: "events/budgets",
+  EventContract: "events/contracts",
+  EventGuest: "events/guests",
+  EventProfitability: "events/profitability",
+  EventReport: "events/reports",
+  EventSummary: "events/summaries",
+  Ingredient: "kitchen/ingredients",
+  InventoryItem: "kitchen/inventory",
+  InventorySupplier: "inventory/suppliers",
+  InventoryTransaction: "inventory/transactions",
+  KitchenTask: "kitchen/kitchen-tasks",
+  Lead: "crm/leads",
+  Menu: "kitchen/menus",
+  MenuDish: "kitchen/menu-dishes",
+  Notification: "collaboration/notifications",
+  OverrideAudit: "kitchen/override-audits",
+  PrepComment: "kitchen/prep-comments",
+  PrepList: "kitchen/prep-lists",
+  PrepListItem: "kitchen/prep-list-items",
+  PrepMethod: "kitchen/prep-methods",
+  PrepTask: "kitchen/prep-tasks",
+  Proposal: "crm/proposals",
+  ProposalLineItem: "crm/proposal-line-items",
+  PurchaseOrder: "inventory/purchase-orders",
+  PurchaseOrderItem: "inventory/purchase-order-items",
+  Recipe: "kitchen/recipes",
+  RecipeIngredient: "kitchen/recipe-ingredients",
+  RecipeVersion: "kitchen/recipe-versions",
+  Schedule: "staff/schedules",
+  ScheduleShift: "staff/shifts",
+  Shipment: "shipments/shipment",
+  ShipmentItem: "shipments/shipment-items",
+  Station: "kitchen/stations",
+  TimeEntry: "timecards/entries",
+  TimecardEditRequest: "timecards/edit-requests",
+  User: "staff/employees",
+  VarianceReport: "inventory/cycle-count/variance-reports",
+  WasteEntry: "kitchen/waste-entries",
+  Workflow: "collaboration/workflows",
+};
+
+/**
+ * Convert a camelCase command name to kebab-case for route path matching.
+ * e.g. "createFromSeed" -> "create-from-seed", "softDelete" -> "soft-delete"
+ */
+function toKebabCase(str: string): string {
+  return str.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+}
+
+/**
+ * Load the commands manifest (kitchen.commands.json) and build a set of
+ * expected command route paths for the COMMAND_ROUTE_ORPHAN check.
+ */
+async function loadCommandManifestPaths(
+  manifestPath: string
+): Promise<Set<string>> {
+  try {
+    const raw = await fs.readFile(manifestPath, "utf-8");
+    const entries: CommandManifestEntry[] = JSON.parse(raw);
+    const paths = new Set<string>();
+    for (const entry of entries) {
+      const domain = ENTITY_DOMAIN_MAP[entry.entity];
+      if (!domain) continue;
+      // Build both camelCase and kebab-case variants since routes may use either
+      const kebabCommand = toKebabCase(entry.command);
+      paths.add(`${domain}/commands/${kebabCommand}/route.ts`);
+      if (kebabCommand !== entry.command) {
+        paths.add(`${domain}/commands/${entry.command}/route.ts`);
+      }
+    }
+    return paths;
+  } catch {
+    return new Set();
+  }
+}
+
+/**
+ * Load the exemptions registry.
+ */
+async function loadExemptions(
+  exemptionsPath: string
+): Promise<ExemptionEntry[]> {
+  try {
+    const raw = await fs.readFile(exemptionsPath, "utf-8");
+    return JSON.parse(raw);
+  } catch {
+    return [];
+  }
+}
+
 export async function auditRoutesCommand(
   options: AuditRoutesOptions = {}
 ): Promise<void> {
@@ -289,6 +534,30 @@ export async function auditRoutesCommand(
     const tenantField = options.tenantField || "tenantId";
     const deletedField = options.deletedField || "deletedAt";
     const locationField = options.locationField || "locationId";
+
+    // Load ownership context
+    const commandsManifestPath = options.commandsManifest
+      ? path.resolve(options.commandsManifest)
+      : path.resolve(
+          root,
+          "packages/manifest-ir/ir/kitchen/kitchen.commands.json"
+        );
+    const exemptionsPath = options.exemptions
+      ? path.resolve(options.exemptions)
+      : path.resolve(
+          root,
+          "packages/manifest-runtime/packages/cli/src/commands/audit-routes-exemptions.json"
+        );
+
+    const commandManifestPaths =
+      await loadCommandManifestPaths(commandsManifestPath);
+    const exemptions = await loadExemptions(exemptionsPath);
+
+    const ownershipContext: OwnershipAuditContext = {
+      commandManifestPaths,
+      exemptions,
+    };
+
     const routeFiles = await discoverRouteFiles(root);
 
     if (routeFiles.length === 0) {
@@ -301,11 +570,16 @@ export async function auditRoutesCommand(
 
     for (const routeFile of routeFiles) {
       const content = await fs.readFile(routeFile, "utf-8");
-      const result = auditRouteFileContent(content, routeFile, {
-        tenantField,
-        deletedField,
-        locationField,
-      });
+      const result = auditRouteFileContent(
+        content,
+        routeFile,
+        {
+          tenantField,
+          deletedField,
+          locationField,
+        },
+        ownershipContext
+      );
 
       if (result.methods.length > 0) {
         filesAudited++;
