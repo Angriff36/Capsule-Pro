@@ -7,7 +7,7 @@
  * @module kitchen-ops/prep-list-autogeneration
  */
 
-import type { Prisma, PrismaClient } from "@repo/database";
+import type { Prisma, PrismaClient } from "@repo/database/standalone";
 import { createOutboxEvent } from "@repo/realtime";
 import { captureException } from "@sentry/nextjs";
 

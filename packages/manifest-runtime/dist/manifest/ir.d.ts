@@ -11,7 +11,7 @@ export interface IRProvenance {
     compiledAt: string;
 }
 export interface IR {
-    version: '1.0';
+    version: "1.0";
     /** Provenance metadata for traceability */
     provenance: IRProvenance;
     modules: IRModule[];
@@ -61,7 +61,7 @@ export interface IRProperty {
     defaultValue?: IRValue;
     modifiers: PropertyModifier[];
 }
-export type PropertyModifier = 'required' | 'unique' | 'indexed' | 'private' | 'readonly' | 'optional';
+export type PropertyModifier = "required" | "unique" | "indexed" | "private" | "readonly" | "optional";
 export interface IRComputedProperty {
     name: string;
     type: IRType;
@@ -70,7 +70,7 @@ export interface IRComputedProperty {
 }
 export interface IRRelationship {
     name: string;
-    kind: 'hasMany' | 'hasOne' | 'belongsTo' | 'ref';
+    kind: "hasMany" | "hasOne" | "belongsTo" | "ref";
     target: string;
     foreignKey?: string;
     through?: string;
@@ -81,7 +81,7 @@ export interface IRConstraint {
     code: string;
     expression: IRExpression;
     /** Constraint severity level (default: block) */
-    severity?: 'ok' | 'warn' | 'block';
+    severity?: "ok" | "warn" | "block";
     message?: string;
     /** Template for error messages with interpolation */
     messageTemplate?: string;
@@ -94,7 +94,7 @@ export interface IRConstraint {
 }
 export interface IRStore {
     entity: string;
-    target: 'memory' | 'localStorage' | 'postgres' | 'supabase';
+    target: "memory" | "localStorage" | "postgres" | "supabase";
     config: Record<string, IRValue>;
 }
 export interface IREvent {
@@ -128,7 +128,7 @@ export interface IRParameter {
     defaultValue?: IRValue;
 }
 export interface IRAction {
-    kind: 'mutate' | 'emit' | 'compute' | 'effect' | 'publish' | 'persist';
+    kind: "mutate" | "emit" | "compute" | "effect" | "publish" | "persist";
     target?: string;
     expression: IRExpression;
 }
@@ -136,7 +136,7 @@ export interface IRPolicy {
     name: string;
     module?: string;
     entity?: string;
-    action: 'read' | 'write' | 'delete' | 'execute' | 'all' | 'override';
+    action: "read" | "write" | "delete" | "execute" | "all" | "override";
     expression: IRExpression;
     message?: string;
 }
@@ -146,67 +146,67 @@ export interface IRType {
     nullable: boolean;
 }
 export type IRValue = {
-    kind: 'string';
+    kind: "string";
     value: string;
 } | {
-    kind: 'number';
+    kind: "number";
     value: number;
 } | {
-    kind: 'boolean';
+    kind: "boolean";
     value: boolean;
 } | {
-    kind: 'null';
+    kind: "null";
 } | {
-    kind: 'array';
+    kind: "array";
     elements: IRValue[];
 } | {
-    kind: 'object';
+    kind: "object";
     properties: Record<string, IRValue>;
 };
 export type IRExpression = {
-    kind: 'literal';
+    kind: "literal";
     value: IRValue;
 } | {
-    kind: 'identifier';
+    kind: "identifier";
     name: string;
 } | {
-    kind: 'member';
+    kind: "member";
     object: IRExpression;
     property: string;
 } | {
-    kind: 'binary';
+    kind: "binary";
     operator: string;
     left: IRExpression;
     right: IRExpression;
 } | {
-    kind: 'unary';
+    kind: "unary";
     operator: string;
     operand: IRExpression;
 } | {
-    kind: 'call';
+    kind: "call";
     callee: IRExpression;
     args: IRExpression[];
 } | {
-    kind: 'conditional';
+    kind: "conditional";
     condition: IRExpression;
     consequent: IRExpression;
     alternate: IRExpression;
 } | {
-    kind: 'array';
+    kind: "array";
     elements: IRExpression[];
 } | {
-    kind: 'object';
+    kind: "object";
     properties: {
         key: string;
         value: IRExpression;
     }[];
 } | {
-    kind: 'lambda';
+    kind: "lambda";
     params: string[];
     body: IRExpression;
 };
 export interface IRDiagnostic {
-    severity: 'error' | 'warning' | 'info';
+    severity: "error" | "warning" | "info";
     message: string;
     line?: number;
     column?: number;
@@ -220,7 +220,7 @@ export interface ConstraintOutcome {
     /** Constraint name for reference */
     constraintName: string;
     /** Severity level of the constraint */
-    severity: 'ok' | 'warn' | 'block';
+    severity: "ok" | "warn" | "block";
     /** Formatted expression string */
     formatted: string;
     /** Optional message from constraint */

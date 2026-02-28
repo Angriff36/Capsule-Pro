@@ -1,13 +1,17 @@
-import { describe, expect, it } from 'vitest';
+import fs from "node:fs/promises";
+import os from "node:os";
+import path from "node:path";
+import { describe, expect, it } from "vitest";
 import {
   detectEntitySourceParseHeuristics,
   diffEntitySurface,
+  inspectSourceEntities,
   normalizeMergeReportEntries,
-} from './doctor-lib.js';
+} from "./doctor-lib.js";
 
-describe('doctor-lib', () => {
-  describe('detectEntitySourceParseHeuristics', () => {
-    it('flags probable parser/scanner mismatch when raw entity block has command tokens but parsed entity has none', () => {
+describe("doctor-lib", () => {
+  describe("detectEntitySourceParseHeuristics", () => {
+    it("flags probable parser/scanner mismatch when raw entity block has command tokens but parsed entity has none", () => {
       const source = `
 entity KitchenTask {
   property status: string
@@ -19,15 +23,19 @@ entity KitchenTask {
 `;
 
       const findings = detectEntitySourceParseHeuristics({
-        entityName: 'KitchenTask',
+        entityName: "KitchenTask",
         source,
         parsedCommandCount: 0,
       });
 
-      expect(findings.some((f) => f.code === 'SOURCE_ENTITY_RAW_COMMAND_TOKENS_UNPARSED')).toBe(true);
+      expect(
+        findings.some(
+          (f) => f.code === "SOURCE_ENTITY_RAW_COMMAND_TOKENS_UNPARSED"
+        )
+      ).toBe(true);
     });
 
-    it('does not flag when parsed command count matches raw command tokens', () => {
+    it("does not flag when parsed command count matches raw command tokens", () => {
       const source = `
 entity KitchenTask {
   command claim() {
@@ -37,7 +45,7 @@ entity KitchenTask {
 `;
 
       const findings = detectEntitySourceParseHeuristics({
-        entityName: 'KitchenTask',
+        entityName: "KitchenTask",
         source,
         parsedCommandCount: 1,
       });
@@ -46,38 +54,38 @@ entity KitchenTask {
     });
   });
 
-  describe('diffEntitySurface', () => {
-    it('reports missing and extra commands/properties/emits and marks drift', () => {
+  describe("diffEntitySurface", () => {
+    it("reports missing and extra commands/properties/emits and marks drift", () => {
       const diff = diffEntitySurface({
-        entityName: 'KitchenTask',
+        entityName: "KitchenTask",
         source: {
           exists: true,
-          commands: ['claim', 'start'],
-          properties: ['id', 'status'],
-          emits: ['KitchenTaskClaimed'],
+          commands: ["claim", "start"],
+          properties: ["id", "status"],
+          emits: ["KitchenTaskClaimed"],
         },
         ir: {
           exists: true,
-          commands: ['start', 'complete'],
-          properties: ['id'],
+          commands: ["start", "complete"],
+          properties: ["id"],
           emits: [],
         },
       });
 
       expect(diff.hasDrift).toBe(true);
-      expect(diff.commands.missingInIR).toEqual(['claim']);
-      expect(diff.commands.extraInIR).toEqual(['complete']);
-      expect(diff.properties.missingInIR).toEqual(['status']);
-      expect(diff.emits.missingInIR).toEqual(['KitchenTaskClaimed']);
+      expect(diff.commands.missingInIR).toEqual(["claim"]);
+      expect(diff.commands.extraInIR).toEqual(["complete"]);
+      expect(diff.properties.missingInIR).toEqual(["status"]);
+      expect(diff.emits.missingInIR).toEqual(["KitchenTaskClaimed"]);
     });
 
-    it('reports entity missing in IR', () => {
+    it("reports entity missing in IR", () => {
       const diff = diffEntitySurface({
-        entityName: 'KitchenTask',
+        entityName: "KitchenTask",
         source: {
           exists: true,
-          commands: ['claim'],
-          properties: ['id'],
+          commands: ["claim"],
+          properties: ["id"],
           emits: [],
         },
         ir: {
@@ -93,49 +101,97 @@ entity KitchenTask {
     });
   });
 
-  describe('normalizeMergeReportEntries', () => {
-    it('normalizes dropped duplicate entries from a merge report object', () => {
+  describe("normalizeMergeReportEntries", () => {
+    it("normalizes dropped duplicate entries from a merge report object", () => {
       const report = {
         droppedDuplicates: [
           {
-            type: 'entity',
-            key: 'Dish',
-            keptFrom: 'kitchen-a.manifest',
-            droppedFrom: 'kitchen-b.manifest',
-            status: 'known_duplicate_merge',
+            type: "entity",
+            key: "Dish",
+            keptFrom: "kitchen-a.manifest",
+            droppedFrom: "kitchen-b.manifest",
+            status: "known_duplicate_merge",
           },
         ],
       };
 
-      const entries = normalizeMergeReportEntries(report, 'kitchen.merge-report.json');
+      const entries = normalizeMergeReportEntries(
+        report,
+        "kitchen.merge-report.json"
+      );
       expect(entries).toHaveLength(1);
       expect(entries[0]).toMatchObject({
-        type: 'entity',
-        key: 'Dish',
-        keptFrom: 'kitchen-a.manifest',
-        droppedFrom: 'kitchen-b.manifest',
-        classification: 'known',
+        type: "entity",
+        key: "Dish",
+        keptFrom: "kitchen-a.manifest",
+        droppedFrom: "kitchen-b.manifest",
+        classification: "known",
       });
     });
 
-    it('supports alternate nested array shapes', () => {
+    it("supports alternate nested array shapes", () => {
       const report = {
         duplicates: {
           dropped: [
             {
-              duplicateType: 'command',
-              duplicateKey: 'KitchenTask.claim',
-              kept: 'a.manifest',
-              dropped: 'b.manifest',
+              duplicateType: "command",
+              duplicateKey: "KitchenTask.claim",
+              kept: "a.manifest",
+              dropped: "b.manifest",
             },
           ],
         },
       };
 
-      const entries = normalizeMergeReportEntries(report, 'alt.merge-report.json');
+      const entries = normalizeMergeReportEntries(
+        report,
+        "alt.merge-report.json"
+      );
       expect(entries).toHaveLength(1);
-      expect(entries[0].type).toBe('command');
-      expect(entries[0].key).toBe('KitchenTask.claim');
+      expect(entries[0].type).toBe("command");
+      expect(entries[0].key).toBe("KitchenTask.claim");
+    });
+  });
+
+  describe("inspectSourceEntities", () => {
+    it("parses entity commands with inline constraint block metadata", async () => {
+      const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), "doctor-lib-"));
+      try {
+        const manifestPath = path.join(tmpDir, "sample.manifest");
+        await fs.writeFile(
+          manifestPath,
+          `
+entity PrepList {
+  property required id: string
+  property status: string = "draft"
+
+  command update() {
+    constraint warnStatus:warn self.status == "draft" {
+      messageTemplate: "Still draft"
+      details: {
+        status: self.status
+      }
+    }
+
+    emit PrepListUpdated
+  }
+}
+`,
+          "utf8"
+        );
+
+        const result = await inspectSourceEntities({
+          cwd: tmpDir,
+          srcPattern: "*.manifest",
+        });
+        const defs = result.entities.get("PrepList") ?? [];
+
+        expect(defs).toHaveLength(1);
+        expect(defs[0].commands).toContain("update");
+        expect(defs[0].parserHeuristics).toHaveLength(0);
+      } finally {
+        await fs.rm(tmpDir, { recursive: true, force: true });
+      }
     });
   });
 });

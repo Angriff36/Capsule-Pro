@@ -32,12 +32,12 @@ vi.mock(
   "../../app/(authenticated)/command-board/actions/bulk-edit-utils",
   () => ({
     BULK_EDITABLE_PROPERTIES: {
-      EVENT: ["status", "priority"],
-      TASK: ["status", "priority"],
+      event: ["status", "priority"],
+      prep_task: ["status", "priority"],
     },
     ENTITY_STATUS_OPTIONS: {
-      EVENT: ["DRAFT", "CONFIRMED", "CANCELLED"],
-      TASK: ["PENDING", "IN_PROGRESS", "COMPLETED"],
+      event: ["DRAFT", "CONFIRMED", "CANCELLED"],
+      prep_task: ["PENDING", "IN_PROGRESS", "COMPLETED"],
     },
     PRIORITY_OPTIONS: ["LOW", "MEDIUM", "HIGH", "URGENT"],
   })
@@ -66,7 +66,7 @@ vi.mock("lucide-react", () => ({
 describe("BulkActionToolbar Select safety", () => {
   const mockBoardId = "test-board-id";
   const createMockProjection = (
-    entityType: "EVENT" | "TASK" = "EVENT"
+    entityType: BoardProjection["entityType"] = "event"
   ): BoardProjection =>
     ({
       id: `projection-${Math.random().toString(36).slice(2)}`,
@@ -87,7 +87,7 @@ describe("BulkActionToolbar Select safety", () => {
 
   describe("Component renders without errors", () => {
     it("renders Bulk Edit button when projections selected", () => {
-      const projections = [createMockProjection("EVENT")];
+      const projections = [createMockProjection("event")];
 
       const { container } = render(
         <BulkActionToolbar
@@ -104,8 +104,8 @@ describe("BulkActionToolbar Select safety", () => {
 
     it("renders Group button when 2+ projections selected", () => {
       const projections = [
-        createMockProjection("EVENT"),
-        createMockProjection("TASK"),
+        createMockProjection("event"),
+        createMockProjection("prep_task"),
       ];
 
       const { container } = render(
@@ -124,7 +124,7 @@ describe("BulkActionToolbar Select safety", () => {
 
   describe("No empty value SelectItem", () => {
     it('should not have SelectItem with value="" in status select', () => {
-      const projections = [createMockProjection("EVENT")];
+      const projections = [createMockProjection("event")];
 
       const { container } = render(
         <BulkActionToolbar
@@ -145,7 +145,7 @@ describe("BulkActionToolbar Select safety", () => {
     });
 
     it('should not have SelectItem with value="" in priority select', () => {
-      const projections = [createMockProjection("TASK")];
+      const projections = [createMockProjection("prep_task")];
 
       const { container } = render(
         <BulkActionToolbar
@@ -176,7 +176,7 @@ describe("BulkActionToolbar Select safety", () => {
     });
 
     it("component handles undefined status gracefully with sentinel fallback", () => {
-      const projections = [createMockProjection("EVENT")];
+      const projections = [createMockProjection("event")];
 
       // When status is undefined (initial state), the component should use
       // the sentinel value "__clear__" as fallback instead of empty string ""
@@ -192,7 +192,7 @@ describe("BulkActionToolbar Select safety", () => {
     });
 
     it("component handles undefined priority gracefully with sentinel fallback", () => {
-      const projections = [createMockProjection("TASK")];
+      const projections = [createMockProjection("prep_task")];
 
       // When priority is undefined (initial state), the component should use
       // the sentinel value "__clear__" as fallback instead of empty string ""

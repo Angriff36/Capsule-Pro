@@ -204,7 +204,10 @@ export async function PATCH(
       return manifestErrorResponse(
         "Waste factor update blocked by constraints",
         400,
-        { constraintOutcomes: (error as { constraintOutcomes: unknown[] }).constraintOutcomes }
+        {
+          constraintOutcomes: (error as { constraintOutcomes: unknown[] })
+            .constraintOutcomes,
+        }
       );
     }
 

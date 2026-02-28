@@ -7,7 +7,7 @@
  * The registry calls this automatically on first access, so consumers
  * don't need to think about startup ordering.
  */
-import type { ProjectionTarget } from './interface';
+import type { ProjectionTarget } from "./interface";
 /**
  * Register all built-in projections.
  *

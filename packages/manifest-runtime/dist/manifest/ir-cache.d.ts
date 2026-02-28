@@ -8,9 +8,9 @@ export interface IRCacheEntry {
     sourceHash: string;
 }
 export declare class IRCache {
-    private cache;
-    private maxAge;
-    private maxSize;
+    private readonly cache;
+    private readonly maxAge;
+    private readonly maxSize;
     constructor(maxAge?: number, maxSize?: number);
     /**
      * Get cached IR by content hash

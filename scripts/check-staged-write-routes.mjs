@@ -12,25 +12,32 @@
  *  2) An infrastructure allowlist rule (webhooks/auth/cron/health).
  */
 
-import { existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
 import { spawnSync } from "node:child_process";
+import { existsSync, readFileSync } from "node:fs";
 
 const ROUTE_FILE_RE = /^apps\/api\/app\/api\/.+\/route\.(ts|tsx|js|jsx)$/;
 const WRITE_METHODS = ["POST", "PUT", "PATCH", "DELETE"];
 const ROUTE_MANIFEST_PATH = "packages/manifest-ir/dist/routes.manifest.json";
-const INFRA_ALLOWLIST_PATH = "scripts/manifest/write-route-infra-allowlist.json";
+const INFRA_ALLOWLIST_PATH =
+  "scripts/manifest/write-route-infra-allowlist.json";
 
 function runGit(args) {
   const result = spawnSync("git", args, { encoding: "utf8" });
   if (result.status !== 0) {
-    throw new Error(result.stderr || result.stdout || `git ${args.join(" ")} failed`);
+    throw new Error(
+      result.stderr || result.stdout || `git ${args.join(" ")} failed`
+    );
   }
   return result.stdout;
 }
 
 function getStagedRouteFiles() {
-  const output = runGit(["diff", "--cached", "--name-only", "--diff-filter=AM"]);
+  const output = runGit([
+    "diff",
+    "--cached",
+    "--name-only",
+    "--diff-filter=AM",
+  ]);
   return output
     .split(/\r?\n/)
     .map((value) => value.trim().replace(/\\/g, "/"))
@@ -106,7 +113,9 @@ function routePathFromFile(filePath) {
 
 function loadCanonicalRoutes() {
   if (!existsSync(ROUTE_MANIFEST_PATH)) {
-    throw new Error(`Missing ${ROUTE_MANIFEST_PATH}. Run pnpm manifest:routes:ir.`);
+    throw new Error(
+      `Missing ${ROUTE_MANIFEST_PATH}. Run pnpm manifest:routes:ir.`
+    );
   }
   const manifest = JSON.parse(readFileSync(ROUTE_MANIFEST_PATH, "utf8"));
   const routes = Array.isArray(manifest.routes) ? manifest.routes : [];
@@ -192,7 +201,9 @@ function main() {
     process.exit(0);
   }
 
-  console.error("[check-staged-write-routes] Blocked non-manifest write route changes:");
+  console.error(
+    "[check-staged-write-routes] Blocked non-manifest write route changes:"
+  );
   for (const violation of violations) {
     console.error(
       `  - ${violation.filePath} -> ${violation.method} ${violation.routePath}`

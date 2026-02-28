@@ -25,8 +25,8 @@ import type {
   RecipeVersion,
   recipe_steps,
   Station,
-} from "@repo/database";
-import { Prisma } from "@repo/database";
+} from "@repo/database/standalone";
+import { Prisma } from "@repo/database/standalone";
 
 export interface EntityInstance {
   id: string;
@@ -470,7 +470,8 @@ export class RecipeVersionPrismaStore implements Store<EntityInstance> {
           notes: data.notes as string | null | undefined,
           totalCost: data.totalCost as number | undefined,
           costPerYield: data.costPerYield as number | undefined,
-          costCalculatedAt: data.totalCost !== undefined ? new Date() : undefined,
+          costCalculatedAt:
+            data.totalCost !== undefined ? new Date() : undefined,
           updatedAt: new Date(),
         },
       });
@@ -1309,7 +1310,7 @@ export class AllergenWarningPrismaStore implements Store<EntityInstance> {
    * Convert Prisma array to Manifest string property
    */
   private arrayToString(arr: string[] | null | undefined): string {
-    if (!arr || !Array.isArray(arr) || arr.length === 0) {
+    if (!(arr && Array.isArray(arr)) || arr.length === 0) {
       return "";
     }
     return arr.join(",");
@@ -1338,7 +1339,7 @@ export class AllergenWarningPrismaStore implements Store<EntityInstance> {
       updatedAt: warning.updatedAt.getTime(),
       deletedAt: warning.deletedAt ? warning.deletedAt.getTime() : 0,
       isHighSeverity: warning.severity === "critical",
-      isPending: !warning.isAcknowledged && !warning.resolved,
+      isPending: !(warning.isAcknowledged || warning.resolved),
       isOverridden: !!warning.overrideReason,
       isDeleted: !!warning.deletedAt,
     };

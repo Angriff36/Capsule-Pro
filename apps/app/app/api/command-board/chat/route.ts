@@ -34,7 +34,6 @@ Rules:
    - Include closest-supported sequence suggestions in nextSteps[].
    - Optionally suggest the manifest entity command that would need to be added (never invent endpoints).`;
 
-
 export const runtime = "nodejs";
 export const maxDuration = 60;
 

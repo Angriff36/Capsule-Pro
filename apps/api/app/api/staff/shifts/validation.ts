@@ -196,7 +196,7 @@ export async function checkOvertimeHours(
   weekEnd.setUTCDate(weekEnd.getUTCDate() + 7);
 
   // Calculate proposed shift duration in hours
-  const proposedHours = (shiftEnd.getTime() - shiftStart.getTime()) / 3600000;
+  const proposedHours = (shiftEnd.getTime() - shiftStart.getTime()) / 3_600_000;
 
   // Query existing shifts for the week
   const existingShifts = await database.$queryRaw<
@@ -218,7 +218,7 @@ export async function checkOvertimeHours(
   let currentWeekHours = 0;
   for (const shift of existingShifts) {
     currentWeekHours +=
-      (shift.shift_end.getTime() - shift.shift_start.getTime()) / 3600000;
+      (shift.shift_end.getTime() - shift.shift_start.getTime()) / 3_600_000;
   }
 
   const projectedHours = currentWeekHours + proposedHours;
@@ -300,8 +300,7 @@ export async function checkCertificationRequirements(
   const normalizedRole = roleDuringShift.toLowerCase().replace(/\s+/g, "_");
 
   // Get required certifications for role
-  const requiredCerts =
-    ROLE_CERTIFICATION_REQUIREMENTS[normalizedRole] || [];
+  const requiredCerts = ROLE_CERTIFICATION_REQUIREMENTS[normalizedRole] || [];
 
   // No certification requirements for this role
   if (requiredCerts.length === 0) {
@@ -450,8 +449,18 @@ export async function validateShift(
       employee: null,
       schedule: null,
       overlaps: [],
-      overtime: { severity: "OK", currentWeekHours: 0, projectedHours: 0, message: "" },
-      certifications: { severity: "OK", missingCerts: [], expiredCerts: [], message: "" },
+      overtime: {
+        severity: "OK",
+        currentWeekHours: 0,
+        projectedHours: 0,
+        message: "",
+      },
+      certifications: {
+        severity: "OK",
+        missingCerts: [],
+        expiredCerts: [],
+        message: "",
+      },
       error: employeeError,
     };
   }
@@ -467,8 +476,18 @@ export async function validateShift(
       employee,
       schedule: null,
       overlaps: [],
-      overtime: { severity: "OK", currentWeekHours: 0, projectedHours: 0, message: "" },
-      certifications: { severity: "OK", missingCerts: [], expiredCerts: [], message: "" },
+      overtime: {
+        severity: "OK",
+        currentWeekHours: 0,
+        projectedHours: 0,
+        message: "",
+      },
+      certifications: {
+        severity: "OK",
+        missingCerts: [],
+        expiredCerts: [],
+        message: "",
+      },
       error: scheduleError,
     };
   }
@@ -491,8 +510,18 @@ export async function validateShift(
       employee,
       schedule,
       overlaps,
-      overtime: { severity: "OK", currentWeekHours: 0, projectedHours: 0, message: "" },
-      certifications: { severity: "OK", missingCerts: [], expiredCerts: [], message: "" },
+      overtime: {
+        severity: "OK",
+        currentWeekHours: 0,
+        projectedHours: 0,
+        message: "",
+      },
+      certifications: {
+        severity: "OK",
+        missingCerts: [],
+        expiredCerts: [],
+        message: "",
+      },
       error: NextResponse.json(
         {
           message: "Overlapping shifts detected",
@@ -532,7 +561,12 @@ export async function validateShift(
         projectedHours: overtimeResult.projectedHours,
         message: overtimeResult.message,
       },
-      certifications: { severity: "OK", missingCerts: [], expiredCerts: [], message: "" },
+      certifications: {
+        severity: "OK",
+        missingCerts: [],
+        expiredCerts: [],
+        message: "",
+      },
       error: overtimeResult.error,
     };
   }

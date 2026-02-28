@@ -13,7 +13,7 @@
  */
 
 import type { Store } from "@angriff36/manifest";
-import type { Prisma, PrismaClient } from "@repo/database";
+import type { Prisma, PrismaClient } from "@repo/database/standalone";
 import type { EntityInstance } from "./prisma-store.js";
 
 /**

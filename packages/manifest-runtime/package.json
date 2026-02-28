@@ -1,7 +1,7 @@
 {
   "name": "@angriff36/manifest",
-  "version": "0.3.21",
-  "private": true,
+  "version": "0.3.26",
+  "private": false,
   "type": "module",
   "main": "./dist/manifest/runtime-engine.js",
   "types": "./dist/manifest/runtime-engine.d.ts",
@@ -65,9 +65,14 @@
     "manifest:generate": "tsx ./packages/cli/src/index.ts generate",
     "manifest:build": "tsx ./packages/cli/src/index.ts build",
     "manifest:validate": "tsx ./packages/cli/src/index.ts validate",
+    "manifest:route-audit": "tsx ./packages/cli/src/index.ts audit-routes",
     "prepublishOnly": "pnpm run build:lib && cd packages/cli && tsc"
   },
   "devDependencies": {
     "@supabase/supabase-js": "^2.97.0"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "restricted"
   }
 }

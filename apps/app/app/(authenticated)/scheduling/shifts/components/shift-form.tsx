@@ -203,22 +203,41 @@ export function ShiftForm({
     };
 
     try {
-      const url = isEditing && shift?.id
-        ? staffShiftsUpdateValidated()
-        : staffShiftsCreateValidated();
+      const url =
+        isEditing && shift?.id
+          ? staffShiftsUpdateValidated()
+          : staffShiftsCreateValidated();
 
       const response = await apiFetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(isEditing && shift?.id
-          ? { ...payload, id: shift.id }
-          : payload
+        body: JSON.stringify(
+          isEditing && shift?.id ? { ...payload, id: shift.id } : payload
         ),
       });
 
-      if (!response.ok) {
+      if (response.ok) {
+        const result = await response.json();
+
+        // Show success with any warnings
+        if (result.warnings && result.warnings.length > 0) {
+          toast.success(
+            `Shift ${isEditing ? "updated" : "created"} with warnings`,
+            {
+              description: result.warnings.join(", "),
+            }
+          );
+        } else {
+          toast.success(
+            `Shift ${isEditing ? "updated" : "created"} successfully`
+          );
+        }
+      } else {
         const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.message || errorData.error?.message || `Failed to ${isEditing ? "update" : "create"} shift`;
+        const errorMessage =
+          errorData.message ||
+          errorData.error?.message ||
+          `Failed to ${isEditing ? "update" : "create"} shift`;
 
         // Handle validation warnings (overtime, etc.)
         if (errorData.warnings && errorData.warnings.length > 0) {
@@ -227,17 +246,6 @@ export function ShiftForm({
           });
         } else {
           throw new Error(errorMessage);
-        }
-      } else {
-        const result = await response.json();
-
-        // Show success with any warnings
-        if (result.warnings && result.warnings.length > 0) {
-          toast.success(`Shift ${isEditing ? "updated" : "created"} with warnings`, {
-            description: result.warnings.join(", "),
-          });
-        } else {
-          toast.success(`Shift ${isEditing ? "updated" : "created"} successfully`);
         }
       }
 

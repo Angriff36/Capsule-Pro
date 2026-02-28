@@ -309,7 +309,11 @@ let cachedPrecompiledPath = "";
  *   Example: "packages/manifest-ir/ir/kitchen/kitchen.ir.json"
  */
 export function loadPrecompiledIR(irPath: string): CompiledManifestBundle {
-  const repoRoot = findRepoRoot(process.cwd());
+  // MCP/Cursor may spawn with cwd = home dir; use explicit root when set
+  const repoRoot =
+    process.env.MCP_PROJECT_ROOT ??
+    process.env.REPO_ROOT ??
+    findRepoRoot(process.cwd());
 
   const candidates = [
     resolve(repoRoot, irPath),
@@ -325,7 +329,7 @@ export function loadPrecompiledIR(irPath: string): CompiledManifestBundle {
 
   if (!absPath) {
     throw new Error(
-      `[loadManifests] Precompiled IR not found. Tried:\n` +
+      "[loadManifests] Precompiled IR not found. Tried:\n" +
         candidates.map((c) => `  - ${c}`).join("\n") +
         `\n  irPath: ${irPath}\n` +
         `  repoRoot: ${repoRoot}\n` +

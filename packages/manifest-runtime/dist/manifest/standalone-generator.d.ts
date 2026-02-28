@@ -1,4 +1,4 @@
-import { ManifestProgram } from './types';
+import type { ManifestProgram } from "./types";
 export declare class StandaloneGenerator {
     private out;
     private indent;

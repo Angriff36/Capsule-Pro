@@ -19,11 +19,13 @@ import { z } from "zod";
 import { getAllowedCommands, getCommandAccess } from "../lib/command-policy.js";
 import {
   getCommand,
+  getCommands,
   getCommandsForEntity,
   getEntity,
   getEntityNames,
   getEvents,
   getIR,
+  getPolicies,
 } from "../lib/ir-loader.js";
 import type {
   IrCommandSummary,
@@ -219,12 +221,38 @@ export const irIntrospectionPlugin: McpPlugin = {
           });
         } else {
           result.entities = entities.map((e) => summarizeEntity(e));
+          // Flat commands list: name, entity, parameter names, emits
+          if (includeSet.has("commands")) {
+            const allCommands = getCommands();
+            result.commands = allCommands
+              .filter(
+                (c) =>
+                  !entityFilter?.length || entityFilter.includes(c.entity ?? "")
+              )
+              .map((c) => ({
+                name: c.name,
+                entity: c.entity ?? "",
+                parameterNames: (c.parameters ?? []).map((p) => p.name),
+                emits: c.emits ?? [],
+              }));
+          }
         }
 
-        if (includeSet.has("events") && !isSummary) {
+        // Events: name, channel (always in summary format per spec)
+        if (includeSet.has("events")) {
           result.events = getEvents().map((ev) => ({
+            name: ev.name,
             channel: ev.channel,
-            payload: ev.payload,
+          }));
+        }
+
+        // Policies: name, action, entity (if set) — excluded from tenant view by default
+        const policies = getPolicies();
+        if (policies.length > 0) {
+          result.policies = policies.map((p) => ({
+            name: (p as { name?: string }).name,
+            action: (p as { action?: string }).action,
+            entity: (p as { entity?: string }).entity,
           }));
         }
 

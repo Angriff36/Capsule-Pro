@@ -67,9 +67,21 @@ const typeConfig = {
     label: "Inventory",
     color: "bg-pink-100 text-pink-700",
   },
+  equipment: {
+    label: "Equipment",
+    color: "bg-indigo-100 text-indigo-700",
+  },
   timeline: {
     label: "Timeline",
     color: "bg-cyan-100 text-cyan-700",
+  },
+  venue: {
+    label: "Venue",
+    color: "bg-lime-100 text-lime-700",
+  },
+  financial: {
+    label: "Financial",
+    color: "bg-yellow-100 text-yellow-700",
   },
 } as const satisfies Record<ConflictType, unknown>;
 

@@ -12,7 +12,10 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { PrismaJsonStore, createPrismaJsonStoreProvider } from "../src/prisma-json-store";
+import {
+  createPrismaJsonStoreProvider,
+  PrismaJsonStore,
+} from "../src/prisma-json-store";
 
 // Hoist mock functions for use in vi.mock factory
 const mockManifestEntity = vi.hoisted(() => ({
@@ -51,7 +54,9 @@ describe("PrismaJsonStore", () => {
     vi.clearAllMocks();
     prisma = { manifestEntity: mockManifestEntity };
     store = new PrismaJsonStore({
-      prisma: prisma as unknown as MockPrismaClient & { manifestEntity: typeof mockManifestEntity },
+      prisma: prisma as unknown as MockPrismaClient & {
+        manifestEntity: typeof mockManifestEntity;
+      },
       tenantId,
       entityType,
     } as Parameters<typeof PrismaJsonStore>[0]);
@@ -60,8 +65,24 @@ describe("PrismaJsonStore", () => {
   describe("getAll", () => {
     it("returns all entities for the current tenant and type", async () => {
       const mockRows = [
-        { id: "entity-1", data: { name: "First", value: 10 }, version: 1, createdAt: new Date(), updatedAt: new Date(), tenantId, entityType },
-        { id: "entity-2", data: { name: "Second", value: 20 }, version: 1, createdAt: new Date(), updatedAt: new Date(), tenantId, entityType },
+        {
+          id: "entity-1",
+          data: { name: "First", value: 10 },
+          version: 1,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          tenantId,
+          entityType,
+        },
+        {
+          id: "entity-2",
+          data: { name: "Second", value: 20 },
+          version: 1,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          tenantId,
+          entityType,
+        },
       ];
       mockManifestEntity.findMany.mockResolvedValue(mockRows);
 
@@ -88,7 +109,9 @@ describe("PrismaJsonStore", () => {
       const error = new Error("Database connection failed");
       mockManifestEntity.findMany.mockRejectedValue(error);
 
-      await expect(store.getAll()).rejects.toThrow("Database connection failed");
+      await expect(store.getAll()).rejects.toThrow(
+        "Database connection failed"
+      );
     });
   });
 
@@ -144,7 +167,11 @@ describe("PrismaJsonStore", () => {
       };
       mockManifestEntity.create.mockResolvedValue(mockRow);
 
-      const result = await store.create({ id: "entity-1", name: "New Entity", value: 100 });
+      const result = await store.create({
+        id: "entity-1",
+        name: "New Entity",
+        value: 100,
+      });
 
       expect(mockManifestEntity.create).toHaveBeenCalledWith({
         data: {
@@ -155,7 +182,11 @@ describe("PrismaJsonStore", () => {
           version: 1,
         },
       });
-      expect(result).toEqual({ id: "entity-1", name: "New Entity", value: 100 });
+      expect(result).toEqual({
+        id: "entity-1",
+        name: "New Entity",
+        value: 100,
+      });
     });
 
     it("throws error when id is missing", async () => {
@@ -169,7 +200,9 @@ describe("PrismaJsonStore", () => {
       const error = new Error("Insert failed");
       mockManifestEntity.create.mockRejectedValue(error);
 
-      await expect(store.create({ id: "entity-1" })).rejects.toThrow("Insert failed");
+      await expect(store.create({ id: "entity-1" })).rejects.toThrow(
+        "Insert failed"
+      );
     });
   });
 
@@ -187,7 +220,10 @@ describe("PrismaJsonStore", () => {
       mockManifestEntity.findUnique.mockResolvedValue(existingRow);
       mockManifestEntity.updateMany.mockResolvedValue({ count: 1 });
 
-      const result = await store.update("entity-1", { value: 20, extra: "added" });
+      const result = await store.update("entity-1", {
+        value: 20,
+        extra: "added",
+      });
 
       expect(mockManifestEntity.updateMany).toHaveBeenCalledWith({
         where: { tenantId, entityType, id: "entity-1", version: 1 },
@@ -197,7 +233,12 @@ describe("PrismaJsonStore", () => {
           updatedAt: expect.any(Date),
         },
       });
-      expect(result).toEqual({ name: "Original", value: 20, extra: "added", id: "entity-1" });
+      expect(result).toEqual({
+        name: "Original",
+        value: 20,
+        extra: "added",
+        id: "entity-1",
+      });
     });
 
     it("returns undefined when entity not found", async () => {
@@ -246,7 +287,12 @@ describe("PrismaJsonStore", () => {
       expect(mockManifestEntity.updateMany).toHaveBeenCalledWith({
         where: { tenantId, entityType, id: "entity-1", version: 1 },
         data: {
-          data: { name: "Original", value: 20, nested: { a: 1 }, id: "entity-1" },
+          data: {
+            name: "Original",
+            value: 20,
+            nested: { a: 1 },
+            id: "entity-1",
+          },
           version: 2,
           updatedAt: expect.any(Date),
         },
@@ -257,7 +303,9 @@ describe("PrismaJsonStore", () => {
       const error = new Error("Update failed");
       mockManifestEntity.findUnique.mockRejectedValue(error);
 
-      await expect(store.update("entity-1", { value: 20 })).rejects.toThrow("Update failed");
+      await expect(store.update("entity-1", { value: 20 })).rejects.toThrow(
+        "Update failed"
+      );
     });
   });
 
@@ -404,7 +452,9 @@ describe("createPrismaJsonStoreProvider", () => {
     const tenantId = "tenant-11111111-1111-1111-1111-111111111111";
 
     const provider = createPrismaJsonStoreProvider(
-      mockPrisma as unknown as Parameters<typeof createPrismaJsonStoreProvider>[0],
+      mockPrisma as unknown as Parameters<
+        typeof createPrismaJsonStoreProvider
+      >[0],
       tenantId
     );
 
@@ -418,7 +468,9 @@ describe("createPrismaJsonStoreProvider", () => {
     const tenantId = "tenant-11111111-1111-1111-1111-111111111111";
 
     const provider = createPrismaJsonStoreProvider(
-      mockPrisma as unknown as Parameters<typeof createPrismaJsonStoreProvider>[0],
+      mockPrisma as unknown as Parameters<
+        typeof createPrismaJsonStoreProvider
+      >[0],
       tenantId
     );
 

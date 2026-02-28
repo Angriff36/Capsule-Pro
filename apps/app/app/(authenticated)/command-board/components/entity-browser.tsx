@@ -598,7 +598,7 @@ export function EntityBrowser({
   return (
     <section
       aria-label="Entity Browser"
-      className="flex h-full w-72 flex-col border-l bg-card"
+      className="flex h-full min-h-0 w-72 flex-col border-l bg-card"
       onKeyDown={handleKeyDown}
       ref={containerRef as React.RefObject<HTMLElement>}
       tabIndex={-1}
@@ -631,7 +631,7 @@ export function EntityBrowser({
       </div>
 
       {/* Scrollable category list */}
-      <ScrollArea className="flex-1">
+      <ScrollArea className="h-full min-h-0 flex-1">
         <div className="p-2">
           {ENTITY_CATEGORIES.map(({ type, icon: Icon }, categoryIndex) => {
             const label = ENTITY_TYPE_LABELS[type] ?? type;
@@ -646,46 +646,70 @@ export function EntityBrowser({
                 key={type}
                 onOpenChange={(isOpen) => handleOpenChange(type, isOpen)}
               >
-              <div className="flex items-center gap-1">
-                <CollapsibleTrigger
-                  className={cn(
-                    "group flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium transition-colors",
-                    isCategoryFocused
-                      ? "bg-primary/10 ring-2 ring-primary/50"
-                      : "hover:bg-muted/50"
-                  )}
-                >
-                  <ChevronRightIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-90" />
-                  <Icon className={`h-4 w-4 shrink-0 ${colors.icon}`} />
-                  <span className="flex-1 text-left">{label}s</span>
-                  {/* Show count: loaded count takes precedence, then pre-loaded count */}
-                  {state?.loaded ? (
-                    <span className="text-xs text-muted-foreground tabular-nums">
-                      {state.items.length}
-                    </span>
-                  ) : (
-                    entityCounts[type] !== undefined && (
-                      <span className="text-xs text-muted-foreground tabular-nums">
-                        {entityCounts[type]}
-                      </span>
-                    )
-                  )}
-                </CollapsibleTrigger>
-                {state?.loaded ? (
-                  <button
-                    aria-label={`Refresh ${label.toLowerCase()}s`}
-                    className="h-6 w-6 shrink-0 flex items-center justify-center rounded hover:bg-muted-foreground/10 transition-colors"
-                    disabled={state.refreshing}
-                    onClick={(e) => handleRefresh(type, e)}
-                    title={`Refresh ${label.toLowerCase()}s`}
-                    type="button"
+                <div className="flex items-center gap-1">
+                  <CollapsibleTrigger
+                    className={cn(
+                      "group flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-sm font-medium transition-colors",
+                      isCategoryFocused
+                        ? "bg-primary/10 ring-2 ring-primary/50"
+                        : "hover:bg-muted/50"
+                    )}
                   >
-                    <RefreshCwIcon
-                      className={`h-3 w-3 text-muted-foreground ${state.refreshing ? "animate-spin" : ""}`}
-                    />
-                  </button>
-                ) : null}
-              </div>
+                    <ChevronRightIcon className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform group-data-[state=open]:rotate-90" />
+                    <Icon className={`h-4 w-4 shrink-0 ${colors.icon}`} />
+                    <span className="flex-1 text-left">{label}s</span>
+                    {/* Show count: loaded count takes precedence, then pre-loaded count */}
+                    {state?.loaded ? (
+                      <span className="text-xs text-muted-foreground tabular-nums">
+                        {state.items.length}
+                      </span>
+                    ) : (
+                      entityCounts[type] !== undefined && (
+                        <span className="text-xs text-muted-foreground tabular-nums">
+                          {entityCounts[type]}
+                        </span>
+                      )
+                    )}
+                  </CollapsibleTrigger>
+                  {state?.loaded ? (
+                    <div
+                      aria-label={`Refresh ${label.toLowerCase()}s`}
+                      className={cn(
+                        "flex h-6 w-6 shrink-0 items-center justify-center rounded transition-colors",
+                        state.refreshing
+                          ? "cursor-not-allowed opacity-60"
+                          : "cursor-pointer hover:bg-muted-foreground/10"
+                      )}
+                      onClick={(event) => {
+                        if (!state.refreshing) {
+                          handleRefresh(
+                            type,
+                            event as unknown as React.MouseEvent
+                          );
+                        }
+                      }}
+                      onKeyDown={(event) => {
+                        if (state.refreshing) {
+                          return;
+                        }
+                        if (event.key === "Enter" || event.key === " ") {
+                          event.preventDefault();
+                          handleRefresh(
+                            type,
+                            event as unknown as React.MouseEvent
+                          );
+                        }
+                      }}
+                      role="button"
+                      tabIndex={state.refreshing ? -1 : 0}
+                      title={`Refresh ${label.toLowerCase()}s`}
+                    >
+                      <RefreshCwIcon
+                        className={`h-3 w-3 text-muted-foreground ${state.refreshing ? "animate-spin" : ""}`}
+                      />
+                    </div>
+                  ) : null}
+                </div>
 
                 <CollapsibleContent>
                   <div className="ml-5 mt-0.5 mb-1 space-y-px">

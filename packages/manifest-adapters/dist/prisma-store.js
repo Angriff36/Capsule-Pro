@@ -5,7 +5,7 @@
  * using the existing Prisma schema. It bridges the gap between Manifest's entity
  * model and the Prisma database tables.
  */
-import { Prisma } from "@repo/database";
+import { Prisma } from "@repo/database/standalone";
 /**
  * Prisma-backed store for PrepTask entities
  *
@@ -1154,7 +1154,7 @@ export class AllergenWarningPrismaStore {
      * Convert Prisma array to Manifest string property
      */
     arrayToString(arr) {
-        if (!arr || !Array.isArray(arr) || arr.length === 0) {
+        if (!(arr && Array.isArray(arr)) || arr.length === 0) {
             return "";
         }
         return arr.join(",");
@@ -1182,7 +1182,7 @@ export class AllergenWarningPrismaStore {
             updatedAt: warning.updatedAt.getTime(),
             deletedAt: warning.deletedAt ? warning.deletedAt.getTime() : 0,
             isHighSeverity: warning.severity === "critical",
-            isPending: !warning.isAcknowledged && !warning.resolved,
+            isPending: !(warning.isAcknowledged || warning.resolved),
             isOverridden: !!warning.overrideReason,
             isDeleted: !!warning.deletedAt,
         };

@@ -1,12 +1,10 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { database } from "@repo/database";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
-  checkOvertimeHours,
   checkCertificationRequirements,
+  checkOvertimeHours,
   validateShift,
-  OVERTIME_WARNING_THRESHOLD_HOURS,
-  OVERTIME_BLOCK_THRESHOLD_HOURS,
 } from "./validation";
-import { database, Prisma } from "@repo/database";
 
 // Mock database
 vi.mock("@repo/database", () => ({
@@ -52,11 +50,31 @@ describe("Shift Validation", () => {
     it("returns WARN when projected hours exceed warning threshold", async () => {
       // Mock existing 35 hours
       vi.mocked(database.$queryRaw).mockResolvedValueOnce([
-        { id: "shift-1", shift_start: new Date("2024-01-15T08:00:00Z"), shift_end: new Date("2024-01-15T16:00:00Z") },
-        { id: "shift-2", shift_start: new Date("2024-01-16T08:00:00Z"), shift_end: new Date("2024-01-16T16:00:00Z") },
-        { id: "shift-3", shift_start: new Date("2024-01-17T08:00:00Z"), shift_end: new Date("2024-01-17T16:00:00Z") },
-        { id: "shift-4", shift_start: new Date("2024-01-18T08:00:00Z"), shift_end: new Date("2024-01-18T16:00:00Z") },
-        { id: "shift-5", shift_start: new Date("2024-01-19T03:00:00Z"), shift_end: new Date("2024-01-19T06:00:00Z") }, // 3 hours = 35 total
+        {
+          id: "shift-1",
+          shift_start: new Date("2024-01-15T08:00:00Z"),
+          shift_end: new Date("2024-01-15T16:00:00Z"),
+        },
+        {
+          id: "shift-2",
+          shift_start: new Date("2024-01-16T08:00:00Z"),
+          shift_end: new Date("2024-01-16T16:00:00Z"),
+        },
+        {
+          id: "shift-3",
+          shift_start: new Date("2024-01-17T08:00:00Z"),
+          shift_end: new Date("2024-01-17T16:00:00Z"),
+        },
+        {
+          id: "shift-4",
+          shift_start: new Date("2024-01-18T08:00:00Z"),
+          shift_end: new Date("2024-01-18T16:00:00Z"),
+        },
+        {
+          id: "shift-5",
+          shift_start: new Date("2024-01-19T03:00:00Z"),
+          shift_end: new Date("2024-01-19T06:00:00Z"),
+        }, // 3 hours = 35 total
       ]);
 
       // Add 8 more hours = 43 total (exceeds 40)
@@ -270,7 +288,9 @@ describe("Shift Validation", () => {
 
     it("returns error when schedule not found", async () => {
       vi.mocked(database.$queryRaw)
-        .mockResolvedValueOnce([{ id: "employee-1", role: "staff", is_active: true }]) // employee
+        .mockResolvedValueOnce([
+          { id: "employee-1", role: "staff", is_active: true },
+        ]) // employee
         .mockResolvedValueOnce([]); // schedule
 
       const result = await validateShift(tenantId, validBody);
@@ -282,10 +302,16 @@ describe("Shift Validation", () => {
 
     it("returns error when shifts overlap", async () => {
       vi.mocked(database.$queryRaw)
-        .mockResolvedValueOnce([{ id: "employee-1", role: "staff", is_active: true }]) // employee
+        .mockResolvedValueOnce([
+          { id: "employee-1", role: "staff", is_active: true },
+        ]) // employee
         .mockResolvedValueOnce([{ id: "schedule-1", status: "draft" }]) // schedule
         .mockResolvedValueOnce([
-          { id: "existing-shift", shift_start: new Date(validBody.shiftStart), shift_end: new Date(validBody.shiftEnd) },
+          {
+            id: "existing-shift",
+            shift_start: new Date(validBody.shiftStart),
+            shift_end: new Date(validBody.shiftEnd),
+          },
         ]); // overlapping shifts
 
       const result = await validateShift(tenantId, validBody);
@@ -297,18 +323,41 @@ describe("Shift Validation", () => {
 
     it("returns valid with warnings when overtime threshold exceeded", async () => {
       vi.mocked(database.$queryRaw)
-        .mockResolvedValueOnce([{ id: "employee-1", role: "staff", is_active: true }]) // employee
+        .mockResolvedValueOnce([
+          { id: "employee-1", role: "staff", is_active: true },
+        ]) // employee
         .mockResolvedValueOnce([{ id: "schedule-1", status: "draft" }]) // schedule
         .mockResolvedValueOnce([]) // no overlaps
         .mockResolvedValueOnce([
           // 35 hours of existing shifts
-          { id: "s1", shift_start: new Date(), shift_end: new Date(Date.now() + 9 * 60 * 60 * 1000) },
-          { id: "s2", shift_start: new Date(), shift_end: new Date(Date.now() + 9 * 60 * 60 * 1000) },
-          { id: "s3", shift_start: new Date(), shift_end: new Date(Date.now() + 9 * 60 * 60 * 1000) },
-          { id: "s4", shift_start: new Date(), shift_end: new Date(Date.now() + 8 * 60 * 60 * 1000) },
+          {
+            id: "s1",
+            shift_start: new Date(),
+            shift_end: new Date(Date.now() + 9 * 60 * 60 * 1000),
+          },
+          {
+            id: "s2",
+            shift_start: new Date(),
+            shift_end: new Date(Date.now() + 9 * 60 * 60 * 1000),
+          },
+          {
+            id: "s3",
+            shift_start: new Date(),
+            shift_end: new Date(Date.now() + 9 * 60 * 60 * 1000),
+          },
+          {
+            id: "s4",
+            shift_start: new Date(),
+            shift_end: new Date(Date.now() + 8 * 60 * 60 * 1000),
+          },
         ]) // 35 hours
         .mockResolvedValueOnce([
-          { id: "cert-1", certification_type: "food_safety", certification_name: "Food Handler", expiry_date: new Date("2027-12-31") },
+          {
+            id: "cert-1",
+            certification_type: "food_safety",
+            certification_name: "Food Handler",
+            expiry_date: new Date("2027-12-31"),
+          },
         ]); // certifications
 
       const result = await validateShift(tenantId, validBody);
@@ -319,12 +368,19 @@ describe("Shift Validation", () => {
 
     it("returns valid when all checks pass", async () => {
       vi.mocked(database.$queryRaw)
-        .mockResolvedValueOnce([{ id: "employee-1", role: "staff", is_active: true }]) // employee
+        .mockResolvedValueOnce([
+          { id: "employee-1", role: "staff", is_active: true },
+        ]) // employee
         .mockResolvedValueOnce([{ id: "schedule-1", status: "draft" }]) // schedule
         .mockResolvedValueOnce([]) // no overlaps
         .mockResolvedValueOnce([]) // no existing shifts (overtime OK)
         .mockResolvedValueOnce([
-          { id: "cert-1", certification_type: "food_safety", certification_name: "Food Handler", expiry_date: new Date("2027-12-31") },
+          {
+            id: "cert-1",
+            certification_type: "food_safety",
+            certification_name: "Food Handler",
+            expiry_date: new Date("2027-12-31"),
+          },
         ]); // certifications
 
       const result = await validateShift(tenantId, validBody);

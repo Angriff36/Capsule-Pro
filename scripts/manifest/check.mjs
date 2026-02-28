@@ -87,7 +87,8 @@ if (!existsSync(irPath)) {
   }
 }
 
-const mergeReportPath = "packages/manifest-ir/ir/kitchen/kitchen.merge-report.json";
+const mergeReportPath =
+  "packages/manifest-ir/ir/kitchen/kitchen.merge-report.json";
 const duplicateAllowlistPath = "scripts/manifest/duplicate-drop-allowlist.json";
 if (existsSync(mergeReportPath) && existsSync(duplicateAllowlistPath)) {
   try {

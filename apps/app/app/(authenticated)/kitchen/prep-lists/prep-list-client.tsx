@@ -50,6 +50,7 @@ import type {
   StationPrepList,
 } from "./actions";
 import { PrepListSaveButton } from "./components/prep-list-form-with-constraints";
+import { getEventMenuDishesHref } from "./navigation";
 
 interface PrepListClientProps {
   eventId: string;
@@ -435,7 +436,7 @@ export function PrepListClient({
     return (
       <div className="space-y-6">
         <EmptyState
-          onGoToEvents={() => router.push(`/events/${eventId}#dishes`)}
+          onGoToEvents={() => router.push(getEventMenuDishesHref(eventId))}
         />
       </div>
     );
@@ -603,7 +604,7 @@ export function PrepListClient({
           </div>
         ) : prepList.totalIngredients === 0 ? (
           <EmptyState
-            onGoToEvents={() => router.push(`/events/${eventId}#dishes`)}
+            onGoToEvents={() => router.push(getEventMenuDishesHref(eventId))}
           />
         ) : (
           <div className="space-y-8">

@@ -78,11 +78,17 @@ function inferOwnerEntityName(ir, command, manifestName) {
   }
 
   const commandName = command.name;
-  const sameNameCount = ir.commands.filter((c) => c.name === commandName).length;
+  const sameNameCount = ir.commands.filter(
+    (c) => c.name === commandName
+  ).length;
 
   if (sameNameCount <= 1) {
     const entitiesReferencingCommand = ir.entities
-      .filter((entity) => Array.isArray(entity.commands) && entity.commands.includes(commandName))
+      .filter(
+        (entity) =>
+          Array.isArray(entity.commands) &&
+          entity.commands.includes(commandName)
+      )
       .map((entity) => entity.name);
     if (entitiesReferencingCommand.length === 1) {
       return entitiesReferencingCommand[0] ?? "";
@@ -115,7 +121,9 @@ function inferOwnerEntityName(ir, command, manifestName) {
   }
 
   if (Array.isArray(command.emits) && command.emits.length > 0) {
-    const sortedEntities = [...ir.entities].sort((a, b) => b.name.length - a.name.length);
+    const sortedEntities = [...ir.entities].sort(
+      (a, b) => b.name.length - a.name.length
+    );
     for (const entity of sortedEntities) {
       if (command.emits.some((e) => e.startsWith(entity.name))) {
         return entity.name;

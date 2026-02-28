@@ -207,7 +207,11 @@ async function resolveUserRole(
   }
 
   // Fallback lookup by authUserId for Clerk-style IDs.
-  const byAuthUser = await (prisma.user.findFirst as unknown as (args: unknown) => Promise<{ role: string | null } | null>)({
+  const byAuthUser = await (
+    prisma.user.findFirst as unknown as (
+      args: unknown
+    ) => Promise<{ role: string | null } | null>
+  )({
     where: {
       authUserId: user.id,
       tenantId: user.tenantId,

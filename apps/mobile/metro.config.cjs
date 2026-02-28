@@ -1,3 +1,4 @@
+"use strict";
 const path = require("node:path");
 const { getDefaultConfig } = require("expo/metro-config");
 

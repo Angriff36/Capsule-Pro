@@ -32,4 +32,3 @@ export function formatStructuredAgentResponseForDisplay(
 
   return lines.join("\n").trim();
 }
-

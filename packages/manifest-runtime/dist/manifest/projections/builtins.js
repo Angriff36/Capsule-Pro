@@ -7,9 +7,9 @@
  * The registry calls this automatically on first access, so consumers
  * don't need to think about startup ordering.
  */
-import { registerProjection } from './registry.js';
-import { NextJsProjection } from './nextjs/generator.js';
-import { RoutesProjection } from './routes/generator.js';
+import { NextJsProjection } from "./nextjs/generator.js";
+import { registerProjection } from "./registry.js";
+import { RoutesProjection } from "./routes/generator.js";
 /**
  * Register all built-in projections.
  *
@@ -42,9 +42,6 @@ export function registerBuiltinProjections() {
  * @returns Array of built-in projection instances
  */
 export function listBuiltinProjections() {
-    return [
-        new NextJsProjection(),
-        new RoutesProjection(),
-    ];
+    return [new NextJsProjection(), new RoutesProjection()];
 }
 //# sourceMappingURL=builtins.js.map

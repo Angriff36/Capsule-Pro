@@ -19,7 +19,8 @@ const signUpUrl = normalizePath(
   "/sign-up"
 );
 const afterSignUpUrl = normalizePath(
-  process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL,
+  process.env.NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL ??
+    process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL,
   "/"
 );
 

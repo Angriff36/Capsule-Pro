@@ -10,7 +10,9 @@ describe("formatStructuredAgentResponseForDisplay", () => {
         "Attempted to create a new event.",
         "Successfully created a new menu item.",
       ],
-      errors: ["The request format was invalid. Please rephrase and try again."],
+      errors: [
+        "The request format was invalid. Please rephrase and try again.",
+      ],
       nextSteps: [
         "Review and correct the parameters for the event creation request.",
         "Attempt to recreate the event with the corrected format.",

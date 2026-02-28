@@ -11,23 +11,24 @@ import { realpath } from "node:fs/promises";
 import { normalize, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { Command } from "commander";
+import { auditRoutesCommand } from "./commands/audit-routes.js";
 import { buildCommand } from "./commands/build.js";
 import { checkCommand } from "./commands/check.js";
 import { compileCommand } from "./commands/compile.js";
+import {
+  cacheStatusCommand,
+  diffSourceVsIRCommand,
+  doctorCommand,
+  duplicatesCommand,
+  inspectEntityCommand,
+  runtimeCheckCommand,
+} from "./commands/doctor.js";
 import { generateCommand } from "./commands/generate.js";
 import { initCommand } from "./commands/init.js";
 import { lintRoutesCommand } from "./commands/lint-routes.js";
 import { routesCommand } from "./commands/routes.js";
 import { scanCommand } from "./commands/scan.js";
 import { validateCommand } from "./commands/validate.js";
-import {
-  cacheStatusCommand,
-  doctorCommand,
-  duplicatesCommand,
-  inspectEntityCommand,
-  runtimeCheckCommand,
-  diffSourceVsIRCommand,
-} from "./commands/doctor.js";
 import { getConfig } from "./utils/config.js";
 
 const program = new Command();
@@ -302,6 +303,28 @@ program
   });
 
 /**
+ * manifest audit-routes
+ *
+ * Audit route boundary compliance:
+ * - write routes should execute through runtime.runCommand
+ * - direct read routes should include expected tenant/location/soft-delete filters
+ */
+program
+  .command("audit-routes")
+  .description(
+    "Audit route boundary compliance (runtime writes + scoped reads)"
+  )
+  .option("-r, --root <path>", "Root directory to audit", ".")
+  .option("-f, --format <format>", "Output format (text, json)", "text")
+  .option("--strict", "Fail on warnings", false)
+  .option("--tenant-field <name>", "Tenant scope field name", "tenantId")
+  .option("--deleted-field <name>", "Soft-delete field name", "deletedAt")
+  .option("--location-field <name>", "Location scope field name", "locationId")
+  .action(async (options = {}) => {
+    await auditRoutesCommand(options);
+  });
+
+/**
  * manifest inspect entity <EntityName>
  *
  * Inspect source manifests and precompiled IR for a single entity.
@@ -312,7 +335,9 @@ const inspectProgram = program
 
 inspectProgram
   .command("entity")
-  .description("Inspect a single entity across source manifests and precompiled IR")
+  .description(
+    "Inspect a single entity across source manifests and precompiled IR"
+  )
   .argument("<entityName>", "Entity name")
   .option("--json", "JSON output", false)
   .option("--src <pattern>", "Source manifest glob pattern")
@@ -330,7 +355,9 @@ const diffProgram = program
 
 diffProgram
   .command("source-vs-ir")
-  .description("Compare source manifest parse output vs precompiled IR for an entity")
+  .description(
+    "Compare source manifest parse output vs precompiled IR for an entity"
+  )
   .argument("<entityName>", "Entity name")
   .option("--json", "JSON output", false)
   .option("--src <pattern>", "Source manifest glob pattern")
@@ -357,10 +384,15 @@ program
  */
 program
   .command("runtime-check")
-  .description("Correlate route surface, source manifests, and precompiled IR for a command")
+  .description(
+    "Correlate route surface, source manifests, and precompiled IR for a command"
+  )
   .argument("<entityName>", "Entity name")
   .argument("<commandName>", "Command name")
-  .option("--route <path>", "Optional canonical route path to validate (exact match)")
+  .option(
+    "--route <path>",
+    "Optional canonical route path to validate (exact match)"
+  )
   .option("--json", "JSON output", false)
   .option("--src <pattern>", "Source manifest glob pattern")
   .option("--ir-root <path...>", "Compiled IR root directory/directories")
@@ -373,7 +405,9 @@ program
  */
 program
   .command("cache-status")
-  .description("Show offline cache guidance (precompiled IR timestamps + restart advice)")
+  .description(
+    "Show offline cache guidance (precompiled IR timestamps + restart advice)"
+  )
   .option("--entity <name>", "Optional entity context for guidance text")
   .option("--command <name>", "Optional command context for guidance text")
   .option("--json", "JSON output", false)
@@ -387,7 +421,9 @@ program
  */
 program
   .command("doctor")
-  .description("Run ranked offline diagnostics for source/IR/route drift and duplicate merges")
+  .description(
+    "Run ranked offline diagnostics for source/IR/route drift and duplicate merges"
+  )
   .option("--entity <name>", "Optional entity to focus the diagnosis")
   .option("--command <name>", "Optional command to focus the diagnosis")
   .option("--route <path>", "Optional route path for route-surface correlation")

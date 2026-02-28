@@ -5,7 +5,7 @@
     "next-forge": "dist/index.js"
   },
   "dependencies": {
-    "@angriff36/manifest": "0.3.24",
+    "@angriff36/manifest": "0.3.26",
     "@prisma/adapter-neon": "7.3.0",
     "@prisma/client": "7.3.0",
     "ai": "^6.0.70",
@@ -108,6 +108,7 @@
     "manifest:duplicates": "pnpm exec manifest duplicates",
     "manifest:runtime-check": "pnpm exec manifest runtime-check",
     "manifest:cache-status": "pnpm exec manifest cache-status",
+    "manifest:route-audit": "pnpm exec manifest audit-routes --root apps/api",
     "manifest:routes:ir": "tsx scripts/manifest/generate-route-manifest.ts",
     "manifest:validate": "pnpm exec manifest validate packages/manifest-ir/ir/kitchen/kitchen.ir.json",
     "bump-deps": "pnpm dlx npm-check-updates --deep -u --reject recharts && pnpm install",

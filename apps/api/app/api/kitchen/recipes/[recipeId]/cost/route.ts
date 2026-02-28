@@ -55,7 +55,11 @@ export interface IngredientCostBreakdown {
 const calculateRecipeCostData = async (
   tenantId: string,
   recipeVersionId: string
-): Promise<{ breakdown: RecipeCostBreakdown; totalCost: number; costPerYield: number } | null> => {
+): Promise<{
+  breakdown: RecipeCostBreakdown;
+  totalCost: number;
+  costPerYield: number;
+} | null> => {
   const recipeVersion = await database.recipeVersion.findFirst({
     where: { tenantId, id: recipeVersionId, deletedAt: null },
     select: { id: true, yieldQuantity: true },
@@ -261,18 +265,19 @@ export async function POST(
       error.message === "CONSTRAINT_BLOCKED" &&
       "constraintOutcomes" in error
     ) {
-      return manifestErrorResponse(
-        "Cost update blocked by constraints",
-        400,
-        { constraintOutcomes: (error as { constraintOutcomes: unknown[] }).constraintOutcomes }
-      );
+      return manifestErrorResponse("Cost update blocked by constraints", 400, {
+        constraintOutcomes: (error as { constraintOutcomes: unknown[] })
+          .constraintOutcomes,
+      });
     }
 
     console.error("[recipes/cost] Error:", error);
     captureException(error);
 
     const message =
-      error instanceof Error ? error.message : "Failed to recalculate recipe cost";
+      error instanceof Error
+        ? error.message
+        : "Failed to recalculate recipe cost";
     return manifestErrorResponse(message, 500);
   }
 }

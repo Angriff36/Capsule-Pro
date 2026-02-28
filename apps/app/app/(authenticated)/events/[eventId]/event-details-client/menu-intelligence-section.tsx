@@ -15,6 +15,12 @@ import {
   PopoverTrigger,
 } from "@repo/design-system/components/ui/popover";
 import { Progress } from "@repo/design-system/components/ui/progress";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs";
 import { cn } from "@repo/design-system/lib/utils";
 import {
   ChefHatIcon,
@@ -23,12 +29,15 @@ import {
   ListIcon,
 } from "lucide-react";
 import Link from "next/link";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { MenuDishesSection } from "../event-details-sections";
 import type {
   EventDishSummary,
   InventoryCoverageItem,
   RecipeDetailSummary,
 } from "../event-details-types";
+import { normalizeMenuTab } from "./menu-tab-utils";
 import { formatCurrency } from "./utils";
 
 type DrawerMode = "instructions" | "ingredients";
@@ -105,6 +114,46 @@ export function MenuIntelligenceSection({
   onSelectedDishIdChange,
   onSelectedCourseChange,
 }: MenuIntelligenceSectionProps) {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [activeMenuTab, setActiveMenuTab] = useState(() =>
+    normalizeMenuTab(searchParams?.get("menuTab") ?? null)
+  );
+
+  const currentSearchParams = useMemo(
+    () => new URLSearchParams(searchParams?.toString() ?? ""),
+    [searchParams]
+  );
+
+  useEffect(() => {
+    const queryTab = normalizeMenuTab(searchParams?.get("menuTab") ?? null);
+    setActiveMenuTab((previousTab) =>
+      previousTab === queryTab ? previousTab : queryTab
+    );
+  }, [searchParams]);
+
+  const handleMenuTabChange = (value: string) => {
+    const nextTab = normalizeMenuTab(value);
+    setActiveMenuTab(nextTab);
+
+    if (!pathname) {
+      return;
+    }
+
+    const nextSearchParams = new URLSearchParams(currentSearchParams);
+    if (nextTab === "dishes") {
+      nextSearchParams.delete("menuTab");
+    } else {
+      nextSearchParams.set("menuTab", nextTab);
+    }
+
+    const query = nextSearchParams.toString();
+    router.replace(query ? `${pathname}?${query}` : pathname, {
+      scroll: false,
+    });
+  };
+
   return (
     <section id="recipes">
       <div className="mb-4 flex items-center gap-2">
@@ -112,200 +161,17 @@ export function MenuIntelligenceSection({
           Menu Intelligence
         </p>
       </div>
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
-        <Card className="border-border/60 bg-card/70 text-foreground">
-          <CardHeader className="space-y-1">
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <ChefHatIcon className="size-5 text-warning" />
-              Menu intelligence
-            </CardTitle>
-            <CardDescription className="text-muted-foreground">
-              Recipes, yields, and ingredient summaries for this event.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {dishRows.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-border/70 p-8 text-center">
-                <p className="text-sm text-muted-foreground">
-                  No dishes linked yet.
-                </p>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Add dishes to start building recipe intelligence.
-                </p>
-                <Button
-                  className="mt-4"
-                  onClick={() => onShowAddDialogChange(true)}
-                  size="sm"
-                  variant="outline"
-                >
-                  Add dishes
-                </Button>
-              </div>
-            ) : (
-              dishRows.map((row, index) => (
-                <div
-                  className="group rounded-2xl border border-border/70 bg-muted/40 p-4 transition duration-300 hover:-translate-y-0.5 hover:border-success/40"
-                  key={`${row.dish.dishId}-${index}`}
-                  style={{ animationDelay: `${index * 40}ms` }}
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-4">
-                    <div className="space-y-1">
-                      <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-                        {row.dish.course ?? "Course not set"}
-                      </p>
-                      <p className="text-lg font-semibold">{row.dish.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {row.dish.recipeName ?? "Recipe not linked"}
-                      </p>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <Button size="sm" variant="outline">
-                            <ClipboardCopyIcon className="mr-2 size-3" />
-                            Ingredients
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent
-                          align="end"
-                          className="w-72 border-border bg-muted text-foreground"
-                        >
-                          {row.recipe ? (
-                            <div className="space-y-3 text-sm">
-                              <div className="flex items-center justify-between">
-                                <span className="font-semibold">
-                                  {row.recipe.recipeName}
-                                </span>
-                                <Badge
-                                  className="border-border/70 bg-card/70 text-foreground"
-                                  variant="outline"
-                                >
-                                  {row.recipe.ingredients.length} ingredients
-                                </Badge>
-                              </div>
-                              <div className="max-h-56 space-y-2 overflow-y-auto pr-1 text-xs">
-                                {row.scaledIngredients.map((ingredient) => (
-                                  <div
-                                    className="flex items-start justify-between gap-3"
-                                    key={ingredient.ingredientId}
-                                  >
-                                    <span>{ingredient.ingredientName}</span>
-                                    <span className="text-muted-foreground">
-                                      {ingredient.scaledQuantity}{" "}
-                                      {ingredient.unitCode ?? ""}
-                                    </span>
-                                  </div>
-                                ))}
-                              </div>
-                              <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-                                <span>
-                                  Yield: {row.recipe.yieldQuantity}{" "}
-                                  {row.recipe.yieldUnitCode ?? "servings"}
-                                </span>
-                                {row.recipe.versionId ? (
-                                  <Link
-                                    className="text-success hover:text-success/80"
-                                    href={`/inventory/recipe-costs/${row.recipe.versionId}`}
-                                  >
-                                    View recipe
-                                  </Link>
-                                ) : null}
-                              </div>
-                            </div>
-                          ) : (
-                            <p className="text-sm text-muted-foreground">
-                              No recipe linked yet.
-                            </p>
-                          )}
-                        </PopoverContent>
-                      </Popover>
-                      <Button
-                        disabled={!row.recipe}
-                        onClick={() =>
-                          row.recipe &&
-                          onOpenRecipeDrawer(
-                            row.recipe.recipeId,
-                            row.dish.dishId,
-                            "instructions"
-                          )
-                        }
-                        size="sm"
-                        variant="secondary"
-                      >
-                        <ChevronRightIcon className="mr-2 size-3" />
-                        Instructions
-                      </Button>
-                      <Button
-                        disabled={!row.recipe}
-                        onClick={() =>
-                          row.recipe &&
-                          onOpenRecipeDrawer(
-                            row.recipe.recipeId,
-                            row.dish.dishId,
-                            "ingredients"
-                          )
-                        }
-                        size="sm"
-                        variant="outline"
-                      >
-                        <ListIcon className="mr-2 size-3" />
-                        Full ingredients
-                      </Button>
-                    </div>
-                  </div>
-                  <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
-                    <Badge
-                      className="border-border/70 bg-card/70"
-                      variant="outline"
-                    >
-                      {row.dish.quantityServings} servings
-                    </Badge>
-                    {row.dish.pricePerPerson !== null && (
-                      <Badge
-                        className="border-success/40 bg-success/10 text-success"
-                        variant="outline"
-                      >
-                        Price {formatCurrency(row.dish.pricePerPerson)} / person
-                      </Badge>
-                    )}
-                    {row.dish.costPerPerson !== null && (
-                      <Badge
-                        className="border-warning/40 bg-warning/10 text-warning"
-                        variant="outline"
-                      >
-                        Cost {formatCurrency(row.dish.costPerPerson)} / person
-                      </Badge>
-                    )}
-                    {row.dish.dietaryTags.map((tag) => (
-                      <Badge
-                        className="border-border/70 bg-card/70 text-foreground"
-                        key={tag}
-                        variant="outline"
-                      >
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                  {row.recipe && (
-                    <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground opacity-0 transition group-hover:opacity-100">
-                      <span>
-                        Prep: {row.recipe.prepTimeMinutes ?? 0}m • Cook:{" "}
-                        {row.recipe.cookTimeMinutes ?? 0}m • Rest:{" "}
-                        {row.recipe.restTimeMinutes ?? 0}m
-                      </span>
-                      <span>
-                        Yield {row.recipe.yieldQuantity}{" "}
-                        {row.recipe.yieldUnitCode ?? "servings"}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
+      <Tabs
+        className="space-y-4"
+        onValueChange={handleMenuTabChange}
+        value={activeMenuTab}
+      >
+        <TabsList>
+          <TabsTrigger value="dishes">Dishes</TabsTrigger>
+          <TabsTrigger value="recipes">Recipes</TabsTrigger>
+        </TabsList>
 
-        <div className="space-y-6">
+        <TabsContent className="space-y-4" value="dishes">
           <MenuDishesSection
             availableDishes={availableDishes}
             eventDishes={menuDishRows}
@@ -320,6 +186,193 @@ export function MenuIntelligenceSection({
             selectedDishId={selectedDishIdForAdd}
             showAddDialog={showAddDishDialog}
           />
+        </TabsContent>
+
+        <TabsContent className="space-y-6" value="recipes">
+          <Card className="border-border/60 bg-card/70 text-foreground">
+            <CardHeader className="space-y-1">
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <ChefHatIcon className="size-5 text-warning" />
+                Recipe intelligence
+              </CardTitle>
+              <CardDescription className="text-muted-foreground">
+                Recipes, yields, and ingredient summaries for linked dishes.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {dishRows.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-border/70 p-8 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    No dishes linked yet.
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Link dishes from the Dishes tab first.
+                  </p>
+                </div>
+              ) : (
+                dishRows.map((row, index) => (
+                  <div
+                    className="group rounded-2xl border border-border/70 bg-muted/40 p-4 transition duration-300 hover:-translate-y-0.5 hover:border-success/40"
+                    key={`${row.dish.dishId}-${index}`}
+                    style={{ animationDelay: `${index * 40}ms` }}
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-4">
+                      <div className="space-y-1">
+                        <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+                          {row.dish.course ?? "Course not set"}
+                        </p>
+                        <p className="text-lg font-semibold">{row.dish.name}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {row.dish.recipeName ?? "Recipe not linked"}
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Popover>
+                          <PopoverTrigger asChild>
+                            <Button size="sm" variant="outline">
+                              <ClipboardCopyIcon className="mr-2 size-3" />
+                              Ingredients
+                            </Button>
+                          </PopoverTrigger>
+                          <PopoverContent
+                            align="end"
+                            className="w-72 border-border bg-muted text-foreground"
+                          >
+                            {row.recipe ? (
+                              <div className="space-y-3 text-sm">
+                                <div className="flex items-center justify-between">
+                                  <span className="font-semibold">
+                                    {row.recipe.recipeName}
+                                  </span>
+                                  <Badge
+                                    className="border-border/70 bg-card/70 text-foreground"
+                                    variant="outline"
+                                  >
+                                    {row.recipe.ingredients.length} ingredients
+                                  </Badge>
+                                </div>
+                                <div className="max-h-56 space-y-2 overflow-y-auto pr-1 text-xs">
+                                  {row.scaledIngredients.map((ingredient) => (
+                                    <div
+                                      className="flex items-start justify-between gap-3"
+                                      key={ingredient.ingredientId}
+                                    >
+                                      <span>{ingredient.ingredientName}</span>
+                                      <span className="text-muted-foreground">
+                                        {ingredient.scaledQuantity}{" "}
+                                        {ingredient.unitCode ?? ""}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                                <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                                  <span>
+                                    Yield: {row.recipe.yieldQuantity}{" "}
+                                    {row.recipe.yieldUnitCode ?? "servings"}
+                                  </span>
+                                  {row.recipe.versionId ? (
+                                    <Link
+                                      className="text-success hover:text-success/80"
+                                      href={`/inventory/recipe-costs/${row.recipe.versionId}`}
+                                    >
+                                      View recipe
+                                    </Link>
+                                  ) : null}
+                                </div>
+                              </div>
+                            ) : (
+                              <p className="text-sm text-muted-foreground">
+                                No recipe linked yet.
+                              </p>
+                            )}
+                          </PopoverContent>
+                        </Popover>
+                        <Button
+                          disabled={!row.recipe}
+                          onClick={() =>
+                            row.recipe &&
+                            onOpenRecipeDrawer(
+                              row.recipe.recipeId,
+                              row.dish.dishId,
+                              "instructions"
+                            )
+                          }
+                          size="sm"
+                          variant="secondary"
+                        >
+                          <ChevronRightIcon className="mr-2 size-3" />
+                          Instructions
+                        </Button>
+                        <Button
+                          disabled={!row.recipe}
+                          onClick={() =>
+                            row.recipe &&
+                            onOpenRecipeDrawer(
+                              row.recipe.recipeId,
+                              row.dish.dishId,
+                              "ingredients"
+                            )
+                          }
+                          size="sm"
+                          variant="outline"
+                        >
+                          <ListIcon className="mr-2 size-3" />
+                          Full ingredients
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                      <Badge
+                        className="border-border/70 bg-card/70"
+                        variant="outline"
+                      >
+                        {row.dish.quantityServings} servings
+                      </Badge>
+                      {row.dish.pricePerPerson !== null && (
+                        <Badge
+                          className="border-success/40 bg-success/10 text-success"
+                          variant="outline"
+                        >
+                          Price {formatCurrency(row.dish.pricePerPerson)} /
+                          person
+                        </Badge>
+                      )}
+                      {row.dish.costPerPerson !== null && (
+                        <Badge
+                          className="border-warning/40 bg-warning/10 text-warning"
+                          variant="outline"
+                        >
+                          Cost {formatCurrency(row.dish.costPerPerson)} / person
+                        </Badge>
+                      )}
+                      {row.dish.dietaryTags.map((tag) => (
+                        <Badge
+                          className="border-border/70 bg-card/70 text-foreground"
+                          key={tag}
+                          variant="outline"
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                    {row.recipe && (
+                      <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-muted-foreground opacity-0 transition group-hover:opacity-100">
+                        <span>
+                          Prep: {row.recipe.prepTimeMinutes ?? 0}m • Cook:{" "}
+                          {row.recipe.cookTimeMinutes ?? 0}m • Rest:{" "}
+                          {row.recipe.restTimeMinutes ?? 0}m
+                        </span>
+                        <span>
+                          Yield {row.recipe.yieldQuantity}{" "}
+                          {row.recipe.yieldUnitCode ?? "servings"}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                ))
+              )}
+            </CardContent>
+          </Card>
 
           <Card className="border-border/60 bg-card/70 text-foreground">
             <CardHeader className="space-y-1">
@@ -444,8 +497,8 @@ export function MenuIntelligenceSection({
               )}
             </CardContent>
           </Card>
-        </div>
-      </div>
+        </TabsContent>
+      </Tabs>
     </section>
   );
 }

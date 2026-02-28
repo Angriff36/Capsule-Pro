@@ -6,7 +6,7 @@
  *
  * @module kitchen-ops/prep-list-autogeneration
  */
-import type { Prisma, PrismaClient } from "@repo/database";
+import type { Prisma, PrismaClient } from "@repo/database/standalone";
 /**
  * Input for triggering prep list auto-generation
  */

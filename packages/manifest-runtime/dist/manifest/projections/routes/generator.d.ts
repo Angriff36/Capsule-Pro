@@ -13,8 +13,8 @@
  *
  * See docs/spec/manifest-vnext.md § "Canonical Routes (Normative)".
  */
-import type { IR } from '../../ir';
-import type { ProjectionTarget, ProjectionRequest, ProjectionResult } from '../interface';
+import type { IR } from "../../ir";
+import type { ProjectionRequest, ProjectionResult, ProjectionTarget } from "../interface";
 /**
  * Canonical Routes projection.
  *
@@ -28,5 +28,5 @@ export declare class RoutesProjection implements ProjectionTarget {
     readonly surfaces: readonly ["routes.manifest", "routes.ts"];
     generate(ir: IR, request: ProjectionRequest): ProjectionResult;
 }
-export type { RouteEntry, RouteManifest, RouteParam, RoutesProjectionOptions, ManualRouteDeclaration } from './types';
+export type { ManualRouteDeclaration, RouteEntry, RouteManifest, RouteParam, RoutesProjectionOptions, } from "./types";
 //# sourceMappingURL=generator.d.ts.map

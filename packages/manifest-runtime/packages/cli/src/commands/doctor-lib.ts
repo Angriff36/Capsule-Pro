@@ -1,8 +1,9 @@
-import fs from 'node:fs/promises';
-import path from 'node:path';
-import { glob } from 'glob';
+import fs from "node:fs/promises";
+import path from "node:path";
+import { compileToIR } from "@angriff36/manifest/ir-compiler";
+import { glob } from "glob";
 
-export type Severity = 'error' | 'warning' | 'info';
+export type Severity = "error" | "warning" | "info";
 
 export interface DiagnosticFinding {
   severity: Severity;
@@ -32,7 +33,9 @@ export interface EntitySurfaceDiff {
 }
 
 function uniqueSorted(values: Iterable<string>): string[] {
-  return Array.from(new Set(Array.from(values).filter(Boolean))).sort((a, b) => a.localeCompare(b));
+  return Array.from(new Set(Array.from(values).filter(Boolean))).sort((a, b) =>
+    a.localeCompare(b)
+  );
 }
 
 function diffSets(sourceValues: string[], irValues: string[]) {
@@ -83,14 +86,14 @@ function findEntityBlock(source: string, entityName: string): string | null {
   if (!match) return null;
 
   const start = match.index;
-  const openBrace = source.indexOf('{', start);
+  const openBrace = source.indexOf("{", start);
   if (openBrace < 0) return null;
 
   let depth = 0;
   for (let i = openBrace; i < source.length; i++) {
     const ch = source[i];
-    if (ch === '{') depth++;
-    if (ch === '}') {
+    if (ch === "{") depth++;
+    if (ch === "}") {
       depth--;
       if (depth === 0) {
         return source.slice(start, i + 1);
@@ -115,15 +118,16 @@ export function detectEntitySourceParseHeuristics(input: {
   const rawCommandTokenCount = (block.match(/\bcommand\b/g) || []).length;
   if (rawCommandTokenCount > 0 && input.parsedCommandCount === 0) {
     findings.push({
-      severity: 'error',
-      code: 'SOURCE_ENTITY_RAW_COMMAND_TOKENS_UNPARSED',
+      severity: "error",
+      code: "SOURCE_ENTITY_RAW_COMMAND_TOKENS_UNPARSED",
       message: `Entity '${input.entityName}' contains raw 'command' tokens in source, but parsed command count is 0.`,
       details: {
         entityName: input.entityName,
         rawCommandTokenCount,
         parsedCommandCount: input.parsedCommandCount,
       },
-      suggestion: 'Likely parser/scanner mismatch or parse failure inside the entity block. Re-run compile diagnostics and inspect unsupported syntax in this entity.',
+      suggestion:
+        "Likely parser/scanner mismatch or parse failure inside the entity block. Re-run compile diagnostics and inspect unsupported syntax in this entity.",
     });
   }
 
@@ -135,26 +139,31 @@ export interface DuplicateReportEntry {
   key: string;
   keptFrom: string | null;
   droppedFrom: string | null;
-  classification: 'known' | 'suspicious';
+  classification: "known" | "suspicious";
   sourceReport: string;
   raw: Record<string, unknown>;
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {
-  return value && typeof value === 'object' && !Array.isArray(value)
+  return value && typeof value === "object" && !Array.isArray(value)
     ? (value as Record<string, unknown>)
     : null;
 }
 
-function pickString(obj: Record<string, unknown>, keys: string[]): string | null {
+function pickString(
+  obj: Record<string, unknown>,
+  keys: string[]
+): string | null {
   for (const key of keys) {
     const value = obj[key];
-    if (typeof value === 'string' && value.trim()) return value;
+    if (typeof value === "string" && value.trim()) return value;
   }
   return null;
 }
 
-function collectCandidateArrays(report: unknown): Array<Record<string, unknown>> {
+function collectCandidateArrays(
+  report: unknown
+): Array<Record<string, unknown>> {
   const candidates: Array<Record<string, unknown>> = [];
   const root = asRecord(report);
   if (!root) return candidates;
@@ -189,36 +198,59 @@ function collectCandidateArrays(report: unknown): Array<Record<string, unknown>>
   return candidates;
 }
 
-function classifyDuplicate(raw: Record<string, unknown>): 'known' | 'suspicious' {
-  const status = pickString(raw, ['classification', 'status', 'disposition', 'action', 'kind'])?.toLowerCase() ?? '';
-  const reason = pickString(raw, ['reason', 'note', 'explanation'])?.toLowerCase() ?? '';
+function classifyDuplicate(
+  raw: Record<string, unknown>
+): "known" | "suspicious" {
+  const status =
+    pickString(raw, [
+      "classification",
+      "status",
+      "disposition",
+      "action",
+      "kind",
+    ])?.toLowerCase() ?? "";
+  const reason =
+    pickString(raw, ["reason", "note", "explanation"])?.toLowerCase() ?? "";
   if (
-    status.includes('known') ||
-    status.includes('allow') ||
-    status.includes('merged') ||
-    status.includes('drop') ||
-    reason.includes('known') ||
-    reason.includes('duplicate')
+    status.includes("known") ||
+    status.includes("allow") ||
+    status.includes("merged") ||
+    status.includes("drop") ||
+    reason.includes("known") ||
+    reason.includes("duplicate")
   ) {
-    return 'known';
+    return "known";
   }
-  return 'suspicious';
+  return "suspicious";
 }
 
-export function normalizeMergeReportEntries(report: unknown, sourceReport: string): DuplicateReportEntry[] {
+export function normalizeMergeReportEntries(
+  report: unknown,
+  sourceReport: string
+): DuplicateReportEntry[] {
   const entries: DuplicateReportEntry[] = [];
   for (const item of collectCandidateArrays(report)) {
-    const type = pickString(item, ['type', 'duplicateType', 'entryType']) ?? '';
-    const key = pickString(item, ['key', 'duplicateKey', 'name', 'id']) ?? '';
-    const keptFrom = pickString(item, ['keptFrom', 'kept', 'winner', 'sourceKept']);
-    const droppedFrom = pickString(item, ['droppedFrom', 'dropped', 'loser', 'sourceDropped']);
+    const type = pickString(item, ["type", "duplicateType", "entryType"]) ?? "";
+    const key = pickString(item, ["key", "duplicateKey", "name", "id"]) ?? "";
+    const keptFrom = pickString(item, [
+      "keptFrom",
+      "kept",
+      "winner",
+      "sourceKept",
+    ]);
+    const droppedFrom = pickString(item, [
+      "droppedFrom",
+      "dropped",
+      "loser",
+      "sourceDropped",
+    ]);
 
     // Only keep rows that look like duplicate report items.
-    if (!type && !key && !keptFrom && !droppedFrom) continue;
+    if (!(type || key || keptFrom || droppedFrom)) continue;
 
     entries.push({
-      type: type || 'unknown',
-      key: key || '(unknown)',
+      type: type || "unknown",
+      key: key || "(unknown)",
       keptFrom,
       droppedFrom,
       classification: classifyDuplicate(item),
@@ -242,7 +274,12 @@ export interface SourceEntityDefinition {
   policies: string[];
   emits: string[];
   parserHeuristics: DiagnosticFinding[];
-  parserErrors: Array<{ message: string; line?: number; column?: number; severity?: string }>;
+  parserErrors: Array<{
+    message: string;
+    line?: number;
+    column?: number;
+    severity?: string;
+  }>;
 }
 
 export interface SourceInspectionResult {
@@ -267,156 +304,133 @@ export interface IRInspectionResult {
   filesScanned: number;
 }
 
-export async function findManifestSourceFiles(cwd: string, srcPattern = '**/*.manifest'): Promise<string[]> {
+export async function findManifestSourceFiles(
+  cwd: string,
+  srcPattern = "**/*.manifest"
+): Promise<string[]> {
   const files = await glob(srcPattern, {
     cwd,
     absolute: true,
-    ignore: ['**/node_modules/**', '**/dist/**', '**/build/**'],
+    ignore: ["**/node_modules/**", "**/dist/**", "**/build/**"],
   });
   return uniqueSorted(files);
 }
 
-async function loadParserClass() {
-  const mod = await import('../../../../dist/manifest/parser.js');
-  return mod.Parser as unknown as new () => {
-    parse(source: string): {
-      program: Record<string, unknown>;
-      errors: Array<{ message: string; severity?: string; position?: { line?: number; column?: number } }>;
-    };
-  };
+interface SourceEntityBlock {
+  name: string;
+  block: string;
+  line: number;
 }
 
-function flattenProgramEntities(program: Record<string, unknown>): Array<Record<string, unknown>> {
-  const top = Array.isArray(program.entities) ? (program.entities as Array<Record<string, unknown>>) : [];
-  const modules = Array.isArray(program.modules) ? (program.modules as Array<Record<string, unknown>>) : [];
-  const nested = modules.flatMap((m) => Array.isArray(m.entities) ? (m.entities as Array<Record<string, unknown>>) : []);
-  return [...top, ...nested];
+function lineFromIndex(source: string, index: number): number {
+  return source.slice(0, Math.max(0, index)).split("\n").length;
 }
 
-function sourceFileLevelPoliciesForEntity(program: Record<string, unknown>, entityName: string): string[] {
-  const collect = (arr: unknown[]) =>
-    arr
-      .filter((p) => asRecord(p)?.entity === entityName || asRecord(p)?.name)
-      .map((p) => pickString(p as Record<string, unknown>, ['name']))
-      .filter((v): v is string => !!v);
+function findSourceEntityBlocks(source: string): SourceEntityBlock[] {
+  const blocks: SourceEntityBlock[] = [];
+  const entityRegex = /^\s*entity\s+([A-Za-z_][A-Za-z0-9_]*)\b/gm;
+  let match: RegExpExecArray | null;
 
-  const topPolicies = Array.isArray(program.policies) ? collect(program.policies) : [];
-  const modulePolicies = Array.isArray(program.modules)
-    ? (program.modules as unknown[]).flatMap((m) => {
-        const rec = asRecord(m);
-        return rec && Array.isArray(rec.policies) ? collect(rec.policies) : [];
-      })
-    : [];
-  return uniqueSorted([...topPolicies, ...modulePolicies]);
+  while ((match = entityRegex.exec(source)) !== null) {
+    const name = match[1];
+    const start = match.index;
+    const openBrace = source.indexOf("{", start);
+    if (openBrace < 0) continue;
+
+    let depth = 0;
+    let end = source.length - 1;
+    for (let i = openBrace; i < source.length; i++) {
+      const ch = source[i];
+      if (ch === "{") depth++;
+      if (ch === "}") {
+        depth--;
+        if (depth === 0) {
+          end = i;
+          break;
+        }
+      }
+    }
+
+    blocks.push({
+      name,
+      block: source.slice(start, end + 1),
+      line: lineFromIndex(source, start),
+    });
+  }
+
+  return blocks;
 }
 
-function fileLevelEventNames(program: Record<string, unknown>): string[] {
-  const collectEvents = (arr: unknown[]) =>
-    arr
-      .map((e) => pickString((e as Record<string, unknown>) || {}, ['name']))
-      .filter((v): v is string => !!v);
-
-  const topEvents = Array.isArray(program.events) ? collectEvents(program.events) : [];
-  const moduleEvents = Array.isArray(program.modules)
-    ? (program.modules as unknown[]).flatMap((m) => {
-        const rec = asRecord(m);
-        return rec && Array.isArray(rec.events) ? collectEvents(rec.events) : [];
-      })
-    : [];
-  return uniqueSorted([...topEvents, ...moduleEvents]);
-}
-
-function extractSourceEntityDefinition(input: {
-  entityNode: Record<string, unknown>;
-  source: string;
-  file: string;
-  program: Record<string, unknown>;
-  parserErrors: Array<{ message: string; severity?: string; position?: { line?: number; column?: number } }>;
-}): SourceEntityDefinition | null {
-  const entityName = pickString(input.entityNode, ['name']);
-  if (!entityName) return null;
-
-  const properties = Array.isArray(input.entityNode.properties)
-    ? (input.entityNode.properties as unknown[])
-        .map((p) => pickString((p as Record<string, unknown>) || {}, ['name']))
-        .filter((v): v is string => !!v)
-    : [];
-  const commands = Array.isArray(input.entityNode.commands)
-    ? (input.entityNode.commands as unknown[])
-        .map((c) => pickString((c as Record<string, unknown>) || {}, ['name']))
-        .filter((v): v is string => !!v)
-    : [];
-  const policies = Array.isArray(input.entityNode.policies)
-    ? (input.entityNode.policies as unknown[])
-        .map((p) => pickString((p as Record<string, unknown>) || {}, ['name']))
-        .filter((v): v is string => !!v)
-    : [];
-
-  const emits = Array.isArray(input.entityNode.commands)
-    ? (input.entityNode.commands as unknown[]).flatMap((cmd) => {
-        const rec = asRecord(cmd);
-        return rec && Array.isArray(rec.emits)
-          ? rec.emits.filter((e): e is string => typeof e === 'string')
-          : [];
-      })
-    : [];
-
-  const parserHeuristics = detectEntitySourceParseHeuristics({
-    entityName,
-    source: input.source,
-    parsedCommandCount: commands.length,
-  });
-
-  const fileParserErrors = input.parserErrors.map((e) => ({
-    message: e.message,
-    line: e.position?.line,
-    column: e.position?.column,
-    severity: e.severity,
-  }));
+function scanEntityBlockTokens(block: string) {
+  const collect = (pattern: RegExp): string[] =>
+    uniqueSorted(
+      Array.from(block.matchAll(pattern))
+        .map((m) => m[1])
+        .filter(Boolean)
+    );
 
   return {
-    entityName,
-    file: input.file,
-    line: (asRecord(input.entityNode.position)?.line as number | undefined) ?? undefined,
-    properties: uniqueSorted(properties),
-    commands: uniqueSorted(commands),
-    policies: uniqueSorted([...policies, ...sourceFileLevelPoliciesForEntity(input.program, entityName)]),
-    emits: uniqueSorted(emits),
-    parserHeuristics,
-    parserErrors: fileParserErrors,
+    properties: collect(
+      /^\s*property(?:\s+[A-Za-z_][A-Za-z0-9_]*)*\s+([A-Za-z_][A-Za-z0-9_]*)\s*:/gm
+    ),
+    commands: collect(/^\s*command\s+([A-Za-z_][A-Za-z0-9_]*)\s*\(/gm),
+    policies: collect(
+      /^\s*(?:default\s+)?policy\s+([A-Za-z_][A-Za-z0-9_]*)\b/gm
+    ),
+    emits: collect(/^\s*emit\s+([A-Za-z_][A-Za-z0-9_]*)\b/gm),
   };
 }
 
-export async function inspectSourceEntities(options: {
-  cwd?: string;
-  srcPattern?: string;
-} = {}): Promise<SourceInspectionResult> {
+export async function inspectSourceEntities(
+  options: { cwd?: string; srcPattern?: string } = {}
+): Promise<SourceInspectionResult> {
   const cwd = options.cwd || process.cwd();
-  const files = await findManifestSourceFiles(cwd, options.srcPattern || '**/*.manifest');
-  const Parser = await loadParserClass();
+  const files = await findManifestSourceFiles(
+    cwd,
+    options.srcPattern || "**/*.manifest"
+  );
   const entities = new Map<string, SourceEntityDefinition[]>();
   let filesWithParseErrors = 0;
 
   for (const file of files) {
-    const source = await fs.readFile(file, 'utf-8');
-    const parser = new Parser();
-    const { program, errors } = parser.parse(source);
-    if ((errors || []).some((e) => e.severity === 'error')) filesWithParseErrors++;
-    const programRecord = program as unknown as Record<string, unknown>;
-    const eventNames = fileLevelEventNames(programRecord);
-    const entityNodes = flattenProgramEntities(programRecord);
+    const source = await fs.readFile(file, "utf-8");
+    const { ir, diagnostics } = await compileToIR(source);
+    const parserErrors = (diagnostics || []).map((d) => ({
+      message: d.message,
+      line: d.line,
+      column: d.column,
+      severity: d.severity,
+    }));
+    if (parserErrors.some((e) => e.severity === "error"))
+      filesWithParseErrors++;
 
-    for (const entityNode of entityNodes) {
-      const definition = extractSourceEntityDefinition({
-        entityNode,
-        source,
+    const eventNames = uniqueSorted(
+      (Array.isArray(ir?.events) ? ir.events : [])
+        .map((e: any) => (typeof e?.name === "string" ? e.name : null))
+        .filter((v: string | null): v is string => !!v)
+    );
+    const entityBlocks = findSourceEntityBlocks(source);
+
+    for (const entityNode of entityBlocks) {
+      const entityName = entityNode.name;
+      const scanned = scanEntityBlockTokens(entityNode.block);
+
+      const definition: SourceEntityDefinition = {
+        entityName,
         file,
-        program: programRecord,
-        parserErrors: errors || [],
-      });
-      if (!definition) continue;
-      // File-level event declarations are not entity-scoped in the AST; include as context.
-      definition.emits = uniqueSorted([...definition.emits, ...eventNames]);
+        line: entityNode.line,
+        properties: scanned.properties,
+        commands: scanned.commands,
+        policies: scanned.policies,
+        emits: uniqueSorted([...scanned.emits, ...eventNames]),
+        parserHeuristics: detectEntitySourceParseHeuristics({
+          entityName,
+          source: entityNode.block,
+          parsedCommandCount: scanned.commands.length,
+        }),
+        parserErrors,
+      };
+
       const list = entities.get(definition.entityName) || [];
       list.push(definition);
       entities.set(definition.entityName, list);
@@ -426,25 +440,24 @@ export async function inspectSourceEntities(options: {
   return { entities, filesScanned: files.length, filesWithParseErrors };
 }
 
-export async function discoverIRFiles(options: {
-  cwd?: string;
-  irRoots?: string[];
-} = {}): Promise<string[]> {
+export async function discoverIRFiles(
+  options: { cwd?: string; irRoots?: string[] } = {}
+): Promise<string[]> {
   const cwd = options.cwd || process.cwd();
   const roots = uniqueSorted(
     (options.irRoots && options.irRoots.length > 0
       ? options.irRoots
-      : ['packages/manifest-ir/ir', 'ir'])
-      .map((r) => path.resolve(cwd, r))
+      : ["packages/manifest-ir/ir", "ir"]
+    ).map((r) => path.resolve(cwd, r))
   );
 
   const files = new Set<string>();
   for (const root of roots) {
     try {
-      const matches = await glob('**/*.ir.json', {
+      const matches = await glob("**/*.ir.json", {
         cwd: root,
         absolute: true,
-        ignore: ['**/node_modules/**'],
+        ignore: ["**/node_modules/**"],
       });
       for (const f of matches) files.add(path.resolve(f));
     } catch {
@@ -454,17 +467,16 @@ export async function discoverIRFiles(options: {
   return uniqueSorted(files);
 }
 
-export async function inspectCompiledIR(options: {
-  cwd?: string;
-  irRoots?: string[];
-} = {}): Promise<IRInspectionResult> {
+export async function inspectCompiledIR(
+  options: { cwd?: string; irRoots?: string[] } = {}
+): Promise<IRInspectionResult> {
   const files = await discoverIRFiles(options);
   const entities = new Map<string, IREntityDefinition[]>();
 
   for (const file of files) {
     let parsed: any;
     try {
-      parsed = JSON.parse(await fs.readFile(file, 'utf-8'));
+      parsed = JSON.parse(await fs.readFile(file, "utf-8"));
     } catch {
       continue;
     }
@@ -475,25 +487,29 @@ export async function inspectCompiledIR(options: {
     const irPolicies = Array.isArray(parsed?.policies) ? parsed.policies : [];
 
     for (const entity of irEntities) {
-      const entityName = typeof entity?.name === 'string' ? entity.name : null;
+      const entityName = typeof entity?.name === "string" ? entity.name : null;
       if (!entityName) continue;
 
       const commands = irCommands
-        .filter((c: any) => c?.entity === entityName && typeof c?.name === 'string')
+        .filter(
+          (c: any) => c?.entity === entityName && typeof c?.name === "string"
+        )
         .map((c: any) => c.name);
       const emits = irCommands
         .filter((c: any) => c?.entity === entityName && Array.isArray(c?.emits))
-        .flatMap((c: any) => c.emits.filter((e: unknown) => typeof e === 'string'));
+        .flatMap((c: any) =>
+          c.emits.filter((e: unknown) => typeof e === "string")
+        );
       const properties = Array.isArray(entity?.properties)
         ? entity.properties
-            .map((p: any) => (typeof p?.name === 'string' ? p.name : null))
+            .map((p: any) => (typeof p?.name === "string" ? p.name : null))
             .filter((v: string | null): v is string => !!v)
         : [];
       const policies = Array.isArray(entity?.policies)
-        ? entity.policies.filter((p: unknown) => typeof p === 'string')
+        ? entity.policies.filter((p: unknown) => typeof p === "string")
         : [];
       const events = irEvents
-        .map((e: any) => (typeof e?.name === 'string' ? e.name : null))
+        .map((e: any) => (typeof e?.name === "string" ? e.name : null))
         .filter((v: string | null): v is string => !!v);
 
       const list = entities.get(entityName) || [];
@@ -505,7 +521,10 @@ export async function inspectCompiledIR(options: {
         policies: uniqueSorted([
           ...policies,
           ...irPolicies
-            .filter((p: any) => p?.entity === entityName && typeof p?.name === 'string')
+            .filter(
+              (p: any) =>
+                p?.entity === entityName && typeof p?.name === "string"
+            )
             .map((p: any) => p.name),
         ]),
         emits: uniqueSorted(emits),
@@ -519,10 +538,12 @@ export async function inspectCompiledIR(options: {
   return { entities, filesScanned: files.length };
 }
 
-export function mergeSourceEntityDefinitions(defs: SourceEntityDefinition[] | undefined): EntitySurfaceShape & {
+export function mergeSourceEntityDefinitions(
+  defs: SourceEntityDefinition[] | undefined
+): EntitySurfaceShape & {
   files: Array<{ file: string; line?: number }>;
   parserFindings: DiagnosticFinding[];
-  parserErrors: SourceEntityDefinition['parserErrors'];
+  parserErrors: SourceEntityDefinition["parserErrors"];
   policies: string[];
 } {
   if (!defs || defs.length === 0) {
@@ -549,7 +570,9 @@ export function mergeSourceEntityDefinitions(defs: SourceEntityDefinition[] | un
   };
 }
 
-export function mergeIREntityDefinitions(defs: IREntityDefinition[] | undefined): EntitySurfaceShape & {
+export function mergeIREntityDefinitions(
+  defs: IREntityDefinition[] | undefined
+): EntitySurfaceShape & {
   files: Array<{ file: string; provenance?: Record<string, unknown> }>;
   policies: string[];
   events: string[];
@@ -585,11 +608,13 @@ export interface RouteManifestCommandHit {
   manifestFile: string;
 }
 
-export async function findRoutesManifestFiles(cwd: string = process.cwd()): Promise<string[]> {
-  const files = await glob('**/routes.manifest.json', {
+export async function findRoutesManifestFiles(
+  cwd: string = process.cwd()
+): Promise<string[]> {
+  const files = await glob("**/routes.manifest.json", {
     cwd,
     absolute: true,
-    ignore: ['**/node_modules/**', '**/dist/**/.vite/**'],
+    ignore: ["**/node_modules/**", "**/dist/**/.vite/**"],
   });
   return uniqueSorted(files);
 }
@@ -605,7 +630,7 @@ export async function inspectRouteSurfaceForCommand(options: {
   for (const file of files) {
     let json: any;
     try {
-      json = JSON.parse(await fs.readFile(file, 'utf-8'));
+      json = JSON.parse(await fs.readFile(file, "utf-8"));
     } catch {
       continue;
     }
@@ -613,10 +638,12 @@ export async function inspectRouteSurfaceForCommand(options: {
     for (const route of routes) {
       const source = route?.source;
       const sameCommand =
-        source?.kind === 'command' &&
+        source?.kind === "command" &&
         source?.entity === options.entityName &&
         source?.command === options.commandName;
-      const samePath = options.routePath ? route?.path === options.routePath : true;
+      const samePath = options.routePath
+        ? route?.path === options.routePath
+        : true;
       if (sameCommand && samePath) {
         matches.push({
           routePath: route.path,
@@ -632,22 +659,27 @@ export async function inspectRouteSurfaceForCommand(options: {
   return { routeExists: matches.length > 0, matches };
 }
 
-export async function readMergeReports(options: {
-  cwd?: string;
-  pattern?: string;
-} = {}): Promise<Array<{ file: string; entries: DuplicateReportEntry[]; parseError?: string }>> {
+export async function readMergeReports(
+  options: { cwd?: string; pattern?: string } = {}
+): Promise<
+  Array<{ file: string; entries: DuplicateReportEntry[]; parseError?: string }>
+> {
   const cwd = options.cwd || process.cwd();
-  const pattern = options.pattern || '**/*.merge-report.json';
+  const pattern = options.pattern || "**/*.merge-report.json";
   const files = await glob(pattern, {
     cwd,
     absolute: true,
-    ignore: ['**/node_modules/**'],
+    ignore: ["**/node_modules/**"],
   });
 
-  const results: Array<{ file: string; entries: DuplicateReportEntry[]; parseError?: string }> = [];
+  const results: Array<{
+    file: string;
+    entries: DuplicateReportEntry[];
+    parseError?: string;
+  }> = [];
   for (const file of uniqueSorted(files)) {
     try {
-      const parsed = JSON.parse(await fs.readFile(file, 'utf-8'));
+      const parsed = JSON.parse(await fs.readFile(file, "utf-8"));
       results.push({
         file,
         entries: normalizeMergeReportEntries(parsed, file),

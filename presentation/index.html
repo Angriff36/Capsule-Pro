@@ -1684,7 +1684,7 @@ managed-settings.json              <span class="comment"># Organization policy (
     <div class="slide-counter" id="slideCounter">1 / --</div>
     <div class="keyboard-hint"><kbd>&#8592;</kbd> <kbd>&#8594;</kbd> or <kbd>Space</kbd> to navigate</div>
 
-    <script>
+    <script>"use strict";
         let currentSlide = 1;
         const slides = document.querySelectorAll('[data-slide]');
         const totalSlides = slides.length;
@@ -1693,8 +1693,8 @@ managed-settings.json              <span class="comment"># Organization policy (
         const cumulativeWeights = [];
         let runningSum = 0;
         slides.forEach((s) => {
-            const num = parseInt(s.dataset.slide);
-            const w = parseInt(s.dataset.weight || 0);
+            const num = Number.parseInt(s.dataset.slide);
+            const w = Number.parseInt(s.dataset.weight || 0);
             SLIDE_WEIGHTS[num] = w;
             runningSum += w;
             cumulativeWeights[num] = runningSum;

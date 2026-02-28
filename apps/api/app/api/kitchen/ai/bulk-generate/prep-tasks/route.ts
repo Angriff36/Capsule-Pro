@@ -111,7 +111,10 @@ export async function POST(request: Request): Promise<NextResponse> {
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 404 }
+      );
     }
 
     const body = (await request.json()) as BulkGenerateRequest;

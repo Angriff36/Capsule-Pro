@@ -74,3 +74,18 @@ export interface ConflictDetectionResult {
   /** Warnings from individual detectors that partially failed */
   warnings?: DetectorWarning[];
 }
+
+/** Typed error response for conflict detection API */
+export interface ConflictApiError {
+  code:
+    | "AUTH_REQUIRED"
+    | "UNAUTHORIZED"
+    | "TENANT_NOT_FOUND"
+    | "USER_NOT_FOUND"
+    | "INVALID_REQUEST"
+    | "VALIDATION_ERROR"
+    | "DETECTION_FAILED";
+  message: string;
+  guidance?: string;
+  correlationId?: string;
+}

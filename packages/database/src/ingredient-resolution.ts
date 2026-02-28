@@ -4,7 +4,7 @@
  */
 
 import { randomUUID } from "node:crypto";
-import { Prisma as PrismaNamespace } from "../generated/client";
+import { Prisma as PrismaNamespace } from "../generated/client.js";
 
 /** Regex for parsing ingredient lines like "2 cups flour" */
 const INGREDIENT_LINE_REGEX = /^([\d.]+)\s*([a-zA-Z]+)?\s*(.*)$/;

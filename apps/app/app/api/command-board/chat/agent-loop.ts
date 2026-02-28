@@ -192,6 +192,16 @@ function parseStructuredResponse(text: string): StructuredAgentResponse | null {
 
   const candidateValues = [trimmed];
 
+  if (trimmed.startsWith("```")) {
+    const fenced = trimmed
+      .replace(/^```(?:json)?\s*/i, "")
+      .replace(/\s*```$/, "")
+      .trim();
+    if (fenced.length > 0) {
+      candidateValues.push(fenced);
+    }
+  }
+
   const firstBrace = trimmed.indexOf("{");
   const lastBrace = trimmed.lastIndexOf("}");
   if (firstBrace >= 0 && lastBrace > firstBrace) {
@@ -345,6 +355,25 @@ function latestUserMessage(messages: UIMessage[]): string {
     }
   }
   return "";
+}
+
+export function isBoardStateReadIntent(request: string): boolean {
+  const lowered = request.trim().toLowerCase();
+  if (!lowered) {
+    return false;
+  }
+
+  const hasReadSignal =
+    /\b(summary|summarize|overview|what(?:'s| is)? on (?:this|the) board|board state|current state|list entities|show entities|show board|what do i have)\b/i.test(
+      lowered
+    ) || /\b(conflicts?|risks?)\b/i.test(lowered);
+
+  const hasWriteSignal =
+    /\b(create|add|update|edit|change|delete|remove|move|assign|schedule|set|apply|execute|run)\b/i.test(
+      lowered
+    );
+
+  return hasReadSignal && !hasWriteSignal;
 }
 
 function buildPlanningInstructions(
@@ -552,6 +581,32 @@ function isTypedValueMatch(
   return typeof value === "boolean";
 }
 
+function isPlaceholderString(value: string): boolean {
+  const normalized = value.trim().toLowerCase();
+  return (
+    normalized.length === 0 ||
+    normalized === "tbd" ||
+    normalized === "todo" ||
+    normalized === "unknown" ||
+    normalized === "n/a" ||
+    normalized === "na" ||
+    normalized === "placeholder"
+  );
+}
+
+export function isMissingRequiredArgValue(
+  value: unknown,
+  type: "string" | "number" | "boolean"
+): boolean {
+  if (value === undefined || value === null) {
+    return true;
+  }
+  if (type === "string" && typeof value === "string") {
+    return isPlaceholderString(value);
+  }
+  return false;
+}
+
 function validateStepArgs(
   step: SimulationPlanStep,
   args: Record<string, unknown>,
@@ -577,11 +632,13 @@ function validateStepArgs(
     return `Unsupported args for ${canonicalPair}: ${unsupported.join(", ")}`;
   }
 
+  const missingRequired: string[] = [];
+
   for (const param of route.params) {
     const value = args[param.name];
-    if (value === undefined || value === null) {
+    if (isMissingRequiredArgValue(value, param.type)) {
       if (param.required) {
-        return `Missing required arg '${param.name}' for ${canonicalPair}`;
+        missingRequired.push(param.name);
       }
       continue;
     }
@@ -591,17 +648,17 @@ function validateStepArgs(
     }
   }
 
+  if (missingRequired.length > 0) {
+    return `Missing required args for ${canonicalPair}: ${missingRequired.join(", ")}`;
+  }
+
   return null;
 }
 
 function defaultArgValue(type: "string" | "number" | "boolean"): unknown {
-  if (type === "number") {
-    return 1;
-  }
-  if (type === "boolean") {
-    return false;
-  }
-  return "TBD";
+  // Keep defaults intentionally unresolved so required args are surfaced
+  // before hitting downstream API validation.
+  return null;
 }
 
 function coerceArgValue(
@@ -974,6 +1031,60 @@ export async function runManifestActionAgent(
   const commandCatalog = loadCommandCatalog();
   const registry = createManifestToolRegistry(params.context);
   const toolExecutions: AgentToolExecution[] = [];
+  const userRequest = latestUserMessage(params.messages);
+
+  if (isBoardStateReadIntent(userRequest)) {
+    const readResult = await registry.executeToolCall({
+      name: "read_board_state",
+      argumentsJson: JSON.stringify({
+        boardId: params.context.boardId,
+      }),
+      callId: `${params.context.correlationId}:read-board-state`,
+    });
+
+    if (!readResult.ok) {
+      return {
+        summary: "Unable to load the current board state.",
+        actionsTaken: [],
+        errors: [readResult.summary],
+        nextSteps: ["Retry after confirming the board is available."],
+      };
+    }
+
+    const snapshot = (readResult.data ?? {}) as {
+      board?: { name?: string; status?: string };
+      projectionSummary?: {
+        total?: number;
+        byType?: Record<string, number>;
+      };
+    };
+    const total = snapshot.projectionSummary?.total ?? 0;
+    const topTypes = Object.entries(snapshot.projectionSummary?.byType ?? {})
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 3)
+      .map(([type, count]) => `${type}: ${count}`);
+
+    return {
+      summary: snapshot.board?.name
+        ? `Board "${snapshot.board.name}" currently has ${total} entities.`
+        : `Current board has ${total} entities.`,
+      actionsTaken: [
+        readResult.summary,
+        ...(topTypes.length > 0
+          ? [`Top entity types: ${topTypes.join(", ")}`]
+          : []),
+      ],
+      errors: [],
+      nextSteps:
+        total === 0
+          ? [
+              "Add entities from the Entities panel to start modeling the board.",
+            ]
+          : [
+              "Open an entity card to inspect details or run conflict detection.",
+            ],
+    };
+  }
 
   const plan = await planSimulation(params);
 

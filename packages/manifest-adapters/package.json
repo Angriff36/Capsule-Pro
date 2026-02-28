@@ -64,7 +64,7 @@
   "dependencies": {
     "@repo/database": "workspace:*",
     "@repo/realtime": "workspace:*",
-    "@angriff36/manifest": "0.3.24",
+    "@angriff36/manifest": "0.3.25",
     "@sentry/nextjs": "^10.38.0",
     "hono": "^4.10.5"
   },

@@ -14,7 +14,7 @@
  * @packageDocumentation
  */
 import type { CommandResult, IdempotencyStore } from "@angriff36/manifest";
-import type { PrismaClient } from "@repo/database";
+import type { PrismaClient } from "@repo/database/standalone";
 /**
  * Configuration for PrismaIdempotencyStore.
  */

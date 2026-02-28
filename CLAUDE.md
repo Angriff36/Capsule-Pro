@@ -72,3 +72,23 @@ If you find yourself:
 STOP.
 
 That impulse is a known failure mode. Document a blocker if relevant and exit.
+
+---
+
+## Manifest Route Audit Command
+
+Use this when validating route boundaries in Capsule-Pro:
+
+- `pnpm manifest:route-audit`
+
+What it checks:
+- write handlers use Manifest runtime command execution
+- direct read handlers include expected tenant/soft-delete filters
+- location-scoped reads include location filtering in query `where`
+
+## GitHub Packages Token Rule
+
+For `@angriff36/manifest` package install/publish in this repo:
+
+- Use `GITHUB_PACKAGES_TOKEN` (not `NPM_TOKEN`).
+- `.npmrc` is configured for `https://npm.pkg.github.com` with `GITHUB_PACKAGES_TOKEN`.

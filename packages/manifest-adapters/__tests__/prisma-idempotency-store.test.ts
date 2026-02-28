@@ -12,13 +12,13 @@
  * @vitest-environment node
  */
 
-import { beforeEach, describe, expect, it, vi, afterEach } from "vitest";
-import {
-  PrismaIdempotencyStore,
-  createPrismaIdempotencyStore,
-  cleanupExpiredIdempotencyEntries,
-} from "../src/prisma-idempotency-store";
 import type { CommandResult } from "@angriff36/manifest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  cleanupExpiredIdempotencyEntries,
+  createPrismaIdempotencyStore,
+  PrismaIdempotencyStore,
+} from "../src/prisma-idempotency-store";
 
 // Hoist mock functions for use in vi.mock factory
 const mockManifestIdempotency = vi.hoisted(() => ({
@@ -52,7 +52,9 @@ describe("PrismaIdempotencyStore", () => {
     vi.useFakeTimers();
     prisma = { manifestIdempotency: mockManifestIdempotency };
     store = new PrismaIdempotencyStore({
-      prisma: prisma as unknown as Parameters<typeof PrismaIdempotencyStore>[0]["prisma"],
+      prisma: prisma as unknown as Parameters<
+        typeof PrismaIdempotencyStore
+      >[0]["prisma"],
       tenantId,
     });
   });
@@ -108,7 +110,9 @@ describe("PrismaIdempotencyStore", () => {
     });
 
     it("returns false on database error (fail-open)", async () => {
-      mockManifestIdempotency.findUnique.mockRejectedValue(new Error("DB error"));
+      mockManifestIdempotency.findUnique.mockRejectedValue(
+        new Error("DB error")
+      );
 
       const result = await store.has("cmd-123");
 
@@ -159,7 +163,9 @@ describe("PrismaIdempotencyStore", () => {
     it("respects custom TTL", async () => {
       const customTtlMs = 60_000; // 1 minute
       const customStore = new PrismaIdempotencyStore({
-        prisma: prisma as unknown as Parameters<typeof PrismaIdempotencyStore>[0]["prisma"],
+        prisma: prisma as unknown as Parameters<
+          typeof PrismaIdempotencyStore
+        >[0]["prisma"],
         tenantId,
         ttlMs: customTtlMs,
       });
@@ -193,7 +199,9 @@ describe("PrismaIdempotencyStore", () => {
       mockManifestIdempotency.upsert.mockRejectedValue(new Error("DB error"));
 
       // Should not throw
-      await expect(store.set("cmd-123", { success: true, events: [] })).resolves.toBeUndefined();
+      await expect(
+        store.set("cmd-123", { success: true, events: [] })
+      ).resolves.toBeUndefined();
     });
 
     it("stores result with tenant isolation", async () => {
@@ -259,7 +267,9 @@ describe("PrismaIdempotencyStore", () => {
     });
 
     it("returns undefined on database error (fail-open)", async () => {
-      mockManifestIdempotency.findUnique.mockRejectedValue(new Error("DB error"));
+      mockManifestIdempotency.findUnique.mockRejectedValue(
+        new Error("DB error")
+      );
 
       const result = await store.get("cmd-123");
 
@@ -322,11 +332,15 @@ describe("PrismaIdempotencyStore", () => {
   describe("tenant isolation", () => {
     it("different tenants have isolated idempotency keys", async () => {
       const storeA = new PrismaIdempotencyStore({
-        prisma: prisma as unknown as Parameters<typeof PrismaIdempotencyStore>[0]["prisma"],
+        prisma: prisma as unknown as Parameters<
+          typeof PrismaIdempotencyStore
+        >[0]["prisma"],
         tenantId,
       });
       const storeB = new PrismaIdempotencyStore({
-        prisma: prisma as unknown as Parameters<typeof PrismaIdempotencyStore>[0]["prisma"],
+        prisma: prisma as unknown as Parameters<
+          typeof PrismaIdempotencyStore
+        >[0]["prisma"],
         tenantId: otherTenantId,
       });
 
@@ -349,7 +363,9 @@ describe("PrismaIdempotencyStore", () => {
     it("entries expire after TTL period", async () => {
       const shortTtlMs = 1000; // 1 second
       const shortTtlStore = new PrismaIdempotencyStore({
-        prisma: prisma as unknown as Parameters<typeof PrismaIdempotencyStore>[0]["prisma"],
+        prisma: prisma as unknown as Parameters<
+          typeof PrismaIdempotencyStore
+        >[0]["prisma"],
         tenantId,
         ttlMs: shortTtlMs,
       });
@@ -364,14 +380,18 @@ describe("PrismaIdempotencyStore", () => {
       // Verify expiration is set correctly
       expect(mockManifestIdempotency.upsert).toHaveBeenCalledWith(
         expect.objectContaining({
-          create: expect.objectContaining({ expiresAt: new Date(now + shortTtlMs) }),
+          create: expect.objectContaining({
+            expiresAt: new Date(now + shortTtlMs),
+          }),
         })
       );
     });
 
     it("default TTL is 24 hours", () => {
       const storeWithDefaultTtl = new PrismaIdempotencyStore({
-        prisma: prisma as unknown as Parameters<typeof PrismaIdempotencyStore>[0]["prisma"],
+        prisma: prisma as unknown as Parameters<
+          typeof PrismaIdempotencyStore
+        >[0]["prisma"],
         tenantId,
       });
 
@@ -388,7 +408,9 @@ describe("createPrismaIdempotencyStore", () => {
     const tenantId = "tenant-11111111-1111-1111-1111-111111111111";
 
     const store = createPrismaIdempotencyStore(
-      mockPrisma as unknown as Parameters<typeof createPrismaIdempotencyStore>[0],
+      mockPrisma as unknown as Parameters<
+        typeof createPrismaIdempotencyStore
+      >[0],
       tenantId
     );
 
@@ -401,7 +423,9 @@ describe("createPrismaIdempotencyStore", () => {
     const customTtl = 60_000;
 
     const store = createPrismaIdempotencyStore(
-      mockPrisma as unknown as Parameters<typeof createPrismaIdempotencyStore>[0],
+      mockPrisma as unknown as Parameters<
+        typeof createPrismaIdempotencyStore
+      >[0],
       tenantId,
       customTtl
     );
@@ -419,7 +443,9 @@ describe("cleanupExpiredIdempotencyEntries", () => {
     };
 
     const result = await cleanupExpiredIdempotencyEntries(
-      mockPrisma as unknown as Parameters<typeof cleanupExpiredIdempotencyEntries>[0]
+      mockPrisma as unknown as Parameters<
+        typeof cleanupExpiredIdempotencyEntries
+      >[0]
     );
 
     expect(result).toBe(5);
@@ -436,7 +462,9 @@ describe("cleanupExpiredIdempotencyEntries", () => {
     };
 
     const result = await cleanupExpiredIdempotencyEntries(
-      mockPrisma as unknown as Parameters<typeof cleanupExpiredIdempotencyEntries>[0]
+      mockPrisma as unknown as Parameters<
+        typeof cleanupExpiredIdempotencyEntries
+      >[0]
     );
 
     expect(result).toBe(0);

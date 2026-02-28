@@ -50,16 +50,10 @@ export const manifestQueriesPlugin: McpPlugin = {
         const { entity, id } = args;
         try {
           const runtime = await createMcpRuntime(identity, entity);
-          const result = await runtime.runCommand(
-            "get",
-            {},
-            {
-              entityName: entity,
-              instanceId: id,
-            }
-          );
+          // Store read: bypass runtime, never use runCommand for reads
+          const instance = await runtime.getInstance(entity, id);
 
-          if (!result.success) {
+          if (!instance) {
             return {
               content: [
                 {
@@ -75,7 +69,7 @@ export const manifestQueriesPlugin: McpPlugin = {
             content: [
               {
                 type: "text" as const,
-                text: JSON.stringify(result.result, null, 2),
+                text: JSON.stringify(instance, null, 2),
               },
             ],
           };
@@ -157,35 +151,27 @@ export const manifestQueriesPlugin: McpPlugin = {
         try {
           const runtime = await createMcpRuntime(identity, entity);
 
-          // Use the runtime's list capability via runCommand
-          const effectiveLimit = Math.min(limit ?? 50, 200);
-          const effectiveOffset = offset ?? 0;
+          // Store read: use store.getAll() via getAllInstances — NEVER runCommand
+          // IR has no built-in "list" command; reads bypass the runtime.
+          const allItems = await runtime.getAllInstances(entity);
 
-          const result = await runtime.runCommand(
-            "list",
-            {
-              ...(filters ?? {}),
-              _limit: effectiveLimit,
-              _offset: effectiveOffset,
-            },
-            { entityName: entity }
-          );
-
-          if (!result.success) {
-            return {
-              content: [
-                {
-                  type: "text" as const,
-                  text: `Failed to list ${entity} entities: ${JSON.stringify(result)}`,
-                },
-              ],
-              isError: true,
-            };
+          // Apply optional equality filters in memory
+          let items = allItems;
+          if (filters && Object.keys(filters).length > 0) {
+            items = items.filter((item) =>
+              Object.entries(filters).every(
+                ([key, value]) =>
+                  (item as Record<string, unknown>)[key] === value
+              )
+            );
           }
 
-          const items = Array.isArray(result.result)
-            ? result.result
-            : [result.result];
+          const effectiveLimit = Math.min(limit ?? 50, 200);
+          const effectiveOffset = offset ?? 0;
+          const paginated = items.slice(
+            effectiveOffset,
+            effectiveOffset + effectiveLimit
+          );
 
           return {
             content: [
@@ -194,10 +180,11 @@ export const manifestQueriesPlugin: McpPlugin = {
                 text: JSON.stringify(
                   {
                     entity,
-                    count: items.length,
+                    count: paginated.length,
+                    total: items.length,
                     limit: effectiveLimit,
                     offset: effectiveOffset,
-                    items,
+                    items: paginated,
                   },
                   null,
                   2

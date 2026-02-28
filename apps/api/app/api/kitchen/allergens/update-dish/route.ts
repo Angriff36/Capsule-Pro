@@ -44,7 +44,10 @@ function arrayToManifestString(arr: string[]): string {
  */
 function manifestStringToArray(str: string): string[] {
   if (!str || str === "") return [];
-  return str.split(",").map((s) => s.trim()).filter(Boolean);
+  return str
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
 }
 
 export async function POST(request: NextRequest) {
@@ -172,18 +175,19 @@ export async function POST(request: NextRequest) {
       error.message === "CONSTRAINT_BLOCKED" &&
       "constraintOutcomes" in error
     ) {
-      return manifestErrorResponse(
-        "Dish update blocked by constraints",
-        400,
-        { constraintOutcomes: (error as { constraintOutcomes: unknown[] }).constraintOutcomes }
-      );
+      return manifestErrorResponse("Dish update blocked by constraints", 400, {
+        constraintOutcomes: (error as { constraintOutcomes: unknown[] })
+          .constraintOutcomes,
+      });
     }
 
     console.error("[allergens/update-dish] Error:", error);
     captureException(error);
 
     const message =
-      error instanceof Error ? error.message : "Failed to update dish allergens";
+      error instanceof Error
+        ? error.message
+        : "Failed to update dish allergens";
     return manifestErrorResponse(message, 500);
   }
 }

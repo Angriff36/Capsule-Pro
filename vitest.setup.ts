@@ -66,5 +66,6 @@ if (typeof window !== "undefined") {
     }
   }
 
-  global.ResizeObserver = MockResizeObserver as unknown as typeof ResizeObserver;
+  global.ResizeObserver =
+    MockResizeObserver as unknown as typeof ResizeObserver;
 }

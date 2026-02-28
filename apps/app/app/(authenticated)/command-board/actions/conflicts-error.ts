@@ -1,4 +1,4 @@
-import type { ConflictApiError } from "../../../../api/conflicts/detect/types";
+import type { ConflictApiError } from "../conflict-types";
 
 export interface LegacyConflictErrorPayload {
   message?: string;

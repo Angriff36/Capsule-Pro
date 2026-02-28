@@ -139,14 +139,60 @@ const styleOptions = [
   { value: "other", label: "Other", color: "bg-gray-100 text-gray-800" },
 ];
 
+function asRecord(value: unknown): Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : {};
+}
+
+export function normalizeBoardData(raw: Record<string, unknown>): BoardData {
+  const source = asRecord(raw);
+  const metaSource = asRecord(source.meta);
+
+  return {
+    schema: typeof source.schema === "string" ? source.schema : undefined,
+    version: typeof source.version === "string" ? source.version : undefined,
+    meta: {
+      eventName:
+        typeof metaSource.eventName === "string" ? metaSource.eventName : "",
+      eventNumber:
+        typeof metaSource.eventNumber === "string"
+          ? metaSource.eventNumber
+          : "",
+      eventDate:
+        typeof metaSource.eventDate === "string" ? metaSource.eventDate : "",
+      staffRestrooms:
+        typeof metaSource.staffRestrooms === "string"
+          ? metaSource.staffRestrooms
+          : "",
+      staffParking:
+        typeof metaSource.staffParking === "string"
+          ? metaSource.staffParking
+          : "",
+      lastUpdatedISO:
+        typeof metaSource.lastUpdatedISO === "string"
+          ? metaSource.lastUpdatedISO
+          : undefined,
+    },
+    staff: Array.isArray(source.staff) ? (source.staff as StaffMember[]) : [],
+    timeline: Array.isArray(source.timeline)
+      ? (source.timeline as TimelineItem[])
+      : [],
+    layouts: Array.isArray(source.layouts) ? (source.layouts as Layout[]) : [],
+    attachments: Array.isArray(source.attachments)
+      ? (source.attachments as Attachment[])
+      : [],
+  };
+}
+
 export function BattleBoardEditorClient({
   board,
   event,
 }: BattleBoardEditorProps) {
   const router = useRouter();
   const [isSaving, setIsSaving] = useState(false);
-  const [boardData, setBoardData] = useState<BoardData>(
-    board.boardData as unknown as BoardData
+  const [boardData, setBoardData] = useState<BoardData>(() =>
+    normalizeBoardData(board.boardData)
   );
   const [status, setStatus] = useState(board.status);
   const [boardName, setBoardName] = useState(board.boardName);
@@ -164,7 +210,7 @@ export function BattleBoardEditorClient({
     setBoardData((prev) => ({
       ...prev,
       staff: [
-        ...prev.staff,
+        ...(Array.isArray(prev.staff) ? prev.staff : []),
         {
           name: "",
           role: "Staff",
@@ -181,7 +227,7 @@ export function BattleBoardEditorClient({
     (index: number, field: keyof StaffMember, value: string) => {
       setBoardData((prev) => ({
         ...prev,
-        staff: prev.staff.map((s, i) =>
+        staff: (Array.isArray(prev.staff) ? prev.staff : []).map((s, i) =>
           i === index ? { ...s, [field]: value } : s
         ),
       }));
@@ -193,7 +239,9 @@ export function BattleBoardEditorClient({
   const removeStaffMember = useCallback((index: number) => {
     setBoardData((prev) => ({
       ...prev,
-      staff: prev.staff.filter((_, i) => i !== index),
+      staff: (Array.isArray(prev.staff) ? prev.staff : []).filter(
+        (_, i) => i !== index
+      ),
     }));
   }, []);
 
@@ -202,7 +250,7 @@ export function BattleBoardEditorClient({
     setBoardData((prev) => ({
       ...prev,
       timeline: [
-        ...prev.timeline,
+        ...(Array.isArray(prev.timeline) ? prev.timeline : []),
         {
           time: "",
           item: "",
@@ -221,8 +269,8 @@ export function BattleBoardEditorClient({
     (index: number, field: keyof TimelineItem, value: string | boolean) => {
       setBoardData((prev) => ({
         ...prev,
-        timeline: prev.timeline.map((t, i) =>
-          i === index ? { ...t, [field]: value } : t
+        timeline: (Array.isArray(prev.timeline) ? prev.timeline : []).map(
+          (t, i) => (i === index ? { ...t, [field]: value } : t)
         ),
       }));
     },
@@ -233,7 +281,9 @@ export function BattleBoardEditorClient({
   const removeTimelineItem = useCallback((index: number) => {
     setBoardData((prev) => ({
       ...prev,
-      timeline: prev.timeline.filter((_, i) => i !== index),
+      timeline: (Array.isArray(prev.timeline) ? prev.timeline : []).filter(
+        (_, i) => i !== index
+      ),
     }));
   }, []);
 

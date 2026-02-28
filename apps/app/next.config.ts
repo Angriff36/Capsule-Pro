@@ -8,6 +8,8 @@ const OPENTELEMETRY_EXCLUDE = /@opentelemetry/;
 const SENTRY_EXCLUDE = /@sentry/;
 const CRITICAL_DEPENDENCY_WARNING =
   /Critical dependency: the request of a dependency is an expression/;
+const PACK_FILE_CACHE_WARNING =
+  /Serializing big strings .* impacts deserialization performance/;
 
 const apiBaseUrl = (
   process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:2223"
@@ -97,9 +99,9 @@ let nextConfig: NextConfig = withToolbar(
   withLogging({
     ...config,
     distDir,
-    // Disable type checking during build to avoid React type conflicts
-    typescript: {
-      ignoreBuildErrors: true,
+    // Build-time linting is handled by Biome in this repo.
+    eslint: {
+      ignoreDuringBuilds: true,
     },
     // Transpile workspace packages and heavy libraries for better performance
     transpilePackages: [
@@ -166,6 +168,10 @@ let nextConfig: NextConfig = withToolbar(
       "@clerk/backend",
     ],
     webpack: (webpackConfig: WebpackConfig, context: WebpackContext) => {
+      if (process.env.NODE_ENV === "production") {
+        webpackConfig.cache = false;
+      }
+
       // Production optimizations to reduce bundle size and build time
       if (context.isServer && context.nextRuntime === "nodejs") {
         webpackConfig.resolve = webpackConfig.resolve ?? {};
@@ -223,6 +229,9 @@ let nextConfig: NextConfig = withToolbar(
           { module: SENTRY_EXCLUDE },
           {
             message: CRITICAL_DEPENDENCY_WARNING,
+          },
+          {
+            message: PACK_FILE_CACHE_WARNING,
           },
         ];
       }

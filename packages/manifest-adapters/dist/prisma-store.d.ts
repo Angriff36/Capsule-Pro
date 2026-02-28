@@ -6,7 +6,7 @@
  * model and the Prisma database tables.
  */
 import type { Store } from "@angriff36/manifest";
-import type { PrismaClient } from "@repo/database";
+import type { PrismaClient } from "@repo/database/standalone";
 export interface EntityInstance {
     id: string;
     [key: string]: unknown;

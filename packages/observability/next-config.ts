@@ -66,16 +66,12 @@ export const sentryConfig: Parameters<typeof withSentryConfig>[1] = {
    */
   tunnelRoute: "/monitoring",
 
-  // Automatically tree-shake Sentry logger statements to reduce bundle size
-  disableLogger: true,
-
-  /*
-   * Enables automatic instrumentation of Vercel Cron Monitors. (Does not yet work with App Router route handlers.)
-   * See the following for more information:
-   * https://docs.sentry.io/product/crons/
-   * https://vercel.com/docs/cron-jobs
-   */
-  automaticVercelMonitors: true,
+  webpack: {
+    treeshake: {
+      removeDebugLogging: true,
+    },
+    automaticVercelMonitors: true,
+  },
 
   // Disable telemetry to speed up builds
   telemetry: false,
@@ -90,4 +86,22 @@ export const withSentry = (sourceConfig: object): object => {
   return withSentryConfig(configWithTranspile, sentryConfig);
 };
 
-export const withLogging = (config: object): object => withLogtail(config);
+export const withLogging = (config: object): object => {
+  const hasBetterStackSourceToken = Boolean(
+    process.env.BETTER_STACK_SOURCE_TOKEN ||
+      process.env.NEXT_PUBLIC_BETTER_STACK_SOURCE_TOKEN ||
+      process.env.LOGTAIL_SOURCE_TOKEN ||
+      process.env.NEXT_PUBLIC_LOGTAIL_SOURCE_TOKEN
+  );
+  const hasBetterStackIngestUrl = Boolean(
+    process.env.BETTER_STACK_INGESTING_URL ||
+      process.env.NEXT_PUBLIC_BETTER_STACK_INGESTING_URL ||
+      process.env.LOGTAIL_URL ||
+      process.env.NEXT_PUBLIC_LOGTAIL_URL
+  );
+
+  if (!(hasBetterStackSourceToken && hasBetterStackIngestUrl)) {
+    return config;
+  }
+  return withLogtail(config);
+};

@@ -235,6 +235,34 @@ manifest validate ir/ --schema custom-schema.json
 - `--schema <path>` - Schema path (default: `docs/spec/ir/ir-v1.schema.json`)
 - `--strict` - Fail on warnings
 
+### `manifest audit-routes`
+
+Audit API route handlers for Manifest boundary compliance.
+
+Checks include:
+- write handlers (`POST`/`PUT`/`PATCH`/`DELETE`) should use `runCommand`
+- direct read queries should include tenant and soft-delete predicates
+- location-referenced reads should include a location predicate in the query `where`
+
+```bash
+# Audit app/api routes from repo root
+manifest audit-routes --root apps/api
+
+# Strict mode (warnings fail)
+manifest audit-routes --root apps/api --strict
+
+# JSON output for CI tooling
+manifest audit-routes --root apps/api --format json
+```
+
+**Options:**
+- `-r, --root <path>` - Root directory to audit (default: `.`)
+- `-f, --format <format>` - Output format: `text` or `json` (default: `text`)
+- `--strict` - Exit non-zero on warnings
+- `--tenant-field <name>` - Tenant field name (default: `tenantId`)
+- `--deleted-field <name>` - Soft-delete field name (default: `deletedAt`)
+- `--location-field <name>` - Location field name (default: `locationId`)
+
 ## Package Scripts
 
 Add to your `package.json`:

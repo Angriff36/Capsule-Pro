@@ -194,8 +194,9 @@ async function loadTsConfig(
       const config = await loadModule(configPath);
 
       if (config && typeof config === "object") {
+        const configRecord = config as Record<string, unknown>;
         // Handle both default export and named export
-        const runtimeConfig = config.default ?? config;
+        const runtimeConfig = configRecord.default ?? config;
 
         if (isValidRuntimeConfig(runtimeConfig)) {
           return runtimeConfig;
@@ -223,7 +224,6 @@ async function loadModule(modulePath: string): Promise<unknown> {
         ? path.dirname(import.meta.filename)
         : process.cwd(),
       {
-        esmResolve: true,
         interopDefault: true,
         requireCache: false, // Always reload config
       }
@@ -252,9 +252,9 @@ function isValidRuntimeConfig(
   const c = config as Record<string, unknown>;
 
   // At least one of these should be defined for a runtime config
-  const hasStores = c.stores && typeof c.stores === "object";
+  const hasStores = !!c.stores && typeof c.stores === "object";
   const hasResolveUser = typeof c.resolveUser === "function";
-  const hasBuild = c.build && typeof c.build === "object";
+  const hasBuild = !!c.build && typeof c.build === "object";
 
   // Allow empty config objects that just have build settings
   return hasStores || hasResolveUser || hasBuild || Object.keys(c).length === 0;
@@ -633,9 +633,11 @@ export function createUserResolver(
     return async () => null;
   }
 
+  const resolveUser = config.resolveUser;
+
   return async (auth: AuthContext): Promise<UserContext | null> => {
     try {
-      return await config.resolveUser?.(auth);
+      return await resolveUser(auth);
     } catch (error) {
       // Log error but don't throw - return null to indicate resolution failure
       console.error(

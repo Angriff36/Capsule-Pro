@@ -93,7 +93,10 @@ export async function POST(request: NextRequest) {
       userRole: currentUser.role,
       tenantId,
       warnings: {
-        overtime: validation.overtime.severity === "WARN" ? validation.overtime.message : null,
+        overtime:
+          validation.overtime.severity === "WARN"
+            ? validation.overtime.message
+            : null,
       },
     });
 

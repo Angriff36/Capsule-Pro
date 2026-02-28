@@ -4,8 +4,8 @@
  * Initializes Sentry, resolves identity, creates the MCP server,
  * and connects the stdio transport.
  *
+ * Uses @repo/database/standalone to avoid server-only guard.
  * Requires preload.cts to run first (via tsx --require) which:
- * - Shims `server-only` to prevent the RSC guard from throwing
  * - Loads .env from the monorepo root for DATABASE_URL
  *
  * Usage:
@@ -16,7 +16,7 @@
  */
 
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
-import { database } from "@repo/database";
+import { database } from "@repo/database/standalone";
 import { consoleLoggingIntegration, init } from "@sentry/node";
 import { resolveIdentity } from "./lib/auth.js";
 import { startIRWatcher } from "./lib/ir-loader.js";

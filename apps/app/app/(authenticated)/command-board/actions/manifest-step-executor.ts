@@ -22,7 +22,7 @@
 
 import type { CommandResult } from "@angriff36/manifest";
 import { database } from "@repo/database";
-import { createManifestRuntime } from "@repo/manifest-adapters";
+import { createManifestRuntime } from "@repo/manifest-adapters/manifest-runtime-factory";
 
 // ---------------------------------------------------------------------------
 // Public types

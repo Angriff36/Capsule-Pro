@@ -547,6 +547,28 @@ describe("RuntimeEngine", () => {
       ]);
     });
 
+    it("getAllInstances returns data via store.getAll without runCommand", async () => {
+      const mockItems = [
+        { id: "id-1", name: "Item1" },
+        { id: "id-2", name: "Item2" },
+      ];
+      const mockStore = {
+        getAll: vi.fn().mockResolvedValue(mockItems),
+        getById: vi.fn().mockResolvedValue(undefined),
+        create: vi.fn(),
+        update: vi.fn(),
+        delete: vi.fn(),
+        clear: vi.fn(),
+      };
+      const options: RuntimeOptions = {
+        storeProvider: () => mockStore,
+      };
+      const rt = new RuntimeEngine(simpleIR, {}, options);
+      const instances = await rt.getAllInstances("User");
+      expect(mockStore.getAll).toHaveBeenCalledTimes(1);
+      expect(instances).toEqual(mockItems);
+    });
+
     it("should update instance", async () => {
       const created = await runtime.createInstance("User", {
         name: "Alice",
@@ -650,6 +672,17 @@ describe("RuntimeEngine", () => {
       const result = await runtime.runCommand("updateName", { newName: "" });
       expect(result.success).toBe(false);
       expect(result.guardFailure).toBeDefined();
+    });
+
+    it("runCommand('list') fails when no IR command named 'list' exists", async () => {
+      const runtime = new RuntimeEngine(simpleIR);
+      const result = await runtime.runCommand(
+        "list",
+        {},
+        { entityName: "User" }
+      );
+      expect(result.success).toBe(false);
+      expect(result.error).toBe("Command 'list' not found");
     });
 
     it("should emit events from command", async () => {
