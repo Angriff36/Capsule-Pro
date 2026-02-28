@@ -1288,6 +1288,8 @@ export function createPrismaStoreProvider(
         return new InventoryItemPrismaStore(prisma, tenantId);
       case "KitchenTask":
         return new KitchenTaskPrismaStore(prisma, tenantId);
+      case "Event":
+        return new EventPrismaStore(prisma, tenantId);
       default:
         console.error(
           `[createPrismaStoreProvider] No store for entity "${entityName}" — commands will fail`
@@ -1408,6 +1410,130 @@ export async function syncDishToPrisma(
     await store.update(entity.id, entity);
   } else {
     await store.create(entity);
+  }
+}
+
+/**
+ * Prisma-backed store for Event entities
+ *
+ * Maps Manifest Event entities to the Prisma Event table (tenant_events.events).
+ */
+export class EventPrismaStore implements Store<EntityInstance> {
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly tenantId: string
+  ) {}
+
+  async getAll(): Promise<EntityInstance[]> {
+    const events = await this.prisma.event.findMany({
+      where: { tenantId: this.tenantId, deletedAt: null },
+    });
+    return events.map((event) => this.mapToManifestEntity(event));
+  }
+
+  async getById(id: string): Promise<EntityInstance | undefined> {
+    const event = await this.prisma.event.findFirst({
+      where: { tenantId: this.tenantId, id, deletedAt: null },
+    });
+    return event ? this.mapToManifestEntity(event) : undefined;
+  }
+
+  async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
+    // Helper: convert string "null"/"undefined"/empty to actual null
+    const toNull = (v: unknown): string | null | undefined => {
+      if (v === null || v === undefined || v === "null" || v === "undefined" || v === "") return null;
+      return String(v);
+    };
+    const toNum = (v: unknown): number | null => {
+      if (v === null || v === undefined || v === "null" || v === "undefined") return null;
+      const n = Number(v);
+      return isNaN(n) ? null : n;
+    };
+    const event = await this.prisma.event.create({
+      data: {
+        tenantId: this.tenantId,
+        id: toNull(data.id) || undefined,
+        eventNumber: toNull(data.eventNumber) || null,
+        title: toNull(data.title) || "Untitled Event",
+        clientId: toNull(data.clientId),
+        locationId: toNull(data.locationId),
+        venueId: toNull(data.venueId),
+        venueEntityId: toNull(data.venueEntityId),
+        eventType: toNull(data.eventType) || "catering",
+        eventDate: data.eventDate ? new Date(toNum(data.eventDate) || Date.now()) : new Date(),
+        guestCount: toNum(data.guestCount) || 1,
+        status: toNull(data.status) || "draft",
+        venueName: toNull(data.venueName),
+        venueAddress: toNull(data.venueAddress),
+        notes: toNull(data.notes),
+        tags: Array.isArray(data.tags) ? data.tags as string[] : [],
+      },
+    });
+    return this.mapToManifestEntity(event);
+  }
+
+  async update(id: string, data: Partial<EntityInstance>): Promise<EntityInstance | undefined> {
+    try {
+      const updateData: Record<string, unknown> = {};
+      if (data.eventNumber !== undefined) updateData.eventNumber = data.eventNumber;
+      if (data.title !== undefined) updateData.title = data.title;
+      if (data.clientId !== undefined) updateData.clientId = data.clientId;
+      if (data.eventType !== undefined) updateData.eventType = data.eventType;
+      if (data.eventDate !== undefined) updateData.eventDate = new Date(data.eventDate as number);
+      if (data.guestCount !== undefined) updateData.guestCount = data.guestCount;
+      if (data.status !== undefined) updateData.status = data.status;
+      if (data.venueName !== undefined) updateData.venueName = data.venueName;
+      if (data.venueAddress !== undefined) updateData.venueAddress = data.venueAddress;
+      if (data.notes !== undefined) updateData.notes = data.notes;
+      if (data.tags !== undefined) updateData.tags = Array.isArray(data.tags) ? data.tags as string[] : [];
+
+      if (Object.keys(updateData).length === 0) return this.getById(id);
+
+      const updated = await this.prisma.event.update({
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
+        data: updateData,
+      });
+      return this.mapToManifestEntity(updated);
+    } catch { return undefined; }
+  }
+
+  async delete(id: string): Promise<boolean> {
+    try {
+      await this.prisma.event.update({
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
+        data: { deletedAt: new Date() },
+      });
+      return true;
+    } catch { return false; }
+  }
+
+  async clear(): Promise<void> { }
+
+  private mapToManifestEntity(event: {
+    id: string; tenantId: string; eventNumber: string | null; title: string;
+    clientId: string | null; locationId: string | null; venueId: string | null;
+    venueEntityId: string | null; eventType: string; eventDate: Date; guestCount: number;
+    status: string; budget: unknown; ticketPrice: unknown; ticketTier: string | null;
+    eventFormat: string | null; accessibilityOptions: string[]; featuredMediaUrl: string | null;
+    assignedTo: string | null; venueName: string | null; venueAddress: string | null;
+    notes: string | null; tags: string[]; createdAt: Date; updatedAt: Date; deletedAt: Date | null;
+  }): EntityInstance {
+    return {
+      id: event.id, tenantId: event.tenantId, eventNumber: event.eventNumber ?? "",
+      title: event.title, clientId: event.clientId ?? "", locationId: event.locationId ?? "",
+      venueId: event.venueId ?? "", venueEntityId: event.venueEntityId ?? "",
+      eventType: event.eventType, eventDate: event.eventDate.getTime(),
+      guestCount: event.guestCount, status: event.status,
+      budget: event.budget ? Number(event.budget) : 0,
+      ticketPrice: event.ticketPrice ? Number(event.ticketPrice) : 0,
+      ticketTier: event.ticketTier ?? "", eventFormat: event.eventFormat ?? "",
+      accessibilityOptions: event.accessibilityOptions?.join(",") ?? "",
+      featuredMediaUrl: event.featuredMediaUrl ?? "", assignedTo: event.assignedTo ?? "",
+      venueName: event.venueName ?? "", venueAddress: event.venueAddress ?? "",
+      notes: event.notes ?? "", tags: event.tags?.join(",") ?? "",
+      createdAt: event.createdAt.getTime(), updatedAt: event.updatedAt.getTime(),
+      deletedAt: event.deletedAt?.getTime() ?? 0,
+    };
   }
 }
 
