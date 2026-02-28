@@ -367,7 +367,7 @@ export function useReleaseTask() {
 
 /**
  * Hook to mark a prep item as complete/incomplete
- * POST /api/kitchen/prep-lists/items/commands/mark-completed
+ * POST /api/kitchen/prep-list-items/commands/mark-completed
  */
 export function useMarkPrepItemComplete() {
   const queryClient = useQueryClient();
@@ -382,7 +382,7 @@ export function useMarkPrepItemComplete() {
     }) => {
       try {
         return await authRequest<{ success: boolean }>(
-          "/api/kitchen/prep-lists/items/commands/mark-completed",
+          "/api/kitchen/prep-list-items/commands/mark-completed",
           {
             method: "POST",
             body: { itemId, completed },
@@ -419,7 +419,7 @@ export function useMarkPrepItemComplete() {
 
 /**
  * Hook to update prep item notes
- * POST /api/kitchen/prep-lists/items/commands/update-prep-notes
+ * POST /api/kitchen/prep-list-items/commands/update-prep-notes
  */
 export function useUpdatePrepItemNotes() {
   const queryClient = useQueryClient();
@@ -434,7 +434,7 @@ export function useUpdatePrepItemNotes() {
     }) => {
       try {
         return await authRequest<{ success: boolean }>(
-          "/api/kitchen/prep-lists/items/commands/update-prep-notes",
+          "/api/kitchen/prep-list-items/commands/update-prep-notes",
           {
             method: "POST",
             body: { itemId, notes },

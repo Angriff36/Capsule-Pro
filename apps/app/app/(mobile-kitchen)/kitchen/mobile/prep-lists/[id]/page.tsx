@@ -331,7 +331,7 @@ export default function MobilePrepListDetailPage() {
       for (const item of noteQueue) {
         try {
           const response = await apiFetch(
-            "/api/kitchen/prep-lists/items/commands/update-prep-notes",
+            "/api/kitchen/prep-list-items/commands/update-prep-notes",
             {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -400,7 +400,7 @@ export default function MobilePrepListDetailPage() {
 
     try {
       const response = await apiFetch(
-        "/api/kitchen/prep-lists/items/commands/update-prep-notes",
+        "/api/kitchen/prep-list-items/commands/update-prep-notes",
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

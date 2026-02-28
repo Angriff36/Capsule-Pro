@@ -379,10 +379,10 @@ describe("Manifest HTTP Integration - Station Commands", () => {
     vi.clearAllMocks();
   });
 
-  describe("POST /api/kitchen/stations/commands/assignTask", () => {
+  describe("POST /api/kitchen/stations/commands/assign-task", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/stations/commands/assignTask/route"
+        "@/app/api/kitchen/stations/commands/assign-task/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -396,11 +396,11 @@ describe("Manifest HTTP Integration - Station Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/stations/commands/assignTask/route"
+        "@/app/api/kitchen/stations/commands/assign-task/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/stations/commands/assignTask",
+        "http://localhost/api/kitchen/stations/commands/assign-task",
         {
           method: "POST",
           body: JSON.stringify({
@@ -419,20 +419,20 @@ describe("Manifest HTTP Integration - Station Commands", () => {
     });
   });
 
-  describe("POST /api/kitchen/stations/commands/removeTask", () => {
+  describe("POST /api/kitchen/stations/commands/remove-task", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/stations/commands/removeTask/route"
+        "@/app/api/kitchen/stations/commands/remove-task/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
     });
   });
 
-  describe("POST /api/kitchen/stations/commands/updateCapacity", () => {
+  describe("POST /api/kitchen/stations/commands/update-capacity", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/stations/commands/updateCapacity/route"
+        "@/app/api/kitchen/stations/commands/update-capacity/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -459,10 +459,10 @@ describe("Manifest HTTP Integration - Station Commands", () => {
     });
   });
 
-  describe("POST /api/kitchen/stations/commands/updateEquipment", () => {
+  describe("POST /api/kitchen/stations/commands/update-equipment", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/stations/commands/updateEquipment/route"
+        "@/app/api/kitchen/stations/commands/update-equipment/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");

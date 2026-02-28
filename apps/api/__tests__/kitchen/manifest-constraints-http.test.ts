@@ -606,7 +606,7 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
     vi.clearAllMocks();
   });
 
-  describe("POST /api/kitchen/prep-lists/items/commands/update-quantity", () => {
+  describe("POST /api/kitchen/prep-list-items/commands/update-quantity", () => {
     it("should reject unauthorized requests with 401", async () => {
       const { auth } = await import("@repo/auth/server");
       vi.mocked(auth).mockResolvedValueOnce({
@@ -615,11 +615,11 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/items/commands/update-quantity/route"
+        "@/app/api/kitchen/prep-list-items/commands/update-quantity/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-lists/items/commands/update-quantity",
+        "http://localhost/api/kitchen/prep-list-items/commands/update-quantity",
         {
           method: "POST",
           body: JSON.stringify({
@@ -676,11 +676,11 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/items/commands/update-quantity/route"
+        "@/app/api/kitchen/prep-list-items/commands/update-quantity/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-lists/items/commands/update-quantity",
+        "http://localhost/api/kitchen/prep-list-items/commands/update-quantity",
         {
           method: "POST",
           body: JSON.stringify({
@@ -744,11 +744,11 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/items/commands/update-quantity/route"
+        "@/app/api/kitchen/prep-list-items/commands/update-quantity/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-lists/items/commands/update-quantity",
+        "http://localhost/api/kitchen/prep-list-items/commands/update-quantity",
         {
           method: "POST",
           body: JSON.stringify({
@@ -777,7 +777,7 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
     });
   });
 
-  describe("POST /api/kitchen/prep-lists/items/commands/update-station", () => {
+  describe("POST /api/kitchen/prep-list-items/commands/update-station", () => {
     it("should reject unauthorized requests with 401", async () => {
       const { auth } = await import("@repo/auth/server");
       vi.mocked(auth).mockResolvedValueOnce({
@@ -786,11 +786,11 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/items/commands/update-station/route"
+        "@/app/api/kitchen/prep-list-items/commands/update-station/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-lists/items/commands/update-station",
+        "http://localhost/api/kitchen/prep-list-items/commands/update-station",
         {
           method: "POST",
           body: JSON.stringify({
@@ -843,11 +843,11 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/items/commands/update-station/route"
+        "@/app/api/kitchen/prep-list-items/commands/update-station/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-lists/items/commands/update-station",
+        "http://localhost/api/kitchen/prep-list-items/commands/update-station",
         {
           method: "POST",
           body: JSON.stringify({
@@ -907,11 +907,11 @@ describe("Manifest HTTP Constraint Enforcement - PrepListItem Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/items/commands/update-station/route"
+        "@/app/api/kitchen/prep-list-items/commands/update-station/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-lists/items/commands/update-station",
+        "http://localhost/api/kitchen/prep-list-items/commands/update-station",
         {
           method: "POST",
           body: JSON.stringify({

@@ -900,30 +900,6 @@
     "category": "legacy-migrate"
   },
   {
-    "path": "app/api/kitchen/stations/commands/assignTask/route.ts",
-    "methods": ["POST"],
-    "reason": "Duplicate camelCase route — canonical is assign-task",
-    "category": "legacy-migrate"
-  },
-  {
-    "path": "app/api/kitchen/stations/commands/removeTask/route.ts",
-    "methods": ["POST"],
-    "reason": "Duplicate camelCase route — canonical is remove-task",
-    "category": "legacy-migrate"
-  },
-  {
-    "path": "app/api/kitchen/stations/commands/updateCapacity/route.ts",
-    "methods": ["POST"],
-    "reason": "Duplicate camelCase route — canonical is update-capacity",
-    "category": "legacy-migrate"
-  },
-  {
-    "path": "app/api/kitchen/stations/commands/updateEquipment/route.ts",
-    "methods": ["POST"],
-    "reason": "Duplicate camelCase route — canonical is update-equipment",
-    "category": "legacy-migrate"
-  },
-  {
     "path": "app/api/staff/shifts/commands/create-validated/route.ts",
     "methods": ["POST"],
     "reason": "Validated shift create — composite with extra validation",

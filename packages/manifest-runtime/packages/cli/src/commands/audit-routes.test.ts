@@ -174,6 +174,38 @@ export async function POST(request: Request) {
         result.findings.some((f) => f.code === "COMMAND_ROUTE_ORPHAN")
       ).toBe(false);
     });
+
+    it("does not flag an orphan command route that is exempted", () => {
+      const content = `
+export async function POST(request: Request) {
+  const runtime = createManifestRuntime({ user: { id: userId, tenantId } });
+  return runtime.runCommand("create", {});
+}
+`;
+      const ctx = makeOwnershipContext({
+        commandManifestPaths: new Set([
+          "staff/shifts/commands/create/route.ts",
+        ]),
+        exemptions: [
+          {
+            path: "app/api/staff/shifts/commands/create-validated/route.ts",
+            methods: ["POST"],
+            reason: "Validated shift create — composite with extra validation",
+            category: "composite",
+          },
+        ],
+      });
+
+      const result = auditRouteFileContent(
+        content,
+        "/repo/apps/api/app/api/staff/shifts/commands/create-validated/route.ts",
+        OPTIONS,
+        ctx
+      );
+      expect(
+        result.findings.some((f) => f.code === "COMMAND_ROUTE_ORPHAN")
+      ).toBe(false);
+    });
   });
 
   describe("WRITE_OUTSIDE_COMMANDS_NAMESPACE (Test E)", () => {

@@ -55,7 +55,7 @@ async function processQueueItem(item: OfflineQueueItem): Promise<boolean> {
       body = { status: "done" };
       break;
     case "markPrepComplete":
-      endpoint = "/api/kitchen/prep-lists/items/commands/mark-completed";
+      endpoint = "/api/kitchen/prep-list-items/commands/mark-completed";
       method = "POST";
       body = {
         itemId: item.taskId,
@@ -63,7 +63,7 @@ async function processQueueItem(item: OfflineQueueItem): Promise<boolean> {
       };
       break;
     case "updatePrepNotes":
-      endpoint = "/api/kitchen/prep-lists/items/commands/update-prep-notes";
+      endpoint = "/api/kitchen/prep-list-items/commands/update-prep-notes";
       method = "POST";
       body = {
         itemId: item.taskId,

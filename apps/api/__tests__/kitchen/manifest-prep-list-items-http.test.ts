@@ -81,10 +81,10 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
   // ==========================================================================
   // mark-completed command
   // ==========================================================================
-  describe("POST /api/kitchen/prep-lists/items/commands/mark-completed", () => {
+  describe("POST /api/kitchen/prep-list-items/commands/mark-completed", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/items/commands/mark-completed/route"
+        "@/app/api/kitchen/prep-list-items/commands/mark-completed/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -98,11 +98,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/items/commands/mark-completed/route"
+        "@/app/api/kitchen/prep-list-items/commands/mark-completed/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-lists/items/commands/mark-completed",
+        "http://localhost/api/kitchen/prep-list-items/commands/mark-completed",
         {
           method: "POST",
           body: JSON.stringify({
@@ -125,11 +125,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValueOnce(null as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/items/commands/mark-completed/route"
+        "@/app/api/kitchen/prep-list-items/commands/mark-completed/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-lists/items/commands/mark-completed",
+        "http://localhost/api/kitchen/prep-list-items/commands/mark-completed",
         {
           method: "POST",
           body: JSON.stringify({
@@ -183,11 +183,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/items/commands/mark-completed/route"
+        "@/app/api/kitchen/prep-list-items/commands/mark-completed/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-lists/items/commands/mark-completed",
+        "http://localhost/api/kitchen/prep-list-items/commands/mark-completed",
         {
           method: "POST",
           body: JSON.stringify({
@@ -215,10 +215,10 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
   // ==========================================================================
   // mark-uncompleted command
   // ==========================================================================
-  describe("POST /api/kitchen/prep-lists/items/commands/mark-uncompleted", () => {
+  describe("POST /api/kitchen/prep-list-items/commands/mark-uncompleted", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/items/commands/mark-uncompleted/route"
+        "@/app/api/kitchen/prep-list-items/commands/mark-uncompleted/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -232,11 +232,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/items/commands/mark-uncompleted/route"
+        "@/app/api/kitchen/prep-list-items/commands/mark-uncompleted/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-lists/items/commands/mark-uncompleted",
+        "http://localhost/api/kitchen/prep-list-items/commands/mark-uncompleted",
         {
           method: "POST",
           body: JSON.stringify({
@@ -258,11 +258,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValueOnce(null as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/items/commands/mark-uncompleted/route"
+        "@/app/api/kitchen/prep-list-items/commands/mark-uncompleted/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-lists/items/commands/mark-uncompleted",
+        "http://localhost/api/kitchen/prep-list-items/commands/mark-uncompleted",
         {
           method: "POST",
           body: JSON.stringify({
@@ -315,11 +315,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/items/commands/mark-uncompleted/route"
+        "@/app/api/kitchen/prep-list-items/commands/mark-uncompleted/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-lists/items/commands/mark-uncompleted",
+        "http://localhost/api/kitchen/prep-list-items/commands/mark-uncompleted",
         {
           method: "POST",
           body: JSON.stringify({
@@ -351,10 +351,10 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
   // ==========================================================================
   // update-prep-notes command
   // ==========================================================================
-  describe("POST /api/kitchen/prep-lists/items/commands/update-prep-notes", () => {
+  describe("POST /api/kitchen/prep-list-items/commands/update-prep-notes", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/items/commands/update-prep-notes/route"
+        "@/app/api/kitchen/prep-list-items/commands/update-prep-notes/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -368,11 +368,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/items/commands/update-prep-notes/route"
+        "@/app/api/kitchen/prep-list-items/commands/update-prep-notes/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-lists/items/commands/update-prep-notes",
+        "http://localhost/api/kitchen/prep-list-items/commands/update-prep-notes",
         {
           method: "POST",
           body: JSON.stringify({
@@ -396,11 +396,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValueOnce(null as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/items/commands/update-prep-notes/route"
+        "@/app/api/kitchen/prep-list-items/commands/update-prep-notes/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-lists/items/commands/update-prep-notes",
+        "http://localhost/api/kitchen/prep-list-items/commands/update-prep-notes",
         {
           method: "POST",
           body: JSON.stringify({
@@ -454,11 +454,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/items/commands/update-prep-notes/route"
+        "@/app/api/kitchen/prep-list-items/commands/update-prep-notes/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-lists/items/commands/update-prep-notes",
+        "http://localhost/api/kitchen/prep-list-items/commands/update-prep-notes",
         {
           method: "POST",
           body: JSON.stringify({
@@ -487,10 +487,10 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
   // ==========================================================================
   // update-quantity command
   // ==========================================================================
-  describe("POST /api/kitchen/prep-lists/items/commands/update-quantity", () => {
+  describe("POST /api/kitchen/prep-list-items/commands/update-quantity", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/items/commands/update-quantity/route"
+        "@/app/api/kitchen/prep-list-items/commands/update-quantity/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -504,11 +504,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/items/commands/update-quantity/route"
+        "@/app/api/kitchen/prep-list-items/commands/update-quantity/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-lists/items/commands/update-quantity",
+        "http://localhost/api/kitchen/prep-list-items/commands/update-quantity",
         {
           method: "POST",
           body: JSON.stringify({
@@ -534,11 +534,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValueOnce(null as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/items/commands/update-quantity/route"
+        "@/app/api/kitchen/prep-list-items/commands/update-quantity/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-lists/items/commands/update-quantity",
+        "http://localhost/api/kitchen/prep-list-items/commands/update-quantity",
         {
           method: "POST",
           body: JSON.stringify({
@@ -596,11 +596,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/items/commands/update-quantity/route"
+        "@/app/api/kitchen/prep-list-items/commands/update-quantity/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-lists/items/commands/update-quantity",
+        "http://localhost/api/kitchen/prep-list-items/commands/update-quantity",
         {
           method: "POST",
           body: JSON.stringify({
@@ -631,10 +631,10 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
   // ==========================================================================
   // update-station command
   // ==========================================================================
-  describe("POST /api/kitchen/prep-lists/items/commands/update-station", () => {
+  describe("POST /api/kitchen/prep-list-items/commands/update-station", () => {
     it("should import the route handler", async () => {
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/items/commands/update-station/route"
+        "@/app/api/kitchen/prep-list-items/commands/update-station/route"
       );
       expect(POST).toBeDefined();
       expect(typeof POST).toBe("function");
@@ -648,11 +648,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       } as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/items/commands/update-station/route"
+        "@/app/api/kitchen/prep-list-items/commands/update-station/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-lists/items/commands/update-station",
+        "http://localhost/api/kitchen/prep-list-items/commands/update-station",
         {
           method: "POST",
           body: JSON.stringify({
@@ -676,11 +676,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValueOnce(null as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/items/commands/update-station/route"
+        "@/app/api/kitchen/prep-list-items/commands/update-station/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-lists/items/commands/update-station",
+        "http://localhost/api/kitchen/prep-list-items/commands/update-station",
         {
           method: "POST",
           body: JSON.stringify({
@@ -733,11 +733,11 @@ describe("Manifest HTTP - PrepListItem Commands", () => {
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/items/commands/update-station/route"
+        "@/app/api/kitchen/prep-list-items/commands/update-station/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-lists/items/commands/update-station",
+        "http://localhost/api/kitchen/prep-list-items/commands/update-station",
         {
           method: "POST",
           body: JSON.stringify({

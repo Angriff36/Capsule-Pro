@@ -1480,7 +1480,7 @@ describe("Manifest Command Constraints - PrepListItem Commands (PrepList domain)
     vi.clearAllMocks();
   });
 
-  describe("POST /api/kitchen/prep-lists/items/commands/update-station - warnStationChange", () => {
+  describe("POST /api/kitchen/prep-list-items/commands/update-station - warnStationChange", () => {
     it("should warn when changing station", async () => {
       const { database } = await import("@repo/database");
 
@@ -1525,11 +1525,11 @@ describe("Manifest Command Constraints - PrepListItem Commands (PrepList domain)
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/items/commands/update-station/route"
+        "@/app/api/kitchen/prep-list-items/commands/update-station/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-lists/items/commands/update-station",
+        "http://localhost/api/kitchen/prep-list-items/commands/update-station",
         {
           method: "POST",
           body: JSON.stringify({
@@ -1597,11 +1597,11 @@ describe("Manifest Command Constraints - PrepListItem Commands (PrepList domain)
       vi.mocked(database.outboxEvent.create).mockResolvedValueOnce({} as never);
 
       const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/items/commands/update-station/route"
+        "@/app/api/kitchen/prep-list-items/commands/update-station/route"
       );
 
       const request = new NextRequest(
-        "http://localhost/api/kitchen/prep-lists/items/commands/update-station",
+        "http://localhost/api/kitchen/prep-list-items/commands/update-station",
         {
           method: "POST",
           body: JSON.stringify({

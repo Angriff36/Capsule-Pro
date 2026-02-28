@@ -378,14 +378,20 @@ export function auditRouteFileContent(
         routeRelative &&
         !ownershipContext.commandManifestPaths.has(routeRelative)
       ) {
-        findings.push({
-          file,
-          severity: "warning",
-          code: "COMMAND_ROUTE_ORPHAN",
-          message: `Command route "${routeRelative}" has no backing entry in kitchen.commands.json.`,
-          suggestion:
-            "This command route has no IR backing. Delete it or add the command to your manifest.",
-        });
+        // Check if this orphan route is explicitly exempted
+        const isOrphanExempted = methods.some((m) =>
+          isExempted(normalizedFile, m, ownershipContext.exemptions)
+        );
+        if (!isOrphanExempted) {
+          findings.push({
+            file,
+            severity: "warning",
+            code: "COMMAND_ROUTE_ORPHAN",
+            message: `Command route "${routeRelative}" has no backing entry in kitchen.commands.json.`,
+            suggestion:
+              "This command route has no IR backing. Delete it or add the command to your manifest.",
+          });
+        }
       }
     }
   }
