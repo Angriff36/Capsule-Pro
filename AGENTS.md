@@ -93,3 +93,4 @@ See `package.json` root scripts. Summary of most-used:
 - Pre-existing lint errors (~1000+) and some test failures related to `@repo/manifest-adapters/prisma-idempotency-store` import exist in the codebase.
 - `.env.local` files must be created from `.env.example` in `apps/app`, `apps/api`, `apps/web`, and root. The `packages/database` uses `.env` (not `.env.local`).
 - The husky `pre-push` hook is disabled (exits 0). The `pre-commit` hook runs biome formatting on staged files.
+- **Clerk auth in Cloud VMs**: Direct sign-in via password triggers email verification ("new device" policy). To bypass, use Clerk Backend API sign-in tokens: create a token via `POST https://api.clerk.com/v1/sign_in_tokens` with the user ID, then navigate to `http://localhost:2221/sign-in?__clerk_ticket=<token>`. The token must be used immediately (short TTL). A Clerk testing token (`POST /v1/testing_tokens`) can bypass CAPTCHA but not email verification on its own.
