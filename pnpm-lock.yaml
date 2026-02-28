@@ -29,8 +29,8 @@ importers:
   .:
     dependencies:
       '@angriff36/manifest':
-        specifier: 0.3.28
-        version: 0.3.28(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
+        specifier: 0.3.29
+        version: 0.3.29(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
       '@prisma/adapter-neon':
         specifier: 7.3.0
         version: 7.3.0
@@ -129,8 +129,8 @@ importers:
         specifier: ^3.0.25
         version: 3.0.25(zod@4.3.6)
       '@angriff36/manifest':
-        specifier: 0.3.28
-        version: 0.3.28(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
+        specifier: 0.3.29
+        version: 0.3.29(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
       '@capsule-pro/sales-reporting':
         specifier: workspace:*
         version: link:../../packages/sales-reporting
@@ -247,8 +247,8 @@ importers:
         specifier: ^3.0.88
         version: 3.0.88(react@19.2.4)(zod@4.3.6)
       '@angriff36/manifest':
-        specifier: 0.3.28
-        version: 0.3.28(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
+        specifier: 0.3.29
+        version: 0.3.29(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
       '@capsule-pro/sales-reporting':
         specifier: workspace:*
         version: link:../../packages/sales-reporting
@@ -1304,8 +1304,8 @@ importers:
   packages/manifest-adapters:
     dependencies:
       '@angriff36/manifest':
-        specifier: 0.3.28
-        version: 0.3.28(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
+        specifier: 0.3.29
+        version: 0.3.29(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))
       '@repo/database':
         specifier: workspace:*
         version: link:../database
@@ -1847,8 +1847,8 @@ packages:
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
     engines: {node: '>=10'}
 
-  '@angriff36/manifest@0.3.28':
-    resolution: {integrity: sha512-t8qpvtyelJ1wSOOrBdojZe4SKA13dV000fzEXjKIdSuc212hjmvJS/3ax4/l6tF18AXgQpruFd8v3MOQaNHNXw==, tarball: https://npm.pkg.github.com/download/@angriff36/manifest/0.3.28/845c8cfe484745214b03f3750a91bce54c30e674}
+  '@angriff36/manifest@0.3.29':
+    resolution: {integrity: sha512-YPj73LYnk7AYvua/aoPfVoVpDbErwJ3AzUeRFTrH9VLt4UPFWb5zZ9F2hvry2YuFlZy+xE6B2QB4LGKZJbTAMg==, tarball: https://npm.pkg.github.com/download/@angriff36/manifest/0.3.29/e361902a28240438906514feb16df4bf0cfbeeaf}
     hasBin: true
     peerDependencies:
       '@supabase/supabase-js': ^2
@@ -12512,6 +12512,7 @@ packages:
     resolution: {integrity: sha512-iiRSuRmLihoEJ4YGkoqSq3/r4MR0OmkMTYDda0Pq7DAWqJwMylTilXu46T16gfS3DUp3fhiVuz7NtRMbk3uBhw==}
     engines: {node: '>=20.18.0'}
     hasBin: true
+    bundledDependencies: []
 
   pdfjs-dist@5.4.296:
     resolution: {integrity: sha512-DlOzet0HO7OEnmUmB6wWGJrrdvbyJKftI1bhMitK7O2N8W2gc757yyYBbINy9IDafXAV9wmKr9t7xsTaNKRG5Q==}
@@ -15607,7 +15608,7 @@ snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
 
-  '@angriff36/manifest@0.3.28(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))':
+  '@angriff36/manifest@0.3.29(@supabase/supabase-js@2.97.0(bufferutil@4.1.0)(utf-8-validate@5.0.10))':
     dependencies:
       '@supabase/supabase-js': 2.97.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       '@types/pg': 8.16.0
