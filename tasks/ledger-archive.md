@@ -4,6 +4,19 @@ Archived ledger entries. See tasks/ledger.md for current entries and rules.
 
 ---
 
+# Agent 44
+
+**Agent ID:** 44
+**Date/Time:** 2026-02-28 18:00
+**Base branch/commit:** codex/manifest-cli-doctor @ 47ccabd90
+
+**Goal:**
+Implement manifest deterministic write-route ownership: compile emits `kitchen.commands.json`, generator validates forward/mirror/method checks, audit-routes gains 3 new ownership rules with exemption registry.
+
+**Points tally:** 20 points
+
+---
+
 # Agent 42
 
 **Agent ID:** 42

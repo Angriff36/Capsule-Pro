@@ -38,12 +38,13 @@ only the full write-up moves to the archive. This keeps the ledger readable for 
 
 ** CURRENT LEADERS **
 
-1. Agent 44 — 20 points (manifest route ownership)
+1. Agent 44 — 20 points (manifest route ownership) (archived)
 2. Agent 42 — 18 points (implementation) (archived)
 2. Agent 16 — 18 points (archived)
 4. Agent 47 — 16 points (--strict ownership-gate semantics)
 4. Agent 46 — 16 points (orphan detection fix)
 4. Agent 48 — 16 points (Phase 3 route cleanup)
+4. Agent 49 — 16 points (OWNERSHIP_RULE_CODES guardrail)
 7. Agent 43 — 15 points (manifest route migration) (archived)
 7. Agent 3 — 13 points
 7. Agent 4 — 13 points
@@ -68,6 +69,78 @@ only the full write-up moves to the archive. This keeps the ledger readable for 
 16. Agent 40 — 7 points (verification) (archived)
 16. Agent 27 — 7 points (verification) (archived)
 16. Agent 26 — 7 points (verification) (archived)
+
+# Agent 49
+
+**Agent ID:** 49
+**Date/Time:** 2026-03-01 15:35
+**Base branch/commit:** codex/manifest-cli-doctor @ 87afc048d
+
+**Goal:**
+Lock ownership-rule codes into a canonical `OWNERSHIP_RULE_CODES` constant Set and fix the `--strict` gate to only consider ownership-rule findings (was gating on ALL warnings).
+
+**Invariants enforced:**
+
+- `OWNERSHIP_RULE_CODES` is the single exported Set defining which rule codes constitute ownership rules. No magic strings scattered across the codebase.
+- `--strict` exit code gates on ownership-rule findings ONLY. Quality/hygiene warnings (READ_MISSING_SOFT_DELETE_FILTER, READ_MISSING_TENANT_SCOPE, READ_LOCATION_REFERENCE_WITHOUT_FILTER, WRITE_ROUTE_BYPASSES_RUNTIME) never poison the strict gate.
+- The Set is frozen at exactly 3 codes: COMMAND_ROUTE_ORPHAN, COMMAND_ROUTE_MISSING_RUNTIME_CALL, WRITE_OUTSIDE_COMMANDS_NAMESPACE.
+
+**Subagents used:**
+
+- None. Direct execution — scope was narrow (add constant, fix gate, add tests, publish).
+
+**Reproducer:**
+`packages/manifest-runtime/packages/cli/src/commands/audit-routes.test.ts` — 4 new tests + 1 updated:
+1. "contains exactly the three ownership rules" — verifies Set contents
+2. "does not contain quality/hygiene rules" — verifies exclusions
+3. "strict mode: route with only WRITE_ROUTE_BYPASSES_RUNTIME produces no ownership findings" — end-to-end
+4. "strict mode: orphan command route produces ownership finding" — end-to-end
+5. Updated: "ownership rules do not fire without context" — now references OWNERSHIP_RULE_CODES instead of string literals
+
+**Root cause:**
+Agent 47 claimed to add `OWNERSHIP_RULE_CODES` but the export never existed in the source. The strict gate at line 650 of `audit-routes.ts` was still `if (errors.length > 0 || (options.strict && warnings.length > 0))` — gating on ALL warnings, not just ownership rules. This meant `--strict` would fail on any quality warning (soft-delete, tenant scope, location filter), defeating the purpose of a targeted ownership gate.
+
+**Fix strategy:**
+1. Added `OWNERSHIP_RULE_CODES` as an exported `ReadonlySet<string>` with doc comment explaining the contract.
+2. Fixed strict gate to filter findings through `OWNERSHIP_RULE_CODES` before deciding exit code.
+3. Added 4 new tests covering Set contents, exclusions, and 2 end-to-end strict-mode scenarios.
+4. Updated 1 existing test to use the constant instead of string literals.
+5. Published as `@angriff36/manifest@0.3.32`, updated 4 consumers.
+
+**Verification evidence:**
+
+```
+# Manifest repo — all tests pass
+$ npm test
+Test Files: 16 passed, Tests: 693 passed
+
+# Published 0.3.32
+$ npm publish --ignore-scripts
++ @angriff36/manifest@0.3.32
+
+# Capsule-pro — full build pipeline
+$ node scripts/manifest/build.mjs
+Audited 529 route file(s) — 172 error(s), 41 warning(s)
+Build complete!
+
+# Orphan count: 0
+# Warning count: 41 (unchanged — no regression)
+# Route files: 529 (unchanged)
+```
+
+**Follow-ups filed:**
+- Phase 4: Flip to `--strict` in build.mjs + remove `continue-on-error` from CI
+- Create handoff doc at `tasks/manifest-route-ownership-handoff.md`
+
+**Points tally:**
++3 invariant defined before implementation (OWNERSHIP_RULE_CODES is single source of truth, strict gates on ownership only, Set frozen at 3 codes)
++5 minimal reproducer added (4 new tests + 1 updated — cover Set contents, exclusions, 2 end-to-end strict scenarios)
++4 fix addresses root cause with minimal diff (added Set constant, fixed gate filter — not a workaround)
++2 improved diagnosability (strict gate now reports ownership-specific error count, quality warnings can't cause false strict failures)
++2 boundary/edge case added (WRITE_ROUTE_BYPASSES_RUNTIME-only route proves quality warnings don't leak into strict gate)
+= **16 points**
+
+---
 
 # Agent 48
 
@@ -401,75 +474,5 @@ SUMMARY:
 = **13 points**
 
 ---
-
-# Agent 44
-
-**Agent ID:** 44
-**Date/Time:** 2026-02-28 18:00
-**Base branch/commit:** codex/manifest-cli-doctor @ 47ccabd90
-
-**Goal:**
-Implement manifest deterministic write-route ownership: compile emits `kitchen.commands.json`, generator validates forward/mirror/method checks, audit-routes gains 3 new ownership rules with exemption registry.
-
-**Invariants enforced:**
-
-- IR commands define the complete, closed set of Manifest-owned write routes — no filesystem scanning for ownership inference.
-- Generator overwrites command-namespace routes unconditionally; never overwrites non-commands routes without marker.
-- Same IR in → byte-identical `kitchen.commands.json` out (determinism verified via SHA256).
-
-**Subagents used:**
-
-- Explore agents (parallel): Analyzed IR command shape, ENTITY_DOMAIN_MAP locations, existing audit-routes structure, generate.mjs overwrite logic, and exemption candidates across 80+ manual write routes.
-
-**Reproducer:**
-`packages/manifest-runtime/packages/cli/src/commands/audit-routes.test.ts` — 7 new ownership tests:
-- COMMAND_ROUTE_ORPHAN: flags orphan route, passes valid route
-- WRITE_OUTSIDE_COMMANDS_NAMESPACE: flags non-exempted write, passes exempted write
-- COMMAND_ROUTE_MISSING_RUNTIME_CALL: flags missing runCommand, passes with runCommand
-- Backward compatibility: ownership rules don't fire without context
-
-**Root cause:**
-Generator used marker-check heuristic to decide what to overwrite — fragile and implicit. No machine-enforceable rule separated "Manifest owns this" from "someone wrote this manually." 80 write routes bypassed the runtime entirely with no audit visibility.
-
-**Fix strategy:**
-1. `compile.mjs` emits `kitchen.commands.json` (308 entries, sorted entity+command ASC, 3 fields only) — single source of truth for command ownership.
-2. `generate.mjs` replaces heuristic overwrite with deterministic validation: forward check (staged commands must be in commands.json), mirror check (commands.json entries missing from staging = warning), method check (commands with GET = error).
-3. `audit-routes.ts` gains 3 new rules as warnings (not errors) behind `--strict` for safe rollout: WRITE_OUTSIDE_COMMANDS_NAMESPACE, COMMAND_ROUTE_MISSING_RUNTIME_CALL, COMMAND_ROUTE_ORPHAN.
-4. `audit-routes-exemptions.json` registers ~130 legitimate manual write routes (webhooks, auth, infrastructure, integrations, AI orchestration, legacy).
-5. Minimal diff — no existing behavior changed, new rules additive only.
-
-**Verification evidence:**
-
-```
-$ pnpm manifest:compile
-kitchen.commands.json: 308 entries, sorted, 3 fields per entry
-
-$ sha256sum (run 1) == sha256sum (run 2)
-Determinism confirmed — byte-identical output
-
-$ pnpm manifest:generate
-59 list routes copied, 264 mirror warnings (expected — CLI doesn't generate command routes)
-
-$ pnpm --filter @angriff36/manifest test --run
-Test Files: 16 passed, Tests: 688 passed
-
-$ pnpm tsc --noEmit
-(exit 0, no errors)
-```
-
-**Follow-ups filed:**
-- Republish `@angriff36/manifest` as 0.3.27 — new audit rules only visible via `pnpm exec manifest` after publish (requires `GITHUB_PACKAGES_TOKEN`).
-- Fix known issues deferred: `conflicts/detect` duplicate route, `user-preferences` invalid exports, `prep-lists/save` legacy deletion.
-- Flip new rules from warnings to errors in second PR after burn-down of current violations.
-- Migrate domain-logic routes to commands namespace (out of scope for this PR).
-
-**Points tally:**
-+3 invariant defined before implementation (IR = closed set of write routes, determinism, unconditional overwrite)
-+5 minimal reproducer added (7 ownership tests — fail without rules, pass with rules, backward-compatible)
-+4 correct subagent delegation (parallel explore agents for IR shape, ENTITY_DOMAIN_MAP, audit structure, exemption candidates)
-+4 fix addresses root cause with minimal diff (replaced heuristic with deterministic validation, additive rules only)
-+2 improved diagnosability (exemptions registry makes manual writes visible in PRs, mirror check warns about drift)
-+2 boundary/edge case added (backward compatibility test — ownership rules don't fire without context)
-= **20 points**
 
 ---

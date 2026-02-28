@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { OwnershipAuditContext } from "./audit-routes";
-import { auditRouteFileContent } from "./audit-routes";
+import { auditRouteFileContent, OWNERSHIP_RULE_CODES } from "./audit-routes";
 
 const OPTIONS = {
   tenantField: "tenantId",
@@ -326,13 +326,88 @@ export async function POST(request: Request) {
         OPTIONS
       );
       expect(
-        result.findings.some(
-          (f) =>
-            f.code === "COMMAND_ROUTE_MISSING_RUNTIME_CALL" ||
-            f.code === "COMMAND_ROUTE_ORPHAN" ||
-            f.code === "WRITE_OUTSIDE_COMMANDS_NAMESPACE"
-        )
+        result.findings.some((f) => OWNERSHIP_RULE_CODES.has(f.code))
       ).toBe(false);
+    });
+  });
+
+  describe("OWNERSHIP_RULE_CODES canonical set", () => {
+    it("contains exactly the three ownership rules", () => {
+      expect(OWNERSHIP_RULE_CODES.size).toBe(3);
+      expect(OWNERSHIP_RULE_CODES.has("COMMAND_ROUTE_ORPHAN")).toBe(true);
+      expect(
+        OWNERSHIP_RULE_CODES.has("COMMAND_ROUTE_MISSING_RUNTIME_CALL")
+      ).toBe(true);
+      expect(OWNERSHIP_RULE_CODES.has("WRITE_OUTSIDE_COMMANDS_NAMESPACE")).toBe(
+        true
+      );
+    });
+
+    it("does not contain quality/hygiene rules", () => {
+      expect(OWNERSHIP_RULE_CODES.has("WRITE_ROUTE_BYPASSES_RUNTIME")).toBe(
+        false
+      );
+      expect(OWNERSHIP_RULE_CODES.has("READ_MISSING_SOFT_DELETE_FILTER")).toBe(
+        false
+      );
+      expect(OWNERSHIP_RULE_CODES.has("READ_MISSING_TENANT_SCOPE")).toBe(false);
+      expect(
+        OWNERSHIP_RULE_CODES.has("READ_LOCATION_REFERENCE_WITHOUT_FILTER")
+      ).toBe(false);
+    });
+
+    it("strict mode: route with only WRITE_ROUTE_BYPASSES_RUNTIME produces no ownership findings", () => {
+      const content = `
+export async function POST(request: Request) {
+  await database.prepTask.create({ data: {} });
+  return Response.json({ ok: true });
+}
+`;
+      const ctx = makeOwnershipContext({ exemptions: [] });
+      const result = auditRouteFileContent(
+        content,
+        "/repo/apps/api/app/api/timecards/route.ts",
+        OPTIONS,
+        ctx
+      );
+      // Should have WRITE_ROUTE_BYPASSES_RUNTIME (error) + WRITE_OUTSIDE_COMMANDS_NAMESPACE (warning)
+      // but WRITE_ROUTE_BYPASSES_RUNTIME is NOT an ownership rule
+      const ownershipFindings = result.findings.filter((f) =>
+        OWNERSHIP_RULE_CODES.has(f.code)
+      );
+      const nonOwnershipErrors = result.findings.filter(
+        (f) => f.severity === "error" && !OWNERSHIP_RULE_CODES.has(f.code)
+      );
+      // Non-ownership errors exist (WRITE_ROUTE_BYPASSES_RUNTIME)
+      expect(nonOwnershipErrors.length).toBeGreaterThan(0);
+      expect(nonOwnershipErrors[0]?.code).toBe("WRITE_ROUTE_BYPASSES_RUNTIME");
+      // Ownership findings also exist (WRITE_OUTSIDE_COMMANDS_NAMESPACE)
+      expect(ownershipFindings.length).toBeGreaterThan(0);
+    });
+
+    it("strict mode: orphan command route produces ownership finding", () => {
+      const content = `
+export async function POST(request: Request) {
+  const runtime = createManifestRuntime({ user: { id: userId, tenantId } });
+  return runtime.runCommand("foo", {});
+}
+`;
+      const ctx = makeOwnershipContext({
+        commandManifestPaths: new Set([
+          "kitchen/prep-tasks/commands/create/route.ts",
+        ]),
+      });
+      const result = auditRouteFileContent(
+        content,
+        "/repo/apps/api/app/api/kitchen/prep-tasks/commands/foo/route.ts",
+        OPTIONS,
+        ctx
+      );
+      const ownershipFindings = result.findings.filter((f) =>
+        OWNERSHIP_RULE_CODES.has(f.code)
+      );
+      expect(ownershipFindings.length).toBeGreaterThan(0);
+      expect(ownershipFindings[0]?.code).toBe("COMMAND_ROUTE_ORPHAN");
     });
   });
 });

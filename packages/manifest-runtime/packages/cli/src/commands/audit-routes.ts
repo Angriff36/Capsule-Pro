@@ -44,6 +44,23 @@ export interface AuditRoutesOptions {
   exemptions?: string;
 }
 
+/**
+ * Canonical set of ownership-rule finding codes.
+ *
+ * These are the ONLY codes that the `--strict` gate considers.
+ * Quality/hygiene rules (WRITE_ROUTE_BYPASSES_RUNTIME, READ_MISSING_*,
+ * etc.) never poison the strict exit code.
+ *
+ * To add a new ownership rule: add it here, add the audit logic,
+ * and add a test in audit-routes.test.ts that references this set.
+ * No silent expansion — this set is the single source of truth.
+ */
+export const OWNERSHIP_RULE_CODES: ReadonlySet<string> = new Set([
+  "COMMAND_ROUTE_ORPHAN",
+  "COMMAND_ROUTE_MISSING_RUNTIME_CALL",
+  "WRITE_OUTSIDE_COMMANDS_NAMESPACE",
+]);
+
 const READ_METHODS = new Set(["GET"]);
 const WRITE_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 const DIRECT_QUERY_METHODS = new Set([
@@ -647,8 +664,31 @@ export async function auditRoutesCommand(
       );
     }
 
-    if (errors.length > 0 || (options.strict && warnings.length > 0)) {
-      process.exit(1);
+    // Strict gate: only ownership-rule findings trigger failure.
+    // Quality/hygiene warnings (READ_MISSING_*, WRITE_ROUTE_BYPASSES_RUNTIME)
+    // never poison the strict exit code.
+    const ownershipErrors = errors.filter((f) =>
+      OWNERSHIP_RULE_CODES.has(f.code)
+    );
+    const ownershipWarnings = warnings.filter((f) =>
+      OWNERSHIP_RULE_CODES.has(f.code)
+    );
+
+    if (options.strict) {
+      // Strict mode: fail only on ownership-rule findings (errors or warnings)
+      if (ownershipErrors.length > 0 || ownershipWarnings.length > 0) {
+        console.log(
+          chalk.red(
+            `  Strict gate: ${ownershipErrors.length} ownership error(s), ${ownershipWarnings.length} ownership warning(s) → exit 1`
+          )
+        );
+        process.exit(1);
+      }
+    } else {
+      // Default mode: fail on any error-severity finding
+      if (errors.length > 0) {
+        process.exit(1);
+      }
     }
   } catch (error: any) {
     spinner.fail(`Route audit failed: ${error.message}`);

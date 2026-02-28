@@ -29,8 +29,8 @@ importers:
   .:
     dependencies:
       '@angriff36/manifest':
-        specifier: 0.3.31
-        version: 0.3.31
+        specifier: 0.3.32
+        version: 0.3.32
       '@prisma/adapter-neon':
         specifier: 7.3.0
         version: 7.3.0
@@ -129,8 +129,8 @@ importers:
         specifier: ^3.0.25
         version: 3.0.25(zod@4.3.6)
       '@angriff36/manifest':
-        specifier: 0.3.31
-        version: 0.3.31
+        specifier: 0.3.32
+        version: 0.3.32
       '@capsule-pro/sales-reporting':
         specifier: workspace:*
         version: link:../../packages/sales-reporting
@@ -247,8 +247,8 @@ importers:
         specifier: ^3.0.88
         version: 3.0.88(react@19.2.4)(zod@4.3.6)
       '@angriff36/manifest':
-        specifier: 0.3.31
-        version: 0.3.31
+        specifier: 0.3.32
+        version: 0.3.32
       '@capsule-pro/sales-reporting':
         specifier: workspace:*
         version: link:../../packages/sales-reporting
@@ -1304,8 +1304,8 @@ importers:
   packages/manifest-adapters:
     dependencies:
       '@angriff36/manifest':
-        specifier: 0.3.31
-        version: 0.3.31
+        specifier: 0.3.32
+        version: 0.3.32
       '@repo/database':
         specifier: workspace:*
         version: link:../database
@@ -1847,8 +1847,8 @@ packages:
     resolution: {integrity: sha512-UrcABB+4bUrFABwbluTIBErXwvbsU/V7TZWfmbgJfbkwiBuziS9gxdODUyuiecfdGQ85jglMW6juS3+z5TsKLw==}
     engines: {node: '>=10'}
 
-  '@angriff36/manifest@0.3.31':
-    resolution: {integrity: sha512-ygeLuIbNtmHKSlywpuK9nR82pCrpRFxvns53zAKWhzQQqH59rIZ3mRk9unAuWDQYnM9HNHJWQOi/QJmugTrq/A==, tarball: https://npm.pkg.github.com/download/@angriff36/manifest/0.3.31/0c8056cf425b8c2f84c15617d6e932d728783117}
+  '@angriff36/manifest@0.3.32':
+    resolution: {integrity: sha512-vwAJFBEFvv88/lSnCOE9goFf9HPSlivzdlOni3tcnsku5SVBZOWeV4ku5IhPVcR1+ecduhRc119xch7rXwhBtQ==, tarball: https://npm.pkg.github.com/download/@angriff36/manifest/0.3.32/d8b64e7183d07e90c9badb7eb88db27d0050b548}
     hasBin: true
 
   '@apm-js-collab/code-transformer@0.8.2':
@@ -15592,7 +15592,7 @@ snapshots:
 
   '@alloc/quick-lru@5.2.0': {}
 
-  '@angriff36/manifest@0.3.31': {}
+  '@angriff36/manifest@0.3.32': {}
 
   '@apm-js-collab/code-transformer@0.8.2': {}
 
