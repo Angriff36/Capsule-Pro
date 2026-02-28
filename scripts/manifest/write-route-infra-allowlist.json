@@ -1,0 +1,81 @@
+{
+  "description": "Infrastructure write routes allowed outside Manifest domain command surface.",
+  "rules": [
+    {
+      "prefix": "/api/webhooks/",
+      "methods": ["POST", "PUT", "PATCH", "DELETE"]
+    },
+    {
+      "prefix": "/api/auth/",
+      "methods": ["POST", "PUT", "PATCH", "DELETE"]
+    },
+    {
+      "prefix": "/api/cron/",
+      "methods": ["POST", "PUT", "PATCH", "DELETE"]
+    },
+    {
+      "prefix": "/api/health",
+      "methods": ["POST", "PUT", "PATCH", "DELETE"]
+    },
+    {
+      "prefix": "/api/kitchen/recipes/composite/",
+      "methods": ["POST"],
+      "comment": "Composite routes wrap multiple Manifest commands in atomic transactions"
+    },
+    {
+      "pattern": "^/api/kitchen/recipes/[^/]+/composite/",
+      "methods": ["POST"],
+      "comment": "Recipe-scoped composite routes (update-with-version, restore-version)"
+    },
+    {
+      "pattern": "^/api/kitchen/recipes/[^/]+/cost$",
+      "methods": ["POST"],
+      "comment": "Recipe cost calculation route using RecipeVersion.updateCosts command"
+    },
+    {
+      "pattern": "^/api/kitchen/recipes/[^/]+/scale$",
+      "methods": ["POST", "PATCH"],
+      "comment": "Recipe scaling routes using RecipeIngredient.updateWasteFactor command"
+    },
+    {
+      "prefix": "/api/kitchen/allergens/update-dish",
+      "methods": ["POST"],
+      "comment": "Allergen update route using Dish.update command"
+    },
+    {
+      "prefix": "/api/kitchen/allergens/detect-conflicts",
+      "methods": ["POST"],
+      "comment": "Allergen conflict detection using AllergenWarning.create command"
+    },
+    {
+      "prefix": "/api/kitchen/prep-lists/save-db",
+      "methods": ["POST"],
+      "comment": "Prep list save route using PrepList/PrepListItem manifest commands"
+    },
+    {
+      "prefix": "/api/kitchen/ai/bulk-generate/prep-tasks",
+      "methods": ["POST"],
+      "comment": "AI-generated prep task bulk creation using PrepTask.create command"
+    },
+    {
+      "prefix": "/api/kitchen/manifest/",
+      "methods": ["POST", "PUT", "PATCH", "DELETE"],
+      "comment": "Legacy infrastructure routes using Manifest runtime (to be migrated)"
+    },
+    {
+      "prefix": "/api/conflicts/",
+      "methods": ["POST", "PUT", "PATCH", "DELETE"],
+      "comment": "Conflict detection infrastructure"
+    },
+    {
+      "prefix": "/api/staff/shifts/commands/create-validated",
+      "methods": ["POST"],
+      "comment": "Validated shift creation with overlap/overtime/certification checks using ScheduleShift.create command"
+    },
+    {
+      "prefix": "/api/staff/shifts/commands/update-validated",
+      "methods": ["POST"],
+      "comment": "Validated shift update with overlap/overtime/certification checks using ScheduleShift.update command"
+    }
+  ]
+}

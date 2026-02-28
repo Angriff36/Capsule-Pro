@@ -156,6 +156,41 @@ entity PrepList {
     emit PrepListCreated
   }
 
+  command createFromSeed(eventId: string, name: string, batchMultiplier: number, dietaryRestrictions: string, notes: string, menuGroupsJson: string, totalInstructionLines: number, validInstructionLines: number) {
+    guard self.tenantId != null and self.tenantId != "" "Tenant ID is required"
+    guard eventId != null and eventId != "" "Event ID is required"
+    guard name != null and name != "" "Prep list name is required"
+    guard not (name contains "  ") "Prep list name must be normalized"
+    guard batchMultiplier > 0 "Batch multiplier must be positive"
+    guard menuGroupsJson != null and menuGroupsJson != "" "menuGroups payload is required"
+    guard totalInstructionLines > 0 "At least one instruction line is required"
+    guard validInstructionLines > 0 "At least one valid instruction line is required"
+    guard validInstructionLines == totalInstructionLines "Empty instruction lines are not allowed"
+
+    mutate eventId = eventId
+    mutate name = name
+    mutate batchMultiplier = batchMultiplier
+    mutate dietaryRestrictions = dietaryRestrictions
+    mutate notes = notes
+    mutate totalItems = validInstructionLines
+    mutate status = "draft"
+    mutate generatedAt = now()
+    mutate finalizedAt = 0
+    mutate isActive = true
+
+    emit PrepListSeedImported
+  }
+
+  command reopen(reason: string) {
+    guard self.status == "finalized" or self.status == "completed" "Can only reopen finalized or completed prep lists"
+
+    mutate status = "draft"
+    mutate finalizedAt = 0
+    mutate notes = reason
+
+    emit PrepListReopened
+  }
+
   store PrepList in memory
 }
 
@@ -313,6 +348,7 @@ entity PrepListItem {
 
 // Policy definitions
 policy PrepListManagement execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can manage prep lists"
+policy PrepListSeedImport execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] and user.tenantId != null and user.tenantId != "" "Kitchen staff can import prep seeds for their tenant"
 policy PrepListFinalize execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and above can finalize prep lists"
 policy PrepListDelete execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and above can delete prep lists"
 
@@ -325,6 +361,15 @@ event PrepListCreated: "kitchen.preplist.created" {
   totalItems: number
   batchMultiplier: number
   createdAt: number
+}
+
+event PrepListSeedImported: "kitchen.preplist.seed_imported" {
+  prepListId: string
+  tenantId: string
+  eventId: string
+  name: string
+  totalItems: number
+  importedAt: number
 }
 
 event PrepListUpdated: "kitchen.preplist.updated" {
@@ -371,6 +416,14 @@ event PrepListCompleted: "kitchen.preplist.completed" {
   tenantId: string
   eventId: string
   completedAt: number
+}
+
+event PrepListReopened: "kitchen.preplist.reopened" {
+  prepListId: string
+  tenantId: string
+  eventId: string
+  reason: string
+  reopenedAt: number
 }
 
 event PrepListCancelled: "kitchen.preplist.cancelled" {

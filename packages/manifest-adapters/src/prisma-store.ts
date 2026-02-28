@@ -6,8 +6,9 @@
  * model and the Prisma database tables.
  */
 
-import type { Store } from "@manifest/runtime";
+import type { Store } from "@angriff36/manifest";
 import type {
+  AllergenWarning,
   Dish,
   Ingredient,
   InventoryItem,
@@ -22,6 +23,7 @@ import type {
   Recipe,
   RecipeIngredient,
   RecipeVersion,
+  recipe_steps,
   Station,
 } from "@repo/database";
 import { Prisma } from "@repo/database";
@@ -466,6 +468,9 @@ export class RecipeVersionPrismaStore implements Store<EntityInstance> {
           difficultyLevel: data.difficultyLevel as number | null | undefined,
           instructions: data.instructions as string | null | undefined,
           notes: data.notes as string | null | undefined,
+          totalCost: data.totalCost as number | undefined,
+          costPerYield: data.costPerYield as number | undefined,
+          costCalculatedAt: data.totalCost !== undefined ? new Date() : undefined,
           updatedAt: new Date(),
         },
       });
@@ -520,6 +525,8 @@ export class RecipeVersionPrismaStore implements Store<EntityInstance> {
       notes: version.notes ?? "",
       ingredientCount: 0, // Would need to query recipe_ingredients table
       stepCount: 0, // Would need to query recipe_steps table
+      totalCost: Number(version.totalCost) || 0,
+      costPerYield: Number(version.costPerYield) || 0,
       createdAt: version.createdAt.getTime(),
       totalTimeMinutes: prepTime + cookTime + restTime,
       isVersion1: version.versionNumber === 1,
@@ -663,6 +670,7 @@ export class RecipeIngredientPrismaStore implements Store<EntityInstance> {
         preparationNotes: (data.preparationNotes as string) || null,
         isOptional: data.isOptional as boolean,
         sortOrder: (data.sortOrder as number) || 0,
+        wasteFactor: (data.wasteFactor as number) ?? 1.0,
       },
     });
     return this.mapToManifestEntity(ingredient);
@@ -678,6 +686,7 @@ export class RecipeIngredientPrismaStore implements Store<EntityInstance> {
         data: {
           quantity: data.quantity as number | undefined,
           unitId: data.unitId as number | undefined,
+          wasteFactor: data.wasteFactor as number | undefined,
           updatedAt: new Date(),
         },
       });
@@ -716,9 +725,121 @@ export class RecipeIngredientPrismaStore implements Store<EntityInstance> {
       unitId: ingredient.unitId,
       preparationNotes: ingredient.preparationNotes ?? "",
       isOptional: ingredient.isOptional,
+      wasteFactor: Number(ingredient.wasteFactor),
       sortOrder: ingredient.sortOrder,
       createdAt: ingredient.createdAt.getTime(),
       updatedAt: ingredient.updatedAt.getTime(),
+    };
+  }
+}
+
+/**
+ * Prisma-backed store for RecipeStep entities
+ *
+ * Maps Manifest RecipeStep entities to the Prisma recipe_steps table.
+ * Note: Prisma model uses snake_case (recipe_steps).
+ */
+export class RecipeStepPrismaStore implements Store<EntityInstance> {
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly tenantId: string
+  ) {}
+
+  async getAll(): Promise<EntityInstance[]> {
+    const steps = await this.prisma.recipe_steps.findMany({
+      where: { tenant_id: this.tenantId, deleted_at: null },
+    });
+    return steps.map((step) => this.mapToManifestEntity(step));
+  }
+
+  async getById(id: string): Promise<EntityInstance | undefined> {
+    const step = await this.prisma.recipe_steps.findFirst({
+      where: { tenant_id: this.tenantId, id, deleted_at: null },
+    });
+    return step ? this.mapToManifestEntity(step) : undefined;
+  }
+
+  async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
+    const step = await this.prisma.recipe_steps.create({
+      data: {
+        tenant_id: this.tenantId,
+        id: data.id as string,
+        recipe_version_id: data.recipeVersionId as string,
+        step_number: data.stepNumber as number,
+        instruction: data.instruction as string,
+        duration_minutes: (data.durationMinutes as number) || null,
+        temperature_value: (data.temperatureValue as number) || null,
+        temperature_unit: (data.temperatureUnit as string) || null,
+        equipment_needed: (data.equipmentNeeded as string[])
+          ? ((data.equipmentNeeded as string)
+              .split(",")
+              .filter(Boolean) as string[])
+          : [],
+        tips: (data.tips as string) || null,
+        video_url: (data.videoUrl as string) || null,
+        image_url: (data.imageUrl as string) || null,
+      },
+    });
+    return this.mapToManifestEntity(step);
+  }
+
+  async update(
+    id: string,
+    data: Partial<EntityInstance>
+  ): Promise<EntityInstance | undefined> {
+    try {
+      const updated = await this.prisma.recipe_steps.update({
+        where: { tenant_id_id: { tenant_id: this.tenantId, id } },
+        data: {
+          instruction: data.instruction as string | undefined,
+          duration_minutes: data.durationMinutes as number | null | undefined,
+          tips: data.tips as string | null | undefined,
+          updated_at: new Date(),
+        },
+      });
+      return this.mapToManifestEntity(updated);
+    } catch {
+      return undefined;
+    }
+  }
+
+  async delete(id: string): Promise<boolean> {
+    try {
+      await this.prisma.recipe_steps.update({
+        where: { tenant_id_id: { tenant_id: this.tenantId, id } },
+        data: { deleted_at: new Date() },
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async clear(): Promise<void> {
+    await this.prisma.recipe_steps.updateMany({
+      where: { tenant_id: this.tenantId },
+      data: { deleted_at: new Date() },
+    });
+  }
+
+  private mapToManifestEntity(step: recipe_steps): EntityInstance {
+    return {
+      id: step.id,
+      tenantId: step.tenant_id,
+      recipeVersionId: step.recipe_version_id,
+      stepNumber: step.step_number,
+      instruction: step.instruction,
+      durationMinutes: step.duration_minutes ?? 0,
+      temperatureValue: step.temperature_value
+        ? Number(step.temperature_value)
+        : 0,
+      temperatureUnit: step.temperature_unit ?? "",
+      equipmentNeeded: step.equipment_needed?.join(",") ?? "",
+      tips: step.tips ?? "",
+      videoUrl: step.video_url ?? "",
+      imageUrl: step.image_url ?? "",
+      createdAt: step.created_at.getTime(),
+      updatedAt: step.updated_at.getTime(),
     };
   }
 }
@@ -936,7 +1057,9 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
       where: { tenantId: this.tenantId, id, deletedAt: null },
     });
 
-    if (!existing) return false;
+    if (!existing) {
+      return false;
+    }
 
     await this.prisma.kitchenTask.update({
       where: { tenantId_id: { tenantId: this.tenantId, id } },
@@ -969,6 +1092,161 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
 }
 
 /**
+ * Prisma-backed store for AllergenWarning entities
+ *
+ * Maps Manifest AllergenWarning entities to the Prisma AllergenWarning table.
+ * Handles the conversion between Manifest string properties (allergens, affectedGuests)
+ * and Prisma array types.
+ */
+export class AllergenWarningPrismaStore implements Store<EntityInstance> {
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly tenantId: string
+  ) {}
+
+  async getAll(): Promise<EntityInstance[]> {
+    const warnings = await this.prisma.allergenWarning.findMany({
+      where: { tenantId: this.tenantId, deletedAt: null },
+    });
+    return warnings.map((warning) => this.mapToManifestEntity(warning));
+  }
+
+  async getById(id: string): Promise<EntityInstance | undefined> {
+    const warning = await this.prisma.allergenWarning.findFirst({
+      where: { tenantId: this.tenantId, id, deletedAt: null },
+    });
+    return warning ? this.mapToManifestEntity(warning) : undefined;
+  }
+
+  async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
+    const warning = await this.prisma.allergenWarning.create({
+      data: {
+        tenantId: this.tenantId,
+        id: data.id as string,
+        eventId: data.eventId as string,
+        dishId: (data.dishId as string) || null,
+        warningType: data.warningType as string,
+        allergens: this.stringToArray(data.allergens),
+        affectedGuests: this.stringToArray(data.affectedGuests),
+        severity: (data.severity as string) || "warning",
+        isAcknowledged: (data.isAcknowledged as boolean) ?? false,
+        acknowledgedBy: (data.acknowledgedBy as string) || null,
+        acknowledgedAt: data.acknowledgedAt
+          ? new Date(data.acknowledgedAt as number)
+          : null,
+        overrideReason: (data.overrideReason as string) || null,
+        resolved: (data.resolved as boolean) ?? false,
+        resolvedAt: data.resolvedAt
+          ? new Date(data.resolvedAt as number)
+          : null,
+        notes: (data.notes as string) || null,
+      },
+    });
+    return this.mapToManifestEntity(warning);
+  }
+
+  async update(
+    id: string,
+    data: Partial<EntityInstance>
+  ): Promise<EntityInstance | undefined> {
+    try {
+      const updated = await this.prisma.allergenWarning.update({
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
+        data: {
+          isAcknowledged: data.isAcknowledged as boolean | undefined,
+          acknowledgedBy: data.acknowledgedBy as string | null | undefined,
+          acknowledgedAt: data.acknowledgedAt
+            ? new Date(data.acknowledgedAt as number)
+            : undefined,
+          overrideReason: data.overrideReason as string | null | undefined,
+          resolved: data.resolved as boolean | undefined,
+          resolvedAt: data.resolvedAt
+            ? new Date(data.resolvedAt as number)
+            : undefined,
+          notes: data.notes as string | null | undefined,
+          updatedAt: new Date(),
+        },
+      });
+      return this.mapToManifestEntity(updated);
+    } catch {
+      return undefined;
+    }
+  }
+
+  async delete(id: string): Promise<boolean> {
+    try {
+      await this.prisma.allergenWarning.update({
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
+        data: { deletedAt: new Date() },
+      });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  async clear(): Promise<void> {
+    await this.prisma.allergenWarning.updateMany({
+      where: { tenantId: this.tenantId },
+      data: { deletedAt: new Date() },
+    });
+  }
+
+  /**
+   * Convert Manifest string property to Prisma array
+   * Manifest stores arrays as comma-separated strings
+   */
+  private stringToArray(value: unknown): string[] {
+    if (Array.isArray(value)) {
+      return value as string[];
+    }
+    if (typeof value === "string" && value.length > 0) {
+      return value.split(",").filter(Boolean);
+    }
+    return [];
+  }
+
+  /**
+   * Convert Prisma array to Manifest string property
+   */
+  private arrayToString(arr: string[] | null | undefined): string {
+    if (!arr || !Array.isArray(arr) || arr.length === 0) {
+      return "";
+    }
+    return arr.join(",");
+  }
+
+  private mapToManifestEntity(warning: AllergenWarning): EntityInstance {
+    return {
+      id: warning.id,
+      tenantId: warning.tenantId,
+      eventId: warning.eventId,
+      dishId: warning.dishId ?? "",
+      warningType: warning.warningType,
+      allergens: this.arrayToString(warning.allergens),
+      affectedGuests: this.arrayToString(warning.affectedGuests),
+      severity: warning.severity,
+      isAcknowledged: warning.isAcknowledged,
+      acknowledgedBy: warning.acknowledgedBy ?? "",
+      acknowledgedAt: warning.acknowledgedAt
+        ? warning.acknowledgedAt.getTime()
+        : 0,
+      overrideReason: warning.overrideReason ?? "",
+      resolved: warning.resolved,
+      resolvedAt: warning.resolvedAt ? warning.resolvedAt.getTime() : 0,
+      notes: warning.notes ?? "",
+      createdAt: warning.createdAt.getTime(),
+      updatedAt: warning.updatedAt.getTime(),
+      deletedAt: warning.deletedAt ? warning.deletedAt.getTime() : 0,
+      isHighSeverity: warning.severity === "critical",
+      isPending: !warning.isAcknowledged && !warning.resolved,
+      isOverridden: !!warning.overrideReason,
+      isDeleted: !!warning.deletedAt,
+    };
+  }
+}
+
+/**
  * Create a Prisma store provider for Kitchen-Ops entities
  *
  * This returns a function that provides the appropriate Store implementation
@@ -980,6 +1258,8 @@ export function createPrismaStoreProvider(
 ): (entityName: string) => Store<EntityInstance> | undefined {
   return (entityName: string) => {
     switch (entityName) {
+      case "AllergenWarning":
+        return new AllergenWarningPrismaStore(prisma, tenantId);
       case "PrepTask":
         return new PrepTaskPrismaStore(prisma, tenantId);
       case "Recipe":
@@ -990,6 +1270,8 @@ export function createPrismaStoreProvider(
         return new IngredientPrismaStore(prisma, tenantId);
       case "RecipeIngredient":
         return new RecipeIngredientPrismaStore(prisma, tenantId);
+      case "RecipeStep":
+        return new RecipeStepPrismaStore(prisma, tenantId);
       case "Dish":
         return new DishPrismaStore(prisma, tenantId);
       case "Menu":
@@ -1006,6 +1288,8 @@ export function createPrismaStoreProvider(
         return new InventoryItemPrismaStore(prisma, tenantId);
       case "KitchenTask":
         return new KitchenTaskPrismaStore(prisma, tenantId);
+      case "Event":
+        return new EventPrismaStore(prisma, tenantId);
       default:
         console.error(
           `[createPrismaStoreProvider] No store for entity "${entityName}" — commands will fail`
@@ -1126,6 +1410,130 @@ export async function syncDishToPrisma(
     await store.update(entity.id, entity);
   } else {
     await store.create(entity);
+  }
+}
+
+/**
+ * Prisma-backed store for Event entities
+ *
+ * Maps Manifest Event entities to the Prisma Event table (tenant_events.events).
+ */
+export class EventPrismaStore implements Store<EntityInstance> {
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly tenantId: string
+  ) {}
+
+  async getAll(): Promise<EntityInstance[]> {
+    const events = await this.prisma.event.findMany({
+      where: { tenantId: this.tenantId, deletedAt: null },
+    });
+    return events.map((event) => this.mapToManifestEntity(event));
+  }
+
+  async getById(id: string): Promise<EntityInstance | undefined> {
+    const event = await this.prisma.event.findFirst({
+      where: { tenantId: this.tenantId, id, deletedAt: null },
+    });
+    return event ? this.mapToManifestEntity(event) : undefined;
+  }
+
+  async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
+    // Helper: convert string "null"/"undefined"/empty to actual null
+    const toNull = (v: unknown): string | null | undefined => {
+      if (v === null || v === undefined || v === "null" || v === "undefined" || v === "") return null;
+      return String(v);
+    };
+    const toNum = (v: unknown): number | null => {
+      if (v === null || v === undefined || v === "null" || v === "undefined") return null;
+      const n = Number(v);
+      return isNaN(n) ? null : n;
+    };
+    const event = await this.prisma.event.create({
+      data: {
+        tenantId: this.tenantId,
+        id: toNull(data.id) || undefined,
+        eventNumber: toNull(data.eventNumber) || null,
+        title: toNull(data.title) || "Untitled Event",
+        clientId: toNull(data.clientId),
+        locationId: toNull(data.locationId),
+        venueId: toNull(data.venueId),
+        venueEntityId: toNull(data.venueEntityId),
+        eventType: toNull(data.eventType) || "catering",
+        eventDate: data.eventDate ? new Date(toNum(data.eventDate) || Date.now()) : new Date(),
+        guestCount: toNum(data.guestCount) || 1,
+        status: toNull(data.status) || "draft",
+        venueName: toNull(data.venueName),
+        venueAddress: toNull(data.venueAddress),
+        notes: toNull(data.notes),
+        tags: Array.isArray(data.tags) ? data.tags as string[] : [],
+      },
+    });
+    return this.mapToManifestEntity(event);
+  }
+
+  async update(id: string, data: Partial<EntityInstance>): Promise<EntityInstance | undefined> {
+    try {
+      const updateData: Record<string, unknown> = {};
+      if (data.eventNumber !== undefined) updateData.eventNumber = data.eventNumber;
+      if (data.title !== undefined) updateData.title = data.title;
+      if (data.clientId !== undefined) updateData.clientId = data.clientId;
+      if (data.eventType !== undefined) updateData.eventType = data.eventType;
+      if (data.eventDate !== undefined) updateData.eventDate = new Date(data.eventDate as number);
+      if (data.guestCount !== undefined) updateData.guestCount = data.guestCount;
+      if (data.status !== undefined) updateData.status = data.status;
+      if (data.venueName !== undefined) updateData.venueName = data.venueName;
+      if (data.venueAddress !== undefined) updateData.venueAddress = data.venueAddress;
+      if (data.notes !== undefined) updateData.notes = data.notes;
+      if (data.tags !== undefined) updateData.tags = Array.isArray(data.tags) ? data.tags as string[] : [];
+
+      if (Object.keys(updateData).length === 0) return this.getById(id);
+
+      const updated = await this.prisma.event.update({
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
+        data: updateData,
+      });
+      return this.mapToManifestEntity(updated);
+    } catch { return undefined; }
+  }
+
+  async delete(id: string): Promise<boolean> {
+    try {
+      await this.prisma.event.update({
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
+        data: { deletedAt: new Date() },
+      });
+      return true;
+    } catch { return false; }
+  }
+
+  async clear(): Promise<void> { }
+
+  private mapToManifestEntity(event: {
+    id: string; tenantId: string; eventNumber: string | null; title: string;
+    clientId: string | null; locationId: string | null; venueId: string | null;
+    venueEntityId: string | null; eventType: string; eventDate: Date; guestCount: number;
+    status: string; budget: unknown; ticketPrice: unknown; ticketTier: string | null;
+    eventFormat: string | null; accessibilityOptions: string[]; featuredMediaUrl: string | null;
+    assignedTo: string | null; venueName: string | null; venueAddress: string | null;
+    notes: string | null; tags: string[]; createdAt: Date; updatedAt: Date; deletedAt: Date | null;
+  }): EntityInstance {
+    return {
+      id: event.id, tenantId: event.tenantId, eventNumber: event.eventNumber ?? "",
+      title: event.title, clientId: event.clientId ?? "", locationId: event.locationId ?? "",
+      venueId: event.venueId ?? "", venueEntityId: event.venueEntityId ?? "",
+      eventType: event.eventType, eventDate: event.eventDate.getTime(),
+      guestCount: event.guestCount, status: event.status,
+      budget: event.budget ? Number(event.budget) : 0,
+      ticketPrice: event.ticketPrice ? Number(event.ticketPrice) : 0,
+      ticketTier: event.ticketTier ?? "", eventFormat: event.eventFormat ?? "",
+      accessibilityOptions: event.accessibilityOptions?.join(",") ?? "",
+      featuredMediaUrl: event.featuredMediaUrl ?? "", assignedTo: event.assignedTo ?? "",
+      venueName: event.venueName ?? "", venueAddress: event.venueAddress ?? "",
+      notes: event.notes ?? "", tags: event.tags?.join(",") ?? "",
+      createdAt: event.createdAt.getTime(), updatedAt: event.updatedAt.getTime(),
+      deletedAt: event.deletedAt?.getTime() ?? 0,
+    };
   }
 }
 

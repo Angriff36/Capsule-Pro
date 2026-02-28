@@ -231,15 +231,18 @@ export function AccountModal({
                 <Select
                   disabled={isLoading}
                   onValueChange={(value) =>
-                    setFormData({ ...formData, parent_id: value })
+                    setFormData({
+                      ...formData,
+                      parent_id: value === "__none__" ? "" : value,
+                    })
                   }
-                  value={formData.parent_id}
+                  value={formData.parent_id || "__none__"}
                 >
                   <SelectTrigger id="parent_id">
                     <SelectValue placeholder="Select parent account (optional)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">No parent</SelectItem>
+                    <SelectItem value="__none__">No parent</SelectItem>
                     {availableParentAccounts.map((acc) => (
                       <SelectItem key={acc.id} value={acc.id}>
                         {acc.account_number} - {acc.account_name}

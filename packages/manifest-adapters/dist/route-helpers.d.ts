@@ -8,11 +8,16 @@
  * Auth and context setup should be handled at the app level, not in shared packages.
  */
 /**
- * Create a standard error response
+ * Create a standard error response.
+ * Uses the standard Web API Response so this package does not need a
+ * hard dependency on next/server. Next.js accepts plain Response objects
+ * from App Router route handlers.
  */
 export declare function manifestErrorResponse(error: Error | string, statusCode?: number, details?: Record<string, unknown>): Response;
 /**
- * Create a standard success response
+ * Create a standard success response.
+ * Uses the standard Web API Response so this package does not need a
+ * hard dependency on next/server.
  */
 export declare function manifestSuccessResponse<T>(data: T): Response;
 /**
@@ -74,4 +79,25 @@ export declare function checkCommandResult(result: {
     success: boolean;
     constraintOutcomes?: unknown[];
 }): void;
+/**
+ * Create a response for constraint-blocked operations.
+ * Returns HTTP 200 with success: false and constraint outcomes.
+ * This allows the frontend to show the override dialog.
+ */
+export declare function manifestConstraintBlockedResponse(constraintOutcomes: unknown[], message?: string): Response;
+/**
+ * Check if a command result has blocking constraints.
+ * Returns the blocking constraints or null if none.
+ */
+export declare function getBlockingConstraints(result: {
+    success: boolean;
+    constraintOutcomes?: unknown[];
+}): unknown[] | null;
+/**
+ * Get warning constraints from a successful result.
+ */
+export declare function getWarningConstraints(result: {
+    success: boolean;
+    constraintOutcomes?: unknown[];
+}): unknown[];
 //# sourceMappingURL=route-helpers.d.ts.map

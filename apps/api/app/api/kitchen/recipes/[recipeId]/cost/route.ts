@@ -1,8 +1,27 @@
+/**
+ * @module RecipeCost
+ * @intent Handle API requests to calculate and update recipe costs
+ * @responsibility Calculate ingredient costs, update RecipeVersion via manifest runtime
+ * @domain Kitchen
+ * @tags recipes, api, cost-calculation
+ * @canonical true
+ */
+
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { createManifestRuntime } from "@repo/manifest-adapters/manifest-runtime-factory";
+import {
+  getBlockingConstraints,
+  manifestErrorResponse,
+  manifestSuccessResponse,
+} from "@repo/manifest-adapters/route-helpers";
+import { log } from "@repo/observability/log";
 import { captureException } from "@sentry/nextjs";
-import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { createSentryTelemetry } from "@/lib/manifest/telemetry";
+
+export const runtime = "nodejs";
 
 export interface UnitConversion {
   fromUnitId: number;
@@ -29,10 +48,14 @@ export interface IngredientCostBreakdown {
   hasInventoryItem: boolean;
 }
 
-const calculateRecipeCost = async (
+/**
+ * Calculate recipe cost from ingredients.
+ * Returns cost breakdown without persisting (used by both GET and POST).
+ */
+const calculateRecipeCostData = async (
   tenantId: string,
   recipeVersionId: string
-): Promise<RecipeCostBreakdown | null> => {
+): Promise<{ breakdown: RecipeCostBreakdown; totalCost: number; costPerYield: number } | null> => {
   const recipeVersion = await database.recipeVersion.findFirst({
     where: { tenantId, id: recipeVersionId, deletedAt: null },
     select: { id: true, yieldQuantity: true },
@@ -94,41 +117,22 @@ const calculateRecipeCost = async (
   const yieldQuantity = Number(recipeVersion.yieldQuantity);
   const costPerYield = yieldQuantity > 0 ? totalCost / yieldQuantity : 0;
 
-  await database.recipeVersion.update({
-    where: { tenantId_id: { tenantId, id: recipeVersionId } },
-    data: {
+  return {
+    breakdown: {
       totalCost,
       costPerYield,
-      costCalculatedAt: new Date(),
+      ingredients: costBreakdowns,
     },
-  });
-
-  return {
     totalCost,
     costPerYield,
-    ingredients: costBreakdowns,
   };
 };
 
-const calculateAllRecipeCosts = async (
-  tenantId: string,
-  recipeVersionId: string
-): Promise<RecipeCostBreakdown | null> => {
-  // Batch update all ingredient cost timestamps in one query (fixes N+1)
-  await database.recipeIngredient.updateMany({
-    where: {
-      tenantId,
-      recipeVersionId,
-      deletedAt: null,
-    },
-    data: { costCalculatedAt: new Date() },
-  });
-
-  return await calculateRecipeCost(tenantId, recipeVersionId);
-};
-
+/**
+ * GET - Fetch recipe cost breakdown (read-only, no persistence)
+ */
 export async function GET(
-  _request: Request,
+  _request: NextRequest,
   { params }: { params: Promise<{ recipeId: string }> }
 ) {
   try {
@@ -137,60 +141,138 @@ export async function GET(
     const { orgId } = await auth();
 
     if (!orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return manifestErrorResponse("Unauthorized", 401);
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
-    const costSummary = await calculateRecipeCost(tenantId, recipeVersionId);
-
-    if (!costSummary) {
-      return NextResponse.json(
-        { error: "Recipe version not found" },
-        { status: 404 }
-      );
+    if (!tenantId) {
+      return manifestErrorResponse("Tenant not found", 400);
     }
 
-    return NextResponse.json(costSummary);
+    const costData = await calculateRecipeCostData(tenantId, recipeVersionId);
+
+    if (!costData) {
+      return manifestErrorResponse("Recipe version not found", 404);
+    }
+
+    return manifestSuccessResponse(costData.breakdown);
   } catch (error) {
+    console.error("[recipes/cost] Error:", error);
     captureException(error);
-    return NextResponse.json(
-      { error: "Failed to fetch recipe cost" },
-      { status: 500 }
-    );
+    const message =
+      error instanceof Error ? error.message : "Failed to fetch recipe cost";
+    return manifestErrorResponse(message, 500);
   }
 }
 
+/**
+ * POST - Recalculate and persist recipe costs via manifest runtime
+ */
 export async function POST(
-  _request: Request,
+  _request: NextRequest,
   { params }: { params: Promise<{ recipeVersionId: string }> }
 ) {
   try {
     const { recipeVersionId } = await params;
-    const { orgId } = await auth();
+    const { orgId, userId } = await auth();
 
-    if (!orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    if (!(userId && orgId)) {
+      return manifestErrorResponse("Unauthorized", 401);
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
-    const costSummary = await calculateAllRecipeCosts(
-      tenantId,
-      recipeVersionId
-    );
+    if (!tenantId) {
+      return manifestErrorResponse("Tenant not found", 400);
+    }
 
-    if (!costSummary) {
-      return NextResponse.json(
-        { error: "Recipe version not found" },
-        { status: 404 }
+    // Calculate costs first
+    const costData = await calculateRecipeCostData(tenantId, recipeVersionId);
+
+    if (!costData) {
+      return manifestErrorResponse("Recipe version not found", 404);
+    }
+
+    // Update ingredient cost timestamps (batch update, no manifest needed)
+    await database.recipeIngredient.updateMany({
+      where: {
+        tenantId,
+        recipeVersionId,
+        deletedAt: null,
+      },
+      data: { costCalculatedAt: new Date() },
+    });
+
+    // Update RecipeVersion costs via manifest runtime
+    const sentryTelemetry = createSentryTelemetry();
+
+    const result = await database.$transaction(async (tx) => {
+      const runtime = await createManifestRuntime(
+        {
+          prisma: database,
+          prismaOverride: tx,
+          log,
+          captureException,
+          telemetry: sentryTelemetry,
+        },
+        {
+          user: { id: userId, tenantId },
+        }
+      );
+
+      const updateResult = await runtime.runCommand(
+        "updateCosts",
+        {
+          id: recipeVersionId,
+          newTotalCost: costData.totalCost,
+          newCostPerYield: costData.costPerYield,
+        },
+        { entityName: "RecipeVersion" }
+      );
+
+      // Check for blocking constraints
+      const blocking = getBlockingConstraints(updateResult);
+      if (blocking) {
+        throw Object.assign(new Error("CONSTRAINT_BLOCKED"), {
+          constraintOutcomes: updateResult.constraintOutcomes || [],
+        });
+      }
+
+      if (!updateResult.success) {
+        throw new Error(
+          updateResult.guardFailure?.formatted ||
+            updateResult.policyDenial?.policyName ||
+            updateResult.error ||
+            "Failed to update costs"
+        );
+      }
+
+      return updateResult;
+    });
+
+    return manifestSuccessResponse({
+      ...costData.breakdown,
+      events: result.emittedEvents || [],
+      constraintOutcomes: result.constraintOutcomes || [],
+    });
+  } catch (error) {
+    // Check if this is a constraint-blocked error
+    if (
+      error instanceof Error &&
+      error.message === "CONSTRAINT_BLOCKED" &&
+      "constraintOutcomes" in error
+    ) {
+      return manifestErrorResponse(
+        "Cost update blocked by constraints",
+        400,
+        { constraintOutcomes: (error as { constraintOutcomes: unknown[] }).constraintOutcomes }
       );
     }
 
-    return NextResponse.json(costSummary);
-  } catch (error) {
+    console.error("[recipes/cost] Error:", error);
     captureException(error);
-    return NextResponse.json(
-      { error: "Failed to recalculate recipe cost" },
-      { status: 500 }
-    );
+
+    const message =
+      error instanceof Error ? error.message : "Failed to recalculate recipe cost";
+    return manifestErrorResponse(message, 500);
   }
 }

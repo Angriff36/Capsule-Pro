@@ -1,4 +1,4 @@
-import { RuntimeEngine } from "@manifest/runtime";
+import { RuntimeEngine } from "@angriff36/manifest";
 /**
  * Compatibility layer until compiler output always includes command owners.
  * This keeps command lookup authoritative on IR root commands.

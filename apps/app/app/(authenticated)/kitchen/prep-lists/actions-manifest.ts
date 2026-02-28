@@ -1,13 +1,10 @@
 "use server";
 
 import { randomUUID } from "node:crypto";
-// biome-ignore lint/performance/noBarrelFile: Sentry requires namespace import for logger
-import * as Sentry from "@sentry/nextjs";
-
-const { captureException } = Sentry;
-
-import type { ConstraintOutcome, OverrideRequest } from "@manifest/runtime/ir";
-import { auth } from "@repo/auth/server";
+import type {
+  ConstraintOutcome,
+  OverrideRequest,
+} from "@angriff36/manifest/ir";
 import { database, Prisma } from "@repo/database";
 import {
   activatePrepList,
@@ -26,9 +23,10 @@ import {
   updatePrepListItemQuantity,
   updatePrepListItemStation,
 } from "@repo/manifest-adapters";
+// biome-ignore lint/performance/noNamespaceImport: Sentry.logger requires namespace import
+import * as Sentry from "@sentry/nextjs";
 import { revalidatePath } from "next/cache";
-import { invariant } from "../../../lib/invariant";
-import { requireTenantId } from "../../../lib/tenant";
+import { requireCurrentUser, requireTenantId } from "../../../lib/tenant";
 
 // ============ Helper Types ============
 
@@ -111,19 +109,7 @@ export interface PrepListManifestActionResult {
  * for persistent entity storage and constraint checking.
  */
 async function createRuntimeContext(): Promise<KitchenOpsContext> {
-  const { orgId } = await auth();
-  invariant(orgId, "Unauthorized");
-
-  const tenantId = await requireTenantId();
-
-  // Get current user from database
-  const currentUser = await database.user.findFirst({
-    where: {
-      AND: [{ tenantId }, { authUserId: (await auth()).userId ?? "" }],
-    },
-  });
-
-  invariant(currentUser, "User not found in database");
+  const currentUser = await requireCurrentUser();
 
   // Dynamically import PrismaStore to avoid circular dependencies
   const { createPrismaStoreProvider } = await import(
@@ -131,10 +117,10 @@ async function createRuntimeContext(): Promise<KitchenOpsContext> {
   );
 
   return {
-    tenantId,
+    tenantId: currentUser.tenantId,
     userId: currentUser.id,
     userRole: currentUser.role,
-    storeProvider: createPrismaStoreProvider(database, tenantId),
+    storeProvider: createPrismaStoreProvider(database, currentUser.tenantId),
   };
 }
 
@@ -152,27 +138,6 @@ function createOverrideRequests(
     authorizedBy: userId,
     timestamp: Date.now(),
   }));
-}
-
-/**
- * Enqueue outbox event for downstream consumers
- */
-async function enqueueOutboxEvent(
-  tenantId: string,
-  aggregateType: string,
-  aggregateId: string,
-  eventType: string,
-  payload: Prisma.InputJsonValue
-) {
-  await database.outboxEvent.create({
-    data: {
-      tenantId,
-      aggregateType,
-      aggregateId,
-      eventType,
-      payload,
-    },
-  });
 }
 
 // ============ Public Actions ============
@@ -270,109 +235,113 @@ export const createPrepListManifest = async (
     );
   }
 
-  // Persist to Prisma database
-  await database.$executeRaw(
-    Prisma.sql`
-      INSERT INTO tenant_kitchen.prep_lists (
-        tenant_id,
-        event_id,
-        id,
-        name,
-        batch_multiplier,
-        dietary_restrictions,
-        status,
-        total_items,
-        total_estimated_time,
-        notes,
-        generated_at
-      )
-      VALUES (
-        ${tenantId},
-        ${input.eventId},
-        ${prepListId},
-        ${name},
-        ${input.batchMultiplier ?? 1},
-        ${input.dietaryRestrictions?.length > 0 ? input.dietaryRestrictions : null},
-        'draft',
-        ${input.totalItems ?? 0},
-        ${totalEstimatedTimeMinutes},
-        ${input.notes ?? null},
-        NOW()
-      )
-    `
-  );
+  // Persist to Prisma database + outbox atomically
+  await database.$transaction(async (tx) => {
+    await tx.$executeRaw(
+      Prisma.sql`
+        INSERT INTO tenant_kitchen.prep_lists (
+          tenant_id,
+          event_id,
+          id,
+          name,
+          batch_multiplier,
+          dietary_restrictions,
+          status,
+          total_items,
+          total_estimated_time,
+          notes,
+          generated_at
+        )
+        VALUES (
+          ${tenantId},
+          ${input.eventId},
+          ${prepListId},
+          ${name},
+          ${input.batchMultiplier ?? 1},
+          ${input.dietaryRestrictions?.length > 0 ? input.dietaryRestrictions : null},
+          'draft',
+          ${input.totalItems ?? 0},
+          ${totalEstimatedTimeMinutes},
+          ${input.notes ?? null},
+          NOW()
+        )
+      `
+    );
 
-  // Create prep list items
-  if (input.items && Array.isArray(input.items)) {
-    for (let i = 0; i < input.items.length; i++) {
-      const item = input.items[i];
-      const itemId = randomUUID();
+    // Create prep list items
+    if (input.items && Array.isArray(input.items)) {
+      for (let i = 0; i < input.items.length; i++) {
+        const item = input.items[i];
+        const itemId = randomUUID();
 
-      await database.$executeRaw(
-        Prisma.sql`
-          INSERT INTO tenant_kitchen.prep_list_items (
-            tenant_id,
-            prep_list_id,
-            id,
-            station_id,
-            station_name,
-            ingredient_id,
-            ingredient_name,
-            category,
-            base_quantity,
-            base_unit,
-            scaled_quantity,
-            scaled_unit,
-            is_optional,
-            preparation_notes,
-            allergens,
-            dietary_substitutions,
-            dish_id,
-            dish_name,
-            recipe_version_id,
-            sort_order
-          )
-          VALUES (
-            ${tenantId},
-            ${prepListId},
-            ${itemId},
-            ${item.stationId},
-            ${item.stationName},
-            ${item.ingredientId},
-            ${item.ingredientName},
-            ${item.category ?? null},
-            ${item.baseQuantity},
-            ${item.baseUnit},
-            ${item.scaledQuantity},
-            ${item.scaledUnit},
-            ${item.isOptional},
-            ${item.preparationNotes ?? null},
-            ${item.allergens ?? []},
-            ${item.dietarySubstitutions ?? []},
-            ${item.dishId ?? null},
-            ${item.dishName ?? null},
-            ${item.recipeVersionId ?? null},
-            ${i}
-          )
-        `
-      );
+        await tx.$executeRaw(
+          Prisma.sql`
+            INSERT INTO tenant_kitchen.prep_list_items (
+              tenant_id,
+              prep_list_id,
+              id,
+              station_id,
+              station_name,
+              ingredient_id,
+              ingredient_name,
+              category,
+              base_quantity,
+              base_unit,
+              scaled_quantity,
+              scaled_unit,
+              is_optional,
+              preparation_notes,
+              allergens,
+              dietary_substitutions,
+              dish_id,
+              dish_name,
+              recipe_version_id,
+              sort_order
+            )
+            VALUES (
+              ${tenantId},
+              ${prepListId},
+              ${itemId},
+              ${item.stationId},
+              ${item.stationName},
+              ${item.ingredientId},
+              ${item.ingredientName},
+              ${item.category ?? null},
+              ${item.baseQuantity},
+              ${item.baseUnit},
+              ${item.scaledQuantity},
+              ${item.scaledUnit},
+              ${item.isOptional},
+              ${item.preparationNotes ?? null},
+              ${item.allergens ?? []},
+              ${item.dietarySubstitutions ?? []},
+              ${item.dishId ?? null},
+              ${item.dishName ?? null},
+              ${item.recipeVersionId ?? null},
+              ${i}
+            )
+          `
+        );
+      }
     }
-  }
 
-  // Enqueue outbox event
-  await enqueueOutboxEvent(
-    tenantId,
-    "PrepList",
-    prepListId,
-    "kitchen.preplist.created",
-    {
-      prepListId,
-      eventId: input.eventId,
-      name,
-      totalItems: input.totalItems ?? 0,
-      batchMultiplier: input.batchMultiplier ?? 1,
-    }
-  );
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "PrepList",
+        aggregateId: prepListId,
+        eventType: "kitchen.preplist.created",
+        payload: {
+          prepListId,
+          eventId: input.eventId,
+          name,
+          totalItems: input.totalItems ?? 0,
+          batchMultiplier: input.batchMultiplier ?? 1,
+        },
+        status: "pending" as const,
+      },
+    });
+  });
 
   revalidatePath("/kitchen/prep-lists");
 
@@ -490,32 +459,36 @@ export const updatePrepListManifest = async (
     };
   }
 
-  // Persist to Prisma
-  await database.$executeRaw(
-    Prisma.sql`
-      UPDATE tenant_kitchen.prep_lists
-      SET
-        name = ${name},
-        dietary_restrictions = ${input.dietaryRestrictions?.length > 0 ? input.dietaryRestrictions : null},
-        notes = ${input.notes ?? null},
-        updated_at = NOW()
-      WHERE tenant_id = ${tenantId}
-        AND id = ${input.prepListId}
-    `
-  );
+  // Persist to Prisma + outbox atomically
+  await database.$transaction(async (tx) => {
+    await tx.$executeRaw(
+      Prisma.sql`
+        UPDATE tenant_kitchen.prep_lists
+        SET
+          name = ${name},
+          dietary_restrictions = ${input.dietaryRestrictions?.length > 0 ? input.dietaryRestrictions : null},
+          notes = ${input.notes ?? null},
+          updated_at = NOW()
+        WHERE tenant_id = ${tenantId}
+          AND id = ${input.prepListId}
+      `
+    );
 
-  // Enqueue outbox event
-  await enqueueOutboxEvent(
-    tenantId,
-    "PrepList",
-    input.prepListId,
-    "kitchen.preplist.updated",
-    {
-      prepListId: input.prepListId,
-      oldName: existing.name,
-      newName: name,
-    }
-  );
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "PrepList",
+        aggregateId: input.prepListId,
+        eventType: "kitchen.preplist.updated",
+        payload: {
+          prepListId: input.prepListId,
+          oldName: existing.name,
+          newName: name,
+        },
+        status: "pending" as const,
+      },
+    });
+  });
 
   revalidatePath("/kitchen/prep-lists");
   revalidatePath(`/kitchen/prep-lists/${input.prepListId}`);
@@ -620,29 +593,33 @@ export const updateBatchMultiplierManifest = async (
     };
   }
 
-  // Persist to Prisma
-  await database.$executeRaw(
-    Prisma.sql`
-      UPDATE tenant_kitchen.prep_lists
-      SET batch_multiplier = ${input.batchMultiplier},
-          updated_at = NOW()
-      WHERE tenant_id = ${tenantId}
-        AND id = ${input.prepListId}
-    `
-  );
+  // Persist to Prisma + outbox atomically
+  await database.$transaction(async (tx) => {
+    await tx.$executeRaw(
+      Prisma.sql`
+        UPDATE tenant_kitchen.prep_lists
+        SET batch_multiplier = ${input.batchMultiplier},
+            updated_at = NOW()
+        WHERE tenant_id = ${tenantId}
+          AND id = ${input.prepListId}
+      `
+    );
 
-  // Enqueue outbox event
-  await enqueueOutboxEvent(
-    tenantId,
-    "PrepList",
-    input.prepListId,
-    "kitchen.preplist.batch_multiplier_updated",
-    {
-      prepListId: input.prepListId,
-      oldMultiplier: existing.batch_multiplier,
-      newMultiplier: input.batchMultiplier,
-    }
-  );
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "PrepList",
+        aggregateId: input.prepListId,
+        eventType: "kitchen.preplist.batch_multiplier_updated",
+        payload: {
+          prepListId: input.prepListId,
+          oldMultiplier: existing.batch_multiplier,
+          newMultiplier: input.batchMultiplier,
+        },
+        status: "pending" as const,
+      },
+    });
+  });
 
   revalidatePath("/kitchen/prep-lists");
   revalidatePath(`/kitchen/prep-lists/${input.prepListId}`);
@@ -715,30 +692,34 @@ export const finalizePrepListManifest = async (
     };
   }
 
-  // Persist to Prisma
-  await database.$executeRaw(
-    Prisma.sql`
-      UPDATE tenant_kitchen.prep_lists
-      SET status = 'finalized',
-          finalized_at = NOW(),
-          updated_at = NOW()
-      WHERE tenant_id = ${tenantId}
-        AND id = ${prepListId}
-    `
-  );
+  // Persist to Prisma + outbox atomically
+  await database.$transaction(async (tx) => {
+    await tx.$executeRaw(
+      Prisma.sql`
+        UPDATE tenant_kitchen.prep_lists
+        SET status = 'finalized',
+            finalized_at = NOW(),
+            updated_at = NOW()
+        WHERE tenant_id = ${tenantId}
+          AND id = ${prepListId}
+      `
+    );
 
-  // Enqueue outbox event
-  await enqueueOutboxEvent(
-    tenantId,
-    "PrepList",
-    prepListId,
-    "kitchen.preplist.finalized",
-    {
-      prepListId,
-      totalItems: existing.total_items,
-      finalizedAt: Date.now(),
-    }
-  );
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "PrepList",
+        aggregateId: prepListId,
+        eventType: "kitchen.preplist.finalized",
+        payload: {
+          prepListId,
+          totalItems: existing.total_items,
+          finalizedAt: Date.now(),
+        },
+        status: "pending" as const,
+      },
+    });
+  });
 
   revalidatePath("/kitchen/prep-lists");
   revalidatePath(`/kitchen/prep-lists/${prepListId}`);
@@ -794,28 +775,32 @@ export const activatePrepListManifest = async (
   // Activate via Manifest
   const activateResult = await activatePrepList(runtime, prepListId);
 
-  // Persist to Prisma
-  await database.$executeRaw(
-    Prisma.sql`
-      UPDATE tenant_kitchen.prep_lists
-      SET is_active = true,
-          updated_at = NOW()
-      WHERE tenant_id = ${tenantId}
-        AND id = ${prepListId}
-    `
-  );
+  // Persist to Prisma + outbox atomically
+  await database.$transaction(async (tx) => {
+    await tx.$executeRaw(
+      Prisma.sql`
+        UPDATE tenant_kitchen.prep_lists
+        SET is_active = true,
+            updated_at = NOW()
+        WHERE tenant_id = ${tenantId}
+          AND id = ${prepListId}
+      `
+    );
 
-  // Enqueue outbox event
-  await enqueueOutboxEvent(
-    tenantId,
-    "PrepList",
-    prepListId,
-    "kitchen.preplist.activated",
-    {
-      prepListId,
-      activatedAt: Date.now(),
-    }
-  );
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "PrepList",
+        aggregateId: prepListId,
+        eventType: "kitchen.preplist.activated",
+        payload: {
+          prepListId,
+          activatedAt: Date.now(),
+        },
+        status: "pending" as const,
+      },
+    });
+  });
 
   revalidatePath("/kitchen/prep-lists");
   revalidatePath(`/kitchen/prep-lists/${prepListId}`);
@@ -871,28 +856,32 @@ export const deactivatePrepListManifest = async (
   // Deactivate via Manifest
   const deactivateResult = await deactivatePrepList(runtime, prepListId);
 
-  // Persist to Prisma
-  await database.$executeRaw(
-    Prisma.sql`
-      UPDATE tenant_kitchen.prep_lists
-      SET is_active = false,
-          updated_at = NOW()
-      WHERE tenant_id = ${tenantId}
-        AND id = ${prepListId}
-    `
-  );
+  // Persist to Prisma + outbox atomically
+  await database.$transaction(async (tx) => {
+    await tx.$executeRaw(
+      Prisma.sql`
+        UPDATE tenant_kitchen.prep_lists
+        SET is_active = false,
+            updated_at = NOW()
+        WHERE tenant_id = ${tenantId}
+          AND id = ${prepListId}
+      `
+    );
 
-  // Enqueue outbox event
-  await enqueueOutboxEvent(
-    tenantId,
-    "PrepList",
-    prepListId,
-    "kitchen.preplist.deactivated",
-    {
-      prepListId,
-      deactivatedAt: Date.now(),
-    }
-  );
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "PrepList",
+        aggregateId: prepListId,
+        eventType: "kitchen.preplist.deactivated",
+        payload: {
+          prepListId,
+          deactivatedAt: Date.now(),
+        },
+        status: "pending" as const,
+      },
+    });
+  });
 
   revalidatePath("/kitchen/prep-lists");
   revalidatePath(`/kitchen/prep-lists/${prepListId}`);
@@ -948,28 +937,32 @@ export const markPrepListCompletedManifest = async (
   // Mark completed via Manifest
   const completeResult = await markPrepListCompleted(runtime, prepListId);
 
-  // Persist to Prisma
-  await database.$executeRaw(
-    Prisma.sql`
-      UPDATE tenant_kitchen.prep_lists
-      SET status = 'completed',
-          updated_at = NOW()
-      WHERE tenant_id = ${tenantId}
-        AND id = ${prepListId}
-    `
-  );
+  // Persist to Prisma + outbox atomically
+  await database.$transaction(async (tx) => {
+    await tx.$executeRaw(
+      Prisma.sql`
+        UPDATE tenant_kitchen.prep_lists
+        SET status = 'completed',
+            updated_at = NOW()
+        WHERE tenant_id = ${tenantId}
+          AND id = ${prepListId}
+      `
+    );
 
-  // Enqueue outbox event
-  await enqueueOutboxEvent(
-    tenantId,
-    "PrepList",
-    prepListId,
-    "kitchen.preplist.completed",
-    {
-      prepListId,
-      completedAt: Date.now(),
-    }
-  );
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "PrepList",
+        aggregateId: prepListId,
+        eventType: "kitchen.preplist.completed",
+        payload: {
+          prepListId,
+          completedAt: Date.now(),
+        },
+        status: "pending" as const,
+      },
+    });
+  });
 
   revalidatePath("/kitchen/prep-lists");
   revalidatePath(`/kitchen/prep-lists/${prepListId}`);
@@ -1026,29 +1019,33 @@ export const cancelPrepListManifest = async (
   // Cancel via Manifest
   const cancelResult = await cancelPrepList(runtime, prepListId, reason);
 
-  // Persist to Prisma
-  await database.$executeRaw(
-    Prisma.sql`
-      UPDATE tenant_kitchen.prep_lists
-      SET status = 'cancelled',
-          updated_at = NOW()
-      WHERE tenant_id = ${tenantId}
-        AND id = ${prepListId}
-    `
-  );
+  // Persist to Prisma + outbox atomically
+  await database.$transaction(async (tx) => {
+    await tx.$executeRaw(
+      Prisma.sql`
+        UPDATE tenant_kitchen.prep_lists
+        SET status = 'cancelled',
+            updated_at = NOW()
+        WHERE tenant_id = ${tenantId}
+          AND id = ${prepListId}
+      `
+    );
 
-  // Enqueue outbox event
-  await enqueueOutboxEvent(
-    tenantId,
-    "PrepList",
-    prepListId,
-    "kitchen.preplist.cancelled",
-    {
-      prepListId,
-      reason,
-      cancelledAt: Date.now(),
-    }
-  );
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "PrepList",
+        aggregateId: prepListId,
+        eventType: "kitchen.preplist.cancelled",
+        payload: {
+          prepListId,
+          reason,
+          cancelledAt: Date.now(),
+        },
+        status: "pending" as const,
+      },
+    });
+  });
 
   revalidatePath("/kitchen/prep-lists");
   revalidatePath(`/kitchen/prep-lists/${prepListId}`);
@@ -1126,32 +1123,36 @@ export const updatePrepListItemQuantityManifest = async (
     };
   }
 
-  // Persist to Prisma
-  await database.$executeRaw(
-    Prisma.sql`
-      UPDATE tenant_kitchen.prep_list_items
-      SET base_quantity = ${input.baseQuantity},
-          scaled_quantity = ${input.scaledQuantity},
-          base_unit = ${input.baseUnit},
-          scaled_unit = ${input.scaledUnit},
-          updated_at = NOW()
-      WHERE tenant_id = ${tenantId}
-        AND id = ${input.itemId}
-    `
-  );
+  // Persist to Prisma + outbox atomically
+  await database.$transaction(async (tx) => {
+    await tx.$executeRaw(
+      Prisma.sql`
+        UPDATE tenant_kitchen.prep_list_items
+        SET base_quantity = ${input.baseQuantity},
+            scaled_quantity = ${input.scaledQuantity},
+            base_unit = ${input.baseUnit},
+            scaled_unit = ${input.scaledUnit},
+            updated_at = NOW()
+        WHERE tenant_id = ${tenantId}
+          AND id = ${input.itemId}
+      `
+    );
 
-  // Enqueue outbox event
-  await enqueueOutboxEvent(
-    tenantId,
-    "PrepListItem",
-    input.itemId,
-    "kitchen.preplist.item_updated",
-    {
-      itemId: input.itemId,
-      oldScaledQuantity: existing.scaled_quantity,
-      newScaledQuantity: input.scaledQuantity,
-    }
-  );
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "PrepListItem",
+        aggregateId: input.itemId,
+        eventType: "kitchen.preplist.item_updated",
+        payload: {
+          itemId: input.itemId,
+          oldScaledQuantity: existing.scaled_quantity,
+          newScaledQuantity: input.scaledQuantity,
+        },
+        status: "pending" as const,
+      },
+    });
+  });
 
   revalidatePath("/kitchen/prep-lists");
 
@@ -1217,30 +1218,34 @@ export const updatePrepListItemStationManifest = async (
     };
   }
 
-  // Persist to Prisma
-  await database.$executeRaw(
-    Prisma.sql`
-      UPDATE tenant_kitchen.prep_list_items
-      SET station_id = ${input.stationId},
-          station_name = ${input.stationName},
-          updated_at = NOW()
-      WHERE tenant_id = ${tenantId}
-        AND id = ${input.itemId}
-    `
-  );
+  // Persist to Prisma + outbox atomically
+  await database.$transaction(async (tx) => {
+    await tx.$executeRaw(
+      Prisma.sql`
+        UPDATE tenant_kitchen.prep_list_items
+        SET station_id = ${input.stationId},
+            station_name = ${input.stationName},
+            updated_at = NOW()
+        WHERE tenant_id = ${tenantId}
+          AND id = ${input.itemId}
+      `
+    );
 
-  // Enqueue outbox event
-  await enqueueOutboxEvent(
-    tenantId,
-    "PrepListItem",
-    input.itemId,
-    "kitchen.preplist.item_station_changed",
-    {
-      itemId: input.itemId,
-      oldStationName: existing.station_name,
-      newStationName: input.stationName,
-    }
-  );
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "PrepListItem",
+        aggregateId: input.itemId,
+        eventType: "kitchen.preplist.item_station_changed",
+        payload: {
+          itemId: input.itemId,
+          oldStationName: existing.station_name,
+          newStationName: input.stationName,
+        },
+        status: "pending" as const,
+      },
+    });
+  });
 
   revalidatePath("/kitchen/prep-lists");
 
@@ -1290,28 +1295,32 @@ export const updatePrepListItemNotesManifest = async (
     input.dietarySubstitutions
   );
 
-  // Persist to Prisma
-  await database.$executeRaw(
-    Prisma.sql`
-      UPDATE tenant_kitchen.prep_list_items
-      SET preparation_notes = ${input.preparationNotes},
-          dietary_substitutions = ${input.dietarySubstitutions},
-          updated_at = NOW()
-      WHERE tenant_id = ${tenantId}
-        AND id = ${input.itemId}
-    `
-  );
+  // Persist to Prisma + outbox atomically
+  await database.$transaction(async (tx) => {
+    await tx.$executeRaw(
+      Prisma.sql`
+        UPDATE tenant_kitchen.prep_list_items
+        SET preparation_notes = ${input.preparationNotes},
+            dietary_substitutions = ${input.dietarySubstitutions},
+            updated_at = NOW()
+        WHERE tenant_id = ${tenantId}
+          AND id = ${input.itemId}
+      `
+    );
 
-  // Enqueue outbox event
-  await enqueueOutboxEvent(
-    tenantId,
-    "PrepListItem",
-    input.itemId,
-    "kitchen.preplist.item_notes_updated",
-    {
-      itemId: input.itemId,
-    }
-  );
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "PrepListItem",
+        aggregateId: input.itemId,
+        eventType: "kitchen.preplist.item_notes_updated",
+        payload: {
+          itemId: input.itemId,
+        },
+        status: "pending" as const,
+      },
+    });
+  });
 
   revalidatePath("/kitchen/prep-lists");
 
@@ -1358,16 +1367,8 @@ export const markPrepListItemCompletedManifest = async (
     };
   }
 
-  // Get current user
-  const currentUser = await database.user.findFirst({
-    where: {
-      AND: [{ tenantId }, { authUserId: (await auth()).userId ?? "" }],
-    },
-  });
-
-  if (!currentUser) {
-    return { success: false, error: "User not found." };
-  }
+  // Get current user (auto-provisions if needed)
+  const currentUser = await requireCurrentUser();
 
   // Create Manifest runtime for constraint checking
   const runtimeContext = await createRuntimeContext();
@@ -1380,31 +1381,35 @@ export const markPrepListItemCompletedManifest = async (
     currentUser.id
   );
 
-  // Persist to Prisma
-  await database.$executeRaw(
-    Prisma.sql`
-      UPDATE tenant_kitchen.prep_list_items
-      SET is_completed = true,
-          completed_at = NOW(),
-          completed_by = ${currentUser.id},
-          updated_at = NOW()
-      WHERE tenant_id = ${tenantId}
-        AND id = ${itemId}
-    `
-  );
+  // Persist to Prisma + outbox atomically
+  await database.$transaction(async (tx) => {
+    await tx.$executeRaw(
+      Prisma.sql`
+        UPDATE tenant_kitchen.prep_list_items
+        SET is_completed = true,
+            completed_at = NOW(),
+            completed_by = ${currentUser.id},
+            updated_at = NOW()
+        WHERE tenant_id = ${tenantId}
+          AND id = ${itemId}
+      `
+    );
 
-  // Enqueue outbox event
-  await enqueueOutboxEvent(
-    tenantId,
-    "PrepListItem",
-    itemId,
-    "kitchen.preplist.item_completed",
-    {
-      itemId,
-      completedBy: currentUser.id,
-      completedAt: Date.now(),
-    }
-  );
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "PrepListItem",
+        aggregateId: itemId,
+        eventType: "kitchen.preplist.item_completed",
+        payload: {
+          itemId,
+          completedBy: currentUser.id,
+          completedAt: Date.now(),
+        },
+        status: "pending" as const,
+      },
+    });
+  });
 
   revalidatePath("/kitchen/prep-lists");
 
@@ -1458,30 +1463,34 @@ export const markPrepListItemUncompletedManifest = async (
   // Mark uncompleted via Manifest
   const uncompleteResult = await markPrepListItemUncompleted(runtime, itemId);
 
-  // Persist to Prisma
-  await database.$executeRaw(
-    Prisma.sql`
-      UPDATE tenant_kitchen.prep_list_items
-      SET is_completed = false,
-          completed_at = NULL,
-          completed_by = NULL,
-          updated_at = NOW()
-      WHERE tenant_id = ${tenantId}
-        AND id = ${itemId}
-    `
-  );
+  // Persist to Prisma + outbox atomically
+  await database.$transaction(async (tx) => {
+    await tx.$executeRaw(
+      Prisma.sql`
+        UPDATE tenant_kitchen.prep_list_items
+        SET is_completed = false,
+            completed_at = NULL,
+            completed_by = NULL,
+            updated_at = NOW()
+        WHERE tenant_id = ${tenantId}
+          AND id = ${itemId}
+      `
+    );
 
-  // Enqueue outbox event
-  await enqueueOutboxEvent(
-    tenantId,
-    "PrepListItem",
-    itemId,
-    "kitchen.preplist.item_uncompleted",
-    {
-      itemId,
-      uncompletedAt: Date.now(),
-    }
-  );
+    await tx.outboxEvent.create({
+      data: {
+        tenantId,
+        aggregateType: "PrepListItem",
+        aggregateId: itemId,
+        eventType: "kitchen.preplist.item_uncompleted",
+        payload: {
+          itemId,
+          uncompletedAt: Date.now(),
+        },
+        status: "pending" as const,
+      },
+    });
+  });
 
   revalidatePath("/kitchen/prep-lists");
 

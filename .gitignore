@@ -8,6 +8,9 @@
 .claude/
 /nul
 
+# Agent session files (ledger, todo, lessons — local only)
+/tasks/
+
 # Storybook build artifacts
 **/storybook-static/
 
@@ -250,6 +253,7 @@ sketch
 
 storybook-static/
 docs/
+!**/packages/manifest-runtime/docs/
 ### Turbo ###
 # Turborepo task cache
 .turbo
@@ -319,7 +323,12 @@ tools/
 # scripts/ directory is ignored, except for manifest validation and build scripts
 scripts/*
 !scripts/validate-manifests.mjs
+!scripts/manifest/
 !scripts/manifest/*.mjs
+!scripts/check-hardcoded-routes.mjs
+!scripts/check-staged-write-routes.mjs
+!scripts/test-route-conformance.mjs
+!scripts/sync-manifest-runtime.mjs
 
 # Local Netlify folder
 .netlify
@@ -342,6 +351,7 @@ IMPLEMENTATION_SUMMARY_BATTLE_BOARD.md
 create_timeline_tasks_table.sql
 test-results/
 e2e/.auth/
+e2e/reports/
 test-*.spec.ts
 **/battle-board/README.md
 nul
@@ -385,6 +395,13 @@ spec-prompt-template-generator.md
 # Vendored manifest-runtime has no build step; its dist must be committed
 !packages/manifest-runtime/dist/
 !packages/manifest-runtime/dist/**
+# Route manifest artifacts must be committed for CI and dev-time validation
+!packages/manifest-ir/dist/
+!packages/manifest-ir/dist/routes.manifest.json
+!packages/manifest-ir/dist/routes.ts
+# manifest-adapters dist is consumed directly by apps/api (no publish step); must be committed
+!packages/manifest-adapters/dist/
+!packages/manifest-adapters/dist/**
 **/build/
 **/.output/
 **/.vite/

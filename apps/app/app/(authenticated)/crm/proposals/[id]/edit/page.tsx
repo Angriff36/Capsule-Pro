@@ -4,6 +4,7 @@
  * Form for editing an existing proposal
  */
 
+import type { Proposal } from "@repo/database";
 import { Button } from "@repo/design-system/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
@@ -37,7 +38,7 @@ export default async function EditProposalPage({
 }: EditProposalPageProps) {
   const { id } = await params;
 
-  let proposal;
+  let proposal: Proposal | null = null;
   try {
     proposal = await getProposalById(id);
   } catch {
@@ -56,7 +57,13 @@ export default async function EditProposalPage({
     }
 
     const lineItemsJson = formData.get("lineItems") as string;
-    let lineItems = [];
+    let lineItems: Array<{
+      itemType: string;
+      description: string;
+      quantity: number;
+      unitPrice: number;
+      notes?: string;
+    }> = [];
     if (lineItemsJson) {
       try {
         lineItems = JSON.parse(lineItemsJson);
@@ -65,13 +72,23 @@ export default async function EditProposalPage({
       }
     }
 
+    const toUuid = (v: FormDataEntryValue | null): string | null => {
+      if (!v || v === "__none__" || v === "") {
+        return null;
+      }
+      return v as string;
+    };
+
     const input = {
       title: formData.get("title") as string,
-      clientId: formData.get("clientId") as string | null,
-      leadId: formData.get("leadId") as string | null,
-      eventId: formData.get("eventId") as string | null,
+      clientId: toUuid(formData.get("clientId")),
+      leadId: toUuid(formData.get("leadId")),
+      eventId: toUuid(formData.get("eventId")),
       eventDate: formData.get("eventDate") as string | null,
-      eventType: formData.get("eventType") as string | null,
+      eventType: (() => {
+        const v = formData.get("eventType") as string | null;
+        return v === "__none__" || v === "" ? null : v;
+      })(),
       guestCount: formData.get("guestCount")
         ? Number(formData.get("guestCount"))
         : null,

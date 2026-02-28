@@ -7,7 +7,7 @@
  * @canonical true
  */
 
-import { auth } from "@repo/auth/server";
+import { auth, currentUser } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -87,6 +87,36 @@ export async function PATCH(
         status,
       },
     });
+
+    // Log status change to audit_log
+    const user = await currentUser();
+    const userId = user?.id;
+    const oldValues = JSON.stringify({ status: contract.status });
+    const newValues = JSON.stringify({ status });
+
+    await database.$executeRaw`
+      INSERT INTO platform.audit_log (
+        tenant_id,
+        table_schema,
+        table_name,
+        record_id,
+        action,
+        old_values,
+        new_values,
+        performed_by,
+        created_at
+      ) VALUES (
+        ${tenantId}::uuid,
+        'tenant_events',
+        'event_contracts',
+        ${contractId}::uuid,
+        'update',
+        ${oldValues}::json,
+        ${newValues}::json,
+        ${userId}::uuid,
+        NOW()
+      )
+    `;
 
     return NextResponse.json({
       success: true,

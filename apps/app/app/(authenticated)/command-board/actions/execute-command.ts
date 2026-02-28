@@ -3,8 +3,8 @@
 import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { requireTenantId } from "../../../lib/tenant";
-import { autoPopulateBoard } from "./auto-populate";
 import type { BoardScope } from "../types/board";
+import { autoPopulateBoard } from "./auto-populate";
 import type { BoardCommandId } from "./command-definitions";
 
 // Re-export types so existing consumers don't break
@@ -117,9 +117,7 @@ async function clearBoard(
 }
 
 /** Run auto-populate with the board's current scope */
-async function runAutoPopulate(
-  boardId: string
-): Promise<ExecuteCommandResult> {
+async function runAutoPopulate(boardId: string): Promise<ExecuteCommandResult> {
   const result = await autoPopulateBoard(boardId);
 
   if (!result.success) {

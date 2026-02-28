@@ -1,16 +1,17 @@
 // Auto-generated Next.js command handler for KitchenTask.release
 // Generated from Manifest IR - DO NOT EDIT
-// Writes MUST flow through runtime.runCommand() to enforce guards, policies, and constraints
+// Writes MUST flow through runtime to enforce guards, policies, and constraints
 
 import { auth } from "@repo/auth/server";
+import type { NextRequest } from "next/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
-} from "@repo/manifest-adapters/route-helpers";
-import { captureException } from "@sentry/nextjs";
-import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
+} from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+
+export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,27 +27,13 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { id, userId: bodyUserId, ...commandArgs } = body;
-
-    if (!id) {
-      return manifestErrorResponse("Task ID is required", 400);
-    }
-
-    // Use userId from body or fallback to auth userId
-    const effectiveUserId = bodyUserId || userId;
 
     const runtime = await createManifestRuntime({
       user: { id: userId, tenantId },
+    });
+    const result = await runtime.runCommand("release", body, {
       entityName: "KitchenTask",
     });
-    const result = await runtime.runCommand(
-      "release",
-      { userId: effectiveUserId, ...commandArgs },
-      {
-        entityName: "KitchenTask",
-        instanceId: id,
-      }
-    );
 
     if (!result.success) {
       if (result.policyDenial) {
@@ -69,8 +56,7 @@ export async function POST(request: NextRequest) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    console.error("[kitchen-task/release] Error:", error);
-    captureException(error);
+    console.error("Error executing KitchenTask.release:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

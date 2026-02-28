@@ -1,0 +1,76 @@
+// Events & Catering - Event Staff Rules
+// Manifest spec for event staff assignment and scheduling
+
+entity EventStaff {
+  property required id: string
+  property required tenantId: string
+  property required eventId: string
+  property required userId: string
+  property role: string = ""
+  property notes: string = ""
+  property shiftStart: number = 0
+  property shiftEnd: number = 0
+  property status: string = "assigned"
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isAssigned: boolean = self.status == "assigned"
+  computed isUnassigned: boolean = self.status == "unassigned"
+  computed isDeleted: boolean = self.deletedAt > 0
+  computed hasShift: boolean = self.shiftStart > 0 and self.shiftEnd > 0
+
+  constraint requireEvent: self.eventId != null and self.eventId != "" "Event ID is required"
+  constraint requireUser: self.userId != null and self.userId != "" "User ID is required"
+  constraint validStatus: self.status in ["assigned", "unassigned"] "Status must be valid"
+
+  command assign(eventId: string, userId: string, role: string, notes: string, shiftStart: number, shiftEnd: number) {
+    guard eventId != null and eventId != "" "Event ID is required"
+    guard userId != null and userId != "" "User ID is required"
+
+    mutate eventId = eventId
+    mutate userId = userId
+    mutate role = role
+    mutate notes = notes
+    mutate shiftStart = shiftStart
+    mutate shiftEnd = shiftEnd
+    mutate status = "assigned"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit EventStaffAssigned
+  }
+
+  command unassign(reason: string) {
+    guard self.status == "assigned" "Staff member is not currently assigned"
+
+    mutate status = "unassigned"
+    mutate updatedAt = now()
+
+    emit EventStaffUnassigned
+  }
+
+  store EventStaff in memory
+}
+
+policy EventStaffManagement execute: user.role in ["event_coordinator", "manager", "admin"] "Event coordinators and above can manage event staff"
+
+event EventStaffAssigned: "events.event-staff.assigned" {
+  eventStaffId: string
+  tenantId: string
+  eventId: string
+  userId: string
+  role: string
+  shiftStart: number
+  shiftEnd: number
+  assignedAt: number
+}
+
+event EventStaffUnassigned: "events.event-staff.unassigned" {
+  eventStaffId: string
+  tenantId: string
+  eventId: string
+  userId: string
+  reason: string
+  unassignedAt: number
+}

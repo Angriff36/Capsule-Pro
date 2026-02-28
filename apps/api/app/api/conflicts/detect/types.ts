@@ -13,8 +13,10 @@ export const ConflictType = {
   resource: "resource",
   staff: "staff",
   inventory: "inventory",
+  equipment: "equipment",
   timeline: "timeline",
   venue: "venue",
+  financial: "financial",
 } as const;
 
 export type ConflictType = (typeof ConflictType)[keyof typeof ConflictType];
@@ -26,7 +28,7 @@ export interface Conflict {
   title: string;
   description: string;
   affectedEntities: {
-    type: "event" | "task" | "employee" | "inventory" | "venue";
+    type: "event" | "task" | "employee" | "inventory" | "equipment" | "venue";
     id: string;
     name: string;
   }[];
@@ -39,7 +41,7 @@ export interface ResolutionOption {
   type: "reassign" | "reschedule" | "substitute" | "cancel" | "split";
   description: string;
   affectedEntities: {
-    type: "event" | "task" | "employee" | "inventory" | "venue";
+    type: "event" | "task" | "employee" | "inventory" | "equipment" | "venue";
     id: string;
     name: string;
   }[];
@@ -55,6 +57,11 @@ export interface ConflictDetectionRequest {
   entityTypes?: ConflictType[];
 }
 
+export interface DetectorWarning {
+  detectorType: ConflictType;
+  message: string;
+}
+
 export interface ConflictDetectionResult {
   conflicts: Conflict[];
   summary: {
@@ -63,4 +70,23 @@ export interface ConflictDetectionResult {
     byType: Record<ConflictType, number>;
   };
   analyzedAt: Date;
+  /** Warnings from individual detectors that partially failed */
+  warnings?: DetectorWarning[];
+}
+
+/** Typed error response for conflict detection API */
+export interface ConflictApiError {
+  code:
+    | "AUTH_REQUIRED"
+    | "UNAUTHORIZED"
+    | "TENANT_NOT_FOUND"
+    | "USER_NOT_FOUND"
+    | "INVALID_REQUEST"
+    | "VALIDATION_ERROR"
+    | "DETECTION_FAILED";
+  message: string;
+  /** Guidance for the user on how to proceed */
+  guidance?: string;
+  /** Correlation ID for end-to-end tracing */
+  correlationId?: string;
 }

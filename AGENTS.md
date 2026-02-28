@@ -1,54 +1,47 @@
-# AGENTS.md — Convoy (Ralph Wiggum Loop)
+# AGENTS.md — Operational Guide
 
-This file defines **operational context** for Ralph Wiggum loops. It is read on
-every iteration.
+## Build & Run
 
-It is NOT an architecture document. It is NOT a design proposal. It is NOT a
-planning scratchpad.
+- Monorepo with pnpm (ONLY — no npm, no yarn)
+- Primary folders: `apps/`, `packages/`, `specs/`
 
----
+## Session Start
+- Read `tasks/ledger.md` before starting work (know the scoring system, know the leaderboard)
 
-## Project Type
+## Validation
+Run these after implementing to get immediate feedback:
+- Tests (targeted): `pnpm --filter @capsule/app test [specific-test]`
+- Typecheck: `pnpm tsc --noEmit`
+- Lint: `pnpm biome check`
+- Build: `pnpm turbo build --filter=@capsule/app`
 
-- Monorepo
-- Package manager: pnpm (ONLY)
-- Primary folders:
-  - apps/
-  - packages/
-  - specs/
+## Manifest Commands
 
----
+- Routes from IR: `pnpm manifest:routes:ir -- --format summary`
+- Lint routes: `pnpm manifest:lint-routes`
+- After .manifest edits: `pnpm manifest:build`
 
-## Build & Validation Conventions
+## Operational Notes
 
-- Use pnpm only (no npm, no yarn)
-- Prefer the smallest possible validation:
-  - Targeted tests
-  - Targeted typecheck
-- Do NOT run full monorepo builds unless required to validate the task
-- ALWAYS ADD FULL ERROR LOGGING THIS IS RIDICULOUS
+- IR is authority — filesystem is not source of truth for routes
+- All mutations compile to Manifest domain commands
+- New/changed API write handlers (`POST`/`PUT`/`PATCH`/`DELETE`) under `apps/api/app/api` must exist in canonical route surface (`packages/manifest-ir/dist/routes.manifest.json`) unless explicitly infrastructure-allowlisted (`webhooks`/`auth`/`cron`/`health`)
+- Generated code is projection — never edit generated files
+- Exactly one commit per iteration, conventional commit format
 
----
+### Codebase Patterns
 
-## Files to Ignore by Default
+- Command Board UI: `apps/app/app/(authenticated)/command-board/`
+- Command Board API: `apps/api/app/api/command-board/`
+- AI API: `apps/api/app/api/ai/`
+- Shared packages: `packages/ai/`, `packages/database/`
+- Specs: `specs/command-board/`
 
-Do not read unless explicitly required by the current task:
-
-- docs/inventory/\*\*
-- Archived plans
-- Historical architecture findings
-
----
-
-## Execution Mode
-
-- **Autonomous execution**: Do NOT ask for approval before bash/write/edit/task operations. Just do it.
-- Skip approval gates — the user trusts the agent to execute directly.
-- Still report errors and stop on failures (don't auto-fix blindly), but don't ask permission to start work.
-
----
-
-## Commit Rules
-
-- Exactly one commit per iteration
-- Conventional Commit format
+## Important Efficiency Standards.
+- Never re-read files you just wrote or edited. You know the contents.
+- Never re-run commands to "verify" unless the outcome was uncertain.
+- Don't echo back large blocks of code or file contents unless asked.
+- Batch related edits into single operations. Don't make 5 edits when 1 handles it.
+- Skip confirmations like "I'll continue..."  Lust do it.
+- If a task needs 1 tool call, don't use 3. Plan before acting.
+- Do not summarize what you just did unless the result is ambiguous or you need additional input.

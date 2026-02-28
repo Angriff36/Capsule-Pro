@@ -12,7 +12,7 @@
  * @packageDocumentation
  */
 
-import type { Store } from "@manifest/runtime";
+import type { Store } from "@angriff36/manifest";
 import type { Prisma, PrismaClient } from "@repo/database";
 import type { EntityInstance } from "./prisma-store.js";
 
@@ -26,6 +26,13 @@ interface PrismaJsonStoreConfig {
   tenantId: string;
   /** Entity type name (e.g., "PrepComment", "Container") */
   entityType: string;
+}
+
+/** Type for ManifestEntity database row */
+interface ManifestEntityRow {
+  id: string;
+  data: unknown;
+  version: number;
 }
 
 /**
@@ -62,7 +69,7 @@ export class PrismaJsonStore implements Store<EntityInstance> {
         orderBy: { createdAt: "asc" },
       });
 
-      return rows.map((row) => this.deserialize(row));
+      return rows.map((row: ManifestEntityRow) => this.deserialize(row));
     } catch (error) {
       console.error(
         `[PrismaJsonStore] getAll failed for entityType="${this.entityType}", tenant="${this.tenantId}":`,

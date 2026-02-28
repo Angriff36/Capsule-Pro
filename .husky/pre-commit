@@ -21,10 +21,26 @@ git stash push --quiet --keep-index --message "pre-commit-stash" || true
 STASHED=$?
 
 # Run formatter/linter only on staged files
+# Use --stdin-file-path piping is not available; instead chunk files to avoid
+# Windows command-line length limits (8191 chars) when many files are staged.
 FORMAT_EXIT_CODE=0
 if [ -n "$STAGED_FILES" ]; then
-  FILES_ARG=$(echo "$STAGED_FILES" | tr '\n' ' ')
-  pnpm dlx biome check --write --files-ignore-unknown=true $FILES_ARG || FORMAT_EXIT_CODE=$?
+  # Process files in chunks of 50 to stay well under Windows arg-length limits
+  chunk=()
+  count=0
+  while IFS= read -r file; do
+    chunk+=("$file")
+    count=$((count + 1))
+    if [ $count -eq 50 ]; then
+      pnpm dlx biome check --write --files-ignore-unknown=true "${chunk[@]}" || FORMAT_EXIT_CODE=$?
+      chunk=()
+      count=0
+    fi
+  done <<< "$STAGED_FILES"
+  # Process remaining files
+  if [ ${#chunk[@]} -gt 0 ]; then
+    pnpm dlx biome check --write --files-ignore-unknown=true "${chunk[@]}" || FORMAT_EXIT_CODE=$?
+  fi
 fi
 
 # Restore working directory state
@@ -62,10 +78,19 @@ else
   fi
 fi
 
-# Check if staged files actually changed (cross-platform)
-NEW_STAGED_HASH=$(git diff --cached | openssl dgst -sha256 | cut -d' ' -f2 || git diff --cached | sha256sum | cut -d' ' -f1)
+# Check if staged files actually changed (cross-platform, uses git built-in)
+NEW_STAGED_HASH=$(git diff --cached | git hash-object --stdin)
 if [ "$STAGED_HASH" != "$NEW_STAGED_HASH" ]; then
   echo "✨ Files formatted by Ultracite"
+fi
+
+# Block staged non-manifest write route handlers.
+ROUTE_GUARD_EXIT=0
+if [ $FORMAT_EXIT_CODE -eq 0 ]; then
+  pnpm exec node scripts/check-staged-write-routes.mjs || ROUTE_GUARD_EXIT=$?
+fi
+if [ $ROUTE_GUARD_EXIT -ne 0 ]; then
+  exit $ROUTE_GUARD_EXIT
 fi
 
 exit $FORMAT_EXIT_CODE

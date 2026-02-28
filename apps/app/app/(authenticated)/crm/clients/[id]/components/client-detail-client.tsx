@@ -1,6 +1,17 @@
 "use client";
 
 import { ClientQuickStatsBlock } from "@repo/design-system/components/blocks/client-quick-stats-block";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@repo/design-system/components/ui/alert-dialog";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Separator } from "@repo/design-system/components/ui/separator";
@@ -148,14 +159,6 @@ export function ClientDetailClient({ client }: ClientDetailProps) {
   };
 
   const handleDelete = async () => {
-    if (
-      !confirm(
-        "Are you sure you want to delete this client? This action cannot be undone."
-      )
-    ) {
-      return;
-    }
-
     setIsDeleting(true);
     try {
       await deleteClient(clientId);
@@ -223,14 +226,32 @@ export function ClientDetailClient({ client }: ClientDetailProps) {
               </Button>
             }
           />
-          <Button
-            disabled={isDeleting}
-            onClick={handleDelete}
-            variant="outline"
-          >
-            <TrashIcon className="h-4 w-4 mr-2" />
-            Delete
-          </Button>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button disabled={isDeleting} variant="outline">
+                <TrashIcon className="h-4 w-4 mr-2" />
+                Delete
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete client?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete this client? This action
+                  cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                  onClick={handleDelete}
+                >
+                  Delete
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
 

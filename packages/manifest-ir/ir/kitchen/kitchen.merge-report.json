@@ -1,0 +1,302 @@
+{
+  "$schema": "https://manifest.dev/merge-report.schema.json",
+  "version": "1.0",
+  "generatedAt": "2026-02-26T15:24:52.127Z",
+  "sources": [
+    "alerts-config-rules.manifest",
+    "allergen-warning-rules.manifest",
+    "battle-board-rules.manifest",
+    "catering-order-rules.manifest",
+    "client-interaction-rules.manifest",
+    "client-rules.manifest",
+    "command-board-rules.manifest",
+    "container-rules.manifest",
+    "cycle-count-rules.manifest",
+    "dish-rules.manifest",
+    "event-budget-rules.manifest",
+    "event-contract-rules.manifest",
+    "event-dish-rules.manifest",
+    "event-guest-rules.manifest",
+    "event-import-workflow.manifest",
+    "event-report-rules.manifest",
+    "event-rules.manifest",
+    "event-staff-rules.manifest",
+    "ingredient-rules.manifest",
+    "inventory-rules.manifest",
+    "inventory-supplier-rules.manifest",
+    "inventory-transaction-rules.manifest",
+    "kitchen-task-rules.manifest",
+    "lead-rules.manifest",
+    "menu-rules.manifest",
+    "notification-rules.manifest",
+    "override-audit-rules.manifest",
+    "prep-comment-rules.manifest",
+    "prep-list-rules.manifest",
+    "prep-method-rules.manifest",
+    "prep-task-plan-workflow.manifest",
+    "prep-task-rules.manifest",
+    "proposal-rules.manifest",
+    "purchase-order-rules.manifest",
+    "recipe-rules.manifest",
+    "role-policy-rules.manifest",
+    "schedule-rules.manifest",
+    "shipment-rules.manifest",
+    "station-rules.manifest",
+    "time-entry-rules.manifest",
+    "user-rules.manifest",
+    "waste-entry-rules.manifest",
+    "workflow-rules.manifest"
+  ],
+  "totals": {
+    "modules": 0,
+    "entities": 65,
+    "stores": 65,
+    "events": 309,
+    "commands": 308,
+    "policies": 120
+  },
+  "droppedDuplicates": [
+    {
+      "type": "command",
+      "key": "Dish.create",
+      "allowlistKey": "command:Dish.create",
+      "keptFrom": "dish-rules.manifest",
+      "droppedFrom": [
+        "recipe-rules.manifest"
+      ],
+      "sources": [
+        "dish-rules.manifest",
+        "recipe-rules.manifest"
+      ]
+    },
+    {
+      "type": "command",
+      "key": "Dish.updateLeadTime",
+      "allowlistKey": "command:Dish.updateLeadTime",
+      "keptFrom": "dish-rules.manifest",
+      "droppedFrom": [
+        "recipe-rules.manifest"
+      ],
+      "sources": [
+        "dish-rules.manifest",
+        "recipe-rules.manifest"
+      ]
+    },
+    {
+      "type": "command",
+      "key": "Dish.updatePricing",
+      "allowlistKey": "command:Dish.updatePricing",
+      "keptFrom": "dish-rules.manifest",
+      "droppedFrom": [
+        "recipe-rules.manifest"
+      ],
+      "sources": [
+        "dish-rules.manifest",
+        "recipe-rules.manifest"
+      ]
+    },
+    {
+      "type": "command",
+      "key": "Ingredient.create",
+      "allowlistKey": "command:Ingredient.create",
+      "keptFrom": "ingredient-rules.manifest",
+      "droppedFrom": [
+        "recipe-rules.manifest"
+      ],
+      "sources": [
+        "ingredient-rules.manifest",
+        "recipe-rules.manifest"
+      ]
+    },
+    {
+      "type": "command",
+      "key": "Ingredient.updateAllergens",
+      "allowlistKey": "command:Ingredient.updateAllergens",
+      "keptFrom": "ingredient-rules.manifest",
+      "droppedFrom": [
+        "recipe-rules.manifest"
+      ],
+      "sources": [
+        "ingredient-rules.manifest",
+        "recipe-rules.manifest"
+      ]
+    },
+    {
+      "type": "entity",
+      "key": "Dish",
+      "allowlistKey": "entity:Dish",
+      "keptFrom": "dish-rules.manifest",
+      "droppedFrom": [
+        "recipe-rules.manifest"
+      ],
+      "sources": [
+        "dish-rules.manifest",
+        "recipe-rules.manifest"
+      ]
+    },
+    {
+      "type": "entity",
+      "key": "Ingredient",
+      "allowlistKey": "entity:Ingredient",
+      "keptFrom": "ingredient-rules.manifest",
+      "droppedFrom": [
+        "recipe-rules.manifest"
+      ],
+      "sources": [
+        "ingredient-rules.manifest",
+        "recipe-rules.manifest"
+      ]
+    },
+    {
+      "type": "event-channel",
+      "key": "kitchen.dish.created",
+      "allowlistKey": "event-channel:kitchen.dish.created",
+      "keptFrom": "dish-rules.manifest",
+      "droppedFrom": [
+        "recipe-rules.manifest"
+      ],
+      "sources": [
+        "dish-rules.manifest",
+        "recipe-rules.manifest"
+      ]
+    },
+    {
+      "type": "event-channel",
+      "key": "kitchen.dish.leadtime.updated",
+      "allowlistKey": "event-channel:kitchen.dish.leadtime.updated",
+      "keptFrom": "dish-rules.manifest",
+      "droppedFrom": [
+        "recipe-rules.manifest"
+      ],
+      "sources": [
+        "dish-rules.manifest",
+        "recipe-rules.manifest"
+      ]
+    },
+    {
+      "type": "event-channel",
+      "key": "kitchen.dish.pricing.updated",
+      "allowlistKey": "event-channel:kitchen.dish.pricing.updated",
+      "keptFrom": "dish-rules.manifest",
+      "droppedFrom": [
+        "recipe-rules.manifest"
+      ],
+      "sources": [
+        "dish-rules.manifest",
+        "recipe-rules.manifest"
+      ]
+    },
+    {
+      "type": "event-channel",
+      "key": "kitchen.ingredient.allergens.updated",
+      "allowlistKey": "event-channel:kitchen.ingredient.allergens.updated",
+      "keptFrom": "ingredient-rules.manifest",
+      "droppedFrom": [
+        "recipe-rules.manifest"
+      ],
+      "sources": [
+        "ingredient-rules.manifest",
+        "recipe-rules.manifest"
+      ]
+    },
+    {
+      "type": "event-channel",
+      "key": "kitchen.ingredient.created",
+      "allowlistKey": "event-channel:kitchen.ingredient.created",
+      "keptFrom": "ingredient-rules.manifest",
+      "droppedFrom": [
+        "recipe-rules.manifest"
+      ],
+      "sources": [
+        "ingredient-rules.manifest",
+        "recipe-rules.manifest"
+      ]
+    },
+    {
+      "type": "policy",
+      "key": "KitchenStaffCanManage",
+      "allowlistKey": "policy:KitchenStaffCanManage",
+      "keptFrom": "container-rules.manifest",
+      "droppedFrom": [
+        "dish-rules.manifest",
+        "ingredient-rules.manifest",
+        "prep-method-rules.manifest"
+      ],
+      "sources": [
+        "container-rules.manifest",
+        "dish-rules.manifest",
+        "ingredient-rules.manifest",
+        "prep-method-rules.manifest"
+      ]
+    },
+    {
+      "type": "policy",
+      "key": "ManagersCanAdjust",
+      "allowlistKey": "policy:ManagersCanAdjust",
+      "keptFrom": "inventory-rules.manifest",
+      "droppedFrom": [
+        "inventory-transaction-rules.manifest"
+      ],
+      "sources": [
+        "inventory-rules.manifest",
+        "inventory-transaction-rules.manifest"
+      ]
+    },
+    {
+      "type": "policy",
+      "key": "ManagersCanCancel",
+      "allowlistKey": "policy:ManagersCanCancel",
+      "keptFrom": "kitchen-task-rules.manifest",
+      "droppedFrom": [
+        "prep-task-rules.manifest"
+      ],
+      "sources": [
+        "kitchen-task-rules.manifest",
+        "prep-task-rules.manifest"
+      ]
+    },
+    {
+      "type": "policy",
+      "key": "ManagersCanDeactivate",
+      "allowlistKey": "policy:ManagersCanDeactivate",
+      "keptFrom": "container-rules.manifest",
+      "droppedFrom": [
+        "dish-rules.manifest",
+        "ingredient-rules.manifest",
+        "prep-method-rules.manifest"
+      ],
+      "sources": [
+        "container-rules.manifest",
+        "dish-rules.manifest",
+        "ingredient-rules.manifest",
+        "prep-method-rules.manifest"
+      ]
+    },
+    {
+      "type": "store",
+      "key": "Dish:undefined",
+      "allowlistKey": "store:Dish:undefined",
+      "keptFrom": "dish-rules.manifest",
+      "droppedFrom": [
+        "recipe-rules.manifest"
+      ],
+      "sources": [
+        "dish-rules.manifest",
+        "recipe-rules.manifest"
+      ]
+    },
+    {
+      "type": "store",
+      "key": "Ingredient:undefined",
+      "allowlistKey": "store:Ingredient:undefined",
+      "keptFrom": "ingredient-rules.manifest",
+      "droppedFrom": [
+        "recipe-rules.manifest"
+      ],
+      "sources": [
+        "ingredient-rules.manifest",
+        "recipe-rules.manifest"
+      ]
+    }
+  ]
+}

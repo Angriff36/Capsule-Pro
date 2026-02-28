@@ -2,8 +2,10 @@
 
 import { useEffect } from "react";
 
+// Match actual connection/infrastructure errors — NOT application-level messages
+// that happen to contain "database" (e.g. "User not found in database").
 const DB_ERROR_PATTERN =
-  /database|connection terminated|connection refused|ECONNREFUSED|DATABASE_URL/i;
+  /connection terminated|connection refused|ECONNREFUSED|ENOTFOUND|DATABASE_URL|Database connection failed/i;
 
 export default function AuthenticatedError({
   error,

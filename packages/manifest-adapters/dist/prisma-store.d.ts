@@ -5,7 +5,7 @@
  * using the existing Prisma schema. It bridges the gap between Manifest's entity
  * model and the Prisma database tables.
  */
-import type { Store } from "@manifest/runtime";
+import type { Store } from "@angriff36/manifest";
 import type { PrismaClient } from "@repo/database";
 export interface EntityInstance {
     id: string;
@@ -106,6 +106,24 @@ export declare class RecipeIngredientPrismaStore implements Store<EntityInstance
     private mapToManifestEntity;
 }
 /**
+ * Prisma-backed store for RecipeStep entities
+ *
+ * Maps Manifest RecipeStep entities to the Prisma recipe_steps table.
+ * Note: Prisma model uses snake_case (recipe_steps).
+ */
+export declare class RecipeStepPrismaStore implements Store<EntityInstance> {
+    private readonly prisma;
+    private readonly tenantId;
+    constructor(prisma: PrismaClient, tenantId: string);
+    getAll(): Promise<EntityInstance[]>;
+    getById(id: string): Promise<EntityInstance | undefined>;
+    create(data: Partial<EntityInstance>): Promise<EntityInstance>;
+    update(id: string, data: Partial<EntityInstance>): Promise<EntityInstance | undefined>;
+    delete(id: string): Promise<boolean>;
+    clear(): Promise<void>;
+    private mapToManifestEntity;
+}
+/**
  * Prisma-backed store for Dish entities
  *
  * Maps Manifest Dish entities to the Prisma Dish table.
@@ -140,6 +158,34 @@ export declare class KitchenTaskPrismaStore implements Store<EntityInstance> {
     update(id: string, data: Partial<EntityInstance>): Promise<EntityInstance | undefined>;
     delete(id: string): Promise<boolean>;
     clear(): Promise<void>;
+    private mapToManifestEntity;
+}
+/**
+ * Prisma-backed store for AllergenWarning entities
+ *
+ * Maps Manifest AllergenWarning entities to the Prisma AllergenWarning table.
+ * Handles the conversion between Manifest string properties (allergens, affectedGuests)
+ * and Prisma array types.
+ */
+export declare class AllergenWarningPrismaStore implements Store<EntityInstance> {
+    private readonly prisma;
+    private readonly tenantId;
+    constructor(prisma: PrismaClient, tenantId: string);
+    getAll(): Promise<EntityInstance[]>;
+    getById(id: string): Promise<EntityInstance | undefined>;
+    create(data: Partial<EntityInstance>): Promise<EntityInstance>;
+    update(id: string, data: Partial<EntityInstance>): Promise<EntityInstance | undefined>;
+    delete(id: string): Promise<boolean>;
+    clear(): Promise<void>;
+    /**
+     * Convert Manifest string property to Prisma array
+     * Manifest stores arrays as comma-separated strings
+     */
+    private stringToArray;
+    /**
+     * Convert Prisma array to Manifest string property
+     */
+    private arrayToString;
     private mapToManifestEntity;
 }
 /**

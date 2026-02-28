@@ -72,9 +72,7 @@ describe("Generated PrepTask.claim route wiring", () => {
     expect(response.status).toBe(200);
     expect(json).toMatchObject({
       success: true,
-      data: {
-        result: { id: "task-123", status: "in_progress" },
-      },
+      result: { id: "task-123", status: "in_progress" },
     });
   });
 });

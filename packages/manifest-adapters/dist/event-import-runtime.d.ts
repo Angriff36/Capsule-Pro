@@ -4,7 +4,7 @@
  * This module integrates Manifest language runtime with the document parsing workflow.
  * It orchestrates the flow: Document Import -> Event Creation -> Battle Board/Checklist Generation
  */
-import type { EmittedEvent, RuntimeEngine } from "@manifest/runtime";
+import type { EmittedEvent, RuntimeEngine } from "@angriff36/manifest";
 import { ManifestRuntimeEngine } from "./runtime-engine.js";
 /**
  * Create a runtime engine with tenant context
@@ -13,21 +13,21 @@ export declare function createEventImportRuntime(tenantId: string, userId: strin
 /**
  * Process a document import using Manifest commands
  */
-export declare function processDocumentImport(engine: RuntimeEngine, importId: string, _fileName: string, parsedData: any, confidence: number, errors?: string[]): Promise<import("@manifest/runtime").CommandResult>;
+export declare function processDocumentImport(engine: RuntimeEngine, importId: string, _fileName: string, parsedData: any, confidence: number, errors?: string[]): Promise<import("@angriff36/manifest").CommandResult>;
 /**
  * Create or update an event from parsed data
  */
-export declare function createOrUpdateEvent(engine: RuntimeEngine, eventId: string | undefined, tenantId: string, parsedEvent: any): Promise<import("@manifest/runtime").CommandResult | {
+export declare function createOrUpdateEvent(engine: RuntimeEngine, eventId: string | undefined, tenantId: string, parsedEvent: any): Promise<import("@angriff36/manifest").CommandResult | {
     eventId: string | undefined;
     success: boolean;
     result?: unknown;
     error?: string;
     deniedBy?: string;
-    guardFailure?: import("@manifest/runtime").GuardFailure;
-    policyDenial?: import("@manifest/runtime").PolicyDenial;
-    constraintOutcomes?: ConstraintOutcome[];
-    overrideRequests?: OverrideRequest[];
-    concurrencyConflict?: ConcurrencyConflict;
+    guardFailure?: import("@angriff36/manifest").GuardFailure;
+    policyDenial?: import("@angriff36/manifest").PolicyDenial;
+    constraintOutcomes?: import("@angriff36/manifest/ir").ConstraintOutcome[];
+    overrideRequests?: import("@angriff36/manifest/ir").OverrideRequest[];
+    concurrencyConflict?: import("@angriff36/manifest/ir").ConcurrencyConflict;
     correlationId?: string;
     causationId?: string;
     emittedEvents: EmittedEvent[];
@@ -35,11 +35,11 @@ export declare function createOrUpdateEvent(engine: RuntimeEngine, eventId: stri
 /**
  * Generate battle board from event data
  */
-export declare function generateBattleBoard(engine: RuntimeEngine, battleBoardId: string, _tenantId: string, _eventId: string | undefined, eventData: any): Promise<import("@manifest/runtime").CommandResult>;
+export declare function generateBattleBoard(engine: RuntimeEngine, battleBoardId: string, _tenantId: string, _eventId: string | undefined, eventData: any): Promise<import("@angriff36/manifest").CommandResult>;
 /**
  * Generate checklist/report from event data
  */
-export declare function generateChecklist(engine: RuntimeEngine, reportId: string, _tenantId: string, _eventId: string, eventData: any, checklistData: any): Promise<import("@manifest/runtime").CommandResult>;
+export declare function generateChecklist(engine: RuntimeEngine, reportId: string, _tenantId: string, _eventId: string, eventData: any, checklistData: any): Promise<import("@angriff36/manifest").CommandResult>;
 /**
  * Event listener helper to handle Manifest events and persist to database
  */

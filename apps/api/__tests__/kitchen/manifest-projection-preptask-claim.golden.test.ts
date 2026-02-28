@@ -11,8 +11,8 @@
 import { spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { compileToIR } from "@manifest/runtime/ir-compiler";
-import { NextJsProjection } from "@manifest/runtime/projections/nextjs";
+import { compileToIR } from "@angriff36/manifest/ir-compiler";
+import { NextJsProjection } from "@angriff36/manifest/projections/nextjs";
 import { enforceCommandOwnership } from "@repo/manifest-adapters/ir-contract";
 import { describe, expect, it } from "vitest";
 

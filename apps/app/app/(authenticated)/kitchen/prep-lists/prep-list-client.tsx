@@ -549,16 +549,18 @@ export function PrepListClient({
                 <Select
                   onValueChange={(value) =>
                     setDietaryRestrictions(
-                      value ? value.split(",").map((s) => s.trim()) : []
+                      value && value !== "__none__"
+                        ? value.split(",").map((s) => s.trim())
+                        : []
                     )
                   }
-                  value={dietaryRestrictions.join(",")}
+                  value={dietaryRestrictions.join(",") || "__none__"}
                 >
                   <SelectTrigger className="w-[180px]">
                     <SelectValue placeholder="None" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="__none__">None</SelectItem>
                     <SelectItem value="gluten-free">Gluten Free</SelectItem>
                     <SelectItem value="dairy-free">Dairy Free</SelectItem>
                     <SelectItem value="vegan">Vegan</SelectItem>

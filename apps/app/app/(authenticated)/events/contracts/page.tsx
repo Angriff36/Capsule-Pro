@@ -78,7 +78,7 @@ const ContractsPage = async () => {
       ) as event,
       jsonb_build_object(
         'id', c.id,
-        'name', c.name
+        'name', COALESCE(c.company_name, NULLIF(TRIM(CONCAT(c.first_name, ' ', c.last_name)), ''), 'Unknown')
       ) as client
     FROM tenant_events.event_contracts ec
     LEFT JOIN tenant_events.events e ON e.tenant_id = ec.tenant_id AND e.id = ec.event_id
@@ -125,10 +125,7 @@ const ContractsPage = async () => {
 
   return (
     <>
-      <Header
-        page="Contracts"
-        pages={[{ label: "Events", href: "/events" }]}
-      >
+      <Header page="Contracts" pages={[{ label: "Events", href: "/events" }]}>
         {/* Add action buttons here if needed */}
       </Header>
 

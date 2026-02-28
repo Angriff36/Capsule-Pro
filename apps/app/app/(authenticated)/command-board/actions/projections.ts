@@ -1,6 +1,6 @@
 "use server";
 
-import { database } from "@repo/database";
+import { database, Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { requireTenantId } from "../../../lib/tenant";
 import type { BoardProjection } from "../types/board";
@@ -10,22 +10,29 @@ import type { EntityType } from "../types/entities";
 // Helpers
 // ============================================================================
 
-/** Map a Prisma BoardProjection row to the BoardProjection domain type */
+/** Default values for projection fields if DB returns null */
+const DEFAULT_POSITION_X = 0;
+const DEFAULT_POSITION_Y = 0;
+const DEFAULT_WIDTH = 280;
+const DEFAULT_HEIGHT = 180;
+const DEFAULT_Z_INDEX = 0;
+
+/** Map a Prisma BoardProjection row to the BoardProjection domain type with defensive normalization */
 function dbToProjection(row: {
   id: string;
   tenantId: string;
   boardId: string;
   entityType: string;
   entityId: string;
-  positionX: number;
-  positionY: number;
-  width: number;
-  height: number;
-  zIndex: number;
+  positionX: number | null;
+  positionY: number | null;
+  width: number | null;
+  height: number | null;
+  zIndex: number | null;
   colorOverride: string | null;
-  collapsed: boolean;
+  collapsed: boolean | null;
   groupId: string | null;
-  pinned: boolean;
+  pinned: boolean | null;
 }): BoardProjection {
   return {
     id: row.id,
@@ -33,15 +40,15 @@ function dbToProjection(row: {
     boardId: row.boardId,
     entityType: row.entityType as EntityType,
     entityId: row.entityId,
-    positionX: row.positionX,
-    positionY: row.positionY,
-    width: row.width,
-    height: row.height,
-    zIndex: row.zIndex,
+    positionX: row.positionX ?? DEFAULT_POSITION_X,
+    positionY: row.positionY ?? DEFAULT_POSITION_Y,
+    width: row.width ?? DEFAULT_WIDTH,
+    height: row.height ?? DEFAULT_HEIGHT,
+    zIndex: row.zIndex ?? DEFAULT_Z_INDEX,
     colorOverride: row.colorOverride,
-    collapsed: row.collapsed,
+    collapsed: row.collapsed ?? false,
     groupId: row.groupId,
-    pinned: row.pinned,
+    pinned: row.pinned ?? false,
   };
 }
 
@@ -86,6 +93,16 @@ export interface AddProjectionResult {
   success: boolean;
   projection?: BoardProjection;
   error?: string;
+  /** True if the entity already exists on the board (duplicate) */
+  isDuplicate?: boolean;
+}
+
+/** Check if error is a Prisma unique constraint violation (P2002) */
+function isUniqueConstraintError(error: unknown): boolean {
+  if (error instanceof Prisma.PrismaClientKnownRequestError) {
+    return error.code === "P2002";
+  }
+  return false;
 }
 
 /** Add a new entity projection to a board */
@@ -110,6 +127,7 @@ export async function addProjection(
     if (existing) {
       return {
         success: false,
+        isDuplicate: true,
         error: `A ${input.entityType} projection for this entity already exists on this board`,
       };
     }
@@ -151,10 +169,19 @@ export async function addProjection(
       projection: dbToProjection(created),
     };
   } catch (error) {
+    // Handle race condition: another request inserted the same projection between our check and create
+    if (isUniqueConstraintError(error)) {
+      return {
+        success: false,
+        isDuplicate: true,
+        error: `A ${input.entityType} projection for this entity already exists on this board`,
+      };
+    }
     console.error("[addProjection] Failed to add projection:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to add projection",
+      error:
+        error instanceof Error ? error.message : "Failed to add projection",
     };
   }
 }
@@ -257,13 +284,56 @@ export async function removeProjection(projectionId: string): Promise<void> {
   revalidatePath(`/command-board/${projection.boardId}`);
 }
 
+// ============================================================================
+// Update — Pin
+// ============================================================================
+
+/** Toggle the pinned state of a projection */
+export async function toggleProjectionPin(
+  projectionId: string
+): Promise<BoardProjection> {
+  const tenantId = await requireTenantId();
+
+  const current = await database.boardProjection.findUnique({
+    where: {
+      tenantId_id: {
+        tenantId,
+        id: projectionId,
+      },
+    },
+    select: { pinned: true },
+  });
+
+  if (!current) {
+    throw new Error("Projection not found");
+  }
+
+  const updated = await database.boardProjection.update({
+    where: {
+      tenantId_id: {
+        tenantId,
+        id: projectionId,
+      },
+    },
+    data: {
+      pinned: !current.pinned,
+    },
+  });
+
+  revalidatePath(`/command-board/${updated.boardId}`);
+
+  return dbToProjection(updated);
+}
+
 /** Soft-delete multiple projections at once */
 export async function batchRemoveProjections(
   projectionIds: string[]
 ): Promise<void> {
   const tenantId = await requireTenantId();
 
-  if (projectionIds.length === 0) return;
+  if (projectionIds.length === 0) {
+    return;
+  }
 
   // Use updateMany for bulk soft-delete — filters by tenantId for isolation
   await database.boardProjection.updateMany({

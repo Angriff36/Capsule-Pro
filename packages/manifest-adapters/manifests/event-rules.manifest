@@ -66,39 +66,56 @@ entity Event {
     }
   }
 
-  command create(title: string, eventType: string, eventDate: number, guestCount: number, clientId: string, locationId: string, venueId: string, venueName: string, venueAddress: string, budget: number, notes: string) {
+  command create(clientId: string, eventNumber: string, title: string, eventType: string, eventDate: number, guestCount: number, venueName: string, venueAddress: string, notes: string, tags: string, status: string) {
+    guard self.tenantId != null and self.tenantId != "" "Tenant ID is required"
+    guard clientId != null and clientId != "" "Client ID is required"
+    guard eventNumber != null and eventNumber != "" "Event number is required"
     guard title != null and title != "" "Event title is required"
     guard eventType != null and eventType != "" "Event type is required"
+    guard eventDate > 0 "Event date is required"
     guard guestCount > 0 "Guest count must be positive"
+    guard status == "" or status in ["draft", "confirmed", "completed", "archived", "cancelled"] "Status must be valid"
 
+    mutate clientId = clientId
+    mutate eventNumber = eventNumber
     mutate title = title
     mutate eventType = eventType
     mutate eventDate = eventDate
     mutate guestCount = guestCount
-    mutate clientId = clientId
-    mutate locationId = locationId
-    mutate venueId = venueId
     mutate venueName = venueName
     mutate venueAddress = venueAddress
-    mutate budget = budget
     mutate notes = notes
-    mutate status = "draft"
+    mutate tags = tags
+    mutate status = status != null and status != "" ? status : "draft"
     mutate createdAt = now()
     mutate updatedAt = now()
 
     emit EventCreated
   }
 
-  command update(title: string, eventType: string, guestCount: number, notes: string, tags: string) {
+  command update(clientId: string, eventNumber: string, title: string, eventType: string, eventDate: number, guestCount: number, venueName: string, venueAddress: string, notes: string, tags: string, status: string) {
     guard self.status != "cancelled" "Cannot update cancelled event"
     guard self.status != "archived" "Cannot update archived event"
+    guard self.tenantId != null and self.tenantId != "" "Tenant ID is required"
+    guard clientId != null and clientId != "" "Client ID is required"
+    guard eventNumber != null and eventNumber != "" "Event number is required"
     guard title != null and title != "" "Event title is required"
+    guard eventType != null and eventType != "" "Event type is required"
+    guard eventDate > 0 "Event date is required"
+    guard guestCount > 0 "Guest count must be positive"
+    guard status == "" or status in ["draft", "confirmed", "completed", "archived", "cancelled"] "Status must be valid"
 
+    mutate clientId = clientId
+    mutate eventNumber = eventNumber
     mutate title = title
     mutate eventType = eventType
+    mutate eventDate = eventDate
     mutate guestCount = guestCount
+    mutate venueName = venueName
+    mutate venueAddress = venueAddress
     mutate notes = notes
     mutate tags = tags
+    mutate status = status != null and status != "" ? status : self.status
     mutate updatedAt = now()
 
     emit EventUpdated
@@ -382,7 +399,9 @@ entity EventSummary {
 }
 
 // Policy definitions
-policy EventManagement execute: user.role in ["event_coordinator", "manager", "admin"] "Event coordinators and above can manage events"
+policy EventManagement execute: user.role in ["event_coordinator", "manager", "admin"] and user.tenantId != null and user.tenantId != "" "Event coordinators and above can manage events for their tenant"
+policy EventCreate execute: user.role in ["event_coordinator", "manager", "admin"] and user.tenantId != null and user.tenantId != "" "Event coordinators and above can create events for their tenant"
+policy EventUpdate execute: user.role in ["event_coordinator", "manager", "admin"] and user.tenantId != null and user.tenantId != "" "Event coordinators and above can update events for their tenant"
 policy EventFinalize execute: user.role in ["manager", "admin"] "Only managers can finalize events"
 policy EventArchive execute: user.role in ["manager", "admin"] "Only managers can archive events"
 policy ProfitabilityManagement execute: user.role in ["manager", "admin", "finance"] "Managers and finance can manage profitability"

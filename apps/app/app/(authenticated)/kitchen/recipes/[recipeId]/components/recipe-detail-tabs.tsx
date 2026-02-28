@@ -1,6 +1,5 @@
 "use client";
 
-import { captureException } from "@sentry/nextjs";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -28,6 +27,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
+import { captureException } from "@sentry/nextjs";
 import {
   ChefHat,
   Clock,
@@ -40,11 +40,16 @@ import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import {
+  kitchenRecipeCompositeRestore,
+  kitchenRecipeVersionDetail,
+  kitchenRecipeVersions,
+  kitchenRecipeVersionsCompare,
+} from "@/app/lib/routes";
+import {
   getRecipeCost,
   type IngredientCostBreakdown,
   type RecipeCostBreakdown,
 } from "@/app/lib/use-recipe-costing";
-import { restoreRecipeVersion } from "../../actions-manifest";
 
 interface RecipeDetailRow {
   id: string;
@@ -403,7 +408,7 @@ function HistoryTabContent({
     const fetchVersions = async () => {
       setLoading(true);
       try {
-        const response = await apiFetch(`/api/recipes/${recipeId}/versions`);
+        const response = await apiFetch(kitchenRecipeVersions(recipeId));
         if (response.ok) {
           const data = await response.json();
           setVersions(data);
@@ -424,7 +429,7 @@ function HistoryTabContent({
     }
     // Use functional updates to avoid needing compareFrom/compareTo in deps
     setCompareFrom((prev) => prev ?? versions[0].id);
-    setCompareTo((prev) => prev ?? (versions[1]?.id ?? versions[0].id));
+    setCompareTo((prev) => prev ?? versions[1]?.id ?? versions[0].id);
   }, [versions]);
 
   const handleViewVersion = async (version: RecipeVersionRow) => {
@@ -433,7 +438,7 @@ function HistoryTabContent({
     setViewingDetail(null);
     try {
       const response = await apiFetch(
-        `/api/recipes/${recipeId}/versions/${version.id}`
+        kitchenRecipeVersionDetail(recipeId, version.id)
       );
       if (!response.ok) {
         const error = await response.json();
@@ -459,7 +464,7 @@ function HistoryTabContent({
     setCompareData(null);
     try {
       const response = await apiFetch(
-        `/api/recipes/${recipeId}/versions/compare?from=${compareFrom}&to=${compareTo}`
+        kitchenRecipeVersionsCompare(recipeId, compareFrom, compareTo)
       );
       if (!response.ok) {
         const error = await response.json();
@@ -476,7 +481,7 @@ function HistoryTabContent({
     }
   };
 
-  const handleRestore = async () => {
+  const handleRestore = () => {
     if (!viewingDetail) {
       return;
     }
@@ -492,7 +497,20 @@ function HistoryTabContent({
 
     startRestore(async () => {
       try {
-        await restoreRecipeVersion(recipeId, viewingDetail.id);
+        const response = await apiFetch(
+          kitchenRecipeCompositeRestore(recipeId),
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ sourceVersionId: viewingDetail.id }),
+          }
+        );
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || "Failed to restore version");
+        }
+
         toast.success("Recipe version restored.");
         setViewingVersion(null);
         setViewingDetail(null);

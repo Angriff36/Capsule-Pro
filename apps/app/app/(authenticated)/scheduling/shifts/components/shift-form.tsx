@@ -15,13 +15,16 @@ import { Loader2Icon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 import {
-  createShift,
+  staffShiftsCreateValidated,
+  staffShiftsUpdateValidated,
+} from "@/app/lib/routes";
+import {
   getAvailableEmployees,
   getEmployees,
   getLocations,
   getSchedules,
-  updateShift,
 } from "../actions";
 
 interface Shift {
@@ -187,34 +190,57 @@ export function ShiftForm({
       return;
     }
 
-    // Create FormData for server action
-    const submitData = new FormData();
-    submitData.append("scheduleId", formData.scheduleId);
-    submitData.append("employeeId", formData.employeeId);
-    submitData.append("locationId", formData.locationId);
-    submitData.append(
-      "shiftStart",
-      new Date(formData.shiftStart).toISOString()
-    );
-    submitData.append("shiftEnd", new Date(formData.shiftEnd).toISOString());
-    if (formData.roleDuringShift) {
-      submitData.append("roleDuringShift", formData.roleDuringShift);
-    }
-    if (formData.notes) {
-      submitData.append("notes", formData.notes);
-    }
-    if (formData.allowOverlap) {
-      submitData.append("allowOverlap", "true");
-    }
+    // Build JSON payload for validated API route
+    const payload = {
+      scheduleId: formData.scheduleId,
+      employeeId: formData.employeeId,
+      locationId: formData.locationId,
+      shiftStart: new Date(formData.shiftStart).getTime(),
+      shiftEnd: new Date(formData.shiftEnd).getTime(),
+      roleDuringShift: formData.roleDuringShift || undefined,
+      notes: formData.notes || undefined,
+      allowOverlap: formData.allowOverlap || undefined,
+    };
 
     try {
-      if (isEditing && shift?.id) {
-        await updateShift(shift.id, submitData);
-        toast.success("Shift updated successfully");
+      const url = isEditing && shift?.id
+        ? staffShiftsUpdateValidated()
+        : staffShiftsCreateValidated();
+
+      const response = await apiFetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(isEditing && shift?.id
+          ? { ...payload, id: shift.id }
+          : payload
+        ),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = errorData.message || errorData.error?.message || `Failed to ${isEditing ? "update" : "create"} shift`;
+
+        // Handle validation warnings (overtime, etc.)
+        if (errorData.warnings && errorData.warnings.length > 0) {
+          toast.warning("Shift created with warnings", {
+            description: errorData.warnings.join(", "),
+          });
+        } else {
+          throw new Error(errorMessage);
+        }
       } else {
-        await createShift(submitData);
-        toast.success("Shift created successfully");
+        const result = await response.json();
+
+        // Show success with any warnings
+        if (result.warnings && result.warnings.length > 0) {
+          toast.success(`Shift ${isEditing ? "updated" : "created"} with warnings`, {
+            description: result.warnings.join(", "),
+          });
+        } else {
+          toast.success(`Shift ${isEditing ? "updated" : "created"} successfully`);
+        }
       }
+
       onSuccess?.();
       router.refresh();
     } catch (error) {

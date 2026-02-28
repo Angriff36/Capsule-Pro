@@ -5,14 +5,90 @@ import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 import {
-  createRecipe,
-  getRecipeForEdit,
-  type RecipeForEdit,
-  updateRecipe,
-} from "./actions-manifest";
+  kitchenRecipeCompositeCreate,
+  kitchenRecipeCompositeUpdate,
+} from "@/app/lib/routes";
+import { getRecipeForEdit, type RecipeForEdit } from "./actions-manifest-v2";
 import { RecipeEditModal } from "./components/recipe-edit-modal";
 import { RecipeEditorModal } from "./recipe-editor-modal";
+
+interface CompositeRouteResponse {
+  success: boolean;
+  message?: string;
+  constraintOutcomes?: Array<{ blocked: boolean; message: string }>;
+  data?: {
+    recipeId?: string;
+    version?: unknown;
+  };
+}
+
+/** Convert difficulty string to numeric level */
+const difficultyToLevel = (difficulty: string): number | undefined => {
+  const map: Record<string, number> = { Easy: 1, Medium: 2, Hard: 3 };
+  return map[difficulty];
+};
+
+/** Build JSON payload from RecipeEditorModal FormData for create route */
+const buildCreatePayload = (formData: FormData) => {
+  const tagsRaw = formData.get("tags") as string;
+  let tags: string[] | undefined;
+  try {
+    const parsed = tagsRaw ? JSON.parse(tagsRaw) : [];
+    tags = parsed.length > 0 ? parsed : undefined;
+  } catch {
+    // Ignore parse errors
+  }
+
+  return {
+    name: (formData.get("name") as string) || "",
+    description: (formData.get("description") as string) || undefined,
+    tags,
+    yieldQuantity: formData.get("servings")
+      ? Number.parseInt(formData.get("servings") as string, 10)
+      : undefined,
+    prepTimeMinutes: formData.get("prepTime")
+      ? Number.parseInt(formData.get("prepTime") as string, 10)
+      : undefined,
+    cookTimeMinutes: formData.get("cookTime")
+      ? Number.parseInt(formData.get("cookTime") as string, 10)
+      : undefined,
+    difficultyLevel: formData.get("difficulty")
+      ? difficultyToLevel(formData.get("difficulty") as string)
+      : undefined,
+  };
+};
+
+/** Build JSON payload from RecipeEditModal FormData for update route */
+const buildUpdatePayload = (formData: FormData) => {
+  const tagsRaw = formData.get("tags") as string;
+  let tags: string[] | undefined;
+  try {
+    const parsed = tagsRaw ? JSON.parse(tagsRaw) : [];
+    tags = parsed.length > 0 ? parsed : undefined;
+  } catch {
+    // Ignore parse errors
+  }
+
+  return {
+    name: (formData.get("name") as string) || undefined,
+    description: (formData.get("description") as string) || undefined,
+    tags,
+    yieldQuantity: formData.get("servings")
+      ? Number.parseInt(formData.get("servings") as string, 10)
+      : undefined,
+    prepTimeMinutes: formData.get("prepTime")
+      ? Number.parseInt(formData.get("prepTime") as string, 10)
+      : undefined,
+    cookTimeMinutes: formData.get("cookTime")
+      ? Number.parseInt(formData.get("cookTime") as string, 10)
+      : undefined,
+    difficultyLevel: formData.get("difficulty")
+      ? difficultyToLevel(formData.get("difficulty") as string)
+      : undefined,
+  };
+};
 
 export const RecipesPageClient = () => {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -59,12 +135,42 @@ export const RecipesPageClient = () => {
   }, [editRecipeId]);
 
   const handleSaveNewRecipe = async (formData: FormData) => {
+    const payload = buildCreatePayload(formData);
+
     try {
-      await createRecipe(formData);
-      toast.success("Recipe added successfully");
+      const response = await apiFetch(kitchenRecipeCompositeCreate(), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const result: CompositeRouteResponse = await response.json();
+
+      if (result.success) {
+        toast.success("Recipe added successfully");
+        if (result.data?.recipeId) {
+          router.push(`/kitchen/recipes/${result.data.recipeId}`);
+        } else {
+          router.refresh();
+        }
+      } else if (result.constraintOutcomes?.some((c) => c.blocked)) {
+        const messages = result.constraintOutcomes
+          .filter((c) => c.blocked)
+          .map((c) => c.message)
+          .join("; ");
+        toast.error(`Blocked by constraints: ${messages}`);
+        throw new Error(`Blocked by constraints: ${messages}`);
+      } else {
+        toast.error(result.message || "Failed to create recipe");
+        throw new Error(result.message || "Failed to create recipe");
+      }
     } catch (error) {
       captureException(error);
-      toast.error("Failed to save recipe. Please try again.");
+      if (error instanceof Error && error.message.includes("constraints")) {
+        // Already handled above
+      } else {
+        toast.error("Failed to save recipe. Please try again.");
+      }
       throw error;
     }
   };
@@ -73,13 +179,42 @@ export const RecipesPageClient = () => {
     if (!editRecipeId) {
       return;
     }
+
+    const payload = buildUpdatePayload(formData);
+
     try {
-      await updateRecipe(editRecipeId, formData);
-      toast.success("Recipe updated successfully");
-      router.refresh();
+      const response = await apiFetch(
+        kitchenRecipeCompositeUpdate(editRecipeId),
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const result: CompositeRouteResponse = await response.json();
+
+      if (result.success) {
+        toast.success("Recipe updated successfully");
+        router.refresh();
+      } else if (result.constraintOutcomes?.some((c) => c.blocked)) {
+        const messages = result.constraintOutcomes
+          .filter((c) => c.blocked)
+          .map((c) => c.message)
+          .join("; ");
+        toast.error(`Blocked by constraints: ${messages}`);
+        throw new Error(`Blocked by constraints: ${messages}`);
+      } else {
+        toast.error(result.message || "Failed to update recipe");
+        throw new Error(result.message || "Failed to update recipe");
+      }
     } catch (error) {
       captureException(error);
-      toast.error("Failed to update recipe. Please try again.");
+      if (error instanceof Error && error.message.includes("constraints")) {
+        // Already handled above
+      } else {
+        toast.error("Failed to update recipe. Please try again.");
+      }
       throw error;
     }
   };

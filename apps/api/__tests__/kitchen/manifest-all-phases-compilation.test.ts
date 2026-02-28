@@ -1,7 +1,7 @@
 /**
- * Compilation Test: All 25 Phase Manifest Files
+ * Compilation Test: All 29 Phase Manifest Files
  *
- * Validates that every new manifest file (Phases 1–7):
+ * Validates that every manifest file (Phases 1–7 + Governance):
  * 1. Can be read from disk
  * 2. Compiles to IR via compileToIR() without errors
  * 3. Contains the expected entity names
@@ -20,7 +20,7 @@
 
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
-import { compileToIR } from "@manifest/runtime/ir-compiler";
+import { compileToIR } from "@angriff36/manifest/ir-compiler";
 import { enforceCommandOwnership } from "@repo/manifest-adapters/ir-contract";
 import { ManifestRuntimeEngine } from "@repo/manifest-adapters/runtime-engine";
 import { describe, expect, it } from "vitest";
@@ -57,7 +57,7 @@ interface ManifestSpec {
  * - `publish` → `release`
  * - `not in` → negated constraint
  */
-const KNOWN_COMPILER_ISSUES: Record<string, string> = {};
+const _KNOWN_COMPILER_ISSUES: Record<string, string> = {};
 
 const MANIFEST_SPECS: ManifestSpec[] = [
   // ── Phase 1: Kitchen Operations ──────────────────────────────────────────
@@ -120,6 +120,62 @@ const MANIFEST_SPECS: ManifestSpec[] = [
       {
         name: "PrepMethod",
         commands: ["create", "update", "deactivate"],
+      },
+    ],
+  },
+  {
+    manifest: "prep-task-rules",
+    phase: "Phase 1",
+    entities: [
+      {
+        name: "PrepTask",
+        commands: [
+          "claim",
+          "unclaim",
+          "start",
+          "complete",
+          "release",
+          "reassign",
+          "updateQuantity",
+          "cancel",
+          "create",
+          "updateStatus",
+          "updatePriority",
+          "updateAssignment",
+          "updateDueDate",
+        ],
+      },
+    ],
+  },
+
+  // ── Phase 1 Governance: New entities for plan-step migration ──────────────
+  {
+    manifest: "event-dish-rules",
+    phase: "Phase 1 Gov",
+    entities: [
+      {
+        name: "EventDish",
+        commands: ["create", "remove"],
+      },
+    ],
+  },
+  {
+    manifest: "event-staff-rules",
+    phase: "Phase 1 Gov",
+    entities: [
+      {
+        name: "EventStaff",
+        commands: ["assign", "unassign"],
+      },
+    ],
+  },
+  {
+    manifest: "role-policy-rules",
+    phase: "Phase 1 Gov",
+    entities: [
+      {
+        name: "RolePolicy",
+        commands: ["update", "grant", "revoke"],
       },
     ],
   },
@@ -468,6 +524,11 @@ const EXPECTED_ENTITY_MAPPING: Record<string, string> = {
   Dish: "dish-rules",
   Container: "container-rules",
   PrepMethod: "prep-method-rules",
+  PrepTask: "prep-task-rules",
+  // Phase 1 Governance
+  EventDish: "event-dish-rules",
+  EventStaff: "event-staff-rules",
+  RolePolicy: "role-policy-rules",
   // Phase 2
   Event: "event-rules",
   EventProfitability: "event-rules",
@@ -529,8 +590,8 @@ async function compileManifest(manifestName: string) {
 
 describe("Manifest All-Phases Compilation", () => {
   // Verify we're testing exactly 25 manifests
-  it("should define exactly 25 manifest specs", () => {
-    expect(MANIFEST_SPECS).toHaveLength(25);
+  it("should define exactly 29 manifest specs", () => {
+    expect(MANIFEST_SPECS).toHaveLength(29);
   });
 
   // ── Per-manifest compilation tests ─────────────────────────────────────
@@ -572,7 +633,7 @@ describe("Manifest All-Phases Compilation", () => {
       const { ir } = await compileManifest(manifest);
       expect(ir).toBeDefined();
 
-      const irEntityNames = ir!.entities.map((e: { name: string }) => e.name);
+      const irEntityNames = ir?.entities.map((e: { name: string }) => e.name);
 
       for (const entitySpec of entities) {
         expect(
@@ -585,10 +646,13 @@ describe("Manifest All-Phases Compilation", () => {
     it("IR contains expected commands for each entity (after normalization)", async () => {
       const { ir } = await compileManifest(manifest);
       expect(ir).toBeDefined();
+      if (!ir) {
+        throw new Error(`${manifest} should compile to a valid IR`);
+      }
 
       // Apply enforceCommandOwnership to normalize entity→command mapping
       // This is the same normalization the runtime uses
-      const normalized = enforceCommandOwnership(ir!, manifest);
+      const normalized = enforceCommandOwnership(ir, manifest);
 
       for (const entitySpec of entities) {
         // After normalization, commands have entity set
@@ -608,8 +672,11 @@ describe("Manifest All-Phases Compilation", () => {
     it("ManifestRuntimeEngine can be instantiated", async () => {
       const { ir } = await compileManifest(manifest);
       expect(ir).toBeDefined();
+      if (!ir) {
+        throw new Error(`${manifest} should compile to a valid IR`);
+      }
 
-      const normalized = enforceCommandOwnership(ir!, manifest);
+      const normalized = enforceCommandOwnership(ir, manifest);
 
       const runtime = new ManifestRuntimeEngine(normalized, {
         user: {
@@ -646,7 +713,7 @@ describe("Manifest All-Phases Compilation", () => {
       it("documents known compiler limitation", () => {
         console.info(`  ⚠️  ${manifest}: ${knownCompilerIssue}`);
         expect(knownCompilerIssue).toBeDefined();
-        expect(knownCompilerIssue!.length).toBeGreaterThan(0);
+        expect(knownCompilerIssue?.length).toBeGreaterThan(0);
       });
 
       it("fails compilation due to known reserved word / syntax issue", async () => {

@@ -27,7 +27,7 @@ import {
 } from "@tanstack/react-table";
 import { FilterIcon, Loader2Icon, PlusIcon } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import type {
   TimeOffRequest,
@@ -85,6 +85,9 @@ export function TimeOffClient() {
   const [modalOpen, setModalOpen] = useState(false);
   const [createModalOpen, setCreateModalOpen] = useState(false);
 
+  // Track initial mount to avoid URL push on first render
+  const isMounted = useRef(false);
+
   // Fetch time off requests
   const fetchTimeOffRequests = useCallback(async () => {
     setLoading(true);
@@ -124,7 +127,7 @@ export function TimeOffClient() {
       setEmployees(employeesData.employees || []);
       setLocations(locationsData.locations || []);
     } catch (error) {
-      console.error("Failed to load filter options:", error);
+      console.warn("Failed to load filter options:", error);
     }
   }, []);
 
@@ -134,8 +137,12 @@ export function TimeOffClient() {
     fetchFilterOptions();
   }, [fetchTimeOffRequests, fetchFilterOptions]);
 
-  // Update URL when filters change
+  // Update URL when filters change (skip initial mount)
   useEffect(() => {
+    if (!isMounted.current) {
+      isMounted.current = true;
+      return;
+    }
     const params = new URLSearchParams();
     Object.entries(filters).forEach(([key, value]) => {
       if (value) {
@@ -279,14 +286,16 @@ export function TimeOffClient() {
             value={filters.endDate}
           />
           <Select
-            onValueChange={(value) => handleFilterChange("employeeId", value)}
-            value={filters.employeeId}
+            onValueChange={(value) =>
+              handleFilterChange("employeeId", value === "__all__" ? "" : value)
+            }
+            value={filters.employeeId || "__all__"}
           >
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Filter by employee" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All employees</SelectItem>
+              <SelectItem value="__all__">All employees</SelectItem>
               {employees.map((emp) => (
                 <SelectItem key={emp.id} value={emp.id}>
                   {emp.first_name} {emp.last_name}
@@ -295,14 +304,16 @@ export function TimeOffClient() {
             </SelectContent>
           </Select>
           <Select
-            onValueChange={(value) => handleFilterChange("locationId", value)}
-            value={filters.locationId}
+            onValueChange={(value) =>
+              handleFilterChange("locationId", value === "__all__" ? "" : value)
+            }
+            value={filters.locationId || "__all__"}
           >
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Filter by location" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All locations</SelectItem>
+              <SelectItem value="__all__">All locations</SelectItem>
               {locations.map((loc) => (
                 <SelectItem key={loc.id} value={loc.id}>
                   {loc.name}
@@ -311,14 +322,16 @@ export function TimeOffClient() {
             </SelectContent>
           </Select>
           <Select
-            onValueChange={(value) => handleFilterChange("status", value)}
-            value={filters.status}
+            onValueChange={(value) =>
+              handleFilterChange("status", value === "__all__" ? "" : value)
+            }
+            value={filters.status || "__all__"}
           >
             <SelectTrigger className="w-[150px]">
               <SelectValue placeholder="Status" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All statuses</SelectItem>
+              <SelectItem value="__all__">All statuses</SelectItem>
               <SelectItem value="PENDING">Pending</SelectItem>
               <SelectItem value="APPROVED">Approved</SelectItem>
               <SelectItem value="REJECTED">Rejected</SelectItem>
@@ -326,14 +339,16 @@ export function TimeOffClient() {
             </SelectContent>
           </Select>
           <Select
-            onValueChange={(value) => handleFilterChange("type", value)}
-            value={filters.type}
+            onValueChange={(value) =>
+              handleFilterChange("type", value === "__all__" ? "" : value)
+            }
+            value={filters.type || "__all__"}
           >
             <SelectTrigger className="w-[150px]">
               <SelectValue placeholder="Type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All types</SelectItem>
+              <SelectItem value="__all__">All types</SelectItem>
               <SelectItem value="VACATION">Vacation</SelectItem>
               <SelectItem value="SICK_LEAVE">Sick Leave</SelectItem>
               <SelectItem value="PERSONAL_DAY">Personal Day</SelectItem>

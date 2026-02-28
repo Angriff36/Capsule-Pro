@@ -5,6 +5,7 @@ entity PrepTask {
   property required id: string
   property required tenantId: string
   property required eventId: string
+  property prepListId: string = ""
   property required name: string
   property required taskType: string = "prep"
   property required status: string = "open"
@@ -58,8 +59,9 @@ entity PrepTask {
   }
 
   command claim(userId: string, stationId: string) {
-    guard userId != null and userId != ""
-    guard self.status == "open" or self.status == "pending"
+    guard userId != null and userId != "" "User ID is required"
+    guard self.status == "open" or self.status == "pending" "Task is not claimable"
+    guard self.claimedBy == "" "Task is already claimed"
 
     constraint warnOverdueClaim:warn self.isOverdue {
       messageTemplate: "Claiming overdue task '{taskName}'"
@@ -77,6 +79,21 @@ entity PrepTask {
     emit PrepTaskClaimed
   }
 
+  command unclaim(userId: string, reason: string) {
+    guard userId != null and userId != "" "User ID is required"
+    guard self.status == "in_progress" "Can only unclaim in-progress tasks"
+    guard self.claimedBy != "" "Task is not currently claimed"
+    guard self.claimedBy == userId or userId != "" "Only claimer or manager can unclaim"
+
+    mutate status = "open"
+    mutate claimedBy = ""
+    mutate claimedAt = 0
+    mutate stationId = ""
+    mutate updatedAt = now()
+
+    emit PrepTaskUnclaimed
+  }
+
   command start(userId: string) {
     guard userId != null and userId != ""
     guard self.status == "open" or self.status == "pending"
@@ -89,10 +106,11 @@ entity PrepTask {
     emit PrepTaskStarted
   }
 
-  command complete(quantityCompleted: number, userId: string) {
-    guard quantityCompleted != null and quantityCompleted >= 0
-    guard self.status == "in_progress"
-    guard self.claimedBy == userId or userId == ""
+  command complete(quantityCompleted: number, userId: string, completedAt: number) {
+    guard quantityCompleted != null and quantityCompleted >= 0 "Completed quantity must be non-negative"
+    guard self.status == "in_progress" "Can only complete in-progress tasks"
+    guard self.claimedBy == userId or userId == "" "Only claimer can complete task"
+    guard self.quantityTotal == 0 or quantityCompleted <= self.quantityTotal "Completed quantity cannot exceed total quantity"
 
     constraint warnIncomplete:warn quantityCompleted < self.quantityTotal and self.quantityTotal > 0 {
       messageTemplate: "Completing with {remaining} {unit} remaining"
@@ -106,7 +124,7 @@ entity PrepTask {
 
     mutate status = "done"
     mutate quantityCompleted = quantityCompleted
-    mutate updatedAt = now()
+    mutate updatedAt = completedAt != null and completedAt > 0 ? completedAt : now()
 
     emit PrepTaskCompleted
   }
@@ -181,15 +199,16 @@ entity PrepTask {
     emit PrepTaskCanceled
   }
 
-  command create(name: string, eventId: string, taskType: string, priority: number, quantityTotal: number, quantityUnitId: string, servingsTotal: number, startByDate: number, dueByDate: number, notes: string, ingredients: string) {
+  command create(name: string, eventId: string, prepListId: string, taskType: string, priority: number, quantityTotal: number, quantityUnitId: string, servingsTotal: number, startByDate: number, dueByDate: number, notes: string, ingredients: string) {
     guard name != null and name != "" "Task name is required"
     guard eventId != null and eventId != "" "Event ID is required"
+    // prepListId is optional — AI-generated tasks may not have a prep list yet
     guard priority >= 1 and priority <= 5 "Priority must be between 1 and 5"
 
     mutate name = name
     mutate eventId = eventId
+    mutate prepListId = prepListId
     mutate taskType = taskType
-    mutate status = "open"
     mutate priority = priority
     mutate quantityTotal = quantityTotal
     mutate quantityUnitId = quantityUnitId
@@ -204,12 +223,45 @@ entity PrepTask {
     emit PrepTaskCreated
   }
 
+  command updateStatus(status: string) {
+    guard status in ["open", "pending", "in_progress", "done", "canceled"] "Invalid status"
+
+    mutate status = status
+    mutate updatedAt = now()
+
+    emit PrepTaskStatusUpdated
+  }
+
+  command updatePriority(priority: number) {
+    guard priority >= 1 and priority <= 5 "Priority must be between 1 and 5"
+
+    mutate priority = priority
+    mutate updatedAt = now()
+
+    emit PrepTaskPriorityUpdated
+  }
+
+  command updateAssignment(claimedBy: string) {
+    mutate claimedBy = claimedBy
+    mutate updatedAt = now()
+
+    emit PrepTaskAssignmentUpdated
+  }
+
+  command updateDueDate(dueByDate: number) {
+    mutate dueByDate = dueByDate
+    mutate updatedAt = now()
+
+    emit PrepTaskDueDateUpdated
+  }
+
   store PrepTask in memory
 }
 
-policy KitchenStaffClaim execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can claim prep tasks"
-policy KitchenStaffComplete execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can complete prep tasks"
-policy ManagersCanCancel execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can cancel prep tasks"
+policy KitchenStaffClaim execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] and user.tenantId != null and user.tenantId != "" "Kitchen staff can claim prep tasks for their tenant"
+policy KitchenStaffComplete execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] and user.tenantId != null and user.tenantId != "" "Kitchen staff can complete prep tasks for their tenant"
+policy KitchenStaffUnclaim execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] and user.tenantId != null and user.tenantId != "" "Kitchen staff can unclaim prep tasks for their tenant"
+policy ManagersCanCancel execute: user.role in ["kitchen_lead", "manager", "admin"] and user.tenantId != null and user.tenantId != "" "Only managers can cancel prep tasks in their tenant"
 
 event PrepTaskClaimed: "kitchen.preptask.claimed" {
   taskId: string
@@ -229,6 +281,13 @@ event PrepTaskCompleted: "kitchen.preptask.completed" {
   userId: string
   quantityCompleted: number
   completedAt: number
+}
+
+event PrepTaskUnclaimed: "kitchen.preptask.unclaimed" {
+  taskId: string
+  userId: string
+  reason: string
+  unclaimedAt: number
 }
 
 event PrepTaskReleased: "kitchen.preptask.released" {
@@ -269,4 +328,32 @@ event PrepTaskCanceled: "kitchen.preptask.canceled" {
   reason: string
   canceledBy: string
   canceledAt: number
+}
+
+event PrepTaskStatusUpdated: "kitchen.preptask.status.updated" {
+  taskId: string
+  oldStatus: string
+  newStatus: string
+  updatedAt: number
+}
+
+event PrepTaskPriorityUpdated: "kitchen.preptask.priority.updated" {
+  taskId: string
+  oldPriority: number
+  newPriority: number
+  updatedAt: number
+}
+
+event PrepTaskAssignmentUpdated: "kitchen.preptask.assignment.updated" {
+  taskId: string
+  oldClaimedBy: string
+  newClaimedBy: string
+  updatedAt: number
+}
+
+event PrepTaskDueDateUpdated: "kitchen.preptask.duedate.updated" {
+  taskId: string
+  oldDueByDate: number
+  newDueByDate: number
+  updatedAt: number
 }

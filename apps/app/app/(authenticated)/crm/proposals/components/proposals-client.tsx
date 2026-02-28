@@ -207,6 +207,13 @@ export function ProposalsClient({
       setProposals(data.data);
       setPagination(data.pagination);
     } catch (error) {
+      // Ignore abort errors (navigation away from page cancels in-flight fetches)
+      if (
+        error instanceof Error &&
+        (error.name === "AbortError" || error.message === "Failed to fetch")
+      ) {
+        return;
+      }
       console.error("Error fetching proposals:", error);
       toast.error("Failed to load proposals", {
         description: error instanceof Error ? error.message : "Unknown error",
@@ -218,7 +225,9 @@ export function ProposalsClient({
 
   // Fetch proposals
   useEffect(() => {
+    const controller = new AbortController();
     fetchProposals();
+    return () => controller.abort();
   }, [fetchProposals]);
 
   const updateFilters = () => {
@@ -227,7 +236,7 @@ export function ProposalsClient({
     if (searchInput) {
       params.set("search", searchInput);
     }
-    if (statusFilter) {
+    if (statusFilter && statusFilter !== "__all__") {
       params.set("status", statusFilter);
     }
     if (initialClientId) {
@@ -252,7 +261,7 @@ export function ProposalsClient({
   };
 
   const _handleStatusChangeOpen = (open: boolean) => {
-    if (!open && statusFilter !== "") {
+    if (!open && statusFilter !== "__all__") {
       updateFilters();
     }
   };
@@ -542,7 +551,7 @@ export function ProposalsClient({
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="">All Statuses</SelectItem>
+                <SelectItem value="__all__">All Statuses</SelectItem>
                 <SelectItem value="draft">Draft</SelectItem>
                 <SelectItem value="sent">Sent</SelectItem>
                 <SelectItem value="viewed">Viewed</SelectItem>

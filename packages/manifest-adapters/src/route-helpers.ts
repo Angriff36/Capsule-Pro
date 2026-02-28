@@ -11,14 +11,16 @@
 // ============ Route Handler Response Helpers ============
 
 /**
- * Create a standard error response
+ * Create a standard error response.
+ * Uses the standard Web API Response so this package does not need a
+ * hard dependency on next/server. Next.js accepts plain Response objects
+ * from App Router route handlers.
  */
 export function manifestErrorResponse(
   error: Error | string,
   statusCode = 500,
   details?: Record<string, unknown>
 ): Response {
-  const { NextResponse } = require("next/server");
   const message = typeof error === "string" ? error : error.message;
 
   const body = {
@@ -27,21 +29,27 @@ export function manifestErrorResponse(
     ...(details && { details }),
   };
 
-  return NextResponse.json(body, { status: statusCode });
+  return new Response(JSON.stringify(body), {
+    status: statusCode,
+    headers: { "Content-Type": "application/json" },
+  });
 }
 
 /**
- * Create a standard success response
+ * Create a standard success response.
+ * Uses the standard Web API Response so this package does not need a
+ * hard dependency on next/server.
  */
 export function manifestSuccessResponse<T>(data: T): Response {
-  const { NextResponse } = require("next/server");
-
   const body = {
     success: true,
     data,
   };
 
-  return NextResponse.json(body);
+  return new Response(JSON.stringify(body), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
 }
 
 /**
@@ -219,4 +227,68 @@ export function checkCommandResult(result: {
   if (blockingConstraints && blockingConstraints.length > 0) {
     throw new Error("Command blocked by constraint");
   }
+}
+
+/**
+ * Create a response for constraint-blocked operations.
+ * Returns HTTP 200 with success: false and constraint outcomes.
+ * This allows the frontend to show the override dialog.
+ */
+export function manifestConstraintBlockedResponse(
+  constraintOutcomes: unknown[],
+  message = "Operation blocked by constraints"
+): Response {
+  const body = {
+    success: false,
+    message,
+    constraintOutcomes,
+  };
+
+  return new Response(JSON.stringify(body), {
+    status: 200, // Return 200 so the frontend can parse the response
+    headers: { "Content-Type": "application/json" },
+  });
+}
+
+/**
+ * Check if a command result has blocking constraints.
+ * Returns the blocking constraints or null if none.
+ */
+export function getBlockingConstraints(result: {
+  success: boolean;
+  constraintOutcomes?: unknown[];
+}): unknown[] | null {
+  if (result.success) {
+    return null;
+  }
+
+  const blocking = result.constraintOutcomes?.filter((outcome: unknown) => {
+    const o = outcome as {
+      passed?: boolean;
+      severity?: string;
+      overridden?: boolean;
+    };
+    return (
+      !o.passed &&
+      (o.severity === "block" || o.severity === "error") &&
+      !o.overridden
+    );
+  });
+
+  return blocking && blocking.length > 0 ? blocking : null;
+}
+
+/**
+ * Get warning constraints from a successful result.
+ */
+export function getWarningConstraints(result: {
+  success: boolean;
+  constraintOutcomes?: unknown[];
+}): unknown[] {
+  const warnings = result.constraintOutcomes?.filter((outcome: unknown) => {
+    const o = outcome as { passed?: boolean; severity?: string };
+    return !o.passed && o.severity === "warn";
+  });
+
+  return warnings || [];
 }

@@ -96,7 +96,11 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
   return (
     <>
       <Header
-        page={event.title}
+        page={
+          event.eventNumber
+            ? `${event.eventNumber} — ${event.title}`
+            : event.title
+        }
         pages={[{ label: "Events", href: "/events" }]}
       >
         <div className="flex items-center gap-2">
