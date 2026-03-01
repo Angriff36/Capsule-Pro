@@ -7,10 +7,10 @@
 
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { NextResponse } from "next/server";
-import { z } from "zod";
-import { InvariantError, invariant } from "@/app/lib/invariant";
+import { type NextRequest, NextResponse } from "next/server";
+import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 
 type PayrollRunStatus =
   | "pending"
@@ -21,12 +21,6 @@ type PayrollRunStatus =
   | "finalized"
   | "paid"
   | "failed";
-
-const CreateApprovalRequestSchema = z.object({
-  payrollRunId: z.string().uuid(),
-  requestedBy: z.string().uuid().optional(),
-  notes: z.string().optional(),
-});
 
 interface PaginationParams {
   page: number;
@@ -191,110 +185,17 @@ export async function GET(request: Request) {
 /**
  * POST /api/payroll/approvals - Create approval request for a payroll run
  */
-export async function POST(request: Request) {
-  try {
-    const { orgId, userId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return NextResponse.json(
-        { message: "Tenant not found" },
-        { status: 404 }
-      );
-    }
-
-    const body = await request.json();
-    const parseResult = CreateApprovalRequestSchema.safeParse(body);
-
-    if (!parseResult.success) {
-      return NextResponse.json(
-        {
-          message: "Invalid request body",
-          errors: parseResult.error.issues,
-        },
-        { status: 400 }
-      );
-    }
-
-    const { payrollRunId, requestedBy, notes } = parseResult.data;
-
-    invariant(payrollRunId, "payrollRunId is required");
-
-    // Check if the payroll run exists
-    const runResult = await database.$queryRaw<
-      { id: string; status: string }[]
-    >(
-      Prisma.sql`
-        SELECT id, status
-        FROM tenant_staff.payroll_runs
-        WHERE tenant_id = ${tenantId}
-          AND id = ${payrollRunId}::uuid
-          AND deleted_at IS NULL
-      `
-    );
-
-    if (!runResult || runResult.length === 0) {
-      return NextResponse.json(
-        { message: "Payroll run not found" },
-        { status: 404 }
-      );
-    }
-
-    const run = runResult[0];
-
-    // Only allow creating approval requests for completed or pending runs
-    if (run.status !== "completed" && run.status !== "pending") {
-      return NextResponse.json(
-        {
-          message:
-            "Can only create approval requests for pending or completed payroll runs",
-        },
-        { status: 400 }
-      );
-    }
-
-    // Create approval history entry
-    await database.$queryRaw(
-      Prisma.sql`
-        INSERT INTO tenant_staff.payroll_approval_history (
-          tenant_id, payroll_run_id, action, previous_status, new_status,
-          performed_by, performed_at, reason
-        )
-        VALUES (
-          ${tenantId},
-          ${payrollRunId}::uuid,
-          'approval_requested',
-          ${run.status},
-          ${run.status},
-          ${requestedBy || userId},
-          ${new Date()},
-          ${notes || null}
-        )
-      `
-    );
-
-    return NextResponse.json(
-      {
-        message: "Approval request created successfully",
-        data: {
-          payrollRunId,
-          status: "pending_approval",
-          requestedAt: new Date(),
-        },
-      },
-      { status: 201 }
-    );
-  } catch (error) {
-    if (error instanceof InvariantError) {
-      return NextResponse.json({ message: error.message }, { status: 400 });
-    }
-    console.error("Failed to create approval request:", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
-  }
+export function POST(request: NextRequest) {
+  return executeManifestCommand(request, {
+    entityName: "PayrollApprovalHistory",
+    commandName: "create",
+    transformBody: (body, ctx) => ({
+      payrollRunId: body.payrollRunId || "",
+      action: "approval_requested",
+      previousStatus: "",
+      newStatus: "",
+      performedBy: body.requestedBy || ctx.userId,
+      reason: body.notes || "",
+    }),
+  });
 }

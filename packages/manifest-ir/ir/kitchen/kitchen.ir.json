@@ -5,8 +5,9 @@
     "irHash": "",
     "compilerVersion": "0.3.8",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-03-01T07:38:21.141Z",
+    "compiledAt": "2026-03-01T07:55:00.807Z",
     "sources": [
+      "admin-chat-participant-rules.manifest",
       "admin-task-rules.manifest",
       "alerts-config-rules.manifest",
       "allergen-warning-rules.manifest",
@@ -19,6 +20,7 @@
       "container-rules.manifest",
       "cycle-count-rules.manifest",
       "dish-rules.manifest",
+      "email-workflow-rules.manifest",
       "employee-availability-rules.manifest",
       "employee-certification-rules.manifest",
       "event-budget-rules.manifest",
@@ -34,10 +36,12 @@
       "inventory-supplier-rules.manifest",
       "inventory-transaction-rules.manifest",
       "kitchen-task-rules.manifest",
+      "labor-budget-rules.manifest",
       "lead-rules.manifest",
       "menu-rules.manifest",
       "notification-rules.manifest",
       "override-audit-rules.manifest",
+      "payroll-rules.manifest",
       "prep-comment-rules.manifest",
       "prep-list-rules.manifest",
       "prep-method-rules.manifest",
@@ -61,6 +65,152 @@
   },
   "modules": [],
   "entities": [
+    {
+      "name": "AdminChatParticipant",
+      "properties": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "threadId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "userId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "archivedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "clearedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "deletedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        }
+      ],
+      "computedProperties": [
+        {
+          "name": "isArchived",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "archivedAt"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          },
+          "dependencies": []
+        }
+      ],
+      "relationships": [],
+      "commands": [
+        "archive",
+        "unarchive",
+        "clearHistory"
+      ],
+      "constraints": [],
+      "policies": []
+    },
     {
       "name": "AdminTask",
       "properties": [
@@ -9302,6 +9452,203 @@
       "policies": []
     },
     {
+      "name": "EmailWorkflow",
+      "properties": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "name",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "triggerType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "custom"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "triggerConfig",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "{}"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "emailTemplateId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "recipientConfig",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "{}"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "isActive",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "boolean",
+            "value": true
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "deletedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        }
+      ],
+      "computedProperties": [
+        {
+          "name": "isDeleted",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "deletedAt"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          },
+          "dependencies": []
+        }
+      ],
+      "relationships": [],
+      "commands": [
+        "create",
+        "update",
+        "softDelete"
+      ],
+      "constraints": [
+        {
+          "name": "requireName",
+          "code": "requireName",
+          "expression": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "name"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Workflow name is required",
+          "overrideable": false
+        }
+      ],
+      "policies": []
+    },
+    {
       "name": "EmployeeAvailability",
       "properties": [
         {
@@ -18156,6 +18503,329 @@
       ]
     },
     {
+      "name": "LaborBudget",
+      "properties": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "locationId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "periodStart",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "periodEnd",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "budgetAmount",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "budgetType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "weekly"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "notes",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "deletedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        }
+      ],
+      "computedProperties": [
+        {
+          "name": "isDeleted",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "deletedAt"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          },
+          "dependencies": []
+        }
+      ],
+      "relationships": [],
+      "commands": [
+        "create",
+        "update",
+        "softDelete"
+      ],
+      "constraints": [],
+      "policies": []
+    },
+    {
+      "name": "BudgetAlert",
+      "properties": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "budgetId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "alertType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "isAcknowledged",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "boolean",
+            "value": false
+          },
+          "modifiers": []
+        },
+        {
+          "name": "acknowledgedBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "acknowledgedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "resolved",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "boolean",
+            "value": false
+          },
+          "modifiers": []
+        },
+        {
+          "name": "resolvedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        }
+      ],
+      "computedProperties": [],
+      "relationships": [],
+      "commands": [
+        "acknowledge",
+        "resolve"
+      ],
+      "constraints": [],
+      "policies": []
+    },
+    {
       "name": "Lead",
       "properties": [
         {
@@ -20187,6 +20857,765 @@
           "overrideable": false
         }
       ],
+      "policies": []
+    },
+    {
+      "name": "PayrollPeriod",
+      "properties": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "periodStart",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "periodEnd",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "status",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "open"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "deletedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        }
+      ],
+      "computedProperties": [
+        {
+          "name": "isDeleted",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "deletedAt"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          },
+          "dependencies": []
+        }
+      ],
+      "relationships": [],
+      "commands": [
+        "create"
+      ],
+      "constraints": [],
+      "policies": []
+    },
+    {
+      "name": "EmployeeDeduction",
+      "properties": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "employeeId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "type",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "name",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "amount",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "percentage",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "isPreTax",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "boolean",
+            "value": false
+          },
+          "modifiers": []
+        },
+        {
+          "name": "effectiveDate",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "endDate",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "maxAnnualAmount",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "deletedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        }
+      ],
+      "computedProperties": [
+        {
+          "name": "isDeleted",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "deletedAt"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          },
+          "dependencies": []
+        }
+      ],
+      "relationships": [],
+      "commands": [
+        "create"
+      ],
+      "constraints": [
+        {
+          "name": "requireEmployee",
+          "code": "requireEmployee",
+          "expression": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "employeeId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Employee ID is required",
+          "overrideable": false
+        },
+        {
+          "name": "requireType",
+          "code": "requireType",
+          "expression": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "type"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Deduction type is required",
+          "overrideable": false
+        },
+        {
+          "name": "requireName",
+          "code": "requireName",
+          "expression": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "name"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Deduction name is required",
+          "overrideable": false
+        }
+      ],
+      "policies": []
+    },
+    {
+      "name": "PayrollApprovalHistory",
+      "properties": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "payrollRunId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "action",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "previousStatus",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "newStatus",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "performedBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "performedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        }
+      ],
+      "computedProperties": [],
+      "relationships": [],
+      "commands": [
+        "create"
+      ],
+      "constraints": [],
+      "policies": []
+    },
+    {
+      "name": "PayrollRun",
+      "properties": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "payrollPeriodId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "runDate",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "status",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "pending"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "totalGross",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "totalDeductions",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "totalNet",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "approvedBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "approvedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "paidAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "rejectReason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "deletedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        }
+      ],
+      "computedProperties": [
+        {
+          "name": "isDeleted",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "deletedAt"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          },
+          "dependencies": []
+        }
+      ],
+      "relationships": [],
+      "commands": [
+        "updateStatus"
+      ],
+      "constraints": [],
       "policies": []
     },
     {
@@ -32591,6 +34020,11 @@
   ],
   "stores": [
     {
+      "entity": "AdminChatParticipant",
+      "target": "memory",
+      "config": {}
+    },
+    {
       "entity": "AdminTask",
       "target": "memory",
       "config": {}
@@ -32691,6 +34125,11 @@
       "config": {}
     },
     {
+      "entity": "EmailWorkflow",
+      "target": "memory",
+      "config": {}
+    },
+    {
       "entity": "EmployeeAvailability",
       "target": "memory",
       "config": {}
@@ -32786,6 +34225,16 @@
       "config": {}
     },
     {
+      "entity": "LaborBudget",
+      "target": "memory",
+      "config": {}
+    },
+    {
+      "entity": "BudgetAlert",
+      "target": "memory",
+      "config": {}
+    },
+    {
       "entity": "Lead",
       "target": "memory",
       "config": {}
@@ -32807,6 +34256,26 @@
     },
     {
       "entity": "OverrideAudit",
+      "target": "memory",
+      "config": {}
+    },
+    {
+      "entity": "PayrollPeriod",
+      "target": "memory",
+      "config": {}
+    },
+    {
+      "entity": "EmployeeDeduction",
+      "target": "memory",
+      "config": {}
+    },
+    {
+      "entity": "PayrollApprovalHistory",
+      "target": "memory",
+      "config": {}
+    },
+    {
+      "entity": "PayrollRun",
       "target": "memory",
       "config": {}
     },
@@ -32952,6 +34421,64 @@
     }
   ],
   "events": [
+    {
+      "name": "ChatParticipantArchived",
+      "channel": "admin.chat-participant.archived",
+      "payload": [
+        {
+          "name": "participantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "archivedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ChatParticipantUnarchived",
+      "channel": "admin.chat-participant.unarchived",
+      "payload": [
+        {
+          "name": "participantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ChatHistoryCleared",
+      "channel": "admin.chat-participant.history-cleared",
+      "payload": [
+        {
+          "name": "participantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "clearedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
     {
       "name": "AdminTaskCreated",
       "channel": "admin.task.created",
@@ -37116,6 +38643,96 @@
         },
         {
           "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "EmailWorkflowCreated",
+      "channel": "collaboration.email-workflow.created",
+      "payload": [
+        {
+          "name": "workflowId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "triggerType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "EmailWorkflowUpdated",
+      "channel": "collaboration.email-workflow.updated",
+      "payload": [
+        {
+          "name": "workflowId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "EmailWorkflowDeleted",
+      "channel": "collaboration.email-workflow.deleted",
+      "payload": [
+        {
+          "name": "workflowId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "deletedAt",
           "type": {
             "name": "number",
             "nullable": false
@@ -41655,6 +43272,140 @@
       ]
     },
     {
+      "name": "LaborBudgetCreated",
+      "channel": "staff.labor-budget.created",
+      "payload": [
+        {
+          "name": "budgetId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "budgetAmount",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "LaborBudgetUpdated",
+      "channel": "staff.labor-budget.updated",
+      "payload": [
+        {
+          "name": "budgetId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "LaborBudgetDeleted",
+      "channel": "staff.labor-budget.deleted",
+      "payload": [
+        {
+          "name": "budgetId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "deletedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "BudgetAlertAcknowledged",
+      "channel": "staff.budget-alert.acknowledged",
+      "payload": [
+        {
+          "name": "alertId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "acknowledgedBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "acknowledgedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "BudgetAlertResolved",
+      "channel": "staff.budget-alert.resolved",
+      "payload": [
+        {
+          "name": "alertId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "resolvedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
       "name": "LeadCreated",
       "channel": "crm.lead.created",
       "payload": [
@@ -42720,6 +44471,182 @@
         },
         {
           "name": "authorizedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "PayrollPeriodCreated",
+      "channel": "payroll.period.created",
+      "payload": [
+        {
+          "name": "periodId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "periodStart",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "periodEnd",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "EmployeeDeductionCreated",
+      "channel": "payroll.deduction.created",
+      "payload": [
+        {
+          "name": "deductionId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "employeeId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "PayrollApprovalRequested",
+      "channel": "payroll.approval.requested",
+      "payload": [
+        {
+          "name": "approvalId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "payrollRunId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "performedBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "PayrollRunStatusChanged",
+      "channel": "payroll.run.status-changed",
+      "payload": [
+        {
+          "name": "runId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "updatedAt",
           "type": {
             "name": "number",
             "nullable": false
@@ -49706,6 +51633,113 @@
     }
   ],
   "commands": [
+    {
+      "name": "archive",
+      "entity": "AdminChatParticipant",
+      "parameters": [],
+      "guards": [],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "mutate",
+          "target": "archivedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "ChatParticipantArchived"
+      ]
+    },
+    {
+      "name": "unarchive",
+      "entity": "AdminChatParticipant",
+      "parameters": [],
+      "guards": [],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "mutate",
+          "target": "archivedAt",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "ChatParticipantUnarchived"
+      ]
+    },
+    {
+      "name": "clearHistory",
+      "entity": "AdminChatParticipant",
+      "parameters": [],
+      "guards": [],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "mutate",
+          "target": "clearedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "ChatHistoryCleared"
+      ]
+    },
     {
       "name": "create",
       "entity": "AdminTask",
@@ -65276,6 +67310,395 @@
       ],
       "emits": [
         "DishLeadTimeUpdated"
+      ]
+    },
+    {
+      "name": "create",
+      "entity": "EmailWorkflow",
+      "parameters": [
+        {
+          "name": "name",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "triggerType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "triggerConfig",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "emailTemplateId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "recipientConfig",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "name"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "name"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Workflow name is required"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "name",
+          "expression": {
+            "kind": "identifier",
+            "name": "name"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "triggerType",
+          "expression": {
+            "kind": "identifier",
+            "name": "triggerType"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "triggerConfig",
+          "expression": {
+            "kind": "identifier",
+            "name": "triggerConfig"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "emailTemplateId",
+          "expression": {
+            "kind": "identifier",
+            "name": "emailTemplateId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "recipientConfig",
+          "expression": {
+            "kind": "identifier",
+            "name": "recipientConfig"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isActive",
+          "expression": {
+            "kind": "identifier",
+            "name": "isActive"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "createdAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "EmailWorkflowCreated"
+      ]
+    },
+    {
+      "name": "update",
+      "entity": "EmailWorkflow",
+      "parameters": [
+        {
+          "name": "name",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "triggerConfig",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "emailTemplateId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "recipientConfig",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Cannot update a deleted workflow"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "name",
+          "expression": {
+            "kind": "identifier",
+            "name": "name"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "triggerConfig",
+          "expression": {
+            "kind": "identifier",
+            "name": "triggerConfig"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "emailTemplateId",
+          "expression": {
+            "kind": "identifier",
+            "name": "emailTemplateId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "recipientConfig",
+          "expression": {
+            "kind": "identifier",
+            "name": "recipientConfig"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isActive",
+          "expression": {
+            "kind": "identifier",
+            "name": "isActive"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "EmailWorkflowUpdated"
+      ]
+    },
+    {
+      "name": "softDelete",
+      "entity": "EmailWorkflow",
+      "parameters": [],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Workflow is already deleted"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "deletedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isActive",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": false
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "EmailWorkflowDeleted"
       ]
     },
     {
@@ -82057,6 +84480,569 @@
     },
     {
       "name": "create",
+      "entity": "LaborBudget",
+      "parameters": [
+        {
+          "name": "locationId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "periodStart",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "periodEnd",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "budgetAmount",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "budgetType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "createdBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": ">",
+          "left": {
+            "kind": "identifier",
+            "name": "budgetAmount"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Budget amount must be positive"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "locationId",
+          "expression": {
+            "kind": "identifier",
+            "name": "locationId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "periodStart",
+          "expression": {
+            "kind": "identifier",
+            "name": "periodStart"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "periodEnd",
+          "expression": {
+            "kind": "identifier",
+            "name": "periodEnd"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "budgetAmount",
+          "expression": {
+            "kind": "identifier",
+            "name": "budgetAmount"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "budgetType",
+          "expression": {
+            "kind": "identifier",
+            "name": "budgetType"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "notes",
+          "expression": {
+            "kind": "identifier",
+            "name": "notes"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "createdBy",
+          "expression": {
+            "kind": "identifier",
+            "name": "createdBy"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "createdAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "LaborBudgetCreated"
+      ]
+    },
+    {
+      "name": "update",
+      "entity": "LaborBudget",
+      "parameters": [
+        {
+          "name": "locationId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "periodStart",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "periodEnd",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "budgetAmount",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "budgetType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Cannot update a deleted budget"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "locationId",
+          "expression": {
+            "kind": "identifier",
+            "name": "locationId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "periodStart",
+          "expression": {
+            "kind": "identifier",
+            "name": "periodStart"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "periodEnd",
+          "expression": {
+            "kind": "identifier",
+            "name": "periodEnd"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "budgetAmount",
+          "expression": {
+            "kind": "identifier",
+            "name": "budgetAmount"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "budgetType",
+          "expression": {
+            "kind": "identifier",
+            "name": "budgetType"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "notes",
+          "expression": {
+            "kind": "identifier",
+            "name": "notes"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "LaborBudgetUpdated"
+      ]
+    },
+    {
+      "name": "softDelete",
+      "entity": "LaborBudget",
+      "parameters": [],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Budget is already deleted"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "deletedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "LaborBudgetDeleted"
+      ]
+    },
+    {
+      "name": "acknowledge",
+      "entity": "BudgetAlert",
+      "parameters": [
+        {
+          "name": "acknowledgedBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "isAcknowledged"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": false
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Alert is already acknowledged"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isAcknowledged",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": true
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "acknowledgedBy",
+          "expression": {
+            "kind": "identifier",
+            "name": "acknowledgedBy"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "acknowledgedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "BudgetAlertAcknowledged"
+      ]
+    },
+    {
+      "name": "resolve",
+      "entity": "BudgetAlert",
+      "parameters": [],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "resolved"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": false
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Alert is already resolved"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "resolved",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": true
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "resolvedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "BudgetAlertResolved"
+      ]
+    },
+    {
+      "name": "create",
       "entity": "Lead",
       "parameters": [
         {
@@ -85581,6 +88567,764 @@
       ],
       "emits": [
         "OverrideAuditAuthorized"
+      ]
+    },
+    {
+      "name": "create",
+      "entity": "PayrollPeriod",
+      "parameters": [
+        {
+          "name": "periodStart",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "periodEnd",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "periodStart"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "periodStart"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "periodEnd"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "periodEnd"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Period start date is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Period end date is required"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "periodStart",
+          "expression": {
+            "kind": "identifier",
+            "name": "periodStart"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "periodEnd",
+          "expression": {
+            "kind": "identifier",
+            "name": "periodEnd"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "status",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "open"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "createdAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "PayrollPeriodCreated"
+      ]
+    },
+    {
+      "name": "create",
+      "entity": "EmployeeDeduction",
+      "parameters": [
+        {
+          "name": "employeeId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "amount",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "percentage",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "isPreTax",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "effectiveDate",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "endDate",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "maxAnnualAmount",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "employeeId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "employeeId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "type"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "type"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "name"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "name"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Employee ID is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Deduction type is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Deduction name is required"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "employeeId",
+          "expression": {
+            "kind": "identifier",
+            "name": "employeeId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "type",
+          "expression": {
+            "kind": "identifier",
+            "name": "type"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "name",
+          "expression": {
+            "kind": "identifier",
+            "name": "name"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "amount",
+          "expression": {
+            "kind": "identifier",
+            "name": "amount"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "percentage",
+          "expression": {
+            "kind": "identifier",
+            "name": "percentage"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isPreTax",
+          "expression": {
+            "kind": "identifier",
+            "name": "isPreTax"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "effectiveDate",
+          "expression": {
+            "kind": "identifier",
+            "name": "effectiveDate"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "endDate",
+          "expression": {
+            "kind": "identifier",
+            "name": "endDate"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "maxAnnualAmount",
+          "expression": {
+            "kind": "identifier",
+            "name": "maxAnnualAmount"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "createdAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "EmployeeDeductionCreated"
+      ]
+    },
+    {
+      "name": "create",
+      "entity": "PayrollApprovalHistory",
+      "parameters": [
+        {
+          "name": "payrollRunId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "previousStatus",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "newStatus",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "performedBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "payrollRunId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "payrollRunId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Payroll run ID is required"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "payrollRunId",
+          "expression": {
+            "kind": "identifier",
+            "name": "payrollRunId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "action",
+          "expression": {
+            "kind": "identifier",
+            "name": "action"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "previousStatus",
+          "expression": {
+            "kind": "identifier",
+            "name": "previousStatus"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "newStatus",
+          "expression": {
+            "kind": "identifier",
+            "name": "newStatus"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "performedBy",
+          "expression": {
+            "kind": "identifier",
+            "name": "performedBy"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "reason",
+          "expression": {
+            "kind": "identifier",
+            "name": "reason"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "performedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "createdAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "PayrollApprovalRequested"
+      ]
+    },
+    {
+      "name": "updateStatus",
+      "entity": "PayrollRun",
+      "parameters": [
+        {
+          "name": "status",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "approvedBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "rejectReason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Cannot update a deleted payroll run"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "status",
+          "expression": {
+            "kind": "identifier",
+            "name": "status"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "approvedBy",
+          "expression": {
+            "kind": "identifier",
+            "name": "approvedBy"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "rejectReason",
+          "expression": {
+            "kind": "identifier",
+            "name": "rejectReason"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "PayrollRunStatusChanged"
       ]
     },
     {
@@ -110421,6 +114165,56 @@
   ],
   "policies": [
     {
+      "name": "AdminChatManagement",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "staff"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "kitchen_manager"
+              }
+            }
+          ]
+        }
+      },
+      "message": "Staff can manage their chat participation"
+    },
+    {
       "name": "AdminTaskManagement",
       "action": "execute",
       "expression": {
@@ -111651,6 +115445,42 @@
         }
       },
       "message": "Only leads and managers can update dish pricing"
+    },
+    {
+      "name": "EmailWorkflowManagement",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "Managers can manage email workflows"
     },
     {
       "name": "AvailabilityManagement",
@@ -113311,6 +117141,42 @@
       "message": "Anyone can view kitchen tasks"
     },
     {
+      "name": "LaborBudgetManagement",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "Managers can manage labor budgets"
+    },
+    {
       "name": "SalesCanManageLeads",
       "action": "execute",
       "expression": {
@@ -113797,6 +117663,49 @@
         }
       },
       "message": "Only admins can authorize overrides"
+    },
+    {
+      "name": "PayrollManagement",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "payroll_admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "Managers can manage payroll"
     },
     {
       "name": "KitchenStaffCanComment",

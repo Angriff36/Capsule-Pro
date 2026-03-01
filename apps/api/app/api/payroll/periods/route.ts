@@ -7,9 +7,9 @@
 
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { NextResponse } from "next/server";
-import { InvariantError } from "@/app/lib/invariant";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 
 type PayrollPeriodStatus = "open" | "closed" | "processing";
 
@@ -140,84 +140,13 @@ export async function GET(request: Request) {
 /**
  * POST /api/payroll/periods - Create a new payroll period
  */
-export async function POST(request: Request) {
-  try {
-    const { orgId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return NextResponse.json(
-        { message: "Tenant not found" },
-        { status: 404 }
-      );
-    }
-
-    const body = await request.json();
-
-    if (!(body.periodStart && body.periodEnd)) {
-      throw new InvariantError("periodStart and periodEnd are required");
-    }
-
-    const startDate = new Date(body.periodStart);
-    const endDate = new Date(body.periodEnd);
-
-    if (startDate >= endDate) {
-      throw new InvariantError("periodStart must be before periodEnd");
-    }
-
-    // Check for reasonable date range (max 31 days)
-    const daysDiff = Math.ceil(
-      (endDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)
-    );
-    if (daysDiff > 31) {
-      throw new InvariantError("Payroll period cannot exceed 31 days");
-    }
-
-    // Create payroll period
-    const period = await database.$queryRaw<
-      {
-        id: string;
-        tenant_id: string;
-        period_start: Date;
-        period_end: Date;
-        status: string;
-        created_at: Date;
-        updated_at: Date;
-      }[]
-    >(
-      Prisma.sql`
-        INSERT INTO tenant_staff.payroll_periods (tenant_id, period_start, period_end, status)
-        VALUES (${tenantId}, ${startDate}, ${endDate}, 'open')
-        RETURNING id, tenant_id, period_start, period_end, status, created_at, updated_at
-      `
-    );
-
-    if (!period[0]) {
-      throw new Error("Failed to create payroll period");
-    }
-
-    const mappedPeriod = {
-      id: period[0].id,
-      tenantId: period[0].tenant_id,
-      periodStart: period[0].period_start,
-      periodEnd: period[0].period_end,
-      status: period[0].status as PayrollPeriodStatus,
-      createdAt: period[0].created_at,
-      updatedAt: period[0].updated_at,
-    };
-
-    return NextResponse.json(mappedPeriod, { status: 201 });
-  } catch (error) {
-    if (error instanceof InvariantError) {
-      return NextResponse.json({ message: error.message }, { status: 400 });
-    }
-    console.error("Failed to create payroll period:", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
-  }
+export function POST(request: NextRequest) {
+  return executeManifestCommand(request, {
+    entityName: "PayrollPeriod",
+    commandName: "create",
+    transformBody: (body) => ({
+      periodStart: body.periodStart || "",
+      periodEnd: body.periodEnd || "",
+    }),
+  });
 }

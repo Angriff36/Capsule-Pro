@@ -1,5 +1,20 @@
 [
   {
+    "entity": "AdminChatParticipant",
+    "command": "archive",
+    "commandId": "AdminChatParticipant.archive"
+  },
+  {
+    "entity": "AdminChatParticipant",
+    "command": "clearHistory",
+    "commandId": "AdminChatParticipant.clearHistory"
+  },
+  {
+    "entity": "AdminChatParticipant",
+    "command": "unarchive",
+    "commandId": "AdminChatParticipant.unarchive"
+  },
+  {
     "entity": "AdminTask",
     "command": "cancel",
     "commandId": "AdminTask.cancel"
@@ -113,6 +128,16 @@
     "entity": "BattleBoard",
     "command": "vote",
     "commandId": "BattleBoard.vote"
+  },
+  {
+    "entity": "BudgetAlert",
+    "command": "acknowledge",
+    "commandId": "BudgetAlert.acknowledge"
+  },
+  {
+    "entity": "BudgetAlert",
+    "command": "resolve",
+    "commandId": "BudgetAlert.resolve"
   },
   {
     "entity": "BudgetLineItem",
@@ -420,6 +445,21 @@
     "commandId": "Dish.updatePricing"
   },
   {
+    "entity": "EmailWorkflow",
+    "command": "create",
+    "commandId": "EmailWorkflow.create"
+  },
+  {
+    "entity": "EmailWorkflow",
+    "command": "softDelete",
+    "commandId": "EmailWorkflow.softDelete"
+  },
+  {
+    "entity": "EmailWorkflow",
+    "command": "update",
+    "commandId": "EmailWorkflow.update"
+  },
+  {
     "entity": "EmployeeAvailability",
     "command": "create",
     "commandId": "EmployeeAvailability.create"
@@ -448,6 +488,11 @@
     "entity": "EmployeeCertification",
     "command": "update",
     "commandId": "EmployeeCertification.update"
+  },
+  {
+    "entity": "EmployeeDeduction",
+    "command": "create",
+    "commandId": "EmployeeDeduction.create"
   },
   {
     "entity": "Event",
@@ -870,6 +915,21 @@
     "commandId": "KitchenTask.updatePriority"
   },
   {
+    "entity": "LaborBudget",
+    "command": "create",
+    "commandId": "LaborBudget.create"
+  },
+  {
+    "entity": "LaborBudget",
+    "command": "softDelete",
+    "commandId": "LaborBudget.softDelete"
+  },
+  {
+    "entity": "LaborBudget",
+    "command": "update",
+    "commandId": "LaborBudget.update"
+  },
+  {
     "entity": "Lead",
     "command": "archive",
     "commandId": "Lead.archive"
@@ -958,6 +1018,21 @@
     "entity": "OverrideAudit",
     "command": "create",
     "commandId": "OverrideAudit.create"
+  },
+  {
+    "entity": "PayrollApprovalHistory",
+    "command": "create",
+    "commandId": "PayrollApprovalHistory.create"
+  },
+  {
+    "entity": "PayrollPeriod",
+    "command": "create",
+    "commandId": "PayrollPeriod.create"
+  },
+  {
+    "entity": "PayrollRun",
+    "command": "updateStatus",
+    "commandId": "PayrollRun.updateStatus"
   },
   {
     "entity": "PrepComment",

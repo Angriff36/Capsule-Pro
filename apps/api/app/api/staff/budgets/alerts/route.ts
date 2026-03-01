@@ -1,11 +1,8 @@
 import { auth } from "@repo/auth/server";
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import {
-  acknowledgeBudgetAlert,
-  getBudgetAlerts,
-  resolveBudgetAlert,
-} from "@/lib/staff/labor-budget";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getBudgetAlerts } from "@/lib/staff/labor-budget";
 
 /**
  * GET /api/staff/budgets/alerts
@@ -55,50 +52,17 @@ export async function GET(request: Request) {
   }
 }
 
-/**
- * POST /api/staff/budgets/alerts/acknowledge
- * Acknowledge a budget alert
- *
- * Body:
- * - alertId: Alert ID to acknowledge
- */
-export async function POST(request: Request) {
-  const { orgId } = await auth();
-  if (!orgId) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
+export async function POST(request: NextRequest) {
+  const body = await request.clone().json();
+  const action = body.action || "acknowledge";
+  const commandName = action === "resolve" ? "resolve" : "acknowledge";
 
-  const tenantId = await getTenantIdForOrg(orgId);
-  const body = await request.json();
-  const { alertId, action } = body;
-
-  if (!alertId) {
-    return NextResponse.json(
-      { message: "Alert ID is required" },
-      { status: 400 }
-    );
-  }
-
-  if (!(action && ["acknowledge", "resolve"].includes(action))) {
-    return NextResponse.json(
-      { message: "Action must be either 'acknowledge' or 'resolve'" },
-      { status: 400 }
-    );
-  }
-
-  try {
-    if (action === "acknowledge") {
-      await acknowledgeBudgetAlert(tenantId, alertId, orgId);
-    } else {
-      await resolveBudgetAlert(tenantId, alertId);
-    }
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Error updating budget alert:", error);
-    return NextResponse.json(
-      { message: "Failed to update budget alert" },
-      { status: 500 }
-    );
-  }
+  return executeManifestCommand(request, {
+    entityName: "BudgetAlert",
+    commandName,
+    transformBody: (body, ctx) => ({
+      id: body.alertId || body.id || "",
+      acknowledgedBy: ctx.userId,
+    }),
+  });
 }

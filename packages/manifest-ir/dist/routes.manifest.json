@@ -1,9 +1,39 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-03-01T07:38:22.787Z",
+  "generatedAt": "2026-03-01T07:55:02.449Z",
   "basePath": "/api",
   "routes": [
+    {
+      "id": "AdminChatParticipant.get.list",
+      "path": "/api/adminchatparticipant/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "AdminChatParticipant"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminChatParticipant.get.detail",
+      "path": "/api/adminchatparticipant/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "AdminChatParticipant"
+      },
+      "auth": true,
+      "tenant": true
+    },
     {
       "id": "AdminTask.get.list",
       "path": "/api/admintask/list",
@@ -120,6 +150,36 @@
       "source": {
         "kind": "entity-read",
         "entity": "BattleBoard"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "BudgetAlert.get.list",
+      "path": "/api/budgetalert/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "BudgetAlert"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "BudgetAlert.get.detail",
+      "path": "/api/budgetalert/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "BudgetAlert"
       },
       "auth": true,
       "tenant": true
@@ -635,6 +695,36 @@
       "tenant": true
     },
     {
+      "id": "EmailWorkflow.get.list",
+      "path": "/api/emailworkflow/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "EmailWorkflow"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EmailWorkflow.get.detail",
+      "path": "/api/emailworkflow/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "EmailWorkflow"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "EmployeeAvailability.get.list",
       "path": "/api/employeeavailability/list",
       "method": "GET",
@@ -690,6 +780,36 @@
       "source": {
         "kind": "entity-read",
         "entity": "EmployeeCertification"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EmployeeDeduction.get.list",
+      "path": "/api/employeededuction/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "EmployeeDeduction"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EmployeeDeduction.get.detail",
+      "path": "/api/employeededuction/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "EmployeeDeduction"
       },
       "auth": true,
       "tenant": true
@@ -1145,6 +1265,36 @@
       "tenant": true
     },
     {
+      "id": "LaborBudget.get.list",
+      "path": "/api/laborbudget/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "LaborBudget"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "LaborBudget.get.detail",
+      "path": "/api/laborbudget/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "LaborBudget"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "Lead.get.list",
       "path": "/api/lead/list",
       "method": "GET",
@@ -1290,6 +1440,96 @@
       "source": {
         "kind": "entity-read",
         "entity": "OverrideAudit"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PayrollApprovalHistory.get.list",
+      "path": "/api/payrollapprovalhistory/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "PayrollApprovalHistory"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PayrollApprovalHistory.get.detail",
+      "path": "/api/payrollapprovalhistory/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "PayrollApprovalHistory"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PayrollPeriod.get.list",
+      "path": "/api/payrollperiod/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "PayrollPeriod"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PayrollPeriod.get.detail",
+      "path": "/api/payrollperiod/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "PayrollPeriod"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PayrollRun.get.list",
+      "path": "/api/payrollrun/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "PayrollRun"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PayrollRun.get.detail",
+      "path": "/api/payrollrun/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "PayrollRun"
       },
       "auth": true,
       "tenant": true
@@ -2165,6 +2405,45 @@
       "tenant": true
     },
     {
+      "id": "AdminChatParticipant.archive",
+      "path": "/api/adminchatparticipant/archive",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "AdminChatParticipant",
+        "command": "archive"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminChatParticipant.clearHistory",
+      "path": "/api/adminchatparticipant/clear-history",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "AdminChatParticipant",
+        "command": "clearHistory"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminChatParticipant.unarchive",
+      "path": "/api/adminchatparticipant/unarchive",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "AdminChatParticipant",
+        "command": "unarchive"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "AdminTask.cancel",
       "path": "/api/admintask/cancel",
       "method": "POST",
@@ -2770,6 +3049,39 @@
         "kind": "command",
         "entity": "BattleBoard",
         "command": "vote"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "BudgetAlert.acknowledge",
+      "path": "/api/budgetalert/acknowledge",
+      "method": "POST",
+      "params": [
+        {
+          "name": "acknowledgedBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "BudgetAlert",
+        "command": "acknowledge"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "BudgetAlert.resolve",
+      "path": "/api/budgetalert/resolve",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "BudgetAlert",
+        "command": "resolve"
       },
       "auth": true,
       "tenant": true
@@ -5416,6 +5728,113 @@
       "tenant": true
     },
     {
+      "id": "EmailWorkflow.create",
+      "path": "/api/emailworkflow/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "triggerType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "triggerConfig",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "emailTemplateId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "recipientConfig",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EmailWorkflow",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EmailWorkflow.softDelete",
+      "path": "/api/emailworkflow/soft-delete",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "EmailWorkflow",
+        "command": "softDelete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EmailWorkflow.update",
+      "path": "/api/emailworkflow/update",
+      "method": "POST",
+      "params": [
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "triggerConfig",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "emailTemplateId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "recipientConfig",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EmailWorkflow",
+        "command": "update"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "EmployeeAvailability.create",
       "path": "/api/employeeavailability/create",
       "method": "POST",
@@ -5637,6 +6056,74 @@
         "kind": "command",
         "entity": "EmployeeCertification",
         "command": "update"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EmployeeDeduction.create",
+      "path": "/api/employeededuction/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "employeeId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "percentage",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "isPreTax",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "effectiveDate",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "endDate",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "maxAnnualAmount",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EmployeeDeduction",
+        "command": "create"
       },
       "auth": true,
       "tenant": true
@@ -8269,6 +8756,125 @@
       "tenant": true
     },
     {
+      "id": "LaborBudget.create",
+      "path": "/api/laborbudget/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "locationId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "periodStart",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "periodEnd",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "budgetAmount",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "budgetType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "createdBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "LaborBudget",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "LaborBudget.softDelete",
+      "path": "/api/laborbudget/soft-delete",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "LaborBudget",
+        "command": "softDelete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "LaborBudget.update",
+      "path": "/api/laborbudget/update",
+      "method": "POST",
+      "params": [
+        {
+          "name": "locationId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "periodStart",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "periodEnd",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "budgetAmount",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "budgetType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "LaborBudget",
+        "command": "update"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "Lead.archive",
       "path": "/api/crm/leads/commands/archive",
       "method": "POST",
@@ -8922,6 +9528,114 @@
         "kind": "command",
         "entity": "OverrideAudit",
         "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PayrollApprovalHistory.create",
+      "path": "/api/payrollapprovalhistory/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "payrollRunId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "previousStatus",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "newStatus",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "performedBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PayrollApprovalHistory",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PayrollPeriod.create",
+      "path": "/api/payrollperiod/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "periodStart",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "periodEnd",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PayrollPeriod",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PayrollRun.updateStatus",
+      "path": "/api/payrollrun/update-status",
+      "method": "POST",
+      "params": [
+        {
+          "name": "status",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "approvedBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "rejectReason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PayrollRun",
+        "command": "updateStatus"
       },
       "auth": true,
       "tenant": true

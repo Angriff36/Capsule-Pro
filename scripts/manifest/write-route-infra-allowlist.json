@@ -221,6 +221,51 @@
       "pattern": "^/api/administrative/tasks/[^/]+$",
       "methods": ["PATCH", "DELETE"],
       "comment": "Uses executeManifestCommand — AdminTask commands/softDelete"
+    },
+    {
+      "prefix": "/api/collaboration/notifications/email/workflows",
+      "methods": ["POST"],
+      "comment": "Uses executeManifestCommand — EmailWorkflow.create"
+    },
+    {
+      "pattern": "^/api/collaboration/notifications/email/workflows/[^/]+$",
+      "methods": ["PUT", "DELETE"],
+      "comment": "Uses executeManifestCommand — EmailWorkflow.update/softDelete"
+    },
+    {
+      "prefix": "/api/payroll/periods",
+      "methods": ["POST"],
+      "comment": "Uses executeManifestCommand — PayrollPeriod.create"
+    },
+    {
+      "prefix": "/api/payroll/deductions",
+      "methods": ["POST"],
+      "comment": "Uses executeManifestCommand — EmployeeDeduction.create"
+    },
+    {
+      "prefix": "/api/payroll/approvals",
+      "methods": ["POST"],
+      "comment": "Uses executeManifestCommand — PayrollApprovalHistory.create"
+    },
+    {
+      "pattern": "^/api/payroll/runs/[^/]+$",
+      "methods": ["PUT"],
+      "comment": "Uses executeManifestCommand — PayrollRun.updateStatus"
+    },
+    {
+      "prefix": "/api/staff/budgets",
+      "methods": ["POST"],
+      "comment": "Uses executeManifestCommand — LaborBudget.create"
+    },
+    {
+      "pattern": "^/api/staff/budgets/[^/]+$",
+      "methods": ["PUT", "DELETE"],
+      "comment": "Uses executeManifestCommand — LaborBudget.update/softDelete"
+    },
+    {
+      "prefix": "/api/staff/budgets/alerts",
+      "methods": ["POST"],
+      "comment": "Uses executeManifestCommand — BudgetAlert.acknowledge/resolve"
     }
   ]
 }

@@ -1,0 +1,171 @@
+// Payroll Domain - Payroll Rules
+// Manifest spec for payroll periods, deductions, approvals, and runs
+
+entity PayrollPeriod {
+  property required id: string
+  property required tenantId: string
+  property periodStart: string = ""
+  property periodEnd: string = ""
+  property status: string = "open"
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isDeleted: boolean = self.deletedAt > 0
+
+  command create(periodStart: string, periodEnd: string) {
+    guard periodStart != null and periodStart != "" "Period start date is required"
+    guard periodEnd != null and periodEnd != "" "Period end date is required"
+
+    mutate periodStart = periodStart
+    mutate periodEnd = periodEnd
+    mutate status = "open"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit PayrollPeriodCreated
+  }
+
+  store PayrollPeriod in memory
+}
+
+entity EmployeeDeduction {
+  property required id: string
+  property required tenantId: string
+  property employeeId: string = ""
+  property type: string = ""
+  property name: string = ""
+  property amount: number = 0
+  property percentage: number = 0
+  property isPreTax: boolean = false
+  property effectiveDate: string = ""
+  property endDate: string = ""
+  property maxAnnualAmount: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isDeleted: boolean = self.deletedAt > 0
+
+  constraint requireEmployee: self.employeeId != "" "Employee ID is required"
+  constraint requireType: self.type != "" "Deduction type is required"
+  constraint requireName: self.name != "" "Deduction name is required"
+
+  command create(employeeId: string, type: string, name: string, amount: number, percentage: number, isPreTax: boolean, effectiveDate: string, endDate: string, maxAnnualAmount: number) {
+    guard employeeId != null and employeeId != "" "Employee ID is required"
+    guard type != null and type != "" "Deduction type is required"
+    guard name != null and name != "" "Deduction name is required"
+
+    mutate employeeId = employeeId
+    mutate type = type
+    mutate name = name
+    mutate amount = amount
+    mutate percentage = percentage
+    mutate isPreTax = isPreTax
+    mutate effectiveDate = effectiveDate
+    mutate endDate = endDate
+    mutate maxAnnualAmount = maxAnnualAmount
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit EmployeeDeductionCreated
+  }
+
+  store EmployeeDeduction in memory
+}
+
+entity PayrollApprovalHistory {
+  property required id: string
+  property required tenantId: string
+  property payrollRunId: string = ""
+  property action: string = ""
+  property previousStatus: string = ""
+  property newStatus: string = ""
+  property performedBy: string = ""
+  property performedAt: number = 0
+  property reason: string = ""
+  property createdAt: number = 0
+
+  command create(payrollRunId: string, action: string, previousStatus: string, newStatus: string, performedBy: string, reason: string) {
+    guard payrollRunId != null and payrollRunId != "" "Payroll run ID is required"
+
+    mutate payrollRunId = payrollRunId
+    mutate action = action
+    mutate previousStatus = previousStatus
+    mutate newStatus = newStatus
+    mutate performedBy = performedBy
+    mutate reason = reason
+    mutate performedAt = now()
+    mutate createdAt = now()
+
+    emit PayrollApprovalRequested
+  }
+
+  store PayrollApprovalHistory in memory
+}
+
+entity PayrollRun {
+  property required id: string
+  property required tenantId: string
+  property payrollPeriodId: string = ""
+  property runDate: string = ""
+  property status: string = "pending"
+  property totalGross: number = 0
+  property totalDeductions: number = 0
+  property totalNet: number = 0
+  property approvedBy: string = ""
+  property approvedAt: number = 0
+  property paidAt: number = 0
+  property rejectReason: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isDeleted: boolean = self.deletedAt > 0
+
+  command updateStatus(status: string, approvedBy: string, rejectReason: string) {
+    guard self.deletedAt == 0 "Cannot update a deleted payroll run"
+
+    mutate status = status
+    mutate approvedBy = approvedBy
+    mutate rejectReason = rejectReason
+    mutate updatedAt = now()
+
+    emit PayrollRunStatusChanged
+  }
+
+  store PayrollRun in memory
+}
+
+policy PayrollManagement execute: user.role in ["manager", "admin", "payroll_admin"] "Managers can manage payroll"
+
+event PayrollPeriodCreated: "payroll.period.created" {
+  periodId: string
+  tenantId: string
+  periodStart: string
+  periodEnd: string
+  createdAt: number
+}
+
+event EmployeeDeductionCreated: "payroll.deduction.created" {
+  deductionId: string
+  tenantId: string
+  employeeId: string
+  type: string
+  name: string
+  createdAt: number
+}
+
+event PayrollApprovalRequested: "payroll.approval.requested" {
+  approvalId: string
+  payrollRunId: string
+  action: string
+  performedBy: string
+  createdAt: number
+}
+
+event PayrollRunStatusChanged: "payroll.run.status-changed" {
+  runId: string
+  status: string
+  updatedAt: number
+}

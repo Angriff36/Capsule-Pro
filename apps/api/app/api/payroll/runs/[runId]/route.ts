@@ -7,9 +7,9 @@
 
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { NextResponse } from "next/server";
-import { z } from "zod";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 
 type PayrollRunStatus =
   | "pending"
@@ -18,13 +18,6 @@ type PayrollRunStatus =
   | "approved"
   | "paid"
   | "failed";
-
-const UpdatePayrollRunSchema = z.object({
-  status: z
-    .enum(["pending", "processing", "completed", "approved", "paid", "failed"])
-    .optional(),
-  rejectionReason: z.string().optional(),
-});
 
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -274,127 +267,20 @@ export async function GET(_request: Request, context: RouteContext) {
 /**
  * PUT /api/payroll/runs/[runId] - Update payroll run
  */
-export async function PUT(request: Request, context: RouteContext) {
-  try {
-    const { orgId, userId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return NextResponse.json(
-        { message: "Tenant not found" },
-        { status: 404 }
-      );
-    }
-
-    const { runId } = await context.params;
-
-    if (!UUID_REGEX.test(runId)) {
-      return NextResponse.json(
-        { message: "Invalid runId format" },
-        { status: 400 }
-      );
-    }
-
-    const body = await request.json();
-    const validationResult = UpdatePayrollRunSchema.safeParse(body);
-
-    if (!validationResult.success) {
-      return NextResponse.json(
-        {
-          message: "Invalid request body",
-          errors: validationResult.error.issues,
-        },
-        { status: 400 }
-      );
-    }
-
-    const { status } = validationResult.data;
-
-    // Get current run to check if update is valid
-    const currentRunResult = await database.$queryRaw<{ status: string }[]>(
-      Prisma.sql`
-        SELECT status
-        FROM tenant_staff.payroll_runs
-        WHERE tenant_id = ${tenantId}
-          AND id = ${runId}::uuid
-          AND deleted_at IS NULL
-      `
-    );
-
-    if (!currentRunResult || currentRunResult.length === 0) {
-      return NextResponse.json(
-        { message: "Payroll run not found" },
-        { status: 404 }
-      );
-    }
-
-    const currentStatus = currentRunResult[0].status as PayrollRunStatus;
-
-    // Validate status transitions
-    if (status === "approved" && currentStatus !== "completed") {
-      return NextResponse.json(
-        { message: "Can only approve completed payroll runs" },
-        { status: 400 }
-      );
-    }
-
-    if (status === "paid" && currentStatus !== "approved") {
-      return NextResponse.json(
-        { message: "Can only mark as paid for approved payroll runs" },
-        { status: 400 }
-      );
-    }
-
-    // Update the payroll run
-    const updateResult = await database.$queryRaw<
-      { id: string; status: string }[]
-    >(
-      Prisma.sql`
-        UPDATE tenant_staff.payroll_runs
-        SET
-          status = ${status},
-          approved_by = CASE
-            WHEN ${status} = 'approved' THEN ${userId}
-            ELSE approved_by
-          END,
-          approved_at = CASE
-            WHEN ${status} = 'approved' THEN NOW()
-            ELSE approved_at
-          END,
-          paid_at = CASE
-            WHEN ${status} = 'paid' THEN NOW()
-            ELSE paid_at
-          END,
-          updated_at = NOW()
-        WHERE tenant_id = ${tenantId}
-          AND id = ${runId}::uuid
-          AND deleted_at IS NULL
-        RETURNING id, status
-      `
-    );
-
-    if (!updateResult || updateResult.length === 0) {
-      return NextResponse.json(
-        { message: "Failed to update payroll run" },
-        { status: 500 }
-      );
-    }
-
-    return NextResponse.json({
-      message: "Payroll run updated successfully",
-      data: {
-        id: updateResult[0].id,
-        status: updateResult[0].status,
-      },
-    });
-  } catch (error) {
-    console.error("Failed to update payroll run:", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
-  }
+export async function PUT(
+  request: NextRequest,
+  context: { params: Promise<{ runId: string }> }
+) {
+  const { runId } = await context.params;
+  return executeManifestCommand(request, {
+    entityName: "PayrollRun",
+    commandName: "updateStatus",
+    params: { id: runId },
+    transformBody: (body, ctx) => ({
+      id: runId,
+      status: body.status || "",
+      approvedBy: body.status === "approved" ? ctx.userId : "",
+      rejectReason: body.rejectionReason || "",
+    }),
+  });
 }

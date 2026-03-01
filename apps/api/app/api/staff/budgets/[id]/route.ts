@@ -1,11 +1,8 @@
 import { auth } from "@repo/auth/server";
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import {
-  deleteLaborBudget,
-  getLaborBudgetById,
-  updateLaborBudget,
-} from "@/lib/staff/labor-budget";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { getLaborBudgetById } from "@/lib/staff/labor-budget";
 
 /**
  * GET /api/staff/budgets/[id]
@@ -43,103 +40,36 @@ export async function GET(
   }
 }
 
-/**
- * PUT /api/staff/budgets/[id]
- * Update a labor budget
- *
- * Optional fields:
- * - name
- * - description
- * - budgetTarget
- * - status
- * - overrideReason
- * - threshold80Pct
- * - threshold90Pct
- * - threshold100Pct
- */
 export async function PUT(
-  request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
-  const { orgId } = await auth();
-  if (!orgId) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-  const { id } = await params;
-  const body = await request.json();
-
-  // Validate budget target if provided
-  if (body.budgetTarget !== undefined && body.budgetTarget <= 0) {
-    return NextResponse.json(
-      { message: "Budget target must be greater than 0" },
-      { status: 400 }
-    );
-  }
-
-  // Validate status if provided
-  if (body.status && !["active", "paused", "archived"].includes(body.status)) {
-    return NextResponse.json(
-      { message: "Status must be one of: active, paused, archived" },
-      { status: 400 }
-    );
-  }
-
-  try {
-    const budget = await updateLaborBudget(tenantId, id, {
-      name: body.name,
-      description: body.description,
-      budgetTarget: body.budgetTarget,
-      status: body.status,
-      overrideReason: body.overrideReason,
-      threshold80Pct: body.threshold80Pct,
-      threshold90Pct: body.threshold90Pct,
-      threshold100Pct: body.threshold100Pct,
-    });
-
-    if (!budget) {
-      return NextResponse.json(
-        { message: "Budget not found" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({ budget });
-  } catch (error) {
-    console.error("Error updating labor budget:", error);
-    return NextResponse.json(
-      { message: "Failed to update labor budget" },
-      { status: 500 }
-    );
-  }
+  const { id } = await context.params;
+  return executeManifestCommand(request, {
+    entityName: "LaborBudget",
+    commandName: "update",
+    params: { id },
+    transformBody: (body) => ({
+      id,
+      locationId: body.locationId || "",
+      periodStart: body.periodStart || "",
+      periodEnd: body.periodEnd || "",
+      budgetAmount: body.budgetAmount ?? body.amount ?? 0,
+      budgetType: body.budgetType || body.type || "weekly",
+      notes: body.notes || "",
+    }),
+  });
 }
 
-/**
- * DELETE /api/staff/budgets/[id]
- * Delete (soft delete) a labor budget
- */
 export async function DELETE(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
-  const { orgId } = await auth();
-  if (!orgId) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-  const { id } = await params;
-
-  try {
-    await deleteLaborBudget(tenantId, id);
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Error deleting labor budget:", error);
-    return NextResponse.json(
-      { message: "Failed to delete labor budget" },
-      { status: 500 }
-    );
-  }
+  const { id } = await context.params;
+  return executeManifestCommand(request, {
+    entityName: "LaborBudget",
+    commandName: "softDelete",
+    params: { id },
+    transformBody: () => ({ id }),
+  });
 }

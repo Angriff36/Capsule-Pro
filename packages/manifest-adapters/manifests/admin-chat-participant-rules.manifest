@@ -1,0 +1,55 @@
+// Administrative Domain - Chat Participant Rules
+// Manifest spec for admin chat participant operations
+
+entity AdminChatParticipant {
+  property required id: string
+  property required tenantId: string
+  property threadId: string = ""
+  property userId: string = ""
+  property archivedAt: number = 0
+  property clearedAt: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isArchived: boolean = self.archivedAt > 0
+
+  command archive() {
+    mutate archivedAt = now()
+    mutate updatedAt = now()
+
+    emit ChatParticipantArchived
+  }
+
+  command unarchive() {
+    mutate archivedAt = 0
+    mutate updatedAt = now()
+
+    emit ChatParticipantUnarchived
+  }
+
+  command clearHistory() {
+    mutate clearedAt = now()
+    mutate updatedAt = now()
+
+    emit ChatHistoryCleared
+  }
+
+  store AdminChatParticipant in memory
+}
+
+policy AdminChatManagement execute: user.role in ["manager", "admin", "staff", "kitchen_manager"] "Staff can manage their chat participation"
+
+event ChatParticipantArchived: "admin.chat-participant.archived" {
+  participantId: string
+  archivedAt: number
+}
+
+event ChatParticipantUnarchived: "admin.chat-participant.unarchived" {
+  participantId: string
+}
+
+event ChatHistoryCleared: "admin.chat-participant.history-cleared" {
+  participantId: string
+  clearedAt: number
+}
