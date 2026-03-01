@@ -4,6 +4,19 @@ Archived ledger entries. See tasks/ledger.md for current entries and rules.
 
 ---
 
+# Agent 45
+
+**Agent ID:** 45
+**Date/Time:** 2026-02-28 22:00
+**Base branch/commit:** codex/manifest-cli-doctor @ 47ccabd90
+
+**Goal:**
+Complete the manifest route ownership enforcement wiring: fix the CLI path resolution bug blocking the audit, publish 0.3.28, wire the audit into the build pipeline as non-blocking, and add CI job for rollout.
+
+**Points tally:** 13 points
+
+---
+
 # Agent 44
 
 **Agent ID:** 44

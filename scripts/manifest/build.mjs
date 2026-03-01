@@ -147,11 +147,13 @@ function generateRouteSurface() {
  * checks the actual output, not stale state.
  *
  * Ownership rules (WRITE_OUTSIDE_COMMANDS_NAMESPACE, COMMAND_ROUTE_MISSING_RUNTIME_CALL,
- * COMMAND_ROUTE_ORPHAN) are enabled via --commands-manifest. Per the rollout strategy
- * in tasks/manifest-route-ownership-plan.md §3, new rules ship as warnings (no --strict)
- * in the first PR. A follow-up PR flips to --strict after burn-down.
+ * COMMAND_ROUTE_ORPHAN) are enabled via --commands-manifest. The --strict flag causes
+ * the audit to fail the build if ANY ownership-rule finding is present. Quality/hygiene
+ * warnings (WRITE_ROUTE_BYPASSES_RUNTIME, READ_MISSING_SOFT_DELETE_FILTER, etc.) are
+ * reported but never block the build.
  *
  * See: docs/spec/manifest-vnext.md § "Canonical Routes (Normative)" — Enforcement
+ * See: OWNERSHIP_RULE_CODES in audit-routes.ts for the canonical set of blocking rules.
  */
 function auditRouteBoundaries() {
   console.log("[manifest/build] Step 4: Auditing route boundaries...");
@@ -162,6 +164,7 @@ function auditRouteBoundaries() {
       "exec",
       "manifest",
       "audit-routes",
+      "--strict",
       "--root",
       "apps/api",
       "--commands-manifest",
@@ -175,14 +178,15 @@ function auditRouteBoundaries() {
     }
   );
   if (result.status !== 0) {
-    // Rollout mode: audit findings are informational, not blocking.
-    // A follow-up PR will flip to --strict after burn-down.
-    // See: tasks/manifest-route-ownership-plan.md §3 Rollout Strategy
-    console.warn(
-      "[manifest/build] Route boundary audit found issues (non-blocking in rollout mode)."
+    console.error(
+      "[manifest/build] Route boundary audit FAILED — ownership-rule violations detected."
     );
+    console.error(
+      "[manifest/build] Fix all COMMAND_ROUTE_ORPHAN, COMMAND_ROUTE_MISSING_RUNTIME_CALL, and WRITE_OUTSIDE_COMMANDS_NAMESPACE findings before merging."
+    );
+    process.exit(1);
   } else {
-    console.log("[manifest/build] Route boundary audit passed.");
+    console.log("[manifest/build] Route boundary audit passed (strict mode).");
   }
 }
 
