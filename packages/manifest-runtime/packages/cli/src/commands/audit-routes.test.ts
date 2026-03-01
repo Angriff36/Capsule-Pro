@@ -324,7 +324,7 @@ export async function POST(request: Request) {
       ).toBe(false);
     });
 
-    it("suppresses WRITE_ROUTE_BYPASSES_RUNTIME for exempted routes", () => {
+    it("WRITE_ROUTE_BYPASSES_RUNTIME still fires for exempted routes (exemptions only suppress ownership rules)", () => {
       const content = `
 export async function POST(request: Request) {
   await database.timecard.create({ data: {} });
@@ -348,65 +348,15 @@ export async function POST(request: Request) {
         OPTIONS,
         ctx
       );
+      // Exemption suppresses WRITE_OUTSIDE_COMMANDS_NAMESPACE but NOT WRITE_ROUTE_BYPASSES_RUNTIME
       expect(
-        result.findings.some((f) => f.code === "WRITE_ROUTE_BYPASSES_RUNTIME")
+        result.findings.some(
+          (f) => f.code === "WRITE_OUTSIDE_COMMANDS_NAMESPACE"
+        )
       ).toBe(false);
-    });
-
-    it("still flags WRITE_ROUTE_BYPASSES_RUNTIME for non-exempted routes", () => {
-      const content = `
-export async function POST(request: Request) {
-  await database.timecard.create({ data: {} });
-  return Response.json({ ok: true });
-}
-`;
-      const ctx = makeOwnershipContext({ exemptions: [] });
-
-      const result = auditRouteFileContent(
-        content,
-        "/repo/apps/api/app/api/timecards/route.ts",
-        OPTIONS,
-        ctx
-      );
       expect(
         result.findings.some((f) => f.code === "WRITE_ROUTE_BYPASSES_RUNTIME")
       ).toBe(true);
-    });
-
-    it("suppresses WRITE_ROUTE_BYPASSES_RUNTIME only for exempted methods", () => {
-      const content = `
-export async function POST(request: Request) {
-  await database.timecard.create({ data: {} });
-  return Response.json({ ok: true });
-}
-export async function PUT(request: Request) {
-  await database.timecard.update({ data: {} });
-  return Response.json({ ok: true });
-}
-`;
-      const ctx = makeOwnershipContext({
-        exemptions: [
-          {
-            path: "app/api/timecards/route.ts",
-            methods: ["POST"],
-            reason: "Legacy bulk — migrate to Manifest command",
-            category: "legacy-migrate",
-          },
-        ],
-      });
-
-      const result = auditRouteFileContent(
-        content,
-        "/repo/apps/api/app/api/timecards/route.ts",
-        OPTIONS,
-        ctx
-      );
-      const bypassFindings = result.findings.filter(
-        (f) => f.code === "WRITE_ROUTE_BYPASSES_RUNTIME"
-      );
-      // POST is exempted, PUT is not — only PUT should fire
-      expect(bypassFindings).toHaveLength(1);
-      expect(bypassFindings[0]?.message).toContain("PUT");
     });
   });
 
