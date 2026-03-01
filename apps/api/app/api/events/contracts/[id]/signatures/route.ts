@@ -10,12 +10,7 @@ import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-
-interface CreateSignatureBody {
-  signatureData: string;
-  signerName: string;
-  signerEmail?: string;
-}
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 
 // Define types
 interface PaginationParams {
@@ -255,77 +250,25 @@ export async function GET(
 
 /**
  * POST /api/events/contracts/[id]/signatures
- * Create a new signature for a contract
+ * Create a new signature for a contract via manifest runtime
  */
 export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id: contractId } = await params;
-  const { orgId } = await auth();
-
-  if (!orgId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-
-  try {
-    const body = (await request.json()) as CreateSignatureBody;
-    const { signatureData, signerName, signerEmail } = body;
-
-    // Validate required fields
-    if (!(signatureData && signerName)) {
-      return NextResponse.json(
-        { error: "Signature data and signer name are required" },
-        { status: 400 }
-      );
-    }
-
-    // Check if contract exists and belongs to tenant
-    const contract = await database.eventContract.findUnique({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: contractId,
-        },
-      },
-    });
-
-    if (!contract) {
-      return NextResponse.json(
-        { error: "Contract not found" },
-        { status: 404 }
-      );
-    }
-
-    // Get client IP address
-    const ipAddress =
-      request.headers.get("x-forwarded-for") ||
-      request.headers.get("x-real-ip") ||
-      "unknown";
-
-    // Create signature record
-    const signature = await database.contractSignature.create({
-      data: {
-        tenantId,
-        contractId,
-        signatureData,
-        signerName,
-        signerEmail: signerEmail || null,
-        ipAddress,
-      },
-    });
-
-    return NextResponse.json({
-      success: true,
-      signature,
-    });
-  } catch (error) {
-    console.error("Error creating signature:", error);
-    return NextResponse.json(
-      { error: "Failed to create signature" },
-      { status: 500 }
-    );
-  }
+  return executeManifestCommand(request, {
+    entityName: "ContractSignature",
+    commandName: "create",
+    params: { contractId },
+    transformBody: (body, ctx) => ({
+      ...body,
+      contractId,
+      tenantId: ctx.tenantId,
+      ipAddress:
+        (request as NextRequest).headers.get("x-forwarded-for") ||
+        (request as NextRequest).headers.get("x-real-ip") ||
+        "unknown",
+    }),
+  });
 }

@@ -3,6 +3,7 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 
 interface WasteEntryDetail {
   id: string;
@@ -76,102 +77,41 @@ export async function GET(
 
 /**
  * PUT /api/kitchen/waste/entries/[id]
- * Update a waste entry
+ * Update a waste entry via manifest runtime
  */
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    const { orgId, userId } = await auth();
-
-    if (!(orgId && userId)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    const { id } = await params;
-    const body = await request.json();
-    const { ingredientId, quantity, unit, reason, notes, eventId } = body;
-
-    // Validate required fields
-    if (!(ingredientId && quantity && unit && reason)) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 }
-      );
-    }
-
-    // Check if the entry exists and belongs to the tenant
-    const existingEntry = await database.wasteEntry.findFirst({
-      where: { tenantId, id, deletedAt: null },
-      select: { id: true },
-    });
-
-    if (!existingEntry) {
-      return NextResponse.json(
-        { error: "Waste entry not found" },
-        { status: 404 }
-      );
-    }
-
-    // Update the waste entry
-    await database.wasteEntry.update({
-      where: { tenantId_id: { tenantId, id } },
-      data: {
-        inventoryItemId: ingredientId,
-        quantity,
-        unitId: typeof unit === "number" ? unit : undefined,
-        reasonId: typeof reason === "number" ? reason : undefined,
-        notes: notes || null,
-        eventId: eventId || null,
-        updatedAt: new Date(),
-      },
-    });
-
-    return NextResponse.json({
-      message: "Waste entry updated successfully",
-    });
-  } catch (error) {
-    captureException(error);
-    return NextResponse.json(
-      { error: "Failed to update waste entry" },
-      { status: 500 }
-    );
-  }
+  const { id } = await params;
+  return executeManifestCommand(request, {
+    entityName: "WasteEntry",
+    commandName: "update",
+    params: { id },
+    transformBody: (body, ctx) => ({
+      ...body,
+      id,
+      tenantId: ctx.tenantId,
+    }),
+  });
 }
 
 /**
  * DELETE /api/kitchen/waste/entries/[id]
- * Delete a waste entry (soft delete)
+ * Soft delete a waste entry via manifest runtime
  */
 export async function DELETE(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    const { orgId } = await auth();
-
-    if (!orgId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    const { id } = await params;
-
-    await database.wasteEntry.updateMany({
-      where: { tenantId, id, deletedAt: null },
-      data: { deletedAt: new Date() },
-    });
-
-    return NextResponse.json({
-      message: "Waste entry deleted successfully",
-    });
-  } catch (error) {
-    captureException(error);
-    return NextResponse.json(
-      { error: "Failed to delete waste entry" },
-      { status: 500 }
-    );
-  }
+  const { id } = await params;
+  return executeManifestCommand(request, {
+    entityName: "WasteEntry",
+    commandName: "softDelete",
+    params: { id },
+    transformBody: (_body, ctx) => ({
+      id,
+      tenantId: ctx.tenantId,
+    }),
+  });
 }

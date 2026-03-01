@@ -81,6 +81,41 @@
       "prefix": "/api/staff/shifts/commands/update-validated",
       "methods": ["POST"],
       "comment": "Validated shift update with overlap/overtime/certification checks using ScheduleShift.update command"
+    },
+    {
+      "prefix": "/api/events/allergens/warnings/acknowledge",
+      "methods": ["POST"],
+      "comment": "Uses executeManifestCommand — AllergenWarning.acknowledge"
+    },
+    {
+      "pattern": "^/api/events/contracts/[^/]+$",
+      "methods": ["PUT", "DELETE"],
+      "comment": "Uses executeManifestCommand — EventContract.update/softDelete"
+    },
+    {
+      "pattern": "^/api/events/contracts/[^/]+/signatures$",
+      "methods": ["POST"],
+      "comment": "Uses executeManifestCommand — ContractSignature.create"
+    },
+    {
+      "pattern": "^/api/events/[^/]+/guests$",
+      "methods": ["POST"],
+      "comment": "Uses executeManifestCommand — EventGuest.create"
+    },
+    {
+      "pattern": "^/api/events/guests/[^/]+$",
+      "methods": ["PUT", "DELETE"],
+      "comment": "Uses executeManifestCommand — EventGuest.update/softDelete"
+    },
+    {
+      "pattern": "^/api/kitchen/waste/entries/[^/]+$",
+      "methods": ["PUT", "DELETE"],
+      "comment": "Uses executeManifestCommand — WasteEntry.update/softDelete"
+    },
+    {
+      "pattern": "^/api/inventory/purchase-orders/[^/]+/items/[^/]+/quality$",
+      "methods": ["PUT"],
+      "comment": "Uses executeManifestCommand — PurchaseOrderItem.update"
     }
   ]
 }
