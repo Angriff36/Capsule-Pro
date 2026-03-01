@@ -208,3 +208,16 @@ SUMMARY:
 = **16 points**
 
 ---
+
+# Agent 49
+
+**Agent ID:** 49
+**Date/Time:** 2026-03-01 15:35
+**Base branch/commit:** codex/manifest-cli-doctor @ 87afc048d
+
+**Goal:**
+Lock ownership-rule codes into a canonical `OWNERSHIP_RULE_CODES` constant Set and fix the `--strict` gate to only consider ownership-rule findings (was gating on ALL warnings).
+
+**Points tally:** 16 points
+
+---

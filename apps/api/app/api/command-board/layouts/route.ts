@@ -7,12 +7,12 @@
 
 import { auth } from "@repo/auth/server";
 import { database, type Prisma } from "@repo/database";
-import { createOutboxEvent } from "@repo/realtime";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import type { CreateLayoutRequest, ViewportState } from "../types";
-import { validateBoardId, validateCreateLayoutRequest } from "./validation";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { validateBoardId } from "./validation";
 
 const LAYOUT_SELECT = {
   id: true,
@@ -28,32 +28,6 @@ const LAYOUT_SELECT = {
   createdAt: true,
   updatedAt: true,
 } as const;
-
-/**
- * Verify board exists and belongs to tenant
- */
-async function verifyBoardAccess(
-  tenantId: string,
-  boardId: string
-): Promise<boolean> {
-  const board = await database.commandBoard.findFirst({
-    where: {
-      AND: [{ tenantId }, { id: boardId }, { deletedAt: null }],
-    },
-  });
-  return board !== null;
-}
-
-/**
- * Get the default viewport state
- */
-function getDefaultViewport(): ViewportState {
-  return {
-    zoom: 1,
-    panX: 0,
-    panY: 0,
-  };
-}
 
 /**
  * GET /api/command-board/layouts
@@ -105,72 +79,16 @@ export async function GET(request: Request) {
 
 /**
  * POST /api/command-board/layouts
- * Create a new layout for the authenticated user
+ * Create a new layout via manifest runtime
  */
-export async function POST(request: Request) {
-  try {
-    const { orgId, userId } = await auth();
-    if (!(orgId && userId)) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    const body = await request.json();
-
-    validateCreateLayoutRequest(body);
-
-    const data = body as CreateLayoutRequest;
-
-    const boardExists = await verifyBoardAccess(tenantId, data.boardId);
-    if (!boardExists) {
-      return NextResponse.json({ message: "Board not found" }, { status: 404 });
-    }
-
-    const layout = await database.$transaction(async (tx) => {
-      const createdLayout = await tx.commandBoardLayout.create({
-        data: {
-          tenantId,
-          boardId: data.boardId,
-          userId,
-          name: data.name.trim(),
-          viewport: (data.viewport ||
-            getDefaultViewport()) as unknown as Prisma.InputJsonValue,
-          visibleCards: data.visibleCards || [],
-          gridSize: data.gridSize ?? 40,
-          showGrid: data.showGrid ?? true,
-          snapToGrid: data.snapToGrid ?? true,
-        },
-        select: LAYOUT_SELECT,
-      });
-
-      // Publish outbox event for real-time sync
-      await createOutboxEvent(tx, {
-        tenantId,
-        aggregateType: "CommandBoardLayout",
-        aggregateId: createdLayout.id,
-        eventType: "command.board.layout.created",
-        payload: {
-          boardId: data.boardId,
-          layoutId: createdLayout.id,
-          name: createdLayout.name,
-          userId,
-          createdAt: createdLayout.createdAt.toISOString(),
-        },
-      });
-
-      return createdLayout;
-    });
-
-    return NextResponse.json({ data: layout }, { status: 201 });
-  } catch (error: unknown) {
-    if (error instanceof InvariantError) {
-      const message = (error as InvariantError).message;
-      return NextResponse.json({ message }, { status: 400 });
-    }
-    console.error("Error creating layout:", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
-  }
+export function POST(request: NextRequest) {
+  return executeManifestCommand(request, {
+    entityName: "CommandBoardLayout",
+    commandName: "create",
+    transformBody: (body, ctx) => ({
+      ...body,
+      tenantId: ctx.tenantId,
+      userId: ctx.userId,
+    }),
+  });
 }

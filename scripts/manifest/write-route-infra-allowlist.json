@@ -116,6 +116,31 @@
       "pattern": "^/api/inventory/purchase-orders/[^/]+/items/[^/]+/quality$",
       "methods": ["PUT"],
       "comment": "Uses executeManifestCommand — PurchaseOrderItem.update"
+    },
+    {
+      "prefix": "/api/inventory/alerts/subscribe",
+      "methods": ["POST"],
+      "comment": "Uses executeManifestCommand — AlertsConfig.create"
+    },
+    {
+      "pattern": "^/api/shipments/[^/]+$",
+      "methods": ["PUT", "DELETE"],
+      "comment": "Uses executeManifestCommand — Shipment.update/cancel"
+    },
+    {
+      "pattern": "^/api/staff/employees/[^/]+$",
+      "methods": ["PUT", "PATCH"],
+      "comment": "Uses executeManifestCommand — User.update"
+    },
+    {
+      "prefix": "/api/command-board",
+      "methods": ["POST", "PUT", "DELETE"],
+      "comment": "Uses executeManifestCommand — CommandBoard/CommandBoardLayout CRUD"
+    },
+    {
+      "prefix": "/api/events/contracts",
+      "methods": ["POST"],
+      "comment": "Uses executeManifestCommand — EventContract.create"
     }
   ]
 }

@@ -7,16 +7,16 @@
 
 import { auth } from "@repo/auth/server";
 import { database, type Prisma } from "@repo/database";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 import type {
   BoardStatus,
   CommandBoardListFilters,
   CommandBoardWithCardsCount,
 } from "./types";
 import { BOARD_STATUSES } from "./types";
-import { validateCreateCommandBoardRequest } from "./validation";
 
 interface PaginationParams {
   page: number;
@@ -183,66 +183,15 @@ export async function GET(request: Request) {
 }
 
 /**
- * POST /api/command-board - Create a new command board
+ * POST /api/command-board - Create a new command board via manifest runtime
  */
-export async function POST(request: Request) {
-  try {
-    const { orgId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return NextResponse.json(
-        { message: "Tenant not found" },
-        { status: 404 }
-      );
-    }
-
-    const body = await request.json();
-    validateCreateCommandBoardRequest(body);
-
-    // Create command board
-    const board = await database.commandBoard.create({
-      data: {
-        tenantId,
-        name: body.name,
-        description: body.description ?? null,
-        eventId: body.event_id ?? null,
-        status: body.status ?? "draft",
-        isTemplate: body.is_template ?? false,
-        tags: body.tags ?? [],
-      },
-    });
-
-    const responseBoard: CommandBoardWithCardsCount = {
-      id: board.id,
-      tenant_id: board.tenantId,
-      event_id: board.eventId,
-      name: board.name,
-      description: board.description,
-      status: board.status as BoardStatus,
-      is_template: board.isTemplate,
-      tags: board.tags,
-      created_at: board.createdAt,
-      updated_at: board.updatedAt,
-      deleted_at: board.deletedAt,
-      cards_count: 0,
-    };
-
-    return NextResponse.json(responseBoard, { status: 201 });
-  } catch (error: unknown) {
-    if (error instanceof InvariantError) {
-      return NextResponse.json(
-        { message: (error as InvariantError).message },
-        { status: 400 }
-      );
-    }
-    console.error("Failed to create command board:", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
-  }
+export function POST(request: NextRequest) {
+  return executeManifestCommand(request, {
+    entityName: "CommandBoard",
+    commandName: "create",
+    transformBody: (body, ctx) => ({
+      ...body,
+      tenantId: ctx.tenantId,
+    }),
+  });
 }

@@ -7,24 +7,12 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { NextResponse } from "next/server";
-import { InvariantError, invariant } from "../../../lib/invariant";
+import { type NextRequest, NextResponse } from "next/server";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { InvariantError } from "../../../lib/invariant";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import type { ContractStatus } from "./types";
 import { CONTRACT_STATUSES } from "./validation";
-
-// Define types
-interface CreateContractRequest {
-  eventId: string;
-  clientId: string;
-  title?: string;
-  notes?: string;
-  expiresAt?: string;
-  documentUrl?: string;
-  documentType?: string;
-}
-
-// Removed - imported from ./types
 
 interface ContractListFilters {
   status?: ContractStatus;
@@ -86,28 +74,6 @@ function parsePaginationParams(
   );
 
   return { page, limit };
-}
-
-/**
- * Validate create contract request body
- */
-function validateCreateContractRequest(
-  data: unknown
-): asserts data is CreateContractRequest {
-  invariant(data, "Request body is required");
-
-  const body = data as CreateContractRequest;
-
-  invariant(body.eventId, "eventId is required");
-  invariant(body.clientId, "clientId is required");
-
-  if (body.expiresAt) {
-    const date = new Date(body.expiresAt);
-    invariant(
-      !Number.isNaN(date.getTime()),
-      "expiresAt must be a valid ISO date string"
-    );
-  }
 }
 
 /**
@@ -258,137 +224,16 @@ export async function GET(request: Request) {
 
 /**
  * POST /api/events/contracts
- * Create a new contract
+ * Create a new contract via manifest runtime
  */
-export async function POST(request: Request) {
-  try {
-    const { orgId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    const body = await request.json();
-
-    // Validate request body
-    validateCreateContractRequest(body);
-
-    const data = body as CreateContractRequest;
-
-    // Verify event exists and belongs to the tenant
-    const event = await database.event.findFirst({
-      where: {
-        tenantId,
-        id: data.eventId,
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-        title: true,
-      },
-    });
-
-    if (!event) {
-      return NextResponse.json({ message: "Event not found" }, { status: 404 });
-    }
-
-    // Verify client exists and belongs to the tenant
-    const client = await database.client.findFirst({
-      where: {
-        tenantId,
-        id: data.clientId,
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-        company_name: true,
-        first_name: true,
-        last_name: true,
-      },
-    });
-
-    if (!client) {
-      return NextResponse.json(
-        { message: "Client not found" },
-        { status: 404 }
-      );
-    }
-
-    // Auto-generate contract number using JavaScript
-    // Format: EVC-YYYY-0001 (EVC = Event Contract, YYYY = year, 0001 = sequential number)
-    const currentYear = new Date().getFullYear().toString();
-    const yearPrefix = `EVC-${currentYear}`;
-
-    // Count existing contracts for this tenant and year
-    const yearCount = await database.eventContract.count({
-      where: {
-        tenantId,
-        contractNumber: { startsWith: yearPrefix },
-        deletedAt: null,
-      },
-    });
-
-    const sequentialNumber = String(yearCount + 1).padStart(4, "0");
-    const finalContractNumber = `${yearPrefix}-${sequentialNumber}`;
-
-    // Create contract with proper tenant isolation
-    const contract = await database.eventContract.create({
-      data: {
-        tenantId,
-        eventId: data.eventId,
-        clientId: data.clientId,
-        contractNumber: finalContractNumber,
-        title: data.title?.trim() || "Untitled Contract",
-        status: "draft" as ContractStatus,
-        notes: data.notes?.trim() || null,
-        expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
-        documentUrl: data.documentUrl?.trim() || null,
-        documentType: data.documentType?.trim() || null,
-      },
-    });
-
-    // Fetch event and client details for the response
-    const eventDetails = await database.event.findFirst({
-      where: {
-        AND: [{ tenantId }, { id: data.eventId }, { deletedAt: null }],
-      },
-      select: {
-        id: true,
-        title: true,
-        eventDate: true,
-      },
-    });
-
-    const clientDetails = await database.client.findFirst({
-      where: {
-        AND: [{ tenantId }, { id: data.clientId }, { deletedAt: null }],
-      },
-      select: {
-        id: true,
-        company_name: true,
-        first_name: true,
-        last_name: true,
-      },
-    });
-
-    return NextResponse.json(
-      {
-        data: {
-          ...contract,
-          event: eventDetails,
-          client: clientDetails,
-        },
-      },
-      { status: 201 }
-    );
-  } catch (error) {
-    if (error instanceof InvariantError) {
-      return NextResponse.json({ message: error.message }, { status: 400 });
-    }
-    console.error("Error creating contract:", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
-  }
+export function POST(request: NextRequest) {
+  return executeManifestCommand(request, {
+    entityName: "EventContract",
+    commandName: "create",
+    transformBody: (body, ctx) => ({
+      ...body,
+      tenantId: ctx.tenantId,
+      status: "draft",
+    }),
+  });
 }

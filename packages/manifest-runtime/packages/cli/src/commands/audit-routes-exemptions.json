@@ -394,9 +394,9 @@
   {
     "path": "app/api/inventory/alerts/subscribe/route.ts",
     "methods": ["POST"],
-    "reason": "Alert subscription — infrastructure, not domain command",
-    "category": "infrastructure",
-    "owner": "platform-team",
+    "reason": "Uses executeManifestCommand → AlertsConfig.create",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
     "allowPermanent": true
   },
   {
@@ -538,34 +538,34 @@
   {
     "path": "app/api/command-board/route.ts",
     "methods": ["POST"],
-    "reason": "Legacy command board CRUD — should use manifest commands",
-    "category": "legacy-migrate",
+    "reason": "Uses executeManifestCommand → CommandBoard.create",
+    "category": "manifest-runtime",
     "owner": "backend-team",
-    "expiresOn": "2026-09-01"
+    "allowPermanent": true
   },
   {
     "path": "app/api/command-board/[boardId]/route.ts",
     "methods": ["PUT", "DELETE"],
-    "reason": "Legacy command board CRUD — should use manifest commands",
-    "category": "legacy-migrate",
+    "reason": "Uses executeManifestCommand → CommandBoard.update/deactivate",
+    "category": "manifest-runtime",
     "owner": "backend-team",
-    "expiresOn": "2026-09-01"
+    "allowPermanent": true
   },
   {
     "path": "app/api/command-board/layouts/route.ts",
     "methods": ["POST"],
-    "reason": "Legacy command board layouts — should use manifest commands",
-    "category": "legacy-migrate",
+    "reason": "Uses executeManifestCommand → CommandBoardLayout.create",
+    "category": "manifest-runtime",
     "owner": "backend-team",
-    "expiresOn": "2026-09-01"
+    "allowPermanent": true
   },
   {
     "path": "app/api/command-board/layouts/[layoutId]/route.ts",
     "methods": ["PUT", "DELETE"],
-    "reason": "Legacy command board layouts — should use manifest commands",
-    "category": "legacy-migrate",
+    "reason": "Uses executeManifestCommand → CommandBoardLayout.update/remove",
+    "category": "manifest-runtime",
     "owner": "backend-team",
-    "expiresOn": "2026-09-01"
+    "allowPermanent": true
   },
   {
     "path": "app/api/crm/clients/route.ts",
@@ -914,10 +914,10 @@
   {
     "path": "app/api/shipments/[id]/route.ts",
     "methods": ["PUT", "DELETE"],
-    "reason": "Legacy shipments CRUD — should use manifest commands",
-    "category": "legacy-migrate",
+    "reason": "Uses executeManifestCommand → Shipment.update/cancel",
+    "category": "manifest-runtime",
     "owner": "backend-team",
-    "expiresOn": "2026-09-01"
+    "allowPermanent": true
   },
   {
     "path": "app/api/shipments/[id]/status/route.ts",
@@ -1010,10 +1010,10 @@
   {
     "path": "app/api/staff/employees/[id]/route.ts",
     "methods": ["PUT", "PATCH"],
-    "reason": "Legacy employee update — should use manifest commands",
-    "category": "legacy-migrate",
+    "reason": "Uses executeManifestCommand → User.update",
+    "category": "manifest-runtime",
     "owner": "backend-team",
-    "expiresOn": "2026-09-01"
+    "allowPermanent": true
   },
   {
     "path": "app/api/staff/shifts/route.ts",

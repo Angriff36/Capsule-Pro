@@ -8,18 +8,10 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { validateUpdateShipmentRequest } from "../validation";
-import type { ShipmentUpdateInput } from "./helpers";
-import {
-  buildShipmentUpdateData,
-  checkDuplicateShipmentNumber,
-  fetchExistingShipment,
-  fetchUpdatedShipment,
-  updateShipmentRaw,
-} from "./helpers";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 
 export async function GET(
   _request: Request,
@@ -131,133 +123,34 @@ export async function GET(
 }
 
 export async function PUT(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    const { orgId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return NextResponse.json(
-        { message: "Tenant not found" },
-        { status: 404 }
-      );
-    }
-
-    const { id } = await params;
-    const body = (await request.json()) as ShipmentUpdateInput;
-    validateUpdateShipmentRequest(body);
-
-    // Verify shipment exists and belongs to tenant
-    const existing = await fetchExistingShipment(tenantId, id);
-    if (!existing) {
-      return NextResponse.json(
-        { message: "Shipment not found" },
-        { status: 404 }
-      );
-    }
-
-    // Check shipment number uniqueness if changed
-    if (
-      body.shipment_number &&
-      body.shipment_number !== existing.shipmentNumber
-    ) {
-      const hasDuplicate = await checkDuplicateShipmentNumber(
-        tenantId,
-        body.shipment_number,
-        id
-      );
-      if (hasDuplicate) {
-        return NextResponse.json(
-          { message: "Shipment number already exists" },
-          { status: 409 }
-        );
-      }
-    }
-
-    // Build and execute update
-    const updateData = buildShipmentUpdateData(body);
-    await updateShipmentRaw(tenantId, id, updateData);
-
-    // Fetch and format updated shipment
-    const updated = await fetchUpdatedShipment(tenantId, id);
-    if (!updated) {
-      return NextResponse.json(
-        { message: "Shipment not found after update" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json(updated);
-  } catch (error) {
-    if (error instanceof InvariantError) {
-      return NextResponse.json({ message: error.message }, { status: 400 });
-    }
-    console.error("Failed to update shipment:", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
-  }
+  const { id } = await params;
+  return executeManifestCommand(request, {
+    entityName: "Shipment",
+    commandName: "update",
+    params: { id },
+    transformBody: (body, ctx) => ({
+      ...body,
+      id,
+      tenantId: ctx.tenantId,
+    }),
+  });
 }
 
 export async function DELETE(
-  _request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  try {
-    const { orgId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return NextResponse.json(
-        { message: "Tenant not found" },
-        { status: 404 }
-      );
-    }
-
-    const { id } = await params;
-
-    // Verify shipment exists and belongs to tenant
-    const existing = await database.shipment.findFirst({
-      where: { tenantId, id, deletedAt: null },
-    });
-
-    if (!existing) {
-      return NextResponse.json(
-        { message: "Shipment not found" },
-        { status: 404 }
-      );
-    }
-
-    // Prevent deletion of non-draft shipments
-    if (existing.status !== "draft" && existing.status !== "cancelled") {
-      return NextResponse.json(
-        { message: `Cannot delete shipment with status: ${existing.status}` },
-        { status: 400 }
-      );
-    }
-
-    // Soft delete using raw SQL for composite key
-    await database.$executeRaw`
-      UPDATE "tenant_inventory"."shipments"
-      SET "deleted_at" = CURRENT_TIMESTAMP
-      WHERE "tenant_id" = ${tenantId}::uuid AND "id" = ${id}::uuid
-    `;
-
-    return NextResponse.json({ message: "Shipment deleted" }, { status: 200 });
-  } catch (error) {
-    console.error("Failed to delete shipment:", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
-  }
+  const { id } = await params;
+  return executeManifestCommand(request, {
+    entityName: "Shipment",
+    commandName: "cancel",
+    params: { id },
+    transformBody: (_body, ctx) => ({
+      id,
+      tenantId: ctx.tenantId,
+    }),
+  });
 }
