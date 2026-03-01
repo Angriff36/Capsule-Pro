@@ -10,6 +10,7 @@
 
 # Agent session files (ledger, todo, lessons — local only)
 /tasks/
+session-ses_*.md
 
 # Storybook build artifacts
 **/storybook-static/
