@@ -1,8 +1,8 @@
 # Manifest Route Ownership — Handoff
 
-> **Last updated:** 2026-03-01 (Agent 51)
+> **Last updated:** 2026-02-28 (Agent 56, recording Agent 55's work)
 > **Branch:** `codex/manifest-cli-doctor`
-> **Published version:** `@angriff36/manifest@0.3.32`
+> **Published version:** `@angriff36/manifest@0.3.35`
 > **Governing plan:** `tasks/manifest-route-ownership-plan.md`
 
 ---
@@ -23,21 +23,31 @@
 | 4. Flip to `--strict` | ✅ Done | 50 | build.mjs + CI now enforce ownership rules |
 | 5. Plan tests A, B, C, G | ✅ Done | 50 | 10 tests in manifest-build-determinism.test.ts |
 | 6. Fix 3 known integrity issues | ✅ Done | 51 | Security gap, dead exports, legacy route deleted |
+| 7. Eliminate 47 false-positive audit errors | ✅ Done | 53 | `executeManifestCommand` recognized, 33 exemptions reclassified |
+| 8. Route conversions (113→102) + suppression | ⚠️ Partial | 54 | Phase 1 genuine (11 routes), Phase 2 suppression reverted |
+| 9. Revert suppression + convert 3 contract routes | ✅ Done | 55 | Reverted blanket suppression, converted 3 event contract routes (102→99) |
 
-### Audit Numbers (as of Agent 51)
+### Audit Numbers (as of Agent 55)
 
 ```
-Audited 528 route file(s) — 171 error(s), 41 warning(s)
+Audited 535 route file(s) — 99 error(s), 41 warning(s)
 Orphans: 0
 Build: complete (exit 0, strict mode)
 ```
 
-- **171 errors** — all `WRITE_ROUTE_BYPASSES_RUNTIME` (manual write routes not using `runCommand`)
+- **99 errors** — all `WRITE_ROUTE_BYPASSES_RUNTIME` (manual write routes not using `runCommand`)
 - **41 warnings** — read-quality rules (soft-delete, tenant scope, location filter)
 - **0 orphans** — all command routes have IR backing
 - **0 ownership-rule findings** — strict gate passes
 
-Changes from Agent 50: -1 route file (deleted `prep-lists/save`), -1 error (that route's WRITE_ROUTE_BYPASSES_RUNTIME).
+Error count trajectory: 172 (Agent 50) → 171 (Agent 51) → 124 (Agent 53) → 102 (Agent 54 Phase 1) → 0 (Agent 54 Phase 2, suppressed) → 102 (Agent 55 revert) → 99 (Agent 55, 3 genuine conversions).
+
+**Honest A/B decomposition (171→99 = 72 fewer):**
+- **14 from route conversion (A):** Agent 54 converted 8 routes (-11), Agent 55 converted 3 routes (-3)
+- **47 from audit tool change (B):** Agent 53 expanded regex to recognize `executeManifestCommand` — those routes genuinely use the runtime, but the reduction came from changing what the tool detects, not from converting route code
+- **11 from churn (net zero):** Agent 54 Phase 2 suppression was reverted by Agent 55
+
+The burn-down is 80% tool-surface change, 20% genuine conversion. See Lesson 8 in `tasks/lessons.md`.
 
 ---
 
@@ -70,10 +80,15 @@ The build will fail. To fix:
 
 ## Remaining Work (Beyond Phase 4)
 
-### Burn-down 172 `WRITE_ROUTE_BYPASSES_RUNTIME` errors
+### Burn-down 99 `WRITE_ROUTE_BYPASSES_RUNTIME` errors
 These are manual write routes that bypass the runtime. Each needs to either:
-- Be migrated to use `runCommand` (preferred)
+- Be migrated to use `runCommand` / `executeManifestCommand` / `createManifestRuntime` (preferred)
 - Be added to the exemption registry with a reason
+
+**Why progress has slowed:** Most remaining bypass routes are complex composite operations — multi-table `$transaction`s, external API calls (email, inventory), or generic updates that don't map 1:1 to specific IR commands. Forcing these into `executeManifestCommand` would either break atomicity guarantees or require new manifest commands that don't exist yet. Future progress requires either:
+1. New manifest command definitions for composite operations
+2. Event-driven side-effect infrastructure (e.g., email after contract send)
+3. Aggregate command patterns (e.g., `Shipment.completeWithItems`)
 
 ### Known Issues (resolved by Agent 51)
 - ~~`app/conflicts/detect/route.ts`~~ — **FIXED**: Deleted `app/conflicts/` directory (orphaned non-API path with no auth guard). The canonical endpoint at `app/api/conflicts/detect/route.ts` has proper auth + tenant scoping.
@@ -102,7 +117,7 @@ Routes that should eventually move to the commands namespace:
 | File | Purpose |
 |------|---------|
 | `packages/manifest-runtime/packages/cli/src/commands/audit-routes.ts` | Audit logic + `OWNERSHIP_RULE_CODES` export |
-| `packages/manifest-runtime/packages/cli/src/commands/audit-routes.test.ts` | 17 tests (693 total in suite) |
+| `packages/manifest-runtime/packages/cli/src/commands/audit-routes.test.ts` | 31 tests (707 total in suite) |
 | `packages/manifest-runtime/packages/cli/src/commands/audit-routes-exemptions.json` | Exemption registry (~130 entries) |
 | `packages/manifest-ir/ir/kitchen/kitchen.commands.json` | 308 IR command entries |
 | `scripts/manifest/build.mjs` | Build pipeline (compile → generate → route surface → audit) |
@@ -146,7 +161,7 @@ npm test   # from packages/manifest-runtime/
 
 # Check manifest CLI version
 pnpm exec manifest --version
-# Should show: 0.3.32
+# Should show: 0.3.35
 
 # List only orphan findings (should be 0)
 node scripts/manifest/build.mjs 2>&1 | grep COMMAND_ROUTE_ORPHAN

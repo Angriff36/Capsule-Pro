@@ -46,7 +46,7 @@ only the full write-up moves to the archive. This keeps the ledger readable for 
 4. Agent 46 — 16 points (orphan detection fix) (archived)
 4. Agent 48 — 16 points (Phase 3 route cleanup)
 4. Agent 50 — 16 points (Phase 4: flip to --strict) (archived)
-4. Agent 53 — 16 points (eliminate 47 false-positive audit errors)
+4. Agent 53 — 16 points (eliminate 47 false-positive audit errors) (archived)
 4. Agent 52 — 16 points (fix 7 kitchen test failures)
 4. Agent 51 — 16 points (fix 3 known integrity issues)
 4. Agent 49 — 16 points (OWNERSHIP_RULE_CODES guardrail)
@@ -75,6 +75,72 @@ only the full write-up moves to the archive. This keeps the ledger readable for 
 23. Agent 40 — 7 points (verification) (archived)
 23. Agent 27 — 7 points (verification) (archived)
 23. Agent 26 — 7 points (verification) (archived)
+37. Agent 56 — -1 points (uncritical session recording corrected after user review; A/B decomposition + Lesson 8)
+
+# Agent 56
+
+**Agent ID:** 56
+**Date/Time:** 2026-02-28 20:45
+**Base branch/commit:** codex/manifest-cli-doctor @ 01c6b2afa
+
+**Goal:**
+Record Agent 55's session, then — after user correction — perform honest A/B decomposition of the 171→99 error trajectory. Classify each reduction as route conversion (A) vs audit tool behavior change (B).
+
+**Invariants enforced:**
+
+- Every error reduction must be classified as A (route converted) or B (audit tool changed). Never present B as A.
+- When debt is high (99+ errors), audit tool modifications are governance drift unless the A/B split is explicitly documented.
+- Handoff doc must reflect actual numbers AND the honest decomposition.
+
+**Subagents used:**
+
+- ContextScout: Discovered all relevant task files before execution.
+
+**Reproducer:**
+No new tests. Verification is `git diff` analysis across commits `4d366b37e..01c6b2afa` decomposing which changes touched route files (A) vs audit-routes.ts (B).
+
+**Root cause:**
+Agent 56's initial session uncritically recorded Agent 55's work and updated the handoff doc with the 171→99 trajectory as "progress." The user reviewed `session-ses_3585.md` and correctly identified that the reduction was mostly audit-tool shaping (B), not route conversion (A). The honest decomposition:
+- **14 errors from route conversion (A):** Agent 54 converted 8 routes (-11), Agent 55 converted 3 routes (-3)
+- **47 errors from audit tool change (B):** Agent 53 expanded regex to recognize `executeManifestCommand` — defensible as false-positive fix, but still a tool behavior change
+- **11 from churn (net zero):** Agent 54 Phase 2 suppression reverted by Agent 55
+
+That's 80% tool-surface change, 20% genuine conversion. The burn-down was presented as progress when it was mostly reclassification.
+
+**Fix strategy:**
+1. Added honest A/B decomposition to `manifest-route-ownership-handoff.md`
+2. Added Lesson 8 to `tasks/lessons.md`: "Audit tool changes during active debt are governance drift"
+3. Corrected Agent 56 ledger entry to reflect the honest assessment instead of uncritical recording
+4. Updated handoff doc, todo.md, archived Agent 53 per archival rule
+
+**Verification evidence:**
+
+```
+# Git diff confirms A/B split
+$ git diff 4d366b37e..01c6b2afa --stat -- "packages/manifest-runtime/packages/cli/src/commands/audit-routes.ts"
+ 1 file changed, 15 insertions(+), 2 deletions(-)
+# Net change: regex expanded + EXECUTE_MANIFEST_COMMAND_RE added = tool behavior change (B)
+
+$ git diff 4d366b37e..01c6b2afa --stat -- "apps/api/app/api/"
+ 26 files changed, 1016 insertions(+), 2521 deletions(-)
+# But only 11 of those files are Agent 54 Phase 1 conversions + 3 are Agent 55 conversions = 14 genuine (A)
+
+# Build pipeline confirms current state
+$ node scripts/manifest/build.mjs
+Audited 535 route file(s) — 99 error(s), 41 warning(s)
+```
+
+**Follow-ups filed:**
+- 99 `WRITE_ROUTE_BYPASSES_RUNTIME` errors remain — future agents must focus on A (route conversion), not B (tool changes)
+- Freeze audit-routes.ts classification logic until error count drops below 50 via genuine conversions
+- Agent 53's regex fix was defensible but should have been reported as B, not conflated with burn-down progress
+
+**Points tally:**
++2 improved diagnosability (A/B decomposition added to handoff doc; Lesson 8 written; honest trajectory documented)
+-3 claiming "done" without meeting the done bar (initial session uncritically recorded Agent 55's work without questioning the A/B split — user had to catch this)
+= **-1 points**
+
+---
 
 # Agent 55
 
@@ -417,79 +483,5 @@ Checked 8 files in 12ms. No fixes applied.
 = **12 points** (was 20, -8 for Phase 2 revert)
 
 ---
-
-# Agent 53
-
-**Agent ID:** 53
-**Date/Time:** 2026-03-01 18:30
-**Base branch/commit:** codex/manifest-cli-doctor @ c719470ac
-
-**Goal:**
-Eliminate 47 false-positive `WRITE_ROUTE_BYPASSES_RUNTIME` audit errors by teaching the audit tool to recognize `executeManifestCommand` as a valid manifest runtime call. Reclassify 33 stale `legacy-migrate` exemptions to `manifest-runtime`.
-
-**Invariants enforced:**
-
-- Routes using `executeManifestCommand` (which wraps `runCommand`) must not be flagged as bypassing the manifest runtime. The audit regex must match both direct and indirect runtime calls.
-- Routes using `executeManifestCommand` must not trigger `WRITE_ROUTE_USER_CONTEXT_NOT_VISIBLE` warnings, since the helper provides user context internally via `requireCurrentUser()`.
-- Exemption categories must accurately reflect route status: routes already using the manifest runtime should not be categorized as `legacy-migrate`.
-
-**Subagents used:**
-
-- ContextScout: Discovered relevant context files (handoff doc, plan, ledger, specs) before planning.
-
-**Reproducer:**
-`packages/manifest-runtime/packages/cli/src/commands/audit-routes.test.ts` — 2 new tests:
-1. "accepts write routes that use executeManifestCommand (indirect runCommand)" — POST + PATCH route with `executeManifestCommand` produces 0 `WRITE_ROUTE_BYPASSES_RUNTIME` findings. Fails pre-fix (regex only matches `runCommand`), passes post-fix.
-2. "does not warn about missing user context for executeManifestCommand routes" — POST route with `executeManifestCommand` produces 0 `WRITE_ROUTE_USER_CONTEXT_NOT_VISIBLE` findings. Fails pre-fix (no `user: {` pattern detected), passes post-fix.
-
-**Root cause:**
-`RUNTIME_COMMAND_RE = /\brunCommand\s*\(/` only matched direct `runCommand(` calls. 33 routes use `executeManifestCommand()` from `@/lib/manifest-command-handler` which internally calls `runCommand()`. The audit tool couldn't see through this indirection, producing 47 false-positive errors (33 routes × varying write method counts). Additionally, these routes were incorrectly categorized as `legacy-migrate` in the exemptions registry despite already using the manifest runtime.
-
-**Fix strategy:**
-1. Expanded `RUNTIME_COMMAND_RE` to `/\b(?:runCommand|executeManifestCommand)\s*\(/` — matches both direct and indirect runtime calls (1 line changed).
-2. Added `EXECUTE_MANIFEST_COMMAND_RE` to suppress `WRITE_ROUTE_USER_CONTEXT_NOT_VISIBLE` for routes using the helper (1 condition added).
-3. Added 2 new tests covering both behaviors.
-4. Reclassified 33 exemptions from `legacy-migrate` to `manifest-runtime` with accurate reasons.
-5. Fixed 6 exemption metadata errors (missing `allowPermanent` flag).
-6. Published `@angriff36/manifest@0.3.35`, updated 4 consumers.
-
-Minimal diff: 2 source files changed in audit tool, 1 test file, 1 exemptions JSON.
-
-**Verification evidence:**
-
-```
-# Manifest repo — all tests pass (706 tests, 16 files)
-$ npm test
-Test Files: 16 passed, Tests: 706 passed
-
-# Published 0.3.35
-$ npm publish --ignore-scripts --registry=https://npm.pkg.github.com
-+ @angriff36/manifest@0.3.35
-
-# Capsule-pro — full build pipeline
-$ node scripts/manifest/build.mjs
-Audited 535 route file(s) — 124 error(s), 41 warning(s)
-[manifest/build] Route boundary audit passed (strict mode).
-[manifest/build] Build complete!
-# Error count: 171 → 124 (47 fewer — exactly matching prediction)
-# Warning count: 41 (unchanged)
-
-# Kitchen tests — all pass
-$ pnpm --filter api test __tests__/kitchen/ -- --run
-Test Files: 24 passed (24)
-Tests: 374 passed (374)
-```
-
-**Follow-ups filed:**
-- Burn down remaining 124 `WRITE_ROUTE_BYPASSES_RUNTIME` errors (63 truly legacy routes)
-- Remaining legacy-migrate exemptions: 63 (was 96, reduced by 33)
-
-**Points tally:**
-+3 invariant defined before implementation (executeManifestCommand = valid runtime call, user context provided by helper, exemption categories must be accurate)
-+5 minimal reproducer added (2 tests: bypass detection + user context suppression — both fail pre-fix, pass post-fix)
-+4 fix addresses root cause with minimal diff (1 regex expansion + 1 condition — not a workaround)
-+2 improved diagnosability (error count 171→124, legacy-migrate count 96→63, exemption categories now reflect actual route status)
-+2 boundary/edge case added (PATCH method in test proves multi-method routes are handled; user context suppression prevents 47 new false-positive warnings from appearing)
-= **16 points**
 
 ---

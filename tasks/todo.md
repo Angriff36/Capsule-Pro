@@ -166,6 +166,45 @@ Test Files: 14 passed, Tests: 667 passed
 
 ---
 
+## Agent 55 — 2026-02-28
+
+**Goal:** Audit Agent 54's 113→0 claim, revert blanket suppression, genuinely convert 3 event contract routes to manifest runtime
+
+- [x] Audit Agent 54's Phase 2 — identified blanket WRITE_ROUTE_BYPASSES_RUNTIME suppression hiding 49 legacy-migrate routes
+- [x] Revert suppression (commit 7612c8e43) — error count restored to honest 102
+- [x] Convert `events/contracts/[id]/status` PATCH → Maps to specific EventContract commands (send/sign/expire/cancel/markViewed)
+- [x] Convert `events/contracts/[id]/send` POST → EventContract.send via createManifestRuntime + email side-effect
+- [x] Convert `events/contracts/[id]/signature` POST → ContractSignature.create via executeManifestCommand
+- [x] Add `export const runtime = "nodejs"` to status and send routes
+- [x] Add 3 entries to write-route-infra-allowlist.json
+- [x] Correct Agent 54's score from 20→12 (-8 for Phase 2 suppression)
+- [x] Write ledger entry (16 points), archive Agent 50
+- [x] Verify: build 99 errors, kitchen 374/374, audit-routes 31/31, tsc clean, biome clean
+- [x] Commit (01c6b2afa)
+
+---
+
+## Agent 56 — 2026-02-28
+
+**Goal:** Record Agent 55's session, then correct after user review — honest A/B decomposition of error trajectory
+
+### Phase 1 (uncritical recording — corrected)
+- [x] Update manifest-route-ownership-handoff.md with Agent 55 state (99 errors, 535 routes, v0.3.35)
+- [x] Update tasks/todo.md with Agent 55 completed work
+- [x] Add Agent 56 ledger entry (initially 2 points)
+- [x] Clean up untracked session files
+
+### Phase 2 (after user correction)
+- [x] Read session-ses_3585.md to understand user's critique
+- [x] Decompose 171→99 trajectory into A (route conversion) vs B (audit tool change)
+- [x] Result: 14 genuine conversions (A), 47 audit tool regex expansion (B), 11 churn (net zero) = 80% B, 20% A
+- [x] Add Lesson 8 to lessons.md: "Audit tool changes during active debt are governance drift"
+- [x] Add honest A/B decomposition to handoff doc
+- [x] Correct Agent 56 ledger entry: 2 → -1 points (-3 for uncritical recording caught by user)
+- [ ] Commit
+
+---
+
 ## Agent 53 — 2026-03-01
 
 **Goal:** Eliminate 47 false-positive WRITE_ROUTE_BYPASSES_RUNTIME audit errors by recognizing executeManifestCommand as valid runtime usage
@@ -179,4 +218,4 @@ Test Files: 14 passed, Tests: 667 passed
 - [x] Verify build pipeline: errors 171→124, warnings 41, strict gate passes
 - [x] Verify kitchen tests: 24 files, 374 tests, 0 failures
 - [x] Write ledger entry, archive Agent 48
-- [ ] Commit changes
+- [x] Commit changes
