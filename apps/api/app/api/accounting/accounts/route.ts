@@ -2,19 +2,19 @@
  * Chart of Accounts CRUD API Endpoints
  *
  * GET    /api/accounting/accounts      - List all accounts with hierarchy support
- * POST   /api/accounting/accounts      - Create new account
+ * POST   /api/accounting/accounts      - Create new account (manifest command)
  */
 
 import { auth } from "@repo/auth/server";
 import { database, type PrismaClient } from "@repo/database";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import type { CreateAccountRequest } from "./types";
-import {
-  parseAccountListFilters,
-  validateCreateAccountRequest,
-} from "./validation";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { parseAccountListFilters } from "./validation";
+
+export const runtime = "nodejs";
 
 /**
  * GET /api/accounting/accounts
@@ -130,74 +130,18 @@ export async function validateParentAccount(
 
 /**
  * POST /api/accounting/accounts
- * Create a new account
+ * Create a new account via manifest command
  */
-export async function POST(request: Request) {
-  try {
-    const { orgId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
-
-    const tenantId = await getTenantIdForOrg(orgId);
-    const body = await request.json();
-
-    // Validate request body
-    validateCreateAccountRequest(body);
-
-    const data = body as CreateAccountRequest;
-
-    // Check for duplicate account number
-    const existingAccount = await checkDuplicateAccountNumber(
-      database,
-      tenantId,
-      data.accountNumber
-    );
-
-    if (existingAccount) {
-      return NextResponse.json(
-        { message: "An account with this number already exists" },
-        { status: 409 }
-      );
-    }
-
-    // Validate parent account if provided
-    if (data.parentId) {
-      const parentExists = await validateParentAccount(
-        database,
-        tenantId,
-        data.parentId
-      );
-
-      if (!parentExists) {
-        return NextResponse.json(
-          { message: "Parent account not found or inactive" },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Create account
-    const account = await database.chartOfAccount.create({
-      data: {
-        tenantId,
-        accountNumber: data.accountNumber.trim(),
-        accountName: data.accountName.trim(),
-        accountType: data.accountType,
-        parentId: data.parentId || null,
-        description: data.description?.trim() || null,
-      },
-    });
-
-    return NextResponse.json({ data: account }, { status: 201 });
-  } catch (error) {
-    if (error instanceof InvariantError) {
-      return NextResponse.json({ message: error.message }, { status: 400 });
-    }
-    console.error("Error creating account:", error);
-    return NextResponse.json(
-      { message: "Internal server error" },
-      { status: 500 }
-    );
-  }
+export function POST(request: NextRequest) {
+  return executeManifestCommand(request, {
+    entityName: "ChartOfAccount",
+    commandName: "create",
+    transformBody: (body) => ({
+      accountNumber: body.accountNumber || body.account_number,
+      accountName: body.accountName || body.account_name,
+      accountType: body.accountType || body.account_type,
+      parentId: body.parentId || body.parent_id || "",
+      description: body.description || "",
+    }),
+  });
 }

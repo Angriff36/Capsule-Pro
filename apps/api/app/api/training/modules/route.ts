@@ -1,10 +1,11 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 import type {
   ContentType,
-  CreateTrainingModuleInput,
   TrainingModule,
   TrainingModulesListResponse,
 } from "../types";
@@ -132,78 +133,21 @@ export async function GET(request: Request) {
 
 /**
  * POST /api/training/modules
- * Create a new training module
- *
- * Required fields:
- * - title: Module title
- *
- * Optional fields:
- * - description: Module description
- * - contentUrl: URL to training content
- * - contentType: Type of content (document, video, quiz, interactive)
- * - durationMinutes: Estimated duration
- * - category: Module category
- * - isRequired: Whether this is required training
+ * Create a new training module via manifest runtime.
  */
-export async function POST(request: Request) {
-  const { orgId, userId } = await auth();
-  if (!(orgId && userId)) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-  const body = (await request.json()) as CreateTrainingModuleInput;
-
-  if (!body.title) {
-    return NextResponse.json({ message: "Title is required" }, { status: 400 });
-  }
-
-  try {
-    const result = await database.$queryRaw<
-      Array<{
-        id: string;
-        title: string;
-        description: string | null;
-        content_type: string;
-        is_required: boolean;
-        is_active: boolean;
-      }>
-    >(
-      Prisma.sql`
-        INSERT INTO tenant_staff.training_modules (
-          tenant_id,
-          title,
-          description,
-          content_url,
-          content_type,
-          duration_minutes,
-          category,
-          is_required,
-          is_active,
-          created_by
-        )
-        VALUES (
-          ${tenantId},
-          ${body.title},
-          ${body.description || null},
-          ${body.contentUrl || null},
-          ${body.contentType || "document"},
-          ${body.durationMinutes || null},
-          ${body.category || null},
-          ${body.isRequired ?? false},
-          true,
-          ${userId}
-        )
-        RETURNING id, title, description, content_type, is_required, is_active
-      `
-    );
-
-    return NextResponse.json({ module: result[0] }, { status: 201 });
-  } catch (error) {
-    console.error("Error creating training module:", error);
-    return NextResponse.json(
-      { message: "Failed to create training module" },
-      { status: 500 }
-    );
-  }
+export function POST(request: NextRequest) {
+  return executeManifestCommand(request, {
+    entityName: "TrainingModule",
+    commandName: "create",
+    transformBody: (body, ctx) => ({
+      ...body,
+      tenantId: ctx.tenantId,
+      createdBy: ctx.userId,
+      isActive: true,
+      contentType: body.contentType || body.content_type || "document",
+      isRequired: body.isRequired || body.is_required,
+      durationMinutes: body.durationMinutes || body.duration_minutes || 0,
+      contentUrl: body.contentUrl || body.content_url || "",
+    }),
+  });
 }

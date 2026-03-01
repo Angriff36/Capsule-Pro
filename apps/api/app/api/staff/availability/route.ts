@@ -1,18 +1,12 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import type {
-  AvailabilityListResponse,
-  CreateAvailabilityInput,
-} from "./types";
-import {
-  checkOverlappingAvailability,
-  validateDayOfWeek,
-  validateEffectiveDates,
-  validateTimeRange,
-  verifyEmployee,
-} from "./validation";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import type { AvailabilityListResponse } from "./types";
+import { validateDayOfWeek } from "./validation";
+
+export const runtime = "nodejs";
 
 /**
  * GET /api/staff/availability
@@ -167,161 +161,20 @@ export async function GET(request: Request) {
 
 /**
  * POST /api/staff/availability
- * Create a new availability record for an employee
- *
- * Required fields:
- * - employeeId: Employee to set availability for
- * - dayOfWeek: Day of week (0-6, where 0=Sunday)
- * - startTime: Start time in HH:MM format (24-hour)
- * - endTime: End time in HH:MM format (24-hour)
- *
- * Optional fields:
- * - isAvailable: Whether employee is available (defaults to true)
- * - effectiveFrom: Date when availability starts (YYYY-MM-DD, defaults to today)
- * - effectiveUntil: Date when availability ends (YYYY-MM-DD or null for ongoing)
+ * Create a new availability record via manifest command
  */
-export async function POST(request: Request) {
-  const { orgId } = await auth();
-  if (!orgId) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-  const body = (await request.json()) as CreateAvailabilityInput;
-
-  // Validate required fields
-  if (
-    !(
-      body.employeeId &&
-      body.dayOfWeek !== undefined &&
-      body.startTime &&
-      body.endTime
-    )
-  ) {
-    return NextResponse.json(
-      {
-        message:
-          "Employee ID, day of week, start time, and end time are required",
-      },
-      { status: 400 }
-    );
-  }
-
-  // Validate day of week
-  const dayError = validateDayOfWeek(body.dayOfWeek);
-  if (dayError) {
-    return dayError;
-  }
-
-  // Validate time range
-  const timeError = validateTimeRange(body.startTime, body.endTime);
-  if (timeError) {
-    return timeError;
-  }
-
-  // Set defaults
-  const effectiveFrom = body.effectiveFrom
-    ? new Date(body.effectiveFrom)
-    : new Date(); // Default to today
-  effectiveFrom.setHours(0, 0, 0, 0);
-
-  const effectiveUntil = body.effectiveUntil
-    ? new Date(body.effectiveUntil)
-    : null;
-  if (effectiveUntil) {
-    effectiveUntil.setHours(0, 0, 0, 0);
-  }
-
-  // Validate effective dates
-  const dateError = validateEffectiveDates(effectiveFrom, effectiveUntil);
-  if (dateError) {
-    return dateError;
-  }
-
-  // Verify employee exists and is active
-  const { error: employeeError } = await verifyEmployee(
-    tenantId,
-    body.employeeId
-  );
-  if (employeeError) {
-    return employeeError;
-  }
-
-  // Check for overlapping availability
-  const { hasOverlap, overlappingAvailability } =
-    await checkOverlappingAvailability(
-      tenantId,
-      body.employeeId,
-      body.dayOfWeek,
-      body.startTime,
-      body.endTime,
-      effectiveFrom,
-      effectiveUntil
-    );
-
-  if (hasOverlap) {
-    return NextResponse.json(
-      {
-        message: "Employee has overlapping availability for this day and time",
-        overlappingAvailability,
-      },
-      { status: 409 }
-    );
-  }
-
-  try {
-    // Parse time strings to Time objects
-    const [startHour, startMinute] = body.startTime.split(":").map(Number);
-    const [endHour, endMinute] = body.endTime.split(":").map(Number);
-
-    const startTime = new Date();
-    startTime.setHours(startHour, startMinute, 0, 0);
-
-    const endTime = new Date();
-    endTime.setHours(endHour, endMinute, 0, 0);
-
-    // Create the availability record
-    const result = await database.$queryRaw<
-      Array<{
-        id: string;
-        employee_id: string;
-        day_of_week: number;
-        start_time: Date;
-        end_time: Date;
-        effective_from: Date;
-      }>
-    >(
-      Prisma.sql`
-        INSERT INTO tenant_staff.employee_availability (
-          tenant_id,
-          employee_id,
-          day_of_week,
-          start_time,
-          end_time,
-          is_available,
-          effective_from,
-          effective_until
-        )
-        VALUES (
-          ${tenantId},
-          ${body.employeeId},
-          ${body.dayOfWeek},
-          ${startTime}::time,
-          ${endTime}::time,
-          ${body.isAvailable ?? true},
-          ${effectiveFrom}::date,
-          ${effectiveUntil}::date
-        )
-        RETURNING id, employee_id, day_of_week, start_time, end_time, effective_from
-      `
-    );
-
-    return NextResponse.json({ availability: result[0] }, { status: 201 });
-  } catch (error) {
-    console.error("Error creating availability:", error);
-    return NextResponse.json(
-      { message: "Failed to create availability" },
-      { status: 500 }
-    );
-  }
+export function POST(request: NextRequest) {
+  return executeManifestCommand(request, {
+    entityName: "EmployeeAvailability",
+    commandName: "create",
+    transformBody: (body) => ({
+      employeeId: body.employeeId || body.employee_id,
+      dayOfWeek: body.dayOfWeek ?? body.day_of_week,
+      startTime: body.startTime || body.start_time,
+      endTime: body.endTime || body.end_time,
+      isAvailable: body.isAvailable ?? body.is_available ?? true,
+      effectiveFrom: body.effectiveFrom || body.effective_from || "",
+      effectiveUntil: body.effectiveUntil || body.effective_until || "",
+    }),
+  });
 }

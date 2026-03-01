@@ -1,7 +1,10 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
+
+export const runtime = "nodejs";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -74,97 +77,41 @@ export async function GET(_request: Request, { params }: RouteParams) {
 
 /**
  * PUT /api/staff/certifications/[id]
- * Update a certification
+ * Update a certification via manifest command
  */
-export async function PUT(request: Request, { params }: RouteParams) {
-  const { orgId } = await auth();
-  if (!orgId) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const { id } = await params;
-  const body = await request.json();
-
-  try {
-    const result = await database.$queryRaw<
-      Array<{
-        id: string;
-        certification_name: string;
-        expiry_date: Date | null;
-      }>
-    >(
-      Prisma.sql`
-        UPDATE tenant_staff.employee_certifications
-        SET
-          certification_type = COALESCE(${body.certificationType}, certification_type),
-          certification_name = COALESCE(${body.certificationName}, certification_name),
-          issued_date = COALESCE(${body.issuedDate ? new Date(body.issuedDate) : null}, issued_date),
-          expiry_date = COALESCE(${body.expiryDate ? new Date(body.expiryDate) : null}, expiry_date),
-          document_url = COALESCE(${body.documentUrl}, document_url),
-          updated_at = NOW()
-        WHERE tenant_id = ${tenantId}
-          AND id = ${id}
-          AND deleted_at IS NULL
-        RETURNING id, certification_name, expiry_date
-      `
-    );
-
-    if (result.length === 0) {
-      return NextResponse.json(
-        { message: "Certification not found" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({ certification: result[0] });
-  } catch (error) {
-    console.error("Error updating certification:", error);
-    return NextResponse.json(
-      { message: "Failed to update certification" },
-      { status: 500 }
-    );
-  }
+  return executeManifestCommand(request, {
+    entityName: "EmployeeCertification",
+    commandName: "update",
+    params: { id },
+    transformBody: (body) => ({
+      id,
+      certificationType: body.certificationType || body.certification_type,
+      certificationName: body.certificationName || body.certification_name,
+      issuedDate: body.issuedDate || body.issued_date,
+      expiryDate: body.expiryDate || body.expiry_date || "",
+      documentUrl: body.documentUrl || body.document_url || "",
+    }),
+  });
 }
 
 /**
  * DELETE /api/staff/certifications/[id]
- * Soft delete a certification
+ * Soft delete a certification via manifest command
  */
-export async function DELETE(_request: Request, { params }: RouteParams) {
-  const { orgId } = await auth();
-  if (!orgId) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const { id } = await params;
-
-  try {
-    const result = await database.$queryRaw<Array<{ id: string }>>(
-      Prisma.sql`
-        UPDATE tenant_staff.employee_certifications
-        SET deleted_at = NOW(), updated_at = NOW()
-        WHERE tenant_id = ${tenantId}
-          AND id = ${id}
-          AND deleted_at IS NULL
-        RETURNING id
-      `
-    );
-
-    if (result.length === 0) {
-      return NextResponse.json(
-        { message: "Certification not found" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Error deleting certification:", error);
-    return NextResponse.json(
-      { message: "Failed to delete certification" },
-      { status: 500 }
-    );
-  }
+  return executeManifestCommand(request, {
+    entityName: "EmployeeCertification",
+    commandName: "softDelete",
+    params: { id },
+    transformBody: () => ({ id }),
+  });
 }

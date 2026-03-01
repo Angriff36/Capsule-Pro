@@ -1,15 +1,10 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import type { UpdateAvailabilityInput } from "../types";
-import { verifyAvailability } from "../validation";
-import {
-  buildAvailabilityUpdateQuery,
-  fetchExistingAvailabilityRecord,
-  updateAvailabilityRaw,
-  validateAvailabilityUpdate,
-} from "./helpers";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
+
+export const runtime = "nodejs";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -86,148 +81,42 @@ export async function GET(_request: Request, context: RouteContext) {
 
 /**
  * PATCH /api/staff/availability/[id]
- * Update an existing availability record
- *
- * Optional fields:
- * - dayOfWeek: New day of week (0-6)
- * - startTime: New start time in HH:MM format
- * - endTime: New end time in HH:MM format
- * - isAvailable: New availability status
- * - effectiveFrom: New effective from date (YYYY-MM-DD)
- * - effectiveUntil: New effective until date (YYYY-MM-DD or null)
+ * Update an existing availability record via manifest command
  */
-export async function PATCH(request: Request, context: RouteContext) {
-  const { orgId } = await auth();
-  if (!orgId) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-  const { id } = await context.params;
-  const body = (await request.json()) as UpdateAvailabilityInput;
-
-  // Verify availability exists
-  const { availability: existingAvail, error: verifyError } =
-    await verifyAvailability(tenantId, id);
-  if (verifyError || !existingAvail) {
-    return (
-      verifyError ||
-      NextResponse.json(
-        { message: "Availability record not found" },
-        { status: 404 }
-      )
-    );
-  }
-
-  // Validate update input
-  const validationError = await validateAvailabilityUpdate(
-    body,
-    existingAvail,
-    tenantId,
-    id
-  );
-  if (validationError) {
-    return validationError;
-  }
-
-  try {
-    // Build dynamic update query
-    const { fields: updateFields, values: updateValues } =
-      buildAvailabilityUpdateQuery(body);
-
-    if (updateFields.length === 0) {
-      return NextResponse.json(
-        { message: "No fields to update" },
-        { status: 400 }
-      );
-    }
-
-    // Execute update
-    const success = await updateAvailabilityRaw(
-      tenantId,
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  return executeManifestCommand(request, {
+    entityName: "EmployeeAvailability",
+    commandName: "update",
+    params: { id },
+    transformBody: (body) => ({
       id,
-      updateFields,
-      updateValues
-    );
-
-    if (!success) {
-      return NextResponse.json(
-        { message: "Availability record not found" },
-        { status: 404 }
-      );
-    }
-
-    // Fetch updated record
-    const updated = await fetchExistingAvailabilityRecord(tenantId, id);
-    if (!updated) {
-      return NextResponse.json(
-        { message: "Availability record not found after update" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({
-      availability: {
-        id,
-        employee_id: existingAvail.employee_id,
-        day_of_week: body.dayOfWeek ?? existingAvail.day_of_week,
-      },
-    });
-  } catch (error) {
-    console.error("Error updating availability:", error);
-    return NextResponse.json(
-      { message: "Failed to update availability" },
-      { status: 500 }
-    );
-  }
+      dayOfWeek: body.dayOfWeek ?? body.day_of_week,
+      startTime: body.startTime || body.start_time,
+      endTime: body.endTime || body.end_time,
+      isAvailable: body.isAvailable ?? body.is_available,
+      effectiveFrom: body.effectiveFrom || body.effective_from || "",
+      effectiveUntil: body.effectiveUntil || body.effective_until || "",
+    }),
+  });
 }
 
 /**
  * DELETE /api/staff/availability/[id]
- * Soft delete an availability record
+ * Soft delete an availability record via manifest command
  */
-export async function DELETE(_request: Request, context: RouteContext) {
-  const { orgId } = await auth();
-  if (!orgId) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-  const { id } = await context.params;
-
-  // Verify availability exists
-  const { error: verifyError } = await verifyAvailability(tenantId, id);
-  if (verifyError) {
-    return verifyError;
-  }
-
-  try {
-    const result = await database.$queryRaw<
-      Array<{ id: string; deleted_at: Date }>
-    >(
-      Prisma.sql`
-        UPDATE tenant_staff.employee_availability
-        SET deleted_at = NOW()
-        WHERE tenant_id = ${tenantId}
-          AND id = ${id}
-          AND deleted_at IS NULL
-        RETURNING id, deleted_at
-      `
-    );
-
-    if (!result[0]) {
-      return NextResponse.json(
-        { message: "Availability record not found" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({ deleted: result[0].id });
-  } catch (error) {
-    console.error("Error deleting availability:", error);
-    return NextResponse.json(
-      { message: "Failed to delete availability" },
-      { status: 500 }
-    );
-  }
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  return executeManifestCommand(request, {
+    entityName: "EmployeeAvailability",
+    commandName: "softDelete",
+    params: { id },
+    transformBody: () => ({ id }),
+  });
 }

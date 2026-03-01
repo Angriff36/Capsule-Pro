@@ -1,12 +1,10 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import type {
-  ContentType,
-  TrainingModule,
-  UpdateTrainingModuleInput,
-} from "../../types";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import type { ContentType, TrainingModule } from "../../types";
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -81,100 +79,37 @@ export async function GET(_request: Request, { params }: RouteParams) {
 
 /**
  * PUT /api/training/modules/[id]
- * Update a training module
+ * Update a training module via manifest runtime.
  */
-export async function PUT(request: Request, { params }: RouteParams) {
-  const { orgId } = await auth();
-  if (!orgId) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
+export async function PUT(request: NextRequest, { params }: RouteParams) {
   const { id } = await params;
-  const body = (await request.json()) as UpdateTrainingModuleInput;
-
-  try {
-    const result = await database.$queryRaw<
-      Array<{
-        id: string;
-        title: string;
-        is_active: boolean;
-      }>
-    >(
-      Prisma.sql`
-        UPDATE tenant_staff.training_modules
-        SET
-          title = COALESCE(${body.title}, title),
-          description = COALESCE(${body.description}, description),
-          content_url = COALESCE(${body.contentUrl}, content_url),
-          content_type = COALESCE(${body.contentType}, content_type),
-          duration_minutes = COALESCE(${body.durationMinutes}, duration_minutes),
-          category = COALESCE(${body.category}, category),
-          is_required = COALESCE(${body.isRequired}, is_required),
-          is_active = COALESCE(${body.isActive}, is_active),
-          updated_at = NOW()
-        WHERE tenant_id = ${tenantId}
-          AND id = ${id}
-          AND deleted_at IS NULL
-        RETURNING id, title, is_active
-      `
-    );
-
-    if (result.length === 0) {
-      return NextResponse.json(
-        { message: "Training module not found" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({ module: result[0] });
-  } catch (error) {
-    console.error("Error updating training module:", error);
-    return NextResponse.json(
-      { message: "Failed to update training module" },
-      { status: 500 }
-    );
-  }
+  return executeManifestCommand(request, {
+    entityName: "TrainingModule",
+    commandName: "update",
+    params: { id },
+    transformBody: (body) => ({
+      ...body,
+      title: body.title,
+      description: body.description,
+      contentUrl: body.contentUrl || body.content_url,
+      contentType: body.contentType || body.content_type,
+      durationMinutes: body.durationMinutes || body.duration_minutes,
+      category: body.category,
+      isRequired: body.isRequired ?? body.is_required,
+      isActive: body.isActive ?? body.is_active,
+    }),
+  });
 }
 
 /**
  * DELETE /api/training/modules/[id]
- * Soft delete a training module
+ * Soft delete a training module via manifest runtime.
  */
-export async function DELETE(_request: Request, { params }: RouteParams) {
-  const { orgId } = await auth();
-  if (!orgId) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
   const { id } = await params;
-
-  try {
-    const result = await database.$queryRaw<Array<{ id: string }>>(
-      Prisma.sql`
-        UPDATE tenant_staff.training_modules
-        SET deleted_at = NOW(), updated_at = NOW()
-        WHERE tenant_id = ${tenantId}
-          AND id = ${id}
-          AND deleted_at IS NULL
-        RETURNING id
-      `
-    );
-
-    if (result.length === 0) {
-      return NextResponse.json(
-        { message: "Training module not found" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("Error deleting training module:", error);
-    return NextResponse.json(
-      { message: "Failed to delete training module" },
-      { status: 500 }
-    );
-  }
+  return executeManifestCommand(request, {
+    entityName: "TrainingModule",
+    commandName: "softDelete",
+    params: { id },
+  });
 }

@@ -1,5 +1,45 @@
 [
   {
+    "entity": "AdminTask",
+    "command": "cancel",
+    "commandId": "AdminTask.cancel"
+  },
+  {
+    "entity": "AdminTask",
+    "command": "complete",
+    "commandId": "AdminTask.complete"
+  },
+  {
+    "entity": "AdminTask",
+    "command": "create",
+    "commandId": "AdminTask.create"
+  },
+  {
+    "entity": "AdminTask",
+    "command": "moveToTodo",
+    "commandId": "AdminTask.moveToTodo"
+  },
+  {
+    "entity": "AdminTask",
+    "command": "reopen",
+    "commandId": "AdminTask.reopen"
+  },
+  {
+    "entity": "AdminTask",
+    "command": "softDelete",
+    "commandId": "AdminTask.softDelete"
+  },
+  {
+    "entity": "AdminTask",
+    "command": "startProgress",
+    "commandId": "AdminTask.startProgress"
+  },
+  {
+    "entity": "AdminTask",
+    "command": "update",
+    "commandId": "AdminTask.update"
+  },
+  {
     "entity": "AlertsConfig",
     "command": "create",
     "commandId": "AlertsConfig.create"
@@ -118,6 +158,21 @@
     "entity": "CateringOrder",
     "command": "update",
     "commandId": "CateringOrder.update"
+  },
+  {
+    "entity": "ChartOfAccount",
+    "command": "create",
+    "commandId": "ChartOfAccount.create"
+  },
+  {
+    "entity": "ChartOfAccount",
+    "command": "deactivate",
+    "commandId": "ChartOfAccount.deactivate"
+  },
+  {
+    "entity": "ChartOfAccount",
+    "command": "update",
+    "commandId": "ChartOfAccount.update"
   },
   {
     "entity": "Client",
@@ -363,6 +418,36 @@
     "entity": "Dish",
     "command": "updatePricing",
     "commandId": "Dish.updatePricing"
+  },
+  {
+    "entity": "EmployeeAvailability",
+    "command": "create",
+    "commandId": "EmployeeAvailability.create"
+  },
+  {
+    "entity": "EmployeeAvailability",
+    "command": "softDelete",
+    "commandId": "EmployeeAvailability.softDelete"
+  },
+  {
+    "entity": "EmployeeAvailability",
+    "command": "update",
+    "commandId": "EmployeeAvailability.update"
+  },
+  {
+    "entity": "EmployeeCertification",
+    "command": "create",
+    "commandId": "EmployeeCertification.create"
+  },
+  {
+    "entity": "EmployeeCertification",
+    "command": "softDelete",
+    "commandId": "EmployeeCertification.softDelete"
+  },
+  {
+    "entity": "EmployeeCertification",
+    "command": "update",
+    "commandId": "EmployeeCertification.update"
   },
   {
     "entity": "Event",
@@ -1463,6 +1548,56 @@
     "entity": "TimeEntry",
     "command": "clockOut",
     "commandId": "TimeEntry.clockOut"
+  },
+  {
+    "entity": "TimeOffRequest",
+    "command": "approve",
+    "commandId": "TimeOffRequest.approve"
+  },
+  {
+    "entity": "TimeOffRequest",
+    "command": "cancel",
+    "commandId": "TimeOffRequest.cancel"
+  },
+  {
+    "entity": "TimeOffRequest",
+    "command": "create",
+    "commandId": "TimeOffRequest.create"
+  },
+  {
+    "entity": "TimeOffRequest",
+    "command": "reject",
+    "commandId": "TimeOffRequest.reject"
+  },
+  {
+    "entity": "TimeOffRequest",
+    "command": "softDelete",
+    "commandId": "TimeOffRequest.softDelete"
+  },
+  {
+    "entity": "TrainingAssignment",
+    "command": "create",
+    "commandId": "TrainingAssignment.create"
+  },
+  {
+    "entity": "TrainingAssignment",
+    "command": "softDelete",
+    "commandId": "TrainingAssignment.softDelete"
+  },
+  {
+    "entity": "TrainingModule",
+    "command": "create",
+    "commandId": "TrainingModule.create"
+  },
+  {
+    "entity": "TrainingModule",
+    "command": "softDelete",
+    "commandId": "TrainingModule.softDelete"
+  },
+  {
+    "entity": "TrainingModule",
+    "command": "update",
+    "commandId": "TrainingModule.update"
   },
   {
     "entity": "User",

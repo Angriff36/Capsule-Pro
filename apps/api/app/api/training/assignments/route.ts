@@ -1,10 +1,10 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 import type {
   AssignmentStatus,
-  CreateTrainingAssignmentInput,
   TrainingAssignment,
   TrainingAssignmentsListResponse,
 } from "../types";
@@ -186,156 +186,18 @@ export async function GET(request: Request) {
 
 /**
  * POST /api/training/assignments
- * Create a new training assignment
- *
- * Required fields:
- * - moduleId: Training module to assign
- *
- * Optional fields:
- * - employeeId: Employee to assign (if not assigning to all)
- * - assignToAll: Whether to assign to all employees
- * - dueDate: Due date for completion
+ * Create a new training assignment via manifest command
  */
-export async function POST(request: Request) {
-  const { orgId, userId } = await auth();
-  if (!(orgId && userId)) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-  const body = (await request.json()) as CreateTrainingAssignmentInput;
-
-  if (!body.moduleId) {
-    return NextResponse.json(
-      { message: "Module ID is required" },
-      { status: 400 }
-    );
-  }
-
-  if (!(body.employeeId || body.assignToAll)) {
-    return NextResponse.json(
-      { message: "Either employeeId or assignToAll is required" },
-      { status: 400 }
-    );
-  }
-
-  // Verify module exists
-  const modules = await database.$queryRaw<Array<{ id: string }>>(
-    Prisma.sql`
-      SELECT id FROM tenant_staff.training_modules
-      WHERE tenant_id = ${tenantId}
-        AND id = ${body.moduleId}
-        AND deleted_at IS NULL
-    `
-  );
-
-  if (modules.length === 0) {
-    return NextResponse.json(
-      { message: "Training module not found" },
-      { status: 404 }
-    );
-  }
-
-  try {
-    if (body.assignToAll) {
-      // Assign to all active employees
-      const result = await database.$queryRaw<
-        Array<{ id: string; module_id: string }>
-      >(
-        Prisma.sql`
-          INSERT INTO tenant_staff.training_assignments (
-            tenant_id,
-            module_id,
-            employee_id,
-            assigned_to_all,
-            assigned_by,
-            due_date,
-            status
-          )
-          SELECT
-            ${tenantId},
-            ${body.moduleId},
-            NULL,
-            true,
-            ${userId},
-            ${body.dueDate ? new Date(body.dueDate) : null},
-            'assigned'
-          RETURNING id, module_id
-        `
-      );
-
-      return NextResponse.json(
-        { assignment: result[0], assignedToAll: true },
-        { status: 201 }
-      );
-    }
-    // Assign to specific employee
-    // Verify employee exists
-    const employees = await database.$queryRaw<Array<{ id: string }>>(
-      Prisma.sql`
-        SELECT id FROM tenant_staff.employees
-        WHERE tenant_id = ${tenantId}
-          AND id = ${body.employeeId}
-      `
-    );
-
-    if (employees.length === 0) {
-      return NextResponse.json(
-        { message: "Employee not found" },
-        { status: 404 }
-      );
-    }
-
-    // Check for existing assignment
-    const existing = await database.$queryRaw<Array<{ id: string }>>(
-      Prisma.sql`
-        SELECT id FROM tenant_staff.training_assignments
-        WHERE tenant_id = ${tenantId}
-          AND module_id = ${body.moduleId}
-          AND employee_id = ${body.employeeId}
-          AND deleted_at IS NULL
-      `
-    );
-
-    if (existing.length > 0) {
-      return NextResponse.json(
-        { message: "Training already assigned to this employee" },
-        { status: 409 }
-      );
-    }
-
-    const result = await database.$queryRaw<
-      Array<{ id: string; module_id: string; employee_id: string }>
-    >(
-      Prisma.sql`
-        INSERT INTO tenant_staff.training_assignments (
-          tenant_id,
-          module_id,
-          employee_id,
-          assigned_to_all,
-          assigned_by,
-          due_date,
-          status
-        )
-        VALUES (
-          ${tenantId},
-          ${body.moduleId},
-          ${body.employeeId},
-          false,
-          ${userId},
-          ${body.dueDate ? new Date(body.dueDate) : null},
-          'assigned'
-        )
-        RETURNING id, module_id, employee_id
-      `
-    );
-
-    return NextResponse.json({ assignment: result[0] }, { status: 201 });
-  } catch (error) {
-    console.error("Error creating training assignment:", error);
-    return NextResponse.json(
-      { message: "Failed to create training assignment" },
-      { status: 500 }
-    );
-  }
+export function POST(request: NextRequest) {
+  return executeManifestCommand(request, {
+    entityName: "TrainingAssignment",
+    commandName: "create",
+    transformBody: (body, ctx) => ({
+      moduleId: body.moduleId || body.module_id || "",
+      employeeId: body.employeeId || body.employee_id || "",
+      assignedToAll: body.assignToAll ?? body.assignedToAll ?? false,
+      assignedBy: ctx.userId,
+      dueDate: body.dueDate || body.due_date || "",
+    }),
+  });
 }

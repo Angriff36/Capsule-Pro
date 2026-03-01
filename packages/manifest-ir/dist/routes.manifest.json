@@ -1,9 +1,39 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-03-01T04:15:32.405Z",
+  "generatedAt": "2026-03-01T07:38:22.787Z",
   "basePath": "/api",
   "routes": [
+    {
+      "id": "AdminTask.get.list",
+      "path": "/api/admintask/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "AdminTask"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminTask.get.detail",
+      "path": "/api/admintask/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "AdminTask"
+      },
+      "auth": true,
+      "tenant": true
+    },
     {
       "id": "AlertsConfig.get.list",
       "path": "/api/alertsconfig/list",
@@ -150,6 +180,36 @@
       "source": {
         "kind": "entity-read",
         "entity": "CateringOrder"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "ChartOfAccount.get.list",
+      "path": "/api/chartofaccount/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "ChartOfAccount"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "ChartOfAccount.get.detail",
+      "path": "/api/chartofaccount/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "ChartOfAccount"
       },
       "auth": true,
       "tenant": true
@@ -570,6 +630,66 @@
       "source": {
         "kind": "entity-read",
         "entity": "Dish"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EmployeeAvailability.get.list",
+      "path": "/api/employeeavailability/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "EmployeeAvailability"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EmployeeAvailability.get.detail",
+      "path": "/api/employeeavailability/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "EmployeeAvailability"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EmployeeCertification.get.list",
+      "path": "/api/employeecertification/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "EmployeeCertification"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EmployeeCertification.get.detail",
+      "path": "/api/employeecertification/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "EmployeeCertification"
       },
       "auth": true,
       "tenant": true
@@ -1835,6 +1955,96 @@
       "tenant": true
     },
     {
+      "id": "TimeOffRequest.get.list",
+      "path": "/api/timeoffrequest/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "TimeOffRequest"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "TimeOffRequest.get.detail",
+      "path": "/api/timeoffrequest/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "TimeOffRequest"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "TrainingAssignment.get.list",
+      "path": "/api/trainingassignment/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "TrainingAssignment"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "TrainingAssignment.get.detail",
+      "path": "/api/trainingassignment/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "TrainingAssignment"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "TrainingModule.get.list",
+      "path": "/api/trainingmodule/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "TrainingModule"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "TrainingModule.get.detail",
+      "path": "/api/trainingmodule/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "TrainingModule"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "User.get.list",
       "path": "/api/user/list",
       "method": "GET",
@@ -1950,6 +2160,196 @@
       "source": {
         "kind": "entity-read",
         "entity": "Workflow"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminTask.cancel",
+      "path": "/api/admintask/cancel",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "AdminTask",
+        "command": "cancel"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminTask.complete",
+      "path": "/api/admintask/complete",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "AdminTask",
+        "command": "complete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminTask.create",
+      "path": "/api/admintask/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "title",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "priority",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "assignedTo",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "dueDate",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "createdBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "AdminTask",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminTask.moveToTodo",
+      "path": "/api/admintask/move-to-todo",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "AdminTask",
+        "command": "moveToTodo"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminTask.reopen",
+      "path": "/api/admintask/reopen",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "AdminTask",
+        "command": "reopen"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminTask.softDelete",
+      "path": "/api/admintask/soft-delete",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "AdminTask",
+        "command": "softDelete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminTask.startProgress",
+      "path": "/api/admintask/start-progress",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "AdminTask",
+        "command": "startProgress"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "AdminTask.update",
+      "path": "/api/admintask/update",
+      "method": "POST",
+      "params": [
+        {
+          "name": "title",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "priority",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "assignedTo",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "dueDate",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "AdminTask",
+        "command": "update"
       },
       "auth": true,
       "tenant": true
@@ -2753,6 +3153,113 @@
       "source": {
         "kind": "command",
         "entity": "CateringOrder",
+        "command": "update"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "ChartOfAccount.create",
+      "path": "/api/chartofaccount/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "accountNumber",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "accountName",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "accountType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "parentId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "ChartOfAccount",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "ChartOfAccount.deactivate",
+      "path": "/api/chartofaccount/deactivate",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "ChartOfAccount",
+        "command": "deactivate"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "ChartOfAccount.update",
+      "path": "/api/chartofaccount/update",
+      "method": "POST",
+      "params": [
+        {
+          "name": "accountName",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "accountNumber",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "accountType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "parentId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "ChartOfAccount",
         "command": "update"
       },
       "auth": true,
@@ -4904,6 +5411,232 @@
         "kind": "command",
         "entity": "Dish",
         "command": "updatePricing"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EmployeeAvailability.create",
+      "path": "/api/employeeavailability/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "employeeId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "dayOfWeek",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "startTime",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "endTime",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "isAvailable",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "effectiveFrom",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "effectiveUntil",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EmployeeAvailability",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EmployeeAvailability.softDelete",
+      "path": "/api/employeeavailability/soft-delete",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "EmployeeAvailability",
+        "command": "softDelete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EmployeeAvailability.update",
+      "path": "/api/employeeavailability/update",
+      "method": "POST",
+      "params": [
+        {
+          "name": "dayOfWeek",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "startTime",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "endTime",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "isAvailable",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "effectiveFrom",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "effectiveUntil",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EmployeeAvailability",
+        "command": "update"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EmployeeCertification.create",
+      "path": "/api/employeecertification/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "employeeId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "certificationType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "certificationName",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "issuedDate",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "expiryDate",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "documentUrl",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EmployeeCertification",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EmployeeCertification.softDelete",
+      "path": "/api/employeecertification/soft-delete",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "EmployeeCertification",
+        "command": "softDelete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EmployeeCertification.update",
+      "path": "/api/employeecertification/update",
+      "method": "POST",
+      "params": [
+        {
+          "name": "certificationType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "certificationName",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "issuedDate",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "expiryDate",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "documentUrl",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EmployeeCertification",
+        "command": "update"
       },
       "auth": true,
       "tenant": true
@@ -11924,6 +12657,316 @@
         "kind": "command",
         "entity": "TimeEntry",
         "command": "clockOut"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "TimeOffRequest.approve",
+      "path": "/api/timeoffrequest/approve",
+      "method": "POST",
+      "params": [
+        {
+          "name": "processedBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "TimeOffRequest",
+        "command": "approve"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "TimeOffRequest.cancel",
+      "path": "/api/timeoffrequest/cancel",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "TimeOffRequest",
+        "command": "cancel"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "TimeOffRequest.create",
+      "path": "/api/timeoffrequest/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "employeeId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "startDate",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "endDate",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "requestType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "TimeOffRequest",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "TimeOffRequest.reject",
+      "path": "/api/timeoffrequest/reject",
+      "method": "POST",
+      "params": [
+        {
+          "name": "processedBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "rejectionReason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "TimeOffRequest",
+        "command": "reject"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "TimeOffRequest.softDelete",
+      "path": "/api/timeoffrequest/soft-delete",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "TimeOffRequest",
+        "command": "softDelete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "TrainingAssignment.create",
+      "path": "/api/trainingassignment/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "moduleId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "employeeId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "assignedToAll",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "assignedBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "dueDate",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "TrainingAssignment",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "TrainingAssignment.softDelete",
+      "path": "/api/trainingassignment/soft-delete",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "TrainingAssignment",
+        "command": "softDelete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "TrainingModule.create",
+      "path": "/api/trainingmodule/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "title",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "contentUrl",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "contentType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "durationMinutes",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "isRequired",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "createdBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "TrainingModule",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "TrainingModule.softDelete",
+      "path": "/api/trainingmodule/soft-delete",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "TrainingModule",
+        "command": "softDelete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "TrainingModule.update",
+      "path": "/api/trainingmodule/update",
+      "method": "POST",
+      "params": [
+        {
+          "name": "title",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "contentUrl",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "contentType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "durationMinutes",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "isRequired",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "TrainingModule",
+        "command": "update"
       },
       "auth": true,
       "tenant": true

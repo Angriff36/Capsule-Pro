@@ -1,7 +1,10 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
+
+export const runtime = "nodejs";
 
 /**
  * GET /api/staff/certifications
@@ -108,97 +111,19 @@ export async function GET(request: Request) {
 
 /**
  * POST /api/staff/certifications
- * Create a new employee certification
- *
- * Required fields:
- * - employeeId: Employee ID
- * - certificationType: Type of certification (e.g., "MAST", "FOOD_HANDLER")
- * - certificationName: Full name of certification
- * - issuedDate: Date certification was issued
- *
- * Optional fields:
- * - expiryDate: Date certification expires
- * - documentUrl: URL to certification document
+ * Create a new employee certification via manifest command
  */
-export async function POST(request: Request) {
-  const { orgId, userId } = await auth();
-  if (!(orgId && userId)) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-  const body = await request.json();
-
-  if (
-    !(
-      body.employeeId &&
-      body.certificationType &&
-      body.certificationName &&
-      body.issuedDate
-    )
-  ) {
-    return NextResponse.json(
-      {
-        message:
-          "Employee ID, certification type, certification name, and issued date are required",
-      },
-      { status: 400 }
-    );
-  }
-
-  // Verify employee exists
-  const employees = await database.$queryRaw<Array<{ id: string }>>(
-    Prisma.sql`
-      SELECT id FROM tenant_staff.employees
-      WHERE tenant_id = ${tenantId} AND id = ${body.employeeId}
-    `
-  );
-
-  if (employees.length === 0) {
-    return NextResponse.json(
-      { message: "Employee not found" },
-      { status: 404 }
-    );
-  }
-
-  try {
-    const result = await database.$queryRaw<
-      Array<{
-        id: string;
-        certification_type: string;
-        certification_name: string;
-        expiry_date: Date | null;
-      }>
-    >(
-      Prisma.sql`
-        INSERT INTO tenant_staff.employee_certifications (
-          tenant_id,
-          employee_id,
-          certification_type,
-          certification_name,
-          issued_date,
-          expiry_date,
-          document_url
-        )
-        VALUES (
-          ${tenantId},
-          ${body.employeeId},
-          ${body.certificationType},
-          ${body.certificationName},
-          ${new Date(body.issuedDate)},
-          ${body.expiryDate ? new Date(body.expiryDate) : null},
-          ${body.documentUrl || null}
-        )
-        RETURNING id, certification_type, certification_name, expiry_date
-      `
-    );
-
-    return NextResponse.json({ certification: result[0] }, { status: 201 });
-  } catch (error) {
-    console.error("Error creating certification:", error);
-    return NextResponse.json(
-      { message: "Failed to create certification" },
-      { status: 500 }
-    );
-  }
+export function POST(request: NextRequest) {
+  return executeManifestCommand(request, {
+    entityName: "EmployeeCertification",
+    commandName: "create",
+    transformBody: (body) => ({
+      employeeId: body.employeeId || body.employee_id,
+      certificationType: body.certificationType || body.certification_type,
+      certificationName: body.certificationName || body.certification_name,
+      issuedDate: body.issuedDate || body.issued_date,
+      expiryDate: body.expiryDate || body.expiry_date || "",
+      documentUrl: body.documentUrl || body.document_url || "",
+    }),
+  });
 }

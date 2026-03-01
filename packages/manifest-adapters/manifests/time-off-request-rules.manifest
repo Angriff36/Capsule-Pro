@@ -1,0 +1,129 @@
+// Staff Domain - Time Off Request Rules
+// Manifest spec for managing employee time-off requests with status transitions
+
+entity TimeOffRequest {
+  property required id: string
+  property required tenantId: string
+  property employeeId: string = ""
+  property startDate: string = ""
+  property endDate: string = ""
+  property reason: string = ""
+  property requestType: string = ""
+  property status: string = "PENDING"
+  property processedBy: string = ""
+  property processedAt: number = 0
+  property rejectionReason: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isDeleted: boolean = self.deletedAt > 0
+  computed isPending: boolean = self.status == "PENDING"
+  computed isApproved: boolean = self.status == "APPROVED"
+
+  constraint requireEmployee: self.employeeId != "" "Employee ID is required"
+  constraint requireStartDate: self.startDate != "" "Start date is required"
+  constraint requireEndDate: self.endDate != "" "End date is required"
+  constraint requireRequestType: self.requestType != "" "Request type is required"
+
+  command create(employeeId: string, startDate: string, endDate: string, reason: string, requestType: string) {
+    guard employeeId != null and employeeId != "" "Employee ID is required"
+    guard startDate != null and startDate != "" "Start date is required"
+    guard endDate != null and endDate != "" "End date is required"
+    guard requestType != null and requestType != "" "Request type is required"
+
+    mutate employeeId = employeeId
+    mutate startDate = startDate
+    mutate endDate = endDate
+    mutate reason = reason
+    mutate requestType = requestType
+    mutate status = "PENDING"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit TimeOffRequestCreated
+  }
+
+  command approve(processedBy: string) {
+    guard self.deletedAt == 0 "Cannot approve a deleted request"
+    guard self.status == "PENDING" "Can only approve pending requests"
+
+    mutate status = "APPROVED"
+    mutate processedBy = processedBy
+    mutate processedAt = now()
+    mutate updatedAt = now()
+
+    emit TimeOffRequestApproved
+  }
+
+  command reject(processedBy: string, rejectionReason: string) {
+    guard self.deletedAt == 0 "Cannot reject a deleted request"
+    guard self.status == "PENDING" "Can only reject pending requests"
+
+    mutate status = "REJECTED"
+    mutate processedBy = processedBy
+    mutate processedAt = now()
+    mutate rejectionReason = rejectionReason
+    mutate updatedAt = now()
+
+    emit TimeOffRequestRejected
+  }
+
+  command cancel() {
+    guard self.deletedAt == 0 "Cannot cancel a deleted request"
+    guard self.status == "PENDING" or self.status == "APPROVED" "Can only cancel pending or approved requests"
+
+    mutate status = "CANCELLED"
+    mutate updatedAt = now()
+
+    emit TimeOffRequestCancelled
+  }
+
+  command softDelete() {
+    guard self.deletedAt == 0 "Request is already deleted"
+    guard self.status == "PENDING" or self.status == "CANCELLED" "Can only delete pending or cancelled requests"
+
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit TimeOffRequestDeleted
+  }
+
+  store TimeOffRequest in memory
+}
+
+policy TimeOffRequestManagement execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Staff can create time-off requests"
+policy TimeOffRequestApproval execute: user.role in ["manager", "admin"] "Only managers can approve/reject requests"
+
+event TimeOffRequestCreated: "staff.time-off-request.created" {
+  requestId: string
+  tenantId: string
+  employeeId: string
+  startDate: string
+  endDate: string
+  requestType: string
+  createdAt: number
+}
+
+event TimeOffRequestApproved: "staff.time-off-request.approved" {
+  requestId: string
+  processedBy: string
+  processedAt: number
+}
+
+event TimeOffRequestRejected: "staff.time-off-request.rejected" {
+  requestId: string
+  processedBy: string
+  rejectionReason: string
+  processedAt: number
+}
+
+event TimeOffRequestCancelled: "staff.time-off-request.cancelled" {
+  requestId: string
+  updatedAt: number
+}
+
+event TimeOffRequestDeleted: "staff.time-off-request.deleted" {
+  requestId: string
+  deletedAt: number
+}

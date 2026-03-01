@@ -1,0 +1,84 @@
+// Accounting Domain - Chart of Account Rules
+// Manifest spec for managing chart of accounts (general ledger account definitions)
+
+entity ChartOfAccount {
+  property required id: string
+  property required tenantId: string
+  property accountNumber: string = ""
+  property accountName: string = ""
+  property accountType: string = ""
+  property parentId: string = ""
+  property description: string = ""
+  property isActive: boolean = true
+  property createdAt: number = 0
+  property updatedAt: number = 0
+
+  computed hasParent: boolean = self.parentId != ""
+
+  constraint requireAccountNumber: self.accountNumber != "" "Account number is required"
+  constraint requireAccountName: self.accountName != "" "Account name is required"
+  constraint requireAccountType: self.accountType != "" "Account type is required"
+
+  command create(accountNumber: string, accountName: string, accountType: string, parentId: string, description: string) {
+    guard accountNumber != null and accountNumber != "" "Account number is required"
+    guard accountName != null and accountName != "" "Account name is required"
+    guard accountType != null and accountType != "" "Account type is required"
+
+    mutate accountNumber = accountNumber
+    mutate accountName = accountName
+    mutate accountType = accountType
+    mutate parentId = parentId
+    mutate description = description
+    mutate isActive = true
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit ChartOfAccountCreated
+  }
+
+  command update(accountName: string, accountNumber: string, accountType: string, parentId: string, description: string, isActive: boolean) {
+    guard self.isActive == true "Cannot update an inactive account"
+
+    mutate accountName = accountName
+    mutate accountNumber = accountNumber
+    mutate accountType = accountType
+    mutate parentId = parentId
+    mutate description = description
+    mutate isActive = isActive
+    mutate updatedAt = now()
+
+    emit ChartOfAccountUpdated
+  }
+
+  command deactivate() {
+    guard self.isActive == true "Account is already inactive"
+
+    mutate isActive = false
+    mutate updatedAt = now()
+
+    emit ChartOfAccountDeactivated
+  }
+
+  store ChartOfAccount in memory
+}
+
+policy AccountManagement execute: user.role in ["manager", "admin"] "Managers can manage chart of accounts"
+
+event ChartOfAccountCreated: "accounting.chart-of-account.created" {
+  accountId: string
+  tenantId: string
+  accountNumber: string
+  accountName: string
+  accountType: string
+  createdAt: number
+}
+
+event ChartOfAccountUpdated: "accounting.chart-of-account.updated" {
+  accountId: string
+  updatedAt: number
+}
+
+event ChartOfAccountDeactivated: "accounting.chart-of-account.deactivated" {
+  accountId: string
+  updatedAt: number
+}

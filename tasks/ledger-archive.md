@@ -247,3 +247,16 @@ Lock ownership-rule codes into a canonical `OWNERSHIP_RULE_CODES` constant Set a
 **Points tally:** 16 points
 
 ---
+
+# Agent 54
+
+**Agent ID:** 54
+**Date/Time:** 2026-02-28 19:30
+**Base branch/commit:** codex/manifest-cli-doctor @ dbede092a
+
+**Goal:**
+Burn down `WRITE_ROUTE_BYPASSES_RUNTIME` audit errors: convert legacy write routes to `executeManifestCommand`, then eliminate remaining noise by teaching the audit tool to suppress errors for exempted routes.
+
+**Points tally:** 12 points (was 20, -8 for Phase 2 revert)
+
+---

@@ -1,19 +1,16 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 import type {
-  CreateTimeOffRequestInput,
   TimeOffRequest,
   TimeOffRequestsListResponse,
   TimeOffStatus,
   TimeOffType,
 } from "../types";
-import {
-  checkOverlappingTimeOffRequests,
-  validateTimeOffDates,
-  verifyEmployee,
-} from "../validation";
+
+export const runtime = "nodejs";
 
 /**
  * GET /api/staff/time-off/requests
@@ -147,116 +144,18 @@ export async function GET(request: Request) {
 
 /**
  * POST /api/staff/time-off/requests
- * Create a new time-off request
- *
- * Required fields:
- * - employeeId: Employee requesting time off
- * - startDate: Start date (ISO date string)
- * - endDate: End date (ISO date string)
- * - requestType: Type of time off
- *
- * Optional fields:
- * - reason: Reason for time off
+ * Create a new time-off request via manifest command
  */
-export async function POST(request: Request) {
-  const { orgId, userId } = await auth();
-  if (!(orgId && userId)) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-  const body = (await request.json()) as CreateTimeOffRequestInput;
-
-  // Validate required fields
-  if (
-    !(body.employeeId && body.startDate && body.endDate && body.requestType)
-  ) {
-    return NextResponse.json(
-      {
-        message:
-          "Employee ID, start date, end date, and request type are required",
-      },
-      { status: 400 }
-    );
-  }
-
-  const startDate = new Date(body.startDate);
-  const endDate = new Date(body.endDate);
-
-  // Validate dates
-  const dateValidationError = validateTimeOffDates(startDate, endDate);
-  if (dateValidationError) {
-    return dateValidationError;
-  }
-
-  // Verify employee exists and is active
-  const { error: employeeError } = await verifyEmployee(
-    tenantId,
-    body.employeeId
-  );
-  if (employeeError) {
-    return employeeError;
-  }
-
-  // Check for overlapping time-off requests
-  const { hasOverlap, overlappingRequests } =
-    await checkOverlappingTimeOffRequests(
-      tenantId,
-      body.employeeId,
-      startDate,
-      endDate
-    );
-
-  if (hasOverlap) {
-    return NextResponse.json(
-      {
-        message: "Employee has overlapping time-off requests",
-        overlappingRequests,
-      },
-      { status: 409 }
-    );
-  }
-
-  try {
-    // Create the time-off request
-    const result = await database.$queryRaw<
-      Array<{
-        id: string;
-        employee_id: string;
-        status: string;
-        start_date: Date;
-        end_date: Date;
-      }>
-    >(
-      Prisma.sql`
-        INSERT INTO tenant_staff.employee_time_off_requests (
-          tenant_id,
-          employee_id,
-          start_date,
-          end_date,
-          reason,
-          request_type,
-          status
-        )
-        VALUES (
-          ${tenantId},
-          ${body.employeeId},
-          ${startDate},
-          ${endDate},
-          ${body.reason || null},
-          ${body.requestType},
-          'PENDING'
-        )
-        RETURNING id, employee_id, status, start_date, end_date
-      `
-    );
-
-    return NextResponse.json({ request: result[0] }, { status: 201 });
-  } catch (error) {
-    console.error("Error creating time-off request:", error);
-    return NextResponse.json(
-      { message: "Failed to create time-off request" },
-      { status: 500 }
-    );
-  }
+export function POST(request: NextRequest) {
+  return executeManifestCommand(request, {
+    entityName: "TimeOffRequest",
+    commandName: "create",
+    transformBody: (body) => ({
+      employeeId: body.employeeId || body.employee_id,
+      startDate: body.startDate || body.start_date,
+      endDate: body.endDate || body.end_date,
+      requestType: body.requestType || body.request_type,
+      reason: body.reason || "",
+    }),
+  });
 }

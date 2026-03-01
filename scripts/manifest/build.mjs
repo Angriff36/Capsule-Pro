@@ -24,6 +24,7 @@ const OUTPUT_DIR = join(process.cwd(), "packages/manifest-ir/ir/kitchen");
 const IR_OUTPUT_FILE = join(OUTPUT_DIR, "kitchen.ir.json");
 const PROVENANCE_OUTPUT_FILE = join(OUTPUT_DIR, "kitchen.provenance.json");
 const MERGE_REPORT_OUTPUT_FILE = join(OUTPUT_DIR, "kitchen.merge-report.json");
+const COMMANDS_OUTPUT_FILE = join(OUTPUT_DIR, "kitchen.commands.json");
 const CODE_OUTPUT_DIR = join(process.cwd(), "apps/api/app/api/kitchen");
 
 async function compileMergedManifests() {
@@ -86,6 +87,24 @@ async function compileMergedManifests() {
     JSON.stringify(mergedIR.provenance, null, 2)
   );
   writeFileSync(MERGE_REPORT_OUTPUT_FILE, JSON.stringify(mergeReport, null, 2));
+
+  // Derive and emit kitchen.commands.json — projection-agnostic command manifest.
+  // Must stay in sync with the IR; the determinism test asserts they match.
+  const commandsManifest = (mergedIR.commands ?? [])
+    .map((cmd) => ({
+      entity: cmd.entity,
+      command: cmd.name,
+      commandId: `${cmd.entity}.${cmd.name}`,
+    }))
+    .sort((a, b) => {
+      const entityCmp = a.entity.localeCompare(b.entity);
+      if (entityCmp !== 0) return entityCmp;
+      return a.command.localeCompare(b.command);
+    });
+  writeFileSync(
+    COMMANDS_OUTPUT_FILE,
+    JSON.stringify(commandsManifest, null, 2)
+  );
 
   console.log(
     `[manifest/build] Compiled ${mergedIR.entities.length} entities, ${mergedIR.commands.length} commands`

@@ -1,13 +1,11 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
-import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { UpdateAdminTaskSchema } from "../validation";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
 
-interface RouteContext {
-  params: Promise<{ id: string }>;
-}
+export const runtime = "nodejs";
 
 // ============ Helpers ============
 
@@ -26,14 +24,17 @@ async function fetchAdminTask(tenantId: string, taskId: string) {
 
 // ============ Route Handlers ============
 
-export async function GET(_request: Request, context: RouteContext) {
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
   const { orgId } = await auth();
   if (!orgId) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
   const tenantId = await getTenantIdForOrg(orgId);
-  const { id } = await context.params;
+  const { id } = await params;
 
   const task = await fetchAdminTask(tenantId, id);
   if (!task) {
@@ -43,111 +44,65 @@ export async function GET(_request: Request, context: RouteContext) {
   return NextResponse.json({ data: task });
 }
 
-export async function PATCH(request: Request, context: RouteContext) {
-  const { orgId } = await auth();
-  if (!orgId) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
+/**
+ * PATCH /api/administrative/tasks/[id]
+ * Update task fields or transition status via manifest commands.
+ *
+ * Status changes are mapped to specific manifest commands:
+ *   todo → moveToTodo, in_progress → startProgress, done → complete,
+ *   cancelled → cancel, backlog → reopen
+ */
+export async function PATCH(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const body = await request.clone().json();
 
-  const tenantId = await getTenantIdForOrg(orgId);
-  const { id } = await context.params;
-
-  // Verify task exists
-  const existingTask = await fetchAdminTask(tenantId, id);
-  if (!existingTask) {
-    return NextResponse.json({ message: "Task not found" }, { status: 404 });
-  }
-
-  const body = await request.json();
-  const parseResult = UpdateAdminTaskSchema.safeParse(body);
-  if (!parseResult.success) {
-    return NextResponse.json(
-      { message: "Invalid request body", details: parseResult.error.issues },
-      { status: 400 }
-    );
-  }
-
-  try {
-    // Validate status transitions
-    const { status: newStatus, dueDate, ...rest } = parseResult.data;
-    if (newStatus) {
-      validateStatusTransition(existingTask.status, newStatus);
+  // If status is being changed, use the specific status command
+  if (body.status) {
+    const statusCommandMap: Record<string, string> = {
+      todo: "moveToTodo",
+      in_progress: "startProgress",
+      done: "complete",
+      cancelled: "cancel",
+      backlog: "reopen",
+    };
+    const commandName = statusCommandMap[body.status];
+    if (!commandName) {
+      return new Response(
+        JSON.stringify({ message: `Invalid status: ${body.status}` }),
+        { status: 400, headers: { "Content-Type": "application/json" } }
+      );
     }
-
-    const updatedTask = await database.adminTask.update({
-      where: { tenantId_id: { tenantId, id } },
-      data: {
-        ...rest,
-        ...(newStatus !== undefined ? { status: newStatus } : {}),
-        ...(dueDate !== undefined ? { dueDate } : {}),
-      },
+    return executeManifestCommand(request, {
+      entityName: "AdminTask",
+      commandName,
+      params: { id },
     });
-
-    return NextResponse.json({ data: updatedTask });
-  } catch (error) {
-    if (error instanceof InvariantError) {
-      return NextResponse.json({ message: error.message }, { status: 400 });
-    }
-    throw error;
-  }
-}
-
-export async function DELETE(_request: Request, context: RouteContext) {
-  const { orgId } = await auth();
-  if (!orgId) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  const tenantId = await getTenantIdForOrg(orgId);
-  const { id } = await context.params;
-
-  // Verify task exists
-  const existingTask = await fetchAdminTask(tenantId, id);
-  if (!existingTask) {
-    return NextResponse.json({ message: "Task not found" }, { status: 404 });
-  }
-
-  // Soft delete
-  await database.adminTask.update({
-    where: { tenantId_id: { tenantId, id } },
-    data: { deletedAt: new Date() },
+  // Otherwise it's a field update
+  return executeManifestCommand(request, {
+    entityName: "AdminTask",
+    commandName: "update",
+    params: { id },
+    transformBody: (body) => ({ ...body }),
   });
-
-  return NextResponse.json({ message: "Task deleted" });
 }
-
-// ============ Business Rules ============
 
 /**
- * Validate that a status transition is allowed.
- *
- * Allowed transitions:
- *   backlog  → todo, cancelled
- *   todo     → in_progress, backlog, cancelled
- *   in_progress → done, todo, cancelled
- *   done     → (terminal)
- *   cancelled → backlog (reopen)
+ * DELETE /api/administrative/tasks/[id]
+ * Soft-delete task via manifest command
  */
-const ALLOWED_TRANSITIONS: Record<string, readonly string[]> = {
-  backlog: ["todo", "cancelled"],
-  todo: ["in_progress", "backlog", "cancelled"],
-  in_progress: ["done", "todo", "cancelled"],
-  done: [],
-  cancelled: ["backlog"],
-};
-
-function validateStatusTransition(
-  currentStatus: string,
-  newStatus: string
-): void {
-  if (currentStatus === newStatus) {
-    return;
-  }
-
-  const allowed = ALLOWED_TRANSITIONS[currentStatus];
-  if (!allowed?.includes(newStatus)) {
-    throw new InvariantError(
-      `Cannot transition from "${currentStatus}" to "${newStatus}"`
-    );
-  }
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  return executeManifestCommand(request, {
+    entityName: "AdminTask",
+    commandName: "softDelete",
+    params: { id },
+  });
 }

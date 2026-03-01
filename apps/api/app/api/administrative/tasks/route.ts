@@ -1,8 +1,12 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { AdminTaskFiltersSchema, CreateAdminTaskSchema } from "./validation";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { AdminTaskFiltersSchema } from "./validation";
+
+export const runtime = "nodejs";
 
 export async function GET(request: Request) {
   const { orgId } = await auth();
@@ -61,43 +65,19 @@ export async function GET(request: Request) {
   });
 }
 
-export async function POST(request: Request) {
-  const { orgId, userId: clerkId } = await auth();
-  if (!orgId) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-
-  const body = await request.json();
-  const parseResult = CreateAdminTaskSchema.safeParse(body);
-  if (!parseResult.success) {
-    return NextResponse.json(
-      { message: "Invalid request body", details: parseResult.error.issues },
-      { status: 400 }
-    );
-  }
-
-  const { dueDate, ...rest } = parseResult.data;
-
-  // Resolve createdBy from Clerk user ID
-  let createdBy: string | undefined;
-  if (clerkId) {
-    const user = await database.user.findFirst({
-      where: { AND: [{ tenantId }, { authUserId: clerkId }] },
-      select: { id: true },
-    });
-    createdBy = user?.id;
-  }
-
-  const task = await database.adminTask.create({
-    data: {
-      tenantId,
-      ...rest,
-      ...(dueDate ? { dueDate } : {}),
-      ...(createdBy ? { createdBy } : {}),
-    },
+/**
+ * POST /api/administrative/tasks
+ * Create a new admin task via manifest command
+ */
+export function POST(request: NextRequest) {
+  return executeManifestCommand(request, {
+    entityName: "AdminTask",
+    commandName: "create",
+    transformBody: (body, ctx) => ({
+      ...body,
+      createdBy: ctx.userId,
+      status: body.status || "backlog",
+      priority: body.priority || "medium",
+    }),
   });
-
-  return NextResponse.json({ data: task }, { status: 201 });
 }

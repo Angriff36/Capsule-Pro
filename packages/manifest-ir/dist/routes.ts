@@ -7,6 +7,16 @@
 // Entity Read Routes
 // ============================================================================
 
+/** GET /api/admintask/list */
+export function adminTaskListPath(): string {
+  return "/api/admintask/list";
+}
+
+/** GET /api/admintask/:id */
+export function adminTaskDetailPath(id: string): string {
+  return "/api/admintask/" + encodeURIComponent(id);
+}
+
 /** GET /api/alertsconfig/list */
 export function alertsConfigListPath(): string {
   return "/api/alertsconfig/list";
@@ -55,6 +65,16 @@ export function cateringOrderListPath(): string {
 /** GET /api/cateringorder/:id */
 export function cateringOrderDetailPath(id: string): string {
   return "/api/cateringorder/" + encodeURIComponent(id);
+}
+
+/** GET /api/chartofaccount/list */
+export function chartOfAccountListPath(): string {
+  return "/api/chartofaccount/list";
+}
+
+/** GET /api/chartofaccount/:id */
+export function chartOfAccountDetailPath(id: string): string {
+  return "/api/chartofaccount/" + encodeURIComponent(id);
 }
 
 /** GET /api/client/list */
@@ -195,6 +215,26 @@ export function dishListPath(): string {
 /** GET /api/dish/:id */
 export function dishDetailPath(id: string): string {
   return "/api/dish/" + encodeURIComponent(id);
+}
+
+/** GET /api/employeeavailability/list */
+export function employeeAvailabilityListPath(): string {
+  return "/api/employeeavailability/list";
+}
+
+/** GET /api/employeeavailability/:id */
+export function employeeAvailabilityDetailPath(id: string): string {
+  return "/api/employeeavailability/" + encodeURIComponent(id);
+}
+
+/** GET /api/employeecertification/list */
+export function employeeCertificationListPath(): string {
+  return "/api/employeecertification/list";
+}
+
+/** GET /api/employeecertification/:id */
+export function employeeCertificationDetailPath(id: string): string {
+  return "/api/employeecertification/" + encodeURIComponent(id);
 }
 
 /** GET /api/event/list */
@@ -617,6 +657,36 @@ export function timeEntryDetailPath(id: string): string {
   return "/api/timeentry/" + encodeURIComponent(id);
 }
 
+/** GET /api/timeoffrequest/list */
+export function timeOffRequestListPath(): string {
+  return "/api/timeoffrequest/list";
+}
+
+/** GET /api/timeoffrequest/:id */
+export function timeOffRequestDetailPath(id: string): string {
+  return "/api/timeoffrequest/" + encodeURIComponent(id);
+}
+
+/** GET /api/trainingassignment/list */
+export function trainingAssignmentListPath(): string {
+  return "/api/trainingassignment/list";
+}
+
+/** GET /api/trainingassignment/:id */
+export function trainingAssignmentDetailPath(id: string): string {
+  return "/api/trainingassignment/" + encodeURIComponent(id);
+}
+
+/** GET /api/trainingmodule/list */
+export function trainingModuleListPath(): string {
+  return "/api/trainingmodule/list";
+}
+
+/** GET /api/trainingmodule/:id */
+export function trainingModuleDetailPath(id: string): string {
+  return "/api/trainingmodule/" + encodeURIComponent(id);
+}
+
 /** GET /api/user/list */
 export function userListPath(): string {
   return "/api/user/list";
@@ -660,6 +730,46 @@ export function workflowDetailPath(id: string): string {
 // ============================================================================
 // Command Routes
 // ============================================================================
+
+/** POST /api/admintask/cancel */
+export function adminTaskCancelPath(): string {
+  return "/api/admintask/cancel";
+}
+
+/** POST /api/admintask/complete */
+export function adminTaskCompletePath(): string {
+  return "/api/admintask/complete";
+}
+
+/** POST /api/admintask/create */
+export function adminTaskCreatePath(): string {
+  return "/api/admintask/create";
+}
+
+/** POST /api/admintask/move-to-todo */
+export function adminTaskMoveToTodoPath(): string {
+  return "/api/admintask/move-to-todo";
+}
+
+/** POST /api/admintask/reopen */
+export function adminTaskReopenPath(): string {
+  return "/api/admintask/reopen";
+}
+
+/** POST /api/admintask/soft-delete */
+export function adminTaskSoftDeletePath(): string {
+  return "/api/admintask/soft-delete";
+}
+
+/** POST /api/admintask/start-progress */
+export function adminTaskStartProgressPath(): string {
+  return "/api/admintask/start-progress";
+}
+
+/** POST /api/admintask/update */
+export function adminTaskUpdatePath(): string {
+  return "/api/admintask/update";
+}
 
 /** POST /api/alertsconfig/create */
 export function alertsConfigCreatePath(): string {
@@ -779,6 +889,21 @@ export function cateringOrderStartPrepPath(): string {
 /** POST /api/cateringorder/update */
 export function cateringOrderUpdatePath(): string {
   return "/api/cateringorder/update";
+}
+
+/** POST /api/chartofaccount/create */
+export function chartOfAccountCreatePath(): string {
+  return "/api/chartofaccount/create";
+}
+
+/** POST /api/chartofaccount/deactivate */
+export function chartOfAccountDeactivatePath(): string {
+  return "/api/chartofaccount/deactivate";
+}
+
+/** POST /api/chartofaccount/update */
+export function chartOfAccountUpdatePath(): string {
+  return "/api/chartofaccount/update";
 }
 
 /** POST /api/client/archive */
@@ -1024,6 +1149,36 @@ export function dishUpdateLeadTimePath(): string {
 /** POST /api/dish/update-pricing */
 export function dishUpdatePricingPath(): string {
   return "/api/dish/update-pricing";
+}
+
+/** POST /api/employeeavailability/create */
+export function employeeAvailabilityCreatePath(): string {
+  return "/api/employeeavailability/create";
+}
+
+/** POST /api/employeeavailability/soft-delete */
+export function employeeAvailabilitySoftDeletePath(): string {
+  return "/api/employeeavailability/soft-delete";
+}
+
+/** POST /api/employeeavailability/update */
+export function employeeAvailabilityUpdatePath(): string {
+  return "/api/employeeavailability/update";
+}
+
+/** POST /api/employeecertification/create */
+export function employeeCertificationCreatePath(): string {
+  return "/api/employeecertification/create";
+}
+
+/** POST /api/employeecertification/soft-delete */
+export function employeeCertificationSoftDeletePath(): string {
+  return "/api/employeecertification/soft-delete";
+}
+
+/** POST /api/employeecertification/update */
+export function employeeCertificationUpdatePath(): string {
+  return "/api/employeecertification/update";
 }
 
 /** POST /api/event/archive */
@@ -2126,6 +2281,56 @@ export function timeEntryClockOutPath(): string {
   return "/api/timeentry/clock-out";
 }
 
+/** POST /api/timeoffrequest/approve */
+export function timeOffRequestApprovePath(): string {
+  return "/api/timeoffrequest/approve";
+}
+
+/** POST /api/timeoffrequest/cancel */
+export function timeOffRequestCancelPath(): string {
+  return "/api/timeoffrequest/cancel";
+}
+
+/** POST /api/timeoffrequest/create */
+export function timeOffRequestCreatePath(): string {
+  return "/api/timeoffrequest/create";
+}
+
+/** POST /api/timeoffrequest/reject */
+export function timeOffRequestRejectPath(): string {
+  return "/api/timeoffrequest/reject";
+}
+
+/** POST /api/timeoffrequest/soft-delete */
+export function timeOffRequestSoftDeletePath(): string {
+  return "/api/timeoffrequest/soft-delete";
+}
+
+/** POST /api/trainingassignment/create */
+export function trainingAssignmentCreatePath(): string {
+  return "/api/trainingassignment/create";
+}
+
+/** POST /api/trainingassignment/soft-delete */
+export function trainingAssignmentSoftDeletePath(): string {
+  return "/api/trainingassignment/soft-delete";
+}
+
+/** POST /api/trainingmodule/create */
+export function trainingModuleCreatePath(): string {
+  return "/api/trainingmodule/create";
+}
+
+/** POST /api/trainingmodule/soft-delete */
+export function trainingModuleSoftDeletePath(): string {
+  return "/api/trainingmodule/soft-delete";
+}
+
+/** POST /api/trainingmodule/update */
+export function trainingModuleUpdatePath(): string {
+  return "/api/trainingmodule/update";
+}
+
 /** POST /api/user/create */
 export function userCreatePath(): string {
   return "/api/user/create";
@@ -2215,6 +2420,8 @@ export interface RouteMetadata {
 }
 
 export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
+  { id: "AdminTask.get.list", path: "/api/admintask/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "AdminTask.get.detail", path: "/api/admintask/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "AlertsConfig.get.list", path: "/api/alertsconfig/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "AlertsConfig.get.detail", path: "/api/alertsconfig/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "AllergenWarning.get.list", path: "/api/allergenwarning/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -2225,6 +2432,8 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "BudgetLineItem.get.detail", path: "/api/budgetlineitem/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "CateringOrder.get.list", path: "/api/cateringorder/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "CateringOrder.get.detail", path: "/api/cateringorder/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "ChartOfAccount.get.list", path: "/api/chartofaccount/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "ChartOfAccount.get.detail", path: "/api/chartofaccount/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Client.get.list", path: "/api/client/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Client.get.detail", path: "/api/client/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "ClientContact.get.list", path: "/api/clientcontact/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -2253,6 +2462,10 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "CycleCountSession.get.detail", path: "/api/cyclecountsession/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Dish.get.list", path: "/api/dish/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Dish.get.detail", path: "/api/dish/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "EmployeeAvailability.get.list", path: "/api/employeeavailability/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "EmployeeAvailability.get.detail", path: "/api/employeeavailability/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "EmployeeCertification.get.list", path: "/api/employeecertification/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "EmployeeCertification.get.detail", path: "/api/employeecertification/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Event.get.list", path: "/api/event/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Event.get.detail", path: "/api/event/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EventBudget.get.list", path: "/api/eventbudget/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -2337,6 +2550,12 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "TimecardEditRequest.get.detail", path: "/api/timecardeditrequest/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "TimeEntry.get.list", path: "/api/timeentry/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "TimeEntry.get.detail", path: "/api/timeentry/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "TimeOffRequest.get.list", path: "/api/timeoffrequest/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "TimeOffRequest.get.detail", path: "/api/timeoffrequest/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "TrainingAssignment.get.list", path: "/api/trainingassignment/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "TrainingAssignment.get.detail", path: "/api/trainingassignment/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "TrainingModule.get.list", path: "/api/trainingmodule/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "TrainingModule.get.detail", path: "/api/trainingmodule/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "User.get.list", path: "/api/user/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "User.get.detail", path: "/api/user/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "VarianceReport.get.list", path: "/api/variancereport/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -2345,6 +2564,14 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "WasteEntry.get.detail", path: "/api/wasteentry/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Workflow.get.list", path: "/api/workflow/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Workflow.get.detail", path: "/api/workflow/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "AdminTask.cancel", path: "/api/admintask/cancel", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "AdminTask.complete", path: "/api/admintask/complete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "AdminTask.create", path: "/api/admintask/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "AdminTask.moveToTodo", path: "/api/admintask/move-to-todo", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "AdminTask.reopen", path: "/api/admintask/reopen", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "AdminTask.softDelete", path: "/api/admintask/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "AdminTask.startProgress", path: "/api/admintask/start-progress", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "AdminTask.update", path: "/api/admintask/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "AlertsConfig.create", path: "/api/alertsconfig/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "AlertsConfig.remove", path: "/api/alertsconfig/remove", method: "POST", source: "command", auth: true, tenant: true },
   { id: "AlertsConfig.update", path: "/api/alertsconfig/update", method: "POST", source: "command", auth: true, tenant: true },
@@ -2369,6 +2596,9 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "CateringOrder.markComplete", path: "/api/cateringorder/mark-complete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "CateringOrder.startPrep", path: "/api/cateringorder/start-prep", method: "POST", source: "command", auth: true, tenant: true },
   { id: "CateringOrder.update", path: "/api/cateringorder/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ChartOfAccount.create", path: "/api/chartofaccount/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ChartOfAccount.deactivate", path: "/api/chartofaccount/deactivate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ChartOfAccount.update", path: "/api/chartofaccount/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Client.archive", path: "/api/client/archive", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Client.create", path: "/api/client/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Client.reactivate", path: "/api/client/reactivate", method: "POST", source: "command", auth: true, tenant: true },
@@ -2418,6 +2648,12 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "Dish.update", path: "/api/dish/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Dish.updateLeadTime", path: "/api/dish/update-lead-time", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Dish.updatePricing", path: "/api/dish/update-pricing", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EmployeeAvailability.create", path: "/api/employeeavailability/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EmployeeAvailability.softDelete", path: "/api/employeeavailability/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EmployeeAvailability.update", path: "/api/employeeavailability/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EmployeeCertification.create", path: "/api/employeecertification/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EmployeeCertification.softDelete", path: "/api/employeecertification/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EmployeeCertification.update", path: "/api/employeecertification/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Event.archive", path: "/api/event/archive", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Event.cancel", path: "/api/event/cancel", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Event.confirm", path: "/api/event/confirm", method: "POST", source: "command", auth: true, tenant: true },
@@ -2638,6 +2874,16 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "TimeEntry.addEntry", path: "/api/timeentry/add-entry", method: "POST", source: "command", auth: true, tenant: true },
   { id: "TimeEntry.clockIn", path: "/api/timeentry/clock-in", method: "POST", source: "command", auth: true, tenant: true },
   { id: "TimeEntry.clockOut", path: "/api/timeentry/clock-out", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "TimeOffRequest.approve", path: "/api/timeoffrequest/approve", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "TimeOffRequest.cancel", path: "/api/timeoffrequest/cancel", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "TimeOffRequest.create", path: "/api/timeoffrequest/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "TimeOffRequest.reject", path: "/api/timeoffrequest/reject", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "TimeOffRequest.softDelete", path: "/api/timeoffrequest/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "TrainingAssignment.create", path: "/api/trainingassignment/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "TrainingAssignment.softDelete", path: "/api/trainingassignment/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "TrainingModule.create", path: "/api/trainingmodule/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "TrainingModule.softDelete", path: "/api/trainingmodule/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "TrainingModule.update", path: "/api/trainingmodule/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "User.create", path: "/api/user/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "User.deactivate", path: "/api/user/deactivate", method: "POST", source: "command", auth: true, tenant: true },
   { id: "User.terminate", path: "/api/user/terminate", method: "POST", source: "command", auth: true, tenant: true },

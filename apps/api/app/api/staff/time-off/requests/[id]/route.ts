@@ -1,12 +1,10 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import type { TimeOffStatus, UpdateTimeOffStatusInput } from "../../types";
-import {
-  validateStatusTransition,
-  verifyTimeOffRequest,
-} from "../../validation";
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
+
+export const runtime = "nodejs";
 
 /**
  * GET /api/staff/time-off/requests/[id]
@@ -93,156 +91,51 @@ export async function GET(
 
 /**
  * PATCH /api/staff/time-off/requests/[id]
- * Update time-off request status (approve, reject, cancel)
- *
- * Body:
- * - status: "APPROVED" | "REJECTED" | "CANCELLED"
- * - rejectionReason: Required when status is "REJECTED"
+ * Update time-off request status (approve, reject, cancel) via manifest command
  */
 export async function PATCH(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { orgId, userId } = await auth();
-  if (!(orgId && userId)) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
+  const { id } = await params;
+  const body = await request.clone().json();
+  const status = body.status;
 
-  const tenantId = await getTenantIdForOrg(orgId);
-  const { id: requestId } = await params;
-  const body = (await request.json()) as UpdateTimeOffStatusInput;
+  let commandName: string;
+  if (status === "APPROVED") commandName = "approve";
+  else if (status === "REJECTED") commandName = "reject";
+  else if (status === "CANCELLED") commandName = "cancel";
+  else
+    return new Response(JSON.stringify({ message: "Invalid status" }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
 
-  // Validate status is provided
-  if (!body.status) {
-    return NextResponse.json(
-      { message: "Status is required" },
-      { status: 400 }
-    );
-  }
-
-  // Get current request
-  const { request: timeOffRequest, error: requestError } =
-    await verifyTimeOffRequest(tenantId, requestId);
-  if (requestError || !timeOffRequest) {
-    return (
-      requestError ||
-      NextResponse.json(
-        { message: "Time-off request not found" },
-        { status: 404 }
-      )
-    );
-  }
-
-  // Validate status transition
-  const transitionError = validateStatusTransition(
-    timeOffRequest.status as TimeOffStatus,
-    body.status,
-    body.rejectionReason
-  );
-  if (transitionError) {
-    return transitionError;
-  }
-
-  try {
-    // Update the time-off request status
-    const result = await database.$queryRaw<
-      Array<{
-        id: string;
-        status: string;
-        processed_at: Date | null;
-        processed_by: string | null;
-        rejection_reason: string | null;
-      }>
-    >(
-      Prisma.sql`
-        UPDATE tenant_staff.employee_time_off_requests
-        SET
-          status = ${body.status},
-          processed_at = now(),
-          processed_by = ${userId},
-          rejection_reason = ${body.status === "REJECTED" ? body.rejectionReason : null},
-          updated_at = now()
-        WHERE tenant_id = ${tenantId}
-          AND id = ${requestId}
-          AND deleted_at IS NULL
-        RETURNING id, status, processed_at, processed_by, rejection_reason
-      `
-    );
-
-    if (!result[0]) {
-      return NextResponse.json(
-        { message: "Time-off request not found" },
-        { status: 404 }
-      );
-    }
-
-    return NextResponse.json({ request: result[0] });
-  } catch (error) {
-    console.error("Error updating time-off request:", error);
-    return NextResponse.json(
-      { message: "Failed to update time-off request" },
-      { status: 500 }
-    );
-  }
+  return executeManifestCommand(request, {
+    entityName: "TimeOffRequest",
+    commandName,
+    params: { id },
+    transformBody: (body, ctx) => ({
+      ...body,
+      processedBy: ctx.userId,
+      rejectionReason: body.rejectionReason || body.rejection_reason || "",
+    }),
+  });
 }
 
 /**
  * DELETE /api/staff/time-off/requests/[id]
- * Soft delete a time-off request (only allowed for PENDING or CANCELLED requests)
+ * Soft delete a time-off request via manifest command
  */
 export async function DELETE(
-  _request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { orgId } = await auth();
-  if (!orgId) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-  const { id: requestId } = await params;
-
-  // Get current request
-  const { request: timeOffRequest, error: requestError } =
-    await verifyTimeOffRequest(tenantId, requestId);
-  if (requestError || !timeOffRequest) {
-    return (
-      requestError ||
-      NextResponse.json(
-        { message: "Time-off request not found" },
-        { status: 404 }
-      )
-    );
-  }
-
-  // Only allow deletion of PENDING or CANCELLED requests
-  if (
-    timeOffRequest.status !== "PENDING" &&
-    timeOffRequest.status !== "CANCELLED"
-  ) {
-    return NextResponse.json(
-      {
-        message: `Cannot delete ${timeOffRequest.status} time-off request. Only PENDING and CANCELLED requests can be deleted.`,
-      },
-      { status: 400 }
-    );
-  }
-
-  try {
-    // Soft delete the time-off request
-    await database.$queryRaw`
-      UPDATE tenant_staff.employee_time_off_requests
-      SET deleted_at = now()
-      WHERE tenant_id = ${tenantId}
-        AND id = ${requestId}
-    `;
-
-    return NextResponse.json({ message: "Time-off request deleted" });
-  } catch (error) {
-    console.error("Error deleting time-off request:", error);
-    return NextResponse.json(
-      { message: "Failed to delete time-off request" },
-      { status: 500 }
-    );
-  }
+  const { id } = await params;
+  return executeManifestCommand(request, {
+    entityName: "TimeOffRequest",
+    commandName: "softDelete",
+    params: { id },
+    transformBody: () => ({ id }),
+  });
 }

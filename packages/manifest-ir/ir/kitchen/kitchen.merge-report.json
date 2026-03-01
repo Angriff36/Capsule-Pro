@@ -1,18 +1,22 @@
 {
   "$schema": "https://manifest.dev/merge-report.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-03-01T04:15:30.777Z",
+  "generatedAt": "2026-03-01T07:38:21.141Z",
   "sources": [
+    "admin-task-rules.manifest",
     "alerts-config-rules.manifest",
     "allergen-warning-rules.manifest",
     "battle-board-rules.manifest",
     "catering-order-rules.manifest",
+    "chart-of-account-rules.manifest",
     "client-interaction-rules.manifest",
     "client-rules.manifest",
     "command-board-rules.manifest",
     "container-rules.manifest",
     "cycle-count-rules.manifest",
     "dish-rules.manifest",
+    "employee-availability-rules.manifest",
+    "employee-certification-rules.manifest",
     "event-budget-rules.manifest",
     "event-contract-rules.manifest",
     "event-dish-rules.manifest",
@@ -43,17 +47,20 @@
     "shipment-rules.manifest",
     "station-rules.manifest",
     "time-entry-rules.manifest",
+    "time-off-request-rules.manifest",
+    "training-assignment-rules.manifest",
+    "training-module-rules.manifest",
     "user-rules.manifest",
     "waste-entry-rules.manifest",
     "workflow-rules.manifest"
   ],
   "totals": {
     "modules": 0,
-    "entities": 65,
-    "stores": 65,
-    "events": 309,
-    "commands": 308,
-    "policies": 120
+    "entities": 72,
+    "stores": 72,
+    "events": 332,
+    "commands": 335,
+    "policies": 128
   },
   "droppedDuplicates": [
     {

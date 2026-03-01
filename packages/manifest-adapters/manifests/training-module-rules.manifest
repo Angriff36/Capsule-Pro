@@ -1,0 +1,90 @@
+// Staff Domain - Training Module Rules
+// Manifest spec for training module CRUD operations
+
+entity TrainingModule {
+  property required id: string
+  property required tenantId: string
+  property title: string = ""
+  property description: string = ""
+  property contentUrl: string = ""
+  property contentType: string = "document"
+  property durationMinutes: number = 0
+  property category: string = ""
+  property isRequired: boolean = false
+  property isActive: boolean = true
+  property createdBy: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isDeleted: boolean = self.deletedAt > 0
+
+  constraint requireTitle: self.title != "" "Title is required"
+
+  command create(title: string, description: string, contentUrl: string, contentType: string, durationMinutes: number, category: string, isRequired: boolean, createdBy: string) {
+    guard title != null and title != "" "Title is required"
+
+    mutate title = title
+    mutate description = description
+    mutate contentUrl = contentUrl
+    mutate contentType = contentType
+    mutate durationMinutes = durationMinutes
+    mutate category = category
+    mutate isRequired = isRequired
+    mutate isActive = true
+    mutate createdBy = createdBy
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit TrainingModuleCreated
+  }
+
+  command update(title: string, description: string, contentUrl: string, contentType: string, durationMinutes: number, category: string, isRequired: boolean, isActive: boolean) {
+    guard self.deletedAt == 0 "Cannot update a deleted training module"
+
+    mutate title = title
+    mutate description = description
+    mutate contentUrl = contentUrl
+    mutate contentType = contentType
+    mutate durationMinutes = durationMinutes
+    mutate category = category
+    mutate isRequired = isRequired
+    mutate isActive = isActive
+    mutate updatedAt = now()
+
+    emit TrainingModuleUpdated
+  }
+
+  command softDelete() {
+    guard self.deletedAt == 0 "Training module is already deleted"
+
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit TrainingModuleDeleted
+  }
+
+  store TrainingModule in memory
+}
+
+policy TrainingModuleManagement execute: user.role in ["manager", "admin", "kitchen_manager"] "Managers can manage training modules"
+
+event TrainingModuleCreated: "staff.training-module.created" {
+  moduleId: string
+  tenantId: string
+  title: string
+  category: string
+  createdBy: string
+  createdAt: number
+}
+
+event TrainingModuleUpdated: "staff.training-module.updated" {
+  moduleId: string
+  title: string
+  updatedAt: number
+}
+
+event TrainingModuleDeleted: "staff.training-module.deleted" {
+  moduleId: string
+  deletedAt: number
+}

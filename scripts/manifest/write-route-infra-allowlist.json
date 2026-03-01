@@ -156,6 +156,71 @@
       "pattern": "^/api/events/contracts/[^/]+/signature$",
       "methods": ["POST"],
       "comment": "Uses executeManifestCommand — ContractSignature.create"
+    },
+    {
+      "prefix": "/api/training/modules",
+      "methods": ["POST"],
+      "comment": "Uses executeManifestCommand — TrainingModule.create"
+    },
+    {
+      "pattern": "^/api/training/modules/[^/]+$",
+      "methods": ["PUT", "DELETE"],
+      "comment": "Uses executeManifestCommand — TrainingModule.update/softDelete"
+    },
+    {
+      "prefix": "/api/training/assignments",
+      "methods": ["POST"],
+      "comment": "Uses executeManifestCommand — TrainingAssignment.create"
+    },
+    {
+      "prefix": "/api/staff/certifications",
+      "methods": ["POST"],
+      "comment": "Uses executeManifestCommand — EmployeeCertification.create"
+    },
+    {
+      "pattern": "^/api/staff/certifications/[^/]+$",
+      "methods": ["PUT", "DELETE"],
+      "comment": "Uses executeManifestCommand — EmployeeCertification.update/softDelete"
+    },
+    {
+      "prefix": "/api/staff/availability",
+      "methods": ["POST"],
+      "comment": "Uses executeManifestCommand — EmployeeAvailability.create"
+    },
+    {
+      "pattern": "^/api/staff/availability/[^/]+$",
+      "methods": ["PATCH", "DELETE"],
+      "comment": "Uses executeManifestCommand — EmployeeAvailability.update/softDelete"
+    },
+    {
+      "prefix": "/api/staff/time-off/requests",
+      "methods": ["POST"],
+      "comment": "Uses executeManifestCommand — TimeOffRequest.create"
+    },
+    {
+      "pattern": "^/api/staff/time-off/requests/[^/]+$",
+      "methods": ["PATCH", "DELETE"],
+      "comment": "Uses executeManifestCommand — TimeOffRequest commands/softDelete"
+    },
+    {
+      "prefix": "/api/accounting/accounts",
+      "methods": ["POST"],
+      "comment": "Uses executeManifestCommand — ChartOfAccount.create"
+    },
+    {
+      "pattern": "^/api/accounting/accounts/[^/]+$",
+      "methods": ["PUT", "DELETE"],
+      "comment": "Uses executeManifestCommand — ChartOfAccount.update/deactivate"
+    },
+    {
+      "prefix": "/api/administrative/tasks",
+      "methods": ["POST"],
+      "comment": "Uses executeManifestCommand — AdminTask.create"
+    },
+    {
+      "pattern": "^/api/administrative/tasks/[^/]+$",
+      "methods": ["PATCH", "DELETE"],
+      "comment": "Uses executeManifestCommand — AdminTask commands/softDelete"
     }
   ]
 }
