@@ -25,6 +25,61 @@ export interface ExemptionEntry {
   methods: string[];
   reason: string;
   category: string;
+  /** Team or individual responsible for reviewing this exemption. */
+  owner?: string;
+  /** ISO-8601 date after which this exemption should be revisited/removed. */
+  expiresOn?: string;
+  /** Alternative to expiresOn — number of days from now until expiry. */
+  expiresInDays?: number;
+  /** If true, the exemption is intentionally permanent and needs no expiry. */
+  allowPermanent?: boolean;
+}
+
+export interface ExemptionValidationDiagnostic {
+  path: string;
+  field: string;
+  message: string;
+  severity: "error" | "warning";
+}
+
+/**
+ * Validate exemption metadata discipline.
+ *
+ * In strict mode, missing owner or missing expiry (without allowPermanent)
+ * produces errors. In non-strict mode, the same issues produce warnings.
+ *
+ * This function NEVER modifies the exemptions list or affects route-audit
+ * findings — it only returns diagnostics about the exemptions themselves.
+ */
+export function validateExemptions(
+  exemptions: ExemptionEntry[],
+  opts: { strict?: boolean } = {}
+): ExemptionValidationDiagnostic[] {
+  const diagnostics: ExemptionValidationDiagnostic[] = [];
+  const severity = opts.strict ? "error" : "warning";
+
+  for (const entry of exemptions) {
+    if (!entry.owner) {
+      diagnostics.push({
+        path: entry.path,
+        field: "owner",
+        message: "Exemption is missing an owner.",
+        severity,
+      });
+    }
+
+    const hasExpiry = entry.expiresOn || entry.expiresInDays != null;
+    if (!(hasExpiry || entry.allowPermanent)) {
+      diagnostics.push({
+        path: entry.path,
+        field: "expiresOn",
+        message: "Exemption has no expiry and allowPermanent is not set.",
+        severity,
+      });
+    }
+  }
+
+  return diagnostics;
 }
 
 export interface CommandManifestEntry {
@@ -576,6 +631,14 @@ export async function auditRoutesCommand(
       await loadCommandManifestPaths(commandsManifestPath);
     const exemptions = await loadExemptions(exemptionsPath);
 
+    // Validate exemption metadata discipline (owner, expiry).
+    // --strict implies strict exemption validation: exemptions can't be used
+    // as a deploy-unblocking hack without proper ownership and sunset dates.
+    // This never alters the exemptions list or route-audit findings.
+    const exemptionDiagnostics = validateExemptions(exemptions, {
+      strict: options.strict,
+    });
+
     const ownershipContext: OwnershipAuditContext = {
       commandManifestPaths,
       exemptions,
@@ -662,11 +725,37 @@ export async function auditRoutesCommand(
       console.log(
         `  Fields: tenant=${tenantField}, deleted=${deletedField}, location=${locationField}`
       );
+
+      // Report exemption metadata diagnostics (if any)
+      if (exemptionDiagnostics.length > 0) {
+        const exemptionErrors = exemptionDiagnostics.filter(
+          (d) => d.severity === "error"
+        );
+        const exemptionWarnings = exemptionDiagnostics.filter(
+          (d) => d.severity === "warning"
+        );
+        console.log("");
+        console.log(
+          chalk.bold(
+            `Exemption metadata: ${exemptionErrors.length} error(s), ${exemptionWarnings.length} warning(s)`
+          )
+        );
+        for (const d of exemptionDiagnostics) {
+          const color = d.severity === "error" ? chalk.red : chalk.yellow;
+          console.log(
+            color(`  [${d.severity.toUpperCase()}] ${d.path}: ${d.message}`)
+          );
+        }
+      }
     }
 
     // Strict gate: only ownership-rule findings trigger failure.
     // Quality/hygiene warnings (READ_MISSING_*, WRITE_ROUTE_BYPASSES_RUNTIME)
     // never poison the strict exit code.
+    //
+    // When --strict is on, exemption metadata discipline is also enforced:
+    // exemptions without owner or expiry (unless allowPermanent) block the build.
+    // This prevents exemptions from being used as a deploy-unblocking hack.
     const ownershipErrors = errors.filter((f) =>
       OWNERSHIP_RULE_CODES.has(f.code)
     );
@@ -675,13 +764,30 @@ export async function auditRoutesCommand(
     );
 
     if (options.strict) {
-      // Strict mode: fail only on ownership-rule findings (errors or warnings)
-      if (ownershipErrors.length > 0 || ownershipWarnings.length > 0) {
-        console.log(
-          chalk.red(
-            `  Strict gate: ${ownershipErrors.length} ownership error(s), ${ownershipWarnings.length} ownership warning(s) → exit 1`
-          )
-        );
+      const exemptionErrors = exemptionDiagnostics.filter(
+        (d) => d.severity === "error"
+      );
+
+      const hasOwnershipIssues =
+        ownershipErrors.length > 0 || ownershipWarnings.length > 0;
+      const hasExemptionIssues = exemptionErrors.length > 0;
+
+      if (hasOwnershipIssues || hasExemptionIssues) {
+        if (hasOwnershipIssues) {
+          console.log(
+            chalk.red(
+              `  Strict gate: ${ownershipErrors.length} ownership error(s), ${ownershipWarnings.length} ownership warning(s)`
+            )
+          );
+        }
+        if (hasExemptionIssues) {
+          console.log(
+            chalk.red(
+              `  Strict gate: ${exemptionErrors.length} exemption metadata error(s)`
+            )
+          );
+        }
+        console.log(chalk.red("  → exit 1"));
         process.exit(1);
       }
     } else {

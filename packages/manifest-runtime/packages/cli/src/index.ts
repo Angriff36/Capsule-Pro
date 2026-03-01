@@ -316,7 +316,11 @@ program
   )
   .option("-r, --root <path>", "Root directory to audit", ".")
   .option("-f, --format <format>", "Output format (text, json)", "text")
-  .option("--strict", "Fail on warnings", false)
+  .option(
+    "--strict",
+    "Fail on ownership warnings and exemption metadata errors",
+    false
+  )
   .option("--tenant-field <name>", "Tenant scope field name", "tenantId")
   .option("--deleted-field <name>", "Soft-delete field name", "deletedAt")
   .option("--location-field <name>", "Location scope field name", "locationId")

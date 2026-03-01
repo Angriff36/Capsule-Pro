@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
-import type { OwnershipAuditContext } from "./audit-routes";
-import { auditRouteFileContent, OWNERSHIP_RULE_CODES } from "./audit-routes";
+import type { ExemptionEntry, OwnershipAuditContext } from "./audit-routes";
+import {
+  auditRouteFileContent,
+  OWNERSHIP_RULE_CODES,
+  validateExemptions,
+} from "./audit-routes";
 
 const OPTIONS = {
   tenantField: "tenantId",
@@ -409,5 +413,164 @@ export async function POST(request: Request) {
       expect(ownershipFindings.length).toBeGreaterThan(0);
       expect(ownershipFindings[0]?.code).toBe("COMMAND_ROUTE_ORPHAN");
     });
+  });
+});
+
+describe("validateExemptions", () => {
+  const completeEntry: ExemptionEntry = {
+    path: "app/api/cron/job/route.ts",
+    methods: ["POST"],
+    reason: "Cron job",
+    category: "infrastructure",
+    owner: "platform-team",
+    allowPermanent: true,
+  };
+
+  const entryWithExpiry: ExemptionEntry = {
+    path: "app/api/legacy/route.ts",
+    methods: ["POST"],
+    reason: "Legacy",
+    category: "legacy-migrate",
+    owner: "backend-team",
+    expiresOn: "2026-06-01",
+  };
+
+  const entryWithExpiryDays: ExemptionEntry = {
+    path: "app/api/temp/route.ts",
+    methods: ["POST"],
+    reason: "Temporary",
+    category: "legacy-migrate",
+    owner: "backend-team",
+    expiresInDays: 90,
+  };
+
+  const entryMissingOwner: ExemptionEntry = {
+    path: "app/api/no-owner/route.ts",
+    methods: ["POST"],
+    reason: "No owner set",
+    category: "legacy-migrate",
+    allowPermanent: true,
+  };
+
+  const entryMissingExpiry: ExemptionEntry = {
+    path: "app/api/no-expiry/route.ts",
+    methods: ["POST"],
+    reason: "No expiry set",
+    category: "legacy-migrate",
+    owner: "someone",
+  };
+
+  const entryMissingBoth: ExemptionEntry = {
+    path: "app/api/bare/route.ts",
+    methods: ["POST"],
+    reason: "Bare entry",
+    category: "legacy-migrate",
+  };
+
+  it("returns no diagnostics for a fully-populated entry", () => {
+    const diags = validateExemptions([completeEntry]);
+    expect(diags).toHaveLength(0);
+  });
+
+  it("returns no diagnostics for entry with expiresOn + owner", () => {
+    const diags = validateExemptions([entryWithExpiry]);
+    expect(diags).toHaveLength(0);
+  });
+
+  it("returns no diagnostics for entry with expiresInDays + owner", () => {
+    const diags = validateExemptions([entryWithExpiryDays]);
+    expect(diags).toHaveLength(0);
+  });
+
+  it("flags missing owner as warning in non-strict mode", () => {
+    const diags = validateExemptions([entryMissingOwner]);
+    expect(diags).toHaveLength(1);
+    expect(diags[0]?.field).toBe("owner");
+    expect(diags[0]?.severity).toBe("warning");
+  });
+
+  it("flags missing owner as error in strict mode", () => {
+    const diags = validateExemptions([entryMissingOwner], { strict: true });
+    expect(diags).toHaveLength(1);
+    expect(diags[0]?.field).toBe("owner");
+    expect(diags[0]?.severity).toBe("error");
+  });
+
+  it("flags missing expiry (without allowPermanent) as warning in non-strict mode", () => {
+    const diags = validateExemptions([entryMissingExpiry]);
+    expect(diags).toHaveLength(1);
+    expect(diags[0]?.field).toBe("expiresOn");
+    expect(diags[0]?.severity).toBe("warning");
+  });
+
+  it("flags missing expiry (without allowPermanent) as error in strict mode", () => {
+    const diags = validateExemptions([entryMissingExpiry], { strict: true });
+    expect(diags).toHaveLength(1);
+    expect(diags[0]?.field).toBe("expiresOn");
+    expect(diags[0]?.severity).toBe("error");
+  });
+
+  it("flags both missing owner and missing expiry on a bare entry", () => {
+    const diags = validateExemptions([entryMissingBoth]);
+    expect(diags).toHaveLength(2);
+    expect(diags.map((d) => d.field).sort()).toEqual(["expiresOn", "owner"]);
+  });
+
+  it("does not flag allowPermanent entries for missing expiry", () => {
+    const entry: ExemptionEntry = {
+      path: "app/api/perm/route.ts",
+      methods: ["POST"],
+      reason: "Permanent",
+      category: "infrastructure",
+      owner: "platform-team",
+      allowPermanent: true,
+    };
+    const diags = validateExemptions([entry]);
+    expect(diags).toHaveLength(0);
+  });
+
+  it("validates multiple entries and returns diagnostics for each", () => {
+    const diags = validateExemptions([
+      completeEntry,
+      entryMissingOwner,
+      entryMissingExpiry,
+      entryMissingBoth,
+    ]);
+    // completeEntry: 0, missingOwner: 1, missingExpiry: 1, missingBoth: 2
+    expect(diags).toHaveLength(4);
+  });
+
+  it("existing exemption matching is unaffected by new fields", () => {
+    // Verify that auditRouteFileContent still works with entries that have
+    // the new metadata fields — the isExempted function only checks path+methods.
+    const content = `
+export async function POST(request: Request) {
+  await database.timecard.create({ data: {} });
+  return Response.json({ ok: true });
+}
+`;
+    const ctx = makeOwnershipContext({
+      exemptions: [
+        {
+          path: "app/api/timecards/route.ts",
+          methods: ["POST"],
+          reason: "Legacy bulk",
+          category: "legacy-migrate",
+          owner: "backend-team",
+          expiresOn: "2026-06-01",
+        },
+      ],
+    });
+
+    const result = auditRouteFileContent(
+      content,
+      "/repo/apps/api/app/api/timecards/route.ts",
+      OPTIONS,
+      ctx
+    );
+    // Should still be exempted — WRITE_OUTSIDE_COMMANDS_NAMESPACE should NOT fire
+    expect(
+      result.findings.some((f) => f.code === "WRITE_OUTSIDE_COMMANDS_NAMESPACE")
+    ).toBe(false);
   });
 });
