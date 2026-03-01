@@ -10,5 +10,5 @@
  * - Integrates with Liveblocks for seamless transition to live mode
  */
 
-export { ReplayBuffer } from "./replay-buffer";
-export * from "./types";
+export { ReplayBuffer } from "./replay-buffer.js";
+export * from "./types.js";

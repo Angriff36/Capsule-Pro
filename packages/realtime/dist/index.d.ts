@@ -22,9 +22,9 @@
  * const channel = getChannelName("tenant-123"); // "tenant:tenant-123"
  * ```
  */
-export * from "./channels/index";
-export * from "./clocks/index";
-export * from "./events/index";
-export * from "./outbox/index";
-export * from "./replay/index";
+export * from "./channels/index.js";
+export * from "./clocks/index.js";
+export * from "./events/index.js";
+export * from "./outbox/index.js";
+export * from "./replay/index.js";
 //# sourceMappingURL=index.d.ts.map
