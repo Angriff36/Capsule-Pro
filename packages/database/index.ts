@@ -10,9 +10,9 @@ import "server-only";
 import { neonConfig } from "@neondatabase/serverless";
 import { PrismaNeon } from "@prisma/adapter-neon";
 import ws from "ws";
-import { PrismaClient } from "./generated/client.js";
-import { keys } from "./keys.js";
-import { createTenantClient } from "./tenant.js";
+import { PrismaClient } from "./generated/client";
+import { keys } from "./keys";
+import { createTenantClient } from "./tenant";
 
 const globalForPrisma = global as unknown as { prisma: PrismaClient };
 
@@ -48,8 +48,8 @@ if (process.env.NODE_ENV !== "production") {
 export const tenantDatabase = (tenantId: string) =>
   createTenantClient(tenantId, database);
 
-export * from "./generated/client.js";
-export { Prisma } from "./generated/client.js";
-export * from "./src/critical-path.js";
-export * from "./src/ingredient-resolution.js";
-export * from "./tenant.js";
+export * from "./generated/client";
+export { Prisma } from "./generated/client";
+export * from "./src/critical-path";
+export * from "./src/ingredient-resolution";
+export * from "./tenant";

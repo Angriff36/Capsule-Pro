@@ -1,4 +1,4 @@
-import type { PrismaClient } from "./generated/client.js";
+import type { PrismaClient } from "./generated/client";
 
 const tenantScopedModels = new Set([
   "Client",
