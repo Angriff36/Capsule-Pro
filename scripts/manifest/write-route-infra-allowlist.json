@@ -141,6 +141,21 @@
       "prefix": "/api/events/contracts",
       "methods": ["POST"],
       "comment": "Uses executeManifestCommand — EventContract.create"
+    },
+    {
+      "pattern": "^/api/events/contracts/[^/]+/status$",
+      "methods": ["PATCH"],
+      "comment": "Uses createManifestRuntime — EventContract.send/sign/expire/cancel/markViewed"
+    },
+    {
+      "pattern": "^/api/events/contracts/[^/]+/send$",
+      "methods": ["POST"],
+      "comment": "Uses createManifestRuntime — EventContract.send + email side-effect"
+    },
+    {
+      "pattern": "^/api/events/contracts/[^/]+/signature$",
+      "methods": ["POST"],
+      "comment": "Uses executeManifestCommand — ContractSignature.create"
     }
   ]
 }

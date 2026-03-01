@@ -4,6 +4,19 @@ Archived ledger entries. See tasks/ledger.md for current entries and rules.
 
 ---
 
+# Agent 50
+
+**Agent ID:** 50
+**Date/Time:** 2026-03-01 16:30
+**Base branch/commit:** codex/manifest-cli-doctor @ 8d3458800
+
+**Goal:**
+Phase 4: Flip to `--strict` in build.mjs and CI — ownership-rule violations now block the build. Phase 5: Implement 4 missing plan tests (A, B, C, G) for build pipeline determinism and correctness.
+
+**Points tally:** 16 points
+
+---
+
 # Agent 48
 
 **Agent ID:** 48
