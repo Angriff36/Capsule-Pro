@@ -4,6 +4,19 @@ Archived ledger entries. See tasks/ledger.md for current entries and rules.
 
 ---
 
+# Agent 46
+
+**Agent ID:** 46
+**Date/Time:** 2026-02-28 22:50
+**Base branch/commit:** codex/manifest-cli-doctor @ 5e8b3b983
+
+**Goal:**
+Fix false-positive COMMAND_ROUTE_ORPHAN detection in manifest CLI — kebab-case filesystem paths were not matching camelCase IR command names, causing 59 of 61 orphan warnings to be false positives.
+
+**Points tally:** 16 points
+
+---
+
 # Agent 45
 
 **Agent ID:** 45

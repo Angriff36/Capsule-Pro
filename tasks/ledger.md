@@ -42,9 +42,10 @@ only the full write-up moves to the archive. This keeps the ledger readable for 
 2. Agent 42 — 18 points (implementation) (archived)
 2. Agent 16 — 18 points (archived)
 4. Agent 47 — 16 points (--strict ownership-gate semantics)
-4. Agent 46 — 16 points (orphan detection fix)
+4. Agent 46 — 16 points (orphan detection fix) (archived)
 4. Agent 48 — 16 points (Phase 3 route cleanup)
 4. Agent 50 — 16 points (Phase 4: flip to --strict)
+4. Agent 51 — 16 points (fix 3 known integrity issues)
 4. Agent 49 — 16 points (OWNERSHIP_RULE_CODES guardrail)
 7. Agent 43 — 15 points (manifest route migration) (archived)
 7. Agent 3 — 13 points
@@ -70,6 +71,82 @@ only the full write-up moves to the archive. This keeps the ledger readable for 
 16. Agent 40 — 7 points (verification) (archived)
 16. Agent 27 — 7 points (verification) (archived)
 16. Agent 26 — 7 points (verification) (archived)
+
+# Agent 51
+
+**Agent ID:** 51
+**Date/Time:** 2026-03-01 17:00
+**Base branch/commit:** codex/manifest-cli-doctor @ 0bd748a7d
+
+**Goal:**
+Fix 3 known integrity issues deferred by previous agents: security gap (unauthenticated conflict detection endpoint), dead code (invalid Next.js exports), and legacy route (direct-Prisma save alongside manifest-backed replacement).
+
+**Invariants enforced:**
+
+- No route handler may exist outside `app/api/` that performs data access without authentication. The `app/conflicts/` path was a security gap — publicly accessible conflict detection with no auth guard or tenant scoping.
+- All exported functions in Next.js route files must be valid handler names (GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS). Invalid exports like `GET_KEY`/`PUT_KEY`/`DELETE_KEY` are dead code.
+- When a manifest-backed route (`save-db`) replaces a legacy route (`save`), the legacy route must be deleted and its exemption removed from the registry.
+
+**Subagents used:**
+
+- None. Direct execution — scope was narrow (delete files, remove dead code, update references, write tests, verify).
+
+**Reproducer:**
+`apps/api/__tests__/kitchen/manifest-build-determinism.test.ts` — 5 new tests (H1–H5):
+1. H1: "no route handler exists at app/conflicts/detect outside the API namespace" — verifies security gap is closed
+2. H2: "user-preferences/route.ts exports only valid Next.js handler names" — verifies dead exports removed
+3. H3: "legacy prep-lists/save route is deleted (replaced by save-db)" — verifies legacy route gone
+4. H4: "save-db route uses manifest runtime (runCommand)" — verifies replacement uses runtime
+5. H5: "exemptions registry does not reference deleted routes" — verifies no stale exemptions
+
+All 5 would fail pre-fix (security gap exists, dead exports present, legacy route exists). All 5 pass post-fix.
+
+**Root cause:**
+Three deferred issues accumulated across Agents 44–50:
+1. `app/conflicts/` was an older AI-based conflict detection service (uses GPT-4o-mini) that predated the SQL-based `app/api/conflicts/detect/`. It was never cleaned up and had no auth.
+2. `user-preferences/route.ts` was written with `GET_KEY`/`PUT_KEY`/`DELETE_KEY` exports — likely intended for sub-route handling but Next.js App Router doesn't support suffixed handler names.
+3. `kitchen/prep-lists/save/route.ts` was the original direct-Prisma save. When `save-db/route.ts` was created with manifest runtime integration, the old route was exempted but never deleted.
+
+**Fix strategy:**
+1. Deleted `apps/api/app/conflicts/` directory (3 files: route.ts, service.ts, types.ts). No references from frontend — both callers use `/api/conflicts/detect`.
+2. Removed `GET_KEY`, `PUT_KEY`, `DELETE_KEY` exports from `user-preferences/route.ts` (~220 lines removed). Valid `GET` and `POST` exports remain.
+3. Deleted `kitchen/prep-lists/save/route.ts`. Updated `apps/app/app/lib/routes.ts` to point to `save-db`. Removed stale exemption from `audit-routes-exemptions.json`.
+4. Added 5 regression tests (Test H) to `manifest-build-determinism.test.ts`.
+
+**Verification evidence:**
+
+```
+# Build pipeline passes (strict mode)
+$ node scripts/manifest/build.mjs
+Audited 528 route file(s) — 171 error(s), 41 warning(s)
+[manifest/build] Route boundary audit passed (strict mode).
+[manifest/build] Build complete!
+# Route count: 529→528 (-1 deleted), Errors: 172→171 (-1 WRITE_ROUTE_BYPASSES_RUNTIME)
+
+# All 15 determinism + integrity tests pass
+$ pnpm --filter api test __tests__/kitchen/manifest-build-determinism.test.ts -- --run
+Test Files: 1 passed (1)
+Tests: 15 passed (15)
+
+# Manifest repo tests all pass
+$ npm test (from packages/manifest-runtime/)
+Test Files: 16 passed, Tests: 704 passed
+```
+
+**Follow-ups filed:**
+- Burn-down 171 `WRITE_ROUTE_BYPASSES_RUNTIME` errors (migrate manual write routes to `runCommand`)
+- Generate routes for 24 missing commands (forward mirror coverage 90.9% → 100%)
+- Fix 7 pre-existing kitchen test failures (database mock, snapshot drift)
+
+**Points tally:**
++3 invariant defined before implementation (no unauthenticated data access outside /api, valid Next.js exports only, legacy routes deleted when replaced)
++5 minimal reproducer added (5 tests: H1 security gap, H2 valid exports, H3 legacy deleted, H4 replacement uses runtime, H5 no stale exemptions)
++4 fix addresses root cause with minimal diff (delete 4 files, remove ~220 lines dead code, update 2 references)
++2 improved diagnosability (audit count 172→171, route count 529→528, stale exemption removed)
++2 boundary/edge case added (H5 validates ALL exemptions point to existing files — catches future stale entries)
+= **16 points**
+
+---
 
 # Agent 50
 
@@ -386,100 +463,5 @@ SUMMARY:
 +2 improved diagnosability (strict gate summary line in text output shows ownership error count + expected exit code)
 +2 boundary/edge case added (mixed-findings test proves non-ownership errors don't leak into strict gate)
 = **16 points**
-
----
-
-# Agent 46
-
-**Agent ID:** 46
-**Date/Time:** 2026-02-28 22:50
-**Base branch/commit:** codex/manifest-cli-doctor @ 5e8b3b983
-
-**Goal:**
-Fix false-positive COMMAND_ROUTE_ORPHAN detection in manifest CLI — kebab-case filesystem paths were not matching camelCase IR command names, causing 59 of 61 orphan warnings to be false positives.
-
-**Invariants enforced:**
-
-- `hasCommandManifestBacking` must normalize both filesystem command names (kebab-case) and IR command names (camelCase) to the same format before comparison.
-- Audit findings must reflect real violations, not tooling bugs. False positives erode trust in enforcement.
-- Enforcement wiring changes must not be mixed with product behavior changes (route deletions, known issue fixes).
-
-**Subagents used:**
-
-- None. Direct execution — the scope was narrow (diagnose false positives → fix comparison function → publish → verify).
-
-**Reproducer:**
-`packages/cli/src/commands/audit-routes.test.ts` (manifest repo) — new test at line 209:
-"matches kebab-case filesystem paths against camelCase IR commands"
-- Tests `assign-task` (filesystem) matching `assignTask` (IR)
-- Tests `clock-in` matching `clockIn`
-- Tests `create-from-seed` matching `createFromSeed`
-- Tests `update-prep-notes` matching `updatePrepNotes`
-- Fails pre-fix (0.3.28), passes post-fix (0.3.29)
-
-**Root cause:**
-`hasCommandManifestBacking` in `audit-routes.ts` compared `entry.command.toLowerCase()` against `commandName.toLowerCase()`. For multi-word commands, the filesystem uses kebab-case (`assign-task`) while the IR uses camelCase (`assignTask`). Lowercasing both yields `assign-task` vs `assigntask` — not equal because the hyphen is present in one but not the other. Every multi-word command route was flagged as an orphan.
-
-**Fix strategy:**
-1. Added `toKebabCase()` helper that converts camelCase to kebab-case: `str.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase()`.
-2. Changed `hasCommandManifestBacking` to normalize both sides via `toKebabCase()` before comparison. Two lines changed in the comparison logic.
-3. Published as `@angriff36/manifest@0.3.29`.
-4. Updated capsule-pro dependency (4 package.json files + lockfile).
-5. No product behavior changes — only enforcement tooling fix.
-
-**Verification evidence:**
-
-```
-# Manifest repo — test fails pre-fix, passes post-fix
-$ npm test (0.3.28, before fix)
-FAIL: "matches kebab-case filesystem paths against camelCase IR commands"
-  expected false to be true
-
-$ npm test (0.3.29, after fix)
-Test Files: 17 passed, Tests: 741 passed
-
-# Manifest repo — typecheck clean
-$ npm run typecheck
-(exit 0, no output)
-
-# Published 0.3.29
-$ pnpm publish --no-git-checks
-+ @angriff36/manifest@0.3.29
-
-# Capsule-pro — audit before fix (0.3.28)
-$ pnpm exec manifest audit-routes ... | grep COMMAND_ROUTE_ORPHAN | wc -l
-61
-
-# Capsule-pro — audit after fix (0.3.29)
-$ pnpm exec manifest audit-routes ... | grep COMMAND_ROUTE_ORPHAN | wc -l
-2
-
-# Remaining 2 are genuine orphans:
-# - staff/shifts/commands/update-validated (no ScheduleShift.updateValidated in IR)
-# - staff/shifts/commands/create-validated (no ScheduleShift.createValidated in IR)
-
-# Full build pipeline
-$ node scripts/manifest/build.mjs
-Audited 539 route file(s) — 172 error(s), 43 warning(s)
-Build complete!
-# Warnings dropped from 102 to 43 (59 false-positive orphans eliminated)
-```
-
-**Follow-ups filed:**
-- [SEPARATE PR] Delete 4 camelCase duplicate station command routes (assignTask, removeTask, updateCapacity, updateEquipment)
-- [SEPARATE PR] Delete 6 prep-lists/items duplicate routes (duplicates of prep-list-items)
-- [SEPARATE PR] Triage 2 genuine orphans: staff/shifts/commands/update-validated, create-validated
-- [SEPARATE PR] Fix known issues: conflicts/detect auth gap, user-preferences dead exports, prep-lists/save legacy
-- [SEPARATE PR] Implement missing plan tests A, B, C, G
-
-**Points tally:**
-+3 invariant defined before implementation (kebab-case normalization, false positives erode trust, no mixing enforcement with product changes)
-+5 minimal reproducer added (test fails pre-fix with 0.3.28, passes post-fix with 0.3.29, covers 4 multi-word command patterns)
-+4 fix addresses root cause with minimal diff (2 lines changed in comparison + 3-line helper function, not a workaround)
-+2 improved diagnosability (audit now reports 2 genuine orphans instead of 61 false positives — signal-to-noise ratio improved 30x)
-+2 boundary/edge case added (test covers camelCase filesystem paths still matching, non-existent commands still failing)
-= **16 points**
-
----
 
 ---

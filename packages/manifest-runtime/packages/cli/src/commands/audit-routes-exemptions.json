@@ -335,14 +335,7 @@
     "owner": "platform-team",
     "allowPermanent": true
   },
-  {
-    "path": "app/api/kitchen/prep-lists/save/route.ts",
-    "methods": ["POST"],
-    "reason": "Legacy prep list save — should be deleted (replaced by save-db)",
-    "category": "legacy-migrate",
-    "owner": "backend-team",
-    "expiresOn": "2026-09-01"
-  },
+
   {
     "path": "app/api/kitchen/recipes/composite/create-with-version/route.ts",
     "methods": ["POST"],

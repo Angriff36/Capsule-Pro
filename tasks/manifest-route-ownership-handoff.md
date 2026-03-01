@@ -1,6 +1,6 @@
 # Manifest Route Ownership — Handoff
 
-> **Last updated:** 2026-03-01 (Agent 50)
+> **Last updated:** 2026-03-01 (Agent 51)
 > **Branch:** `codex/manifest-cli-doctor`
 > **Published version:** `@angriff36/manifest@0.3.32`
 > **Governing plan:** `tasks/manifest-route-ownership-plan.md`
@@ -22,19 +22,22 @@
 | Guardrail: `OWNERSHIP_RULE_CODES` | ✅ Done | 49 | Canonical Set, strict gate fixed, 4 new tests |
 | 4. Flip to `--strict` | ✅ Done | 50 | build.mjs + CI now enforce ownership rules |
 | 5. Plan tests A, B, C, G | ✅ Done | 50 | 10 tests in manifest-build-determinism.test.ts |
+| 6. Fix 3 known integrity issues | ✅ Done | 51 | Security gap, dead exports, legacy route deleted |
 
-### Audit Numbers (as of 0.3.32)
+### Audit Numbers (as of Agent 51)
 
 ```
-Audited 529 route file(s) — 172 error(s), 41 warning(s)
+Audited 528 route file(s) — 171 error(s), 41 warning(s)
 Orphans: 0
-Build: complete (exit 0)
+Build: complete (exit 0, strict mode)
 ```
 
-- **172 errors** — all `WRITE_ROUTE_BYPASSES_RUNTIME` (manual write routes not using `runCommand`)
+- **171 errors** — all `WRITE_ROUTE_BYPASSES_RUNTIME` (manual write routes not using `runCommand`)
 - **41 warnings** — read-quality rules (soft-delete, tenant scope, location filter)
 - **0 orphans** — all command routes have IR backing
-- **0 ownership-rule findings** — strict gate would pass today
+- **0 ownership-rule findings** — strict gate passes
+
+Changes from Agent 50: -1 route file (deleted `prep-lists/save`), -1 error (that route's WRITE_ROUTE_BYPASSES_RUNTIME).
 
 ---
 
@@ -72,17 +75,18 @@ These are manual write routes that bypass the runtime. Each needs to either:
 - Be migrated to use `runCommand` (preferred)
 - Be added to the exemption registry with a reason
 
-### Known Issues (deferred)
-- `app/conflicts/detect/route.ts` — duplicate of `app/api/conflicts/detect/route.ts` with **no auth guard** (security gap)
-- `user-preferences/route.ts` — exports `GET_KEY`/`PUT_KEY`/`DELETE_KEY` (invalid Next.js exports, silently ignored)
-- `kitchen/prep-lists/save/route.ts` — legacy direct-Prisma path alongside Manifest-backed `save-db/route.ts`
+### Known Issues (resolved by Agent 51)
+- ~~`app/conflicts/detect/route.ts`~~ — **FIXED**: Deleted `app/conflicts/` directory (orphaned non-API path with no auth guard). The canonical endpoint at `app/api/conflicts/detect/route.ts` has proper auth + tenant scoping.
+- ~~`user-preferences/route.ts`~~ — **FIXED**: Removed dead exports `GET_KEY`/`PUT_KEY`/`DELETE_KEY` (invalid Next.js handler names). Only valid `GET` and `POST` remain.
+- ~~`kitchen/prep-lists/save/route.ts`~~ — **FIXED**: Deleted legacy direct-Prisma route. The manifest-backed `save-db/route.ts` (uses `runCommand`) is the canonical path. Removed stale exemption from registry. Updated `routes.ts` to point to `save-db`.
 
-### Plan Tests (implemented by Agent 50)
-All 4 missing plan tests are now implemented in `apps/api/__tests__/kitchen/manifest-build-determinism.test.ts`:
+### Plan Tests (implemented by Agents 50–51)
+All plan tests are implemented in `apps/api/__tests__/kitchen/manifest-build-determinism.test.ts` (15 tests):
 - **Test A** ✅ — Determinism: `commands.json` sorted, derivable from IR, correct schema
 - **Test B** ✅ — Determinism: all generated routes have markers and POST exports
 - **Test C** ✅ — Manual GET routes untouched by generator (no generated markers)
 - **Test G** ✅ — Mirror check: reverse mirror (disk→commands.json) is exact; forward mirror tracks coverage (240/264 = 90.9%)
+- **Test H** ✅ — Route integrity: no auth-gap duplicates, valid Next.js exports only, legacy routes deleted, exemptions registry clean
 
 ### Domain Migration (long-term)
 Routes that should eventually move to the commands namespace:
@@ -105,6 +109,7 @@ Routes that should eventually move to the commands namespace:
 | `scripts/manifest/compile.mjs` | Emits `kitchen.commands.json` |
 | `scripts/manifest/generate.mjs` | Forward/mirror/method validation |
 | `.github/workflows/manifest-ci.yml` | CI job `manifest-route-audit` |
+| `apps/api/__tests__/kitchen/manifest-build-determinism.test.ts` | 15 tests: A, B, C, G, H (determinism + integrity) |
 | `tasks/manifest-route-ownership-plan.md` | The governing plan |
 
 ---

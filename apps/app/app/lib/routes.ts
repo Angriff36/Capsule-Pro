@@ -130,9 +130,9 @@ export const kitchenAllergensUpdateDish = (): string =>
 export const kitchenPrepListsGenerate = (): string =>
   "/api/kitchen/prep-lists/generate";
 
-/** POST /api/kitchen/prep-lists/save */
-export const kitchenPrepListsSave = (): string =>
-  "/api/kitchen/prep-lists/save";
+/** POST /api/kitchen/prep-lists/save-db (manifest-backed) */
+export const kitchenPrepListsSaveDb = (): string =>
+  "/api/kitchen/prep-lists/save-db";
 
 // ---------------------------------------------------------------------------
 // Analytics

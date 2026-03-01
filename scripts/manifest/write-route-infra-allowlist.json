@@ -68,6 +68,11 @@
       "comment": "Conflict detection infrastructure"
     },
     {
+      "prefix": "/api/user-preferences",
+      "methods": ["POST"],
+      "comment": "User preferences — settings, not domain command (permanently exempted in audit registry)"
+    },
+    {
       "prefix": "/api/staff/shifts/commands/create-validated",
       "methods": ["POST"],
       "comment": "Validated shift creation with overlap/overtime/certification checks using ScheduleShift.create command"

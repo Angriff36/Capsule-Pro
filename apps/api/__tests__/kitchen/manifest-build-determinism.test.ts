@@ -438,3 +438,109 @@ describe("Test G: mirror check — commands.json entries have disk routes", () =
     expect(diskRouteCount).toBeGreaterThanOrEqual(230);
   });
 });
+
+// ---------------------------------------------------------------------------
+// Test H — Known integrity issues are resolved
+// ---------------------------------------------------------------------------
+
+describe("Test H — Route integrity (known issues)", () => {
+  it("H1: no route handler exists at app/conflicts/detect outside the API namespace", () => {
+    // The non-API path app/conflicts/detect/route.ts was a security gap:
+    // it exposed conflict detection with NO auth guard and NO tenant scoping.
+    // The canonical endpoint is at app/api/conflicts/detect/route.ts (has auth).
+    const nonApiConflictsRoute = join(
+      PROJECT_ROOT,
+      "apps/api/app/conflicts/detect/route.ts"
+    );
+    expect(
+      existsSync(nonApiConflictsRoute),
+      "app/conflicts/detect/route.ts should be deleted — security gap (no auth guard)"
+    ).toBe(false);
+  });
+
+  it("H2: user-preferences/route.ts exports only valid Next.js handler names", () => {
+    // Next.js App Router only recognizes: GET, POST, PUT, PATCH, DELETE, HEAD, OPTIONS.
+    // Exports like GET_KEY, PUT_KEY, DELETE_KEY are silently ignored — dead code.
+    const routeFile = join(API_DIR, "user-preferences/route.ts");
+    expect(existsSync(routeFile)).toBe(true);
+
+    const content = readFileSync(routeFile, "utf-8");
+    const VALID_HANDLER_NAMES = new Set([
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE",
+      "HEAD",
+      "OPTIONS",
+    ]);
+
+    // Match all "export async function NAME" declarations
+    const exportedFunctions = [
+      ...content.matchAll(/export\s+async\s+function\s+(\w+)/g),
+    ].map((m) => m[1]);
+
+    expect(exportedFunctions.length).toBeGreaterThan(0);
+    for (const name of exportedFunctions) {
+      expect(
+        VALID_HANDLER_NAMES.has(name),
+        `Exported function "${name}" is not a valid Next.js route handler name`
+      ).toBe(true);
+    }
+  });
+
+  it("H3: legacy prep-lists/save route is deleted (replaced by save-db)", () => {
+    // The legacy save route used direct Prisma calls. The manifest-backed
+    // save-db route uses runCommand for guard/constraint/policy enforcement.
+    const legacySaveRoute = join(API_DIR, "kitchen/prep-lists/save/route.ts");
+    const manifestSaveRoute = join(
+      API_DIR,
+      "kitchen/prep-lists/save-db/route.ts"
+    );
+
+    expect(
+      existsSync(legacySaveRoute),
+      "kitchen/prep-lists/save/route.ts should be deleted — replaced by save-db"
+    ).toBe(false);
+    expect(
+      existsSync(manifestSaveRoute),
+      "kitchen/prep-lists/save-db/route.ts must exist as the replacement"
+    ).toBe(true);
+  });
+
+  it("H4: save-db route uses manifest runtime (runCommand)", () => {
+    // The replacement route must go through the manifest runtime.
+    const manifestSaveRoute = join(
+      API_DIR,
+      "kitchen/prep-lists/save-db/route.ts"
+    );
+    const content = readFileSync(manifestSaveRoute, "utf-8");
+
+    expect(content).toContain("runCommand");
+    expect(content).toContain("createManifestRuntime");
+  });
+
+  it("H5: exemptions registry does not reference deleted routes", () => {
+    // Stale exemptions for deleted files are noise. Verify cleanup.
+    const exemptionsFile = join(
+      PROJECT_ROOT,
+      "packages/manifest-runtime/packages/cli/src/commands/audit-routes-exemptions.json"
+    );
+    const exemptions = JSON.parse(
+      readFileSync(exemptionsFile, "utf-8")
+    ) as Array<{
+      path: string;
+    }>;
+
+    for (const exemption of exemptions) {
+      const fullPath = join(PROJECT_ROOT, "apps/api", exemption.path);
+      // Only check non-dynamic paths (skip [id] patterns — they always exist)
+      if (!exemption.path.includes("[")) {
+        expect(
+          existsSync(fullPath),
+          `Exemption references non-existent file: ${exemption.path}`
+        ).toBe(true);
+      }
+    }
+  });
+});
