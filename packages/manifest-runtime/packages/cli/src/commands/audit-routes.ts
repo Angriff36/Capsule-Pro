@@ -333,16 +333,29 @@ export function auditRouteFileContent(
     options.locationField
   );
 
+  const normalizedForExemption = ownershipContext
+    ? normalizeRoutePath(file)
+    : "";
+
   for (const method of methods) {
     if (WRITE_METHODS.has(method) && !hasRunCommand) {
-      findings.push({
-        file,
-        severity: "error",
-        code: "WRITE_ROUTE_BYPASSES_RUNTIME",
-        message: `${method} route appears to bypass runtime command execution (no runCommand call found).`,
-        suggestion:
-          "Write routes should execute through RuntimeEngine.runCommand to enforce policy/guard/constraint semantics.",
-      });
+      // Suppress WRITE_ROUTE_BYPASSES_RUNTIME for explicitly exempted routes.
+      // If a route has a documented exemption (infrastructure, integration,
+      // export, composite, etc.), the bypass error is redundant noise — the
+      // exemption already explains why the route doesn't use runtime.
+      const exempted =
+        ownershipContext &&
+        isExempted(normalizedForExemption, method, ownershipContext.exemptions);
+      if (!exempted) {
+        findings.push({
+          file,
+          severity: "error",
+          code: "WRITE_ROUTE_BYPASSES_RUNTIME",
+          message: `${method} route appears to bypass runtime command execution (no runCommand call found).`,
+          suggestion:
+            "Write routes should execute through RuntimeEngine.runCommand to enforce policy/guard/constraint semantics.",
+        });
+      }
     }
 
     if (
