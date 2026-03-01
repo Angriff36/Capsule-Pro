@@ -366,6 +366,17 @@ describe("Test G: mirror check — commands.json entries have disk routes", () =
     // Forward mirror: for each commands.json entry with a domain mapping,
     // check if a route exists on disk. This is informational — not all
     // commands have routes yet (some are pending generation).
+    //
+    // CommandBoard entities are excluded — they are DEAD (replaced by
+    // server actions per PATTERNS.md) and will never have generated routes.
+    const DEAD_ENTITIES = new Set([
+      "CommandBoard",
+      "CommandBoardCard",
+      "CommandBoardGroup",
+      "CommandBoardConnection",
+      "CommandBoardLayout",
+    ]);
+
     const commands = JSON.parse(readFileSync(COMMANDS_FILE, "utf8"));
     let mapped = 0;
     let found = 0;
@@ -378,6 +389,7 @@ describe("Test G: mirror check — commands.json entries have disk routes", () =
     }>) {
       const domain = ENTITY_DOMAIN_MAP[cmd.entity];
       if (!domain) continue;
+      if (DEAD_ENTITIES.has(cmd.entity)) continue;
       mapped++;
 
       const kebabCommand = toKebabCase(cmd.command);
@@ -397,10 +409,9 @@ describe("Test G: mirror check — commands.json entries have disk routes", () =
 
     const coverage = mapped > 0 ? ((found / mapped) * 100).toFixed(1) : "0.0";
 
-    // Coverage must not regress below current level.
-    // As of Phase 4: 242 routes exist out of 264 mapped commands = 91.7%
-    // If this threshold fails, a route was deleted without updating commands.json.
-    expect(found).toBeGreaterThanOrEqual(230);
+    // All non-dead commands must have routes. Coverage = 100%.
+    // As of Agent 52: 247 routes for 247 mapped commands (excluding 17 dead CommandBoard).
+    expect(found).toBe(mapped);
 
     // Log coverage for visibility
     console.info(
