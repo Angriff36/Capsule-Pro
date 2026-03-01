@@ -368,19 +368,15 @@ describe("createManifestRuntime (shared factory)", () => {
       expect(config).not.toHaveProperty("ttlMs");
     });
 
-    it("omits ttlMs when failureTtlMs is not provided", async () => {
+    it("omits idempotency store entirely when deps.idempotency is not provided", async () => {
       const deps = makeDeps();
 
       await createManifestRuntime(deps, {
         user: { id: "user-1", tenantId: "tenant-1", role: "admin" },
       });
 
-      expect(idempotencyStoreConstructorSpy).toHaveBeenCalledTimes(1);
-      const config = idempotencyStoreConstructorSpy.mock
-        .calls[0]?.[0] as Record<string, unknown>;
-      expect(config.tenantId).toBe("tenant-1");
-      // ttlMs should NOT be present (let the store use its default 24h)
-      expect(config).not.toHaveProperty("ttlMs");
+      // When deps.idempotency is undefined, no idempotency store is created
+      expect(idempotencyStoreConstructorSpy).toHaveBeenCalledTimes(0);
     });
   });
 

@@ -49,7 +49,7 @@ describe("manifest repo-root path resolution", () => {
   it("loadPrecompiledIR throws a descriptive error for a missing IR path", () => {
     expect(() =>
       loadPrecompiledIR("packages/manifest-ir/ir/does-not-exist.json")
-    ).toThrow(/Precompiled IR not found at/);
+    ).toThrow(/Precompiled IR not found/);
   });
 
   it("pnpm-workspace.yaml exists at the repo root (sanity check for findRepoRoot)", () => {

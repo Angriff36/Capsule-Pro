@@ -6,6 +6,8 @@ import type { NextRequest } from "next/server";
 import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
+export const runtime = "nodejs";
+
 export async function POST(request: NextRequest) {
   try {
   // Auth disabled - all requests allowed

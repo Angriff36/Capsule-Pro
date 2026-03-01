@@ -163,3 +163,27 @@ Tasks: 7 successful, 7 total
 $ pnpm vitest run (manifest-runtime)
 Test Files: 14 passed, Tests: 667 passed
 ```
+
+---
+
+## Agent 52 — 2026-02-28
+
+**Goal:** Fix all 7 pre-existing kitchen test failures (7 failed → 0 failed, 374 tests green)
+
+- [x] Diagnose all 7 kitchen test failures — identified 5 distinct root causes (A–E)
+- [x] Fix root cause D: Add `export const runtime = "nodejs"` to claim/route.ts
+- [x] Fix root cause B: Delete stale snapshot, regenerate via projection test
+- [x] Fix root cause C: Fix error message regex in manifest-repo-root-resolution.test.ts
+- [x] Fix root cause E: Fix idempotency test expectation (0 calls when deps.idempotency undefined)
+- [x] Fix root cause A: Rewrite vitest.config.ts aliases from object to array format with regex pattern for @repo/manifest-adapters subpath exports
+- [x] Verify all 24 kitchen test files pass (374 tests, 0 failures)
+- [x] Verify determinism tests still pass (15/15)
+- [x] Write ledger entry, archive Agent 47
+- [ ] Commit changes
+
+### Files Changed
+- `apps/api/vitest.config.ts` — Rewrote aliases from object to array format; added regex pattern for manifest-adapters subpath exports; explicit ordering for database/standalone before database
+- `apps/api/app/api/kitchen/kitchen-tasks/commands/claim/route.ts` — Added `export const runtime = "nodejs"`
+- `apps/api/__tests__/kitchen/__snapshots__/preptask-claim-command.snapshot.ts` — Regenerated (includes runtime export)
+- `apps/api/__tests__/kitchen/manifest-repo-root-resolution.test.ts` — Fixed regex
+- `apps/api/__tests__/kitchen/manifest-runtime-factory.test.ts` — Fixed idempotency expectation

@@ -18,10 +18,40 @@ export default defineConfig({
     ],
   },
   resolve: {
-    alias: {
-      "@": resolve(__dirname, "."),
-      "server-only": resolve(__dirname, "./test/mocks/server-only.ts"),
-      "@repo/database": resolve(__dirname, "./test/mocks/@repo/database.ts"),
-    },
+    alias: [
+      // More-specific subpath aliases MUST come before their parent package
+      // aliases, otherwise Vite's prefix matching intercepts them.
+      {
+        find: "@repo/database/standalone",
+        replacement: resolve(__dirname, "./test/mocks/@repo/database.ts"),
+      },
+      {
+        find: "@repo/database",
+        replacement: resolve(__dirname, "./test/mocks/@repo/database.ts"),
+      },
+      // Resolve manifest-adapters to source so transitive imports
+      // (e.g. @repo/database/standalone from prisma-store) go through
+      // vitest's alias pipeline instead of Node's native ESM resolver.
+      // Regex captures subpath exports: @repo/manifest-adapters/foo → src/foo.ts
+      {
+        find: /^@repo\/manifest-adapters\/(.+)$/,
+        replacement: resolve(
+          __dirname,
+          "../../packages/manifest-adapters/src/$1.ts"
+        ),
+      },
+      {
+        find: "@repo/manifest-adapters",
+        replacement: resolve(
+          __dirname,
+          "../../packages/manifest-adapters/src/index.ts"
+        ),
+      },
+      { find: "@", replacement: resolve(__dirname, ".") },
+      {
+        find: "server-only",
+        replacement: resolve(__dirname, "./test/mocks/server-only.ts"),
+      },
+    ],
   },
 });
