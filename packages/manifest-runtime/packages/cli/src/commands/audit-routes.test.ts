@@ -68,6 +68,62 @@ export async function POST() {
     ).toBe(false);
   });
 
+  it("accepts write routes that use executeManifestCommand (indirect runCommand)", () => {
+    const content = `
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
+
+export async function POST(request: NextRequest) {
+  return executeManifestCommand(request, {
+    entityName: "KitchenTask",
+    commandName: "create",
+  });
+}
+
+export async function PATCH(request: NextRequest, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params;
+  return executeManifestCommand(request, {
+    entityName: "KitchenTask",
+    commandName: "update",
+    params: { id },
+    transformBody: (body, ctx) => ({ ...body, id }),
+  });
+}
+`;
+
+    const result = auditRouteFileContent(
+      content,
+      "app/api/kitchen/tasks/route.ts",
+      OPTIONS
+    );
+    const bypassFindings = result.findings.filter(
+      (f) => f.code === "WRITE_ROUTE_BYPASSES_RUNTIME"
+    );
+    expect(bypassFindings).toHaveLength(0);
+  });
+
+  it("does not warn about missing user context for executeManifestCommand routes", () => {
+    const content = `
+import { executeManifestCommand } from "@/lib/manifest-command-handler";
+
+export async function POST(request: NextRequest) {
+  return executeManifestCommand(request, {
+    entityName: "KitchenTask",
+    commandName: "create",
+  });
+}
+`;
+
+    const result = auditRouteFileContent(
+      content,
+      "app/api/kitchen/tasks/route.ts",
+      OPTIONS
+    );
+    const userContextFindings = result.findings.filter(
+      (f) => f.code === "WRITE_ROUTE_USER_CONTEXT_NOT_VISIBLE"
+    );
+    expect(userContextFindings).toHaveLength(0);
+  });
+
   it("flags direct read queries missing tenant and soft delete filters", () => {
     const content = `
 export async function GET() {

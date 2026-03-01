@@ -137,7 +137,19 @@ const ROUTE_PATTERNS = [
 
 const DIRECT_QUERY_RE =
   /\b(findMany|findFirst|findUnique|groupBy|aggregate)\s*\(/;
-const RUNTIME_COMMAND_RE = /\brunCommand\s*\(/;
+/**
+ * Matches routes that execute through the manifest runtime.
+ * - `runCommand(` — direct RuntimeEngine call
+ * - `executeManifestCommand(` — reusable handler that wraps runCommand
+ *   (see apps/api/lib/manifest-command-handler.ts)
+ */
+const RUNTIME_COMMAND_RE = /\b(?:runCommand|executeManifestCommand)\s*\(/;
+/**
+ * Matches routes that use the executeManifestCommand helper specifically.
+ * These routes get user context automatically (the helper calls requireCurrentUser),
+ * so the WRITE_ROUTE_USER_CONTEXT_NOT_VISIBLE warning should be suppressed.
+ */
+const EXECUTE_MANIFEST_COMMAND_RE = /\bexecuteManifestCommand\s*\(/;
 const USER_CONTEXT_RE = /\buser\s*:\s*\{/;
 
 function detectExportedMethods(content: string): string[] {
@@ -336,7 +348,8 @@ export function auditRouteFileContent(
     if (
       WRITE_METHODS.has(method) &&
       hasRunCommand &&
-      !USER_CONTEXT_RE.test(content)
+      !USER_CONTEXT_RE.test(content) &&
+      !EXECUTE_MANIFEST_COMMAND_RE.test(content)
     ) {
       findings.push({
         file,

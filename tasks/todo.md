@@ -166,24 +166,17 @@ Test Files: 14 passed, Tests: 667 passed
 
 ---
 
-## Agent 52 — 2026-02-28
+## Agent 53 — 2026-03-01
 
-**Goal:** Fix all 7 pre-existing kitchen test failures (7 failed → 0 failed, 374 tests green)
+**Goal:** Eliminate 47 false-positive WRITE_ROUTE_BYPASSES_RUNTIME audit errors by recognizing executeManifestCommand as valid runtime usage
 
-- [x] Diagnose all 7 kitchen test failures — identified 5 distinct root causes (A–E)
-- [x] Fix root cause D: Add `export const runtime = "nodejs"` to claim/route.ts
-- [x] Fix root cause B: Delete stale snapshot, regenerate via projection test
-- [x] Fix root cause C: Fix error message regex in manifest-repo-root-resolution.test.ts
-- [x] Fix root cause E: Fix idempotency test expectation (0 calls when deps.idempotency undefined)
-- [x] Fix root cause A: Rewrite vitest.config.ts aliases from object to array format with regex pattern for @repo/manifest-adapters subpath exports
-- [x] Verify all 24 kitchen test files pass (374 tests, 0 failures)
-- [x] Verify determinism tests still pass (15/15)
-- [x] Write ledger entry, archive Agent 47
+- [x] Update RUNTIME_COMMAND_RE to match executeManifestCommand
+- [x] Add EXECUTE_MANIFEST_COMMAND_RE to suppress user context warnings
+- [x] Add 2 new tests (bypass detection + user context suppression)
+- [x] Reclassify 33 exemptions from legacy-migrate to manifest-runtime
+- [x] Fix 6 exemption metadata errors (missing allowPermanent)
+- [x] Publish @angriff36/manifest@0.3.35, update 4 consumers
+- [x] Verify build pipeline: errors 171→124, warnings 41, strict gate passes
+- [x] Verify kitchen tests: 24 files, 374 tests, 0 failures
+- [x] Write ledger entry, archive Agent 48
 - [ ] Commit changes
-
-### Files Changed
-- `apps/api/vitest.config.ts` — Rewrote aliases from object to array format; added regex pattern for manifest-adapters subpath exports; explicit ordering for database/standalone before database
-- `apps/api/app/api/kitchen/kitchen-tasks/commands/claim/route.ts` — Added `export const runtime = "nodejs"`
-- `apps/api/__tests__/kitchen/__snapshots__/preptask-claim-command.snapshot.ts` — Regenerated (includes runtime export)
-- `apps/api/__tests__/kitchen/manifest-repo-root-resolution.test.ts` — Fixed regex
-- `apps/api/__tests__/kitchen/manifest-runtime-factory.test.ts` — Fixed idempotency expectation

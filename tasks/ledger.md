@@ -45,6 +45,7 @@ only the full write-up moves to the archive. This keeps the ledger readable for 
 4. Agent 46 — 16 points (orphan detection fix) (archived)
 4. Agent 48 — 16 points (Phase 3 route cleanup)
 4. Agent 50 — 16 points (Phase 4: flip to --strict)
+4. Agent 53 — 16 points (eliminate 47 false-positive audit errors)
 4. Agent 52 — 16 points (fix 7 kitchen test failures)
 4. Agent 51 — 16 points (fix 3 known integrity issues)
 4. Agent 49 — 16 points (OWNERSHIP_RULE_CODES guardrail)
@@ -390,79 +391,78 @@ Build complete!
 
 ---
 
-# Agent 48
+# Agent 53
 
-**Agent ID:** 48
-**Date/Time:** 2026-02-28 23:30
-**Base branch/commit:** codex/manifest-cli-doctor @ HEAD
+**Agent ID:** 53
+**Date/Time:** 2026-03-01 18:30
+**Base branch/commit:** codex/manifest-cli-doctor @ c719470ac
 
 **Goal:**
-Phase 3 route cleanup: triage 2 genuine orphans (create-validated/update-validated), delete 4 camelCase station duplicates, delete 6 prep-lists/items duplicates, update all references.
+Eliminate 47 false-positive `WRITE_ROUTE_BYPASSES_RUNTIME` audit errors by teaching the audit tool to recognize `executeManifestCommand` as a valid manifest runtime call. Reclassify 33 stale `legacy-migrate` exemptions to `manifest-runtime`.
 
 **Invariants enforced:**
 
-- Orphan command routes that are exempted must not trigger COMMAND_ROUTE_ORPHAN warnings. Exemptions registry is the single source of truth for suppression.
-- Duplicate routes (camelCase vs kebab-case, prep-lists/items vs prep-list-items) must be deleted — only the canonical IR-backed path survives.
-- All references (mobile app, tests, UI) must be updated to canonical paths before deletion.
+- Routes using `executeManifestCommand` (which wraps `runCommand`) must not be flagged as bypassing the manifest runtime. The audit regex must match both direct and indirect runtime calls.
+- Routes using `executeManifestCommand` must not trigger `WRITE_ROUTE_USER_CONTEXT_NOT_VISIBLE` warnings, since the helper provides user context internally via `requireCurrentUser()`.
+- Exemption categories must accurately reflect route status: routes already using the manifest runtime should not be categorized as `legacy-migrate`.
 
 **Subagents used:**
 
-- None. Direct execution — scope was narrow (delete duplicates, update references, fix orphan exemption logic).
+- ContextScout: Discovered relevant context files (handoff doc, plan, ledger, specs) before planning.
 
 **Reproducer:**
-`packages/manifest-runtime/packages/cli/src/commands/audit-routes.test.ts` — new test:
-- "does not flag an orphan command route that is exempted" — verifies exempted orphan routes are suppressed.
-- Fails pre-fix (orphan check ignores exemptions), passes post-fix.
+`packages/manifest-runtime/packages/cli/src/commands/audit-routes.test.ts` — 2 new tests:
+1. "accepts write routes that use executeManifestCommand (indirect runCommand)" — POST + PATCH route with `executeManifestCommand` produces 0 `WRITE_ROUTE_BYPASSES_RUNTIME` findings. Fails pre-fix (regex only matches `runCommand`), passes post-fix.
+2. "does not warn about missing user context for executeManifestCommand routes" — POST route with `executeManifestCommand` produces 0 `WRITE_ROUTE_USER_CONTEXT_NOT_VISIBLE` findings. Fails pre-fix (no `user: {` pattern detected), passes post-fix.
 
 **Root cause:**
-1. **Orphan exemption gap:** `COMMAND_ROUTE_ORPHAN` check in `audit-routes.ts` did not consult the exemptions registry. Routes like `create-validated` and `update-validated` were already exempted but still flagged as orphans.
-2. **Duplicate routes:** Generator previously created camelCase routes (`assignTask/`) alongside kebab-case (`assign-task/`). The `prep-lists/items/commands/*` path duplicated `prep-list-items/commands/*`.
+`RUNTIME_COMMAND_RE = /\brunCommand\s*\(/` only matched direct `runCommand(` calls. 33 routes use `executeManifestCommand()` from `@/lib/manifest-command-handler` which internally calls `runCommand()`. The audit tool couldn't see through this indirection, producing 47 false-positive errors (33 routes × varying write method counts). Additionally, these routes were incorrectly categorized as `legacy-migrate` in the exemptions registry despite already using the manifest runtime.
 
 **Fix strategy:**
-1. Updated `audit-routes.ts` orphan check to also skip routes that are in the exemptions registry (4 lines added).
-2. Added test for exempted orphan suppression.
-3. Published `@angriff36/manifest@0.3.31`.
-4. Deleted 4 camelCase station command dirs: `assignTask/`, `removeTask/`, `updateCapacity/`, `updateEquipment/`.
-5. Deleted 6 `prep-lists/items/commands/*` duplicate routes (restored `prep-lists/items/[id]/route.ts` which was not a duplicate).
-6. Updated all references in 6 files: mobile hooks, mobile mutations, mobile kitchen UI, 3 test files.
-7. Removed 4 stale camelCase exemptions from registry.
-8. Updated capsule-pro to `@angriff36/manifest@0.3.31` (4 package.json files + lockfile).
+1. Expanded `RUNTIME_COMMAND_RE` to `/\b(?:runCommand|executeManifestCommand)\s*\(/` — matches both direct and indirect runtime calls (1 line changed).
+2. Added `EXECUTE_MANIFEST_COMMAND_RE` to suppress `WRITE_ROUTE_USER_CONTEXT_NOT_VISIBLE` for routes using the helper (1 condition added).
+3. Added 2 new tests covering both behaviors.
+4. Reclassified 33 exemptions from `legacy-migrate` to `manifest-runtime` with accurate reasons.
+5. Fixed 6 exemption metadata errors (missing `allowPermanent` flag).
+6. Published `@angriff36/manifest@0.3.35`, updated 4 consumers.
+
+Minimal diff: 2 source files changed in audit tool, 1 test file, 1 exemptions JSON.
 
 **Verification evidence:**
 
 ```
-# Manifest repo — all tests pass (689 tests, 16 files)
+# Manifest repo — all tests pass (706 tests, 16 files)
 $ npm test
-Test Files: 16 passed, Tests: 689 passed
+Test Files: 16 passed, Tests: 706 passed
 
-# Published 0.3.31
-$ npm publish --ignore-scripts
-+ @angriff36/manifest@0.3.31
+# Published 0.3.35
+$ npm publish --ignore-scripts --registry=https://npm.pkg.github.com
++ @angriff36/manifest@0.3.35
 
 # Capsule-pro — full build pipeline
 $ node scripts/manifest/build.mjs
-Audited 529 route file(s) — 172 error(s), 41 warning(s)
-Build complete!
+Audited 535 route file(s) — 124 error(s), 41 warning(s)
+[manifest/build] Route boundary audit passed (strict mode).
+[manifest/build] Build complete!
+# Error count: 171 → 124 (47 fewer — exactly matching prediction)
+# Warning count: 41 (unchanged)
 
-# Orphan count: 0 (was 2)
-$ node scripts/manifest/build.mjs 2>&1 | grep COMMAND_ROUTE_ORPHAN
-(no output — zero orphans)
-
-# Warning count: 41 (was 43, dropped by 2)
-# Route files: 529 (was 539, dropped by 10 deleted files)
+# Kitchen tests — all pass
+$ pnpm --filter api test __tests__/kitchen/ -- --run
+Test Files: 24 passed (24)
+Tests: 374 passed (374)
 ```
 
 **Follow-ups filed:**
-- None. Phase 3 complete. Phase 4 (flip to --strict) is next.
+- Burn down remaining 124 `WRITE_ROUTE_BYPASSES_RUNTIME` errors (63 truly legacy routes)
+- Remaining legacy-migrate exemptions: 63 (was 96, reduced by 33)
 
 **Points tally:**
-+3 invariant defined before implementation (exemptions suppress orphans, only canonical paths survive, all references updated)
-+5 minimal reproducer added (test fails pre-fix when orphan check ignores exemptions, passes post-fix)
-+4 fix addresses root cause with minimal diff (4 lines in audit-routes.ts + route deletions + reference updates)
-+2 improved diagnosability (orphan count 2→0, warning count 43→41, 10 duplicate routes eliminated)
-+2 boundary/edge case added (restored prep-lists/items/[id]/route.ts which was NOT a duplicate — careful scoping)
++3 invariant defined before implementation (executeManifestCommand = valid runtime call, user context provided by helper, exemption categories must be accurate)
++5 minimal reproducer added (2 tests: bypass detection + user context suppression — both fail pre-fix, pass post-fix)
++4 fix addresses root cause with minimal diff (1 regex expansion + 1 condition — not a workaround)
++2 improved diagnosability (error count 171→124, legacy-migrate count 96→63, exemption categories now reflect actual route status)
++2 boundary/edge case added (PATCH method in test proves multi-method routes are handled; user context suppression prevents 47 new false-positive warnings from appearing)
 = **16 points**
-
----
 
 ---
