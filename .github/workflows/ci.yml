@@ -53,6 +53,7 @@ jobs:
       - name: Build with Turbo (matches Vercel)
         run: pnpm turbo run build
         env:
+          NODE_OPTIONS: "--max-old-space-size=8192"
           # All required env vars for build-time validation (dummy values for CI)
           SKIP_ENV_VALIDATION: true
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
@@ -74,7 +75,7 @@ jobs:
           KNOCK_API_KEY: "dummy"
           KNOCK_FEED_CHANNEL_ID: "dummy"
           # Client env vars
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_dummy"
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_Y2kuZHVtbXkuYWNjb3VudHMuZGV2JA=="
           NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
           NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
           NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: "/"
