@@ -1,0 +1,441 @@
+// CRM & Sales - Proposal Rules
+// Manifest spec for proposal lifecycle and line item management
+
+entity Proposal {
+  property required id: string
+  property required tenantId: string
+  property proposalNumber: string = ""
+  property clientId: string = ""
+  property leadId: string = ""
+  property eventId: string = ""
+  property title: string = ""
+  property eventDate: number = 0
+  property eventType: string = ""
+  property guestCount: number = 0
+  property venueName: string = ""
+  property venueAddress: string = ""
+  property subtotal: number = 0
+  property taxRate: number = 0
+  property taxAmount: number = 0
+  property discountAmount: number = 0
+  property total: number = 0
+  property status: string = "draft"
+  property validUntil: number = 0
+  property sentAt: number = 0
+  property viewedAt: number = 0
+  property acceptedAt: number = 0
+  property rejectedAt: number = 0
+  property notes: string = ""
+  property termsAndConditions: string = ""
+  property lineItemCount: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isDraft: boolean = self.status == "draft"
+  computed isSent: boolean = self.status == "sent" or self.status == "viewed"
+  computed isAccepted: boolean = self.status == "accepted"
+  computed isRejected: boolean = self.status == "rejected"
+  computed isWithdrawn: boolean = self.status == "withdrawn"
+  computed isExpired: boolean = self.validUntil > 0 and self.validUntil < now()
+  computed isFinalized: boolean = self.status in ["accepted", "rejected", "withdrawn", "expired"]
+  computed hasLineItems: boolean = self.lineItemCount > 0
+  computed hasDiscount: boolean = self.discountAmount > 0
+
+  constraint validStatus: self.status in ["draft", "sent", "viewed", "accepted", "rejected", "withdrawn", "expired"] "Invalid proposal status"
+  constraint validTitle: self.title != null and self.title != "" "Proposal title is required"
+  constraint validProposalNumber: self.proposalNumber != null and self.proposalNumber != "" "Proposal number is required"
+  constraint positiveSubtotal: self.subtotal >= 0 "Subtotal must be non-negative"
+  constraint positiveTaxRate: self.taxRate >= 0 "Tax rate must be non-negative"
+  constraint positiveTotal: self.total >= 0 "Total must be non-negative"
+
+  constraint warnExpiringSoon:warn self.validUntil > 0 and self.validUntil > now() and self.status == "sent" {
+    messageTemplate: "Proposal '{proposalNumber}' is sent and approaching expiration"
+    details: {
+      proposalNumber: self.proposalNumber
+      title: self.title
+      validUntil: self.validUntil
+      total: self.total
+    }
+  }
+
+  constraint warnHighDiscount:warn self.subtotal > 0 and self.discountAmount > self.subtotal * 0.2 {
+    messageTemplate: "Proposal '{proposalNumber}' has a discount exceeding 20% of subtotal"
+    details: {
+      proposalNumber: self.proposalNumber
+      subtotal: self.subtotal
+      discountAmount: self.discountAmount
+      discountPercent: (self.discountAmount / self.subtotal) * 100
+    }
+  }
+
+  command create(proposalNumber: string, clientId: string, leadId: string, eventId: string, title: string, eventDate: number, eventType: string, guestCount: number, venueName: string, venueAddress: string, taxRate: number, validUntil: number, notes: string, termsAndConditions: string) {
+    guard title != null and title != "" "Proposal title is required"
+    guard proposalNumber != null and proposalNumber != "" "Proposal number is required"
+
+    constraint warnNoClient:warn (clientId == null or clientId == "") and (leadId == null or leadId == "") {
+      messageTemplate: "Creating proposal '{proposalNumber}' with no client or lead attached"
+      details: {
+        proposalNumber: proposalNumber
+        title: title
+      }
+    }
+
+    mutate proposalNumber = proposalNumber
+    mutate clientId = clientId
+    mutate leadId = leadId
+    mutate eventId = eventId
+    mutate title = title
+    mutate eventDate = eventDate
+    mutate eventType = eventType
+    mutate guestCount = guestCount
+    mutate venueName = venueName
+    mutate venueAddress = venueAddress
+    mutate taxRate = taxRate
+    mutate validUntil = validUntil
+    mutate notes = notes
+    mutate termsAndConditions = termsAndConditions
+    mutate subtotal = 0
+    mutate taxAmount = 0
+    mutate discountAmount = 0
+    mutate total = 0
+    mutate status = "draft"
+    mutate lineItemCount = 0
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit ProposalCreated
+  }
+
+  command update(title: string, eventDate: number, eventType: string, guestCount: number, venueName: string, venueAddress: string, subtotal: number, taxRate: number, taxAmount: number, discountAmount: number, total: number, validUntil: number, notes: string, termsAndConditions: string) {
+    guard self.deletedAt == 0 "Cannot update a deleted proposal"
+    guard self.isDraft "Can only update proposals in draft status"
+    guard title != null and title != "" "Proposal title is required"
+
+    mutate title = title
+    mutate eventDate = eventDate
+    mutate eventType = eventType
+    mutate guestCount = guestCount
+    mutate venueName = venueName
+    mutate venueAddress = venueAddress
+    mutate subtotal = subtotal
+    mutate taxRate = taxRate
+    mutate taxAmount = taxAmount
+    mutate discountAmount = discountAmount
+    mutate total = total
+    mutate validUntil = validUntil
+    mutate notes = notes
+    mutate termsAndConditions = termsAndConditions
+    mutate updatedAt = now()
+
+    emit ProposalUpdated
+  }
+
+  command send(userId: string) {
+    guard self.deletedAt == 0 "Cannot send a deleted proposal"
+    guard self.isDraft "Can only send proposals in draft status"
+
+    constraint blockNoLineItems:block self.hasLineItems == false {
+      messageTemplate: "Cannot send proposal '{proposalNumber}' with no line items"
+      details: {
+        proposalNumber: self.proposalNumber
+        title: self.title
+      }
+    }
+
+    constraint warnNoValidUntil:warn self.validUntil == 0 {
+      messageTemplate: "Sending proposal '{proposalNumber}' with no expiration date"
+      details: {
+        proposalNumber: self.proposalNumber
+        title: self.title
+        total: self.total
+      }
+    }
+
+    constraint warnZeroTotal:warn self.total == 0 {
+      messageTemplate: "Sending proposal '{proposalNumber}' with zero total amount"
+      details: {
+        proposalNumber: self.proposalNumber
+        title: self.title
+      }
+    }
+
+    mutate status = "sent"
+    mutate sentAt = now()
+    mutate updatedAt = now()
+
+    emit ProposalSent
+  }
+
+  command markViewed(viewedByInfo: string) {
+    guard self.status == "sent" "Can only mark sent proposals as viewed"
+
+    mutate status = "viewed"
+    mutate viewedAt = now()
+    mutate updatedAt = now()
+
+    emit ProposalViewed
+  }
+
+  command accept(userId: string) {
+    guard self.deletedAt == 0 "Cannot accept a deleted proposal"
+    guard self.status in ["sent", "viewed"] "Can only accept sent or viewed proposals"
+
+    constraint blockExpired:block self.isExpired {
+      messageTemplate: "Cannot accept expired proposal '{proposalNumber}' (expired on {validUntil})"
+      details: {
+        proposalNumber: self.proposalNumber
+        title: self.title
+        validUntil: self.validUntil
+      }
+    }
+
+    mutate status = "accepted"
+    mutate acceptedAt = now()
+    mutate updatedAt = now()
+
+    emit ProposalAccepted
+  }
+
+  command reject(reason: string, userId: string) {
+    guard self.deletedAt == 0 "Cannot reject a deleted proposal"
+    guard self.status in ["sent", "viewed"] "Can only reject sent or viewed proposals"
+
+    mutate status = "rejected"
+    mutate rejectedAt = now()
+    mutate updatedAt = now()
+
+    emit ProposalRejected
+  }
+
+  command withdraw(reason: string, userId: string) {
+    guard self.deletedAt == 0 "Cannot withdraw a deleted proposal"
+
+    constraint blockAlreadyAccepted:block self.isAccepted {
+      messageTemplate: "Cannot withdraw accepted proposal '{proposalNumber}'"
+      details: {
+        proposalNumber: self.proposalNumber
+        title: self.title
+        acceptedAt: self.acceptedAt
+      }
+    }
+
+    constraint blockAlreadyWithdrawn:block self.isWithdrawn {
+      messageTemplate: "Proposal '{proposalNumber}' is already withdrawn"
+      details: {
+        proposalNumber: self.proposalNumber
+      }
+    }
+
+    mutate status = "withdrawn"
+    mutate updatedAt = now()
+
+    emit ProposalWithdrawn
+  }
+
+  store Proposal in memory
+}
+
+entity ProposalLineItem {
+  property required id: string
+  property required tenantId: string
+  property required proposalId: string
+  property itemType: string = ""
+  property category: string = ""
+  property description: string = ""
+  property quantity: number = 0
+  property unitOfMeasure: string = ""
+  property unitPrice: number = 0
+  property total: number = 0
+  property totalPrice: number = 0
+  property sortOrder: number = 0
+  property notes: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed calculatedTotal: number = self.quantity * self.unitPrice
+
+  constraint validProposalId: self.proposalId != null and self.proposalId != "" "Proposal ID is required"
+  constraint validDescription: self.description != null and self.description != "" "Description is required"
+  constraint positiveQuantity: self.quantity > 0 "Quantity must be positive"
+  constraint positiveUnitPrice: self.unitPrice >= 0 "Unit price must be non-negative"
+  constraint positiveSortOrder: self.sortOrder >= 0 "Sort order must be non-negative"
+
+  constraint warnZeroPrice:warn self.unitPrice == 0 {
+    messageTemplate: "Line item '{description}' has zero unit price"
+    details: {
+      description: self.description
+      category: self.category
+      quantity: self.quantity
+    }
+  }
+
+  command create(proposalId: string, itemType: string, category: string, description: string, quantity: number, unitOfMeasure: string, unitPrice: number, sortOrder: number, notes: string) {
+    guard proposalId != null and proposalId != "" "Proposal ID is required"
+    guard description != null and description != "" "Description is required"
+    guard quantity > 0 "Quantity must be positive"
+    guard unitPrice >= 0 "Unit price must be non-negative"
+
+    mutate proposalId = proposalId
+    mutate itemType = itemType
+    mutate category = category
+    mutate description = description
+    mutate quantity = quantity
+    mutate unitOfMeasure = unitOfMeasure
+    mutate unitPrice = unitPrice
+    mutate total = quantity * unitPrice
+    mutate totalPrice = quantity * unitPrice
+    mutate sortOrder = sortOrder
+    mutate notes = notes
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit ProposalLineItemCreated
+  }
+
+  command update(itemType: string, category: string, description: string, quantity: number, unitOfMeasure: string, unitPrice: number, sortOrder: number, notes: string) {
+    guard self.deletedAt == 0 "Cannot update a removed line item"
+    guard description != null and description != "" "Description is required"
+    guard quantity > 0 "Quantity must be positive"
+    guard unitPrice >= 0 "Unit price must be non-negative"
+
+    mutate itemType = itemType
+    mutate category = category
+    mutate description = description
+    mutate quantity = quantity
+    mutate unitOfMeasure = unitOfMeasure
+    mutate unitPrice = unitPrice
+    mutate total = quantity * unitPrice
+    mutate totalPrice = quantity * unitPrice
+    mutate sortOrder = sortOrder
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit ProposalLineItemUpdated
+  }
+
+  command remove(userId: string) {
+    guard self.deletedAt == 0 "Line item is already removed"
+
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit ProposalLineItemRemoved
+  }
+
+  store ProposalLineItem in memory
+}
+
+// Policy definitions
+policy SalesCanManageProposals execute: user.role in ["sales", "manager", "admin"] "Sales staff can manage proposals"
+policy SalesCanSendProposals execute: user.role in ["sales", "manager", "admin"] "Sales staff can send proposals"
+policy ManagerCanWithdrawProposals execute: user.role in ["manager", "admin"] "Only managers can withdraw proposals"
+policy SalesCanManageLineItems execute: user.role in ["sales", "manager", "admin"] "Sales staff can manage line items"
+
+// Proposal events
+event ProposalCreated: "crm.proposal.created" {
+  proposalId: string
+  tenantId: string
+  proposalNumber: string
+  clientId: string
+  leadId: string
+  title: string
+  createdAt: number
+}
+
+event ProposalUpdated: "crm.proposal.updated" {
+  proposalId: string
+  tenantId: string
+  proposalNumber: string
+  title: string
+  total: number
+  updatedAt: number
+}
+
+event ProposalSent: "crm.proposal.sent" {
+  proposalId: string
+  tenantId: string
+  proposalNumber: string
+  clientId: string
+  title: string
+  total: number
+  validUntil: number
+  userId: string
+  sentAt: number
+}
+
+event ProposalViewed: "crm.proposal.viewed" {
+  proposalId: string
+  tenantId: string
+  proposalNumber: string
+  title: string
+  viewedByInfo: string
+  viewedAt: number
+}
+
+event ProposalAccepted: "crm.proposal.accepted" {
+  proposalId: string
+  tenantId: string
+  proposalNumber: string
+  clientId: string
+  title: string
+  total: number
+  userId: string
+  acceptedAt: number
+}
+
+event ProposalRejected: "crm.proposal.rejected" {
+  proposalId: string
+  tenantId: string
+  proposalNumber: string
+  clientId: string
+  title: string
+  total: number
+  reason: string
+  userId: string
+  rejectedAt: number
+}
+
+event ProposalWithdrawn: "crm.proposal.withdrawn" {
+  proposalId: string
+  tenantId: string
+  proposalNumber: string
+  title: string
+  reason: string
+  userId: string
+  withdrawnAt: number
+}
+
+// ProposalLineItem events
+event ProposalLineItemCreated: "crm.proposal_line_item.created" {
+  lineItemId: string
+  tenantId: string
+  proposalId: string
+  description: string
+  category: string
+  quantity: number
+  unitPrice: number
+  totalPrice: number
+  createdAt: number
+}
+
+event ProposalLineItemUpdated: "crm.proposal_line_item.updated" {
+  lineItemId: string
+  tenantId: string
+  proposalId: string
+  description: string
+  quantity: number
+  unitPrice: number
+  totalPrice: number
+  updatedAt: number
+}
+
+event ProposalLineItemRemoved: "crm.proposal_line_item.removed" {
+  lineItemId: string
+  tenantId: string
+  proposalId: string
+  description: string
+  userId: string
+  removedAt: number
+}

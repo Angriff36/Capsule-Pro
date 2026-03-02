@@ -59,5 +59,12 @@ export const initializeSentry = async (): Promise<void> => {
         levels: ["log", "error", "warn"],
       }),
     ],
+    beforeSend(event) {
+      if (shouldDropDevWebpackCacheError(event)) {
+        return null;
+      }
+
+      return event;
+    },
   });
 };

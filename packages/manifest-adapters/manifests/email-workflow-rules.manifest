@@ -1,0 +1,80 @@
+// Collaboration Domain - Email Workflow Rules
+// Manifest spec for email workflow CRUD
+
+entity EmailWorkflow {
+  property required id: string
+  property required tenantId: string
+  property name: string = ""
+  property triggerType: string = "custom"
+  property triggerConfig: string = "{}"
+  property emailTemplateId: string = ""
+  property recipientConfig: string = "{}"
+  property isActive: boolean = true
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isDeleted: boolean = self.deletedAt > 0
+
+  constraint requireName: self.name != "" "Workflow name is required"
+
+  command create(name: string, triggerType: string, triggerConfig: string, emailTemplateId: string, recipientConfig: string, isActive: boolean) {
+    guard name != null and name != "" "Workflow name is required"
+
+    mutate name = name
+    mutate triggerType = triggerType
+    mutate triggerConfig = triggerConfig
+    mutate emailTemplateId = emailTemplateId
+    mutate recipientConfig = recipientConfig
+    mutate isActive = isActive
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit EmailWorkflowCreated
+  }
+
+  command update(name: string, triggerConfig: string, emailTemplateId: string, recipientConfig: string, isActive: boolean) {
+    guard self.deletedAt == 0 "Cannot update a deleted workflow"
+
+    mutate name = name
+    mutate triggerConfig = triggerConfig
+    mutate emailTemplateId = emailTemplateId
+    mutate recipientConfig = recipientConfig
+    mutate isActive = isActive
+    mutate updatedAt = now()
+
+    emit EmailWorkflowUpdated
+  }
+
+  command softDelete() {
+    guard self.deletedAt == 0 "Workflow is already deleted"
+
+    mutate deletedAt = now()
+    mutate isActive = false
+    mutate updatedAt = now()
+
+    emit EmailWorkflowDeleted
+  }
+
+  store EmailWorkflow in memory
+}
+
+policy EmailWorkflowManagement execute: user.role in ["manager", "admin"] "Managers can manage email workflows"
+
+event EmailWorkflowCreated: "collaboration.email-workflow.created" {
+  workflowId: string
+  tenantId: string
+  name: string
+  triggerType: string
+  createdAt: number
+}
+
+event EmailWorkflowUpdated: "collaboration.email-workflow.updated" {
+  workflowId: string
+  updatedAt: number
+}
+
+event EmailWorkflowDeleted: "collaboration.email-workflow.deleted" {
+  workflowId: string
+  deletedAt: number
+}

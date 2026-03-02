@@ -1,0 +1,127 @@
+// Staff Domain - Labor Budget Rules
+// Manifest spec for labor budgets and budget alerts
+
+entity LaborBudget {
+  property required id: string
+  property required tenantId: string
+  property locationId: string = ""
+  property periodStart: string = ""
+  property periodEnd: string = ""
+  property budgetAmount: number = 0
+  property budgetType: string = "weekly"
+  property notes: string = ""
+  property createdBy: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isDeleted: boolean = self.deletedAt > 0
+
+  command create(locationId: string, periodStart: string, periodEnd: string, budgetAmount: number, budgetType: string, notes: string, createdBy: string) {
+    guard budgetAmount > 0 "Budget amount must be positive"
+
+    mutate locationId = locationId
+    mutate periodStart = periodStart
+    mutate periodEnd = periodEnd
+    mutate budgetAmount = budgetAmount
+    mutate budgetType = budgetType
+    mutate notes = notes
+    mutate createdBy = createdBy
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit LaborBudgetCreated
+  }
+
+  command update(locationId: string, periodStart: string, periodEnd: string, budgetAmount: number, budgetType: string, notes: string) {
+    guard self.deletedAt == 0 "Cannot update a deleted budget"
+
+    mutate locationId = locationId
+    mutate periodStart = periodStart
+    mutate periodEnd = periodEnd
+    mutate budgetAmount = budgetAmount
+    mutate budgetType = budgetType
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit LaborBudgetUpdated
+  }
+
+  command softDelete() {
+    guard self.deletedAt == 0 "Budget is already deleted"
+
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit LaborBudgetDeleted
+  }
+
+  store LaborBudget in memory
+}
+
+entity BudgetAlert {
+  property required id: string
+  property required tenantId: string
+  property budgetId: string = ""
+  property alertType: string = ""
+  property isAcknowledged: boolean = false
+  property acknowledgedBy: string = ""
+  property acknowledgedAt: number = 0
+  property resolved: boolean = false
+  property resolvedAt: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+
+  command acknowledge(acknowledgedBy: string) {
+    guard self.isAcknowledged == false "Alert is already acknowledged"
+
+    mutate isAcknowledged = true
+    mutate acknowledgedBy = acknowledgedBy
+    mutate acknowledgedAt = now()
+    mutate updatedAt = now()
+
+    emit BudgetAlertAcknowledged
+  }
+
+  command resolve() {
+    guard self.resolved == false "Alert is already resolved"
+
+    mutate resolved = true
+    mutate resolvedAt = now()
+    mutate updatedAt = now()
+
+    emit BudgetAlertResolved
+  }
+
+  store BudgetAlert in memory
+}
+
+policy LaborBudgetManagement execute: user.role in ["manager", "admin"] "Managers can manage labor budgets"
+
+event LaborBudgetCreated: "staff.labor-budget.created" {
+  budgetId: string
+  tenantId: string
+  budgetAmount: number
+  createdAt: number
+}
+
+event LaborBudgetUpdated: "staff.labor-budget.updated" {
+  budgetId: string
+  updatedAt: number
+}
+
+event LaborBudgetDeleted: "staff.labor-budget.deleted" {
+  budgetId: string
+  deletedAt: number
+}
+
+event BudgetAlertAcknowledged: "staff.budget-alert.acknowledged" {
+  alertId: string
+  acknowledgedBy: string
+  acknowledgedAt: number
+}
+
+event BudgetAlertResolved: "staff.budget-alert.resolved" {
+  alertId: string
+  resolvedAt: number
+}

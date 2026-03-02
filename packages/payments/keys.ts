@@ -3,6 +3,7 @@ import { z } from "zod";
 
 export const keys = () =>
   createEnv({
+    skipValidation: !!process.env.SKIP_ENV_VALIDATION,
     server: {
       STRIPE_SECRET_KEY: z.string().startsWith("sk_"),
       STRIPE_WEBHOOK_SECRET: z.string().startsWith("whsec_").optional(),

@@ -1,0 +1,408 @@
+// CRM & Sales - Client Rules
+// Manifest spec for client, contact, and preference management
+
+entity Client {
+  property required id: string
+  property required tenantId: string
+  property clientType: string = "company"
+  property companyName: string = ""
+  property firstName: string = ""
+  property lastName: string = ""
+  property email: string = ""
+  property phone: string = ""
+  property website: string = ""
+  property addressLine1: string = ""
+  property addressLine2: string = ""
+  property city: string = ""
+  property stateProvince: string = ""
+  property postalCode: string = ""
+  property countryCode: string = ""
+  property defaultPaymentTerms: number = 30
+  property taxExempt: boolean = false
+  property taxId: string = ""
+  property notes: string = ""
+  property tags: string = ""
+  property source: string = ""
+  property assignedTo: string = ""
+  property isActive: boolean = true
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed displayName: string = self.clientType == "company" ? self.companyName : self.firstName + " " + self.lastName
+  computed hasEmail: boolean = self.email != null and self.email != ""
+  computed isArchived: boolean = self.deletedAt > 0
+
+  constraint validClientType: self.clientType in ["company", "individual"] "Client type must be 'company' or 'individual'"
+  constraint validPaymentTerms: self.defaultPaymentTerms >= 0 "Payment terms must be non-negative"
+
+  constraint warnNoEmail:warn self.email == "" and self.phone == "" {
+    messageTemplate: "Client '{clientName}' has no email or phone on file"
+    details: {
+      clientName: self.displayName
+      clientType: self.clientType
+    }
+  }
+
+  constraint warnNoSource:warn self.source == "" {
+    messageTemplate: "Client '{clientName}' has no lead source recorded"
+    details: {
+      clientName: self.displayName
+    }
+  }
+
+  command create(clientType: string, companyName: string, firstName: string, lastName: string, email: string, phone: string, website: string, addressLine1: string, addressLine2: string, city: string, stateProvince: string, postalCode: string, countryCode: string, defaultPaymentTerms: number, taxExempt: boolean, taxId: string, notes: string, tags: string, source: string, assignedTo: string) {
+    guard clientType != null and clientType != "" "Client type is required"
+
+    constraint blockCompanyNoName:block clientType == "company" and (companyName == null or companyName == "") {
+      messageTemplate: "Company clients require a company name"
+      details: {}
+    }
+
+    constraint blockIndividualNoName:block clientType == "individual" and (firstName == null or firstName == "") {
+      messageTemplate: "Individual clients require a first name"
+      details: {}
+    }
+
+    mutate clientType = clientType
+    mutate companyName = companyName
+    mutate firstName = firstName
+    mutate lastName = lastName
+    mutate email = email
+    mutate phone = phone
+    mutate website = website
+    mutate addressLine1 = addressLine1
+    mutate addressLine2 = addressLine2
+    mutate city = city
+    mutate stateProvince = stateProvince
+    mutate postalCode = postalCode
+    mutate countryCode = countryCode
+    mutate defaultPaymentTerms = defaultPaymentTerms
+    mutate taxExempt = taxExempt
+    mutate taxId = taxId
+    mutate notes = notes
+    mutate tags = tags
+    mutate source = source
+    mutate assignedTo = assignedTo
+    mutate isActive = true
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit ClientCreated
+  }
+
+  command update(companyName: string, firstName: string, lastName: string, email: string, phone: string, website: string, addressLine1: string, addressLine2: string, city: string, stateProvince: string, postalCode: string, countryCode: string, defaultPaymentTerms: number, taxExempt: boolean, taxId: string, notes: string, tags: string, source: string, assignedTo: string) {
+    guard self.deletedAt == 0 "Cannot update an archived client"
+
+    mutate companyName = companyName
+    mutate firstName = firstName
+    mutate lastName = lastName
+    mutate email = email
+    mutate phone = phone
+    mutate website = website
+    mutate addressLine1 = addressLine1
+    mutate addressLine2 = addressLine2
+    mutate city = city
+    mutate stateProvince = stateProvince
+    mutate postalCode = postalCode
+    mutate countryCode = countryCode
+    mutate defaultPaymentTerms = defaultPaymentTerms
+    mutate taxExempt = taxExempt
+    mutate taxId = taxId
+    mutate notes = notes
+    mutate tags = tags
+    mutate source = source
+    mutate assignedTo = assignedTo
+    mutate updatedAt = now()
+
+    emit ClientUpdated
+  }
+
+  command archive(reason: string, userId: string) {
+    guard self.deletedAt == 0 "Client is already archived"
+
+    constraint warnArchiveWithAssignment:warn self.assignedTo != "" {
+      messageTemplate: "Archiving client '{clientName}' who is assigned to a sales rep"
+      details: {
+        clientName: self.displayName
+        assignedTo: self.assignedTo
+      }
+    }
+
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit ClientArchived
+  }
+
+  command reactivate(userId: string) {
+    guard self.deletedAt > 0 "Client is not archived"
+
+    mutate deletedAt = 0
+    mutate updatedAt = now()
+
+    emit ClientReactivated
+  }
+
+  store Client in memory
+}
+
+entity ClientContact {
+  property required id: string
+  property required tenantId: string
+  property required clientId: string
+  property firstName: string = ""
+  property lastName: string = ""
+  property title: string = ""
+  property email: string = ""
+  property phone: string = ""
+  property phoneMobile: string = ""
+  property isPrimary: boolean = false
+  property isBillingContact: boolean = false
+  property notes: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed fullName: string = self.firstName + " " + self.lastName
+  computed hasContactInfo: boolean = self.email != "" or self.phone != "" or self.phoneMobile != ""
+
+  constraint validClientId: self.clientId != null and self.clientId != "" "Client ID is required"
+  constraint validFirstName: self.firstName != null and self.firstName != "" "First name is required"
+  constraint validLastName: self.lastName != null and self.lastName != "" "Last name is required"
+
+  constraint warnNoContactInfo:warn self.email == "" and self.phone == "" and self.phoneMobile == "" {
+    messageTemplate: "Contact '{contactName}' has no email or phone number"
+    details: {
+      contactName: self.fullName
+      clientId: self.clientId
+    }
+  }
+
+  command create(clientId: string, firstName: string, lastName: string, title: string, email: string, phone: string, phoneMobile: string, isPrimary: boolean, isBillingContact: boolean, notes: string) {
+    guard clientId != null and clientId != "" "Client ID is required"
+    guard firstName != null and firstName != "" "First name is required"
+    guard lastName != null and lastName != "" "Last name is required"
+
+    mutate clientId = clientId
+    mutate firstName = firstName
+    mutate lastName = lastName
+    mutate title = title
+    mutate email = email
+    mutate phone = phone
+    mutate phoneMobile = phoneMobile
+    mutate isPrimary = isPrimary
+    mutate isBillingContact = isBillingContact
+    mutate notes = notes
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit ClientContactCreated
+  }
+
+  command update(firstName: string, lastName: string, title: string, email: string, phone: string, phoneMobile: string, isBillingContact: boolean, notes: string) {
+    guard self.deletedAt == 0 "Cannot update a removed contact"
+
+    mutate firstName = firstName
+    mutate lastName = lastName
+    mutate title = title
+    mutate email = email
+    mutate phone = phone
+    mutate phoneMobile = phoneMobile
+    mutate isBillingContact = isBillingContact
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit ClientContactUpdated
+  }
+
+  command remove(reason: string, userId: string) {
+    guard self.deletedAt == 0 "Contact is already removed"
+
+    constraint warnRemovePrimary:warn self.isPrimary {
+      messageTemplate: "Removing primary contact '{contactName}' from client"
+      details: {
+        contactName: self.fullName
+        clientId: self.clientId
+      }
+    }
+
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit ClientContactRemoved
+  }
+
+  command setPrimary(userId: string) {
+    guard self.deletedAt == 0 "Cannot set a removed contact as primary"
+    guard self.isPrimary == false "Contact is already primary"
+
+    mutate isPrimary = true
+    mutate updatedAt = now()
+
+    emit ClientContactSetPrimary
+  }
+
+  store ClientContact in memory
+}
+
+entity ClientPreference {
+  property required id: string
+  property required tenantId: string
+  property required clientId: string
+  property preferenceType: string = ""
+  property preferenceKey: string = ""
+  property preferenceValue: string = ""
+  property notes: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  constraint validClientId: self.clientId != null and self.clientId != "" "Client ID is required"
+  constraint validPreferenceType: self.preferenceType != null and self.preferenceType != "" "Preference type is required"
+  constraint validPreferenceKey: self.preferenceKey != null and self.preferenceKey != "" "Preference key is required"
+
+  command create(clientId: string, preferenceType: string, preferenceKey: string, preferenceValue: string, notes: string) {
+    guard clientId != null and clientId != "" "Client ID is required"
+    guard preferenceType != null and preferenceType != "" "Preference type is required"
+    guard preferenceKey != null and preferenceKey != "" "Preference key is required"
+
+    mutate clientId = clientId
+    mutate preferenceType = preferenceType
+    mutate preferenceKey = preferenceKey
+    mutate preferenceValue = preferenceValue
+    mutate notes = notes
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit ClientPreferenceCreated
+  }
+
+  command update(preferenceValue: string, notes: string) {
+    guard self.deletedAt == 0 "Cannot update a removed preference"
+
+    mutate preferenceValue = preferenceValue
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit ClientPreferenceUpdated
+  }
+
+  command remove(userId: string) {
+    guard self.deletedAt == 0 "Preference is already removed"
+
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit ClientPreferenceRemoved
+  }
+
+  store ClientPreference in memory
+}
+
+// Policy definitions
+policy SalesCanManageClients execute: user.role in ["sales", "manager", "admin"] "Sales staff can manage clients"
+policy ManagerCanArchiveClients execute: user.role in ["manager", "admin"] "Only managers can archive clients"
+policy SalesCanManageContacts execute: user.role in ["sales", "manager", "admin"] "Sales staff can manage contacts"
+policy SalesCanManagePreferences execute: user.role in ["sales", "manager", "admin"] "Sales staff can manage preferences"
+
+// Client events
+event ClientCreated: "crm.client.created" {
+  clientId: string
+  tenantId: string
+  clientType: string
+  displayName: string
+  source: string
+  assignedTo: string
+  createdAt: number
+}
+
+event ClientUpdated: "crm.client.updated" {
+  clientId: string
+  tenantId: string
+  displayName: string
+  updatedAt: number
+}
+
+event ClientArchived: "crm.client.archived" {
+  clientId: string
+  tenantId: string
+  displayName: string
+  reason: string
+  userId: string
+  archivedAt: number
+}
+
+event ClientReactivated: "crm.client.reactivated" {
+  clientId: string
+  tenantId: string
+  displayName: string
+  userId: string
+  reactivatedAt: number
+}
+
+// ClientContact events
+event ClientContactCreated: "crm.client_contact.created" {
+  contactId: string
+  tenantId: string
+  clientId: string
+  fullName: string
+  isPrimary: boolean
+  createdAt: number
+}
+
+event ClientContactUpdated: "crm.client_contact.updated" {
+  contactId: string
+  tenantId: string
+  clientId: string
+  fullName: string
+  updatedAt: number
+}
+
+event ClientContactRemoved: "crm.client_contact.removed" {
+  contactId: string
+  tenantId: string
+  clientId: string
+  fullName: string
+  reason: string
+  userId: string
+  removedAt: number
+}
+
+event ClientContactSetPrimary: "crm.client_contact.set_primary" {
+  contactId: string
+  tenantId: string
+  clientId: string
+  fullName: string
+  userId: string
+  updatedAt: number
+}
+
+// ClientPreference events
+event ClientPreferenceCreated: "crm.client_preference.created" {
+  preferenceId: string
+  tenantId: string
+  clientId: string
+  preferenceType: string
+  preferenceKey: string
+  createdAt: number
+}
+
+event ClientPreferenceUpdated: "crm.client_preference.updated" {
+  preferenceId: string
+  tenantId: string
+  clientId: string
+  preferenceType: string
+  preferenceKey: string
+  updatedAt: number
+}
+
+event ClientPreferenceRemoved: "crm.client_preference.removed" {
+  preferenceId: string
+  tenantId: string
+  clientId: string
+  preferenceType: string
+  preferenceKey: string
+  userId: string
+  removedAt: number
+}

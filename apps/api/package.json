@@ -12,6 +12,7 @@
     "@repo/email": "workspace:*",
     "@repo/event-parser": "workspace:*",
     "@repo/next-config": "workspace:*",
+    "@repo/notifications": "workspace:*",
     "@repo/observability": "workspace:*",
     "@repo/payments": "workspace:*",
     "@repo/payroll-engine": "workspace:*",

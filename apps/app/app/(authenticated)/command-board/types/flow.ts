@@ -1,0 +1,189 @@
+// ============================================================================
+// React Flow Types — Node and edge types for @xyflow/react integration
+// ============================================================================
+
+import type { Edge, Node } from "@xyflow/react";
+import type {
+  BoardAnnotation,
+  BoardProjection,
+  DerivedConnection,
+} from "./board";
+import type { ResolvedEntity } from "./entities";
+
+// ============================================================================
+// Node Data Types
+// ============================================================================
+
+/** Quick action type for tasks */
+export type TaskQuickAction =
+  | "complete"
+  | "start"
+  | "cancel"
+  | "claim"
+  | "release";
+
+/** Quick action type for events */
+export type EventQuickAction = "confirm" | "tentative" | "cancel" | "complete";
+
+/** Custom node data for entity projection nodes */
+export interface ProjectionNodeData {
+  [key: string]: unknown;
+  projection: BoardProjection;
+  entity: ResolvedEntity | null;
+  /** True when entity data has not yet been resolved */
+  stale: boolean;
+  onOpenDetail: (entityType: string, entityId: string) => void;
+  onRemove: (projectionId: string) => void;
+  onTogglePin: (projectionId: string) => void;
+  /** Quick action handler for task entities (prep_task, kitchen_task) */
+  onTaskAction?: (
+    entityType: string,
+    entityId: string,
+    action: TaskQuickAction
+  ) => Promise<void>;
+  /** Quick action handler for event entities */
+  onEventAction?: (entityId: string, action: EventQuickAction) => Promise<void>;
+}
+
+/** Custom node data for group nodes */
+export interface GroupNodeData {
+  [key: string]: unknown;
+  groupId: string;
+  name: string;
+  color: string | null;
+  collapsed: boolean;
+}
+
+// ============================================================================
+// Node Types
+// ============================================================================
+
+export type ProjectionNode = Node<ProjectionNodeData, "projection">;
+export type GroupNode = Node<GroupNodeData, "group">;
+export type BoardNode = ProjectionNode | GroupNode;
+
+// ============================================================================
+// Edge Data Types
+// ============================================================================
+
+/** Edge data for derived (automatic) connections */
+export interface DerivedEdgeData {
+  [key: string]: unknown;
+  derived: true;
+  relationshipType: string;
+  label: string;
+}
+
+/** Edge data for manual annotation connections */
+export interface AnnotationEdgeData {
+  [key: string]: unknown;
+  derived: false;
+  annotationId: string;
+  label: string | null;
+  style: string | null;
+}
+
+export type BoardEdge = Edge<DerivedEdgeData | AnnotationEdgeData>;
+
+// ============================================================================
+// Converter Functions
+// ============================================================================
+
+/** Convert a BoardProjection + ResolvedEntity into a React Flow Node */
+export function projectionToNode(
+  projection: BoardProjection,
+  entity: ResolvedEntity | null,
+  callbacks: {
+    onOpenDetail: (entityType: string, entityId: string) => void;
+    onRemove: (projectionId: string) => void;
+    onTogglePin: (projectionId: string) => void;
+    onTaskAction?: (
+      entityType: string,
+      entityId: string,
+      action: TaskQuickAction
+    ) => Promise<void>;
+    onEventAction?: (
+      entityId: string,
+      action: EventQuickAction
+    ) => Promise<void>;
+  }
+): ProjectionNode {
+  return {
+    id: projection.id,
+    type: "projection",
+    position: { x: projection.positionX, y: projection.positionY },
+    data: {
+      projection,
+      entity,
+      stale: entity === null,
+      onOpenDetail: callbacks.onOpenDetail,
+      onRemove: callbacks.onRemove,
+      onTogglePin: callbacks.onTogglePin,
+      onTaskAction: callbacks.onTaskAction,
+      onEventAction: callbacks.onEventAction,
+    },
+    style: {
+      width: projection.width,
+      height: projection.height,
+    },
+    parentId: projection.groupId ?? undefined,
+    zIndex: projection.zIndex,
+  };
+}
+
+/** Convert a DerivedConnection into a React Flow Edge */
+export function connectionToEdge(connection: DerivedConnection): BoardEdge {
+  return {
+    id: connection.id,
+    source: connection.fromProjectionId,
+    target: connection.toProjectionId,
+    type: "smoothstep",
+    animated: false,
+    data: {
+      derived: true,
+      relationshipType: connection.relationshipType,
+      label: connection.label,
+    },
+    label: connection.label,
+    style: { stroke: "#9ca3af" },
+  };
+}
+
+/** Convert a BoardAnnotation into a React Flow Edge (connection type only) */
+export function annotationToEdge(
+  annotation: BoardAnnotation
+): BoardEdge | null {
+  if (annotation.annotationType !== "connection") {
+    return null;
+  }
+  if (!annotation.fromProjectionId) {
+    return null;
+  }
+  if (!annotation.toProjectionId) {
+    return null;
+  }
+
+  return {
+    id: `annotation-${annotation.id}`,
+    source: annotation.fromProjectionId,
+    target: annotation.toProjectionId,
+    type: "smoothstep",
+    animated: false,
+    data: {
+      derived: false,
+      annotationId: annotation.id,
+      label: annotation.label,
+      style: annotation.style,
+    },
+    label: annotation.label ?? undefined,
+    style: {
+      stroke: annotation.color ?? "#9ca3af",
+      strokeDasharray:
+        annotation.style === "dashed"
+          ? "5,5"
+          : annotation.style === "dotted"
+            ? "2,2"
+            : undefined,
+    },
+  };
+}

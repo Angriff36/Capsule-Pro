@@ -1,0 +1,116 @@
+// Kitchen Ops - Waste Entry Rules
+// Manifest spec for waste tracking, cost attribution, and inventory loss management
+
+entity WasteEntry {
+  property required id: string
+  property required tenantId: string
+  property inventoryItemId: string = ""
+  property reasonId: number = 0
+  property quantity: number = 0
+  property unitId: number = 0
+  property locationId: string = ""
+  property eventId: string = ""
+  property loggedBy: string = ""
+  property loggedAt: number = 0
+  property unitCost: number = 0
+  property totalCost: number = 0
+  property notes: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed hasLocation: boolean = self.locationId != ""
+  computed hasEvent: boolean = self.eventId != ""
+  computed hasCost: boolean = self.unitCost > 0
+  computed isDeleted: boolean = self.deletedAt > 0
+
+  constraint requireInventoryItem: self.inventoryItemId != "" "Inventory item is required"
+  constraint requireReason: self.reasonId > 0 "Waste reason is required"
+  constraint positiveQuantity: self.quantity > 0 "Quantity must be positive"
+  constraint positiveCost: self.unitCost >= 0 "Unit cost cannot be negative"
+
+  command create(inventoryItemId: string, reasonId: number, quantity: number, unitId: number, locationId: string, eventId: string, loggedBy: string, unitCost: number, notes: string) {
+    guard inventoryItemId != null and inventoryItemId != "" "Inventory item is required"
+    guard reasonId != null and reasonId > 0 "Waste reason is required"
+    guard quantity != null and quantity > 0 "Quantity must be positive"
+    guard unitCost >= 0 "Unit cost cannot be negative"
+
+    mutate inventoryItemId = inventoryItemId
+    mutate reasonId = reasonId
+    mutate quantity = quantity
+    mutate unitId = unitId
+    mutate locationId = locationId
+    mutate eventId = eventId
+    mutate loggedBy = loggedBy
+    mutate unitCost = unitCost
+    mutate totalCost = quantity * unitCost
+    mutate notes = notes
+    mutate loggedAt = now()
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit WasteEntryCreated
+  }
+
+  command update(quantity: number, unitId: number, locationId: string, notes: string, unitCost: number) {
+    guard self.deletedAt == 0 "Cannot update a deleted waste entry"
+    guard quantity != null and quantity > 0 "Quantity must be positive"
+    guard unitCost >= 0 "Unit cost cannot be negative"
+
+    mutate quantity = quantity
+    mutate unitId = unitId
+    mutate locationId = locationId
+    mutate notes = notes
+    mutate unitCost = unitCost
+    mutate totalCost = quantity * unitCost
+    mutate updatedAt = now()
+
+    emit WasteEntryUpdated
+  }
+
+  command softDelete(reason: string, userId: string) {
+    guard self.deletedAt == 0 "Waste entry is already deleted"
+
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit WasteEntryDeleted
+  }
+
+  store WasteEntry in memory
+}
+
+policy WasteStaffCanLog execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can log waste entries"
+policy WasteManagersCanDelete execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and managers can delete waste entries"
+
+event WasteEntryCreated: "kitchen.waste-entry.created" {
+  wasteEntryId: string
+  tenantId: string
+  inventoryItemId: string
+  reasonId: number
+  quantity: number
+  unitId: number
+  locationId: string
+  eventId: string
+  loggedBy: string
+  unitCost: number
+  totalCost: number
+  createdAt: number
+}
+
+event WasteEntryUpdated: "kitchen.waste-entry.updated" {
+  wasteEntryId: string
+  quantity: number
+  unitId: number
+  locationId: string
+  unitCost: number
+  totalCost: number
+  updatedAt: number
+}
+
+event WasteEntryDeleted: "kitchen.waste-entry.deleted" {
+  wasteEntryId: string
+  reason: string
+  userId: string
+  deletedAt: number
+}

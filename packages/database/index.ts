@@ -1,3 +1,10 @@
+/**
+ * Next.js entry point for @repo/database.
+ *
+ * Includes server-only guard to prevent accidental client-side usage.
+ * For CLI tools and non-Next.js runtimes, use "@repo/database/standalone" instead.
+ */
+
 import "server-only";
 
 import { neonConfig } from "@neondatabase/serverless";

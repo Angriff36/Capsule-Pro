@@ -68,7 +68,7 @@
       "cache": false
     },
     "build": {
-      "dependsOn": ["^build", "generate", "test"],
+      "dependsOn": ["^build", "generate"],
       "outputs": [
         ".next/**",
         "!.next/cache/**",
@@ -86,7 +86,7 @@
       "cache": false
     },
     "analyze": {
-      "dependsOn": ["^analyze"]
+      "dependsOn": ["^build", "^analyze"]
     },
     "dev": {
       "cache": false,

@@ -1,0 +1,142 @@
+// Administrative Domain - Admin Task Rules
+// Manifest spec for managing administrative tasks with status state machine
+
+entity AdminTask {
+  property required id: string
+  property required tenantId: string
+  property title: string = ""
+  property description: string = ""
+  property status: string = "backlog"
+  property priority: string = "medium"
+  property category: string = ""
+  property assignedTo: string = ""
+  property dueDate: string = ""
+  property createdBy: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isDeleted: boolean = self.deletedAt > 0
+
+  constraint requireTitle: self.title != "" "Title is required"
+
+  command create(title: string, description: string, status: string, priority: string, category: string, assignedTo: string, dueDate: string, createdBy: string) {
+    guard title != null and title != "" "Title is required"
+
+    mutate title = title
+    mutate description = description
+    mutate status = status
+    mutate priority = priority
+    mutate category = category
+    mutate assignedTo = assignedTo
+    mutate dueDate = dueDate
+    mutate createdBy = createdBy
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit AdminTaskCreated
+  }
+
+  command update(title: string, description: string, priority: string, category: string, assignedTo: string, dueDate: string) {
+    guard self.deletedAt == 0 "Cannot update a deleted task"
+
+    mutate title = title
+    mutate description = description
+    mutate priority = priority
+    mutate category = category
+    mutate assignedTo = assignedTo
+    mutate dueDate = dueDate
+    mutate updatedAt = now()
+
+    emit AdminTaskUpdated
+  }
+
+  command moveToTodo() {
+    guard self.deletedAt == 0 "Cannot transition a deleted task"
+    guard self.status == "backlog" or self.status == "in_progress" "Can only move to todo from backlog or in_progress"
+
+    mutate status = "todo"
+    mutate updatedAt = now()
+
+    emit AdminTaskStatusChanged
+  }
+
+  command startProgress() {
+    guard self.deletedAt == 0 "Cannot transition a deleted task"
+    guard self.status == "todo" "Can only start progress from todo"
+
+    mutate status = "in_progress"
+    mutate updatedAt = now()
+
+    emit AdminTaskStatusChanged
+  }
+
+  command complete() {
+    guard self.deletedAt == 0 "Cannot transition a deleted task"
+    guard self.status == "in_progress" "Can only complete from in_progress"
+
+    mutate status = "done"
+    mutate updatedAt = now()
+
+    emit AdminTaskStatusChanged
+  }
+
+  command cancel() {
+    guard self.deletedAt == 0 "Cannot transition a deleted task"
+    guard self.status != "done" "Cannot cancel a completed task"
+
+    mutate status = "cancelled"
+    mutate updatedAt = now()
+
+    emit AdminTaskStatusChanged
+  }
+
+  command reopen() {
+    guard self.deletedAt == 0 "Cannot transition a deleted task"
+    guard self.status == "cancelled" "Can only reopen a cancelled task"
+
+    mutate status = "backlog"
+    mutate updatedAt = now()
+
+    emit AdminTaskStatusChanged
+  }
+
+  command softDelete() {
+    guard self.deletedAt == 0 "Task is already deleted"
+
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit AdminTaskDeleted
+  }
+
+  store AdminTask in memory
+}
+
+policy AdminTaskManagement execute: user.role in ["manager", "admin"] "Managers can manage admin tasks"
+
+event AdminTaskCreated: "admin.task.created" {
+  taskId: string
+  tenantId: string
+  title: string
+  status: string
+  priority: string
+  createdBy: string
+  createdAt: number
+}
+
+event AdminTaskUpdated: "admin.task.updated" {
+  taskId: string
+  updatedAt: number
+}
+
+event AdminTaskStatusChanged: "admin.task.status-changed" {
+  taskId: string
+  status: string
+  updatedAt: number
+}
+
+event AdminTaskDeleted: "admin.task.deleted" {
+  taskId: string
+  deletedAt: number
+}

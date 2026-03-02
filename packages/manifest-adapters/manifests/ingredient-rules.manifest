@@ -1,0 +1,148 @@
+// Kitchen Ops - Ingredient Rules
+// Manifest spec for ingredient catalog management, allergen tracking, and shelf life
+
+entity Ingredient {
+  property required id: string
+  property required tenantId: string
+  property required name: string
+  property category: string = ""
+  property defaultUnitId: number = 0
+  property densityGPerMl: number = 0
+  property shelfLifeDays: number = 0
+  property storageInstructions: string = ""
+  property allergens: string = ""
+  property isActive: boolean = true
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isExpirable: boolean = self.shelfLifeDays > 0
+  computed hasAllergens: boolean = self.allergens != ""
+  computed isDeactivated: boolean = self.isActive == false
+
+  constraint requireName: self.name != "" "Ingredient name is required"
+
+  constraint warnNoShelfLife:warn self.shelfLifeDays == 0 {
+    messageTemplate: "Ingredient '{ingredientName}' has no shelf life configured"
+    details: {
+      ingredientName: self.name
+    }
+  }
+
+  command create(name: string, category: string, defaultUnitId: number, densityGPerMl: number, shelfLifeDays: number, storageInstructions: string, allergens: string) {
+    guard name != null and name != "" "Ingredient name is required"
+    guard defaultUnitId != null and defaultUnitId > 0 "Default unit ID is required"
+
+    mutate name = name
+    mutate category = category
+    mutate defaultUnitId = defaultUnitId
+    mutate densityGPerMl = densityGPerMl
+    mutate shelfLifeDays = shelfLifeDays
+    mutate storageInstructions = storageInstructions
+    mutate allergens = allergens
+    mutate isActive = true
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit IngredientCreated
+  }
+
+  command update(name: string, category: string, defaultUnitId: number, densityGPerMl: number, storageInstructions: string) {
+    guard name != null and name != "" "Ingredient name is required"
+    guard self.isActive "Cannot update a deactivated ingredient"
+
+    mutate name = name
+    mutate category = category
+    mutate defaultUnitId = defaultUnitId
+    mutate densityGPerMl = densityGPerMl
+    mutate storageInstructions = storageInstructions
+    mutate updatedAt = now()
+
+    emit IngredientUpdated
+  }
+
+  command deactivate(reason: string, userId: string) {
+    guard self.isActive "Ingredient is already deactivated"
+
+    constraint warnActiveRecipes:warn true {
+      messageTemplate: "Deactivating ingredient '{ingredientName}' — verify it is not used in active recipes"
+      details: {
+        ingredientName: self.name
+        ingredientId: self.id
+        reason: reason
+      }
+    }
+
+    mutate isActive = false
+    mutate updatedAt = now()
+
+    emit IngredientDeactivated
+  }
+
+  command updateAllergens(allergens: string, userId: string) {
+    guard self.isActive "Cannot update allergens on a deactivated ingredient"
+
+    mutate allergens = allergens
+    mutate updatedAt = now()
+
+    emit IngredientAllergensUpdated
+  }
+
+  command updateShelfLife(shelfLifeDays: number, storageInstructions: string, userId: string) {
+    guard self.isActive "Cannot update shelf life on a deactivated ingredient"
+    guard shelfLifeDays >= 0 "Shelf life days cannot be negative"
+
+    mutate shelfLifeDays = shelfLifeDays
+    mutate storageInstructions = storageInstructions
+    mutate updatedAt = now()
+
+    emit IngredientShelfLifeUpdated
+  }
+
+  store Ingredient in memory
+}
+
+policy KitchenStaffCanManage execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can manage ingredients"
+policy ManagersCanDeactivate execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and managers can deactivate ingredients"
+
+event IngredientCreated: "kitchen.ingredient.created" {
+  ingredientId: string
+  tenantId: string
+  name: string
+  category: string
+  allergens: string
+  shelfLifeDays: number
+  createdAt: number
+}
+
+event IngredientUpdated: "kitchen.ingredient.updated" {
+  ingredientId: string
+  name: string
+  category: string
+  updatedAt: number
+}
+
+event IngredientDeactivated: "kitchen.ingredient.deactivated" {
+  ingredientId: string
+  name: string
+  reason: string
+  userId: string
+  deactivatedAt: number
+}
+
+event IngredientAllergensUpdated: "kitchen.ingredient.allergens.updated" {
+  ingredientId: string
+  name: string
+  allergens: string
+  userId: string
+  updatedAt: number
+}
+
+event IngredientShelfLifeUpdated: "kitchen.ingredient.shelflife.updated" {
+  ingredientId: string
+  name: string
+  shelfLifeDays: number
+  storageInstructions: string
+  userId: string
+  updatedAt: number
+}

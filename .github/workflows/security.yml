@@ -7,7 +7,15 @@ on:
     branches: [main, develop]
   schedule:
     # Run weekly on Sundays
-    - cron: '0 0 * * 0'
+    - cron: "0 0 * * 0"
+
+permissions:
+  contents: read
+  packages: read
+
+env:
+  NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+  DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
 
 jobs:
   security:
@@ -29,6 +37,8 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+        env:
+          NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
 
       - name: Run npm audit
         run: pnpm audit --audit-level moderate
@@ -48,13 +58,13 @@ jobs:
       - name: Run Trivy vulnerability scanner
         uses: aquasecurity/trivy-action@master
         with:
-          scan-type: 'fs'
-          scan-ref: '.'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
+          scan-type: "fs"
+          scan-ref: "."
+          format: "sarif"
+          output: "trivy-results.sarif"
 
       - name: Upload Trivy scan results to GitHub Security tab
         uses: github/codeql-action/upload-sarif@v3
-        if: always()
+        if: ${{ always() && hashFiles('trivy-results.sarif') != '' }}
         with:
           sarif_file: 'trivy-results.sarif'

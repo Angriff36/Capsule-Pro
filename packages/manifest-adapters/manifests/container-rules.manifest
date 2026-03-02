@@ -1,0 +1,121 @@
+// Kitchen Ops - Container Rules
+// Manifest spec for container inventory, capacity tracking, and storage management
+
+entity Container {
+  property required id: string
+  property required tenantId: string
+  property required name: string
+  property required containerType: string
+  property locationId: string = ""
+  property sizeDescription: string = ""
+  property capacityVolumeMl: number = 0
+  property capacityWeightG: number = 0
+  property capacityPortions: number = 0
+  property isReusable: boolean = true
+  property isActive: boolean = true
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed hasVolumeCapacity: boolean = self.capacityVolumeMl > 0
+  computed hasWeightCapacity: boolean = self.capacityWeightG > 0
+  computed hasPortionCapacity: boolean = self.capacityPortions > 0
+  computed hasAnyCapacity: boolean = self.capacityVolumeMl > 0 or self.capacityWeightG > 0 or self.capacityPortions > 0
+  computed isDeactivated: boolean = self.isActive == false
+
+  constraint requireName: self.name != "" "Container name is required"
+  constraint positiveVolume: self.capacityVolumeMl >= 0 "Volume capacity cannot be negative"
+  constraint positiveWeight: self.capacityWeightG >= 0 "Weight capacity cannot be negative"
+  constraint positivePortions: self.capacityPortions >= 0 "Portion capacity cannot be negative"
+
+  constraint warnNoCapacity:warn self.hasAnyCapacity == false and self.isActive {
+    messageTemplate: "Container '{containerName}' has no capacity values configured"
+    details: {
+      containerName: self.name
+      containerType: self.containerType
+    }
+  }
+
+  command create(name: string, containerType: string, locationId: string, sizeDescription: string, capacityVolumeMl: number, capacityWeightG: number, capacityPortions: number, isReusable: boolean) {
+    guard name != null and name != "" "Container name is required"
+    guard containerType != null and containerType != "" "Container type is required"
+    guard capacityVolumeMl >= 0 "Volume capacity cannot be negative"
+    guard capacityWeightG >= 0 "Weight capacity cannot be negative"
+    guard capacityPortions >= 0 "Portion capacity cannot be negative"
+
+    mutate name = name
+    mutate containerType = containerType
+    mutate locationId = locationId
+    mutate sizeDescription = sizeDescription
+    mutate capacityVolumeMl = capacityVolumeMl
+    mutate capacityWeightG = capacityWeightG
+    mutate capacityPortions = capacityPortions
+    mutate isReusable = isReusable
+    mutate isActive = true
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit ContainerCreated
+  }
+
+  command update(name: string, containerType: string, locationId: string, sizeDescription: string, capacityVolumeMl: number, capacityWeightG: number, capacityPortions: number, isReusable: boolean) {
+    guard name != null and name != "" "Container name is required"
+    guard self.isActive "Cannot update a deactivated container"
+    guard capacityVolumeMl >= 0 "Volume capacity cannot be negative"
+    guard capacityWeightG >= 0 "Weight capacity cannot be negative"
+    guard capacityPortions >= 0 "Portion capacity cannot be negative"
+
+    mutate name = name
+    mutate containerType = containerType
+    mutate locationId = locationId
+    mutate sizeDescription = sizeDescription
+    mutate capacityVolumeMl = capacityVolumeMl
+    mutate capacityWeightG = capacityWeightG
+    mutate capacityPortions = capacityPortions
+    mutate isReusable = isReusable
+    mutate updatedAt = now()
+
+    emit ContainerUpdated
+  }
+
+  command deactivate(reason: string, userId: string) {
+    guard self.isActive "Container is already deactivated"
+
+    mutate isActive = false
+    mutate updatedAt = now()
+
+    emit ContainerDeactivated
+  }
+
+  store Container in memory
+}
+
+policy KitchenStaffCanManage execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Kitchen staff can manage containers"
+policy ManagersCanDeactivate execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and managers can deactivate containers"
+
+event ContainerCreated: "kitchen.container.created" {
+  containerId: string
+  tenantId: string
+  name: string
+  containerType: string
+  capacityVolumeMl: number
+  capacityWeightG: number
+  capacityPortions: number
+  isReusable: boolean
+  createdAt: number
+}
+
+event ContainerUpdated: "kitchen.container.updated" {
+  containerId: string
+  name: string
+  containerType: string
+  updatedAt: number
+}
+
+event ContainerDeactivated: "kitchen.container.deactivated" {
+  containerId: string
+  name: string
+  reason: string
+  userId: string
+  deactivatedAt: number
+}

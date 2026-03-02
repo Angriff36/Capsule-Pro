@@ -1,0 +1,88 @@
+// Staff Domain - Employee Availability Rules
+// Manifest spec for managing employee availability schedules
+
+entity EmployeeAvailability {
+  property required id: string
+  property required tenantId: string
+  property employeeId: string = ""
+  property dayOfWeek: number = 0
+  property startTime: string = ""
+  property endTime: string = ""
+  property isAvailable: boolean = true
+  property effectiveFrom: string = ""
+  property effectiveUntil: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isDeleted: boolean = self.deletedAt > 0
+
+  constraint requireEmployee: self.employeeId != "" "Employee ID is required"
+  constraint requireStartTime: self.startTime != "" "Start time is required"
+  constraint requireEndTime: self.endTime != "" "End time is required"
+  constraint validDayOfWeek: self.dayOfWeek >= 0 and self.dayOfWeek <= 6 "Day of week must be between 0 and 6"
+
+  command create(employeeId: string, dayOfWeek: number, startTime: string, endTime: string, isAvailable: boolean, effectiveFrom: string, effectiveUntil: string) {
+    guard employeeId != null and employeeId != "" "Employee ID is required"
+    guard startTime != null and startTime != "" "Start time is required"
+    guard endTime != null and endTime != "" "End time is required"
+    guard dayOfWeek >= 0 and dayOfWeek <= 6 "Day of week must be between 0 and 6"
+
+    mutate employeeId = employeeId
+    mutate dayOfWeek = dayOfWeek
+    mutate startTime = startTime
+    mutate endTime = endTime
+    mutate isAvailable = isAvailable
+    mutate effectiveFrom = effectiveFrom
+    mutate effectiveUntil = effectiveUntil
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit EmployeeAvailabilityCreated
+  }
+
+  command update(dayOfWeek: number, startTime: string, endTime: string, isAvailable: boolean, effectiveFrom: string, effectiveUntil: string) {
+    guard self.deletedAt == 0 "Cannot update a deleted availability record"
+
+    mutate dayOfWeek = dayOfWeek
+    mutate startTime = startTime
+    mutate endTime = endTime
+    mutate isAvailable = isAvailable
+    mutate effectiveFrom = effectiveFrom
+    mutate effectiveUntil = effectiveUntil
+    mutate updatedAt = now()
+
+    emit EmployeeAvailabilityUpdated
+  }
+
+  command softDelete() {
+    guard self.deletedAt == 0 "Availability record is already deleted"
+
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit EmployeeAvailabilityDeleted
+  }
+
+  store EmployeeAvailability in memory
+}
+
+policy AvailabilityManagement execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Staff can manage availability"
+
+event EmployeeAvailabilityCreated: "staff.employee-availability.created" {
+  availabilityId: string
+  tenantId: string
+  employeeId: string
+  dayOfWeek: number
+  createdAt: number
+}
+
+event EmployeeAvailabilityUpdated: "staff.employee-availability.updated" {
+  availabilityId: string
+  updatedAt: number
+}
+
+event EmployeeAvailabilityDeleted: "staff.employee-availability.deleted" {
+  availabilityId: string
+  deletedAt: number
+}

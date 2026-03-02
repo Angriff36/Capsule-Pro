@@ -8,7 +8,8 @@ planning scratchpad.
 
 If something is not needed every iteration, it does not belong here.
 
----
+- Monorepo with pnpm (ONLY — no npm, no yarn)
+- Primary folders: `apps/`, `packages/`, `specs/`
 
 ## Project Type
 

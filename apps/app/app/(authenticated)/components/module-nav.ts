@@ -29,6 +29,20 @@ export interface ModuleDefinition {
 
 export const modules: ModuleDefinition[] = [
   {
+    key: "command-board",
+    label: "Command Board",
+    href: "/command-board",
+    sidebar: [
+      {
+        label: "Command Board",
+        items: [
+          { title: "All Boards", href: "/command-board" },
+          { title: "Create Board", href: "/command-board?create=true" },
+        ],
+      },
+    ],
+  },
+  {
     key: "events",
     label: "Events",
     href: "/events",
@@ -226,5 +240,5 @@ export const getModuleKeyFromPathname = (pathname: string): ModuleKey => {
       pathname === module.href || pathname.startsWith(`${module.href}/`)
   );
 
-  return match?.key ?? "events";
+  return match?.key ?? "command-board";
 };

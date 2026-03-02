@@ -10,20 +10,25 @@ import {
 } from "@liveblocks/react/suspense";
 import type { ComponentProps, ReactNode } from "react";
 
-type RoomProps = ComponentProps<typeof LiveblocksProvider> & {
+interface RoomProps {
   id: string;
   children: ReactNode;
   authEndpoint: string;
   fallback: ReactNode;
-  resolveUsers?: (
-    args: ResolveUsersArgs
-  ) => Promise<Liveblocks["UserMeta"]["info"][]>;
-  resolveMentionSuggestions?: (
-    args: ResolveMentionSuggestionsArgs
-  ) => Promise<string[]>;
-};
+  // biome-ignore lint/suspicious/noExplicitAny: Liveblocks resolver types are complex generics
+  resolveUsers?: (args: { userIds: string[] }) => Promise<any>;
+  // biome-ignore lint/suspicious/noExplicitAny: Liveblocks resolver types are complex generics
+  resolveMentionSuggestions?: (args: {
+    text: string;
+    roomId: string;
+  }) => Promise<any>;
+}
 
-export const Room = ({
+/**
+ * Wraps children in LiveblocksProvider + RoomProvider for real-time collaboration.
+ * The authEndpoint is called by Liveblocks to authenticate the user.
+ */
+export function Room({
   id,
   children,
   authEndpoint,

@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "paths": {
+      "@angriff36/manifest/*": ["../../dist/manifest/*"],
+      "@angriff36/manifest": ["../../dist/manifest/runtime-engine.d.ts"],
+      "@angriff36/manifest/compiler": ["../../dist/manifest/compiler.d.ts"],
+      "@angriff36/manifest/ir-compiler": [
+        "../../dist/manifest/ir-compiler.d.ts"
+      ],
+      "@angriff36/manifest/projections/nextjs": [
+        "../../dist/manifest/projections/nextjs/generator.d.ts"
+      ],
+      "@angriff36/manifest/projections/routes": [
+        "../../dist/manifest/projections/routes/generator.d.ts"
+      ]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

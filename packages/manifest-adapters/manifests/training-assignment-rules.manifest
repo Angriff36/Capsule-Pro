@@ -1,0 +1,65 @@
+// Staff Domain - Training Assignment Rules
+// Manifest spec for training assignment creation and management
+
+entity TrainingAssignment {
+  property required id: string
+  property required tenantId: string
+  property moduleId: string = ""
+  property employeeId: string = ""
+  property assignedToAll: boolean = false
+  property assignedBy: string = ""
+  property dueDate: string = ""
+  property status: string = "assigned"
+  property assignedAt: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isDeleted: boolean = self.deletedAt > 0
+
+  constraint requireModule: self.moduleId != "" "Module ID is required"
+
+  command create(moduleId: string, employeeId: string, assignedToAll: boolean, assignedBy: string, dueDate: string) {
+    guard moduleId != null and moduleId != "" "Module ID is required"
+
+    mutate moduleId = moduleId
+    mutate employeeId = employeeId
+    mutate assignedToAll = assignedToAll
+    mutate assignedBy = assignedBy
+    mutate dueDate = dueDate
+    mutate status = "assigned"
+    mutate assignedAt = now()
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit TrainingAssignmentCreated
+  }
+
+  command softDelete() {
+    guard self.deletedAt == 0 "Training assignment is already deleted"
+
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit TrainingAssignmentDeleted
+  }
+
+  store TrainingAssignment in memory
+}
+
+policy TrainingAssignmentManagement execute: user.role in ["manager", "admin", "kitchen_manager"] "Managers can manage training assignments"
+
+event TrainingAssignmentCreated: "staff.training-assignment.created" {
+  assignmentId: string
+  tenantId: string
+  moduleId: string
+  employeeId: string
+  assignedToAll: boolean
+  assignedBy: string
+  createdAt: number
+}
+
+event TrainingAssignmentDeleted: "staff.training-assignment.deleted" {
+  assignmentId: string
+  deletedAt: number
+}

@@ -9,6 +9,14 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+permissions:
+  contents: read
+  packages: read
+
+env:
+  NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+  DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+
 jobs:
   build:
     name: Vercel-Compatible Build

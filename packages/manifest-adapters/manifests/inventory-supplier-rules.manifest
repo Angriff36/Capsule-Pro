@@ -1,0 +1,116 @@
+// Inventory - Supplier Rules
+// Manifest spec for inventory supplier management
+
+entity InventorySupplier {
+  property required id: string
+  property required tenantId: string
+  property required name: string
+  property supplierNumber: string = ""
+  property contactPerson: string = ""
+  property email: string = ""
+  property phone: string = ""
+  property paymentTerms: string = "NET_30"
+  property notes: string = ""
+  property tags: string = ""
+  property isActive: boolean = true
+  property openPOCount: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed hasContact: boolean = self.contactPerson != "" or self.email != ""
+  computed hasOpenPOs: boolean = self.openPOCount > 0
+
+  constraint validPaymentTerms: self.paymentTerms in ["NET_15", "NET_30", "NET_45", "NET_60", "COD", "PREPAID"] "Invalid payment terms"
+
+  command create(name: string, supplierNumber: string, contactPerson: string, email: string, phone: string, paymentTerms: string, notes: string, tags: string) {
+    guard name != null and name != "" "Supplier name is required"
+
+    constraint warnNoContact:warn (contactPerson == null or contactPerson == "") and (email == null or email == "") {
+      messageTemplate: "Creating supplier '{name}' without contact information"
+      details: {
+        name: name
+      }
+    }
+
+    mutate name = name
+    mutate supplierNumber = supplierNumber
+    mutate contactPerson = contactPerson
+    mutate email = email
+    mutate phone = phone
+    mutate paymentTerms = paymentTerms
+    mutate notes = notes
+    mutate tags = tags
+    mutate isActive = true
+    mutate openPOCount = 0
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit InventorySupplierCreated
+  }
+
+  command update(name: string, contactPerson: string, email: string, phone: string, paymentTerms: string, notes: string, tags: string) {
+    guard name != null and name != "" "Supplier name is required"
+
+    mutate name = name
+    mutate contactPerson = contactPerson
+    mutate email = email
+    mutate phone = phone
+    mutate paymentTerms = paymentTerms
+    mutate notes = notes
+    mutate tags = tags
+    mutate updatedAt = now()
+
+    emit InventorySupplierUpdated
+  }
+
+  command deactivate(userId: string, reason: string) {
+    guard self.isActive "Supplier is already inactive"
+
+    constraint warnOpenPOs:warn self.openPOCount > 0 {
+      messageTemplate: "Deactivating supplier '{name}' with {count} open purchase orders"
+      details: {
+        name: self.name
+        count: self.openPOCount
+        reason: reason
+      }
+    }
+
+    mutate isActive = false
+    mutate updatedAt = now()
+
+    emit InventorySupplierDeactivated
+  }
+
+  store InventorySupplier in memory
+}
+
+policy ManagersCanCreateSupplier execute: user.role in ["manager", "admin"] "Only managers can create suppliers"
+policy ManagersCanUpdateSupplier execute: user.role in ["kitchen_lead", "manager", "admin"] "Leads and managers can update suppliers"
+policy ManagersCanDeactivateSupplier execute: user.role in ["manager", "admin"] "Only managers can deactivate suppliers"
+
+event InventorySupplierCreated: "inventory.supplier.created" {
+  supplierId: string
+  tenantId: string
+  name: string
+  supplierNumber: string
+  paymentTerms: string
+  createdAt: number
+}
+
+event InventorySupplierUpdated: "inventory.supplier.updated" {
+  supplierId: string
+  name: string
+  contactPerson: string
+  email: string
+  updatedAt: number
+}
+
+event InventorySupplierDeactivated: "inventory.supplier.deactivated" {
+  supplierId: string
+  name: string
+  userId: string
+  reason: string
+  openPOCount: number
+  deactivatedAt: number
+}

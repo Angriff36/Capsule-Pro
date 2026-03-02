@@ -80,10 +80,14 @@ export async function POST(request: Request) {
   const channel = `tenant:${tenantId}`;
   const ably = new Ably.Rest(env.ABLY_API_KEY);
 
-  const tokenRequest = await ably.auth.createTokenRequest({
-    clientId,
-    capability: { [channel]: ["subscribe"] },
-  });
+  let tokenRequest: Ably.TokenRequest;
+  try {
+    tokenRequest = await ably.auth.createTokenRequest({
+      clientId,
+      capability: { [channel]: ["subscribe"] },
+    });
+  } catch (err) {
+    const code = (err as { code?: number } | null)?.code;
 
   return NextResponse.json(tokenRequest, {
     headers: corsHeaders(request),

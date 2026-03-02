@@ -1,0 +1,86 @@
+// Staff Domain - Employee Certification Rules
+// Manifest spec for managing employee certifications and credentials
+
+entity EmployeeCertification {
+  property required id: string
+  property required tenantId: string
+  property employeeId: string = ""
+  property certificationType: string = ""
+  property certificationName: string = ""
+  property issuedDate: string = ""
+  property expiryDate: string = ""
+  property documentUrl: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isDeleted: boolean = self.deletedAt > 0
+
+  constraint requireEmployee: self.employeeId != "" "Employee ID is required"
+  constraint requireType: self.certificationType != "" "Certification type is required"
+  constraint requireName: self.certificationName != "" "Certification name is required"
+  constraint requireIssuedDate: self.issuedDate != "" "Issued date is required"
+
+  command create(employeeId: string, certificationType: string, certificationName: string, issuedDate: string, expiryDate: string, documentUrl: string) {
+    guard employeeId != null and employeeId != "" "Employee ID is required"
+    guard certificationType != null and certificationType != "" "Certification type is required"
+    guard certificationName != null and certificationName != "" "Certification name is required"
+    guard issuedDate != null and issuedDate != "" "Issued date is required"
+
+    mutate employeeId = employeeId
+    mutate certificationType = certificationType
+    mutate certificationName = certificationName
+    mutate issuedDate = issuedDate
+    mutate expiryDate = expiryDate
+    mutate documentUrl = documentUrl
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit EmployeeCertificationCreated
+  }
+
+  command update(certificationType: string, certificationName: string, issuedDate: string, expiryDate: string, documentUrl: string) {
+    guard self.deletedAt == 0 "Cannot update a deleted certification"
+
+    mutate certificationType = certificationType
+    mutate certificationName = certificationName
+    mutate issuedDate = issuedDate
+    mutate expiryDate = expiryDate
+    mutate documentUrl = documentUrl
+    mutate updatedAt = now()
+
+    emit EmployeeCertificationUpdated
+  }
+
+  command softDelete() {
+    guard self.deletedAt == 0 "Certification is already deleted"
+
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit EmployeeCertificationDeleted
+  }
+
+  store EmployeeCertification in memory
+}
+
+policy CertificationManagement execute: user.role in ["kitchen_lead", "manager", "admin"] "Leads and managers can manage certifications"
+
+event EmployeeCertificationCreated: "staff.employee-certification.created" {
+  certificationId: string
+  tenantId: string
+  employeeId: string
+  certificationType: string
+  certificationName: string
+  createdAt: number
+}
+
+event EmployeeCertificationUpdated: "staff.employee-certification.updated" {
+  certificationId: string
+  updatedAt: number
+}
+
+event EmployeeCertificationDeleted: "staff.employee-certification.deleted" {
+  certificationId: string
+  deletedAt: number
+}

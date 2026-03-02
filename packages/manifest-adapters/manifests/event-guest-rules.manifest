@@ -1,0 +1,123 @@
+// Kitchen Ops - Event Guest Rules
+// Manifest spec for event guest management, dietary tracking, and meal preferences
+
+entity EventGuest {
+  property required id: string
+  property required tenantId: string
+  property eventId: string = ""
+  property guestName: string = ""
+  property guestEmail: string = ""
+  property guestPhone: string = ""
+  property isPrimaryContact: boolean = false
+  property dietaryRestrictions: string = ""
+  property allergenRestrictions: string = ""
+  property notes: string = ""
+  property specialMealRequired: boolean = false
+  property specialMealNotes: string = ""
+  property tableAssignment: string = ""
+  property mealPreference: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed hasDietaryRestrictions: boolean = self.dietaryRestrictions != ""
+  computed hasAllergenRestrictions: boolean = self.allergenRestrictions != ""
+  computed needsSpecialMeal: boolean = self.specialMealRequired == true
+  computed isDeleted: boolean = self.deletedAt > 0
+  computed hasTableAssignment: boolean = self.tableAssignment != ""
+
+  constraint requireEvent: self.eventId != "" "Event ID is required"
+  constraint requireGuestName: self.guestName != "" "Guest name is required"
+
+  command create(eventId: string, guestName: string, guestEmail: string, guestPhone: string, isPrimaryContact: boolean, dietaryRestrictions: string, allergenRestrictions: string, notes: string, specialMealRequired: boolean, specialMealNotes: string, tableAssignment: string, mealPreference: string) {
+    guard eventId != null and eventId != "" "Event ID is required"
+    guard guestName != null and guestName != "" "Guest name is required"
+
+    mutate eventId = eventId
+    mutate guestName = guestName
+    mutate guestEmail = guestEmail
+    mutate guestPhone = guestPhone
+    mutate isPrimaryContact = isPrimaryContact
+    mutate dietaryRestrictions = dietaryRestrictions
+    mutate allergenRestrictions = allergenRestrictions
+    mutate notes = notes
+    mutate specialMealRequired = specialMealRequired
+    mutate specialMealNotes = specialMealNotes
+    mutate tableAssignment = tableAssignment
+    mutate mealPreference = mealPreference
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit EventGuestCreated
+  }
+
+  command update(guestName: string, guestEmail: string, guestPhone: string, isPrimaryContact: boolean, dietaryRestrictions: string, allergenRestrictions: string, notes: string, specialMealRequired: boolean, specialMealNotes: string, tableAssignment: string, mealPreference: string) {
+    guard guestName != null and guestName != "" "Guest name is required"
+    guard self.deletedAt == 0 "Cannot update a deleted guest"
+
+    mutate guestName = guestName
+    mutate guestEmail = guestEmail
+    mutate guestPhone = guestPhone
+    mutate isPrimaryContact = isPrimaryContact
+    mutate dietaryRestrictions = dietaryRestrictions
+    mutate allergenRestrictions = allergenRestrictions
+    mutate notes = notes
+    mutate specialMealRequired = specialMealRequired
+    mutate specialMealNotes = specialMealNotes
+    mutate tableAssignment = tableAssignment
+    mutate mealPreference = mealPreference
+    mutate updatedAt = now()
+
+    emit EventGuestUpdated
+  }
+
+  command softDelete(reason: string, userId: string) {
+    guard self.deletedAt == 0 "Guest is already deleted"
+
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit EventGuestDeleted
+  }
+
+  store EventGuest in memory
+}
+
+policy EventStaffCanManage execute: user.role in ["kitchen_staff", "kitchen_lead", "event_coordinator", "manager", "admin"] "Event staff can manage guests"
+
+event EventGuestCreated: "kitchen.event-guest.created" {
+  guestId: string
+  tenantId: string
+  eventId: string
+  guestName: string
+  guestEmail: string
+  guestPhone: string
+  isPrimaryContact: boolean
+  dietaryRestrictions: string
+  allergenRestrictions: string
+  specialMealRequired: boolean
+  mealPreference: string
+  createdAt: number
+}
+
+event EventGuestUpdated: "kitchen.event-guest.updated" {
+  guestId: string
+  guestName: string
+  guestEmail: string
+  isPrimaryContact: boolean
+  dietaryRestrictions: string
+  allergenRestrictions: string
+  specialMealRequired: boolean
+  mealPreference: string
+  tableAssignment: string
+  updatedAt: number
+}
+
+event EventGuestDeleted: "kitchen.event-guest.deleted" {
+  guestId: string
+  guestName: string
+  eventId: string
+  reason: string
+  userId: string
+  deletedAt: number
+}

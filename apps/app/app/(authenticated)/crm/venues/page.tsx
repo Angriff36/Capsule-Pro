@@ -162,4 +162,8 @@ const CrmVenuesPage = () => (
   </div>
 );
 
-export default CrmVenuesPage;
+export const metadata = {
+  title: "Venues",
+  description:
+    "Manage venues, capacity, and coordination notes for every site.",
+};

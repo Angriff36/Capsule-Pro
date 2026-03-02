@@ -1,0 +1,360 @@
+// Event Import Workflow - Multi-step event import with validation
+// Implements the workflow pattern from spec: parse → extract → validate → propose tasks → reserve inventory → activate
+// Each step is idempotent with clear state transitions
+
+entity EventImportWorkflow {
+  property required id: string
+  property required tenantId: string
+  property eventId: string = ""
+  property idempotencyKey: string = ""
+  property status: string = "created"
+  property currentStep: number = 0
+  property totalSteps: number = 6
+  property inputData: string = "{}"
+  property outputData: string = "{}"
+  property stepResults: string = "{}"
+  property errors: string = "[]"
+  property warnings: string = "[]"
+  property confidence: number = 0
+  property startedAt: number = 0
+  property completedAt: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+
+  // Computed properties for state checks
+  computed isActive: boolean = self.status in ["parsing", "extracting", "validating", "proposing", "reserving", "activating"]
+  computed isCompleted: boolean = self.status == "completed"
+  computed isFailed: boolean = self.status == "failed"
+  computed isPaused: boolean = self.status == "paused"
+  computed canRetry: boolean = self.status == "failed" or self.status == "paused"
+  computed progress: number = self.totalSteps > 0 ? (self.currentStep / self.totalSteps) * 100 : 0
+
+  // Constraints
+  constraint validStatus: self.status in ["created", "parsing", "extracting", "validating", "proposing", "reserving", "activating", "completed", "failed", "paused", "cancelled"]
+  constraint validStep: self.currentStep >= 0 and self.currentStep <= self.totalSteps
+  constraint hasIdempotencyKey: self.idempotencyKey != "" "Idempotency key is required for workflow tracking"
+
+  // Commands
+
+  // Step 1: Initialize workflow with input data
+  command create(idempotencyKey: string, inputData: string) {
+    guard self.status == "" or self.status == null "Workflow already initialized"
+    guard idempotencyKey != "" "Idempotency key is required"
+
+    mutate status = "created"
+    mutate idempotencyKey = idempotencyKey
+    mutate inputData = inputData
+    mutate currentStep = 0
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit EventImportWorkflowCreated
+  }
+
+  // Step 1: Parse uploaded documents
+  command startParsing() {
+    guard self.status == "created" or self.status == "paused"
+    mutate status = "parsing"
+    mutate currentStep = 1
+    mutate startedAt = now() == 0 ? now() : self.startedAt
+    mutate updatedAt = now()
+
+    emit EventImportWorkflowParsingStarted
+  }
+
+  command completeParsing(extractedData: string, confidence: number) {
+    guard self.status == "parsing"
+    guard confidence >= 0 and confidence <= 100
+
+    mutate outputData = extractedData
+    mutate confidence = confidence
+    mutate currentStep = 2
+    mutate updatedAt = now()
+
+    constraint warnLowConfidence:warn confidence < 70 {
+      messageTemplate: "Low parsing confidence ({confidence}%) - manual review recommended"
+      details: { confidence: confidence }
+    }
+
+    emit EventImportWorkflowParsingCompleted
+  }
+
+  // Step 2: Extract event data from parsed documents
+  command startExtracting() {
+    guard self.status == "parsing"
+    mutate status = "extracting"
+    mutate updatedAt = now()
+
+    emit EventImportWorkflowExtractingStarted
+  }
+
+  command completeExtraction(eventData: string) {
+    guard self.status == "extracting"
+
+    mutate outputData = eventData
+    mutate currentStep = 3
+    mutate updatedAt = now()
+
+    emit EventImportWorkflowExtractingCompleted
+  }
+
+  // Step 3: Validate extracted event data
+  command startValidating() {
+    guard self.status == "extracting"
+    mutate status = "validating"
+    mutate updatedAt = now()
+
+    emit EventImportWorkflowValidatingStarted
+  }
+
+  command completeValidation(validationErrors: string, validationWarnings: string) {
+    guard self.status == "validating"
+
+    mutate errors = validationErrors
+    mutate warnings = validationWarnings
+    mutate currentStep = 4
+    mutate updatedAt = now()
+
+    emit EventImportWorkflowValidationCompleted
+  }
+
+  // Step 4: Propose prep tasks from validated event
+  command startProposing() {
+    guard self.status == "validating"
+    mutate status = "proposing"
+    mutate updatedAt = now()
+
+    emit EventImportWorkflowProposingStarted
+  }
+
+  command completeProposing(proposedTasks: string) {
+    guard self.status == "proposing"
+
+    mutate stepResults = proposedTasks
+    mutate currentStep = 5
+    mutate updatedAt = now()
+
+    emit EventImportWorkflowProposingCompleted
+  }
+
+  // Step 5: Reserve inventory for proposed tasks
+  command startReserving() {
+    guard self.status == "proposing"
+    mutate status = "reserving"
+    mutate updatedAt = now()
+
+    emit EventImportWorkflowReservingStarted
+  }
+
+  command completeReserving(reservationResults: string) {
+    guard self.status == "reserving"
+
+    mutate stepResults = reservationResults
+    mutate currentStep = 6
+    mutate updatedAt = now()
+
+    emit EventImportWorkflowReservingCompleted
+  }
+
+  // Step 6: Activate the event and tasks
+  command startActivating() {
+    guard self.status == "reserving"
+    mutate status = "activating"
+    mutate updatedAt = now()
+
+    emit EventImportWorkflowActivatingStarted
+  }
+
+  command completeActivating(eventId: string) {
+    guard self.status == "activating"
+
+    mutate eventId = eventId
+    mutate status = "completed"
+    mutate completedAt = now()
+    mutate updatedAt = now()
+
+    emit EventImportWorkflowCompleted
+  }
+
+  // Failure handling
+  command fail(errorList: string, step: number) {
+    guard self.status in ["parsing", "extracting", "validating", "proposing", "reserving", "activating"]
+
+    mutate status = "failed"
+    mutate errors = errorList
+    mutate currentStep = step
+    mutate updatedAt = now()
+
+    emit EventImportWorkflowFailed
+  }
+
+  // Pause for manual intervention
+  command pause(reasonList: string) {
+    guard self.isActive
+
+    mutate status = "paused"
+    mutate warnings = reasonList
+    mutate updatedAt = now()
+
+    emit EventImportWorkflowPaused
+  }
+
+  // Resume from paused state
+  command resume() {
+    guard self.status == "paused"
+    guard self.currentStep > 0
+
+    mutate status = self.currentStep == 1 ? "parsing" : self.currentStep == 2 ? "extracting" : self.currentStep == 3 ? "validating" : self.currentStep == 4 ? "proposing" : self.currentStep == 5 ? "reserving" : "activating"
+    mutate updatedAt = now()
+
+    emit EventImportWorkflowResumed
+  }
+
+  // Cancel workflow
+  command cancel(reasonList: string) {
+    guard self.status in ["created", "paused", "failed"]
+
+    mutate status = "cancelled"
+    mutate errors = reasonList
+    mutate updatedAt = now()
+
+    emit EventImportWorkflowCancelled
+  }
+
+  // Retry from failed state
+  command retry() {
+    guard self.status == "failed"
+    guard self.currentStep > 0
+
+    mutate currentStep = self.currentStep > 1 ? self.currentStep - 1 : 1
+    mutate status = self.currentStep == 1 ? "parsing" : self.currentStep == 2 ? "extracting" : self.currentStep == 3 ? "validating" : self.currentStep == 4 ? "proposing" : self.currentStep == 5 ? "reserving" : "activating"
+    mutate errors = "[]"
+    mutate updatedAt = now()
+
+    emit EventImportWorkflowRetried
+  }
+
+  store EventImportWorkflow in memory
+}
+
+// Policy definitions
+policy EventImportWorkflowCreate execute: user.role in ["staff", "manager", "admin"] "Staff can create import workflows"
+policy EventImportWorkflowManage execute: user.role in ["manager", "admin"] "Managers can manage import workflows"
+policy EventImportWorkflowRetry execute: user.role in ["manager", "admin"] "Managers can retry failed workflows"
+
+// Event definitions
+event EventImportWorkflowCreated: "event.import.workflow.created" {
+  workflowId: string
+  tenantId: string
+  idempotencyKey: string
+  createdAt: number
+}
+
+event EventImportWorkflowParsingStarted: "event.import.workflow.parsing.started" {
+  workflowId: string
+  tenantId: string
+  currentStep: number
+}
+
+event EventImportWorkflowParsingCompleted: "event.import.workflow.parsing.completed" {
+  workflowId: string
+  tenantId: string
+  confidence: number
+  currentStep: number
+}
+
+event EventImportWorkflowExtractingStarted: "event.import.workflow.extracting.started" {
+  workflowId: string
+  tenantId: string
+  currentStep: number
+}
+
+event EventImportWorkflowExtractingCompleted: "event.import.workflow.extracting.completed" {
+  workflowId: string
+  tenantId: string
+  currentStep: number
+}
+
+event EventImportWorkflowValidatingStarted: "event.import.workflow.validating.started" {
+  workflowId: string
+  tenantId: string
+  currentStep: number
+}
+
+event EventImportWorkflowValidationCompleted: "event.import.workflow.validating.completed" {
+  workflowId: string
+  tenantId: string
+  errorCount: number
+  warningCount: number
+  currentStep: number
+}
+
+event EventImportWorkflowProposingStarted: "event.import.workflow.proposing.started" {
+  workflowId: string
+  tenantId: string
+  currentStep: number
+}
+
+event EventImportWorkflowProposingCompleted: "event.import.workflow.proposing.completed" {
+  workflowId: string
+  tenantId: string
+  currentStep: number
+}
+
+event EventImportWorkflowReservingStarted: "event.import.workflow.reserving.started" {
+  workflowId: string
+  tenantId: string
+  currentStep: number
+}
+
+event EventImportWorkflowReservingCompleted: "event.import.workflow.reserving.completed" {
+  workflowId: string
+  tenantId: string
+  currentStep: number
+}
+
+event EventImportWorkflowActivatingStarted: "event.import.workflow.activating.started" {
+  workflowId: string
+  tenantId: string
+  currentStep: number
+}
+
+event EventImportWorkflowCompleted: "event.import.workflow.completed" {
+  workflowId: string
+  tenantId: string
+  eventId: string
+  completedAt: number
+}
+
+event EventImportWorkflowFailed: "event.import.workflow.failed" {
+  workflowId: string
+  tenantId: string
+  errors: string
+  failedAtStep: number
+  failedAt: number
+}
+
+event EventImportWorkflowPaused: "event.import.workflow.paused" {
+  workflowId: string
+  tenantId: string
+  reasons: string
+  pausedAtStep: number
+}
+
+event EventImportWorkflowResumed: "event.import.workflow.resumed" {
+  workflowId: string
+  tenantId: string
+  resumedAtStep: number
+}
+
+event EventImportWorkflowCancelled: "event.import.workflow.cancelled" {
+  workflowId: string
+  tenantId: string
+  reasons: string
+}
+
+event EventImportWorkflowRetried: "event.import.workflow.retried" {
+  workflowId: string
+  tenantId: string
+  retryFromStep: number
+}

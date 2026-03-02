@@ -1,0 +1,62 @@
+// Alerts - Alerts Config Rules
+// Manifest spec for alert configuration channels and destinations
+
+entity AlertsConfig {
+  property required id: string
+  property required tenantId: string
+  property channel: string = ""
+  property destination: string = ""
+
+  constraint requireChannel: self.channel != "" "Alert channel is required"
+  constraint requireDestination: self.destination != "" "Alert destination is required"
+
+  command create(channel: string, destination: string) {
+    guard channel != null and channel != "" "Alert channel is required"
+    guard destination != null and destination != "" "Alert destination is required"
+
+    mutate channel = channel
+    mutate destination = destination
+
+    emit AlertsConfigCreated
+  }
+
+  command update(channel: string, destination: string) {
+    guard channel != null and channel != "" "Alert channel is required"
+    guard destination != null and destination != "" "Alert destination is required"
+
+    mutate channel = channel
+    mutate destination = destination
+
+    emit AlertsConfigUpdated
+  }
+
+  command remove(reason: string) {
+    guard reason != null and reason != "" "Removal reason is required"
+
+    emit AlertsConfigRemoved
+  }
+
+  store AlertsConfig in memory
+}
+
+policy AlertsManagersCanManage execute: user.role in ["manager", "admin"] "Managers and admins can manage alert configurations"
+
+event AlertsConfigCreated: "alerts.config.created" {
+  alertsConfigId: string
+  tenantId: string
+  channel: string
+  destination: string
+}
+
+event AlertsConfigUpdated: "alerts.config.updated" {
+  alertsConfigId: string
+  tenantId: string
+  channel: string
+  destination: string
+}
+
+event AlertsConfigRemoved: "alerts.config.removed" {
+  alertsConfigId: string
+  tenantId: string
+  reason: string
+}

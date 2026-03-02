@@ -1,0 +1,237 @@
+// CRM & Sales - Lead Rules
+// Manifest spec for lead tracking, qualification, and conversion
+
+entity Lead {
+  property required id: string
+  property required tenantId: string
+  property source: string = ""
+  property companyName: string = ""
+  property contactName: string = ""
+  property contactEmail: string = ""
+  property contactPhone: string = ""
+  property eventType: string = ""
+  property eventDate: number = 0
+  property estimatedGuests: number = 0
+  property estimatedValue: number = 0
+  property status: string = "new"
+  property assignedTo: string = ""
+  property notes: string = ""
+  property convertedToClientId: string = ""
+  property convertedAt: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isConverted: boolean = self.convertedToClientId != "" and self.convertedAt > 0
+  computed isHighValue: boolean = self.estimatedValue >= 10000
+  computed isOpen: boolean = self.status in ["new", "contacted", "qualified", "proposal"]
+  computed isArchived: boolean = self.deletedAt > 0
+
+  constraint validStatus: self.status in ["new", "contacted", "qualified", "proposal", "won", "lost", "disqualified"] "Invalid lead status"
+  constraint validContactName: self.contactName != null and self.contactName != "" "Contact name is required"
+  constraint positiveEstimatedValue: self.estimatedValue >= 0 "Estimated value must be non-negative"
+
+  constraint warnHighValueUnassigned:warn self.isHighValue and self.assignedTo == "" {
+    messageTemplate: "High-value lead '{contactName}' (${estimatedValue}) is not assigned to anyone"
+    details: {
+      contactName: self.contactName
+      estimatedValue: self.estimatedValue
+      companyName: self.companyName
+    }
+  }
+
+  constraint warnStaleNewLead:warn self.status == "new" and self.updatedAt > 0 {
+    messageTemplate: "Lead '{contactName}' is still in 'new' status"
+    details: {
+      contactName: self.contactName
+      companyName: self.companyName
+      createdAt: self.createdAt
+    }
+  }
+
+  command create(source: string, companyName: string, contactName: string, contactEmail: string, contactPhone: string, eventType: string, eventDate: number, estimatedGuests: number, estimatedValue: number, assignedTo: string, notes: string) {
+    guard contactName != null and contactName != "" "Contact name is required"
+
+    constraint warnNoContactInfo:warn (contactEmail == null or contactEmail == "") and (contactPhone == null or contactPhone == "") {
+      messageTemplate: "Creating lead with no email or phone for '{contactName}'"
+      details: {
+        contactName: contactName
+      }
+    }
+
+    mutate source = source
+    mutate companyName = companyName
+    mutate contactName = contactName
+    mutate contactEmail = contactEmail
+    mutate contactPhone = contactPhone
+    mutate eventType = eventType
+    mutate eventDate = eventDate
+    mutate estimatedGuests = estimatedGuests
+    mutate estimatedValue = estimatedValue
+    mutate assignedTo = assignedTo
+    mutate notes = notes
+    mutate status = "new"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit LeadCreated
+  }
+
+  command update(companyName: string, contactName: string, contactEmail: string, contactPhone: string, eventType: string, eventDate: number, estimatedGuests: number, estimatedValue: number, status: string, assignedTo: string, notes: string) {
+    guard self.deletedAt == 0 "Cannot update an archived lead"
+    guard self.isConverted == false "Cannot update a converted lead"
+    guard contactName != null and contactName != "" "Contact name is required"
+
+    constraint warnStatusRegression:warn status == "new" and self.status != "new" {
+      messageTemplate: "Reverting lead '{contactName}' status from '{oldStatus}' back to 'new'"
+      details: {
+        contactName: contactName
+        oldStatus: self.status
+      }
+    }
+
+    mutate companyName = companyName
+    mutate contactName = contactName
+    mutate contactEmail = contactEmail
+    mutate contactPhone = contactPhone
+    mutate eventType = eventType
+    mutate eventDate = eventDate
+    mutate estimatedGuests = estimatedGuests
+    mutate estimatedValue = estimatedValue
+    mutate status = status
+    mutate assignedTo = assignedTo
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit LeadUpdated
+  }
+
+  command convertToClient(clientId: string, userId: string) {
+    guard self.deletedAt == 0 "Cannot convert an archived lead"
+    guard clientId != null and clientId != "" "Client ID is required"
+
+    constraint blockAlreadyConverted:block self.isConverted {
+      messageTemplate: "Lead '{contactName}' has already been converted to client '{existingClientId}'"
+      details: {
+        contactName: self.contactName
+        existingClientId: self.convertedToClientId
+        convertedAt: self.convertedAt
+      }
+    }
+
+    constraint blockDisqualified:block self.status == "disqualified" {
+      messageTemplate: "Cannot convert disqualified lead '{contactName}'"
+      details: {
+        contactName: self.contactName
+        status: self.status
+      }
+    }
+
+    mutate convertedToClientId = clientId
+    mutate convertedAt = now()
+    mutate status = "won"
+    mutate updatedAt = now()
+
+    emit LeadConvertedToClient
+  }
+
+  command disqualify(reason: string, userId: string) {
+    guard self.deletedAt == 0 "Cannot disqualify an archived lead"
+    guard self.isConverted == false "Cannot disqualify a converted lead"
+
+    constraint warnHighValueDisqualify:warn self.isHighValue {
+      messageTemplate: "Disqualifying high-value lead '{contactName}' (${estimatedValue})"
+      details: {
+        contactName: self.contactName
+        estimatedValue: self.estimatedValue
+        companyName: self.companyName
+        reason: reason
+      }
+    }
+
+    mutate status = "disqualified"
+    mutate updatedAt = now()
+
+    emit LeadDisqualified
+  }
+
+  command archive(reason: string, userId: string) {
+    guard self.deletedAt == 0 "Lead is already archived"
+
+    constraint warnArchiveOpenLead:warn self.isOpen {
+      messageTemplate: "Archiving open lead '{contactName}' with status '{status}'"
+      details: {
+        contactName: self.contactName
+        status: self.status
+        estimatedValue: self.estimatedValue
+        reason: reason
+      }
+    }
+
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit LeadArchived
+  }
+
+  store Lead in memory
+}
+
+// Policy definitions
+policy SalesCanManageLeads execute: user.role in ["sales", "manager", "admin"] "Sales staff can manage leads"
+policy SalesCanConvertLeads execute: user.role in ["sales", "manager", "admin"] "Sales staff can convert leads to clients"
+policy ManagerCanDisqualifyLeads execute: user.role in ["manager", "admin"] "Only managers can disqualify leads"
+policy ManagerCanArchiveLeads execute: user.role in ["manager", "admin"] "Only managers can archive leads"
+
+// Event definitions
+event LeadCreated: "crm.lead.created" {
+  leadId: string
+  tenantId: string
+  contactName: string
+  companyName: string
+  source: string
+  estimatedValue: number
+  assignedTo: string
+  createdAt: number
+}
+
+event LeadUpdated: "crm.lead.updated" {
+  leadId: string
+  tenantId: string
+  contactName: string
+  oldStatus: string
+  newStatus: string
+  estimatedValue: number
+  updatedAt: number
+}
+
+event LeadConvertedToClient: "crm.lead.converted" {
+  leadId: string
+  tenantId: string
+  contactName: string
+  companyName: string
+  clientId: string
+  estimatedValue: number
+  userId: string
+  convertedAt: number
+}
+
+event LeadDisqualified: "crm.lead.disqualified" {
+  leadId: string
+  tenantId: string
+  contactName: string
+  companyName: string
+  reason: string
+  estimatedValue: number
+  userId: string
+  disqualifiedAt: number
+}
+
+event LeadArchived: "crm.lead.archived" {
+  leadId: string
+  tenantId: string
+  contactName: string
+  reason: string
+  userId: string
+  archivedAt: number
+}

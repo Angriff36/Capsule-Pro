@@ -1,0 +1,260 @@
+// Events & Catering - Event Contract Rules
+// Manifest spec for event contract management and signature tracking
+
+entity EventContract {
+  property required id: string
+  property required tenantId: string
+  property required eventId: string
+  property required clientId: string
+  property contractNumber: string = ""
+  property title: string = "Untitled Contract"
+  property status: string = "draft"
+  property documentUrl: string = ""
+  property documentType: string = ""
+  property notes: string = ""
+  property expiresAt: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isDraft: boolean = self.status == "draft"
+  computed isSent: boolean = self.status == "sent"
+  computed isViewed: boolean = self.status == "viewed"
+  computed isSigned: boolean = self.status == "signed"
+  computed isExpired: boolean = self.status == "expired"
+  computed isCancelled: boolean = self.status == "cancelled"
+  computed hasDocument: boolean = self.documentUrl != ""
+  computed hasExpiration: boolean = self.expiresAt > 0
+
+  constraint requireEvent: self.eventId != null and self.eventId != "" "Event ID is required"
+  constraint requireClient: self.clientId != null and self.clientId != "" "Client ID is required"
+  constraint validStatus: self.status in ["draft", "sent", "viewed", "signed", "expired", "cancelled"] "Status must be valid"
+
+  command create(eventId: string, clientId: string, contractNumber: string, title: string, documentUrl: string, documentType: string, notes: string, expiresAt: number) {
+    guard eventId != null and eventId != "" "Event ID is required"
+    guard clientId != null and clientId != "" "Client ID is required"
+
+    mutate eventId = eventId
+    mutate clientId = clientId
+    mutate contractNumber = contractNumber
+    mutate title = title
+    mutate documentUrl = documentUrl
+    mutate documentType = documentType
+    mutate notes = notes
+    mutate expiresAt = expiresAt
+    mutate status = "draft"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit ContractCreated
+  }
+
+  command update(title: string, documentUrl: string, documentType: string, notes: string, expiresAt: number) {
+    guard self.status != "signed" "Cannot modify a signed contract"
+
+    mutate title = title
+    mutate documentUrl = documentUrl
+    mutate documentType = documentType
+    mutate notes = notes
+    mutate expiresAt = expiresAt
+    mutate updatedAt = now()
+
+    emit ContractUpdated
+  }
+
+  command send(sentBy: string) {
+    guard self.status != "signed" "Cannot send a signed contract"
+    guard sentBy != null and sentBy != "" "Sender is required"
+
+    mutate status = "sent"
+    mutate updatedAt = now()
+
+    emit ContractSent
+  }
+
+  command markViewed() {
+    guard self.status == "sent" "Contract must be sent before it can be viewed"
+
+    mutate status = "viewed"
+    mutate updatedAt = now()
+
+    emit ContractViewed
+  }
+
+  command sign() {
+    guard self.status == "sent" or self.status == "viewed" "Contract must be sent or viewed to be signed"
+
+    mutate status = "signed"
+    mutate updatedAt = now()
+
+    emit ContractSigned
+  }
+
+  command expire() {
+    guard self.status != "signed" "Cannot expire a signed contract"
+    guard self.status != "cancelled" "Cannot expire a cancelled contract"
+
+    mutate status = "expired"
+    mutate updatedAt = now()
+
+    emit ContractExpired
+  }
+
+  command cancel(reason: string, canceledBy: string) {
+    guard self.status != "signed" "Cannot cancel a signed contract"
+
+    mutate status = "cancelled"
+    mutate updatedAt = now()
+
+    emit ContractCancelled
+  }
+
+  command softDelete(reason: string, userId: string) {
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit ContractDeleted
+  }
+
+  store EventContract in memory
+}
+
+entity ContractSignature {
+  property required id: string
+  property required tenantId: string
+  property required contractId: string
+  property signedAt: number = 0
+  property signatureData: string = ""
+  property signerName: string = ""
+  property signerEmail: string = ""
+  property ipAddress: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed hasEmail: boolean = self.signerEmail != ""
+  computed hasIpAddress: boolean = self.ipAddress != ""
+
+  constraint requireContract: self.contractId != null and self.contractId != "" "Contract ID is required"
+  constraint requireSignatureData: self.signatureData != null and self.signatureData != "" "Signature data is required"
+  constraint requireSignerName: self.signerName != null and self.signerName != "" "Signer name is required"
+
+  command create(contractId: string, signatureData: string, signerName: string, signerEmail: string, ipAddress: string) {
+    guard contractId != null and contractId != "" "Contract ID is required"
+    guard signatureData != null and signatureData != "" "Signature data is required"
+    guard signerName != null and signerName != "" "Signer name is required"
+
+    mutate contractId = contractId
+    mutate signatureData = signatureData
+    mutate signerName = signerName
+    mutate signerEmail = signerEmail
+    mutate ipAddress = ipAddress
+    mutate signedAt = now()
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit SignatureCreated
+  }
+
+  command softDelete(reason: string, userId: string) {
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit SignatureDeleted
+  }
+
+  store ContractSignature in memory
+}
+
+// Policy definitions
+policy ContractStaffCanView execute: user.role in ["event_coordinator", "manager", "admin"] "Event staff can view contracts"
+policy ContractManagersCanManage execute: user.role in ["manager", "admin"] "Only managers and admins can manage contracts"
+
+// Contract events
+event ContractCreated: "events.contract.created" {
+  contractId: string
+  tenantId: string
+  eventId: string
+  clientId: string
+  title: string
+  status: string
+  createdAt: number
+}
+
+event ContractUpdated: "events.contract.updated" {
+  contractId: string
+  tenantId: string
+  eventId: string
+  title: string
+  updatedAt: number
+}
+
+event ContractSent: "events.contract.sent" {
+  contractId: string
+  tenantId: string
+  eventId: string
+  clientId: string
+  sentBy: string
+  sentAt: number
+}
+
+event ContractViewed: "events.contract.viewed" {
+  contractId: string
+  tenantId: string
+  eventId: string
+  clientId: string
+  viewedAt: number
+}
+
+event ContractSigned: "events.contract.signed" {
+  contractId: string
+  tenantId: string
+  eventId: string
+  clientId: string
+  signedAt: number
+}
+
+event ContractExpired: "events.contract.expired" {
+  contractId: string
+  tenantId: string
+  eventId: string
+  expiredAt: number
+}
+
+event ContractCancelled: "events.contract.cancelled" {
+  contractId: string
+  tenantId: string
+  eventId: string
+  reason: string
+  canceledBy: string
+  cancelledAt: number
+}
+
+event ContractDeleted: "events.contract.deleted" {
+  contractId: string
+  tenantId: string
+  eventId: string
+  reason: string
+  userId: string
+  deletedAt: number
+}
+
+// Signature events
+event SignatureCreated: "events.contract.signature_created" {
+  signatureId: string
+  contractId: string
+  tenantId: string
+  signerName: string
+  signerEmail: string
+  signedAt: number
+}
+
+event SignatureDeleted: "events.contract.signature_deleted" {
+  signatureId: string
+  contractId: string
+  tenantId: string
+  signerName: string
+  reason: string
+  userId: string
+  deletedAt: number
+}

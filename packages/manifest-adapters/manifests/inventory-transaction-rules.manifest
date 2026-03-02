@@ -1,0 +1,106 @@
+// Inventory - Transaction Rules
+// Manifest spec for immutable inventory transaction log entries
+
+entity InventoryTransaction {
+  property required id: string
+  property required tenantId: string
+  property required itemId: string
+  property required transactionType: string
+  property quantity: number = 0
+  property unitCost: number = 0
+  property totalCost: number = 0
+  property reference: string = ""
+  property referenceType: string = ""
+  property referenceId: string = ""
+  property notes: string = ""
+  property reason: string = ""
+  property employeeId: string = ""
+  property storageLocationId: string = ""
+  property transactionDate: number = 0
+  property createdAt: number = 0
+
+  computed isReceipt: boolean = self.transactionType == "receipt"
+  computed isIssue: boolean = self.transactionType == "issue"
+  computed isAdjustment: boolean = self.transactionType == "adjustment"
+  computed isTransfer: boolean = self.transactionType == "transfer"
+  computed isWaste: boolean = self.transactionType == "waste"
+  computed isReturn: boolean = self.transactionType == "return"
+  computed hasReference: boolean = self.referenceId != ""
+
+  constraint validTransactionType: self.transactionType in ["receipt", "issue", "adjustment", "transfer", "waste", "return"] "Invalid transaction type"
+
+  constraint nonZeroQuantity: self.quantity != 0 {
+    messageTemplate: "Transaction quantity must not be zero"
+    details: {
+      itemId: self.itemId
+      transactionType: self.transactionType
+    }
+  }
+
+  command create(itemId: string, transactionType: string, quantity: number, unitCost: number, referenceType: string, referenceId: string, reason: string, notes: string, employeeId: string, storageLocationId: string) {
+    guard itemId != null and itemId != "" "Item ID is required"
+    guard transactionType != null and transactionType != "" "Transaction type is required"
+    guard quantity != null and quantity != 0 "Quantity must not be zero"
+
+    constraint warnUnknownType:warn transactionType == "" {
+      messageTemplate: "Transaction type is empty for item '{itemId}'"
+      details: {
+        itemId: itemId
+      }
+    }
+
+    constraint warnLargeQuantity:warn quantity > 1000 or quantity < -1000 {
+      messageTemplate: "Large transaction quantity ({quantity}) for item '{itemId}' - verify correctness"
+      details: {
+        itemId: itemId
+        quantity: quantity
+        transactionType: transactionType
+      }
+    }
+
+    constraint warnWaste:warn transactionType == "waste" {
+      messageTemplate: "Recording waste of {quantity} units for item '{itemId}'"
+      details: {
+        itemId: itemId
+        quantity: quantity
+        reason: reason
+      }
+    }
+
+    mutate itemId = itemId
+    mutate transactionType = transactionType
+    mutate quantity = quantity
+    mutate unitCost = unitCost
+    mutate totalCost = quantity * unitCost
+    mutate referenceType = referenceType
+    mutate referenceId = referenceId
+    mutate reason = reason
+    mutate notes = notes
+    mutate employeeId = employeeId
+    mutate storageLocationId = storageLocationId
+    mutate transactionDate = now()
+    mutate createdAt = now()
+
+    emit InventoryTransactionCreated
+  }
+
+  store InventoryTransaction in memory
+}
+
+policy StaffCanCreateTransaction execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "Staff can create inventory transactions"
+policy ManagersCanAdjust execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and managers can create adjustment transactions"
+
+event InventoryTransactionCreated: "inventory.transaction.created" {
+  transactionId: string
+  tenantId: string
+  itemId: string
+  transactionType: string
+  quantity: number
+  unitCost: number
+  totalCost: number
+  referenceType: string
+  referenceId: string
+  reason: string
+  employeeId: string
+  createdAt: number
+}

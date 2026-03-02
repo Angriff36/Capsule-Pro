@@ -254,12 +254,15 @@ const loadUnitMap = async (codes: string[]) => {
   return new Map(rows.map((row) => [row.code.toLowerCase(), row.id]));
 };
 
-const ensureIngredientId = async (
+type TxClient = Parameters<Parameters<typeof database.$transaction>[0]>[0];
+
+const _ensureIngredientId = async (
+  tx: TxClient,
   tenantId: string,
   name: string,
   defaultUnitId: number
 ) => {
-  const [existing] = await database.$queryRaw<{ id: string }[]>(
+  const [existing] = await tx.$queryRaw<{ id: string }[]>(
     Prisma.sql`
       SELECT id
       FROM tenant_kitchen.ingredients
@@ -275,7 +278,7 @@ const ensureIngredientId = async (
   }
 
   const id = randomUUID();
-  await database.$executeRaw(
+  await tx.$executeRaw(
     Prisma.sql`
       INSERT INTO tenant_kitchen.ingredients (
         tenant_id,
@@ -543,6 +546,18 @@ export const updateRecipeImage = async (
   );
 
   let versionId = version?.id;
+  let newVersionData: {
+    recipe: {
+      name: string;
+      category: string | null;
+      cuisine_type: string | null;
+      description: string | null;
+      tags: string[] | null;
+    };
+    maxVersion: number;
+    fallbackUnitId: number;
+  } | null = null;
+
   if (!versionId) {
     const [maxVersion] = await database.$queryRaw<{ max: number | null }[]>(
       Prisma.sql`
@@ -619,6 +634,17 @@ export const updateRecipeImage = async (
         )
       `
     );
+
+    if (!recipe) {
+      throw new Error("Recipe not found.");
+    }
+
+    versionId = randomUUID();
+    newVersionData = {
+      recipe,
+      maxVersion: maxVersion?.max ?? 0,
+      fallbackUnitId: fallbackUnit.id,
+    };
   }
 
   const [step] = await database.$queryRaw<{ id: string }[]>(

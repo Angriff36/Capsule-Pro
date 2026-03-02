@@ -5,7 +5,7 @@ import { withLogging, withSentry } from "@repo/observability/next-config";
 import type { NextConfig } from "next";
 import { env } from "@/env";
 
-let nextConfig: NextConfig = withToolbar(withLogging(config));
+const baseConfig = withToolbar(withLogging(config)) as NextConfig;
 
 // Disable type checking during build to avoid React type conflicts
 nextConfig.typescript = {

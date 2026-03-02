@@ -3,6 +3,7 @@ import { z } from "zod";
 
 export const keys = () =>
   createEnv({
+    skipValidation: !!process.env.SKIP_ENV_VALIDATION,
     client: {
       NEXT_PUBLIC_POSTHOG_KEY: z.string().startsWith("phc_"),
       NEXT_PUBLIC_POSTHOG_HOST: z.url(),

@@ -1,0 +1,113 @@
+{
+  "version": "1.0",
+  "provenance": {
+    "contentHash": "normalized-content-hash",
+    "irHash": "dc05758f2ec0b518c428594d3928c1d9ad5f566c720806a071ee96e960afd48d",
+    "compilerVersion": "0.3.8",
+    "schemaVersion": "1.0",
+    "compiledAt": "2024-01-01T00:00:00.000Z"
+  },
+  "modules": [],
+  "entities": [
+    {
+      "name": "Author",
+      "properties": [
+        {
+          "name": "name",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        }
+      ],
+      "computedProperties": [
+        {
+          "name": "bookCount",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "books"
+            },
+            "property": "length"
+          },
+          "dependencies": []
+        }
+      ],
+      "relationships": [
+        {
+          "name": "books",
+          "kind": "hasMany",
+          "target": "Book"
+        }
+      ],
+      "commands": [],
+      "constraints": [],
+      "policies": []
+    },
+    {
+      "name": "Book",
+      "properties": [
+        {
+          "name": "title",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "year",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 2024
+          },
+          "modifiers": []
+        }
+      ],
+      "computedProperties": [],
+      "relationships": [
+        {
+          "name": "author",
+          "kind": "belongsTo",
+          "target": "Author"
+        }
+      ],
+      "commands": [],
+      "constraints": [],
+      "policies": []
+    }
+  ],
+  "stores": [
+    {
+      "entity": "Author",
+      "target": "memory",
+      "config": {}
+    },
+    {
+      "entity": "Book",
+      "target": "memory",
+      "config": {}
+    }
+  ],
+  "events": [],
+  "commands": [],
+  "policies": []
+}
