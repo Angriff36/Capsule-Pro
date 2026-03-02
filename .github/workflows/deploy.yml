@@ -29,7 +29,7 @@ jobs:
             echo "has-failing=false" >> $GITHUB_OUTPUT
           fi
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
 
   deploy:
     runs-on: ubuntu-latest
@@ -53,7 +53,7 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
         env:
-          NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
 
       - name: Run linting
         run: pnpm run check
@@ -112,4 +112,4 @@ jobs:
           echo "Please review and fix the failing Dependabot PRs before deploying"
           gh pr list --author dependabot[bot] --json number,title,statusCheckRollup --template '{{range .}}{{tablerow .number .title (join .statusCheckRollup " ")}}{{end}}'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}

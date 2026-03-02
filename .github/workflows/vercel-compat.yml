@@ -37,7 +37,7 @@ jobs:
         run: pnpm install --frozen-lockfile
         env:
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
-          NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
 
       - name: Build with Turbo (exactly like Vercel)
         run: pnpm turbo run build
