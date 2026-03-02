@@ -43,6 +43,30 @@ const ENTITIES_WITH_SPECIFIC_STORES = new Set([
 ]);
 /** Default precompiled IR path (relative to monorepo root). */
 const DEFAULT_IR_PATH = "packages/manifest-ir/ir/kitchen/kitchen.ir.json";
+/**
+ * Store wrapper that no-ops create/update/delete for deterministic (dry-run) mode.
+ * Reads (getAll, getById) delegate to the underlying store; writes return simulated results.
+ */
+function createNoOpPersistStore(store) {
+    return {
+        getAll: () => store.getAll(),
+        getById: (id) => store.getById(id),
+        async create(data) {
+            const id = data.id ?? crypto.randomUUID();
+            return { ...data, id };
+        },
+        async update(id, data) {
+            const existing = await store.getById(id);
+            if (!existing)
+                return undefined;
+            return { ...existing, ...data };
+        },
+        async delete() {
+            return true;
+        },
+        clear: () => Promise.resolve(),
+    };
+}
 // ---------------------------------------------------------------------------
 // Internal helpers
 // ---------------------------------------------------------------------------
@@ -143,7 +167,8 @@ export async function createManifestRuntime(deps, ctx) {
     const eventCollector = [];
     // 4. Build the store provider — entities with dedicated Prisma models use
     //    PrismaStore; everything else falls back to PrismaJsonStore.
-    const storeProvider = (entityName) => {
+    //    When deterministicMode, wrap in NoOpPersistStore so create/update/delete are no-ops.
+    const baseStoreProvider = (entityName) => {
         if (ENTITIES_WITH_SPECIFIC_STORES.has(entityName)) {
             const outboxWriter = createPrismaOutboxWriter(entityName, resolvedUser.tenantId);
             // biome-ignore lint/suspicious/noExplicitAny: PrismaStoreConfig expects the full PrismaClient; callers inject a structurally-compatible superset.
@@ -165,6 +190,15 @@ export async function createManifestRuntime(deps, ctx) {
             entityType: entityName,
         });
     };
+    const storeProvider = (entityName) => {
+        const store = baseStoreProvider(entityName);
+        if (!store)
+            return undefined;
+        if (ctx.deterministicMode) {
+            return createNoOpPersistStore(store);
+        }
+        return store;
+    };
     // 5. Build telemetry hooks — combine caller-provided telemetry with
     //    outbox event persistence (preserving existing behavior exactly).
     const telemetry = {
@@ -174,7 +208,9 @@ export async function createManifestRuntime(deps, ctx) {
             // Fire caller-provided telemetry (e.g. Sentry metrics).
             deps.telemetry?.onCommandExecuted?.(command, result, entityName);
             // Write emitted events to outbox for reliable delivery.
-            if (result.success &&
+            // Skip in deterministicMode (dry-run) — no persistence.
+            if (!ctx.deterministicMode &&
+                result.success &&
                 result.emittedEvents &&
                 result.emittedEvents.length > 0) {
                 const outboxWriter = createPrismaOutboxWriter(entityName || "unknown", resolvedUser.tenantId);
@@ -183,6 +219,7 @@ export async function createManifestRuntime(deps, ctx) {
                     eventType: event.name,
                     payload: event.payload,
                     aggregateId,
+                    correlationId: event.correlationId ?? result.correlationId,
                 }));
                 try {
                     // When prismaOverride is provided (composite route transaction),
@@ -225,5 +262,12 @@ export async function createManifestRuntime(deps, ctx) {
         })
         : undefined;
     // 7. Assemble and return the runtime engine.
-    return new ManifestRuntimeEngine(ir, { user: resolvedUser, eventCollector, telemetry }, { storeProvider, idempotencyStore });
+    const engineOptions = {
+        storeProvider,
+        idempotencyStore,
+        ...(ctx.deterministicMode !== undefined && {
+            deterministicMode: ctx.deterministicMode,
+        }),
+    };
+    return new ManifestRuntimeEngine(ir, { user: resolvedUser, eventCollector, telemetry }, engineOptions);
 }

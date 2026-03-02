@@ -106,6 +106,12 @@ const mcpLogger = {
 // Public API
 // ---------------------------------------------------------------------------
 
+/** Options for createMcpRuntime. */
+export interface CreateMcpRuntimeOptions {
+  /** When true, no persistence occurs (dry-run mode). */
+  deterministicMode?: boolean;
+}
+
 /**
  * Create a manifest runtime for an MCP tool call.
  *
@@ -116,7 +122,8 @@ const mcpLogger = {
  */
 export async function createMcpRuntime(
   identity: McpIdentity,
-  entityName?: string
+  entityName?: string,
+  options?: CreateMcpRuntimeOptions
 ) {
   return await createManifestRuntime(
     {
@@ -132,6 +139,7 @@ export async function createMcpRuntime(
         role: identity.roles[0],
       },
       entityName,
+      deterministicMode: options?.deterministicMode,
     }
   );
 }

@@ -1,3 +1,4 @@
+import { existsSync } from "node:fs";
 import fs from "node:fs/promises";
 import path from "node:path";
 import chalk from "chalk";
@@ -633,12 +634,23 @@ export async function auditRoutesCommand(
           root,
           "packages/manifest-ir/ir/kitchen/kitchen.commands.json"
         );
+    // Exemptions resolution order:
+    // 1. Explicit --exemptions flag
+    // 2. Canonical path (next to IR artifacts)
+    // 3. Legacy path fallback (old monorepo layout)
+    const canonicalExemptionsPath = path.resolve(
+      root,
+      "packages/manifest-ir/ir/kitchen/audit-routes-exemptions.json"
+    );
+    const legacyExemptionsPath = path.resolve(
+      root,
+      "packages/manifest-runtime/packages/cli/src/commands/audit-routes-exemptions.json"
+    );
     const exemptionsPath = options.exemptions
       ? path.resolve(options.exemptions)
-      : path.resolve(
-          root,
-          "packages/manifest-runtime/packages/cli/src/commands/audit-routes-exemptions.json"
-        );
+      : existsSync(canonicalExemptionsPath)
+        ? canonicalExemptionsPath
+        : legacyExemptionsPath;
 
     const commandManifestPaths =
       await loadCommandManifestPaths(commandsManifestPath);

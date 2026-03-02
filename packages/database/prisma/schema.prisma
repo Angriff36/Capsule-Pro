@@ -3519,20 +3519,22 @@ model OverrideAudit {
 }
 
 model OutboxEvent {
-  id            String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  tenantId      String
-  eventType     String
-  payload       Json
-  status        OutboxStatus @default(pending)
-  error         String?
-  createdAt     DateTime     @default(now())
-  publishedAt   DateTime?
-  aggregateId   String
-  aggregateType String
+  id             String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId       String
+  eventType      String
+  payload        Json
+  status         OutboxStatus @default(pending)
+  error          String?
+  createdAt      DateTime     @default(now())
+  publishedAt    DateTime?
+  aggregateId    String
+  aggregateType  String
+  correlationId  String?      @map("correlation_id")
 
   @@index([status, createdAt])
   @@index([tenantId])
   @@index([aggregateType, aggregateId])
+  @@index([tenantId, correlationId])
   @@schema("tenant")
 }
 

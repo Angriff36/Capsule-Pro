@@ -2714,6 +2714,7 @@ export function createPrismaOutboxWriter(
       const eventData = event as {
         name: string;
         payload: { id?: string; taskId?: string };
+        correlationId?: string;
       };
       await tx.outboxEvent.create({
         data: {
@@ -2724,6 +2725,7 @@ export function createPrismaOutboxWriter(
           aggregateId:
             eventData.payload.taskId || eventData.payload.id || "unknown",
           status: "pending",
+          correlationId: eventData.correlationId ?? null,
         },
       });
     }

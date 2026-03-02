@@ -9,8 +9,12 @@
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { wrapMcpServerWithSentry } from "@sentry/node";
+import { dbVerificationPlugin } from "./plugins/db-verification.js";
 import { irIntrospectionPlugin } from "./plugins/ir-introspection.js";
 import { manifestQueriesPlugin } from "./plugins/manifest-queries.js";
+import { promptsPlugin } from "./plugins/prompts.js";
+import { resourcesPlugin } from "./plugins/resources.js";
+import { runtimeExecutionPlugin } from "./plugins/runtime-execution.js";
 import type { McpIdentity, McpPlugin, ServerMode } from "./types.js";
 
 // ---------------------------------------------------------------------------
@@ -21,6 +25,10 @@ import type { McpIdentity, McpPlugin, ServerMode } from "./types.js";
 const TENANT_PLUGINS: McpPlugin[] = [
   manifestQueriesPlugin,
   irIntrospectionPlugin,
+  runtimeExecutionPlugin,
+  dbVerificationPlugin,
+  resourcesPlugin,
+  promptsPlugin,
 ];
 
 /** Admin-only plugins — loaded only for admin server. */

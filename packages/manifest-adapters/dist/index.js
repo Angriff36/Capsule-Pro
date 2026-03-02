@@ -232,17 +232,21 @@ export function createPostgresStoreProvider(databaseUrl, tenantId) {
         if (!tableName) {
             return undefined; // Use default (memory) store for unknown entities
         }
-        // Dynamically import PostgresStore only when databaseUrl is provided
-        // This avoids requiring the pg package in environments that don't need it
+        // Dynamically import PostgresStore only when databaseUrl is provided.
+        // Uses the published "./stores.node" subpath export — never reach into src/.
+        // This avoids requiring the pg package in environments that don't need it.
         try {
-            const { PostgresStore: PGStore, } = require("@angriff36/manifest/src/manifest/stores.node");
+            const { PostgresStore: PGStore, } = require("@angriff36/manifest/stores.node");
             return new PGStore({
                 connectionString: databaseUrl,
                 tableName,
             });
         }
-        catch {
-            return undefined; // Fall back to memory store if PostgresStore is unavailable
+        catch (err) {
+            // PostgresStore unavailable (missing pg dep or unsupported env) — fall back to memory store.
+            // Log once so silent fallback is diagnosable.
+            console.warn(`[manifest-adapters] PostgresStore unavailable for entity "${entityName}", falling back to memory store:`, err instanceof Error ? err.message : err);
+            return undefined;
         }
     };
 }

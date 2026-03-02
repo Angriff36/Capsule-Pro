@@ -535,7 +535,7 @@ describe("Test H — Route integrity (known issues)", () => {
     // Stale exemptions for deleted files are noise. Verify cleanup.
     const exemptionsFile = join(
       PROJECT_ROOT,
-      "packages/manifest-runtime/packages/cli/src/commands/audit-routes-exemptions.json"
+      "packages/manifest-ir/ir/kitchen/audit-routes-exemptions.json"
     );
     const exemptions = JSON.parse(
       readFileSync(exemptionsFile, "utf-8")

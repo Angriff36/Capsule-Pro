@@ -108,7 +108,7 @@
     "manifest:duplicates": "pnpm exec manifest duplicates",
     "manifest:runtime-check": "pnpm exec manifest runtime-check",
     "manifest:cache-status": "pnpm exec manifest cache-status",
-    "manifest:route-audit": "pnpm exec manifest audit-routes --root apps/api --commands-manifest packages/manifest-ir/ir/kitchen/kitchen.commands.json --exemptions packages/manifest-runtime/packages/cli/src/commands/audit-routes-exemptions.json",
+    "manifest:route-audit": "pnpm exec manifest audit-routes --root apps/api --commands-manifest packages/manifest-ir/ir/kitchen/kitchen.commands.json --exemptions packages/manifest-ir/ir/kitchen/audit-routes-exemptions.json",
     "manifest:routes:ir": "tsx scripts/manifest/generate-route-manifest.ts",
     "manifest:validate": "pnpm exec manifest validate packages/manifest-ir/ir/kitchen/kitchen.ir.json",
     "bump-deps": "pnpm dlx npm-check-updates --deep -u --reject recharts && pnpm install",

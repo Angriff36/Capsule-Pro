@@ -2331,6 +2331,7 @@ export function createPrismaOutboxWriter(entityName, tenantId) {
                     payload: eventData.payload,
                     aggregateId: eventData.payload.taskId || eventData.payload.id || "unknown",
                     status: "pending",
+                    correlationId: eventData.correlationId ?? null,
                 },
             });
         }

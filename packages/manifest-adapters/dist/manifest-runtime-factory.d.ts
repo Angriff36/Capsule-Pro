@@ -94,6 +94,11 @@ export interface ManifestRuntimeContext {
         role?: string;
     };
     entityName?: string;
+    /**
+     * When true, no persistence occurs: store create/update/delete are no-ops,
+     * and outbox writes are skipped. Use for dry-run / preview flows.
+     */
+    deterministicMode?: boolean;
 }
 /**
  * Create a manifest runtime with Prisma-based storage and transactional outbox.

@@ -122,6 +122,11 @@ export interface ManifestRuntimeContext {
     role?: string;
   };
   entityName?: string;
+  /**
+   * When true, no persistence occurs: store create/update/delete are no-ops,
+   * and outbox writes are skipped. Use for dry-run / preview flows.
+   */
+  deterministicMode?: boolean;
 }
 
 // ---------------------------------------------------------------------------
@@ -151,6 +156,37 @@ const ENTITIES_WITH_SPECIFIC_STORES = new Set([
 
 /** Default precompiled IR path (relative to monorepo root). */
 const DEFAULT_IR_PATH = "packages/manifest-ir/ir/kitchen/kitchen.ir.json";
+
+/**
+ * Store wrapper that no-ops create/update/delete for deterministic (dry-run) mode.
+ * Reads (getAll, getById) delegate to the underlying store; writes return simulated results.
+ */
+function createNoOpPersistStore<T extends { id: string }>(store: {
+  getAll(): Promise<T[]>;
+  getById(id: string): Promise<T | undefined>;
+  create(data: Partial<T>): Promise<T>;
+  update(id: string, data: Partial<T>): Promise<T | undefined>;
+  delete(id: string): Promise<boolean>;
+  clear(): Promise<void>;
+}): typeof store {
+  return {
+    getAll: () => store.getAll(),
+    getById: (id) => store.getById(id),
+    async create(data) {
+      const id = (data as { id?: string }).id ?? crypto.randomUUID();
+      return { ...data, id } as T;
+    },
+    async update(id, data) {
+      const existing = await store.getById(id);
+      if (!existing) return undefined;
+      return { ...existing, ...data } as T;
+    },
+    async delete() {
+      return true;
+    },
+    clear: () => Promise.resolve(),
+  };
+}
 
 // ---------------------------------------------------------------------------
 // Internal helpers
@@ -277,7 +313,8 @@ export async function createManifestRuntime(
 
   // 4. Build the store provider — entities with dedicated Prisma models use
   //    PrismaStore; everything else falls back to PrismaJsonStore.
-  const storeProvider: RuntimeOptions["storeProvider"] = (
+  //    When deterministicMode, wrap in NoOpPersistStore so create/update/delete are no-ops.
+  const baseStoreProvider: (entityName: string) => unknown = (
     entityName: string
   ) => {
     if (ENTITIES_WITH_SPECIFIC_STORES.has(entityName)) {
@@ -310,6 +347,29 @@ export async function createManifestRuntime(
     });
   };
 
+  const storeProvider: NonNullable<RuntimeOptions["storeProvider"]> = (
+    entityName: string
+  ) => {
+    const store = baseStoreProvider(entityName);
+    if (!store) return undefined;
+    if (ctx.deterministicMode) {
+      return createNoOpPersistStore(
+        store as {
+          getAll(): Promise<{ id: string }[]>;
+          getById(id: string): Promise<{ id: string } | undefined>;
+          create(data: Partial<{ id: string }>): Promise<{ id: string }>;
+          update(
+            id: string,
+            data: Partial<{ id: string }>
+          ): Promise<{ id: string } | undefined>;
+          delete(id: string): Promise<boolean>;
+          clear(): Promise<void>;
+        }
+      ) as ReturnType<NonNullable<RuntimeOptions["storeProvider"]>>;
+    }
+    return store as ReturnType<NonNullable<RuntimeOptions["storeProvider"]>>;
+  };
+
   // 5. Build telemetry hooks — combine caller-provided telemetry with
   //    outbox event persistence (preserving existing behavior exactly).
   const telemetry: ManifestTelemetryHooks = {
@@ -324,7 +384,9 @@ export async function createManifestRuntime(
       deps.telemetry?.onCommandExecuted?.(command, result, entityName);
 
       // Write emitted events to outbox for reliable delivery.
+      // Skip in deterministicMode (dry-run) — no persistence.
       if (
+        !ctx.deterministicMode &&
         result.success &&
         result.emittedEvents &&
         result.emittedEvents.length > 0
@@ -340,6 +402,7 @@ export async function createManifestRuntime(
           eventType: event.name,
           payload: event.payload,
           aggregateId,
+          correlationId: event.correlationId ?? result.correlationId,
         }));
 
         try {
@@ -386,10 +449,17 @@ export async function createManifestRuntime(
     : undefined;
 
   // 7. Assemble and return the runtime engine.
+  const engineOptions: RuntimeOptions = {
+    storeProvider,
+    idempotencyStore,
+    ...(ctx.deterministicMode !== undefined && {
+      deterministicMode: ctx.deterministicMode,
+    }),
+  };
   return new ManifestRuntimeEngine(
     ir,
     { user: resolvedUser, eventCollector, telemetry },
-    { storeProvider, idempotencyStore }
+    engineOptions
   );
 }
 

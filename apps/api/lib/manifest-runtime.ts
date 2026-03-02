@@ -30,6 +30,8 @@ interface GeneratedRuntimeContext {
     role?: string;
   };
   entityName?: string;
+  /** When true, no persistence occurs (dry-run mode). */
+  deterministicMode?: boolean;
 }
 
 /**
