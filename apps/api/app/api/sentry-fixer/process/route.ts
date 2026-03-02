@@ -1,6 +1,11 @@
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import { createPrismaJobStore } from "@repo/sentry-integration/prisma-store";
+
+// Force dynamic rendering — POST reads Authorization headers; GET reads env vars.
+// Both must opt out of static collection at build time.
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 import type { JobQueueConfig } from "@repo/sentry-integration/queue";
 import { SentryJobQueue } from "@repo/sentry-integration/queue";
 import {
