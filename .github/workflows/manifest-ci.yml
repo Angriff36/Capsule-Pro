@@ -136,15 +136,15 @@ jobs:
           RESEND_FROM: "noreply@ci-build.local"
           CLERK_SECRET_KEY: "not_a_real_stripe_key_dummy_value"
           STRIPE_SECRET_KEY: "not_a_real_stripe_key_dummy_value"
-          STRIPE_WEBHOOK_SECRET: "whsec_dummy"
-          SVIX_TOKEN: "sk_dummy"
+          STRIPE_WEBHOOK_SECRET: "webhook_secret_placeholder"
+          SVIX_TOKEN: "api_key_placeholder"
           KNOCK_API_KEY: "dummy"
           KNOCK_FEED_CHANNEL_ID: "dummy"
           BETTERSTACK_API_KEY: "dummy"
           BETTERSTACK_URL: "https://dummy.betterstack.com"
           FLAGS_SECRET: "dummy"
           ARCJET_KEY: "ajkey_dummy"
-          LIVEBLOCKS_SECRET: "sk_dummy"
+          LIVEBLOCKS_SECRET: "api_key_placeholder"
 
       - name: Check if generated code differs
         run: |
@@ -223,23 +223,23 @@ jobs:
           RESEND_FROM: "noreply@ci-build.local"
           CLERK_SECRET_KEY: "not_a_real_stripe_key_dummy_value"
           STRIPE_SECRET_KEY: "not_a_real_stripe_key_dummy_value"
-          STRIPE_WEBHOOK_SECRET: "whsec_dummy"
-          SVIX_TOKEN: "sk_dummy"
+          STRIPE_WEBHOOK_SECRET: "webhook_secret_placeholder"
+          SVIX_TOKEN: "api_key_placeholder"
           KNOCK_API_KEY: "dummy"
           KNOCK_FEED_CHANNEL_ID: "dummy"
           BETTERSTACK_API_KEY: "dummy"
           BETTERSTACK_URL: "https://dummy.betterstack.com"
           FLAGS_SECRET: "dummy"
           ARCJET_KEY: "ajkey_dummy"
-          LIVEBLOCKS_SECRET: "sk_dummy"
+          LIVEBLOCKS_SECRET: "api_key_placeholder"
 
       - name: Type check all packages
         run: |
           echo "Running TypeScript type check..."
           # Exclude @repo/cms — basehub types are environment-dependent (CI token
           # points to a different basehub branch than local dev, causing schema drift).
-          # See: https://github.com/Angriff36/Capsule-Pro/issues/XX
-          pnpm turbo typecheck --filter='!@repo/cms'
+          # Using pnpm filter to exclude the problematic package
+          pnpm -r --filter='!@repo/cms' run typecheck
         env:
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
 
@@ -300,15 +300,15 @@ jobs:
           RESEND_FROM: "noreply@ci-build.local"
           CLERK_SECRET_KEY: "not_a_real_stripe_key_dummy_value"
           STRIPE_SECRET_KEY: "not_a_real_stripe_key_dummy_value"
-          STRIPE_WEBHOOK_SECRET: "whsec_dummy"
-          SVIX_TOKEN: "sk_dummy"
+          STRIPE_WEBHOOK_SECRET: "webhook_secret_placeholder"
+          SVIX_TOKEN: "api_key_placeholder"
           KNOCK_API_KEY: "dummy"
           KNOCK_FEED_CHANNEL_ID: "dummy"
           BETTERSTACK_API_KEY: "dummy"
           BETTERSTACK_URL: "https://dummy.betterstack.com"
           FLAGS_SECRET: "dummy"
           ARCJET_KEY: "ajkey_dummy"
-          LIVEBLOCKS_SECRET: "sk_dummy"
+          LIVEBLOCKS_SECRET: "api_key_placeholder"
 
       - name: Run manifest integration tests
         run: |
@@ -431,15 +431,15 @@ jobs:
           RESEND_FROM: "noreply@ci-build.local"
           CLERK_SECRET_KEY: "not_a_real_stripe_key_dummy_value"
           STRIPE_SECRET_KEY: "not_a_real_stripe_key_dummy_value"
-          STRIPE_WEBHOOK_SECRET: "whsec_dummy"
-          SVIX_TOKEN: "sk_dummy"
+          STRIPE_WEBHOOK_SECRET: "webhook_secret_placeholder"
+          SVIX_TOKEN: "api_key_placeholder"
           KNOCK_API_KEY: "dummy"
           KNOCK_FEED_CHANNEL_ID: "dummy"
           BETTERSTACK_API_KEY: "dummy"
           BETTERSTACK_URL: "https://dummy.betterstack.com"
           FLAGS_SECRET: "dummy"
           ARCJET_KEY: "ajkey_dummy"
-          LIVEBLOCKS_SECRET: "sk_dummy"
+          LIVEBLOCKS_SECRET: "api_key_placeholder"
 
       - name: Check snapshot tests
         run: |
