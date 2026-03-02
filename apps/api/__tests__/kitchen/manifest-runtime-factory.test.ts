@@ -300,19 +300,19 @@ describe("createManifestRuntime (shared factory)", () => {
         storeProvider: (name: string) => unknown;
       };
 
-      // Call with an entity that has no dedicated model
-      engineOptions.storeProvider("Event");
+      // Call with an entity that has no dedicated model (e.g., "Venue" uses PrismaJsonStore fallback)
+      engineOptions.storeProvider("Venue");
       expect(prismaJsonStoreConstructorSpy).toHaveBeenCalledTimes(1);
       expect(prismaJsonStoreConstructorSpy).toHaveBeenCalledWith(
         expect.objectContaining({
           tenantId: "tenant-1",
-          entityType: "Event",
+          entityType: "Venue",
         })
       );
       expect(prismaStoreConstructorSpy).not.toHaveBeenCalled();
     });
 
-    it("routes all 13 dedicated entities to PrismaStore", async () => {
+    it("routes all 14 dedicated entities to PrismaStore", async () => {
       const dedicatedEntities = [
         "PrepTask",
         "Recipe",
@@ -327,6 +327,7 @@ describe("createManifestRuntime (shared factory)", () => {
         "Station",
         "InventoryItem",
         "KitchenTask",
+        "Event",
       ];
 
       const deps = makeDeps();
