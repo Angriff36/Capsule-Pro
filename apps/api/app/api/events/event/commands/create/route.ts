@@ -80,8 +80,15 @@ export async function POST(request: NextRequest) {
       return manifestErrorResponse(result.error ?? "Command failed", 400);
     }
 
+    // WHY TWO-STEP: runCommand("create") validates governance (policies/guards/constraints)
+    // and fires emits, but the IR command create uses mutate+emit only — no persist action.
+    // Without createInstance the row is never written to Prisma. EventPrismaStore handles
+    // the actual INSERT into tenant_events.events.
+    // TODO: Add persist semantics to event-rules.manifest so this explicit call is unnecessary.
+    const created = await runtime.createInstance("Event", body);
+
     return manifestSuccessResponse({
-      result: result.result,
+      result: created,
       events: result.emittedEvents,
     });
   } catch (error) {
