@@ -13,6 +13,7 @@ permissions:
 
 env:
   NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+  DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
 
 jobs:
   test:

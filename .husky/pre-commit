@@ -86,11 +86,16 @@ fi
 
 # Block staged non-manifest write route handlers.
 ROUTE_GUARD_EXIT=0
-if [ $FORMAT_EXIT_CODE -eq 0 ]; then
-  pnpm exec node scripts/check-staged-write-routes.mjs || ROUTE_GUARD_EXIT=$?
+if [ $FORMAT_EXIT_CODE -ne 0 ]; then
+  exit $FORMAT_EXIT_CODE
 fi
+
+pnpm exec node scripts/check-staged-write-routes.mjs || ROUTE_GUARD_EXIT=$?
 if [ $ROUTE_GUARD_EXIT -ne 0 ]; then
   exit $ROUTE_GUARD_EXIT
 fi
 
-exit $FORMAT_EXIT_CODE
+echo "Running typecheck before commit..."
+pnpm check
+
+exit 0
