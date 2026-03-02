@@ -3,6 +3,7 @@ import { z } from "zod";
 
 export const keys = () =>
   createEnv({
+    skipValidation: !!process.env.SKIP_ENV_VALIDATION,
     server: {
       BASEHUB_TOKEN: z.string().startsWith("bshb_pk_"),
     },
