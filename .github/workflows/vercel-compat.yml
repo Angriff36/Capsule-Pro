@@ -60,11 +60,11 @@ jobs:
           NEXT_PUBLIC_POSTHOG_KEY: "phc_dummy"
           NEXT_PUBLIC_POSTHOG_HOST: "https://us.i.posthog.com"
           # Server env vars needed for full turbo build
-          CLERK_SECRET_KEY: "sk_test_dummy"
+          CLERK_SECRET_KEY: "not_a_real_stripe_key_dummy_value"
           CLERK_WEBHOOK_SECRET: "whsec_dummy"
           RESEND_FROM: "noreply@ci-build.local"
           RESEND_TOKEN: "re_dummy"
-          STRIPE_SECRET_KEY: "sk_test_dummy"
+          STRIPE_SECRET_KEY: "not_a_real_stripe_key_dummy_value"
           STRIPE_WEBHOOK_SECRET: "whsec_dummy"
           BETTERSTACK_API_KEY: "dummy"
           BETTERSTACK_URL: "https://dummy.betterstack.com"
