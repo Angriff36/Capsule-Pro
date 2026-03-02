@@ -158,6 +158,9 @@ importers:
       '@repo/next-config':
         specifier: workspace:*
         version: link:../../packages/next-config
+      '@repo/notifications':
+        specifier: workspace:*
+        version: link:../../packages/notifications
       '@repo/observability':
         specifier: workspace:*
         version: link:../../packages/observability
@@ -173,6 +176,9 @@ importers:
       '@repo/realtime':
         specifier: workspace:*
         version: link:../../packages/realtime
+      '@repo/sentry-integration':
+        specifier: workspace:*
+        version: link:../../packages/sentry-integration
       '@sentry/nextjs':
         specifier: ^10.38.0
         version: 10.38.0(@opentelemetry/context-async-hooks@2.5.0(@opentelemetry/api@1.9.0))(@opentelemetry/core@2.5.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.5.0(@opentelemetry/api@1.9.0))(next@15.4.11(@babel/core@7.28.6)(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react@19.2.4)(webpack@5.104.1)
@@ -185,6 +191,9 @@ importers:
       ai:
         specifier: ^6.0.70
         version: 6.0.70(zod@4.3.6)
+      date-fns:
+        specifier: ^4.1.0
+        version: 4.1.0
       import-in-the-middle:
         specifier: ^3.0.0
         version: 3.0.0
@@ -203,6 +212,9 @@ importers:
       svix:
         specifier: ^1.84.1
         version: 1.84.1
+      uuid:
+        specifier: ^13.0.0
+        version: 13.0.0
       zod:
         specifier: ^4.3.6
         version: 4.3.6
@@ -291,6 +303,9 @@ importers:
       '@repo/design-system':
         specifier: workspace:*
         version: link:../../packages/design-system
+      '@repo/email':
+        specifier: workspace:*
+        version: link:../../packages/email
       '@repo/event-parser':
         specifier: workspace:*
         version: link:../../packages/event-parser
@@ -369,6 +384,9 @@ importers:
       react-dom:
         specifier: 19.2.4
         version: 19.2.4(react@19.2.4)
+      react-hook-form:
+        specifier: ^7.71.1
+        version: 7.71.1(react@19.2.4)
       recharts:
         specifier: ^2.15.4
         version: 2.15.4(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -783,6 +801,9 @@ importers:
       concurrently:
         specifier: ^9.2.1
         version: 9.2.1
+      cross-env:
+        specifier: ^10.1.0
+        version: 10.1.0
       tailwindcss:
         specifier: ^4.1.18
         version: 4.1.18
@@ -1330,16 +1351,41 @@ importers:
         version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.2.3)(jiti@2.6.1)(jsdom@28.0.0(@noble/hashes@1.8.0))(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/manifest-runtime:
+    dependencies:
+      jszip:
+        specifier: ^3.10.1
+        version: 3.10.1
+      lucide-react:
+        specifier: ^0.563.0
+        version: 0.563.0(react@19.2.4)
+      pg:
+        specifier: ^8.18.0
+        version: 8.18.0
+      react:
+        specifier: 19.2.4
+        version: 19.2.4
     devDependencies:
       '@supabase/supabase-js':
         specifier: ^2.97.0
         version: 2.97.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
+      vitest:
+        specifier: ^4.0.18
+        version: 4.0.18(@opentelemetry/api@1.9.0)(@types/node@25.2.3)(jiti@2.6.1)(jsdom@28.0.0(@noble/hashes@1.8.0))(lightningcss@1.30.2)(terser@5.46.0)(tsx@4.21.0)(yaml@2.8.2)
 
   packages/mcp-server:
     dependencies:
+      '@angriff36/manifest':
+        specifier: 0.3.35
+        version: 0.3.35
       '@modelcontextprotocol/sdk':
         specifier: ^1.26.0
         version: 1.26.0(@cfworker/json-schema@4.1.1)(zod@4.3.6)
+      '@neondatabase/serverless':
+        specifier: ^1.0.2
+        version: 1.0.2
+      '@prisma/adapter-neon':
+        specifier: 7.3.0
+        version: 7.3.0
       '@repo/database':
         specifier: workspace:*
         version: link:../database
@@ -1352,6 +1398,9 @@ importers:
       dotenv:
         specifier: ^17.2.4
         version: 17.2.4
+      ws:
+        specifier: ^8.19.0
+        version: 8.19.0(bufferutil@4.1.0)(utf-8-validate@5.0.10)
       zod:
         specifier: ^4.3.6
         version: 4.3.6
@@ -1399,6 +1448,9 @@ importers:
       '@knocklabs/react':
         specifier: ^0.10.5
         version: 0.10.5(@types/react-dom@19.2.3(@types/react@19.2.11))(@types/react@19.2.11)(next@15.4.11(@opentelemetry/api@1.9.0)(@playwright/test@1.58.1)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.4(react@19.2.4))(react@19.2.4))(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
+      '@repo/database':
+        specifier: workspace:*
+        version: link:../database
       '@t3-oss/env-nextjs':
         specifier: ^0.13.10
         version: 0.13.10(typescript@5.9.3)(valibot@1.2.0(typescript@5.9.3))(zod@4.3.6)
@@ -10571,6 +10623,9 @@ packages:
     engines: {node: '>=16.x'}
     hasBin: true
 
+  immediate@3.0.6:
+    resolution: {integrity: sha512-XXOFtyqDjNDAQxVfYxuF7g9Il/IbWmmlQg2MYKOH8ExIT1qg6xc4zyS3HaEEATgs1btfzxq15ciUiY7gjSXRGQ==}
+
   import-cwd@3.0.0:
     resolution: {integrity: sha512-4pnzH16plW+hgvRECbDWpQl3cqtvSofHWh44met7ESfZ8UZOWWddm8hEyDTqREJ9RbYHY8gi8DqmaelApoOGMg==}
     engines: {node: '>=8'}
@@ -11128,6 +11183,9 @@ packages:
     resolution: {integrity: sha512-MT/xP0CrubFRNLNKvxJ2BYfy53Zkm++5bX9dtuPbqAeQpTVe0MQTFhao8+Cp//EmJp244xt6Drw/GVEGCUj40g==}
     engines: {node: '>=12', npm: '>=6'}
 
+  jszip@3.10.1:
+    resolution: {integrity: sha512-xXDvecyTpGLrqFrvkrUSoxxfJI5AH7U8zxxtVclpsUtMCq4JQ290LY8AW5c7Ggnr/Y/oK+bQMbqK2qmtk3pN4g==}
+
   jwa@2.0.1:
     resolution: {integrity: sha512-hRF04fqJIP8Abbkq5NKGN0Bbr3JxlQ+qhZufXVr0DvujKy93ZCbXZMHDL4EOtodSbCWxOqR8MS1tXA5hwqCXDg==}
 
@@ -11185,6 +11243,9 @@ packages:
 
   libqp@2.1.1:
     resolution: {integrity: sha512-0Wd+GPz1O134cP62YU2GTOPNA7Qgl09XwCqM5zpBv87ERCXdfDtyKXvV7c9U22yWJh44QZqBocFnXN11K96qow==}
+
+  lie@3.3.0:
+    resolution: {integrity: sha512-UaiMJzeWRlEujzAuw5LokY1L5ecNQYZKfmyZ9L7wDHb/p5etKaxXhohBcrw0EYby+G/NA52vRSN4N39dxHAIwQ==}
 
   lighthouse-logger@1.4.2:
     resolution: {integrity: sha512-gPWxznF6TKmUHrOQjlVo2UbaL2EJ71mb2CCeRs/2qBpi4L/g4LUVc9+3lKQ6DTUZwJswfM7ainGrLO1+fOqa2g==}
@@ -26167,6 +26228,8 @@ snapshots:
 
   image-size@2.0.2: {}
 
+  immediate@3.0.6: {}
+
   import-cwd@3.0.0:
     dependencies:
       import-from: 3.0.0
@@ -26765,6 +26828,13 @@ snapshots:
       ms: 2.1.3
       semver: 7.7.3
 
+  jszip@3.10.1:
+    dependencies:
+      lie: 3.3.0
+      pako: 1.0.11
+      readable-stream: 2.3.8
+      setimmediate: 1.0.5
+
   jwa@2.0.1:
     dependencies:
       buffer-equal-constant-time: 1.0.1
@@ -26815,6 +26885,10 @@ snapshots:
       libqp: 2.1.1
 
   libqp@2.1.1: {}
+
+  lie@3.3.0:
+    dependencies:
+      immediate: 3.0.6
 
   lighthouse-logger@1.4.2:
     dependencies:
