@@ -13,6 +13,9 @@ permissions:
   contents: read
   packages: read
 
+env:
+  NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+
 jobs:
   build:
     name: Vercel-Compatible Build
@@ -44,6 +47,7 @@ jobs:
         env:
           # Match Vercel's minimal env approach
           SKIP_ENV_VALIDATION: true
+          BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
           # Turbo remote caching (optional - requires Vercel token)
           # TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
           # TURBO_TEAM: ${{ secrets.TURBO_TEAM }}

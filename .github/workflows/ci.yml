@@ -11,6 +11,9 @@ permissions:
   contents: read
   packages: read
 
+env:
+  NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+
 jobs:
   test:
     runs-on: ubuntu-latest

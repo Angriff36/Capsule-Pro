@@ -22,6 +22,9 @@ permissions:
   contents: read
   packages: read
 
+env:
+  NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+
 jobs:
   manifest-validate:
     name: Validate Manifest Files
@@ -39,8 +42,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10.22.0
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -92,8 +93,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10.22.0
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -119,6 +118,8 @@ jobs:
           pnpm run analyze
         env:
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+          NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
+          NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
 
       - name: Check if generated code differs
         run: |
@@ -155,8 +156,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10.22.0
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -182,6 +181,8 @@ jobs:
           pnpm run analyze
         env:
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+          NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
+          NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
 
       - name: Type check all packages
         run: |
@@ -206,8 +207,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10.22.0
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -233,6 +232,8 @@ jobs:
           pnpm run analyze
         env:
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+          NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
+          NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
 
       - name: Run manifest integration tests
         run: |
@@ -267,8 +268,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10.22.0
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -316,8 +315,6 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10.22.0
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -343,6 +340,8 @@ jobs:
           pnpm run analyze
         env:
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+          NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
+          NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
 
       - name: Check snapshot tests
         run: |
