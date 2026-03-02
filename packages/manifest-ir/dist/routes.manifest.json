@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-03-01T07:55:02.449Z",
+  "generatedAt": "2026-03-02T22:25:52.897Z",
   "basePath": "/api",
   "routes": [
     {
@@ -6190,67 +6190,67 @@
           "name": "clientId",
           "type": "string",
           "location": "body",
-          "required": false
+          "required": true
         },
         {
           "name": "eventNumber",
           "type": "string",
           "location": "body",
-          "required": false
+          "required": true
         },
         {
           "name": "title",
           "type": "string",
           "location": "body",
-          "required": false
+          "required": true
         },
         {
           "name": "eventType",
           "type": "string",
           "location": "body",
-          "required": false
+          "required": true
         },
         {
           "name": "eventDate",
           "type": "number",
           "location": "body",
-          "required": false
+          "required": true
         },
         {
           "name": "guestCount",
           "type": "number",
           "location": "body",
-          "required": false
+          "required": true
         },
         {
           "name": "venueName",
           "type": "string",
           "location": "body",
-          "required": false
+          "required": true
         },
         {
           "name": "venueAddress",
           "type": "string",
           "location": "body",
-          "required": false
+          "required": true
         },
         {
           "name": "notes",
           "type": "string",
           "location": "body",
-          "required": false
+          "required": true
         },
         {
           "name": "tags",
           "type": "string",
           "location": "body",
-          "required": false
+          "required": true
         },
         {
           "name": "status",
           "type": "string",
           "location": "body",
-          "required": false
+          "required": true
         }
       ],
       "source": {
