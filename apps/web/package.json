@@ -38,6 +38,7 @@
     "@types/react-dom": "19.2.3",
     "basehub": "^9.5.3",
     "concurrently": "^9.2.1",
+    "cross-env": "^10.1.0",
     "tailwindcss": "^4.1.18",
     "typescript": "^5.9.3",
     "vitest": "^4.0.18"
@@ -47,7 +48,7 @@
   },
   "private": true,
   "scripts": {
-    "analyze": "ANALYZE=true npm run build",
+    "analyze": "cross-env ANALYZE=true npm run build",
     "build": "basehub && next build",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "dev": "concurrently \"basehub dev\" \"next dev -p 2222\"",

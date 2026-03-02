@@ -65,7 +65,7 @@ import { database } from "@repo/database";
 import { POST as conflictDetect } from "@/app/api/conflicts/detect/route";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-const mockAuth = vi.mocked(auth);
+const mockAuth = vi.mocked(auth) as any;
 const mockGetTenantIdForOrg = vi.mocked(getTenantIdForOrg);
 const mockQueryRaw = vi.mocked(database.$queryRaw);
 const mockPrepTaskFindMany = vi.mocked(database.prepTask.findMany);
@@ -100,7 +100,7 @@ describe("Command Board Health Smoke Test", () => {
       });
 
       const response = await conflictDetect(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(200);
       expect(body.conflicts).toEqual([]);
@@ -119,10 +119,10 @@ describe("Command Board Health Smoke Test", () => {
       });
 
       const response = await conflictDetect(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(200);
-      const summary = body.summary as Record<string, unknown>;
+      const summary = body.summary as Record<string, any>;
       expect(summary.bySeverity).toEqual({
         low: 0,
         medium: 0,
@@ -162,14 +162,14 @@ describe("Command Board Health Smoke Test", () => {
       });
 
       const response = await conflictDetect(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(200);
       expect(Array.isArray(body.conflicts)).toBe(true);
       expect(body.conflicts.length).toBeGreaterThan(0);
       expect(body.summary.total).toBeGreaterThan(0);
 
-      const conflict = (body.conflicts as Record<string, unknown>[])[0];
+      const conflict = (body.conflicts as Record<string, any>[])[0];
       expect(conflict.id).toBeDefined();
       expect(conflict.type).toBeDefined();
       expect(conflict.severity).toBeDefined();
@@ -219,14 +219,14 @@ describe("Command Board Health Smoke Test", () => {
       });
 
       const response = await conflictDetect(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(200);
       // At least scheduling should be present; inventory may fail due to mock
       expect(body.conflicts.length).toBeGreaterThanOrEqual(1);
 
       const types = new Set(
-        (body.conflicts as Record<string, unknown>[]).map((c) => c.type)
+        (body.conflicts as Record<string, any>[]).map((c) => c.type)
       );
       expect(types.has("scheduling")).toBe(true);
     });
@@ -264,7 +264,7 @@ describe("Command Board Health Smoke Test", () => {
       });
 
       const response = await conflictDetect(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       // Should return 200 with partial results, not 500
       expect(response.status).toBe(200);
@@ -284,7 +284,7 @@ describe("Command Board Health Smoke Test", () => {
       });
 
       const response = await conflictDetect(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(200);
       expect(body.conflicts).toEqual([]);
@@ -347,7 +347,7 @@ describe("Command Board Health Smoke Test", () => {
       });
 
       const response = await conflictDetect(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(401);
       expect(body.code).toBe("AUTH_REQUIRED");
@@ -363,7 +363,7 @@ describe("Command Board Health Smoke Test", () => {
         orgId: VALID_ORG_ID,
         userId: VALID_USER_ID,
       });
-      mockGetTenantIdForOrg.mockResolvedValue(null);
+      mockGetTenantIdForOrg.mockResolvedValue(null as never);
 
       const request = new Request("http://localhost/api/conflicts/detect", {
         method: "POST",
@@ -372,7 +372,7 @@ describe("Command Board Health Smoke Test", () => {
       });
 
       const response = await conflictDetect(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(404);
       expect(body.code).toBe("TENANT_NOT_FOUND");
@@ -393,7 +393,7 @@ describe("Command Board Health Smoke Test", () => {
       });
 
       const response = await conflictDetect(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(400);
       expect(body.code).toBe("INVALID_REQUEST");
@@ -429,9 +429,9 @@ describe("Command Board Health Smoke Test", () => {
       });
 
       const response = await conflictDetect(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
-      const conflict = (body.conflicts as Record<string, unknown>[])[0];
+      const conflict = (body.conflicts as Record<string, any>[])[0];
 
       // Required fields
       expect(typeof conflict.id).toBe("string");
@@ -446,9 +446,7 @@ describe("Command Board Health Smoke Test", () => {
       expect(typeof conflict.suggestedAction).toBe("string");
 
       // affectedEntities shape
-      const entity = (
-        conflict.affectedEntities as Record<string, unknown>[]
-      )[0];
+      const entity = (conflict.affectedEntities as Record<string, any>[])[0];
       expect(entity).toHaveProperty("type");
       expect(entity).toHaveProperty("id");
       expect(entity).toHaveProperty("name");
@@ -465,9 +463,9 @@ describe("Command Board Health Smoke Test", () => {
       });
 
       const response = await conflictDetect(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
-      const summary = body.summary as Record<string, unknown>;
+      const summary = body.summary as Record<string, any>;
       expect(typeof summary.total).toBe("number");
       expect(summary.bySeverity).toBeDefined();
       expect(summary.byType).toBeDefined();
@@ -519,7 +517,7 @@ describe("Command Board Health Smoke Test", () => {
       });
 
       const response = await conflictDetect(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(400);
       expect(body.code).toBe("VALIDATION_ERROR");
@@ -560,7 +558,7 @@ describe("Command Board Health Smoke Test", () => {
       });
 
       const response = await conflictDetect(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(400);
       expect(body.code).toBe("VALIDATION_ERROR");

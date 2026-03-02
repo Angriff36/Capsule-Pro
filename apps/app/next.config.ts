@@ -103,6 +103,12 @@ let nextConfig: NextConfig = withToolbar(
     eslint: {
       ignoreDuringBuilds: true,
     },
+    // Type checking is handled by `pnpm tsc --noEmit` in CI.
+    // Next.js's built-in type checker crashes on Vercel when lstat-ing
+    // parenthesized route groups like (authenticated)/.
+    typescript: {
+      ignoreBuildErrors: true,
+    },
     // Transpile workspace packages and heavy libraries for better performance
     transpilePackages: [
       "@repo/design-system",
@@ -152,6 +158,19 @@ let nextConfig: NextConfig = withToolbar(
     },
     // Optimize production builds
     productionBrowserSourceMaps: false,
+    redirects: async () => [
+      {
+        // Root of the authenticated layout used to be a server component that
+        // called redirect("/command-board").  Vercel's build tracer expects a
+        // page_client-reference-manifest.js for every page, but Next.js never
+        // generates one for a pure server-component redirect — causing ENOENT
+        // during "Collecting page data".  Moving the redirect here avoids
+        // generating any page artifact at all.
+        source: "/",
+        destination: "/command-board",
+        permanent: false,
+      },
+    ],
     rewrites,
     // Externalize pdfjs-dist, ably, and pdfkit to avoid bundling issues
     // ably: Turbopack + Ably causes keyv dynamic require failures in SSR

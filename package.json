@@ -92,7 +92,7 @@
     }
   },
   "scripts": {
-    "analyze": "turbo analyze",
+    "analyze": "cross-env TURBO_UI=0 turbo analyze",
     "boundaries": "turbo boundaries",
     "browser-tools": "pnpm dlx @modelcontextprotocol/server-playwright",
     "build": "pnpm prisma:check && turbo build",

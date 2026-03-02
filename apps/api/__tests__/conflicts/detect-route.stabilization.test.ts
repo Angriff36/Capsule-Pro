@@ -62,12 +62,16 @@ import { database } from "@repo/database";
 import { POST } from "@/app/api/conflicts/detect/route";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
-const mockAuth = vi.mocked(auth);
+const mockAuth = vi.mocked(auth) as any;
 const mockGetTenantIdForOrg = vi.mocked(getTenantIdForOrg);
 const mockQueryRaw = vi.mocked(database.$queryRaw);
-const mockPrepTaskFindMany = vi.mocked(database.prepTask.findMany);
-const mockInventoryAlertFindMany = vi.mocked(database.inventoryAlert.findMany);
-const mockInventoryItemFindMany = vi.mocked(database.inventoryItem.findMany);
+const mockPrepTaskFindMany = vi.mocked(database.prepTask.findMany) as any;
+const mockInventoryAlertFindMany = vi.mocked(
+  database.inventoryAlert.findMany
+) as any;
+const mockInventoryItemFindMany = vi.mocked(
+  database.inventoryItem.findMany
+) as any;
 
 describe("Conflict Detection API Route Stabilization", () => {
   const validTenantId = "550e8400-e29b-41d4-a716-446655440000";
@@ -88,7 +92,7 @@ describe("Conflict Detection API Route Stabilization", () => {
       });
 
       const response = await POST(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(401);
       expect(body).toHaveProperty("message");
@@ -113,7 +117,7 @@ describe("Conflict Detection API Route Stabilization", () => {
       });
 
       const response = await POST(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(404);
       expect(body).toHaveProperty("message");
@@ -146,7 +150,7 @@ describe("Conflict Detection API Route Stabilization", () => {
       });
 
       const response = await POST(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(200);
       expect(body).toHaveProperty("conflicts");
@@ -167,11 +171,11 @@ describe("Conflict Detection API Route Stabilization", () => {
       });
 
       const response = await POST(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(200);
 
-      const summary = body.summary as Record<string, unknown>;
+      const summary = body.summary as Record<string, any>;
       expect(summary.total).toBe(0);
       expect(summary.bySeverity).toEqual({
         low: 0,
@@ -248,7 +252,7 @@ describe("Conflict Detection API Route Stabilization", () => {
       });
 
       const response = await POST(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       // Should return typed 400 error, not 500
       expect(response.status).toBe(400);
@@ -285,13 +289,13 @@ describe("Conflict Detection API Route Stabilization", () => {
       });
 
       const response = await POST(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(200);
       expect(Array.isArray(body.conflicts)).toBe(true);
       expect(body.conflicts).toHaveLength(1);
 
-      const conflict = (body.conflicts as Record<string, unknown>[])[0];
+      const conflict = (body.conflicts as Record<string, any>[])[0];
       expect(conflict).toHaveProperty("id");
       expect(conflict).toHaveProperty("type", "scheduling");
       expect(conflict).toHaveProperty("severity");
@@ -327,12 +331,12 @@ describe("Conflict Detection API Route Stabilization", () => {
       });
 
       const response = await POST(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(200);
       expect(Array.isArray(body.conflicts)).toBe(true);
 
-      const conflict = (body.conflicts as Record<string, unknown>[])[0];
+      const conflict = (body.conflicts as Record<string, any>[])[0];
       expect(conflict.type).toBe("inventory");
     });
 
@@ -359,12 +363,12 @@ describe("Conflict Detection API Route Stabilization", () => {
       });
 
       const response = await POST(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(200);
       expect(body.conflicts).toHaveLength(1);
 
-      const conflict = (body.conflicts as Record<string, unknown>[])[0];
+      const conflict = (body.conflicts as Record<string, any>[])[0];
       expect(conflict.type).toBe("venue");
       expect(conflict).toHaveProperty("resolutionOptions");
     });
@@ -392,12 +396,12 @@ describe("Conflict Detection API Route Stabilization", () => {
       });
 
       const response = await POST(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(200);
       expect(body.conflicts).toHaveLength(1);
 
-      const conflict = (body.conflicts as Record<string, unknown>[])[0];
+      const conflict = (body.conflicts as Record<string, any>[])[0];
       expect(conflict.type).toBe("equipment");
       expect(conflict).toHaveProperty("resolutionOptions");
       // Equipment conflict should have proper severity based on event_count
@@ -424,12 +428,12 @@ describe("Conflict Detection API Route Stabilization", () => {
       });
 
       const response = await POST(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(200);
       expect(body.conflicts).toHaveLength(1);
 
-      const conflict = (body.conflicts as Record<string, unknown>[])[0];
+      const conflict = (body.conflicts as Record<string, any>[])[0];
       expect(conflict.type).toBe("timeline");
       expect(conflict.severity).toBe("critical"); // priority <= 2 is critical
     });
@@ -456,12 +460,12 @@ describe("Conflict Detection API Route Stabilization", () => {
       });
 
       const response = await POST(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(200);
       expect(body.conflicts).toHaveLength(1);
 
-      const conflict = (body.conflicts as Record<string, unknown>[])[0];
+      const conflict = (body.conflicts as Record<string, any>[])[0];
       expect(conflict.type).toBe("financial");
       // marginVariance < -10 is critical
       expect(conflict.severity).toBe("critical");
@@ -489,7 +493,7 @@ describe("Conflict Detection API Route Stabilization", () => {
       });
 
       const response = await POST(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       // Per P0 Item 3: single detector failure should NOT fail whole response
       // Returns HTTP 200 with partial results + warnings
@@ -528,7 +532,7 @@ describe("Conflict Detection API Route Stabilization", () => {
       });
 
       const response = await POST(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(200);
       // Should have 1 conflict from successful detector
@@ -559,7 +563,7 @@ describe("Conflict Detection API Route Stabilization", () => {
       });
 
       const response = await POST(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       // Should return 200 with warnings, not 500
       expect(response.status).toBe(200);
@@ -584,7 +588,7 @@ describe("Conflict Detection API Route Stabilization", () => {
       });
 
       const response = await POST(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(200);
       expect(body).toHaveProperty("warnings");
@@ -609,7 +613,7 @@ describe("Conflict Detection API Route Stabilization", () => {
       });
 
       const response = await POST(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(200);
       expect(body).toHaveProperty("warnings");
@@ -633,7 +637,7 @@ describe("Conflict Detection API Route Stabilization", () => {
       });
 
       const response = await POST(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(200);
       expect(body).toHaveProperty("warnings");
@@ -657,7 +661,7 @@ describe("Conflict Detection API Route Stabilization", () => {
       });
 
       const response = await POST(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(200);
       expect(body).toHaveProperty("warnings");
@@ -680,7 +684,7 @@ describe("Conflict Detection API Route Stabilization", () => {
       });
 
       const response = await POST(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(200);
       expect(body).toHaveProperty("warnings");
@@ -699,7 +703,7 @@ describe("Conflict Detection API Route Stabilization", () => {
       });
 
       const response = await POST(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(200);
       expect(body).toHaveProperty("warnings");
@@ -722,7 +726,7 @@ describe("Conflict Detection API Route Stabilization", () => {
       });
 
       const response = await POST(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(200);
       expect(body).toHaveProperty("warnings");
@@ -746,7 +750,7 @@ describe("Conflict Detection API Route Stabilization", () => {
       });
 
       const response = await POST(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(200);
       expect(body).toHaveProperty("warnings");
@@ -797,11 +801,11 @@ describe("Conflict Detection API Route Stabilization", () => {
       });
 
       const response = await POST(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(200);
 
-      const summary = body.summary as Record<string, unknown>;
+      const summary = body.summary as Record<string, any>;
       // shift_count > 2 is critical, shift_count = 2 is high
       expect(summary.bySeverity).toMatchObject({
         critical: 2,
@@ -860,11 +864,11 @@ describe("Conflict Detection API Route Stabilization", () => {
       });
 
       const response = await POST(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(200);
 
-      const summary = body.summary as Record<string, unknown>;
+      const summary = body.summary as Record<string, any>;
       expect(summary.byType.scheduling).toBe(2);
       expect(summary.byType.inventory).toBe(1);
       expect(summary.total).toBe(3);
@@ -899,11 +903,11 @@ describe("Conflict Detection API Route Stabilization", () => {
       });
 
       const response = await POST(request);
-      const body = (await response.json()) as Record<string, unknown>;
+      const body = (await response.json()) as Record<string, any>;
 
       expect(response.status).toBe(200);
 
-      const conflict = (body.conflicts as Record<string, unknown>[])[0];
+      const conflict = (body.conflicts as Record<string, any>[])[0];
 
       // Required fields
       expect(typeof conflict.id).toBe("string");
@@ -917,9 +921,7 @@ describe("Conflict Detection API Route Stabilization", () => {
       expect(conflict.createdAt).toBeDefined();
 
       // affectedEntities shape
-      const entity = (
-        conflict.affectedEntities as Record<string, unknown>[]
-      )[0];
+      const entity = (conflict.affectedEntities as Record<string, any>[])[0];
       expect(entity).toHaveProperty("type");
       expect(entity).toHaveProperty("id");
       expect(entity).toHaveProperty("name");

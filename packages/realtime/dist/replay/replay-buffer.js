@@ -1,12 +1,9 @@
-"use strict";
 /**
  * Replay Buffer
  *
  * Manages the storage and retrieval of replay events for command boards.
  * Uses the existing OutboxEvent table as the event store.
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.ReplayBuffer = void 0;
 const DEFAULT_CONFIG = {
     maxEventsPerBoard: 1000,
     timeWindowMs: 7 * 24 * 60 * 60 * 1000, // 7 days
@@ -18,7 +15,7 @@ const DEFAULT_CONFIG = {
  * The buffer is conceptual - we query the outbox table directly
  * for replay events, filtered by board and time window.
  */
-class ReplayBuffer {
+export class ReplayBuffer {
     config;
     constructor(config = {}) {
         this.config = { ...DEFAULT_CONFIG, ...config };
@@ -102,4 +99,3 @@ class ReplayBuffer {
         return new Date(Date.now() - this.config.timeWindowMs);
     }
 }
-exports.ReplayBuffer = ReplayBuffer;

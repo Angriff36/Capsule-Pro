@@ -3,7 +3,9 @@
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
-    "strictNullChecks": true
+    "strictNullChecks": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler"
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist", "__tests__"]

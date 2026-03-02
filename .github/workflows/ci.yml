@@ -7,6 +7,10 @@ on:
     branches: [main, develop]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  packages: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -30,6 +34,7 @@ jobs:
         run: pnpm install --frozen-lockfile
         env:
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+          NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
 
       - name: Run linting
         run: pnpm run check

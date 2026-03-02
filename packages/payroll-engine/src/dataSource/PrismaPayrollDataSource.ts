@@ -1,7 +1,7 @@
 // Prisma Payroll Data Source
 // Implements PayrollDataSource interface using Prisma database client
 
-import type { PrismaClient } from "@repo/database";
+import type { PrismaClient } from "@repo/database/generated/client";
 import type {
   Deduction,
   Employee,

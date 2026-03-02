@@ -149,16 +149,6 @@ export async function POST(
         },
         {
           user: { id: userId, tenantId },
-          // Pass override requests if provided
-          overrideRequests: body.override
-            ? [
-                {
-                  constraintCode: "*", // Override all constraints
-                  reasonCode: body.override.reasonCode,
-                  details: body.override.details,
-                },
-              ]
-            : undefined,
         }
       );
 
@@ -315,7 +305,7 @@ export async function POST(
       }
 
       // 4. Resolve and create ingredients if provided
-      const createdIngredients = [];
+      const createdIngredients: unknown[] = [];
       if (body.ingredients && body.ingredients.length > 0) {
         // Separate resolved and raw ingredients
         const resolvedIngredients: ResolvedIngredientInput[] = [];
@@ -398,7 +388,7 @@ export async function POST(
       }
 
       // 5. Create steps if provided
-      const createdSteps = [];
+      const createdSteps: unknown[] = [];
       const stepsToCreate = body.steps || [];
 
       for (const step of stepsToCreate) {
