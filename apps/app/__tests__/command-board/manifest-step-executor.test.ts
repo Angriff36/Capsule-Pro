@@ -36,14 +36,17 @@ const mockCreateManifestRuntime = vi.fn().mockResolvedValue({
   getCommands: vi.fn().mockReturnValue([]),
 });
 
-vi.mock("@repo/manifest-adapters", async (importOriginal) => {
-  const actual = await importOriginal<Record<string, unknown>>();
-  return {
-    ...actual,
-    createManifestRuntime: (...args: unknown[]) =>
-      mockCreateManifestRuntime(...args),
-  };
-});
+vi.mock(
+  "@repo/manifest-adapters/manifest-runtime-factory",
+  async (importOriginal) => {
+    const actual = await importOriginal<Record<string, unknown>>();
+    return {
+      ...actual,
+      createManifestRuntime: (...args: unknown[]) =>
+        mockCreateManifestRuntime(...args),
+    };
+  }
+);
 
 // ---------------------------------------------------------------------------
 // Import the module under test (after mocks)

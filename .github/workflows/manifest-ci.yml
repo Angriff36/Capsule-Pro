@@ -121,6 +121,7 @@ jobs:
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
           NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
           NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
+          BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
 
       - name: Check if generated code differs
         run: |
@@ -184,6 +185,7 @@ jobs:
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
           NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
           NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
+          BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
 
       - name: Type check all packages
         run: |
@@ -235,6 +237,7 @@ jobs:
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
           NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
           NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
+          BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
 
       - name: Run manifest integration tests
         run: |
@@ -343,6 +346,7 @@ jobs:
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
           NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
           NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
+          BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
 
       - name: Check snapshot tests
         run: |

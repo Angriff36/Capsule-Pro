@@ -49,6 +49,10 @@ jobs:
           # Match Vercel's minimal env approach
           SKIP_ENV_VALIDATION: true
           BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
-          # Turbo remote caching (optional - requires Vercel token)
-          # TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
-          # TURBO_TEAM: ${{ secrets.TURBO_TEAM }}
+          # Required public env vars for Next.js builds
+          NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
+          NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
+          NEXT_PUBLIC_APP_URL: "https://capsule-pro-app.vercel.app"
+          NEXT_PUBLIC_WEB_URL: "https://capsule-pro-web.vercel.app"
+          NEXT_PUBLIC_API_URL: "https://capsule-pro-api.vercel.app"
+          NEXT_PUBLIC_DOCS_URL: "https://capsule-pro-docs.vercel.app"
