@@ -42,6 +42,7 @@ jobs:
         run: cd apps/app && pnpm run build
         env:
           SKIP_ENV_VALIDATION: true
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_Y2kuZHVtbXkuYWNjb3VudHMuZGV2JA=="
           NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
           NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
           NEXT_PUBLIC_APP_URL: "https://capsule-pro-app.vercel.app"
@@ -52,6 +53,7 @@ jobs:
           NEXT_PUBLIC_POSTHOG_HOST: "https://us.i.posthog.com"
           RESEND_TOKEN: "re_dummy"
           RESEND_FROM: "noreply@ci-build.local"
+          CLERK_SECRET_KEY: "sk_test_dummy"
 
       - name: Run Lighthouse
         uses: treosh/lighthouse-ci-action@v10
@@ -87,6 +89,7 @@ jobs:
         env:
           ANALYZE: true
           SKIP_ENV_VALIDATION: true
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_Y2kuZHVtbXkuYWNjb3VudHMuZGV2JA=="
           NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
           NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
           NEXT_PUBLIC_APP_URL: "https://capsule-pro-app.vercel.app"
@@ -97,6 +100,7 @@ jobs:
           NEXT_PUBLIC_POSTHOG_HOST: "https://us.i.posthog.com"
           RESEND_TOKEN: "re_dummy"
           RESEND_FROM: "noreply@ci-build.local"
+          CLERK_SECRET_KEY: "sk_test_dummy"
 
       - name: Upload bundle analysis
         uses: actions/upload-artifact@v4
