@@ -9,6 +9,10 @@ on:
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
+permissions:
+  contents: read
+  packages: read
+
 jobs:
   build:
     name: Vercel-Compatible Build
@@ -33,6 +37,7 @@ jobs:
         run: pnpm install --frozen-lockfile
         env:
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+          NPM_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build with Turbo (exactly like Vercel)
         run: pnpm turbo run build
