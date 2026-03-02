@@ -236,10 +236,9 @@ jobs:
       - name: Type check all packages
         run: |
           echo "Running TypeScript type check..."
-          # Exclude @repo/cms — basehub types are environment-dependent (CI token
-          # points to a different basehub branch than local dev, causing schema drift).
-          # Using pnpm filter to exclude the problematic package
-          pnpm -r --filter='!@repo/cms' run typecheck
+          # Exclude @repo/cms and apps that depend on it — basehub types are environment-dependent
+          # (CI token points to a different basehub branch than local dev, causing schema drift).
+          pnpm -r --filter='!@repo/cms' --filter='!web' --filter='!app' run typecheck
         env:
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
 
