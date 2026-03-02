@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 
 const ROUTE_SURFACE_MANIFEST_RELATIVE_PATH = join(
   "packages",
@@ -114,14 +115,19 @@ const WRITE_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
 function listCandidateWorkspaceRoots(): string[] {
   const roots: string[] = [];
-  let current = process.cwd();
-  while (true) {
-    roots.push(current);
-    const parent = dirname(current);
-    if (parent === current) {
-      break;
+  const startDirs = [process.cwd(), dirname(fileURLToPath(import.meta.url))];
+  for (const start of startDirs) {
+    let current = start;
+    while (true) {
+      if (!roots.includes(current)) {
+        roots.push(current);
+      }
+      const parent = dirname(current);
+      if (parent === current) {
+        break;
+      }
+      current = parent;
     }
-    current = parent;
   }
   return roots;
 }

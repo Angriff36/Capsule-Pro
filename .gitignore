@@ -318,6 +318,7 @@ tools/
 .automaker/
 # scripts/ directory is ignored, except for manifest validation and build scripts
 scripts/*
+!scripts/check-package-manager.mjs
 !scripts/validate-manifests.mjs
 !scripts/manifest/*.mjs
 

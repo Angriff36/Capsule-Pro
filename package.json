@@ -89,6 +89,7 @@
     }
   },
   "scripts": {
+    "preinstall": "node scripts/check-package-manager.mjs",
     "analyze": "turbo analyze",
     "boundaries": "turbo boundaries",
     "browser-tools": "pnpm dlx @modelcontextprotocol/server-playwright",

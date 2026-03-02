@@ -47,10 +47,10 @@
   },
   "private": true,
   "scripts": {
-    "analyze": "ANALYZE=true npm run build",
+    "analyze": "cross-env ANALYZE=true pnpm run build",
     "build": "node -e \"require('node:fs').rmSync('.next', { recursive: true, force: true })\" && next build",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
-    "dev": "concurrently \"npm:next\" \"npm:stripe\"",
+    "dev": "concurrently \"pnpm run next\" \"pnpm run stripe\"",
     "next": "cross-env NEXT_DIST_DIR=.next-dev next dev -p 2223",
     "start": "next start",
     "stripe": "stripe listen --forward-to localhost:2223/webhooks/payments",

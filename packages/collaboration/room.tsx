@@ -1,14 +1,12 @@
 "use client";
 
-import type { ResolveMentionSuggestionsArgs } from "@liveblocks/client";
 import { LiveMap } from "@liveblocks/client";
-import type { ResolveUsersArgs } from "@liveblocks/node";
 import {
   ClientSideSuspense,
   LiveblocksProvider,
   RoomProvider,
 } from "@liveblocks/react/suspense";
-import type { ComponentProps, ReactNode } from "react";
+import type { ReactNode } from "react";
 
 interface RoomProps {
   id: string;
@@ -34,18 +32,20 @@ export function Room({
   authEndpoint,
   fallback,
   ...props
-}: RoomProps) => (
-  <LiveblocksProvider authEndpoint={authEndpoint} {...props}>
-    <RoomProvider
-      id={id}
-      initialPresence={{
-        cursor: null,
-        selectedCardId: null,
-        isDragging: false,
-      }}
-      initialStorage={() => ({ cards: new LiveMap() })}
-    >
-      <ClientSideSuspense fallback={fallback}>{children}</ClientSideSuspense>
-    </RoomProvider>
-  </LiveblocksProvider>
-);
+}: RoomProps) {
+  return (
+    <LiveblocksProvider authEndpoint={authEndpoint} {...props}>
+      <RoomProvider
+        id={id}
+        initialPresence={{
+          cursor: null,
+          selectedCardId: null,
+          isDragging: false,
+        }}
+        initialStorage={() => ({ cards: new LiveMap() })}
+      >
+        <ClientSideSuspense fallback={fallback}>{children}</ClientSideSuspense>
+      </RoomProvider>
+    </LiveblocksProvider>
+  );
+}
