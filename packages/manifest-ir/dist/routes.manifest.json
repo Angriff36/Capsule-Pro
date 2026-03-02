@@ -6190,67 +6190,67 @@
           "name": "clientId",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "eventNumber",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "title",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "eventType",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "eventDate",
           "type": "number",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "guestCount",
           "type": "number",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "venueName",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "venueAddress",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "notes",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "tags",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         },
         {
           "name": "status",
           "type": "string",
           "location": "body",
-          "required": true
+          "required": false
         }
       ],
       "source": {

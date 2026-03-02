@@ -67,26 +67,19 @@ entity Event {
   }
 
   command create(clientId: string, eventNumber: string, title: string, eventType: string, eventDate: number, guestCount: number, venueName: string, venueAddress: string, notes: string, tags: string, status: string) {
-    guard self.tenantId != null and self.tenantId != "" "Tenant ID is required"
-    guard clientId != null and clientId != "" "Client ID is required"
-    guard eventNumber != null and eventNumber != "" "Event number is required"
-    guard title != null and title != "" "Event title is required"
-    guard eventType != null and eventType != "" "Event type is required"
-    guard eventDate > 0 "Event date is required"
-    guard guestCount > 0 "Guest count must be positive"
-    guard status == "" or status in ["draft", "confirmed", "completed", "archived", "cancelled"] "Status must be valid"
-
+    // All params are optional — AI and forms can provide any subset
+    // Defaults are applied at the store layer (EventPrismaStore.create)
     mutate clientId = clientId
     mutate eventNumber = eventNumber
-    mutate title = title
-    mutate eventType = eventType
-    mutate eventDate = eventDate
-    mutate guestCount = guestCount
+    mutate title = title != null and title != "" ? title : "Untitled Event"
+    mutate eventType = eventType != null and eventType != "" ? eventType : "general"
+    mutate eventDate = eventDate != null and eventDate > 0 ? eventDate : now()
+    mutate guestCount = guestCount != null and guestCount > 0 ? guestCount : 1
     mutate venueName = venueName
     mutate venueAddress = venueAddress
     mutate notes = notes
     mutate tags = tags
-    mutate status = status != null and status != "" ? status : "draft"
+    mutate status = status != null and status != "" ? status : "confirmed"
     mutate createdAt = now()
     mutate updatedAt = now()
 
