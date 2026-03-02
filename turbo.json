@@ -86,7 +86,7 @@
       "cache": false
     },
     "analyze": {
-      "dependsOn": ["^analyze"]
+      "dependsOn": ["^build", "^analyze"]
     },
     "dev": {
       "cache": false,

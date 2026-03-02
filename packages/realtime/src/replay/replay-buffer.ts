@@ -5,7 +5,7 @@
  * Uses the existing OutboxEvent table as the event store.
  */
 
-import type { ReplayEvent } from "./types";
+import type { ReplayEvent } from "./types.js";
 
 /**
  * Configuration for the replay buffer

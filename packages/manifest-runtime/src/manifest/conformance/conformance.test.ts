@@ -29,7 +29,7 @@ function createDeterministicOptions(): RuntimeOptions {
 }
 
 function loadFixture(name: string): string {
-  return readFileSync(join(FIXTURES_DIR, name), "utf-8");
+  return readFileSync(join(FIXTURES_DIR, name), "utf-8").replace(/\r\n/g, "\n");
 }
 
 function loadExpectedIR(name: string): IR | null {

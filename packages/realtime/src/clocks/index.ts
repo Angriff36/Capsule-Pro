@@ -10,5 +10,5 @@ export type {
   VectorClockData,
   VectorClockJSON,
   VectorClockOptions,
-} from "./vector-clock";
-export { VectorClock } from "./vector-clock";
+} from "./vector-clock.js";
+export { VectorClock } from "./vector-clock.js";

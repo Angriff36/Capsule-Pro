@@ -3,6 +3,7 @@ import { z } from "zod";
 
 export const keys = () =>
   createEnv({
+    skipValidation: !!process.env.SKIP_ENV_VALIDATION,
     server: {
       KNOCK_SECRET_API_KEY: z.string().optional(),
       TWILIO_ACCOUNT_SID: z.string().optional(),

@@ -572,8 +572,13 @@ export async function validateShift(
   }
 
   // 5. Check certification requirements (if role specified)
-  let certResult = {
-    severity: "OK" as const,
+  let certResult: {
+    severity: "OK" | "WARN" | "BLOCK";
+    missingCerts: string[];
+    expiredCerts: { type: string; name: string; expiryDate: Date }[];
+    message: string;
+  } = {
+    severity: "OK",
     missingCerts: [] as string[],
     expiredCerts: [] as { type: string; name: string; expiryDate: Date }[],
     message: "",

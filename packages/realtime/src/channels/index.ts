@@ -7,4 +7,4 @@ export {
   getModuleFromEventType,
   isValidTenantChannel,
   parseChannelName,
-} from "./naming";
+} from "./naming.js";

@@ -17,17 +17,17 @@ export type {
   CommandBoardUpdatedEvent,
   CommandBoardUserJoinedEvent,
   CommandBoardUserLeftEvent,
-} from "./command";
+} from "./command.js";
 // Envelope types
-export type { RealtimeEvent, RealtimeEventBase } from "./envelope";
-export { REALTIME_EVENT_VERSION } from "./envelope";
+export type { RealtimeEvent, RealtimeEventBase } from "./envelope.js";
+export { REALTIME_EVENT_VERSION } from "./envelope.js";
 // Kitchen event types
 export type {
   KitchenEvent,
   KitchenTaskClaimedEvent,
   KitchenTaskProgressEvent,
   KitchenTaskReleasedEvent,
-} from "./kitchen";
+} from "./kitchen.js";
 // Zod schemas - Kitchen
 // Zod schemas - Command Board
 // Core Zod schemas and utilities
@@ -74,7 +74,7 @@ export {
   parseRealtimeEvent,
   RealtimeEventBaseSchema,
   RealtimeEventSchema,
-} from "./schemas";
+} from "./schemas.js";
 // Stock/Inventory event types
 export type {
   InventoryStockAdjustedEvent,
@@ -82,4 +82,4 @@ export type {
   InventoryStockReceivedEvent,
   InventoryStockWastedEvent,
   StockEvent,
-} from "./stock";
+} from "./stock.js";

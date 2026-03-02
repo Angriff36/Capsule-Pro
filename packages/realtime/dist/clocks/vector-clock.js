@@ -1,4 +1,3 @@
-"use strict";
 /**
  * Vector Clock Implementation
  *
@@ -34,8 +33,6 @@
  *
  * @see {@link https://en.wikipedia.org/wiki/Vector_clock | Vector Clock on Wikipedia}
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.VectorClock = void 0;
 /**
  * Vector clock implementation for tracking causality in distributed systems.
  *
@@ -54,7 +51,7 @@ exports.VectorClock = void 0;
  * const restored = VectorClock.fromJSON(serialized);
  * ```
  */
-class VectorClock {
+export class VectorClock {
     /**
      * Internal map storing node ID -> counter pairs.
      * Uses a Map for O(1) lookup and efficient iteration.
@@ -342,4 +339,3 @@ class VectorClock {
         this.#clock.clear();
     }
 }
-exports.VectorClock = VectorClock;

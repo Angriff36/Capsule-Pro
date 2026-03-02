@@ -44,5 +44,16 @@ export interface CreateOutboxEventInput {
  * });
  * ```
  */
-export declare function createOutboxEvent(db: PrismaClient | Prisma.TransactionClient, input: CreateOutboxEventInput): Promise<any>;
+export declare function createOutboxEvent(db: PrismaClient | Prisma.TransactionClient, input: CreateOutboxEventInput): Promise<{
+    error: string | null;
+    id: string;
+    tenantId: string;
+    aggregateType: string;
+    aggregateId: string;
+    createdAt: Date;
+    eventType: string;
+    payload: import("@prisma/client/runtime/client").JsonValue;
+    status: import("@repo/database").OutboxStatus;
+    publishedAt: Date | null;
+}>;
 //# sourceMappingURL=create.d.ts.map

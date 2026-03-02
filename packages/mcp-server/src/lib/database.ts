@@ -13,12 +13,11 @@
 
 import { neonConfig } from "@neondatabase/serverless";
 import { PrismaNeon } from "@prisma/adapter-neon";
+import {
+  PrismaClient,
+  type PrismaClient as TPrismaClient,
+} from "@repo/database/standalone";
 import ws from "ws";
-// Import directly from the generated client to avoid @repo/database's
-// server-only guard and broken ingredient-resolution.ts re-export.
-// The path traverses: mcp-server/src/lib/ → database/generated/client
-// Use path alias to avoid Windows casing issues with relative paths
-import { PrismaClient } from "../../../../packages/database/generated/client.js";
 
 // Configure Neon WebSocket (same as @repo/database)
 neonConfig.webSocketConstructor = ws;
@@ -82,4 +81,6 @@ if (process.env.NODE_ENV !== "production") {
 const adapter = new PrismaNeon({ connectionString });
 
 /** Singleton PrismaClient for the MCP server process. */
-export const database = new PrismaClient({ adapter });
+export const database: TPrismaClient = new PrismaClient({
+  adapter,
+}) as TPrismaClient;

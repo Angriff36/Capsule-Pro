@@ -147,16 +147,6 @@ export async function POST(request: NextRequest) {
         },
         {
           user: { id: userId, tenantId },
-          // Pass override requests if provided
-          overrideRequests: body.override
-            ? [
-                {
-                  constraintCode: "*", // Override all constraints
-                  reasonCode: body.override.reasonCode,
-                  details: body.override.details,
-                },
-              ]
-            : undefined,
         }
       );
 
@@ -256,7 +246,7 @@ export async function POST(request: NextRequest) {
       }
 
       // 3. Resolve and create RecipeIngredients
-      const createdIngredients = [];
+      const createdIngredients: unknown[] = [];
       if (body.ingredients && body.ingredients.length > 0) {
         // Separate resolved and raw ingredients
         const resolvedIngredients: ResolvedIngredientInput[] = [];
@@ -339,7 +329,7 @@ export async function POST(request: NextRequest) {
       }
 
       // 4. Create RecipeSteps
-      const createdSteps = [];
+      const createdSteps: unknown[] = [];
       if (body.steps && body.steps.length > 0) {
         for (const step of body.steps) {
           const stepId = crypto.randomUUID();
