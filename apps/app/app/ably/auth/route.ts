@@ -95,9 +95,11 @@ export async function POST(request: Request) {
         "[ably/auth] ABLY_API_KEY is not set. " +
           "Add it to Vercel → capsule-pro-app → Settings → Environment Variables."
       );
+      // 503 Service Unavailable — the service exists but is not configured.
+      // Clients should not retry (use NEXT_PUBLIC_ABLY_ENABLED to disable at build time).
       return NextResponse.json(
         { error: "Ably is not configured on this server" },
-        { status: 500 }
+        { status: 503 }
       );
     }
 
