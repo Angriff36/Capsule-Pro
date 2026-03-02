@@ -3,7 +3,7 @@
 // Returns structured ConstraintOutcome results per spec
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { database, Prisma } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
     const existingShift = await database.$queryRaw<
       Array<{ schedule_id: string }>
     >(
-      database.Prisma.sql`
+      Prisma.sql`
         SELECT schedule_id
         FROM tenant_staff.schedule_shifts
         WHERE tenant_id = ${tenantId}
@@ -107,7 +107,7 @@ export async function POST(request: NextRequest) {
 
     const result = await runtime.runCommand("update", body, {
       entityName: "ScheduleShift",
-      entityId: shiftId,
+      instanceId: shiftId,
     });
 
     if (!result.success) {
