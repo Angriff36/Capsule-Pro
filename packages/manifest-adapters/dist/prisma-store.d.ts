@@ -188,6 +188,18 @@ export declare class AllergenWarningPrismaStore implements Store<EntityInstance>
     private arrayToString;
     private mapToManifestEntity;
 }
+export declare class EventPrismaStore implements Store<EntityInstance> {
+    private readonly prisma;
+    private readonly tenantId;
+    constructor(prisma: PrismaClient, tenantId: string);
+    private mapToEntity;
+    getAll(): Promise<EntityInstance[]>;
+    getById(id: string): Promise<EntityInstance | undefined>;
+    create(data: Partial<EntityInstance>): Promise<EntityInstance>;
+    update(id: string, data: Partial<EntityInstance>): Promise<EntityInstance | undefined>;
+    delete(id: string): Promise<boolean>;
+    clear(): Promise<void>;
+}
 /**
  * Create a Prisma store provider for Kitchen-Ops entities
  *
