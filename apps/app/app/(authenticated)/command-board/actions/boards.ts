@@ -7,6 +7,7 @@ import type {
   BoardGroup,
   BoardProjection,
 } from "../types/board";
+import { getTemplateById } from "../config/board-templates";
 
 // ---------------------------------------------------------------------------
 // Legacy board types — these match the current Prisma CommandBoard model.
@@ -132,6 +133,8 @@ export interface CreateBoardInput {
   eventId?: string;
   isTemplate?: boolean;
   tags?: string[];
+  /** Optional template ID to apply pre-built configuration */
+  templateId?: string;
 }
 
 export interface UpdateBoardInput {
@@ -253,15 +256,26 @@ export async function createCommandBoard(
   try {
     const tenantId = await requireTenantId();
 
+    // Look up template if specified
+    const template = input.templateId ? getTemplateById(input.templateId) : undefined;
+
+    // Apply template settings or use defaults
+    const scope = template?.scope ?? undefined;
+    const autoPopulate = template?.autoPopulate ?? false;
+    const tags = input.tags ?? template?.tags ?? [];
+    const name = input.name;
+
     const board = await database.commandBoard.create({
       data: {
         tenantId,
         id: crypto.randomUUID(),
-        name: input.name,
+        name,
         description: input.description || null,
         eventId: input.eventId || null,
         isTemplate: input.isTemplate,
-        tags: input.tags || [],
+        tags,
+        scope: scope ? JSON.parse(JSON.stringify(scope)) : undefined,
+        autoPopulate,
       },
     });
 
