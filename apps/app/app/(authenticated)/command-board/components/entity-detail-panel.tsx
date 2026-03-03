@@ -260,6 +260,10 @@ export function EntityDetailPanel({
         );
         setError(errorMsg);
         setEntity(null);
+        // Show toast for transient errors
+        if (errorMsg.includes("network") || errorMsg.includes("timeout") || errorMsg.includes("fetch")) {
+          toast.error("Network error loading entity details");
+        }
         return;
       }
 
@@ -287,6 +291,8 @@ export function EntityDetailPanel({
       );
       setError(errorMsg);
       setEntity(null);
+      // Show toast for unexpected errors
+      toast.error("Failed to load entity details");
     } finally {
       setIsLoading(false);
     }
@@ -308,22 +314,32 @@ export function EntityDetailPanel({
   /** Handle field changes via the update-entity action */
   const handleFieldChange = useCallback(
     async (field: string, value: string) => {
-      const result = await updateEntity({
-        entityType,
-        entityId,
-        field,
-        value: value === "" ? null : value,
-      });
+      try {
+        const result = await updateEntity({
+          entityType,
+          entityId,
+          field,
+          value: value === "" ? null : value,
+        });
 
-      if (!result.success) {
-        throw new Error(result.error ?? "Failed to update");
+        if (!result.success) {
+          // Show toast for the error
+          toast.error(result.error ?? "Failed to update");
+          throw new Error(result.error ?? "Failed to update");
+        }
+
+        // Refresh the entity data
+        await fetchEntity();
+
+        // Notify parent to refresh board data
+        onEntityUpdated?.();
+      } catch (error) {
+        // Re-throw to let the editable field component know it failed
+        if (error instanceof Error) {
+          throw error;
+        }
+        throw new Error("Failed to update field");
       }
-
-      // Refresh the entity data
-      await fetchEntity();
-
-      // Notify parent to refresh board data
-      onEntityUpdated?.();
     },
     [entityType, entityId, fetchEntity, onEntityUpdated]
   );

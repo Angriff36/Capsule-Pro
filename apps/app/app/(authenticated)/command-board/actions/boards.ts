@@ -8,6 +8,7 @@ import type {
   BoardProjection,
 } from "../types/board";
 import { getTemplateById } from "../config/board-templates";
+import { withRetry } from "./retry-utils";
 
 // ---------------------------------------------------------------------------
 // Legacy board types — these match the current Prisma CommandBoard model.
@@ -190,64 +191,82 @@ export async function getCommandBoard(
 ): Promise<CommandBoardWithCards | null> {
   const tenantId = await requireTenantId();
 
-  const board = await database.commandBoard.findUnique({
-    where: {
-      tenantId_id: {
-        tenantId,
-        id: boardId,
-      },
-    },
-    include: {
-      cards: true,
-    },
-  });
+  try {
+    const board = await withRetry(
+      () =>
+        database.commandBoard.findUnique({
+          where: {
+            tenantId_id: {
+              tenantId,
+              id: boardId,
+            },
+          },
+          include: {
+            cards: true,
+          },
+        }),
+      { maxRetries: 1, delayMs: 2000 }
+    );
 
-  if (!board) {
+    if (!board) {
+      return null;
+    }
+
+    return {
+      ...dbBoardToBoard(board),
+      cards: board.cards.map(
+        (card): CommandBoardCard => ({
+          id: card.id,
+          tenantId: card.tenantId,
+          boardId: card.boardId,
+          title: card.title,
+          content: card.content,
+          cardType: card.cardType as CardType,
+          status: card.status as CardStatus,
+          position: {
+            x: card.positionX,
+            y: card.positionY,
+            width: card.width,
+            height: card.height,
+            zIndex: card.zIndex,
+          },
+          color: card.color,
+          metadata: (card.metadata as Record<string, unknown>) || {},
+          createdAt: card.createdAt,
+          updatedAt: card.updatedAt,
+          deletedAt: card.deletedAt,
+        })
+      ),
+    };
+  } catch (error) {
+    console.error("[getCommandBoard] Failed to fetch board:", error);
     return null;
   }
-
-  return {
-    ...dbBoardToBoard(board),
-    cards: board.cards.map(
-      (card): CommandBoardCard => ({
-        id: card.id,
-        tenantId: card.tenantId,
-        boardId: card.boardId,
-        title: card.title,
-        content: card.content,
-        cardType: card.cardType as CardType,
-        status: card.status as CardStatus,
-        position: {
-          x: card.positionX,
-          y: card.positionY,
-          width: card.width,
-          height: card.height,
-          zIndex: card.zIndex,
-        },
-        color: card.color,
-        metadata: (card.metadata as Record<string, unknown>) || {},
-        createdAt: card.createdAt,
-        updatedAt: card.updatedAt,
-        deletedAt: card.deletedAt,
-      })
-    ),
-  };
 }
 
 export async function listCommandBoards(): Promise<CommandBoard[]> {
   const tenantId = await requireTenantId();
 
-  const boards = await database.commandBoard.findMany({
-    where: {
-      tenantId,
-      deletedAt: null,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+  try {
+    const boards = await withRetry(
+      () =>
+        database.commandBoard.findMany({
+          where: {
+            tenantId,
+            deletedAt: null,
+          },
+          orderBy: {
+            createdAt: "desc",
+          },
+        }),
+      { maxRetries: 1, delayMs: 2000 }
+    );
 
-  return boards.map(dbBoardToBoard);
+    return boards.map(dbBoardToBoard);
+  } catch (error) {
+    console.error("[listCommandBoards] Failed to list boards:", error);
+    return [];
+  }
 }
 
 export async function createCommandBoard(
@@ -265,28 +284,35 @@ export async function createCommandBoard(
     const tags = input.tags ?? template?.tags ?? [];
     const name = input.name;
 
-    const board = await database.commandBoard.create({
-      data: {
-        tenantId,
-        id: crypto.randomUUID(),
-        name,
-        description: input.description || null,
-        eventId: input.eventId || null,
-        isTemplate: input.isTemplate,
-        tags,
-        scope: scope ? JSON.parse(JSON.stringify(scope)) : undefined,
-        autoPopulate,
-      },
-    });
+    const board = await withRetry(
+      () =>
+        database.commandBoard.create({
+          data: {
+            tenantId,
+            id: crypto.randomUUID(),
+            name,
+            description: input.description || null,
+            eventId: input.eventId || null,
+            isTemplate: input.isTemplate,
+            tags,
+            scope: scope ? JSON.parse(JSON.stringify(scope)) : undefined,
+            autoPopulate,
+          },
+        }),
+      { maxRetries: 1, delayMs: 2000 }
+    );
 
     return {
       success: true,
       board: dbBoardToBoard(board),
     };
   } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to create board";
+    console.error("[createCommandBoard] Failed to create board:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to create board",
+      error: errorMessage,
     };
   }
 }
@@ -297,33 +323,40 @@ export async function updateCommandBoard(
   try {
     const tenantId = await requireTenantId();
 
-    const board = await database.commandBoard.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: input.id,
-        },
-      },
-      data: {
-        ...(input.name !== undefined && { name: input.name }),
-        ...(input.description !== undefined && {
-          description: input.description,
+    const board = await withRetry(
+      () =>
+        database.commandBoard.update({
+          where: {
+            tenantId_id: {
+              tenantId,
+              id: input.id,
+            },
+          },
+          data: {
+            ...(input.name !== undefined && { name: input.name }),
+            ...(input.description !== undefined && {
+              description: input.description,
+            }),
+            ...(input.status !== undefined && { status: input.status }),
+            ...(input.eventId !== undefined && { eventId: input.eventId }),
+            ...(input.isTemplate !== undefined && { isTemplate: input.isTemplate }),
+            ...(input.tags !== undefined && { tags: input.tags }),
+          },
         }),
-        ...(input.status !== undefined && { status: input.status }),
-        ...(input.eventId !== undefined && { eventId: input.eventId }),
-        ...(input.isTemplate !== undefined && { isTemplate: input.isTemplate }),
-        ...(input.tags !== undefined && { tags: input.tags }),
-      },
-    });
+      { maxRetries: 1, delayMs: 2000 }
+    );
 
     return {
       success: true,
       board: dbBoardToBoard(board),
     };
   } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to update board";
+    console.error("[updateCommandBoard] Failed to update board:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to update board",
+      error: errorMessage,
     };
   }
 }
@@ -334,23 +367,30 @@ export async function deleteCommandBoard(
   try {
     const tenantId = await requireTenantId();
 
-    await database.commandBoard.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: boardId,
-        },
-      },
-      data: {
-        deletedAt: new Date(),
-      },
-    });
+    await withRetry(
+      () =>
+        database.commandBoard.update({
+          where: {
+            tenantId_id: {
+              tenantId,
+              id: boardId,
+            },
+          },
+          data: {
+            deletedAt: new Date(),
+          },
+        }),
+      { maxRetries: 1, delayMs: 2000 }
+    );
 
     return { success: true };
   } catch (error) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Failed to delete board";
+    console.error("[deleteCommandBoard] Failed to delete board:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to delete board",
+      error: errorMessage,
     };
   }
 }
