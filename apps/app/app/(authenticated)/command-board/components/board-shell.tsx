@@ -268,6 +268,19 @@ export function BoardShell({
     setOpenDetailEntity(null);
   }, []);
 
+  // ---- Handler for when an entity is updated in the detail panel ----
+  const handleEntityUpdated = useCallback(async () => {
+    // Trigger a refresh by re-fetching the entity that was updated
+    // This causes the useEntityPolling to pick up the changes
+    if (openDetailEntity) {
+      // Force a re-render of entities by triggering a state update
+      setEntities((prevEntities) => {
+        // Create a new Map to trigger re-render
+        return new Map(prevEntities);
+      });
+    }
+  }, [openDetailEntity]);
+
   const handleProjectionAdded = useCallback(
     (projection: BoardProjection) => {
       pushState(projections);
@@ -644,6 +657,7 @@ export function BoardShell({
           <EntityDetailPanel
             entityId={openDetailEntity?.entityId ?? ""}
             entityType={(openDetailEntity?.entityType ?? "") as EntityType}
+            onEntityUpdated={handleEntityUpdated}
             onOpenChange={(open) => {
               if (!open) {
                 handleCloseDetail();
