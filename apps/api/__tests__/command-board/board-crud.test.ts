@@ -313,14 +313,22 @@ describe("Command Board CRUD Tests", () => {
   });
 
   describe("List Boards", () => {
+    // Helper to add _count to mock boards (required by route)
+    function withCardsCount(boards: any[]) {
+      return boards.map((board) => ({
+        ...board,
+        _count: { cards: 0 },
+      }));
+    }
+
     it("should list boards with pagination", async () => {
       mockAuth.mockResolvedValue({ orgId: TEST_ORG_ID, userId: TEST_USER_ID });
       mockGetTenantIdForOrg.mockResolvedValue(TEST_TENANT_ID);
 
-      const mockBoards = [
+      const mockBoards = withCardsCount([
         createMockBoard({ id: "board_1", name: "Board 1" }),
         createMockBoard({ id: "board_2", name: "Board 2" }),
-      ];
+      ]);
 
       mockCommandBoard.findMany.mockResolvedValue(mockBoards as any);
       mockCommandBoard.count.mockResolvedValue(2);
@@ -343,10 +351,10 @@ describe("Command Board CRUD Tests", () => {
       mockAuth.mockResolvedValue({ orgId: TEST_ORG_ID, userId: TEST_USER_ID });
       mockGetTenantIdForOrg.mockResolvedValue(TEST_TENANT_ID);
 
-      const activeBoards = [
+      const activeBoards = withCardsCount([
         createMockBoard({ id: "board_1", status: "active" }),
         createMockBoard({ id: "board_2", status: "active" }),
-      ];
+      ]);
 
       mockCommandBoard.findMany.mockResolvedValue(activeBoards as any);
       mockCommandBoard.count.mockResolvedValue(2);
@@ -368,7 +376,7 @@ describe("Command Board CRUD Tests", () => {
       mockAuth.mockResolvedValue({ orgId: TEST_ORG_ID, userId: TEST_USER_ID });
       mockGetTenantIdForOrg.mockResolvedValue(TEST_TENANT_ID);
 
-      const draftBoards = [createMockBoard({ id: "board_1", status: "draft" })];
+      const draftBoards = withCardsCount([createMockBoard({ id: "board_1", status: "draft" })]);
 
       mockCommandBoard.findMany.mockResolvedValue(draftBoards as any);
       mockCommandBoard.count.mockResolvedValue(1);
@@ -390,7 +398,7 @@ describe("Command Board CRUD Tests", () => {
       mockAuth.mockResolvedValue({ orgId: TEST_ORG_ID, userId: TEST_USER_ID });
       mockGetTenantIdForOrg.mockResolvedValue(TEST_TENANT_ID);
 
-      const archivedBoards = [createMockBoard({ id: "board_1", status: "archived" })];
+      const archivedBoards = withCardsCount([createMockBoard({ id: "board_1", status: "archived" })]);
 
       mockCommandBoard.findMany.mockResolvedValue(archivedBoards as any);
       mockCommandBoard.count.mockResolvedValue(1);
@@ -412,7 +420,7 @@ describe("Command Board CRUD Tests", () => {
       mockAuth.mockResolvedValue({ orgId: TEST_ORG_ID, userId: TEST_USER_ID });
       mockGetTenantIdForOrg.mockResolvedValue(TEST_TENANT_ID);
 
-      const templates = [createMockBoard({ id: "tmpl_1", isTemplate: true })];
+      const templates = withCardsCount([createMockBoard({ id: "tmpl_1", isTemplate: true })]);
 
       mockCommandBoard.findMany.mockResolvedValue(templates as any);
       mockCommandBoard.count.mockResolvedValue(1);
@@ -434,7 +442,7 @@ describe("Command Board CRUD Tests", () => {
       mockAuth.mockResolvedValue({ orgId: TEST_ORG_ID, userId: TEST_USER_ID });
       mockGetTenantIdForOrg.mockResolvedValue(TEST_TENANT_ID);
 
-      const eventBoards = [createMockBoard({ id: "board_1", eventId: "event_123" })];
+      const eventBoards = withCardsCount([createMockBoard({ id: "board_1", eventId: "event_123" })]);
 
       mockCommandBoard.findMany.mockResolvedValue(eventBoards as any);
       mockCommandBoard.count.mockResolvedValue(1);
