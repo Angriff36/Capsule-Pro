@@ -4,6 +4,7 @@ import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { requireTenantId } from "../../../lib/tenant";
 import type { BoardAnnotation } from "../types/board";
+import { withRetry } from "./retry-utils";
 
 // ============================================================================
 // Types
@@ -40,24 +41,33 @@ export async function getAnnotationsForBoard(
 ): Promise<BoardAnnotation[]> {
   const tenantId = await requireTenantId();
 
-  const rows = await database.boardAnnotation.findMany({
-    where: {
-      tenantId,
-      boardId,
-      deletedAt: null,
-    },
-  });
+  try {
+    const rows = await withRetry(
+      () =>
+        database.boardAnnotation.findMany({
+          where: {
+            tenantId,
+            boardId,
+            deletedAt: null,
+          },
+        }),
+      { maxRetries: 1, delayMs: 2000 }
+    );
 
-  return rows.map((row) => ({
-    id: row.id,
-    boardId: row.boardId,
-    annotationType: row.annotationType as BoardAnnotation["annotationType"],
-    fromProjectionId: row.fromProjectionId,
-    toProjectionId: row.toProjectionId,
-    label: row.label,
-    color: row.color,
-    style: row.style,
-  }));
+    return rows.map((row) => ({
+      id: row.id,
+      boardId: row.boardId,
+      annotationType: row.annotationType as BoardAnnotation["annotationType"],
+      fromProjectionId: row.fromProjectionId,
+      toProjectionId: row.toProjectionId,
+      label: row.label,
+      color: row.color,
+      style: row.style,
+    }));
+  } catch (error) {
+    console.error("[getAnnotationsForBoard] Failed to fetch annotations:", error);
+    return [];
+  }
 }
 
 // ============================================================================
@@ -76,15 +86,19 @@ export async function createConnection(
     const tenantId = await requireTenantId();
 
     // Validate that both projections exist on this board
-    const projections = await database.boardProjection.findMany({
-      where: {
-        tenantId,
-        boardId,
-        id: { in: [input.fromProjectionId, input.toProjectionId] },
-        deletedAt: null,
-      },
-      select: { id: true },
-    });
+    const projections = await withRetry(
+      () =>
+        database.boardProjection.findMany({
+          where: {
+            tenantId,
+            boardId,
+            id: { in: [input.fromProjectionId, input.toProjectionId] },
+            deletedAt: null,
+          },
+          select: { id: true },
+        }),
+      { maxRetries: 1, delayMs: 2000 }
+    );
 
     if (projections.length !== 2) {
       return {
@@ -94,24 +108,28 @@ export async function createConnection(
     }
 
     // Check for duplicate connection (in either direction for undirected connections)
-    const existing = await database.boardAnnotation.findFirst({
-      where: {
-        tenantId,
-        boardId,
-        annotationType: "connection",
-        deletedAt: null,
-        OR: [
-          {
-            fromProjectionId: input.fromProjectionId,
-            toProjectionId: input.toProjectionId,
+    const existing = await withRetry(
+      () =>
+        database.boardAnnotation.findFirst({
+          where: {
+            tenantId,
+            boardId,
+            annotationType: "connection",
+            deletedAt: null,
+            OR: [
+              {
+                fromProjectionId: input.fromProjectionId,
+                toProjectionId: input.toProjectionId,
+              },
+              {
+                fromProjectionId: input.toProjectionId,
+                toProjectionId: input.fromProjectionId,
+              },
+            ],
           },
-          {
-            fromProjectionId: input.toProjectionId,
-            toProjectionId: input.fromProjectionId,
-          },
-        ],
-      },
-    });
+        }),
+      { maxRetries: 1, delayMs: 2000 }
+    );
 
     if (existing) {
       return {
@@ -122,19 +140,23 @@ export async function createConnection(
     }
 
     // Create the annotation
-    const created = await database.boardAnnotation.create({
-      data: {
-        tenantId,
-        id: crypto.randomUUID(),
-        boardId,
-        annotationType: "connection",
-        fromProjectionId: input.fromProjectionId,
-        toProjectionId: input.toProjectionId,
-        label: input.label ?? null,
-        color: input.color ?? null,
-        style: input.style ?? null,
-      },
-    });
+    const created = await withRetry(
+      () =>
+        database.boardAnnotation.create({
+          data: {
+            tenantId,
+            id: crypto.randomUUID(),
+            boardId,
+            annotationType: "connection",
+            fromProjectionId: input.fromProjectionId,
+            toProjectionId: input.toProjectionId,
+            label: input.label ?? null,
+            color: input.color ?? null,
+            style: input.style ?? null,
+          },
+        }),
+      { maxRetries: 1, delayMs: 2000 }
+    );
 
     revalidatePath(`/command-board/${boardId}`);
 
@@ -175,18 +197,22 @@ export async function deleteAnnotation(
   try {
     const tenantId = await requireTenantId();
 
-    const annotation = await database.boardAnnotation.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: annotationId,
-        },
-      },
-      data: {
-        deletedAt: new Date(),
-      },
-      select: { boardId: true },
-    });
+    const annotation = await withRetry(
+      () =>
+        database.boardAnnotation.update({
+          where: {
+            tenantId_id: {
+              tenantId,
+              id: annotationId,
+            },
+          },
+          data: {
+            deletedAt: new Date(),
+          },
+          select: { boardId: true },
+        }),
+      { maxRetries: 1, delayMs: 2000 }
+    );
 
     revalidatePath(`/command-board/${annotation.boardId}`);
 

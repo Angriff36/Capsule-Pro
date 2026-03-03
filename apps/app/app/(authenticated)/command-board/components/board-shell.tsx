@@ -32,7 +32,11 @@ import type {
 } from "../types/index";
 import type { SuggestedManifestPlan } from "../types/manifest-plan";
 import { AiChatPanel } from "./ai-chat-panel";
-import { ErrorBoundary } from "./board-error-boundary";
+import {
+  BoardFilterPanelErrorBoundary,
+  BoardFlowErrorBoundary,
+  EntityDetailPanelErrorBoundary,
+} from "./board-error-boundary";
 import { BoardFilterPanel } from "./board-filter-panel";
 import { BoardFlow } from "./board-flow";
 import { BoardHeader } from "./board-header";
@@ -546,14 +550,16 @@ export function BoardShell({
           <div className="relative flex flex-1 overflow-hidden">
             {/* Filter Toolbar (between header and canvas) */}
             <div className="absolute left-4 top-4 z-10 flex items-center gap-2">
-              <BoardFilterPanel
-                activeFilterCount={activeFilterCount}
-                availableTags={availableTags}
-                filters={filters}
-                hasActiveFilters={hasActiveFilters}
-                onClearFilters={clearFilters}
-                onFiltersChange={_setFilters}
-              />
+              <BoardFilterPanelErrorBoundary>
+                <BoardFilterPanel
+                  activeFilterCount={activeFilterCount}
+                  availableTags={availableTags}
+                  filters={filters}
+                  hasActiveFilters={hasActiveFilters}
+                  onClearFilters={clearFilters}
+                  onFiltersChange={_setFilters}
+                />
+              </BoardFilterPanelErrorBoundary>
               {hasActiveFilters && (
                 <div className="flex items-center gap-1.5 rounded-md bg-muted/80 px-2 py-1 text-xs text-muted-foreground backdrop-blur-sm">
                   <span>
@@ -570,7 +576,7 @@ export function BoardShell({
 
             {/* Board Flow Canvas */}
             <div className="relative flex-1">
-              <ErrorBoundary>
+              <BoardFlowErrorBoundary>
                 <BoardFlow
                   activePreviewMutations={activePreviewPlan?.boardPreview ?? []}
                   annotations={filteredData.annotations}
@@ -587,7 +593,7 @@ export function BoardShell({
                     boardMode === "simulation" ? simulationDelta : null
                   }
                 />
-              </ErrorBoundary>
+              </BoardFlowErrorBoundary>
 
               {/* Conflict Warning Panel Overlay */}
               {showConflicts && (conflicts.length > 0 || conflictsError) && (
@@ -654,17 +660,19 @@ export function BoardShell({
           />
 
           {/* Entity Detail Panel */}
-          <EntityDetailPanel
-            entityId={openDetailEntity?.entityId ?? ""}
-            entityType={(openDetailEntity?.entityType ?? "") as EntityType}
-            onEntityUpdated={handleEntityUpdated}
-            onOpenChange={(open) => {
-              if (!open) {
-                handleCloseDetail();
-              }
-            }}
-            open={openDetailEntity !== null}
-          />
+          <EntityDetailPanelErrorBoundary>
+            <EntityDetailPanel
+              entityId={openDetailEntity?.entityId ?? ""}
+              entityType={(openDetailEntity?.entityType ?? "") as EntityType}
+              onEntityUpdated={handleEntityUpdated}
+              onOpenChange={(open) => {
+                if (!open) {
+                  handleCloseDetail();
+                }
+              }}
+              open={openDetailEntity !== null}
+            />
+          </EntityDetailPanelErrorBoundary>
         </div>
       </BoardRoom>
     </ReactFlowProvider>

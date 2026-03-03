@@ -6,6 +6,7 @@ import { captureException } from "@sentry/nextjs";
 import type { EntityType } from "../types/entities";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { withRetry, isRetryableError } from "./retry-utils";
 
 // ============================================================================
 // Entity Update Action — Generic update handler for all entity types
@@ -49,11 +50,15 @@ export async function updateEntity(
     }
 
     // Resolve internal user from Clerk auth
-    const currentUser = await database.user.findFirst({
-      where: {
-        AND: [{ tenantId }, { authUserId: clerkId }],
-      },
-    });
+    const currentUser = await withRetry(
+      () =>
+        database.user.findFirst({
+          where: {
+            AND: [{ tenantId }, { authUserId: clerkId }],
+          },
+        }),
+      { maxRetries: 1, delayMs: 2000 }
+    );
 
     if (!currentUser) {
       return { success: false, error: "User not found in database" };
@@ -351,9 +356,22 @@ export async function updateEntity(
   } catch (error) {
     console.error(`[updateEntity] Error updating ${entityType}.${field}:`, error);
     captureException(error);
+
+    // Provide more helpful error messages for common failure types
+    const errorMessage =
+      error instanceof Error ? error.message : "An unexpected error occurred";
+
+    // Check if this was a retryable error that exhausted retries
+    if (isRetryableError(error)) {
+      return {
+        success: false,
+        error: `Network error: ${errorMessage}. Please try again.`,
+      };
+    }
+
     return {
       success: false,
-      error: error instanceof Error ? error.message : "An unexpected error occurred",
+      error: errorMessage,
     };
   }
 }
