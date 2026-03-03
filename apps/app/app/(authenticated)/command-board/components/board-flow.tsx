@@ -3,6 +3,7 @@
 import {
   Background,
   BackgroundVariant,
+  type Connection,
   Controls,
   type EdgeChange,
   MiniMap,
@@ -38,6 +39,7 @@ import {
   updateProjectionPosition,
 } from "../actions/projections";
 import { BulkActionToolbar } from "../components/bulk-action-toolbar";
+import { ConnectionDialog } from "../components/connection-dialog";
 import { useBoardSync } from "../hooks/use-board-sync";
 import { useLiveblocksSync } from "../hooks/use-liveblocks-sync";
 import { edgeTypes, nodeTypes } from "../nodes/node-types";
@@ -249,6 +251,15 @@ function BoardFlowInner({
   const [selectedProjections, setSelectedProjections] = useState<
     BoardProjection[]
   >([]);
+
+  // ---- Manual connection state ----
+
+  // Track pending connection for the dialog
+  const [pendingConnection, setPendingConnection] = useState<{
+    source: BoardProjection;
+    target: BoardProjection;
+  } | null>(null);
+  const [isConnectionDialogOpen, setIsConnectionDialogOpen] = useState(false);
 
   // Handle selection changes from ReactFlow
   const handleSelectionChange = useCallback(
@@ -898,6 +909,54 @@ function BoardFlowInner({
     [onEdgesChange]
   );
 
+  // ---- Handle manual connection creation ----
+
+  const handleConnect = useCallback(
+    (connection: Connection) => {
+      // Find the source and target projections
+      const sourceProjection = projections.find((p) => p.id === connection.source);
+      const targetProjection = projections.find((p) => p.id === connection.target);
+
+      if (!sourceProjection || !targetProjection) {
+        toast.error("Could not find source or target entity");
+        return;
+      }
+
+      // Check if connection already exists (derived or manual)
+      const existingDerived = derivedConnections.find(
+        (c) =>
+          (c.fromProjectionId === connection.source && c.toProjectionId === connection.target) ||
+          (c.fromProjectionId === connection.target && c.toProjectionId === connection.source)
+      );
+      const existingAnnotation = annotations.find(
+        (a) =>
+          a.annotationType === "connection" &&
+          ((a.fromProjectionId === connection.source && a.toProjectionId === connection.target) ||
+            (a.fromProjectionId === connection.target && a.toProjectionId === connection.source))
+      );
+
+      if (existingDerived || existingAnnotation) {
+        toast.info("A connection between these entities already exists");
+        return;
+      }
+
+      // Open the connection dialog to get connection details
+      setPendingConnection({
+        source: sourceProjection,
+        target: targetProjection,
+      });
+      setIsConnectionDialogOpen(true);
+    },
+    [projections, derivedConnections, annotations]
+  );
+
+  // Handle successful connection creation
+  const handleConnectionCreated = useCallback(() => {
+    // Trigger a refresh to pick up the new annotation
+    onProjectionAdded?.(undefined as unknown as BoardProjection);
+    toast.success("Connection created");
+  }, [onProjectionAdded]);
+
   // ---- Handle node deletion via keyboard ----
 
   const handleDelete = useCallback(
@@ -1178,6 +1237,7 @@ function BoardFlowInner({
         multiSelectionKeyCode="Shift"
         nodes={renderedNodes}
         nodeTypes={nodeTypes}
+        onConnect={handleConnect}
         onEdgesChange={handleEdgesChange}
         onNodesChange={handleNodesChange}
         onNodesDelete={handleDelete}
@@ -1210,6 +1270,16 @@ function BoardFlowInner({
         }
         onUndo={handleBulkEditUndo}
         selectedProjections={selectedProjections}
+      />
+
+      {/* Connection dialog for manual connections */}
+      <ConnectionDialog
+        boardId={boardId}
+        onConnectionCreated={handleConnectionCreated}
+        onOpenChange={setIsConnectionDialogOpen}
+        open={isConnectionDialogOpen}
+        sourceProjection={pendingConnection?.source ?? null}
+        targetProjection={pendingConnection?.target ?? null}
       />
     </div>
   );
