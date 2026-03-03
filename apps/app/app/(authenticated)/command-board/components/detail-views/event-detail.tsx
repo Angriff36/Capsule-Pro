@@ -12,23 +12,36 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
+import { useCallback } from "react";
+import { toast } from "sonner";
 import type { ResolvedEvent } from "../../types/entities";
+import { EditableField, EditableSelectField } from "./editable-field";
 
 // ============================================================================
-// Event Detail View
+// Event Detail View — With inline editing
 // ============================================================================
 
 interface EventDetailProps {
   data: ResolvedEvent;
+  onFieldChange?: (field: string, value: string) => Promise<void>;
 }
 
+/** Status options for the select field */
+const STATUS_OPTIONS = [
+  { value: "draft", label: "Draft" },
+  { value: "tentative", label: "Tentative" },
+  { value: "confirmed", label: "Confirmed" },
+  { value: "completed", label: "Completed" },
+  { value: "cancelled", label: "Cancelled" },
+];
+
 /** Status → Badge variant mapping */
-const statusVariantMap = {
-  confirmed: "default" as const,
-  tentative: "secondary" as const,
-  cancelled: "destructive" as const,
-  completed: "secondary" as const,
-  draft: "outline" as const,
+const statusVariantMap: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+  confirmed: "default",
+  tentative: "secondary",
+  cancelled: "destructive",
+  completed: "secondary",
+  draft: "outline",
 };
 
 /** Format a date for display using Intl */
@@ -42,6 +55,15 @@ function formatDate(date: Date | null): string | null {
     day: "numeric",
     year: "numeric",
   }).format(new Date(date));
+}
+
+/** Format a date for the date input (YYYY-MM-DD) */
+function formatDateForInput(date: Date | null): string {
+  if (!date) {
+    return "";
+  }
+  const d = new Date(date);
+  return d.toISOString().split("T")[0] ?? "";
 }
 
 /** Format a time for display using Intl */
@@ -68,15 +90,42 @@ function formatCurrency(amount: number | null): string | null {
   }).format(amount);
 }
 
-export function EventDetail({ data }: EventDetailProps) {
-  const variant =
-    statusVariantMap[data.status as keyof typeof statusVariantMap] ?? "outline";
+export function EventDetail({ data, onFieldChange }: EventDetailProps) {
+  const variant = statusVariantMap[data.status] ?? "outline";
+
+  // Handler for field updates
+  const handleFieldSave = useCallback(
+    async (field: string, value: string) => {
+      if (!onFieldChange) {
+        toast.error("Editing not available");
+        return;
+      }
+
+      try {
+        await onFieldChange(field, value);
+        toast.success("Updated successfully");
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Failed to update");
+        throw error; // Re-throw to let the editable field show the error
+      }
+    },
+    [onFieldChange]
+  );
 
   return (
     <div className="space-y-4">
       {/* Status */}
       <div className="flex items-center gap-2">
-        <Badge variant={variant}>{data.status}</Badge>
+        {onFieldChange ? (
+          <EditableSelectField
+            label="Status"
+            onSave={(value) => handleFieldSave("status", value)}
+            options={STATUS_OPTIONS}
+            value={data.status}
+          />
+        ) : (
+          <Badge variant={variant}>{data.status}</Badge>
+        )}
       </div>
 
       <Separator />
@@ -88,12 +137,23 @@ export function EventDetail({ data }: EventDetailProps) {
           Date & Time
         </h4>
         <div className="grid gap-2 pl-6 text-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Date</span>
-            <span className="font-medium">
-              {formatDate(data.eventDate) ?? "Not set"}
-            </span>
-          </div>
+          {onFieldChange ? (
+            <EditableField
+              displayFormatter={() => formatDate(data.eventDate) ?? "Not set"}
+              label="Date"
+              onSave={(value) => handleFieldSave("eventDate", value)}
+              placeholder="Not set"
+              type="date"
+              value={formatDateForInput(data.eventDate)}
+            />
+          ) : (
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Date</span>
+              <span className="font-medium">
+                {formatDate(data.eventDate) ?? "Not set"}
+              </span>
+            </div>
+          )}
           <div className="flex items-center justify-between">
             <span className="text-muted-foreground">Time</span>
             <span className="font-medium">
@@ -112,20 +172,41 @@ export function EventDetail({ data }: EventDetailProps) {
           Event Details
         </h4>
         <div className="grid gap-2 pl-6 text-sm">
-          {data.guestCount != null && (
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Guests</span>
-              <span className="font-medium">{data.guestCount}</span>
-            </div>
+          {onFieldChange ? (
+            <EditableField
+              label="Guests"
+              onSave={(value) => handleFieldSave("guestCount", value)}
+              placeholder="Not set"
+              type="number"
+              value={data.guestCount ?? ""}
+            />
+          ) : (
+            data.guestCount != null && (
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Guests</span>
+                <span className="font-medium">{data.guestCount}</span>
+              </div>
+            )
           )}
-          {data.budget != null && (
-            <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">
-                <DollarSign className="mr-1 inline size-3" />
-                Budget
-              </span>
-              <span className="font-medium">{formatCurrency(data.budget)}</span>
-            </div>
+          {onFieldChange ? (
+            <EditableField
+              displayFormatter={(v) => (v != null && v !== "" ? formatCurrency(Number(v)) ?? "Not set" : "Not set")}
+              label="Budget"
+              onSave={(value) => handleFieldSave("budget", value)}
+              placeholder="Not set"
+              type="number"
+              value={data.budget ?? ""}
+            />
+          ) : (
+            data.budget != null && (
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">
+                  <DollarSign className="mr-1 inline size-3" />
+                  Budget
+                </span>
+                <span className="font-medium">{formatCurrency(data.budget)}</span>
+              </div>
+            )
           )}
         </div>
       </div>

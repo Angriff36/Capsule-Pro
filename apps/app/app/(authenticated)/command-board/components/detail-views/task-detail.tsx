@@ -11,34 +11,53 @@ import {
   User,
 } from "lucide-react";
 import Link from "next/link";
+import { useCallback } from "react";
+import { toast } from "sonner";
 import type {
   ResolvedKitchenTask,
   ResolvedPrepTask,
 } from "../../types/entities";
+import { EditableField, EditableSelectField } from "./editable-field";
 
 // ============================================================================
-// Task Detail View — handles both prep_task and kitchen_task
+// Task Detail View — handles both prep_task and kitchen_task with inline editing
 // ============================================================================
 
 interface TaskDetailProps {
   data: ResolvedPrepTask | ResolvedKitchenTask;
   taskType: "prep_task" | "kitchen_task";
+  onFieldChange?: (field: string, value: string) => Promise<void>;
 }
 
+/** Status options for tasks */
+const STATUS_OPTIONS = [
+  { value: "pending", label: "Pending" },
+  { value: "in_progress", label: "In Progress" },
+  { value: "completed", label: "Completed" },
+  { value: "cancelled", label: "Cancelled" },
+];
+
+/** Priority options for tasks */
+const PRIORITY_OPTIONS = [
+  { value: "high", label: "High" },
+  { value: "medium", label: "Medium" },
+  { value: "low", label: "Low" },
+];
+
 /** Status → Badge variant mapping */
-const statusVariantMap = {
-  pending: "outline" as const,
-  in_progress: "secondary" as const,
-  completed: "default" as const,
-  cancelled: "destructive" as const,
-  overdue: "destructive" as const,
+const statusVariantMap: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+  pending: "outline",
+  in_progress: "secondary",
+  completed: "default",
+  cancelled: "destructive",
+  overdue: "destructive",
 };
 
 /** Priority → Badge variant mapping */
-const priorityVariantMap = {
-  high: "destructive" as const,
-  medium: "secondary" as const,
-  low: "outline" as const,
+const priorityVariantMap: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+  high: "destructive",
+  medium: "secondary",
+  low: "outline",
 };
 
 /** Format a date for display using Intl */
@@ -53,6 +72,15 @@ function formatDate(date: Date | null): string | null {
   }).format(new Date(date));
 }
 
+/** Format a date for the date input (YYYY-MM-DD) */
+function formatDateForInput(date: Date | null): string {
+  if (!date) {
+    return "";
+  }
+  const d = new Date(date);
+  return d.toISOString().split("T")[0] ?? "";
+}
+
 /** Type guard: check if data is a ResolvedPrepTask */
 function isPrepTask(
   data: ResolvedPrepTask | ResolvedKitchenTask
@@ -60,10 +88,9 @@ function isPrepTask(
   return "name" in data && "eventTitle" in data;
 }
 
-export function TaskDetail({ data, taskType }: TaskDetailProps) {
+export function TaskDetail({ data, taskType, onFieldChange }: TaskDetailProps) {
   const _title = isPrepTask(data) ? data.name : data.title;
-  const statusVariant =
-    statusVariantMap[data.status as keyof typeof statusVariantMap] ?? "outline";
+  const statusVariant = statusVariantMap[data.status] ?? "outline";
   const priority = data.priority;
   const priorityLabel =
     typeof priority === "string"
@@ -73,23 +100,82 @@ export function TaskDetail({ data, taskType }: TaskDetailProps) {
         : null;
   const priorityVariant =
     typeof priority === "string"
-      ? (priorityVariantMap[priority as keyof typeof priorityVariantMap] ??
-        "outline")
+      ? (priorityVariantMap[priority] ?? "outline")
       : "outline";
 
   const dueDate = isPrepTask(data) ? data.dueByDate : data.dueDate;
 
+  // Handler for field updates
+  const handleFieldSave = useCallback(
+    async (field: string, value: string) => {
+      if (!onFieldChange) {
+        toast.error("Editing not available");
+        return;
+      }
+
+      try {
+        await onFieldChange(field, value);
+        toast.success("Updated successfully");
+      } catch (error) {
+        toast.error(error instanceof Error ? error.message : "Failed to update");
+        throw error; // Re-throw to let the editable field show the error
+      }
+    },
+    [onFieldChange]
+  );
+
+  // Determine the field name for the task title based on type
+  const titleField = isPrepTask(data) ? "name" : "title";
+  const titleValue = isPrepTask(data) ? data.name : data.title;
+
   return (
     <div className="space-y-4">
       {/* Status & Priority Badges */}
-      <div className="flex items-center gap-2">
-        <Badge variant={statusVariant}>{data.status}</Badge>
-        {priorityLabel && (
-          <Badge variant={priorityVariant}>{priorityLabel}</Badge>
+      <div className="flex items-center gap-2 flex-wrap">
+        {onFieldChange ? (
+          <EditableSelectField
+            label="Status"
+            onSave={(value) => handleFieldSave("status", value)}
+            options={STATUS_OPTIONS}
+            value={data.status}
+          />
+        ) : (
+          <Badge variant={statusVariant}>{data.status}</Badge>
+        )}
+        {onFieldChange ? (
+          <EditableSelectField
+            label="Priority"
+            onSave={(value) => handleFieldSave("priority", value)}
+            options={PRIORITY_OPTIONS}
+            value={typeof priority === "string" ? priority : null}
+          />
+        ) : (
+          priorityLabel && <Badge variant={priorityVariant}>{priorityLabel}</Badge>
         )}
       </div>
 
       <Separator />
+
+      {/* Task Title */}
+      {onFieldChange && (
+        <>
+          <div className="space-y-3">
+            <h4 className="flex items-center gap-2 text-sm font-medium">
+              <CheckSquare className="size-4 text-muted-foreground" />
+              Task Name
+            </h4>
+            <div className="pl-6">
+              <EditableField
+                label={isPrepTask(data) ? "Name" : "Title"}
+                onSave={(value) => handleFieldSave(titleField, value)}
+                placeholder="Untitled"
+                value={titleValue}
+              />
+            </div>
+          </div>
+          <Separator />
+        </>
+      )}
 
       {/* Due Date */}
       <div className="space-y-3">
@@ -98,12 +184,23 @@ export function TaskDetail({ data, taskType }: TaskDetailProps) {
           Schedule
         </h4>
         <div className="grid gap-2 pl-6 text-sm">
-          <div className="flex items-center justify-between">
-            <span className="text-muted-foreground">Due Date</span>
-            <span className="font-medium">
-              {formatDate(dueDate) ?? "Not set"}
-            </span>
-          </div>
+          {onFieldChange ? (
+            <EditableField
+              displayFormatter={() => formatDate(dueDate) ?? "Not set"}
+              label="Due Date"
+              onSave={(value) => handleFieldSave(isPrepTask(data) ? "dueByDate" : "dueDate", value)}
+              placeholder="Not set"
+              type="date"
+              value={formatDateForInput(dueDate)}
+            />
+          ) : (
+            <div className="flex items-center justify-between">
+              <span className="text-muted-foreground">Due Date</span>
+              <span className="font-medium">
+                {formatDate(dueDate) ?? "Not set"}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
