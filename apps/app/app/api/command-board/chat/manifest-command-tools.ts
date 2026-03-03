@@ -136,8 +136,7 @@ function listCandidateWorkspaceRoots(): string[] {
   // In ESM, use import.meta.url; in CJS, use __dirname
   let fileDir: string | undefined;
   try {
-    // @ts-expect-error - __dirname may not exist in ESM
-    fileDir = __dirname;
+    fileDir = __dirname; // available in CJS (Next.js API routes compile to CJS)
   } catch {
     // ESM - would need import.meta.url, but skip for now
   }
