@@ -158,7 +158,18 @@ const mergeTags = (tags: string[], missingFields: string[]) => {
   return Array.from(tagSet);
 };
 
-export const createEvent = async (formData: FormData): Promise<void> => {
+export type CreateEventState = { error?: string } | null;
+
+/**
+ * Create a new event.
+ *
+ * Uses useActionState-compatible signature so the form can display
+ * validation errors returned by the server without a full page reload.
+ */
+export const createEvent = async (
+  _prevState: CreateEventState,
+  formData: FormData
+): Promise<CreateEventState> => {
   const tenantId = await requireTenantId();
 
   const rawData = {
@@ -182,68 +193,72 @@ export const createEvent = async (formData: FormData): Promise<void> => {
   const parsed = createEventSchema.safeParse(rawData);
 
   if (!parsed.success) {
-    const error = parsed.error as {
-      issues?: Array<{ message: string }>;
-      errors?: Array<{ message: string }>;
-    };
-    const issues = error.issues ?? error.errors ?? [];
+    const issues = parsed.error.issues ?? [];
     const errors = issues.map((e) => e.message).join(", ");
-    throw new Error(`Validation failed: ${errors}`);
+    return { error: `Validation failed: ${errors}` };
   }
 
   const data = parsed.data;
 
-  const created = await database.$transaction(async (tx) => {
-    // Generate sequential event number: EVT-{YEAR}-{NNNN}
-    const year = new Date().getFullYear();
-    const count = await tx.event.count({
-      where: {
-        AND: [
-          { tenantId },
-          { eventNumber: { startsWith: `EVT-${year}` } },
-          { deletedAt: null },
-        ],
-      },
-    });
-    const eventNumber = `EVT-${year}-${String(count + 1).padStart(4, "0")}`;
+  let createdId: string;
+  try {
+    const created = await database.$transaction(async (tx) => {
+      // Generate sequential event number: EVT-{YEAR}-{NNNN}
+      const year = new Date().getFullYear();
+      const count = await tx.event.count({
+        where: {
+          AND: [
+            { tenantId },
+            { eventNumber: { startsWith: `EVT-${year}` } },
+            { deletedAt: null },
+          ],
+        },
+      });
+      const eventNumber = `EVT-${year}-${String(count + 1).padStart(4, "0")}`;
 
-    const event = await tx.event.create({
-      data: {
-        tenantId,
-        eventNumber,
-        title: data.title,
-        eventType: data.eventType,
-        eventDate: new Date(`${data.eventDate}T00:00:00`),
-        guestCount: data.guestCount,
-        status: data.status,
-        budget: data.budget ?? null,
-        ticketPrice: data.ticketPrice ?? null,
-        ticketTier: data.ticketTier,
-        eventFormat: data.eventFormat,
-        accessibilityOptions: data.accessibilityOptions,
-        featuredMediaUrl: data.featuredMediaUrl ?? null,
-        venueName: data.venueName,
-        venueAddress: data.venueAddress,
-        notes: data.notes,
-        tags: data.tags,
-      },
+      const event = await tx.event.create({
+        data: {
+          tenantId,
+          eventNumber,
+          title: data.title,
+          eventType: data.eventType,
+          eventDate: new Date(`${data.eventDate}T00:00:00`),
+          guestCount: data.guestCount,
+          status: data.status,
+          budget: data.budget ?? null,
+          ticketPrice: data.ticketPrice ?? null,
+          ticketTier: data.ticketTier,
+          eventFormat: data.eventFormat,
+          accessibilityOptions: data.accessibilityOptions,
+          featuredMediaUrl: data.featuredMediaUrl ?? null,
+          venueName: data.venueName,
+          venueAddress: data.venueAddress,
+          notes: data.notes,
+          tags: data.tags,
+        },
+      });
+
+      await tx.battleBoard.create({
+        data: {
+          tenantId,
+          eventId: event.id,
+          board_name: `${event.title} - Battle Board`,
+          board_type: "event-specific",
+          boardData: {},
+        },
+      });
+
+      return event;
     });
 
-    await tx.battleBoard.create({
-      data: {
-        tenantId,
-        eventId: event.id,
-        board_name: `${event.title} - Battle Board`,
-        board_type: "event-specific",
-        boardData: {},
-      },
-    });
-
-    return event;
-  });
+    createdId = created.id;
+  } catch (err) {
+    console.error("[createEvent] Database error:", err);
+    return { error: "Failed to create event. Please try again." };
+  }
 
   revalidatePath("/events");
-  redirect(`/events/${created.id}`);
+  redirect(`/events/${createdId}`);
 };
 
 export const updateEvent = async (formData: FormData): Promise<void> => {

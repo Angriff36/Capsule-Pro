@@ -2,7 +2,7 @@
 
 import { ReactFlowProvider } from "@xyflow/react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 import type {
   BoardDelta,
@@ -18,8 +18,10 @@ import {
 import { detectConflicts } from "../actions/conflicts";
 import type { SuggestedAction } from "../actions/suggestions-types";
 import type { Conflict } from "../conflict-types";
+import { useBoardFilters } from "../hooks/use-board-filters";
 import { useBoardHistory } from "../hooks/use-board-history";
 import { useEntityPolling } from "../hooks/use-entity-polling";
+import { useFilteredBoardData } from "../hooks/use-filtered-board-data";
 import { useInventoryRealtime } from "../hooks/use-inventory-realtime";
 import type { EntityType, ResolvedInventoryItem } from "../types/entities";
 import type {
@@ -30,7 +32,12 @@ import type {
 } from "../types/index";
 import type { SuggestedManifestPlan } from "../types/manifest-plan";
 import { AiChatPanel } from "./ai-chat-panel";
-import { ErrorBoundary } from "./board-error-boundary";
+import {
+  BoardFilterPanelErrorBoundary,
+  BoardFlowErrorBoundary,
+  EntityDetailPanelErrorBoundary,
+} from "./board-error-boundary";
+import { BoardFilterPanel } from "./board-filter-panel";
 import { BoardFlow } from "./board-flow";
 import { BoardHeader } from "./board-header";
 import { BoardRoom } from "./board-room";
@@ -132,6 +139,44 @@ export function BoardShell({
   >([]);
   const [isCreatingSimulation, setIsCreatingSimulation] = useState(false);
 
+  // ---- Board filters (URL-persisted) ----
+  const {
+    filters,
+    setFilters: _setFilters,
+    clearFilters,
+    hasActiveFilters,
+    activeFilterCount,
+  } = useBoardFilters();
+
+  // ---- Filtered board data ----
+  // In simulation mode, we use simulation projections; otherwise use live projections
+  const activeProjections =
+    boardMode === "simulation" && activeSimulation
+      ? activeSimulation.projections
+      : projections;
+
+  const filteredData = useFilteredBoardData({
+    projections: activeProjections,
+    entities,
+    derivedConnections,
+    annotations,
+    filters,
+  });
+
+  // Extract tags from entities for the tag filter
+  const availableTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    for (const entity of entities.values()) {
+      if (entity.type === "dish" && entity.data.dietaryTags) {
+        entity.data.dietaryTags.forEach((tag: string) => tagSet.add(tag));
+      }
+      if (entity.type === "note" && entity.data.tags) {
+        entity.data.tags.forEach((tag: string) => tagSet.add(tag));
+      }
+    }
+    return Array.from(tagSet).sort();
+  }, [entities]);
+
   // ---- Real-time inventory update handler ----
   const handleInventoryUpdate = useCallback(
     (payload: { stockItemId: string; newQuantity: number }) => {
@@ -226,6 +271,19 @@ export function BoardShell({
   const handleCloseDetail = useCallback(() => {
     setOpenDetailEntity(null);
   }, []);
+
+  // ---- Handler for when an entity is updated in the detail panel ----
+  const handleEntityUpdated = useCallback(async () => {
+    // Trigger a refresh by re-fetching the entity that was updated
+    // This causes the useEntityPolling to pick up the changes
+    if (openDetailEntity) {
+      // Force a re-render of entities by triggering a state update
+      setEntities((prevEntities) => {
+        // Create a new Map to trigger re-render
+        return new Map(prevEntities);
+      });
+    }
+  }, [openDetailEntity]);
 
   const handleProjectionAdded = useCallback(
     (projection: BoardProjection) => {
@@ -490,30 +548,52 @@ export function BoardShell({
 
           {/* Canvas + Entity Browser side by side */}
           <div className="relative flex flex-1 overflow-hidden">
+            {/* Filter Toolbar (between header and canvas) */}
+            <div className="absolute left-4 top-4 z-10 flex items-center gap-2">
+              <BoardFilterPanelErrorBoundary>
+                <BoardFilterPanel
+                  activeFilterCount={activeFilterCount}
+                  availableTags={availableTags}
+                  filters={filters}
+                  hasActiveFilters={hasActiveFilters}
+                  onClearFilters={clearFilters}
+                  onFiltersChange={_setFilters}
+                />
+              </BoardFilterPanelErrorBoundary>
+              {hasActiveFilters && (
+                <div className="flex items-center gap-1.5 rounded-md bg-muted/80 px-2 py-1 text-xs text-muted-foreground backdrop-blur-sm">
+                  <span>
+                    {filteredData.projections.length} of {activeProjections.length} entities
+                  </span>
+                  {filteredData.hiddenProjectionIds.size > 0 && (
+                    <span className="text-muted-foreground/60">
+                      ({filteredData.hiddenProjectionIds.size} hidden)
+                    </span>
+                  )}
+                </div>
+              )}
+            </div>
+
             {/* Board Flow Canvas */}
             <div className="relative flex-1">
-              <ErrorBoundary>
+              <BoardFlowErrorBoundary>
                 <BoardFlow
                   activePreviewMutations={activePreviewPlan?.boardPreview ?? []}
-                  annotations={annotations}
+                  annotations={filteredData.annotations}
                   boardId={boardId}
                   boardMode={boardMode}
-                  derivedConnections={derivedConnections}
-                  entities={entities}
+                  derivedConnections={filteredData.derivedConnections}
+                  entities={filteredData.entities}
                   onOpenDetail={handleOpenDetail}
                   onOpenEntityBrowser={() => setEntityBrowserOpen(true)}
                   onProjectionAdded={handleProjectionAdded}
                   onProjectionRemoved={handleProjectionRemoved}
-                  projections={
-                    boardMode === "simulation" && activeSimulation
-                      ? activeSimulation.projections
-                      : projections
-                  }
+                  projections={filteredData.projections}
                   simulationDelta={
                     boardMode === "simulation" ? simulationDelta : null
                   }
                 />
-              </ErrorBoundary>
+              </BoardFlowErrorBoundary>
 
               {/* Conflict Warning Panel Overlay */}
               {showConflicts && (conflicts.length > 0 || conflictsError) && (
@@ -580,16 +660,19 @@ export function BoardShell({
           />
 
           {/* Entity Detail Panel */}
-          <EntityDetailPanel
-            entityId={openDetailEntity?.entityId ?? ""}
-            entityType={(openDetailEntity?.entityType ?? "") as EntityType}
-            onOpenChange={(open) => {
-              if (!open) {
-                handleCloseDetail();
-              }
-            }}
-            open={openDetailEntity !== null}
-          />
+          <EntityDetailPanelErrorBoundary>
+            <EntityDetailPanel
+              entityId={openDetailEntity?.entityId ?? ""}
+              entityType={(openDetailEntity?.entityType ?? "") as EntityType}
+              onEntityUpdated={handleEntityUpdated}
+              onOpenChange={(open) => {
+                if (!open) {
+                  handleCloseDetail();
+                }
+              }}
+              open={openDetailEntity !== null}
+            />
+          </EntityDetailPanelErrorBoundary>
         </div>
       </BoardRoom>
     </ReactFlowProvider>

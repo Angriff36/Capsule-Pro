@@ -338,8 +338,10 @@ Please generate a complete task breakdown following the system prompt guidelines
     } catch (parseError) {
       console.error("Failed to parse AI response:", parseError);
       console.error("AI Response text:", result.text);
-      // Fall back to basic rule-based tasks if AI fails
-      return getFallbackTasks(event, dishesData);
+      // Throw error instead of silently falling back - user should know AI failed
+      throw new Error(
+        "Failed to parse AI response. The AI returned invalid JSON. Please try again."
+      );
     }
 
     // Transform AI tasks to TaskBreakdownItem format with proper IDs
@@ -378,8 +380,11 @@ Please generate a complete task breakdown following the system prompt guidelines
     };
   } catch (aiError) {
     console.error("AI generation failed:", aiError);
-    // Fall back to basic rule-based tasks if AI call fails
-    return getFallbackTasks(event, dishesData);
+    // Re-throw the error instead of silently falling back.
+    // The UI should handle this and show an error message to the user.
+    throw new Error(
+      `AI task generation failed: ${aiError instanceof Error ? aiError.message : "Unknown error"}. Please check your OpenAI API key and try again.`
+    );
   }
 }
 

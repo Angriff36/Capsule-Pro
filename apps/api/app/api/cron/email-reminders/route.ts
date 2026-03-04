@@ -13,6 +13,10 @@ import { database } from "@repo/database";
 import { triggerEmailWorkflows } from "@repo/notifications";
 import { type NextRequest, NextResponse } from "next/server";
 
+// Force dynamic rendering — reads Authorization headers and queries DB at runtime
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 // Verify cron secret to prevent unauthorized access
 function verifyCronAuth(request: NextRequest): boolean {
   const authHeader = request.headers.get("authorization");

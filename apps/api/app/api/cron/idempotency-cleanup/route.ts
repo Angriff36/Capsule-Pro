@@ -17,6 +17,11 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 
+// Force dynamic rendering — this route reads Authorization headers at runtime
+// and calls the database. Static optimization would fail at build time.
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 export async function GET(request: Request): Promise<NextResponse> {
   const cronSecret = process.env.CRON_SECRET;
 

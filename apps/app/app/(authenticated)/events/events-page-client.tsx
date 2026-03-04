@@ -10,14 +10,12 @@ export const EventsPageClient = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleSaveEvent = async (formData: FormData) => {
-    try {
-      await createEvent(formData);
-      toast.success("Event created successfully");
-    } catch (error) {
-      console.error("Failed to save event:", error);
-      toast.error("Failed to save event. Please try again.");
-      throw error;
+    const result = await createEvent(null, formData);
+    if (result?.error) {
+      toast.error(result.error);
+      throw new Error(result.error);
     }
+    toast.success("Event created successfully");
   };
 
   return (
