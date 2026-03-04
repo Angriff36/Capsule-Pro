@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Automaker-ready fragment: Tier-2 board commands from Capsule-Pro MCP. Source: query_ir_summary, inspect_command. -->
+<commands>
+  <command entity="Event" name="create" tier="2" boardAllowed="true"/>
+  <command entity="Event" name="update" tier="2" boardAllowed="true"/>
+  <command entity="Event" name="confirm" tier="2" boardAllowed="true"/>
+  <command entity="Event" name="cancel" tier="2" boardAllowed="true"/>
+  <command entity="Event" name="finalize" tier="2" boardAllowed="true"/>
+  <command entity="PrepTask" name="claim" tier="2" boardAllowed="true"/>
+  <command entity="PrepTask" name="unclaim" tier="2" boardAllowed="true"/>
+  <command entity="PrepTask" name="start" tier="2" boardAllowed="true"/>
+  <command entity="PrepTask" name="complete" tier="2" boardAllowed="true"/>
+  <command entity="PrepTask" name="reassign" tier="2" boardAllowed="true"/>
+  <command entity="KitchenTask" name="claim" tier="2" boardAllowed="true"/>
+  <command entity="KitchenTask" name="start" tier="2" boardAllowed="true"/>
+  <command entity="KitchenTask" name="complete" tier="2" boardAllowed="true"/>
+  <command entity="KitchenTask" name="reassign" tier="2" boardAllowed="true"/>
+  <command entity="PrepList" name="finalize" tier="2" boardAllowed="true"/>
+  <command entity="PrepList" name="markCompleted" tier="2" boardAllowed="true"/>
+  <command entity="InventoryItem" name="reserve" tier="2" boardAllowed="true"/>
+  <command entity="InventoryItem" name="consume" tier="2" boardAllowed="true"/>
+  <command entity="InventoryItem" name="restock" tier="2" boardAllowed="true"/>
+  <command entity="InventoryItem" name="adjust" tier="2" boardAllowed="true"/>
+  <command entity="EventStaff" name="assign" tier="2" boardAllowed="true"/>
+  <command entity="EventStaff" name="unassign" tier="2" boardAllowed="true"/>
+  <command entity="CateringOrder" name="confirm" tier="2" boardAllowed="true"/>
+  <command entity="CateringOrder" name="startPrep" tier="2" boardAllowed="true"/>
+  <command entity="CateringOrder" name="markComplete" tier="2" boardAllowed="true"/>
+  <command entity="Schedule" name="release" tier="2" boardAllowed="true"/>
+</commands>
+<workflows>
+  <workflow id="event-confirm-flow" name="Event confirmation">
+    <step>Event.update</step>
+    <step>Event.confirm</step>
+    <step>Event.finalize</step>
+  </workflow>
+  <workflow id="prep-task-execution" name="Prep task execution">
+    <step>PrepTask.claim</step>
+    <step>PrepTask.start</step>
+    <step>PrepTask.complete</step>
+  </workflow>
+  <workflow id="kitchen-task-execution" name="Kitchen task execution">
+    <step>KitchenTask.claim</step>
+    <step>KitchenTask.start</step>
+    <step>KitchenTask.complete</step>
+  </workflow>
+  <workflow id="prep-list-to-complete" name="Prep list completion">
+    <step>PrepList.finalize</step>
+    <step>PrepList.markCompleted</step>
+  </workflow>
+  <workflow id="prep-task-reassign" name="Prep task reassignment">
+    <step>PrepTask.unclaim</step>
+    <step>PrepTask.reassign</step>
+  </workflow>
+  <workflow id="event-staff-assignment" name="Event staff assignment">
+    <step>EventStaff.assign</step>
+  </workflow>
+  <workflow id="catering-order-lifecycle" name="Catering order lifecycle">
+    <step>CateringOrder.confirm</step>
+    <step>CateringOrder.startPrep</step>
+    <step>CateringOrder.markComplete</step>
+  </workflow>
+  <workflow id="inventory-reserve-consume" name="Inventory reserve and consume">
+    <step>InventoryItem.reserve</step>
+    <step>InventoryItem.consume</step>
+  </workflow>
+  <workflow id="inventory-restock" name="Inventory restock">
+    <step>InventoryItem.restock</step>
+    <step>InventoryItem.adjust</step>
+  </workflow>
+  <workflow id="event-staff-unassign" name="Event staff unassignment">
+    <step>EventStaff.unassign</step>
+  </workflow>
+  <workflow id="event-cancel" name="Event cancellation">
+    <step>Event.cancel</step>
+  </workflow>
+  <workflow id="schedule-release" name="Schedule release">
+    <step>Schedule.release</step>
+  </workflow>
+</workflows>

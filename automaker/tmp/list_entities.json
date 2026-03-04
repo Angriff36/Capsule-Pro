@@ -1,0 +1,45 @@
+{
+  "entity": "Event",
+  "count": 5,
+  "total": 21,
+  "limit": 5,
+  "offset": 0,
+  "items": [
+    {
+      "id": "321bb0cf-a527-484c-9051-2b73c8dd6e76",
+      "tenantId": "67a4af48-114e-4e45-89d7-6ae36da6ff71",
+      "eventNumber": "5037",
+      "title": "Jessica Khosravi",
+      "status": "confirmed",
+      "eventType": "Plated Dinner Experience",
+      "eventDate": 1757635200000,
+      "guestCount": 75
+    },
+    {
+      "id": "d3e8d645-8f4b-45ba-8b43-c5402156e2ef",
+      "tenantId": "67a4af48-114e-4e45-89d7-6ae36da6ff71",
+      "eventNumber": "5037",
+      "title": "Jessica Khosravi",
+      "status": "confirmed"
+    },
+    {
+      "id": "bf5a6eb7-5255-42eb-846e-862a6eef0ee5",
+      "tenantId": "67a4af48-114e-4e45-89d7-6ae36da6ff71",
+      "title": "E2E Event E2E-1771710544380",
+      "status": "confirmed",
+      "eventType": "catering"
+    },
+    {
+      "id": "942a702c-34c1-4b21-a15c-b85481e02cd2",
+      "tenantId": "67a4af48-114e-4e45-89d7-6ae36da6ff71",
+      "title": "E2E Event E2E-1771710680925",
+      "status": "confirmed"
+    },
+    {
+      "id": "33aa426d-3918-49ed-bdbc-e74c03c25894",
+      "tenantId": "67a4af48-114e-4e45-89d7-6ae36da6ff71",
+      "title": "E2E Event E2E-1771710794247",
+      "status": "confirmed"
+    }
+  ]
+}
