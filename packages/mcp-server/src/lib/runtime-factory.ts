@@ -38,6 +38,17 @@ export function getPrisma(): PrismaLike {
       "Prisma not initialized. Call setPrisma() during server startup."
     );
   }
+  // Env gate: when MCP_ALLOW_DB is explicitly "0" or "false", block DB access.
+  // This lets operators run the MCP server in read-only/IR-only mode without
+  // a live database connection. Tools that need DB will fail fast with a clear
+  // message instead of hanging on a connection timeout.
+  const allowDb = process.env.MCP_ALLOW_DB;
+  if (allowDb === "0" || allowDb === "false") {
+    throw new Error(
+      "Database access is disabled (MCP_ALLOW_DB=0). " +
+        "Set MCP_ALLOW_DB=1 or remove the variable to enable DB-touching tools."
+    );
+  }
   return prismaInstance;
 }
 

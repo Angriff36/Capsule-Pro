@@ -9,7 +9,7 @@
  * validation. We mock the transitive dependency to avoid this.
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock the transitive imports that require DATABASE_URL
 vi.mock("@repo/manifest-adapters/manifest-runtime-factory", () => ({
@@ -74,5 +74,64 @@ describe("runtime-factory Prisma lifecycle", () => {
     setPrisma(mockPrisma);
     // Should not throw
     await disconnectPrisma();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// DB env gate (MCP_ALLOW_DB)
+// ---------------------------------------------------------------------------
+
+describe("MCP_ALLOW_DB env gate", () => {
+  const originalEnv = { ...process.env };
+
+  let setPrisma: typeof import("./runtime-factory.js").setPrisma;
+  let getPrisma: typeof import("./runtime-factory.js").getPrisma;
+
+  beforeEach(async () => {
+    vi.resetModules();
+
+    vi.doMock("@repo/manifest-adapters/manifest-runtime-factory", () => ({
+      createManifestRuntime: vi.fn(),
+    }));
+    vi.doMock("@sentry/node", () => ({
+      addBreadcrumb: vi.fn(),
+      captureException: vi.fn(),
+    }));
+
+    const mod = await import("./runtime-factory.js");
+    setPrisma = mod.setPrisma;
+    getPrisma = mod.getPrisma;
+  });
+
+  afterEach(() => {
+    process.env = { ...originalEnv };
+  });
+
+  it("getPrisma throws when MCP_ALLOW_DB=0", () => {
+    const mockPrisma = { marker: "test" } as any;
+    setPrisma(mockPrisma);
+    process.env.MCP_ALLOW_DB = "0";
+    expect(() => getPrisma()).toThrow(/Database access is disabled/);
+  });
+
+  it("getPrisma throws when MCP_ALLOW_DB=false", () => {
+    const mockPrisma = { marker: "test" } as any;
+    setPrisma(mockPrisma);
+    process.env.MCP_ALLOW_DB = "false";
+    expect(() => getPrisma()).toThrow(/Database access is disabled/);
+  });
+
+  it("getPrisma succeeds when MCP_ALLOW_DB=1", () => {
+    const mockPrisma = { marker: "test" } as any;
+    setPrisma(mockPrisma);
+    process.env.MCP_ALLOW_DB = "1";
+    expect(getPrisma()).toBe(mockPrisma);
+  });
+
+  it("getPrisma succeeds when MCP_ALLOW_DB is not set", () => {
+    const mockPrisma = { marker: "test" } as any;
+    setPrisma(mockPrisma);
+    process.env.MCP_ALLOW_DB = undefined as unknown as string;
+    expect(getPrisma()).toBe(mockPrisma);
   });
 });

@@ -46,22 +46,31 @@ interface RouteManifest {
 // Route loading
 // ---------------------------------------------------------------------------
 
+/** Resolved absolute path to routes.manifest.json (set on first load). */
+let resolvedManifestPath: string | null = null;
+
 function loadRoutesManifest(): RouteManifest {
   const manifestPath = join(
     projectRoot,
     "packages/manifest-ir/dist/routes.manifest.json"
   );
+  resolvedManifestPath = manifestPath;
 
   try {
     const content = readFileSync(manifestPath, "utf-8");
     return JSON.parse(content) as RouteManifest;
   } catch (error) {
     throw new Error(
-      `Failed to load routes.manifest.json: ${
+      `Failed to load routes.manifest.json at ${manifestPath}: ${
         error instanceof Error ? error.message : String(error)
       }`
     );
   }
+}
+
+/** Get the resolved manifest path (for trust signal metadata). */
+export function getResolvedManifestPath(): string | null {
+  return resolvedManifestPath;
 }
 
 // ---------------------------------------------------------------------------
@@ -189,6 +198,10 @@ export const routeResolutionPlugin: McpPlugin = {
             manifest: {
               generatedAt: manifest.generatedAt,
               basePath: manifest.basePath,
+            },
+            _debug: {
+              resolvedManifestPath,
+              projectRoot,
             },
           };
 
@@ -320,6 +333,10 @@ export const routeResolutionPlugin: McpPlugin = {
             },
             manifest: {
               generatedAt: manifest.generatedAt,
+            },
+            _debug: {
+              resolvedManifestPath,
+              projectRoot,
             },
           };
 

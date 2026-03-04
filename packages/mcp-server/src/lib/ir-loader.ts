@@ -142,11 +142,11 @@ export function getPolicies(): IR["policies"] {
 // ---------------------------------------------------------------------------
 
 /**
- * Walk up from cwd to find the monorepo root (pnpm-workspace.yaml),
- * then resolve the given relative path from there.
+ * Walk up from MCP_PROJECT_ROOT (or cwd) to find the monorepo root
+ * (pnpm-workspace.yaml), then resolve the given relative path from there.
  */
 function resolveFromRepoRoot(relPath: string): string {
-  let dir = process.cwd();
+  let dir = process.env.MCP_PROJECT_ROOT || process.cwd();
   while (true) {
     if (existsSync(resolve(dir, "pnpm-workspace.yaml"))) {
       return resolve(dir, relPath);

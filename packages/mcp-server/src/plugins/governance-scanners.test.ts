@@ -158,3 +158,83 @@ describe("AUTH_DISABLED_PATTERN", () => {
     expect(AUTH_DISABLED_PATTERN.test("auth = true")).toBe(false);
   });
 });
+
+// ---------------------------------------------------------------------------
+// KNOWN LIMITATIONS — false positives and false negatives
+//
+// These tests document what the regex patterns do NOT catch. They are
+// intentional: each test asserts the current (limited) behavior so that
+// if someone upgrades to AST-based scanning, these tests flip and prove
+// the upgrade works.
+// ---------------------------------------------------------------------------
+
+describe("known false negatives (NOT caught by current regex)", () => {
+  it("does not catch prisma accessed via wrapper/alias", () => {
+    // Wrapper: const db = prisma; db.user.create(...)
+    expect(DIRECT_DB_ACCESS_PATTERN.test("db.user.create({")).toBe(false);
+  });
+
+  it("does not catch aliased import of prisma", () => {
+    // import { prisma as db } from "@repo/database"
+    // db.event.update({ ... })
+    expect(DIRECT_DB_ACCESS_PATTERN.test("db.event.update({")).toBe(false);
+  });
+
+  it("catches prisma via class property (substring match — not a true negative)", () => {
+    // this.prisma.user.delete({ ... }) — the regex matches because
+    // "prisma.user.delete(" is a substring. This is actually correct
+    // detection, but for the wrong reason (no word boundary check).
+    expect(DIRECT_DB_ACCESS_PATTERN.test("this.prisma.user.delete({")).toBe(
+      true
+    );
+  });
+
+  it("does not catch non-listed Prisma models", () => {
+    // inventoryItem, schedule, menu, etc. are not in the 4-model allowlist
+    expect(DIRECT_DB_ACCESS_PATTERN.test("prisma.inventoryItem.create({")).toBe(
+      false
+    );
+    expect(DIRECT_DB_ACCESS_PATTERN.test("prisma.schedule.update({")).toBe(
+      false
+    );
+    expect(DIRECT_DB_ACCESS_PATTERN.test("prisma.menu.delete({")).toBe(false);
+  });
+
+  it("does not catch hardcoded tenant IDs other than 'test-tenant'", () => {
+    expect(
+      HARDCODED_TENANT_PATTERN.test('tenantId: "my-real-tenant-123"')
+    ).toBe(false);
+    expect(HARDCODED_TENANT_PATTERN.test('tenantId: "acme-corp"')).toBe(false);
+  });
+});
+
+describe("known false positives (incorrectly caught by current regex)", () => {
+  it("matches auth: false inside test fixtures", () => {
+    // This is a test file, not production code — but regex can't tell
+    const testFixture = "const mockConfig = { auth: false, debug: true };";
+    expect(AUTH_DISABLED_PATTERN.test(testFixture)).toBe(true);
+  });
+
+  it("matches auth: false inside comments", () => {
+    // Comment: // previously auth: false was the default
+    const comment = "// previously auth: false was the default";
+    expect(AUTH_DISABLED_PATTERN.test(comment)).toBe(true);
+  });
+
+  it("matches auth: false inside string literals", () => {
+    const stringLiteral = 'const msg = "when auth: false, skip login";';
+    expect(AUTH_DISABLED_PATTERN.test(stringLiteral)).toBe(true);
+  });
+
+  it("matches .update({ data: in non-Prisma contexts", () => {
+    // A plain object method called .update with a data field
+    const nonPrisma = "cache.update({ data: newValue })";
+    expect(DIRECT_UPDATE_PATTERN.test(nonPrisma)).toBe(true);
+  });
+
+  it("matches .delete({ where: in non-Prisma contexts", () => {
+    // A plain object method called .delete with a where field
+    const nonPrisma = "queryBuilder.delete({ where: condition })";
+    expect(DIRECT_DELETE_PATTERN.test(nonPrisma)).toBe(true);
+  });
+});

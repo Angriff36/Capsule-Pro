@@ -40,7 +40,34 @@ interface ScanResult {
   };
 }
 
-// Regex patterns defined at top level for performance
+// ---------------------------------------------------------------------------
+// Regex patterns — defined at top level for performance.
+//
+// KNOWN LIMITATIONS (intentional trade-offs for speed over precision):
+//
+// 1. DIRECT_DB_ACCESS_PATTERN only checks 4 models (user, prepTask, event,
+//    recipe). Any other Prisma model (inventoryItem, schedule, etc.) is NOT
+//    flagged. This is a sampling heuristic, not exhaustive coverage.
+//
+// 2. All patterns are line-level regex, not AST-aware. They cannot
+//    distinguish:
+//    - Wrapper functions that re-export prisma (e.g. `const db = prisma;
+//      db.user.create(...)` is NOT caught)
+//    - Aliased imports (e.g. `import { prisma as db } from ...`)
+//    - Prisma accessed via a class property (e.g. `this.prisma.user.create`)
+//    - Code inside comments or string literals (false positives possible)
+//
+// 3. HARDCODED_TENANT_PATTERN / HARDCODED_USER_PATTERN only match the
+//    literal strings "test-tenant" and "test-user". Any other hardcoded
+//    value (e.g. "my-tenant-123") is NOT caught.
+//
+// 4. AUTH_DISABLED_PATTERN matches `auth: false` anywhere in a file,
+//    including test fixtures, type definitions, and comments.
+//
+// For scope-sensitive checks, AST parsing is required (see Lesson 5 in
+// tasks/lessons.md). These regex patterns are a fast first pass, not a
+// substitute for proper static analysis.
+// ---------------------------------------------------------------------------
 const DIRECT_DB_ACCESS_PATTERN =
   /prisma\.(user|prepTask|event|recipe)\.(create|update|delete|findMany)\(/i;
 const DIRECT_UPDATE_PATTERN = /\.update\(\s*\{\s*data\s*:/i;
