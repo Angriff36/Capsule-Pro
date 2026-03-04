@@ -286,7 +286,18 @@ Record Agent 55's session, then — after user correction — perform honest A/B
 **Points tally:** -1 points
 
 ---
-<<<<<<< HEAD
+# Agent 52
+
+**Agent ID:** 52
+**Date/Time:** 2026-02-28 17:15
+**Base branch/commit:** codex/manifest-cli-doctor @ 4d366b37e
+
+**Goal:**
+Fix all 7 pre-existing kitchen test failures (from 7 failed/17 passed → 0 failed/24 passed, 374 tests green).
+
+**Points tally:** 16 points
+
+---
 
 # Agent 57
 
@@ -313,18 +324,3 @@ Fix 3 known integrity issues deferred by previous agents: security gap (unauthen
 **Points tally:** 16 points
 
 ---
-
-# Agent 52
-
-**Agent ID:** 52
-**Date/Time:** 2026-02-28 17:15
-**Base branch/commit:** codex/manifest-cli-doctor @ 4d366b37e
-
-**Goal:**
-Fix all 7 pre-existing kitchen test failures (from 7 failed/17 passed → 0 failed/24 passed, 374 tests green).
-
-**Points tally:** 16 points
-
----
-=======
->>>>>>> 6d7b7d9c1 (test(mcp-server): add comprehensive test suite (0 → 87 tests across 8 files))
