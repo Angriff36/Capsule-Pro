@@ -2,9 +2,9 @@
  * Governance scanner tools.
  *
  * Tools:
- * - `governance.scanBypass`: Scan for code bypassing manifest commands
- * - `governance.scanRoutes`: Scan for route conformance
- * - `governance.scanDocsDrift`: Scan for documentation drift from IR
+ * - `governance_scanBypass`: Scan for code bypassing manifest commands
+ * - `governance_scanRoutes`: Scan for route conformance
+ * - `governance_scanDocsDrift`: Scan for documentation drift from IR
  *
  * @packageDocumentation
  */
@@ -405,9 +405,9 @@ export const governanceScannersPlugin: McpPlugin = {
   register(ctx: PluginContext) {
     const { server } = ctx;
 
-    // ── governance.scanBypass ───────────────────────────────────────────
+    // ── governance_scanBypass ───────────────────────────────────────────
     server.registerTool(
-      "governance.scanBypass",
+      "governance_scanBypass",
       {
         title: "Scan for Bypass Patterns",
         description:
@@ -452,7 +452,7 @@ export const governanceScannersPlugin: McpPlugin = {
 
     // ── governance.scanRoutes ───────────────────────────────────────────
     server.registerTool(
-      "governance.scanRoutes",
+      "governance_scanRoutes",
       {
         title: "Scan Route Conformance",
         description:
@@ -489,7 +489,7 @@ export const governanceScannersPlugin: McpPlugin = {
 
     // ── governance.scanDocsDrift ───────────────────────────────────────
     server.registerTool(
-      "governance.scanDocsDrift",
+      "governance_scanDocsDrift",
       {
         title: "Scan Documentation Drift",
         description:

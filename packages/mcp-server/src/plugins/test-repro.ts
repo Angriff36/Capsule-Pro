@@ -2,17 +2,17 @@
  * Test and reproduction tools.
  *
  * Tools:
- * - `tests.run`: Run tests with optional filtering
- * - `repro.record`: Record a reproduction case
+ * - `tests_run`: Run tests with optional filtering
+ * - `repro_record`: Record a reproduction case
  *
  * @packageDocumentation
  */
 
-import { z } from "zod";
 import { spawn } from "node:child_process";
-import { writeFileSync, mkdirSync, existsSync } from "node:fs";
-import { join } from "node:path";
 import { randomUUID } from "node:crypto";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
+import { z } from "zod";
 import type { McpPlugin, PluginContext } from "../types.js";
 
 // Regex patterns (defined at top level for performance)
@@ -105,9 +105,12 @@ async function runTests(
       const failedMatch = stdout.match(FAILED_PATTERN);
       const skippedMatch = stdout.match(SKIPPED_PATTERN);
 
-      if (passedMatch) result.passed = parseInt(passedMatch[1] ?? "0", 10);
-      if (failedMatch) result.failed = parseInt(failedMatch[1] ?? "0", 10);
-      if (skippedMatch) result.skipped = parseInt(skippedMatch[1] ?? "0", 10);
+      if (passedMatch)
+        result.passed = Number.parseInt(passedMatch[1] ?? "0", 10);
+      if (failedMatch)
+        result.failed = Number.parseInt(failedMatch[1] ?? "0", 10);
+      if (skippedMatch)
+        result.skipped = Number.parseInt(skippedMatch[1] ?? "0", 10);
 
       // Extract failure details (best-effort)
       FAILURE_PATTERN.lastIndex = 0;
@@ -216,9 +219,9 @@ export const testReproPlugin: McpPlugin = {
   register(ctx: PluginContext) {
     const { server } = ctx;
 
-    // tests.run
+    // tests_run
     server.registerTool(
-      "tests.run",
+      "tests_run",
       {
         title: "Run Tests",
         description:
@@ -228,7 +231,9 @@ export const testReproPlugin: McpPlugin = {
           packageFilter: z
             .string()
             .optional()
-            .describe("Package to test (e.g., '@repo/apps-api' or '@repo/mcp-server')"),
+            .describe(
+              "Package to test (e.g., '@repo/apps-api' or '@repo/mcp-server')"
+            ),
           testPath: z.string().optional().describe("Specific test file path"),
           pattern: z.string().optional().describe("Test name pattern to match"),
           coverage: z
@@ -247,7 +252,12 @@ export const testReproPlugin: McpPlugin = {
         const { packageFilter, testPath, pattern, coverage = false } = args;
 
         try {
-          const result = await runTests(packageFilter, testPath, pattern, coverage);
+          const result = await runTests(
+            packageFilter,
+            testPath,
+            pattern,
+            coverage
+          );
           return {
             content: [
               {
@@ -257,7 +267,8 @@ export const testReproPlugin: McpPlugin = {
             ],
           };
         } catch (error) {
-          const message = error instanceof Error ? error.message : String(error);
+          const message =
+            error instanceof Error ? error.message : String(error);
           return {
             content: [
               {
@@ -273,7 +284,7 @@ export const testReproPlugin: McpPlugin = {
 
     // repro.record
     server.registerTool(
-      "repro.record",
+      "repro_record",
       {
         title: "Record Reproduction Case",
         description:
@@ -281,14 +292,25 @@ export const testReproPlugin: McpPlugin = {
           "and observed behavior. Saves to .tmp/repros/ for later analysis.",
         inputSchema: z.object({
           title: z.string().describe("Brief title for the reproduction"),
-          description: z.string().optional().describe("Detailed description of the issue"),
+          description: z
+            .string()
+            .optional()
+            .describe("Detailed description of the issue"),
           steps: z
             .array(
               z.object({
                 tool: z.string().describe("Tool or action name"),
-                input: z.record(z.string(), z.unknown()).describe("Input parameters"),
-                expected: z.string().optional().describe("Expected step result"),
-                observed: z.string().optional().describe("Observed step result"),
+                input: z
+                  .record(z.string(), z.unknown())
+                  .describe("Input parameters"),
+                expected: z
+                  .string()
+                  .optional()
+                  .describe("Expected step result"),
+                observed: z
+                  .string()
+                  .optional()
+                  .describe("Observed step result"),
               })
             )
             .describe("Steps to reproduce the issue"),
@@ -310,7 +332,13 @@ export const testReproPlugin: McpPlugin = {
       }) => {
         try {
           const { title, steps, description, expected, observed } = args;
-          const saved = recordRepro(title, steps, description, expected, observed);
+          const saved = recordRepro(
+            title,
+            steps,
+            description,
+            expected,
+            observed
+          );
 
           return {
             content: [
@@ -321,7 +349,8 @@ export const testReproPlugin: McpPlugin = {
             ],
           };
         } catch (error) {
-          const message = error instanceof Error ? error.message : String(error);
+          const message =
+            error instanceof Error ? error.message : String(error);
           return {
             content: [
               {
