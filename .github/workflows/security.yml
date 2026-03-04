@@ -17,6 +17,10 @@ env:
   NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
   DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
 
+permissions:
+  contents: read
+  packages: read
+
 jobs:
   security:
     runs-on: ubuntu-latest

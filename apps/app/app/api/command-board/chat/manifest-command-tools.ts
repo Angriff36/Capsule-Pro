@@ -114,6 +114,14 @@ const WRITE_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
 function listCandidateWorkspaceRoots(): string[] {
   const roots: string[] = [];
+
+  // 1. Check env var override first (for Vercel/production deployments)
+  const envRoot = process.env.MANIFEST_REPO_ROOT;
+  if (envRoot) {
+    roots.push(envRoot);
+  }
+
+  // 2. Walk up from current working directory
   let current = process.cwd();
   while (true) {
     roots.push(current);
@@ -123,6 +131,29 @@ function listCandidateWorkspaceRoots(): string[] {
     }
     current = parent;
   }
+
+  // 3. Also walk up from this file's directory (for Vercel where cwd differs)
+  // In ESM, use import.meta.url; in CJS, use __dirname
+  let fileDir: string | undefined;
+  try {
+    fileDir = __dirname; // available in CJS (Next.js API routes compile to CJS)
+  } catch {
+    // ESM - would need import.meta.url, but skip for now
+  }
+  if (fileDir) {
+    current = fileDir;
+    while (true) {
+      if (!roots.includes(current)) {
+        roots.push(current);
+      }
+      const parent = dirname(current);
+      if (parent === current) {
+        break;
+      }
+      current = parent;
+    }
+  }
+
   return roots;
 }
 
@@ -140,7 +171,9 @@ function resolveManifestPath(): string {
   }
 
   throw new Error(
-    "[manifest-command-tools] Could not locate repository root (pnpm-workspace.yaml) from current working directory."
+    "[manifest-command-tools] Could not locate repository root (pnpm-workspace.yaml) from current working directory. " +
+    "Fix: Set MANIFEST_REPO_ROOT environment variable to the repo root path, " +
+    "or ensure pnpm-workspace.yaml is included in the deployment."
   );
 }
 

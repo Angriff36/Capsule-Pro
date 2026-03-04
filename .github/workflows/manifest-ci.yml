@@ -8,7 +8,7 @@ on:
       - "apps/api/app/api/kitchen/**"
       - "apps/api/app/api/**/route.ts"
       - "packages/manifest-ir/ir/**"
-      - "packages/manifest-ir/ir/kitchen/audit-routes-exemptions.json"
+      - "packages/manifest-runtime/packages/cli/src/commands/audit-routes-exemptions.json"
       - ".github/workflows/manifest-ci.yml"
   workflow_dispatch:
     inputs:
@@ -21,10 +21,6 @@ on:
 permissions:
   contents: read
   packages: read
-
-env:
-  NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
-  DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
 
 jobs:
   manifest-validate:
@@ -43,6 +39,8 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
+        with:
+          version: 10.22.0
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -94,6 +92,8 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
+        with:
+          version: 10.22.0
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -118,42 +118,15 @@ jobs:
         run: |
           pnpm run analyze
         env:
-          NODE_OPTIONS: "--max-old-space-size=8192"
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
-          SKIP_ENV_VALIDATION: true
-          BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_Y2kuZHVtbXkuYWNjb3VudHMuZGV2JA=="
-          NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
-          NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
-          NEXT_PUBLIC_APP_URL: "https://capsule-pro-app.vercel.app"
-          NEXT_PUBLIC_WEB_URL: "https://capsule-pro-web.vercel.app"
-          NEXT_PUBLIC_API_URL: "https://capsule-pro-api.vercel.app"
-          NEXT_PUBLIC_DOCS_URL: "https://capsule-pro-docs.vercel.app"
-          NEXT_PUBLIC_POSTHOG_KEY: "phc_dummy"
-          NEXT_PUBLIC_POSTHOG_HOST: "https://us.i.posthog.com"
-          # Server env vars needed for api build (SDK constructors throw without keys)
-          RESEND_TOKEN: "re_dummy"
-          RESEND_FROM: "noreply@ci-build.local"
-          CLERK_SECRET_KEY: "not_a_real_stripe_key_dummy_value"
-          STRIPE_SECRET_KEY: "not_a_real_stripe_key_dummy_value"
-          STRIPE_WEBHOOK_SECRET: "webhook_secret_placeholder"
-          SVIX_TOKEN: "api_key_placeholder"
-          KNOCK_API_KEY: "dummy"
-          KNOCK_FEED_CHANNEL_ID: "dummy"
-          BETTERSTACK_API_KEY: "dummy"
-          BETTERSTACK_URL: "https://dummy.betterstack.com"
-          FLAGS_SECRET: "dummy"
-          ARCJET_KEY: "ajkey_dummy"
-          LIVEBLOCKS_SECRET: "api_key_placeholder"
 
       - name: Check if generated code differs
         run: |
           echo "Checking if generated code is up-to-date..."
 
-          # Exclude environment-dependent generated files (basehub types depend on CI token)
-          git checkout -- '**/basehub-types.d.ts' 2>/dev/null || true
-
-          if ! git diff --quiet; then
+          # Store current git state
+          git diff --quiet
+          if [ $? -ne 0 ]; then
             echo "::error::Generated code is out of date. Please run 'pnpm run analyze' locally and commit the changes."
             echo ""
             echo "The following files have uncommitted changes after code generation:"
@@ -182,6 +155,8 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
+        with:
+          version: 10.22.0
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -206,39 +181,12 @@ jobs:
         run: |
           pnpm run analyze
         env:
-          NODE_OPTIONS: "--max-old-space-size=8192"
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
-          SKIP_ENV_VALIDATION: true
-          BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_Y2kuZHVtbXkuYWNjb3VudHMuZGV2JA=="
-          NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
-          NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
-          NEXT_PUBLIC_APP_URL: "https://capsule-pro-app.vercel.app"
-          NEXT_PUBLIC_WEB_URL: "https://capsule-pro-web.vercel.app"
-          NEXT_PUBLIC_API_URL: "https://capsule-pro-api.vercel.app"
-          NEXT_PUBLIC_DOCS_URL: "https://capsule-pro-docs.vercel.app"
-          NEXT_PUBLIC_POSTHOG_KEY: "phc_dummy"
-          NEXT_PUBLIC_POSTHOG_HOST: "https://us.i.posthog.com"
-          RESEND_TOKEN: "re_dummy"
-          RESEND_FROM: "noreply@ci-build.local"
-          CLERK_SECRET_KEY: "not_a_real_stripe_key_dummy_value"
-          STRIPE_SECRET_KEY: "not_a_real_stripe_key_dummy_value"
-          STRIPE_WEBHOOK_SECRET: "webhook_secret_placeholder"
-          SVIX_TOKEN: "api_key_placeholder"
-          KNOCK_API_KEY: "dummy"
-          KNOCK_FEED_CHANNEL_ID: "dummy"
-          BETTERSTACK_API_KEY: "dummy"
-          BETTERSTACK_URL: "https://dummy.betterstack.com"
-          FLAGS_SECRET: "dummy"
-          ARCJET_KEY: "ajkey_dummy"
-          LIVEBLOCKS_SECRET: "api_key_placeholder"
 
       - name: Type check all packages
         run: |
           echo "Running TypeScript type check..."
-          # Exclude @repo/cms and apps that depend on it — basehub types are environment-dependent
-          # (CI token points to a different basehub branch than local dev, causing schema drift).
-          pnpm -r --filter='!@repo/cms' --filter='!web' --filter='!app' run typecheck
+          pnpm run check
         env:
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
 
@@ -258,6 +206,8 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
+        with:
+          version: 10.22.0
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -282,32 +232,7 @@ jobs:
         run: |
           pnpm run analyze
         env:
-          NODE_OPTIONS: "--max-old-space-size=8192"
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
-          SKIP_ENV_VALIDATION: true
-          BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_Y2kuZHVtbXkuYWNjb3VudHMuZGV2JA=="
-          NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
-          NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
-          NEXT_PUBLIC_APP_URL: "https://capsule-pro-app.vercel.app"
-          NEXT_PUBLIC_WEB_URL: "https://capsule-pro-web.vercel.app"
-          NEXT_PUBLIC_API_URL: "https://capsule-pro-api.vercel.app"
-          NEXT_PUBLIC_DOCS_URL: "https://capsule-pro-docs.vercel.app"
-          NEXT_PUBLIC_POSTHOG_KEY: "phc_dummy"
-          NEXT_PUBLIC_POSTHOG_HOST: "https://us.i.posthog.com"
-          RESEND_TOKEN: "re_dummy"
-          RESEND_FROM: "noreply@ci-build.local"
-          CLERK_SECRET_KEY: "not_a_real_stripe_key_dummy_value"
-          STRIPE_SECRET_KEY: "not_a_real_stripe_key_dummy_value"
-          STRIPE_WEBHOOK_SECRET: "webhook_secret_placeholder"
-          SVIX_TOKEN: "api_key_placeholder"
-          KNOCK_API_KEY: "dummy"
-          KNOCK_FEED_CHANNEL_ID: "dummy"
-          BETTERSTACK_API_KEY: "dummy"
-          BETTERSTACK_URL: "https://dummy.betterstack.com"
-          FLAGS_SECRET: "dummy"
-          ARCJET_KEY: "ajkey_dummy"
-          LIVEBLOCKS_SECRET: "api_key_placeholder"
 
       - name: Run manifest integration tests
         run: |
@@ -342,6 +267,8 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
+        with:
+          version: 10.22.0
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -369,7 +296,7 @@ jobs:
             --strict \
             --root apps/api \
             --commands-manifest packages/manifest-ir/ir/kitchen/kitchen.commands.json \
-            --exemptions packages/manifest-ir/ir/kitchen/audit-routes-exemptions.json
+            --exemptions packages/manifest-runtime/packages/cli/src/commands/audit-routes-exemptions.json
           echo "Route boundary audit passed (strict mode)"
 
   snapshot-check:
@@ -389,6 +316,8 @@ jobs:
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
+        with:
+          version: 10.22.0
 
       - name: Get pnpm store directory
         id: pnpm-cache
@@ -413,32 +342,7 @@ jobs:
         run: |
           pnpm run analyze
         env:
-          NODE_OPTIONS: "--max-old-space-size=8192"
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
-          SKIP_ENV_VALIDATION: true
-          BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_Y2kuZHVtbXkuYWNjb3VudHMuZGV2JA=="
-          NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
-          NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
-          NEXT_PUBLIC_APP_URL: "https://capsule-pro-app.vercel.app"
-          NEXT_PUBLIC_WEB_URL: "https://capsule-pro-web.vercel.app"
-          NEXT_PUBLIC_API_URL: "https://capsule-pro-api.vercel.app"
-          NEXT_PUBLIC_DOCS_URL: "https://capsule-pro-docs.vercel.app"
-          NEXT_PUBLIC_POSTHOG_KEY: "phc_dummy"
-          NEXT_PUBLIC_POSTHOG_HOST: "https://us.i.posthog.com"
-          RESEND_TOKEN: "re_dummy"
-          RESEND_FROM: "noreply@ci-build.local"
-          CLERK_SECRET_KEY: "not_a_real_stripe_key_dummy_value"
-          STRIPE_SECRET_KEY: "not_a_real_stripe_key_dummy_value"
-          STRIPE_WEBHOOK_SECRET: "webhook_secret_placeholder"
-          SVIX_TOKEN: "api_key_placeholder"
-          KNOCK_API_KEY: "dummy"
-          KNOCK_FEED_CHANNEL_ID: "dummy"
-          BETTERSTACK_API_KEY: "dummy"
-          BETTERSTACK_URL: "https://dummy.betterstack.com"
-          FLAGS_SECRET: "dummy"
-          ARCJET_KEY: "ajkey_dummy"
-          LIVEBLOCKS_SECRET: "api_key_placeholder"
 
       - name: Check snapshot tests
         run: |

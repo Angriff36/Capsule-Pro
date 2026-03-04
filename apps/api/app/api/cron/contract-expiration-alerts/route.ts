@@ -18,6 +18,10 @@ import {
 } from "@repo/notifications";
 import { type NextRequest, NextResponse } from "next/server";
 
+// Force dynamic rendering — reads Authorization headers and queries DB at runtime
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+
 interface AlertConfig {
   daysBeforeExpiration: number;
   reminderIntervals: number[];

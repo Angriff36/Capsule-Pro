@@ -1,12 +1,19 @@
+"use client";
+
 import type { Event } from "@repo/database";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { useActionState } from "react";
+import type { CreateEventState } from "../actions";
 import { eventStatuses } from "../constants";
 
 interface EventFormProps {
   event?: Event | null;
-  action: (formData: FormData) => Promise<void>;
+  action: (
+    prevState: CreateEventState,
+    formData: FormData
+  ) => Promise<CreateEventState>;
   submitLabel: string;
 }
 
@@ -30,9 +37,15 @@ const formatDecimalValue = (
 
 export const EventForm = ({ event, action, submitLabel }: EventFormProps) => {
   const isEdit = Boolean(event?.id);
+  const [state, formAction, isPending] = useActionState(action, null);
 
   return (
-    <form action={action} className="flex flex-col gap-6">
+    <form action={formAction} className="flex flex-col gap-6">
+      {state?.error && (
+        <div className="rounded-md border border-destructive/50 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+          {state.error}
+        </div>
+      )}
       {isEdit ? <input name="eventId" type="hidden" value={event?.id} /> : null}
       <div className="grid gap-6 md:grid-cols-2">
         <div className="flex flex-col gap-2">
@@ -67,6 +80,7 @@ export const EventForm = ({ event, action, submitLabel }: EventFormProps) => {
             id="title"
             name="title"
             placeholder="Company holiday party"
+            required
           />
         </div>
 
@@ -257,7 +271,9 @@ export const EventForm = ({ event, action, submitLabel }: EventFormProps) => {
         </div>
       </div>
       <div className="flex justify-end">
-        <Button type="submit">{submitLabel}</Button>
+        <Button disabled={isPending} type="submit">
+          {isPending ? "Saving…" : submitLabel}
+        </Button>
       </div>
     </form>
   );

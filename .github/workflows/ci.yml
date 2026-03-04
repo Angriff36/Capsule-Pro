@@ -11,10 +11,6 @@ permissions:
   contents: read
   packages: read
 
-env:
-  NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
-  DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
-
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -53,29 +49,28 @@ jobs:
       - name: Build with Turbo (matches Vercel)
         run: pnpm turbo run build
         env:
-          NODE_OPTIONS: "--max-old-space-size=8192"
           # All required env vars for build-time validation (dummy values for CI)
           SKIP_ENV_VALIDATION: true
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
           BASEHUB_TOKEN: ${{ secrets.BASEHUB_TOKEN }}
           # Server env vars
-          CLERK_SECRET_KEY: "not_a_real_stripe_key_dummy_value"
-          CLERK_WEBHOOK_SECRET: "webhook_secret_placeholder"
+          CLERK_SECRET_KEY: "sk_test_dummy"
+          CLERK_WEBHOOK_SECRET: "whsec_dummy"
           RESEND_FROM: "noreply@ci-build.local"
           RESEND_TOKEN: "re_dummy"
-          STRIPE_SECRET_KEY: "not_a_real_stripe_key_dummy_value"
-          STRIPE_WEBHOOK_SECRET: "webhook_secret_placeholder"
+          STRIPE_SECRET_KEY: "sk_test_dummy"
+          STRIPE_WEBHOOK_SECRET: "whsec_dummy"
           BETTERSTACK_API_KEY: "dummy"
           BETTERSTACK_URL: "https://dummy.betterstack.com"
           FLAGS_SECRET: "dummy"
           ARCJET_KEY: "ajkey_dummy"
-          SVIX_TOKEN: "api_key_placeholder"
-          LIVEBLOCKS_SECRET: "api_key_placeholder"
+          SVIX_TOKEN: "sk_dummy"
+          LIVEBLOCKS_SECRET: "sk_dummy"
           VERCEL_PROJECT_PRODUCTION_URL: "https://capsule-pro-app.vercel.app"
           KNOCK_API_KEY: "dummy"
           KNOCK_FEED_CHANNEL_ID: "dummy"
           # Client env vars
-          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_Y2kuZHVtbXkuYWNjb3VudHMuZGV2JA=="
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "pk_test_dummy"
           NEXT_PUBLIC_CLERK_SIGN_IN_URL: "/sign-in"
           NEXT_PUBLIC_CLERK_SIGN_UP_URL: "/sign-up"
           NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL: "/"
