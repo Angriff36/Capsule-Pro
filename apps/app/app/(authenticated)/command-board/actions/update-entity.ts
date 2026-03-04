@@ -6,7 +6,7 @@ import { captureException } from "@sentry/nextjs";
 import type { EntityType } from "../types/entities";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
-import { withRetry, isRetryableError } from "./retry-utils";
+import { withRetry, isRetryableError } from "../lib/retry-utils";
 
 // ============================================================================
 // Entity Update Action — Generic update handler for all entity types

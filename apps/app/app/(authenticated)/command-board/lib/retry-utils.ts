@@ -1,8 +1,9 @@
-"use server";
-
 /**
  * Retry utilities for board actions.
  * Provides automatic retry logic for transient failures like network errors.
+ *
+ * NOTE: This is NOT a server action file — it exports plain utility functions
+ * consumed by server actions in other files.
  */
 
 /** Configuration for retry behavior */

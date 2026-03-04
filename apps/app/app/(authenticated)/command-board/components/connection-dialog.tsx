@@ -21,11 +21,13 @@ import {
 import { Loader2 } from "lucide-react";
 import { useCallback, useState } from "react";
 import {
-  CONNECTION_COLORS,
-  CONNECTION_STYLES,
   createConnection,
   type CreateConnectionResult,
 } from "../actions/annotations";
+import {
+  CONNECTION_COLORS,
+  CONNECTION_STYLES,
+} from "../lib/connection-constants";
 import type { BoardProjection } from "../types/board";
 
 // ============================================================================
