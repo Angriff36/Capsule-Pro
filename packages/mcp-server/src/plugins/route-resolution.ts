@@ -13,6 +13,8 @@ import { join } from "node:path";
 import { z } from "zod";
 import type { McpPlugin, PluginContext } from "../types.js";
 
+const projectRoot = process.env.MCP_PROJECT_ROOT || process.cwd();
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -46,7 +48,7 @@ interface RouteManifest {
 
 function loadRoutesManifest(): RouteManifest {
   const manifestPath = join(
-    process.cwd(),
+    projectRoot,
     "packages/manifest-ir/dist/routes.manifest.json"
   );
 
