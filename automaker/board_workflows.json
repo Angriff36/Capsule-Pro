@@ -1,0 +1,73 @@
+{
+  "description": "Workflows composed of Tier-2 board commands. Ordered sequences for realistic app state.",
+  "workflows": [
+    {
+      "id": "event-confirm-flow",
+      "name": "Event confirmation",
+      "steps": ["Event.update", "Event.confirm", "Event.finalize"]
+    },
+    {
+      "id": "prep-task-execution",
+      "name": "Prep task execution",
+      "steps": ["PrepTask.claim", "PrepTask.start", "PrepTask.complete"]
+    },
+    {
+      "id": "kitchen-task-execution",
+      "name": "Kitchen task execution",
+      "steps": [
+        "KitchenTask.claim",
+        "KitchenTask.start",
+        "KitchenTask.complete"
+      ]
+    },
+    {
+      "id": "prep-list-to-complete",
+      "name": "Prep list completion",
+      "steps": ["PrepList.finalize", "PrepList.markCompleted"]
+    },
+    {
+      "id": "prep-task-reassign",
+      "name": "Prep task reassignment",
+      "steps": ["PrepTask.unclaim", "PrepTask.reassign"]
+    },
+    {
+      "id": "event-staff-assignment",
+      "name": "Event staff assignment",
+      "steps": ["EventStaff.assign"]
+    },
+    {
+      "id": "catering-order-lifecycle",
+      "name": "Catering order lifecycle",
+      "steps": [
+        "CateringOrder.confirm",
+        "CateringOrder.startPrep",
+        "CateringOrder.markComplete"
+      ]
+    },
+    {
+      "id": "inventory-reserve-consume",
+      "name": "Inventory reserve and consume",
+      "steps": ["InventoryItem.reserve", "InventoryItem.consume"]
+    },
+    {
+      "id": "inventory-restock",
+      "name": "Inventory restock",
+      "steps": ["InventoryItem.restock", "InventoryItem.adjust"]
+    },
+    {
+      "id": "event-staff-unassign",
+      "name": "Event staff unassignment",
+      "steps": ["EventStaff.unassign"]
+    },
+    {
+      "id": "event-cancel",
+      "name": "Event cancellation",
+      "steps": ["Event.cancel"]
+    },
+    {
+      "id": "schedule-release",
+      "name": "Schedule release",
+      "steps": ["Schedule.release"]
+    }
+  ]
+}
