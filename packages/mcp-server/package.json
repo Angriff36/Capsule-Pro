@@ -7,7 +7,8 @@
     "start": "tsx --require ./src/preload.cts src/index.ts",
     "start:admin": "MCP_SERVER_MODE=admin tsx --require ./src/preload.cts src/index.ts",
     "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
   },
   "dependencies": {
     "@angriff36/manifest": "0.3.35",
@@ -25,6 +26,7 @@
     "@repo/typescript-config": "workspace:*",
     "@types/node": "25.2.0",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
   }
 }

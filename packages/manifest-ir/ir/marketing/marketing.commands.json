@@ -1,0 +1,97 @@
+[
+  {
+    "entity": "Campaign",
+    "command": "create",
+    "commandId": "Campaign.create"
+  },
+  {
+    "entity": "Campaign",
+    "command": "update",
+    "commandId": "Campaign.update"
+  },
+  {
+    "entity": "Campaign",
+    "command": "launch",
+    "commandId": "Campaign.launch"
+  },
+  {
+    "entity": "Campaign",
+    "command": "pause",
+    "commandId": "Campaign.pause"
+  },
+  {
+    "entity": "Campaign",
+    "command": "complete",
+    "commandId": "Campaign.complete"
+  },
+  {
+    "entity": "Campaign",
+    "command": "softDelete",
+    "commandId": "Campaign.softDelete"
+  },
+  {
+    "entity": "Channel",
+    "command": "create",
+    "commandId": "Channel.create"
+  },
+  {
+    "entity": "Channel",
+    "command": "update",
+    "commandId": "Channel.update"
+  },
+  {
+    "entity": "Channel",
+    "command": "activate",
+    "commandId": "Channel.activate"
+  },
+  {
+    "entity": "Channel",
+    "command": "deactivate",
+    "commandId": "Channel.deactivate"
+  },
+  {
+    "entity": "Channel",
+    "command": "softDelete",
+    "commandId": "Channel.softDelete"
+  },
+  {
+    "entity": "AutomationRule",
+    "command": "create",
+    "commandId": "AutomationRule.create"
+  },
+  {
+    "entity": "AutomationRule",
+    "command": "update",
+    "commandId": "AutomationRule.update"
+  },
+  {
+    "entity": "AutomationRule",
+    "command": "activate",
+    "commandId": "AutomationRule.activate"
+  },
+  {
+    "entity": "AutomationRule",
+    "command": "deactivate",
+    "commandId": "AutomationRule.deactivate"
+  },
+  {
+    "entity": "AutomationRule",
+    "command": "softDelete",
+    "commandId": "AutomationRule.softDelete"
+  },
+  {
+    "entity": "ContactList",
+    "command": "create",
+    "commandId": "ContactList.create"
+  },
+  {
+    "entity": "ContactList",
+    "command": "update",
+    "commandId": "ContactList.update"
+  },
+  {
+    "entity": "ContactList",
+    "command": "softDelete",
+    "commandId": "ContactList.softDelete"
+  }
+]

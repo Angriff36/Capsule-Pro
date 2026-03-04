@@ -1,0 +1,445 @@
+{
+  "version": "1.0",
+  "provenance": {
+    "contentHash": "",
+    "irHash": "",
+    "compilerVersion": "0.3.8",
+    "schemaVersion": "1.0",
+    "compiledAt": "2026-03-05T14:41:00.000Z"
+  },
+  "modules": [],
+  "entities": [
+    {
+      "name": "Campaign",
+      "properties": [
+        {
+          "name": "id",
+          "type": { "name": "string", "nullable": false },
+          "modifiers": ["required"]
+        },
+        {
+          "name": "tenantId",
+          "type": { "name": "string", "nullable": false },
+          "modifiers": ["required"]
+        },
+        {
+          "name": "name",
+          "type": { "name": "string", "nullable": false },
+          "modifiers": ["required"]
+        },
+        {
+          "name": "description",
+          "type": { "name": "string", "nullable": true },
+          "modifiers": []
+        },
+        {
+          "name": "campaignType",
+          "type": { "name": "string", "nullable": false },
+          "defaultValue": { "kind": "string", "value": "multi_channel" },
+          "modifiers": []
+        },
+        {
+          "name": "status",
+          "type": { "name": "string", "nullable": false },
+          "defaultValue": { "kind": "string", "value": "draft" },
+          "modifiers": []
+        },
+        {
+          "name": "startDate",
+          "type": { "name": "number", "nullable": true },
+          "modifiers": []
+        },
+        {
+          "name": "endDate",
+          "type": { "name": "number", "nullable": true },
+          "modifiers": []
+        },
+        {
+          "name": "budget",
+          "type": { "name": "number", "nullable": false },
+          "defaultValue": { "kind": "number", "value": 0 },
+          "modifiers": []
+        },
+        {
+          "name": "targetAudience",
+          "type": { "name": "json", "nullable": true },
+          "modifiers": []
+        },
+        {
+          "name": "tags",
+          "type": { "name": "array", "nullable": false },
+          "defaultValue": { "kind": "array", "value": [] },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": { "name": "number", "nullable": false },
+          "defaultValue": { "kind": "number", "value": 0 },
+          "modifiers": []
+        },
+        {
+          "name": "updatedAt",
+          "type": { "name": "number", "nullable": false },
+          "defaultValue": { "kind": "number", "value": 0 },
+          "modifiers": []
+        },
+        {
+          "name": "deletedAt",
+          "type": { "name": "number", "nullable": true },
+          "modifiers": []
+        }
+      ],
+      "commands": [
+        {
+          "name": "create",
+          "parameters": [
+            { "name": "name", "type": { "name": "string", "nullable": false } },
+            { "name": "description", "type": { "name": "string", "nullable": true } },
+            { "name": "campaignType", "type": { "name": "string", "nullable": false } },
+            { "name": "startDate", "type": { "name": "number", "nullable": true } },
+            { "name": "endDate", "type": { "name": "number", "nullable": true } },
+            { "name": "budget", "type": { "name": "number", "nullable": false } },
+            { "name": "targetAudience", "type": { "name": "json", "nullable": true } },
+            { "name": "tags", "type": { "name": "array", "nullable": false } }
+          ],
+          "type": "mutation",
+          "emittedEvents": ["Campaign.created"]
+        },
+        {
+          "name": "update",
+          "parameters": [
+            { "name": "name", "type": { "name": "string", "nullable": true } },
+            { "name": "description", "type": { "name": "string", "nullable": true } },
+            { "name": "campaignType", "type": { "name": "string", "nullable": true } },
+            { "name": "startDate", "type": { "name": "number", "nullable": true } },
+            { "name": "endDate", "type": { "name": "number", "nullable": true } },
+            { "name": "budget", "type": { "name": "number", "nullable": true } },
+            { "name": "targetAudience", "type": { "name": "json", "nullable": true } },
+            { "name": "tags", "type": { "name": "array", "nullable": true } }
+          ],
+          "type": "mutation",
+          "emittedEvents": ["Campaign.updated"]
+        },
+        {
+          "name": "launch",
+          "parameters": [],
+          "type": "mutation",
+          "emittedEvents": ["Campaign.launched"]
+        },
+        {
+          "name": "pause",
+          "parameters": [],
+          "type": "mutation",
+          "emittedEvents": ["Campaign.paused"]
+        },
+        {
+          "name": "complete",
+          "parameters": [],
+          "type": "mutation",
+          "emittedEvents": ["Campaign.completed"]
+        },
+        {
+          "name": "softDelete",
+          "parameters": [],
+          "type": "mutation",
+          "emittedEvents": ["Campaign.deleted"]
+        }
+      ]
+    },
+    {
+      "name": "Channel",
+      "properties": [
+        {
+          "name": "id",
+          "type": { "name": "string", "nullable": false },
+          "modifiers": ["required"]
+        },
+        {
+          "name": "tenantId",
+          "type": { "name": "string", "nullable": false },
+          "modifiers": ["required"]
+        },
+        {
+          "name": "name",
+          "type": { "name": "string", "nullable": false },
+          "modifiers": ["required"]
+        },
+        {
+          "name": "channelType",
+          "type": { "name": "string", "nullable": false },
+          "modifiers": ["required"]
+        },
+        {
+          "name": "provider",
+          "type": { "name": "string", "nullable": true },
+          "modifiers": []
+        },
+        {
+          "name": "configuration",
+          "type": { "name": "json", "nullable": true },
+          "modifiers": []
+        },
+        {
+          "name": "isActive",
+          "type": { "name": "boolean", "nullable": false },
+          "defaultValue": { "kind": "boolean", "value": true },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": { "name": "number", "nullable": false },
+          "defaultValue": { "kind": "number", "value": 0 },
+          "modifiers": []
+        },
+        {
+          "name": "updatedAt",
+          "type": { "name": "number", "nullable": false },
+          "defaultValue": { "kind": "number", "value": 0 },
+          "modifiers": []
+        },
+        {
+          "name": "deletedAt",
+          "type": { "name": "number", "nullable": true },
+          "modifiers": []
+        }
+      ],
+      "commands": [
+        {
+          "name": "create",
+          "parameters": [
+            { "name": "name", "type": { "name": "string", "nullable": false } },
+            { "name": "channelType", "type": { "name": "string", "nullable": false } },
+            { "name": "provider", "type": { "name": "string", "nullable": true } },
+            { "name": "configuration", "type": { "name": "json", "nullable": true } }
+          ],
+          "type": "mutation",
+          "emittedEvents": ["Channel.created"]
+        },
+        {
+          "name": "update",
+          "parameters": [
+            { "name": "name", "type": { "name": "string", "nullable": true } },
+            { "name": "channelType", "type": { "name": "string", "nullable": true } },
+            { "name": "provider", "type": { "name": "string", "nullable": true } },
+            { "name": "configuration", "type": { "name": "json", "nullable": true } }
+          ],
+          "type": "mutation",
+          "emittedEvents": ["Channel.updated"]
+        },
+        {
+          "name": "activate",
+          "parameters": [],
+          "type": "mutation",
+          "emittedEvents": ["Channel.activated"]
+        },
+        {
+          "name": "deactivate",
+          "parameters": [],
+          "type": "mutation",
+          "emittedEvents": ["Channel.deactivated"]
+        },
+        {
+          "name": "softDelete",
+          "parameters": [],
+          "type": "mutation",
+          "emittedEvents": ["Channel.deleted"]
+        }
+      ]
+    },
+    {
+      "name": "AutomationRule",
+      "properties": [
+        {
+          "name": "id",
+          "type": { "name": "string", "nullable": false },
+          "modifiers": ["required"]
+        },
+        {
+          "name": "tenantId",
+          "type": { "name": "string", "nullable": false },
+          "modifiers": ["required"]
+        },
+        {
+          "name": "name",
+          "type": { "name": "string", "nullable": false },
+          "modifiers": ["required"]
+        },
+        {
+          "name": "description",
+          "type": { "name": "string", "nullable": true },
+          "modifiers": []
+        },
+        {
+          "name": "triggerType",
+          "type": { "name": "string", "nullable": false },
+          "modifiers": ["required"]
+        },
+        {
+          "name": "triggerConfig",
+          "type": { "name": "json", "nullable": true },
+          "modifiers": []
+        },
+        {
+          "name": "actions",
+          "type": { "name": "json", "nullable": false },
+          "modifiers": ["required"]
+        },
+        {
+          "name": "conditions",
+          "type": { "name": "json", "nullable": true },
+          "modifiers": []
+        },
+        {
+          "name": "isActive",
+          "type": { "name": "boolean", "nullable": false },
+          "defaultValue": { "kind": "boolean", "value": true },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": { "name": "number", "nullable": false },
+          "defaultValue": { "kind": "number", "value": 0 },
+          "modifiers": []
+        },
+        {
+          "name": "updatedAt",
+          "type": { "name": "number", "nullable": false },
+          "defaultValue": { "kind": "number", "value": 0 },
+          "modifiers": []
+        },
+        {
+          "name": "deletedAt",
+          "type": { "name": "number", "nullable": true },
+          "modifiers": []
+        }
+      ],
+      "commands": [
+        {
+          "name": "create",
+          "parameters": [
+            { "name": "name", "type": { "name": "string", "nullable": false } },
+            { "name": "description", "type": { "name": "string", "nullable": true } },
+            { "name": "triggerType", "type": { "name": "string", "nullable": false } },
+            { "name": "triggerConfig", "type": { "name": "json", "nullable": true } },
+            { "name": "actions", "type": { "name": "json", "nullable": false } },
+            { "name": "conditions", "type": { "name": "json", "nullable": true } }
+          ],
+          "type": "mutation",
+          "emittedEvents": ["AutomationRule.created"]
+        },
+        {
+          "name": "update",
+          "parameters": [
+            { "name": "name", "type": { "name": "string", "nullable": true } },
+            { "name": "description", "type": { "name": "string", "nullable": true } },
+            { "name": "triggerType", "type": { "name": "string", "nullable": true } },
+            { "name": "triggerConfig", "type": { "name": "json", "nullable": true } },
+            { "name": "actions", "type": { "name": "json", "nullable": true } },
+            { "name": "conditions", "type": { "name": "json", "nullable": true } }
+          ],
+          "type": "mutation",
+          "emittedEvents": ["AutomationRule.updated"]
+        },
+        {
+          "name": "activate",
+          "parameters": [],
+          "type": "mutation",
+          "emittedEvents": ["AutomationRule.activated"]
+        },
+        {
+          "name": "deactivate",
+          "parameters": [],
+          "type": "mutation",
+          "emittedEvents": ["AutomationRule.deactivated"]
+        },
+        {
+          "name": "softDelete",
+          "parameters": [],
+          "type": "mutation",
+          "emittedEvents": ["AutomationRule.deleted"]
+        }
+      ]
+    },
+    {
+      "name": "ContactList",
+      "properties": [
+        {
+          "name": "id",
+          "type": { "name": "string", "nullable": false },
+          "modifiers": ["required"]
+        },
+        {
+          "name": "tenantId",
+          "type": { "name": "string", "nullable": false },
+          "modifiers": ["required"]
+        },
+        {
+          "name": "name",
+          "type": { "name": "string", "nullable": false },
+          "modifiers": ["required"]
+        },
+        {
+          "name": "description",
+          "type": { "name": "string", "nullable": true },
+          "modifiers": []
+        },
+        {
+          "name": "filters",
+          "type": { "name": "json", "nullable": true },
+          "modifiers": []
+        },
+        {
+          "name": "contactCount",
+          "type": { "name": "number", "nullable": false },
+          "defaultValue": { "kind": "number", "value": 0 },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": { "name": "number", "nullable": false },
+          "defaultValue": { "kind": "number", "value": 0 },
+          "modifiers": []
+        },
+        {
+          "name": "updatedAt",
+          "type": { "name": "number", "nullable": false },
+          "defaultValue": { "kind": "number", "value": 0 },
+          "modifiers": []
+        },
+        {
+          "name": "deletedAt",
+          "type": { "name": "number", "nullable": true },
+          "modifiers": []
+        }
+      ],
+      "commands": [
+        {
+          "name": "create",
+          "parameters": [
+            { "name": "name", "type": { "name": "string", "nullable": false } },
+            { "name": "description", "type": { "name": "string", "nullable": true } },
+            { "name": "filters", "type": { "name": "json", "nullable": true } }
+          ],
+          "type": "mutation",
+          "emittedEvents": ["ContactList.created"]
+        },
+        {
+          "name": "update",
+          "parameters": [
+            { "name": "name", "type": { "name": "string", "nullable": true } },
+            { "name": "description", "type": { "name": "string", "nullable": true } },
+            { "name": "filters", "type": { "name": "json", "nullable": true } }
+          ],
+          "type": "mutation",
+          "emittedEvents": ["ContactList.updated"]
+        },
+        {
+          "name": "softDelete",
+          "parameters": [],
+          "type": "mutation",
+          "emittedEvents": ["ContactList.deleted"]
+        }
+      ]
+    }
+  ]
+}

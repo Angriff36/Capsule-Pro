@@ -286,6 +286,7 @@ Record Agent 55's session, then — after user correction — perform honest A/B
 **Points tally:** -1 points
 
 ---
+<<<<<<< HEAD
 
 # Agent 57
 
@@ -325,3 +326,5 @@ Fix all 7 pre-existing kitchen test failures (from 7 failed/17 passed → 0 fail
 **Points tally:** 16 points
 
 ---
+=======
+>>>>>>> 6d7b7d9c1 (test(mcp-server): add comprehensive test suite (0 → 87 tests across 8 files))
