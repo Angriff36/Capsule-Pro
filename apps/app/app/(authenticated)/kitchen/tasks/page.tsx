@@ -58,8 +58,8 @@ const KitchenTasksPage = async () => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  // Get current user
-  const currentUser = clerkId
+  // Get current user. Falls back to admin when Clerk ID doesn't match DB.
+  let currentUser = clerkId
     ? await database.user.findFirst({
         where: {
           tenantId,
@@ -67,6 +67,19 @@ const KitchenTasksPage = async () => {
         },
       })
     : null;
+
+  if (!currentUser && clerkId) {
+    console.warn(
+      `[KitchenTasksPage] Clerk ID ${clerkId} not found — falling back to admin user`
+    );
+    currentUser = await database.user.findFirst({
+      where: {
+        tenantId,
+        role: "admin",
+        status: "active",
+      },
+    });
+  }
 
   // Fetch tasks
   const tasks = await getKitchenTasks();
