@@ -2,8 +2,8 @@
  * Route/UI resolution tools.
  *
  * Tools:
- * - `next.route.resolve`: Resolve URL to handler and invoked command
- * - `ui.traceAction`: Trace UI action to command invocation
+ * - `next_route_resolve`: Resolve URL to handler and invoked command
+ * - `ui_traceAction`: Trace UI action to command invocation
  *
  * @packageDocumentation
  */
@@ -113,9 +113,9 @@ export const routeResolutionPlugin: McpPlugin = {
   register(ctx: PluginContext) {
     const { server } = ctx;
 
-    // ── next.route.resolve ─────────────────────────────────────────────
+    // ── next_route_resolve ─────────────────────────────────────────────
     server.registerTool(
-      "next.route.resolve",
+      "next_route_resolve",
       {
         title: "Resolve Next.js Route",
         description:
@@ -216,7 +216,7 @@ export const routeResolutionPlugin: McpPlugin = {
 
     // ── ui.traceAction ─────────────────────────────────────────────────
     server.registerTool(
-      "ui.traceAction",
+      "ui_traceAction",
       {
         title: "Trace UI Action",
         description:
