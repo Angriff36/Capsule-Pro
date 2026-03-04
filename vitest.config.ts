@@ -74,5 +74,10 @@ export default defineConfig({
       name: "sales-reporting",
       root: "./packages/sales-reporting",
     },
+    {
+      name: "mcp-server",
+      root: "./packages/mcp-server",
+      config: "./vitest.config.ts",
+    },
   ],
 });
