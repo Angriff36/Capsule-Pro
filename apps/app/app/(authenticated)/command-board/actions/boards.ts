@@ -8,7 +8,7 @@ import type {
   BoardProjection,
 } from "../types/board";
 import { getTemplateById } from "../config/board-templates";
-import { withRetry } from "./retry-utils";
+import { withRetry } from "../lib/retry-utils";
 
 // ---------------------------------------------------------------------------
 // Legacy board types — these match the current Prisma CommandBoard model.
