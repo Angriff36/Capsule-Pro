@@ -83,6 +83,16 @@ const TEST_ORG_ID = "org_test_123";
 const TEST_BOARD_ID = "00000000-0000-0000-0000-000000000001";
 const TEMPLATE_BOARD_ID = "00000000-0000-0000-0000-000000000002";
 
+// Mock user for tests
+const MOCK_USER = {
+  id: TEST_USER_ID,
+  tenantId: TEST_TENANT_ID,
+  role: "admin",
+  email: "test@example.com",
+  firstName: "Test",
+  lastName: "User",
+};
+
 // Helper to create mock board data
 function createMockBoard(overrides: Partial<any> = {}) {
   return {
@@ -112,11 +122,7 @@ describe("Command Board CRUD Tests", () => {
     describe("with template", () => {
       it("should create board and apply template scope", async () => {
         // Setup auth
-        mockRequireCurrentUser.mockResolvedValue({
-          id: TEST_USER_ID,
-          tenantId: TEST_TENANT_ID,
-          role: "admin",
-        });
+        mockRequireCurrentUser.mockResolvedValue(MOCK_USER);
 
         // Setup manifest runtime mock
         const mockRuntime = {
@@ -165,11 +171,7 @@ describe("Command Board CRUD Tests", () => {
       });
 
       it("should copy projections from template to new board", async () => {
-        mockRequireCurrentUser.mockResolvedValue({
-          id: TEST_USER_ID,
-          tenantId: TEST_TENANT_ID,
-          role: "admin",
-        });
+        mockRequireCurrentUser.mockResolvedValue(MOCK_USER);
 
         const mockRuntime = {
           runCommand: vi.fn().mockResolvedValue({
@@ -196,11 +198,7 @@ describe("Command Board CRUD Tests", () => {
 
     describe("without template", () => {
       it("should create board with default values", async () => {
-        mockRequireCurrentUser.mockResolvedValue({
-          id: TEST_USER_ID,
-          tenantId: TEST_TENANT_ID,
-          role: "admin",
-        });
+        mockRequireCurrentUser.mockResolvedValue(MOCK_USER);
 
         const mockRuntime = {
           runCommand: vi.fn().mockResolvedValue({
@@ -242,11 +240,7 @@ describe("Command Board CRUD Tests", () => {
       });
 
       it("should default status to 'draft' for new boards", async () => {
-        mockRequireCurrentUser.mockResolvedValue({
-          id: TEST_USER_ID,
-          tenantId: TEST_TENANT_ID,
-          role: "admin",
-        });
+        mockRequireCurrentUser.mockResolvedValue(MOCK_USER);
 
         const mockRuntime = {
           runCommand: vi.fn().mockResolvedValue({
@@ -275,11 +269,7 @@ describe("Command Board CRUD Tests", () => {
       });
 
       it("should accept optional event_id during creation", async () => {
-        mockRequireCurrentUser.mockResolvedValue({
-          id: TEST_USER_ID,
-          tenantId: TEST_TENANT_ID,
-          role: "admin",
-        });
+        mockRequireCurrentUser.mockResolvedValue(MOCK_USER);
 
         const mockRuntime = {
           runCommand: vi.fn().mockResolvedValue({
@@ -578,11 +568,7 @@ describe("Command Board CRUD Tests", () => {
 
   describe("Delete Board (Soft Delete)", () => {
     it("should soft delete board via manifest runtime", async () => {
-      mockRequireCurrentUser.mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-      });
+      mockRequireCurrentUser.mockResolvedValue(MOCK_USER);
 
       const mockRuntime = {
         runCommand: vi.fn().mockResolvedValue({
@@ -613,8 +599,7 @@ describe("Command Board CRUD Tests", () => {
 
     it("should reject delete for non-admin users", async () => {
       mockRequireCurrentUser.mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
+        ...MOCK_USER,
         role: "viewer",
       });
 
@@ -636,11 +621,7 @@ describe("Command Board CRUD Tests", () => {
     });
 
     it("should return 404 for non-existent board on delete", async () => {
-      mockRequireCurrentUser.mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-      });
+      mockRequireCurrentUser.mockResolvedValue(MOCK_USER);
 
       const mockRuntime = {
         runCommand: vi.fn().mockResolvedValue({
@@ -681,3 +662,4 @@ describe("Command Board CRUD Tests", () => {
     });
   });
 });
+

@@ -65,6 +65,7 @@ import { database } from "@repo/database";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
 import { GET as listConnections } from "@/app/api/command-board/connections/list/route";
+import { NextRequest } from "next/server";
 
 const mockAuth = vi.mocked(auth) as any;
 const mockGetTenantIdForOrg = vi.mocked(getTenantIdForOrg);
@@ -78,6 +79,16 @@ const mockCommandBoardCard = vi.mocked(database.commandBoardCard);
 const TEST_TENANT_ID = "67a4af48-114e-4e45-89d7-6ae36da6ff71";
 const TEST_USER_ID = "user_38l4Ysz037WwfEIfrjAvWLeM7AP";
 const TEST_ORG_ID = "org_test_123";
+
+// Mock user for tests
+const MOCK_USER = {
+  id: TEST_USER_ID,
+  tenantId: TEST_TENANT_ID,
+  role: "admin",
+  email: "test@example.com",
+  firstName: "Test",
+  lastName: "User",
+};
 const TEST_BOARD_ID = "00000000-0000-0000-0000-000000000001";
 const TEST_CARD_1_ID = "00000000-0000-0000-0000-000000000010";
 const TEST_CARD_2_ID = "00000000-0000-0000-0000-000000000011";
@@ -132,11 +143,7 @@ describe("Command Board Connection Tests", () => {
 
   describe("Create Connection", () => {
     it("should create manual connection between two cards", async () => {
-      mockRequireCurrentUser.mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-      });
+      mockRequireCurrentUser.mockResolvedValue(MOCK_USER);
 
       const mockRuntime = {
         runCommand: vi.fn().mockResolvedValue({
@@ -165,11 +172,7 @@ describe("Command Board Connection Tests", () => {
     });
 
     it("should set relationship_type based on card types", async () => {
-      mockRequireCurrentUser.mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-      });
+      mockRequireCurrentUser.mockResolvedValue(MOCK_USER);
 
       const mockRuntime = {
         runCommand: vi.fn().mockResolvedValue({
@@ -212,11 +215,7 @@ describe("Command Board Connection Tests", () => {
 
   describe("Prevent Duplicate Connections", () => {
     it("should not allow duplicate connections between same cards", async () => {
-      mockRequireCurrentUser.mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-      });
+      mockRequireCurrentUser.mockResolvedValue(MOCK_USER);
 
       // Mock existing connection
       mockConnection.findFirst.mockResolvedValue(createMockConnection());
@@ -244,11 +243,7 @@ describe("Command Board Connection Tests", () => {
     });
 
     it("should allow reversed direction connection (A→B is different from B→A)", async () => {
-      mockRequireCurrentUser.mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-      });
+      mockRequireCurrentUser.mockResolvedValue(MOCK_USER);
 
       // No existing connection for B→A
       mockConnection.findFirst.mockResolvedValue(null);
@@ -285,11 +280,7 @@ describe("Command Board Connection Tests", () => {
 
   describe("Delete Connection (Soft Delete)", () => {
     it("should soft delete connection via manifest runtime", async () => {
-      mockRequireCurrentUser.mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-      });
+      mockRequireCurrentUser.mockResolvedValue(MOCK_USER);
 
       const mockRuntime = {
         runCommand: vi.fn().mockResolvedValue({
@@ -326,7 +317,7 @@ describe("Command Board Connection Tests", () => {
 
       mockConnection.findMany.mockResolvedValue(activeConnections as any);
 
-      const request = new Request("http://localhost/api/command-board/connections/list");
+      const request = new NextRequest("http://localhost/api/command-board/connections/list");
       const response = await listConnections(request);
       const body = await response.json();
 
@@ -341,11 +332,7 @@ describe("Command Board Connection Tests", () => {
     });
 
     it("should return 404 for non-existent connection on delete", async () => {
-      mockRequireCurrentUser.mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-      });
+      mockRequireCurrentUser.mockResolvedValue(MOCK_USER);
 
       const mockRuntime = {
         runCommand: vi.fn().mockResolvedValue({
@@ -373,7 +360,7 @@ describe("Command Board Connection Tests", () => {
 
       mockConnection.findMany.mockResolvedValue(mockConnections as any);
 
-      const request = new Request("http://localhost/api/command-board/connections/list");
+      const request = new NextRequest("http://localhost/api/command-board/connections/list");
       const response = await listConnections(request);
       const body = await response.json();
 
@@ -387,7 +374,7 @@ describe("Command Board Connection Tests", () => {
 
       mockConnection.findMany.mockResolvedValue([]);
 
-      const request = new Request("http://localhost/api/command-board/connections/list");
+      const request = new NextRequest("http://localhost/api/command-board/connections/list");
       const response = await listConnections(request);
       const body = await response.json();
 
@@ -407,7 +394,7 @@ describe("Command Board Connection Tests", () => {
 
       mockConnection.findMany.mockResolvedValue([connection] as any);
 
-      const request = new Request("http://localhost/api/command-board/connections/list");
+      const request = new NextRequest("http://localhost/api/command-board/connections/list");
       const response = await listConnections(request);
       const body = await response.json();
 
@@ -424,7 +411,7 @@ describe("Command Board Connection Tests", () => {
 
       mockConnection.findMany.mockResolvedValue([]);
 
-      const request = new Request("http://localhost/api/command-board/connections/list");
+      const request = new NextRequest("http://localhost/api/command-board/connections/list");
       await listConnections(request);
 
       expect(mockConnection.findMany).toHaveBeenCalledWith(
@@ -469,7 +456,7 @@ describe("Command Board Connection Tests", () => {
     it("should return 401 for unauthenticated requests", async () => {
       mockAuth.mockResolvedValue({ orgId: null, userId: null });
 
-      const request = new Request("http://localhost/api/command-board/connections/list");
+      const request = new NextRequest("http://localhost/api/command-board/connections/list");
       const response = await listConnections(request);
 
       expect(response.status).toBe(401);
@@ -479,7 +466,7 @@ describe("Command Board Connection Tests", () => {
       mockAuth.mockResolvedValue({ orgId: TEST_ORG_ID, userId: TEST_USER_ID });
       mockGetTenantIdForOrg.mockResolvedValue(null as never);
 
-      const request = new Request("http://localhost/api/command-board/connections/list");
+      const request = new NextRequest("http://localhost/api/command-board/connections/list");
       const response = await listConnections(request);
 
       expect(response.status).toBe(400);
@@ -487,8 +474,7 @@ describe("Command Board Connection Tests", () => {
 
     it("should require admin role for creating connections", async () => {
       mockRequireCurrentUser.mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
+        ...MOCK_USER,
         role: "viewer",
       });
 
@@ -512,18 +498,14 @@ describe("Command Board Connection Tests", () => {
 
       mockConnection.findMany.mockRejectedValue(new Error("Database error"));
 
-      const request = new Request("http://localhost/api/command-board/connections/list");
+      const request = new NextRequest("http://localhost/api/command-board/connections/list");
       const response = await listConnections(request);
 
       expect(response.status).toBe(500);
     });
 
     it("should handle invalid connection data gracefully", async () => {
-      mockRequireCurrentUser.mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-      });
+      mockRequireCurrentUser.mockResolvedValue(MOCK_USER);
 
       const mockRuntime = {
         runCommand: vi.fn().mockResolvedValue({
@@ -538,3 +520,5 @@ describe("Command Board Connection Tests", () => {
     });
   });
 });
+
+

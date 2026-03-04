@@ -76,7 +76,6 @@ const KitchenTasksPage = async () => {
       where: {
         tenantId,
         role: "admin",
-        status: "active",
       },
     });
   }

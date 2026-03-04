@@ -89,6 +89,16 @@ const TEST_PROJECTION_1_ID = "00000000-0000-0000-0000-000000000010";
 const TEST_PROJECTION_2_ID = "00000000-0000-0000-0000-000000000011";
 const TEST_ANNOTATION_ID = "00000000-0000-0000-0000-000000000020";
 
+// Mock user for tests
+const MOCK_USER = {
+  id: TEST_USER_ID,
+  tenantId: TEST_TENANT_ID,
+  role: "admin",
+  email: "test@example.com",
+  firstName: "Test",
+  lastName: "User",
+};
+
 // Helper to create mock annotation data
 function createMockAnnotation(overrides: Partial<any> = {}) {
   return {
@@ -116,11 +126,7 @@ describe("Command Board Annotation Tests", () => {
 
   describe("Create Annotation", () => {
     it("should create annotation with minimal fields", async () => {
-      mockRequireCurrentUser.mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-      });
+      mockRequireCurrentUser.mockResolvedValue(MOCK_USER);
 
       const mockRuntime = {
         runCommand: vi.fn().mockResolvedValue({
@@ -144,11 +150,7 @@ describe("Command Board Annotation Tests", () => {
     });
 
     it("should create annotation connecting two projections", async () => {
-      mockRequireCurrentUser.mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-      });
+      mockRequireCurrentUser.mockResolvedValue(MOCK_USER);
 
       const annotation = createMockAnnotation({
         fromProjectionId: TEST_PROJECTION_1_ID,
@@ -173,11 +175,7 @@ describe("Command Board Annotation Tests", () => {
     });
 
     it("should create annotation with label and styling", async () => {
-      mockRequireCurrentUser.mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-      });
+      mockRequireCurrentUser.mockResolvedValue(MOCK_USER);
 
       const styledAnnotation = createMockAnnotation({
         label: "Important relationship",
@@ -220,11 +218,7 @@ describe("Command Board Annotation Tests", () => {
     });
 
     it("should require board to exist", async () => {
-      mockRequireCurrentUser.mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-      });
+      mockRequireCurrentUser.mockResolvedValue(MOCK_USER);
 
       // Board not found
       mockCommandBoard.findFirst.mockResolvedValue(null);
@@ -250,11 +244,7 @@ describe("Command Board Annotation Tests", () => {
 
   describe("Update Annotation", () => {
     it("should update annotation label", async () => {
-      mockRequireCurrentUser.mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-      });
+      mockRequireCurrentUser.mockResolvedValue(MOCK_USER);
 
       const updatedAnnotation = createMockAnnotation({
         label: "Updated label",
@@ -276,11 +266,7 @@ describe("Command Board Annotation Tests", () => {
     });
 
     it("should update annotation color and style", async () => {
-      mockRequireCurrentUser.mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-      });
+      mockRequireCurrentUser.mockResolvedValue(MOCK_USER);
 
       const updatedAnnotation = createMockAnnotation({
         color: "#00FF00",
@@ -301,11 +287,7 @@ describe("Command Board Annotation Tests", () => {
     });
 
     it("should update annotation metadata (merge)", async () => {
-      mockRequireCurrentUser.mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-      });
+      mockRequireCurrentUser.mockResolvedValue(MOCK_USER);
 
       const existingMetadata = { priority: "low", tags: ["a", "b"] };
       const newMetadata = { priority: "high", extra: "data" };
@@ -324,11 +306,7 @@ describe("Command Board Annotation Tests", () => {
     });
 
     it("should clear label by setting to null", async () => {
-      mockRequireCurrentUser.mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-      });
+      mockRequireCurrentUser.mockResolvedValue(MOCK_USER);
 
       const updatedAnnotation = createMockAnnotation({
         label: null,
@@ -365,11 +343,7 @@ describe("Command Board Annotation Tests", () => {
     });
 
     it("should return 404 for non-existent annotation", async () => {
-      mockRequireCurrentUser.mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-      });
+      mockRequireCurrentUser.mockResolvedValue(MOCK_USER);
 
       mockAnnotation.findFirst.mockResolvedValue(null);
 
@@ -398,11 +372,7 @@ describe("Command Board Annotation Tests", () => {
 
   describe("Delete Annotation", () => {
     it("should soft delete annotation (set deletedAt)", async () => {
-      mockRequireCurrentUser.mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-      });
+      mockRequireCurrentUser.mockResolvedValue(MOCK_USER);
 
       const deletedAnnotation = createMockAnnotation({
         deletedAt: new Date(),
@@ -436,11 +406,7 @@ describe("Command Board Annotation Tests", () => {
     });
 
     it("should return 404 for non-existent annotation on delete", async () => {
-      mockRequireCurrentUser.mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-      });
+      mockRequireCurrentUser.mockResolvedValue(MOCK_USER);
 
       mockAnnotation.findFirst.mockResolvedValue(null);
 
@@ -457,11 +423,7 @@ describe("Command Board Annotation Tests", () => {
     });
 
     it("should not allow deleting annotation from another tenant", async () => {
-      mockRequireCurrentUser.mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-      });
+      mockRequireCurrentUser.mockResolvedValue(MOCK_USER);
 
       // Annotation belongs to different tenant
       const otherTenantAnnotation = createMockAnnotation({
@@ -542,8 +504,7 @@ describe("Command Board Annotation Tests", () => {
 
     it("should require admin role for create/update/delete", async () => {
       mockRequireCurrentUser.mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
+        ...MOCK_USER,
         role: "viewer",
       });
 
@@ -582,11 +543,7 @@ describe("Command Board Annotation Tests", () => {
     });
 
     it("should validate required fields on create", async () => {
-      mockRequireCurrentUser.mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-      });
+      mockRequireCurrentUser.mockResolvedValue(MOCK_USER);
 
       const mockRuntime = {
         runCommand: vi.fn().mockResolvedValue({
@@ -601,11 +558,7 @@ describe("Command Board Annotation Tests", () => {
     });
 
     it("should validate projection IDs exist when provided", async () => {
-      mockRequireCurrentUser.mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-      });
+      mockRequireCurrentUser.mockResolvedValue(MOCK_USER);
 
       // Projection not found
       mockBoardProjection.findFirst.mockResolvedValue(null);
@@ -635,11 +588,7 @@ describe("Command Board Annotation Tests", () => {
     });
 
     it("should not allow cross-tenant annotation access", async () => {
-      mockRequireCurrentUser.mockResolvedValue({
-        id: TEST_USER_ID,
-        tenantId: TEST_TENANT_ID,
-        role: "admin",
-      });
+      mockRequireCurrentUser.mockResolvedValue(MOCK_USER);
 
       // Try to access annotation from different tenant
       const otherTenantAnnotation = createMockAnnotation({
@@ -661,3 +610,4 @@ describe("Command Board Annotation Tests", () => {
     });
   });
 });
+

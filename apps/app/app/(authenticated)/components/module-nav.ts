@@ -8,7 +8,8 @@ export type ModuleKey =
   | "administrative"
   | "crm"
   | "analytics"
-  | "command-board";
+  | "command-board"
+  | "command-center";
 
 interface ModuleSidebarItem {
   title: string;
@@ -28,6 +29,19 @@ export interface ModuleDefinition {
 }
 
 export const modules: ModuleDefinition[] = [
+  {
+    key: "command-center",
+    label: "Command Center",
+    href: "/command-center",
+    sidebar: [
+      {
+        label: "Command Center",
+        items: [
+          { title: "Agents", href: "/command-center/agents" },
+        ],
+      },
+    ],
+  },
   {
     key: "command-board",
     label: "Command Board",
