@@ -14,6 +14,8 @@ import { join, relative } from "node:path";
 import { z } from "zod";
 import type { McpPlugin, PluginContext } from "../types.js";
 
+const projectRoot = process.env.MCP_PROJECT_ROOT || process.cwd();
+
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
@@ -114,7 +116,7 @@ function findPatternInFile(
             code,
             severity,
             message,
-            file: relative(process.cwd(), filePath),
+            file: relative(projectRoot, filePath),
             line: index + 1,
             evidence: line.trim(),
             suggestion,
@@ -184,10 +186,10 @@ function scanForBypass(scope: "api" | "app" | "all"): ScanResult {
 
   const dirsToScan: string[] = [];
   if (scope === "api" || scope === "all") {
-    dirsToScan.push(join(process.cwd(), "apps/api"));
+    dirsToScan.push(join(projectRoot, "apps/api"));
   }
   if (scope === "app" || scope === "all") {
-    dirsToScan.push(join(process.cwd(), "apps/web"));
+    dirsToScan.push(join(projectRoot, "apps/web"));
   }
 
   for (const dir of dirsToScan) {
@@ -219,7 +221,7 @@ function scanRouteConformance(): ScanResult {
 
   try {
     const manifestPath = join(
-      process.cwd(),
+      projectRoot,
       "packages/manifest-ir/dist/routes.manifest.json"
     );
     const manifest = JSON.parse(readFileSync(manifestPath, "utf-8"));
@@ -227,12 +229,12 @@ function scanRouteConformance(): ScanResult {
       manifest.routes.map((r: { path: string }) => r.path)
     );
 
-    const apiDir = join(process.cwd(), "apps/api/app/api");
+    const apiDir = join(projectRoot, "apps/api/app/api");
     const routeFiles = scanDirectory(apiDir, ROUTE_FILE_PATTERN);
     scannedFiles = routeFiles.length;
 
     for (const file of routeFiles) {
-      const relativePath = relative(join(process.cwd(), "apps/api/app"), file);
+      const relativePath = relative(join(projectRoot, "apps/api/app"), file);
 
       const routePath = `/api/${relativePath
         .replace(/\\/g, "/")
@@ -244,7 +246,7 @@ function scanRouteConformance(): ScanResult {
           code: "ROUTE_NOT_IN_MANIFEST",
           severity: "warning",
           message: "API route not found in routes.manifest.json",
-          file: relative(process.cwd(), file),
+          file: relative(projectRoot, file),
           evidence: routePath,
           suggestion:
             "Add route to manifest or remove if obsolete. Regenerate routes with manifest compile.",
@@ -270,7 +272,7 @@ function scanRouteConformance(): ScanResult {
           severity: "error",
           message: "Route in manifest but no implementation found",
           file: route.path,
-          evidence: `Expected: ${relative(process.cwd(), filePath)}`,
+          evidence: `Expected: ${relative(projectRoot, filePath)}`,
           suggestion: "Implement the route handler or remove from manifest",
         });
       }
@@ -303,7 +305,7 @@ function scanDocumentationDrift(): ScanResult {
   let scannedFiles = 0;
 
   try {
-    const specsDir = join(process.cwd(), "specs");
+    const specsDir = join(projectRoot, "specs");
     const manifestFiles = scanDirectory(specsDir, MANIFEST_FILE_PATTERN);
     scannedFiles += manifestFiles.length;
 
@@ -311,7 +313,7 @@ function scanDocumentationDrift(): ScanResult {
       const relativePath = relative(specsDir, manifestFile);
       const domain = relativePath.split(/[/\\]/)[0];
       const irPath = join(
-        process.cwd(),
+        projectRoot,
         "packages/manifest-ir/ir",
         domain,
         `${domain}.ir.json`
@@ -326,7 +328,7 @@ function scanDocumentationDrift(): ScanResult {
             code: "IR_STALE",
             severity: "warning",
             message: "IR is older than manifest source",
-            file: relative(process.cwd(), manifestFile),
+            file: relative(projectRoot, manifestFile),
             evidence: `Manifest: ${manifestStat.mtime.toISOString()}, IR: ${irStat.mtime.toISOString()}`,
             suggestion: "Regenerate IR with manifest compile",
           });
@@ -336,13 +338,13 @@ function scanDocumentationDrift(): ScanResult {
           code: "IR_MISSING",
           severity: "error",
           message: "No IR found for manifest file",
-          file: relative(process.cwd(), manifestFile),
+          file: relative(projectRoot, manifestFile),
           suggestion: "Run manifest compile to generate IR",
         });
       }
     }
 
-    const irPath = join(process.cwd(), "packages/manifest-ir/ir");
+    const irPath = join(projectRoot, "packages/manifest-ir/ir");
     const irFiles = scanDirectory(irPath, IR_FILE_PATTERN);
     scannedFiles += irFiles.length;
 
@@ -352,7 +354,7 @@ function scanDocumentationDrift(): ScanResult {
         const entities = irContent.entities || [];
 
         for (const entity of entities) {
-          const docsDir = join(process.cwd(), "docs");
+          const docsDir = join(projectRoot, "docs");
           const expectedDocFile = join(
             docsDir,
             "entities",
@@ -366,7 +368,7 @@ function scanDocumentationDrift(): ScanResult {
               code: "DOC_MISSING",
               severity: "info",
               message: `No documentation found for entity ${entity.name}`,
-              file: relative(process.cwd(), irFile),
+              file: relative(projectRoot, irFile),
               suggestion: `Create documentation at docs/entities/${entity.name}.md`,
             });
           }

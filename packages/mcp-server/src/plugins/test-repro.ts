@@ -15,6 +15,8 @@ import { join } from "node:path";
 import { z } from "zod";
 import type { McpPlugin, PluginContext } from "../types.js";
 
+const projectRoot = process.env.MCP_PROJECT_ROOT || process.cwd();
+
 // Regex patterns (defined at top level for performance)
 const PASSED_PATTERN = /(\d+)\s+passed/i;
 const FAILED_PATTERN = /(\d+)\s+failed/i;
@@ -72,7 +74,7 @@ async function runTests(
     }
 
     const child = spawn("pnpm", args, {
-      cwd: process.cwd(),
+      cwd: projectRoot,
       env,
       shell: true,
       stdio: "pipe",
@@ -198,7 +200,7 @@ function recordRepro(
     savedAt: now,
   };
 
-  const reproDir = join(process.cwd(), ".tmp/repros");
+  const reproDir = join(projectRoot, ".tmp/repros");
   if (!existsSync(reproDir)) {
     mkdirSync(reproDir, { recursive: true });
   }
