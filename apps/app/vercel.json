@@ -1,3 +1,4 @@
 {
-  "ignoreCommand": "node scripts/skip-ci.js"
+  "ignoreCommand": "node scripts/skip-ci.js",
+  "buildCommand": "cd ../.. && pnpm turbo build --filter=app"
 }

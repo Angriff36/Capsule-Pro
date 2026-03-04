@@ -5,7 +5,7 @@
     "irHash": "",
     "compilerVersion": "0.3.8",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-03-02T06:37:27.998Z"
+    "compiledAt": "2026-03-02T05:13:02.789Z"
   },
   "modules": [],
   "entities": [
@@ -75102,9 +75102,360 @@
           "required": true
         }
       ],
-      "guards": [],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "tenantId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "tenantId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "clientId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "clientId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "eventNumber"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "eventNumber"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "title"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "title"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "eventType"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "eventType"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": ">",
+          "left": {
+            "kind": "identifier",
+            "name": "eventDate"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": ">",
+          "left": {
+            "kind": "identifier",
+            "name": "guestCount"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "or",
+          "left": {
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "identifier",
+              "name": "status"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "in",
+            "left": {
+              "kind": "identifier",
+              "name": "status"
+            },
+            "right": {
+              "kind": "array",
+              "elements": [
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "draft"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "confirmed"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "completed"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "archived"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "cancelled"
+                  }
+                }
+              ]
+            }
+          }
+        }
+      ],
       "constraints": [],
       "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Tenant ID is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Client ID is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Event number is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Event title is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Event type is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Event date is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Guest count must be positive"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Status must be valid"
+            }
+          }
+        },
         {
           "kind": "mutate",
           "target": "clientId",
@@ -75125,205 +75476,32 @@
           "kind": "mutate",
           "target": "title",
           "expression": {
-            "kind": "conditional",
-            "condition": {
-              "kind": "binary",
-              "operator": "and",
-              "left": {
-                "kind": "binary",
-                "operator": "!=",
-                "left": {
-                  "kind": "identifier",
-                  "name": "title"
-                },
-                "right": {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "null"
-                  }
-                }
-              },
-              "right": {
-                "kind": "binary",
-                "operator": "!=",
-                "left": {
-                  "kind": "identifier",
-                  "name": "title"
-                },
-                "right": {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "string",
-                    "value": ""
-                  }
-                }
-              }
-            },
-            "consequent": {
-              "kind": "identifier",
-              "name": "title"
-            },
-            "alternate": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": "Untitled Event"
-              }
-            }
+            "kind": "identifier",
+            "name": "title"
           }
         },
         {
           "kind": "mutate",
           "target": "eventType",
           "expression": {
-            "kind": "conditional",
-            "condition": {
-              "kind": "binary",
-              "operator": "and",
-              "left": {
-                "kind": "binary",
-                "operator": "!=",
-                "left": {
-                  "kind": "identifier",
-                  "name": "eventType"
-                },
-                "right": {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "null"
-                  }
-                }
-              },
-              "right": {
-                "kind": "binary",
-                "operator": "!=",
-                "left": {
-                  "kind": "identifier",
-                  "name": "eventType"
-                },
-                "right": {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "string",
-                    "value": ""
-                  }
-                }
-              }
-            },
-            "consequent": {
-              "kind": "identifier",
-              "name": "eventType"
-            },
-            "alternate": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": "general"
-              }
-            }
+            "kind": "identifier",
+            "name": "eventType"
           }
         },
         {
           "kind": "mutate",
           "target": "eventDate",
           "expression": {
-            "kind": "conditional",
-            "condition": {
-              "kind": "binary",
-              "operator": "and",
-              "left": {
-                "kind": "binary",
-                "operator": "!=",
-                "left": {
-                  "kind": "identifier",
-                  "name": "eventDate"
-                },
-                "right": {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "null"
-                  }
-                }
-              },
-              "right": {
-                "kind": "binary",
-                "operator": ">",
-                "left": {
-                  "kind": "identifier",
-                  "name": "eventDate"
-                },
-                "right": {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "number",
-                    "value": 0
-                  }
-                }
-              }
-            },
-            "consequent": {
-              "kind": "identifier",
-              "name": "eventDate"
-            },
-            "alternate": {
-              "kind": "call",
-              "callee": {
-                "kind": "identifier",
-                "name": "now"
-              },
-              "args": []
-            }
+            "kind": "identifier",
+            "name": "eventDate"
           }
         },
         {
           "kind": "mutate",
           "target": "guestCount",
           "expression": {
-            "kind": "conditional",
-            "condition": {
-              "kind": "binary",
-              "operator": "and",
-              "left": {
-                "kind": "binary",
-                "operator": "!=",
-                "left": {
-                  "kind": "identifier",
-                  "name": "guestCount"
-                },
-                "right": {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "null"
-                  }
-                }
-              },
-              "right": {
-                "kind": "binary",
-                "operator": ">",
-                "left": {
-                  "kind": "identifier",
-                  "name": "guestCount"
-                },
-                "right": {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "number",
-                    "value": 0
-                  }
-                }
-              }
-            },
-            "consequent": {
-              "kind": "identifier",
-              "name": "guestCount"
-            },
-            "alternate": {
-              "kind": "literal",
-              "value": {
-                "kind": "number",
-                "value": 1
-              }
-            }
+            "kind": "identifier",
+            "name": "guestCount"
           }
         },
         {
@@ -75404,7 +75582,7 @@
               "kind": "literal",
               "value": {
                 "kind": "string",
-                "value": "confirmed"
+                "value": "draft"
               }
             }
           }

@@ -5,17 +5,25 @@ import { withLogging, withSentry } from "@repo/observability/next-config";
 import type { NextConfig } from "next";
 import { env } from "@/env";
 
-let nextConfig: NextConfig = withToolbar(withLogging(config));
+const baseConfig = withToolbar(withLogging(config)) as NextConfig;
 
-// Disable type checking during build to avoid React type conflicts
-nextConfig.typescript = {
-  ignoreBuildErrors: true,
+let nextConfig: NextConfig = {
+  ...baseConfig,
+  // Disable type checking during build to avoid React type conflicts
+  typescript: {
+    ignoreBuildErrors: true,
+  },
+  images: {
+    ...baseConfig.images,
+    remotePatterns: [
+      ...(baseConfig.images?.remotePatterns ?? []),
+      {
+        protocol: "https",
+        hostname: "assets.basehub.com",
+      },
+    ],
+  },
 };
-
-nextConfig.images?.remotePatterns?.push({
-  protocol: "https",
-  hostname: "assets.basehub.com",
-});
 
 if (process.env.NODE_ENV === "production") {
   const redirects: NextConfig["redirects"] = async () => [

@@ -5,35 +5,35 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
+      "types": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./keys": {
-      "types": "./dist/keys.d.ts",
+      "types": "./src/keys.ts",
       "import": "./dist/keys.js"
     },
     "./webhook": {
-      "types": "./dist/webhook.d.ts",
+      "types": "./src/webhook.ts",
       "import": "./dist/webhook.js"
     },
     "./queue": {
-      "types": "./dist/queue.d.ts",
+      "types": "./src/queue.ts",
       "import": "./dist/queue.js"
     },
     "./runner": {
-      "types": "./dist/runner.d.ts",
+      "types": "./src/runner.ts",
       "import": "./dist/runner.js"
     },
     "./slack": {
-      "types": "./dist/slack.d.ts",
+      "types": "./src/slack.ts",
       "import": "./dist/slack.js"
     },
     "./prisma-store": {
-      "types": "./dist/prisma-store.d.ts",
+      "types": "./src/prisma-store.ts",
       "import": "./dist/prisma-store.js"
     },
     "./fixer": {
-      "types": "./dist/fixer.d.ts",
+      "types": "./src/fixer.ts",
       "import": "./dist/fixer.js"
     }
   },

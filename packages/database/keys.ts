@@ -32,6 +32,7 @@ function toNeonPoolerUrl(url: string): string {
 
 export const keys = () => {
   const env = createEnv({
+    skipValidation: !!process.env.SKIP_ENV_VALIDATION,
     server: {
       DATABASE_URL: z.url(),
       SHADOW_DATABASE_URL: z.url().optional(),

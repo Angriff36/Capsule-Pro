@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "ignoreCommand": "exit 0",
+  "buildCommand": "cd ../.. && pnpm turbo build --filter=api",
   "crons": [
     {
       "path": "/api/sentry-fixer/process",
