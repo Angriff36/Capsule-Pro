@@ -4,8 +4,15 @@
  * @vitest-environment node
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { KitchenTaskPrismaStore } from "../src/prisma-store";
+import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+
+let KitchenTaskPrismaStore: any;
+
+beforeAll(async () => {
+  process.env.SKIP_ENV_VALIDATION = "1";
+  process.env.DATABASE_URL ??= "postgresql://test:test@localhost:5432/test";
+  ({ KitchenTaskPrismaStore } = await import("../src/prisma-store"));
+});
 
 const mockKitchenTask = vi.hoisted(() => ({
   findMany: vi.fn(),
