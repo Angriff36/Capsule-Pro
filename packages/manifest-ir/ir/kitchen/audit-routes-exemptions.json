@@ -1284,5 +1284,61 @@
     "category": "manifest-runtime",
     "owner": "backend-team",
     "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/analytics/kitchen/route.ts",
+    "methods": ["GET"],
+    "reason": "Kitchen analytics — read-only aggregation, not domain mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/analytics/finance/route.ts",
+    "methods": ["GET"],
+    "reason": "Finance analytics — read-only aggregation, not domain mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/analytics/events/profitability/route.ts",
+    "methods": ["GET"],
+    "reason": "Event profitability analytics — read-only aggregation, not domain mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/analytics/staff/summary/route.ts",
+    "methods": ["GET"],
+    "reason": "Staff analytics summary — read-only aggregation, not domain mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/analytics/staff/employees/[employeeId]/route.ts",
+    "methods": ["GET"],
+    "reason": "Employee performance analytics — read-only aggregation, not domain mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/analytics/custom-reports/route.ts",
+    "methods": ["GET", "POST"],
+    "reason": "Custom reports — read-only aggregation + report config, not domain mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/analytics/events/profitability/route.ts",
+    "methods": ["GET"],
+    "reason": "Event profitability — read-only aggregation, not domain mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
   }
 ]
