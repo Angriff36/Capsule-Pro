@@ -7,8 +7,13 @@
  */
 
 import { auth } from "@repo/auth/server";
-import type { Client, ClientContact, ClientInteraction } from "@repo/database";
-import { database } from "@repo/database";
+import type {
+  Client,
+  ClientContact,
+  ClientInteraction,
+  CommunicationPreferences,
+} from "@repo/database";
+import { database, defaultCommunicationPreferences } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { invariant } from "@/app/lib/invariant";
 import { getTenantId } from "@/app/lib/tenant";
@@ -793,4 +798,54 @@ export async function getClientEventHistory(
       total: totalCount,
     },
   };
+}
+
+/**
+ * Get client communication preferences
+ */
+export async function getClientCommunicationPreferences(
+  clientId: string
+): Promise<CommunicationPreferences> {
+  const { orgId } = await auth();
+  invariant(orgId, "Unauthorized");
+
+  const tenantId = await getTenantId();
+  invariant(clientId, "Client ID is required");
+
+  // Verify client exists
+  const client = await database.client.findFirst({
+    where: {
+      AND: [{ tenantId }, { id: clientId }, { deletedAt: null }],
+    },
+  });
+
+  invariant(client, "Client not found");
+
+  // Get communication preferences
+  const preferences = await database.clientPreference.findFirst({
+    where: {
+      AND: [
+        { tenantId },
+        { clientId },
+        { preferenceType: "communication" },
+        { preferenceKey: "communication.full" },
+        { deletedAt: null },
+      ],
+    },
+  });
+
+  if (preferences?.preferenceValue) {
+    try {
+      const parsed =
+        typeof preferences.preferenceValue === "string"
+          ? JSON.parse(preferences.preferenceValue)
+          : preferences.preferenceValue;
+      return parsed as CommunicationPreferences;
+    } catch {
+      // If parsing fails, return defaults
+    }
+  }
+
+  // Return default preferences
+  return defaultCommunicationPreferences;
 }

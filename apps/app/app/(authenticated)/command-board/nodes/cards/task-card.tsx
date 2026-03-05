@@ -30,6 +30,10 @@ const priorityConfig = {
 } as const;
 
 const statusConfig = {
+  open: {
+    label: "Open",
+    color: "bg-slate-100 text-slate-700 border-slate-200",
+  },
   pending: {
     label: "Pending",
     color: "bg-slate-100 text-slate-700 border-slate-200",
@@ -38,12 +42,20 @@ const statusConfig = {
     label: "In Progress",
     color: "bg-blue-100 text-blue-700 border-blue-200",
   },
+  done: {
+    label: "Completed",
+    color: "bg-emerald-100 text-emerald-700 border-emerald-200",
+  },
   completed: {
     label: "Completed",
     color: "bg-emerald-100 text-emerald-700 border-emerald-200",
   },
   canceled: {
     label: "Canceled",
+    color: "bg-slate-100 text-slate-500 border-slate-200",
+  },
+  cancelled: {
+    label: "Cancelled",
     color: "bg-slate-100 text-slate-500 border-slate-200",
   },
 } as const;

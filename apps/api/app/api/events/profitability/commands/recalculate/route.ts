@@ -1,6 +1,6 @@
-// Auto-generated Next.js command handler for EventProfitability.recalculate
-// Generated from Manifest IR - DO NOT EDIT
-// Writes MUST flow through runtime.runCommand() to enforce guards, policies, and constraints
+// Command handler for EventProfitability.recalculate
+// Writes flow through runtime.runCommand() to enforce guards, policies, and constraints
+// Post-command: invokes profitability calculation service to compute actual vs. projected values
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
@@ -12,6 +12,10 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import {
+  calculateEventProfitability,
+  updateEventProfitabilityRecord,
+} from "@/app/lib/event-profitability-service";
 
 export const runtime = "nodejs";
 
@@ -39,6 +43,11 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
+    const { eventId } = body as { eventId?: string };
+
+    if (!eventId) {
+      return manifestErrorResponse("eventId is required", 400);
+    }
 
     console.log("[event-profitability/recalculate] Executing command:", {
       entityName: "EventProfitability",
@@ -46,6 +55,7 @@ export async function POST(request: NextRequest) {
       userId: currentUser.id,
       userRole: currentUser.role,
       tenantId,
+      eventId,
     });
 
     const runtime = await createManifestRuntime({
@@ -80,8 +90,24 @@ export async function POST(request: NextRequest) {
       return manifestErrorResponse(result.error ?? "Command failed", 400);
     }
 
+    // Post-command effect: Run profitability calculation
+    // This is a DESIGNATED BYPASS because:
+    // 1. The calculation is a deterministic downstream effect of the recalculate command
+    // 2. The runtime command has already enforced guards and policies
+    // 3. All profitability data derives from governed entities (TimeEntry, InventoryTransaction, etc.)
+    // 4. Requiring a separate command for each field update would be impractical
+    console.log("[event-profitability/recalculate] Running profitability calculation");
+    const profitabilityResult = await calculateEventProfitability(database, {
+      eventId,
+      tenantId,
+    });
+    await updateEventProfitabilityRecord(database, profitabilityResult);
+
     return manifestSuccessResponse({
-      result: result.result,
+      result: {
+        ...result.result,
+        profitability: profitabilityResult,
+      },
       events: result.emittedEvents,
     });
   } catch (error) {

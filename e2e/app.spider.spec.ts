@@ -17,7 +17,6 @@ const SKIP_PATTERNS = [
 
 const IGNORE_CONSOLE_PATTERNS = [
   /Clerk.*development keys/i,
-  /Clerk.*deprecated.*afterSignInUrl/i,
   /Arcjet.*127\.0\.0\.1.*development mode/i,
   /Download the React DevTools/i,
   /Attempted import error/i, // Next.js dev noise

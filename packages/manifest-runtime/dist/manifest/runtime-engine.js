@@ -858,6 +858,11 @@ export class RuntimeEngine {
                     evalContext.self = enriched;
                     evalContext.this = enriched;
                     Object.assign(evalContext, enriched);
+                    // Re-apply original input parameters so they are not clobbered by
+                    // instance fields that share the same name (e.g. stationId).
+                    // Input parameters must always take precedence over instance state
+                    // because subsequent mutate expressions reference them by name.
+                    Object.assign(evalContext, input);
                 }
                 result = actionResult;
             }
