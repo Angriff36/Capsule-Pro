@@ -1,0 +1,168 @@
+# Payment Method Rules Manifest
+# Defines payment method storage and tokenization rules
+
+# Payment method status
+enum PaymentMethodStatus {
+  ACTIVE
+  EXPIRED
+  INVALID
+  FRAUDulent
+}
+
+# Card network
+enum CardNetwork {
+  VISA
+  MASTERCARD
+  AMEX
+  DISCOVER
+  DINERS_CLUB
+  JCB
+}
+
+entity PaymentMethod {
+  property required id: string
+  property required tenantId: string
+
+  # Client and reference
+  property required clientId: string
+  property externalMethodId: string
+
+  # Method type
+  property required type: PaymentMethodType
+
+  # Card details (tokenized)
+  property cardLastFour: string
+  property cardNetwork: CardNetwork
+  property cardExpiryMonth: number
+  property cardExpiryYear: number
+  property cardHolderName: string
+
+  # Bank account details (ACH/Wire)
+  property bankAccountLastFour: string
+  property bankAccountType: string
+  property bankRoutingNumber: string
+
+  # Digital wallet
+  property walletProvider: string
+  property walletEmail: string
+
+  # Status
+  property required status: PaymentMethodStatus = ACTIVE
+  property isDefault: boolean = false
+  property fraudFlagged: boolean = false
+
+  # Verification
+  property verifiedAt: timestamp
+  property verificationMethod: string
+
+  # Metadata
+  property nickname: string
+  property metadata: json
+
+  # Timestamps
+  property required createdAt: timestamp
+  property expiresAt: timestamp
+
+  # Computed properties
+  computed isExpired: boolean =
+    (type == CREDIT_CARD || type == DEBIT_CARD) &&
+    cardExpiryYear != null &&
+    (cardExpiryYear < year(now()) || (cardExpiryYear == year(now()) && cardExpiryMonth < month(now())))
+  computed isUsable: boolean = status == ACTIVE && !isExpired && !fraudFlagged
+  computed displayInfo: string =
+    if (type == CREDIT_CARD || type == DEBIT_CARD) cardNetwork + " •••• " + cardLastFour
+    else if (type == ACH || type == WIRE_TRANSFER) "Bank •••• " + bankAccountLastFour
+    else if (type == DIGITAL_WALLET) walletProvider + " (" + walletEmail + ")"
+    else type
+
+  # Constraints
+  constraint card_details_for_card: (type != CREDIT_CARD && type != DEBIT_CARD) || (cardLastFour != null && cardNetwork != null) "Card details required for card payments"
+  constraint bank_details_for_ach: type != ACH || (bankAccountLastFour != null && bankRoutingNumber != null) "Bank details required for ACH payments"
+  constraint default_for_active_only: isDefault == false || status == ACTIVE "Only active payment methods can be default"
+
+  # Commands
+  command markAsDefault() {
+    guard isUsable "Payment method must be usable to be set as default"
+    guard !isExpired "Cannot set expired card as default"
+    mutate isDefault = true
+    emit PaymentMethodSetDefault
+  }
+
+  command markNotDefault() {
+    mutate isDefault = false
+    emit PaymentMethodUnsetDefault
+  }
+
+  command markExpired() {
+    guard type in [CREDIT_CARD, DEBIT_CARD] "Only cards can expire"
+    mutate status = EXPIRED
+    mutate expiresAt = now()
+    emit PaymentMethodExpired
+  }
+
+  command markInvalid(reason: string) {
+    mutate status = INVALID
+    mutate metadata = {invalidReason: reason}
+    emit PaymentMethodInvalidated
+  }
+
+  command flagForFraud(reason: string) {
+    guard !fraudFlagged "Already flagged for fraud"
+    mutate fraudFlagged = true
+    mutate status = FRAUDulent
+    mutate metadata = {fraudReason: reason}
+    emit PaymentMethodFraudFlagged
+  }
+
+  command verify(method: string) {
+    guard status == ACTIVE "Can only verify active payment methods"
+    mutate verifiedAt = now()
+    mutate verificationMethod = method
+    emit PaymentMethodVerified
+  }
+
+  command updateToken(newToken: string) {
+    guard status == ACTIVE "Can only update active payment methods"
+    mutate externalMethodId = newToken
+    emit PaymentMethodTokenUpdated
+  }
+}
+
+# Events
+event PaymentMethodSetDefault {
+  paymentMethodId: string
+  clientId: string
+}
+
+event PaymentMethodUnsetDefault {
+  paymentMethodId: string
+  clientId: string
+}
+
+event PaymentMethodExpired {
+  paymentMethodId: string
+  clientId: string
+}
+
+event PaymentMethodInvalidated {
+  paymentMethodId: string
+  clientId: string
+  reason: string
+}
+
+event PaymentMethodFraudFlagged {
+  paymentMethodId: string
+  clientId: string
+  reason: string
+}
+
+event PaymentMethodVerified {
+  paymentMethodId: string
+  clientId: string
+  method: string
+}
+
+event PaymentMethodTokenUpdated {
+  paymentMethodId: string
+  clientId: string
+}

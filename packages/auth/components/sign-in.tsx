@@ -18,10 +18,21 @@ const signUpUrl = normalizePath(
   process.env.NEXT_PUBLIC_CLERK_SIGN_UP_URL,
   "/sign-up"
 );
-const afterSignInUrl = normalizePath(
-  process.env.NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL ??
-    process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL,
+const signInFallbackRedirectUrl = normalizePath(
+  process.env.NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL,
   "/"
+);
+const signInForceRedirectUrl = normalizePath(
+  process.env.NEXT_PUBLIC_CLERK_SIGN_IN_FORCE_REDIRECT_URL,
+  signInFallbackRedirectUrl
+);
+const signUpFallbackRedirectUrl = normalizePath(
+  process.env.NEXT_PUBLIC_CLERK_SIGN_UP_FALLBACK_REDIRECT_URL,
+  signInFallbackRedirectUrl
+);
+const signUpForceRedirectUrl = normalizePath(
+  process.env.NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL,
+  signUpFallbackRedirectUrl
 );
 
 export const SignIn = () => (
@@ -31,9 +42,12 @@ export const SignIn = () => (
         header: "hidden",
       },
     }}
-    fallbackRedirectUrl={afterSignInUrl}
+    fallbackRedirectUrl={signInFallbackRedirectUrl}
+    forceRedirectUrl={signInForceRedirectUrl}
     path={signInUrl}
     routing="path"
+    signUpFallbackRedirectUrl={signUpFallbackRedirectUrl}
+    signUpForceRedirectUrl={signUpForceRedirectUrl}
     signUpUrl={signUpUrl}
   />
 );

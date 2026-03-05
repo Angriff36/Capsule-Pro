@@ -679,9 +679,15 @@ export function GenerateTaskBreakdownModal({
     try {
       await onGenerate(customInstructions || undefined);
       onOpenChange?.(false);
+    } catch (error) {
+      // Show error in progress area instead of silently failing
+      const message =
+        error instanceof Error ? error.message : "Failed to generate tasks";
+      setGenerationProgress(`Error: ${message}`);
+      // Don't close modal on error - let user see what happened
+      throw error;
     } finally {
       setIsGenerating(false);
-      setGenerationProgress("");
     }
   };
 

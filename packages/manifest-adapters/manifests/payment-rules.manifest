@@ -1,0 +1,186 @@
+# Payment Rules Manifest
+# Defines payment processing, tracking, and reconciliation rules
+
+# Payment status enum
+enum PaymentStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+  REFUNDED
+  PARTIALLY_REFUNDED
+  CHARGEBACK
+  VOID
+}
+
+# Payment method enum
+enum PaymentMethodType {
+  CREDIT_CARD
+  DEBIT_CARD
+  ACH
+  CHECK
+  CASH
+  WIRE_TRANSFER
+  DIGITAL_WALLET
+}
+
+# Fraud detection status
+enum FraudStatus {
+  NOT_CHECKED
+  PASSED
+  FAILED
+  REVIEW_NEEDED
+  MANUAL_REVIEW
+}
+
+entity Payment {
+  property required id: string
+  property required tenantId: string
+
+  # Payment details
+  property required amount: decimal
+  property required currency: string = "USD"
+  property required status: PaymentStatus = PENDING
+  property required methodType: PaymentMethodType
+
+  # Reference information
+  property required invoiceId: string
+  property required eventId: string
+  property clientId: string
+
+  # Gateway/processor information
+  property gatewayTransactionId: string
+  property gatewayPaymentMethodId: string
+  property processor: string
+  property processorResponseCode: string
+  property processorResponseMessage: string
+
+  # Timestamps
+  property required processedAt: timestamp
+  property completedAt: timestamp
+  property refundedAt: timestamp
+  property chargebackAt: timestamp
+
+  # Fraud detection
+  property fraudStatus: FraudStatus = NOT_CHECKED
+  property fraudScore: decimal
+  property fraudReasons: array<string>
+  property reviewedAt: timestamp
+  property reviewedBy: string
+
+  # Metadata
+  property description: string
+  property externalReference: string
+  property metadata: json
+
+  # Computed properties
+  computed isRefundable: boolean = status == COMPLETED && refundedAt == null
+  computed isFinal: boolean = status in [COMPLETED, FAILED, REFUNDED, PARTIALLY_REFUNDED, CHARGEBACK, VOID]
+  computed daysSinceProcessed: number = days_between(processedAt, now())
+
+  # Constraints
+  constraint amount_positive: amount > 0 "Payment amount must be positive"
+  constraint valid_currency: currency in ["USD", "EUR", "GBP", "CAD"] "Currency must be supported"
+
+  # Commands
+  command process(gatewayResponse: json, completedAt: timestamp) {
+    guard status == PENDING || status == PROCESSING "Can only process pending or processing payments"
+    mutate status = completedAt != null ? COMPLETED : FAILED
+    mutate processedAt = now()
+    mutate processorResponseCode = gatewayResponse.code
+    mutate processorResponseMessage = gatewayResponse.message
+    mutate gatewayTransactionId = gatewayResponse.transactionId
+    if (completedAt != null) {
+      mutate completedAt = completedAt
+    }
+    emit PaymentProcessed
+  }
+
+  command refund(amount: decimal, reason: string) {
+    guard isRefundable "Payment must be completed to be refunded"
+    guard amount <= this.amount "Refund amount cannot exceed payment amount"
+    guard status != REFUNDED "Already fully refunded"
+    if (amount == this.amount) {
+      mutate status = REFUNDED
+    } else {
+      mutate status = PARTIALLY_REFUNDED
+    }
+    mutate refundedAt = now()
+    mutate description = reason
+    emit PaymentRefunded
+  }
+
+  command markChargeback(reason: string) {
+    guard status in [COMPLETED, PARTIALLY_REFUNDED] "Can only chargeback completed payments"
+    mutate status = CHARGEBACK
+    mutate chargebackAt = now()
+    mutate description = reason
+    emit PaymentChargeback
+  }
+
+  command updateFraudStatus(status: FraudStatus, score: decimal, reasons: array<string>) {
+    guard fraudStatus == NOT_CHECKED "Fraud status already checked"
+    mutate fraudStatus = status
+    mutate fraudScore = score
+    mutate fraudReasons = reasons
+    if (status == MANUAL_REVIEW) {
+      emit FraudReviewRequired
+    } else if (status == FAILED) {
+      mutate status = FAILED
+      emit PaymentFailedFraudCheck
+    }
+  }
+
+  command markFraudReviewed(approved: boolean, reviewer: string) {
+    guard fraudStatus == MANUAL_REVIEW "Payment must be in manual review"
+    mutate reviewedAt = now()
+    mutate reviewedBy = reviewer
+    if (approved) {
+      mutate fraudStatus = PASSED
+    } else {
+      mutate fraudStatus = FAILED
+      mutate status = FAILED
+    }
+    emit FraudReviewCompleted
+  }
+}
+
+# Events
+event PaymentProcessed {
+  paymentId: string
+  invoiceId: string
+  amount: decimal
+  status: PaymentStatus
+  gatewayTransactionId: string
+}
+
+event PaymentRefunded {
+  paymentId: string
+  invoiceId: string
+  refundAmount: decimal
+  reason: string
+}
+
+event PaymentChargeback {
+  paymentId: string
+  invoiceId: string
+  reason: string
+}
+
+event FraudReviewRequired {
+  paymentId: string
+  fraudScore: decimal
+  reasons: array<string>
+}
+
+event PaymentFailedFraudCheck {
+  paymentId: string
+  fraudScore: decimal
+  reasons: array<string>
+}
+
+event FraudReviewCompleted {
+  paymentId: string
+  approved: boolean
+  reviewer: string
+}

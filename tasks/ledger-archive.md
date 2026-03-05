@@ -4,6 +4,19 @@ Archived ledger entries. See tasks/ledger.md for current entries and rules.
 
 ---
 
+# Agent 58
+
+**Agent ID:** 58
+**Date/Time:** 2026-03-02 21:15
+**Base branch/commit:** main @ 622de9f9c
+
+**Goal:**
+Add comprehensive test suite for `@repo/mcp-server` (0 to 87 tests across 8 files).
+
+**Points tally:** 16 points
+
+---
+
 # Agent 53
 
 **Agent ID:** 53
@@ -258,5 +271,57 @@ Lock ownership-rule codes into a canonical `OWNERSHIP_RULE_CODES` constant Set a
 Burn down `WRITE_ROUTE_BYPASSES_RUNTIME` audit errors: convert legacy write routes to `executeManifestCommand`, then eliminate remaining noise by teaching the audit tool to suppress errors for exempted routes.
 
 **Points tally:** 12 points (was 20, -8 for Phase 2 revert)
+
+---
+
+# Agent 56
+
+**Agent ID:** 56
+**Date/Time:** 2026-02-28 20:45
+**Base branch/commit:** codex/manifest-cli-doctor @ 01c6b2afa
+
+**Goal:**
+Record Agent 55's session, then — after user correction — perform honest A/B decomposition of the 171→99 error trajectory.
+
+**Points tally:** -1 points
+
+---
+
+# Agent 57
+
+**Agent ID:** 57
+**Date/Time:** 2026-02-28 23:30
+**Base branch/commit:** codex/manifest-cli-doctor
+
+**Goal:**
+Continue burning down `WRITE_ROUTE_BYPASSES_RUNTIME` errors via genuine route conversions (A-category only). 99→69 errors, 31 methods converted across 3 sessions.
+
+**Points tally:** 21 points
+
+---
+
+# Agent 51
+
+**Agent ID:** 51
+**Date/Time:** 2026-03-01 17:00
+**Base branch/commit:** codex/manifest-cli-doctor @ 0bd748a7d
+
+**Goal:**
+Fix 3 known integrity issues deferred by previous agents: security gap (unauthenticated conflict detection endpoint), dead code (invalid Next.js exports), and legacy route (direct-Prisma save alongside manifest-backed replacement).
+
+**Points tally:** 16 points
+
+---
+
+# Agent 52
+
+**Agent ID:** 52
+**Date/Time:** 2026-02-28 17:15
+**Base branch/commit:** codex/manifest-cli-doctor @ 4d366b37e
+
+**Goal:**
+Fix all 7 pre-existing kitchen test failures (from 7 failed/17 passed → 0 failed/24 passed, 374 tests green).
+
+**Points tally:** 16 points
 
 ---

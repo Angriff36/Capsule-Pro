@@ -39,7 +39,7 @@ import type {
 // ---------------------------------------------------------------------------
 
 /** Stringify an IR expression for display (not for execution). */
-function expressionToString(expr: IRExpression): string {
+export function expressionToString(expr: IRExpression): string {
   if (!expr) {
     return "";
   }
@@ -48,8 +48,33 @@ function expressionToString(expr: IRExpression): string {
   }
   if ("kind" in expr) {
     switch (expr.kind) {
-      case "literal":
-        return String((expr as { value: unknown }).value ?? "");
+      case "literal": {
+        const literalValue = (expr as { value: unknown }).value;
+        if (
+          literalValue &&
+          typeof literalValue === "object" &&
+          "kind" in literalValue
+        ) {
+          const nestedLiteral = literalValue as {
+            kind?: string;
+            value?: unknown;
+          };
+          if (nestedLiteral.kind === "null") {
+            return "null";
+          }
+          if (nestedLiteral.kind === "string") {
+            return `"${String(nestedLiteral.value ?? "")}"`;
+          }
+          if (
+            nestedLiteral.kind === "number" ||
+            nestedLiteral.kind === "boolean"
+          ) {
+            return String(nestedLiteral.value ?? "");
+          }
+          return JSON.stringify(literalValue);
+        }
+        return String(literalValue ?? "");
+      }
       case "identifier":
         return (expr as { name: string }).name ?? "";
       case "binary":

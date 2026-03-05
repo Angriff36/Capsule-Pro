@@ -3184,3 +3184,17 @@ export {
   processPendingPrepListGenerations,
   triggerPrepListAutoGeneration,
 } from "./prep-list-autogeneration.js";
+
+// ============ Nutrition Label Exports ============
+
+export {
+  type AllergenInfo,
+  batchGenerateNutritionLabels,
+  type FDAComplianceInfo,
+  generateNutritionLabel,
+  getAllergenSummary,
+  type NutrientsPerServing,
+  type NutritionLabel,
+  type PercentDailyValues,
+  type VitaminsMinerals,
+} from "./nutrition-label-engine.js";

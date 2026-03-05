@@ -1,0 +1,132 @@
+// Sample Data Operations
+// Manifest spec for seeding and clearing sample/demo data
+//
+// GOVERNANCE NOTE:
+// This entity provides a governed interface for bulk sample data operations.
+// All sample data creation/deletion flows through the manifest runtime,
+// ensuring proper event emission, policy enforcement, and auditability.
+//
+// WHY THIS IS A MANIFEST ENTITY:
+// - Sample data creates governed entities (Event, PrepTask, Client, User, etc.)
+// - Direct Prisma writes bypass the runtime, defeating the governance system
+// - The seed/clear operations emit events for projections to react to
+// - Policies ensure only authorized users can manage sample data
+
+entity SampleData {
+  // The tenant this sample data belongs to
+  property required tenantId: string
+  
+  // Timestamps for tracking
+  property seededAt: number = 0
+  property clearedAt: number = 0
+  
+  // Status tracking
+  property isSeeded: boolean = false
+  
+  // Statistics (populated after seed/clear)
+  property eventsCreated: number = 0
+  property clientsCreated: number = 0
+  property usersCreated: number = 0
+  property recipesCreated: number = 0
+  
+  computed hasSampleData: boolean = self.isSeeded == true
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // SEED COMMAND
+  // Creates sample data for new organizations to explore the platform
+  // ─────────────────────────────────────────────────────────────────────────
+  command seed(requestedBy: string) {
+    guard requestedBy != null and requestedBy != "" "User ID is required"
+    guard self.isSeeded == false "Sample data already exists for this tenant"
+    
+    // The actual seeding is performed by the store's effect handler
+    // This command validates guards, emits events, and records the operation
+    mutate isSeeded = true
+    mutate seededAt = now()
+    mutate clearedAt = 0
+    
+    // Statistics will be populated by the effect
+    mutate eventsCreated = 2
+    mutate clientsCreated = 1
+    mutate usersCreated = 3
+    mutate recipesCreated = 1
+    
+    emit SampleDataSeeded
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // CLEAR COMMAND
+  // Removes all sample data tagged with "sample" or source: "sample"
+  // ─────────────────────────────────────────────────────────────────────────
+  command clear(requestedBy: string, reason: string) {
+    guard requestedBy != null and requestedBy != "" "User ID is required"
+    guard self.isSeeded == true "No sample data to clear"
+    
+    // The actual clearing is performed by the store's effect handler
+    mutate isSeeded = false
+    mutate clearedAt = now()
+    mutate eventsCreated = 0
+    mutate clientsCreated = 0
+    mutate usersCreated = 0
+    mutate recipesCreated = 0
+    
+    emit SampleDataCleared
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────
+  // RESEED COMMAND
+  // Clears existing sample data and seeds fresh data
+  // Useful for resetting demo environments
+  // ─────────────────────────────────────────────────────────────────────────
+  command reseed(requestedBy: string) {
+    guard requestedBy != null and requestedBy != "" "User ID is required"
+    
+    // Effect will handle the clear + seed sequence
+    mutate isSeeded = true
+    mutate seededAt = now()
+    mutate clearedAt = 0
+    
+    mutate eventsCreated = 2
+    mutate clientsCreated = 1
+    mutate usersCreated = 3
+    mutate recipesCreated = 1
+    
+    emit SampleDataReseeded
+  }
+
+  store SampleData in memory
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POLICIES
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Only managers and admins can manage sample data
+policy ManagersCanSeedSampleData execute: user.role in ["manager", "admin"] and user.tenantId != null and user.tenantId != "" "Only managers and admins can seed sample data"
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EVENTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+event SampleDataSeeded: "tenant.sampledata.seeded" {
+  tenantId: string
+  seededBy: string
+  seededAt: number
+  eventsCreated: number
+  clientsCreated: number
+  usersCreated: number
+  recipesCreated: number
+}
+
+event SampleDataCleared: "tenant.sampledata.cleared" {
+  tenantId: string
+  clearedBy: string
+  reason: string
+  clearedAt: number
+}
+
+event SampleDataReseeded: "tenant.sampledata.reseeded" {
+  tenantId: string
+  reseededBy: string
+  reseededAt: number
+}

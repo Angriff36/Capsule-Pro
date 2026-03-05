@@ -1,0 +1,365 @@
+// Procurement - Purchase Requisition Rules
+// Manifest spec for purchase requisition lifecycle and approval workflows
+//
+// GOVERNANCE NOTE:
+// Purchase requisitions are the starting point for procurement workflow.
+// They must be approved before converting to purchase orders, ensuring
+// proper budget validation and authorization.
+
+entity PurchaseRequisition {
+  property required id: string
+  property required tenantId: string
+  property required requisitionNumber: string
+  property requestedBy: string = ""
+  property requestDate: number = 0
+  property requiredBy: number = 0
+  property locationId: string = ""
+  property department: string = ""
+  property justification: string = ""
+  property status: string = "draft"
+  property subtotal: number = 0
+  property estimatedTax: number = 0
+  property estimatedShipping: number = 0
+  property estimatedTotal: number = 0
+  property approvedBy: string = ""
+  property approvedAt: number = 0
+  property managerApprovalBy: string = ""
+  property managerApprovalAt: number = 0
+  property financeApprovalBy: string = ""
+  property financeApprovalAt: number = 0
+  property convertedToPoId: string = ""
+  property convertedAt: number = 0
+  property rejectionReason: string = ""
+  property notes: string = ""
+  property submittedAt: number = 0
+  property itemCategory: string = ""
+  property priority: string = "normal"
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+  property itemCount: number = 0
+
+  computed isDraft: boolean = self.status == "draft"
+  computed isPending: boolean = self.status == "pending_manager"
+  computed isApproved: boolean = self.status == "approved"
+  computed isRejected: boolean = self.status == "rejected"
+  computed isConverted: boolean = self.status == "converted"
+  computed isHighPriority: boolean = self.priority == "urgent" or self.priority == "critical"
+  computed requiresFinanceApproval: boolean = self.estimatedTotal >= 5000
+  computed isEditable: boolean = self.status == "draft"
+
+  constraint validStatus: self.status in ["draft", "pending_manager", "pending_finance", "approved", "rejected", "converted", "cancelled"] "Invalid requisition status"
+  constraint validPriority: self.priority in ["low", "normal", "high", "urgent", "critical"] "Invalid priority level"
+  constraint blockEditAfterSubmit:block self.status != "draft" "Cannot edit requisition after submission"
+
+  command create(requisitionNumber: string, locationId: string, department: string, requestedBy: string, requiredBy: number, justification: string, priority: string, itemCategory: string) {
+    guard requisitionNumber != null and requisitionNumber != "" "Requisition number is required"
+    guard requestedBy != null and requestedBy != "" "Requester is required"
+    guard requiredBy != null and requiredBy > 0 "Required by date is required"
+
+    mutate requisitionNumber = requisitionNumber
+    mutate locationId = locationId
+    mutate department = department
+    mutate requestedBy = requestedBy
+    mutate requestDate = now()
+    mutate requiredBy = requiredBy
+    mutate justification = justification
+    mutate priority = priority
+    mutate itemCategory = itemCategory
+    mutate status = "draft"
+    mutate subtotal = 0
+    mutate estimatedTax = 0
+    mutate estimatedShipping = 0
+    mutate estimatedTotal = 0
+    mutate itemCount = 0
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit PurchaseRequisitionCreated
+  }
+
+  command update(justification: string, requiredBy: number, priority: string, department: string) {
+    guard self.status == "draft" "Can only update draft requisitions"
+
+    mutate justification = justification
+    mutate requiredBy = requiredBy
+    mutate priority = priority
+    mutate department = department
+    mutate updatedAt = now()
+
+    emit PurchaseRequisitionUpdated
+  }
+
+  command submit(userId: string) {
+    guard self.status == "draft" "Can only submit draft requisitions"
+
+    constraint blockNoItems:block self.itemCount == 0 {
+      messageTemplate: "Cannot submit requisition '{requisitionNumber}' with no items"
+      details: {
+        requisitionNumber: self.requisitionNumber
+      }
+    }
+
+    mutate status = "pending_manager"
+    mutate submittedBy = userId
+    mutate submittedAt = now()
+    mutate updatedAt = now()
+
+    emit PurchaseRequisitionSubmitted
+  }
+
+  command approveManager(userId: string) {
+    guard self.status == "pending_manager" "Can only approve requisitions pending manager approval"
+
+    // Check if finance approval is needed based on amount
+    if self.estimatedTotal >= 5000 {
+      mutate status = "pending_finance"
+      mutate managerApprovalBy = userId
+      mutate managerApprovalAt = now()
+      mutate updatedAt = now()
+    } else {
+      mutate status = "approved"
+      mutate managerApprovalBy = userId
+      mutate managerApprovalAt = now()
+      mutate approvedBy = userId
+      mutate approvedAt = now()
+      mutate updatedAt = now()
+    }
+
+    emit PurchaseRequisitionManagerApproved
+  }
+
+  command approveFinance(userId: string) {
+    guard self.status == "pending_finance" "Can only approve requisitions pending finance approval"
+
+    mutate status = "approved"
+    mutate financeApprovalBy = userId
+    mutate financeApprovalAt = now()
+    mutate approvedBy = userId
+    mutate approvedAt = now()
+    mutate updatedAt = now()
+
+    emit PurchaseRequisitionFinanceApproved
+  }
+
+  command reject(userId: string, reason: string) {
+    guard self.status in ["pending_manager", "pending_finance"] "Can only reject pending requisitions"
+    guard reason != null and reason != "" "Rejection reason is required"
+
+    mutate status = "rejected"
+    mutate rejectionReason = reason
+    mutate approvedBy = userId
+    mutate approvedAt = now()
+    mutate updatedAt = now()
+
+    emit PurchaseRequisitionRejected
+  }
+
+  command convertToPo(userId: string, purchaseOrderId: string) {
+    guard self.status == "approved" "Can only convert approved requisitions"
+    guard purchaseOrderId != null and purchaseOrderId != "" "Purchase order ID is required"
+
+    mutate status = "converted"
+    mutate convertedToPoId = purchaseOrderId
+    mutate convertedAt = now()
+    mutate updatedAt = now()
+
+    emit PurchaseRequisitionConverted
+  }
+
+  command cancel(userId: string, reason: string) {
+    guard self.status in ["draft", "pending_manager", "pending_finance"] "Cannot cancel processed requisitions"
+
+    mutate status = "cancelled"
+    mutate rejectionReason = reason
+    mutate updatedAt = now()
+
+    emit PurchaseRequisitionCancelled
+  }
+
+  store PurchaseRequisition in memory
+}
+
+entity PurchaseRequisitionItem {
+  property required id: string
+  property required tenantId: string
+  property required requisitionId: string
+  property required itemId: string
+  property itemName: string = ""
+  property quantityRequested: number = 0
+  property unitId: number = 0
+  property estimatedUnitCost: number = 0
+  property estimatedTotalCost: number = 0
+  property suggestedVendorId: string = ""
+  property suggestedVendorName: string = ""
+  property specifications: string = ""
+  property notes: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed totalCost: number = self.quantityRequested * self.estimatedUnitCost
+  computed hasSuggestedVendor: boolean = self.suggestedVendorId != ""
+
+  constraint positiveQuantity: self.quantityRequested > 0 "Quantity requested must be positive"
+  constraint nonNegativeCost: self.estimatedUnitCost >= 0 "Unit cost cannot be negative"
+
+  command create(requisitionId: string, itemId: string, itemName: string, quantityRequested: number, unitId: number, estimatedUnitCost: number, suggestedVendorId: string, suggestedVendorName: string, specifications: string, notes: string) {
+    guard requisitionId != null and requisitionId != "" "Requisition ID is required"
+    guard itemId != null and itemId != "" "Item ID is required"
+    guard quantityRequested != null and quantityRequested > 0 "Quantity must be positive"
+    guard estimatedUnitCost != null and estimatedUnitCost >= 0 "Unit cost cannot be negative"
+
+    mutate requisitionId = requisitionId
+    mutate itemId = itemId
+    mutate itemName = itemName
+    mutate quantityRequested = quantityRequested
+    mutate unitId = unitId
+    mutate estimatedUnitCost = estimatedUnitCost
+    mutate estimatedTotalCost = quantityRequested * estimatedUnitCost
+    mutate suggestedVendorId = suggestedVendorId
+    mutate suggestedVendorName = suggestedVendorName
+    mutate specifications = specifications
+    mutate notes = notes
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit PurchaseRequisitionItemCreated
+  }
+
+  command update(quantityRequested: number, estimatedUnitCost: number, suggestedVendorId: string, suggestedVendorName: string, specifications: string, notes: string) {
+    guard quantityRequested != null and quantityRequested > 0 "Quantity must be positive"
+    guard estimatedUnitCost != null and estimatedUnitCost >= 0 "Unit cost cannot be negative"
+
+    mutate quantityRequested = quantityRequested
+    mutate estimatedUnitCost = estimatedUnitCost
+    mutate estimatedTotalCost = quantityRequested * estimatedUnitCost
+    mutate suggestedVendorId = suggestedVendorId
+    mutate suggestedVendorName = suggestedVendorName
+    mutate specifications = specifications
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit PurchaseRequisitionItemUpdated
+  }
+
+  command remove(userId: string) {
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit PurchaseRequisitionItemRemoved
+  }
+
+  store PurchaseRequisitionItem in memory
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// POLICIES
+// ─────────────────────────────────────────────────────────────────────────────
+
+// Staff can create requisitions for their department
+policy StaffCanCreateRequisition execute: user.role in ["kitchen_staff", "kitchen_lead", "manager", "admin"] "All staff can create requisitions"
+
+// Department leads can approve requisitions under their threshold
+policy LeadsCanApproveRequisition execute: user.role in ["kitchen_lead", "manager", "admin"] "Leads and managers can approve requisitions"
+
+// Finance approval required for high-value requisitions
+policy FinanceCanApproveRequisition execute: user.role in ["manager", "admin"] "Managers and admins can provide finance approval"
+
+// Only admins can cancel approved requisitions
+policy AdminsCanCancelApproved execute: user.role == "admin" "Only admins can cancel approved requisitions"
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EVENTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+event PurchaseRequisitionCreated: "procurement.requisition.created" {
+  requisitionId: string
+  tenantId: string
+  requisitionNumber: string
+  requestedBy: string
+  department: string
+  priority: string
+  createdAt: number
+}
+
+event PurchaseRequisitionUpdated: "procurement.requisition.updated" {
+  requisitionId: string
+  requisitionNumber: string
+  updatedAt: number
+}
+
+event PurchaseRequisitionSubmitted: "procurement.requisition.submitted" {
+  requisitionId: string
+  requisitionNumber: string
+  submittedBy: string
+  itemCount: number
+  estimatedTotal: number
+  submittedAt: number
+}
+
+event PurchaseRequisitionManagerApproved: "procurement.requisition.manager_approved" {
+  requisitionId: string
+  requisitionNumber: string
+  approvedBy: string
+  estimatedTotal: number
+  approvedAt: number
+}
+
+event PurchaseRequisitionFinanceApproved: "procurement.requisition.finance_approved" {
+  requisitionId: string
+  requisitionNumber: string
+  approvedBy: string
+  estimatedTotal: number
+  approvedAt: number
+}
+
+event PurchaseRequisitionRejected: "procurement.requisition.rejected" {
+  requisitionId: string
+  requisitionNumber: string
+  rejectedBy: string
+  reason: string
+  rejectedAt: number
+}
+
+event PurchaseRequisitionConverted: "procurement.requisition.converted" {
+  requisitionId: string
+  requisitionNumber: string
+  purchaseOrderId: string
+  convertedAt: number
+}
+
+event PurchaseRequisitionCancelled: "procurement.requisition.cancelled" {
+  requisitionId: string
+  requisitionNumber: string
+  cancelledBy: string
+  reason: string
+  cancelledAt: number
+}
+
+event PurchaseRequisitionItemCreated: "procurement.requisition.item.created" {
+  requisitionItemId: string
+  requisitionId: string
+  itemId: string
+  itemName: string
+  quantityRequested: number
+  estimatedUnitCost: number
+  estimatedTotalCost: number
+  createdAt: number
+}
+
+event PurchaseRequisitionItemUpdated: "procurement.requisition.item.updated" {
+  requisitionItemId: string
+  requisitionId: string
+  itemId: string
+  quantityRequested: number
+  estimatedUnitCost: number
+  estimatedTotalCost: number
+  updatedAt: number
+}
+
+event PurchaseRequisitionItemRemoved: "procurement.requisition.item.removed" {
+  requisitionItemId: string
+  requisitionId: string
+  removedAt: number
+}

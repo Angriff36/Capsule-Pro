@@ -1,0 +1,161 @@
+# Digital Twin Simulation Manifest
+
+# This manifest defines the governance rules for kitchen digital twin simulation operations.
+# Digital twin allows "what-if" scenario modeling without affecting production data.
+
+## Entity: DigitalTwinSimulation
+
+### Command: create
+**Description**: Create a new simulation scenario for kitchen operations planning
+
+**Parameters**:
+- eventId: string - The event to simulate
+- scenarioType: enum("layout_optimization", "workflow_analysis", "resource_allocation", "peak_demand", "custom") - Type of simulation
+- parameters: object - Simulation-specific parameters
+
+**Guards**:
+- user_has_role: ["admin", "kitchen_manager", "operations_manager"]
+- event_exists: eventId
+- simulation_not_exists_for_event: eventId
+
+**Events**:
+- DigitalTwinSimulation.created
+
+**Effect**:
+- Create simulation record in tenant_kitchen.digital_twin_simulations
+- Initialize simulation state with current kitchen snapshot
+
+---
+
+### Command: start
+**Description**: Start execution of a prepared simulation
+
+**Parameters**:
+- simulationId: string - The simulation to start
+
+**Guards**:
+- simulation_exists: simulationId
+- simulation_status_is: "ready"
+- user_has_role: ["admin", "kitchen_manager", "operations_manager"]
+
+**Events**:
+- DigitalTwinSimulation.started
+
+**Effect**:
+- Update simulation status to "running"
+- Begin time-step simulation execution
+
+---
+
+### Command: complete
+**Description**: Mark simulation as complete with final results
+
+**Parameters**:
+- simulationId: string
+- metrics: object - Final simulation metrics
+- recommendations: array - Generated recommendations
+
+**Guards**:
+- simulation_exists: simulationId
+- simulation_status_is: "running"
+- user_has_role: ["admin", "kitchen_manager", "operations_manager"]
+
+**Events**:
+- DigitalTwinSimulation.completed
+
+**Effect**:
+- Update simulation status to "completed"
+- Store metrics and recommendations
+- Calculate efficiency deltas vs baseline
+
+---
+
+### Command: cancel
+**Description**: Cancel a running simulation
+
+**Parameters**:
+- simulationId: string
+
+**Guards**:
+- simulation_exists: simulationId
+- simulation_status_in: ["ready", "running"]
+- user_has_role: ["admin", "kitchen_manager", "operations_manager"]
+
+**Events**:
+- DigitalTwinSimulation.cancelled
+
+**Effect**:
+- Update simulation status to "cancelled"
+- Clean up temporary simulation data
+
+---
+
+### Command: compare
+**Description**: Compare multiple simulation scenarios side-by-side
+
+**Parameters**:
+- simulationIds: array<string> - Simulations to compare
+- focusMetrics: array<string> - Specific metrics to focus on
+
+**Guards**:
+- all_simulations_exist: simulationIds
+- all_simulations_completed: simulationIds
+- user_has_role: ["admin", "kitchen_manager", "operations_manager"]
+
+**Events**:
+- DigitalTwinSimulation.compared
+
+**Effect**:
+- Create comparison report with metrics deltas
+- Highlight optimal scenario for each metric
+
+---
+
+### Command: applyToProduction
+**Description**: Apply a simulation's recommendations to production (bypass allowed with manifest approval)
+
+**Parameters**:
+- simulationId: string
+- changes: array - Specific changes to apply from recommendations
+
+**Guards**:
+- simulation_exists: simulationId
+- simulation_status_is: "completed"
+- user_has_role: ["admin", "kitchen_manager"]
+- manifest_approval_required: true
+
+**Events**:
+- DigitalTwinSimulation.appliedToProduction
+
+**Effect**:
+- Execute production commands for approved changes
+- Create change audit record
+- Track actual vs predicted outcomes
+
+---
+
+## Constraints
+
+### simulation_isolation
+**Description**: Simulation data must never mix with production data
+**Severity**: critical
+**Check**: All simulation operations use separate schema/prefix
+
+### max_simulation_duration
+**Description**: Prevent runaway simulations
+**Severity**: high
+**Check**: simulation duration <= 24 hours (configurable)
+
+### recommendation_validation
+**Description**: Auto-generated recommendations must be validated before production application
+**Severity**: high
+**Check**: Manual approval required for applyToProduction
+
+---
+
+## Policy Notes
+
+1. **Read Bypass Allowed**: Simulation reads from production data are permitted for baseline modeling
+2. **Write Path**: All simulation writes go to separate simulation tables
+3. **No Production Mutation**: Simulation commands cannot directly mutate production kitchen state
+4. **Manifest Approval Required**: Applying simulation results to production requires explicit approval

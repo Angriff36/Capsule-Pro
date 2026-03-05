@@ -1,0 +1,10 @@
+ALTER TABLE "tenant_admin"."activity_feed" ALTER COLUMN "activity_type" SET DATA TYPE TEXT,
+ALTER COLUMN "entity_type" SET DATA TYPE TEXT,
+ALTER COLUMN "action" SET DATA TYPE TEXT,
+ALTER COLUMN "title" SET DATA TYPE TEXT,
+ALTER COLUMN "performer_name" SET DATA TYPE TEXT,
+ALTER COLUMN "source_type" SET DATA TYPE TEXT,
+ALTER COLUMN "importance" SET DATA TYPE TEXT,
+ALTER COLUMN "visibility" SET DATA TYPE TEXT;
+
+ALTER TABLE "tenant_admin"."role_policies" ALTER COLUMN "role_name" SET DATA TYPE TEXT;

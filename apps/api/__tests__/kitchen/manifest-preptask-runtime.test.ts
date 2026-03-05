@@ -75,8 +75,7 @@ describe("Manifest Runtime - PrepTask Commands", () => {
     const instance = await runtime.getInstance("PrepTask", "task-001");
     expect(instance?.status).toBe("in_progress");
     expect(instance?.claimedBy).toBe("user-001");
-    // Current runtime context refresh behavior can overwrite same-named input keys.
-    expect(instance?.stationId).toBe("");
+    expect(instance?.stationId).toBe("station-a");
     expect(instance?.claimedAt).toBeGreaterThan(0);
 
     // Verify event emission
@@ -190,8 +189,7 @@ describe("Manifest Runtime - PrepTask Commands", () => {
     // Verify state mutation
     const instance = await runtime.getInstance("PrepTask", "task-004");
     expect(instance?.status).toBe("done");
-    // Current runtime context refresh behavior can overwrite same-named input keys.
-    expect(instance?.quantityCompleted).toBe(0);
+    expect(instance?.quantityCompleted).toBe(20);
 
     // Verify event emission
     expect(completeResult.emittedEvents).toHaveLength(1);
