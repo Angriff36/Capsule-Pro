@@ -17,6 +17,8 @@ import { NextResponse } from "next/server";
 import { createManifestRuntime } from "~/lib/manifest-runtime";
 import { getTenant } from "~/lib/tenant";
 
+export const runtime = "nodejs";
+
 // Load the compiled IR from manifest-ir package
 const getIR = (): IR => {
   const { ir } = loadPrecompiledIR(

@@ -7,6 +7,8 @@ import { type NextRequest, NextResponse } from "next/server";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
+export const runtime = "nodejs";
+
 interface ValidateRequest {
   entityName: string;
   commandName?: string;
