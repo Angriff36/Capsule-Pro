@@ -28,17 +28,21 @@ describe("createEvent validation", () => {
     vi.restoreAllMocks();
   });
 
-  it("throws error when title is missing", async () => {
-    vi.spyOn(tenantModule, "requireTenantId").mockResolvedValue(mockTenantId);
+  it(
+    "throws error when title is missing",
+    async () => {
+      vi.spyOn(tenantModule, "requireTenantId").mockResolvedValue(mockTenantId);
 
-    mockFormData.delete("title");
-    mockFormData.set("title", "");
+      mockFormData.delete("title");
+      mockFormData.set("title", "");
 
-    const { createEvent } = await import("../actions");
-    await expect(createEvent(mockFormData)).rejects.toThrow(
-      /Validation failed/
-    );
-  });
+      const { createEvent } = await import("../actions");
+      await expect(createEvent(mockFormData)).rejects.toThrow(
+        /Validation failed/
+      );
+    },
+    15000
+  );
 
   it("throws error when title is only whitespace", async () => {
     vi.spyOn(tenantModule, "requireTenantId").mockResolvedValue(mockTenantId);

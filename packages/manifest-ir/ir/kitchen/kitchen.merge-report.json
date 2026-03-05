@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.dev/merge-report.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-03-02T05:13:02.789Z",
+  "generatedAt": "2026-03-05T13:35:52.247Z",
   "sources": [
     "admin-chat-participant-rules.manifest",
     "admin-task-rules.manifest",

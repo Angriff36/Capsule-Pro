@@ -21,6 +21,9 @@ export const secure = async (
     // Get your site key from https://app.arcjet.com
     key: arcjetKey,
     // Identify the user by their IP address
+    // Local development is expected to run in Arcjet development mode.
+    // In production, ensure your edge/load balancer forwards client IP headers
+    // (for example, X-Forwarded-For) so Arcjet can resolve public client IPs.
     characteristics: ["ip.src"],
     rules: [
       // Protect against common attacks with Arcjet Shield

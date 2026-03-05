@@ -1,0 +1,27 @@
+{
+  "mcpServers": {
+    "capsule-pro": {
+      "command": "pnpm",
+      "args": ["--silent", "--filter", "@repo/mcp-server", "start"],
+      "env": {
+        "MCP_PROJECT_ROOT": "C:\\Projects\\capsule-pro"
+      }
+    },
+    "capsule-pro-admin": {
+      "command": "pnpm",
+      "args": ["--silent", "--filter", "@repo/mcp-server", "start:admin"],
+      "env": {
+        "MCP_SERVER_MODE": "admin",
+        "MCP_PROJECT_ROOT": "C:\\Projects\\capsule-pro"
+      }
+    },
+    "chrome-devtools": {
+      "command": "cmd",
+      "args": ["/c", "npx", "chrome-devtools-mcp@latest", "--autoConnect"]
+    },
+    "context7": {
+      "command": "cmd",
+      "args": ["/c", "npx", "@upstash/context7-mcp@latest"]
+    }
+  }
+}

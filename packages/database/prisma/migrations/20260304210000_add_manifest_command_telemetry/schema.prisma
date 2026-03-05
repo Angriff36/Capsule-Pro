@@ -1,0 +1,179 @@
+{
+  "provide": "prisma_migratemigration_sql",
+  "id": "20260304210000_add_manifest_command_telemetry",
+  "migration": {
+    "datamodel_steps": [],
+    "database_steps": [
+      {
+        "action": "CreateTable",
+        "table": "manifest_command_telemetry",
+        "schema": "tenant",
+        "columns": [
+          {
+            "name": "tenant_id",
+            "type": "Uuid",
+            "default": null,
+            "nullable": false
+          },
+          {
+            "name": "id",
+            "type": "Uuid",
+            "default": "gen_random_uuid()",
+            "nullable": false
+          },
+          {
+            "name": "command_name",
+            "type": "Text",
+            "default": null,
+            "nullable": false
+          },
+          {
+            "name": "entity_name",
+            "type": "Text",
+            "default": null,
+            "nullable": true
+          },
+          {
+            "name": "instance_id",
+            "type": "Uuid",
+            "default": null,
+            "nullable": true
+          },
+          {
+            "name": "status",
+            "type": "Text",
+            "default": null,
+            "nullable": false
+          },
+          {
+            "name": "error_message",
+            "type": "Text",
+            "default": null,
+            "nullable": true
+          },
+          {
+            "name": "error_code",
+            "type": "Text",
+            "default": null,
+            "nullable": true
+          },
+          {
+            "name": "duration_ms",
+            "type": "Integer",
+            "default": null,
+            "nullable": false
+          },
+          {
+            "name": "guard_eval_ms",
+            "type": "Integer",
+            "default": null,
+            "nullable": true
+          },
+          {
+            "name": "action_exec_ms",
+            "type": "Integer",
+            "default": null,
+            "nullable": true
+          },
+          {
+            "name": "guards_evaluated",
+            "type": "Integer",
+            "default": "0",
+            "nullable": false
+          },
+          {
+            "name": "guards_passed",
+            "type": "Integer",
+            "default": "0",
+            "nullable": false
+          },
+          {
+            "name": "guards_failed",
+            "type": "Integer",
+            "default": "0",
+            "nullable": false
+          },
+          {
+            "name": "failed_guards",
+            "type": "Json",
+            "default": null,
+            "nullable": true
+          },
+          {
+            "name": "idempotency_key",
+            "type": "Text",
+            "default": null,
+            "nullable": true
+          },
+          {
+            "name": "was_idempotent_hit",
+            "type": "Boolean",
+            "default": null,
+            "nullable": true
+          },
+          {
+            "name": "events_emitted",
+            "type": "Integer",
+            "default": "0",
+            "nullable": false
+          },
+          {
+            "name": "performed_by",
+            "type": "Uuid",
+            "default": null,
+            "nullable": true
+          },
+          {
+            "name": "correlation_id",
+            "type": "Uuid",
+            "default": null,
+            "nullable": true
+          },
+          {
+            "name": "causation_id",
+            "type": "Uuid",
+            "default": null,
+            "nullable": true
+          },
+          {
+            "name": "request_id",
+            "type": "Text",
+            "default": null,
+            "nullable": true
+          },
+          {
+            "name": "ip_address",
+            "type": "Inet",
+            "default": null,
+            "nullable": true
+          },
+          {
+            "name": "executed_at",
+            "type": "Timestamp(6)",
+            "default": "CURRENT_TIMESTAMP",
+            "nullable": false
+          }
+        ],
+        "primary_key": {
+          "columns": [
+            "tenant_id",
+            "id"
+          ]
+        },
+        "foreign_keys": [
+          {
+            "table": "accounts",
+            "schema": "platform",
+            "columns": [
+              "tenant_id"
+            ],
+            "referenced_columns": [
+              "id"
+            ],
+            "on_delete": "Restrict"
+          }
+        ]
+      }
+    ]
+  }
+}

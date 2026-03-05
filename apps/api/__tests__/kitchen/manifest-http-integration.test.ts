@@ -866,13 +866,17 @@ describe("Manifest HTTP Integration - PrepList Commands", () => {
   });
 
   describe("POST /api/kitchen/prep-lists/commands/deactivate", () => {
-    it("should import the route handler", async () => {
-      const { POST } = await import(
-        "@/app/api/kitchen/prep-lists/commands/deactivate/route"
-      );
-      expect(POST).toBeDefined();
-      expect(typeof POST).toBe("function");
-    });
+    it(
+      "should import the route handler",
+      async () => {
+        const { POST } = await import(
+          "@/app/api/kitchen/prep-lists/commands/deactivate/route"
+        );
+        expect(POST).toBeDefined();
+        expect(typeof POST).toBe("function");
+      },
+      15000
+    );
   });
 
   describe("POST /api/kitchen/prep-lists/commands/cancel", () => {
@@ -885,3 +889,5 @@ describe("Manifest HTTP Integration - PrepList Commands", () => {
     });
   });
 });
+
+

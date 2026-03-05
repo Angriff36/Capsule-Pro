@@ -44,7 +44,6 @@ describe("Prep List Auto-Generation", () => {
         createdAt: new Date(),
         publishedAt: null,
         error: null,
-        correlationId: null,
       });
 
       const input: PrepListAutoGenerationInput = {
@@ -114,7 +113,6 @@ describe("Prep List Auto-Generation", () => {
         createdAt: new Date(),
         publishedAt: null,
         error: null,
-        correlationId: null,
       });
 
       const input: PrepListAutoGenerationInput = {
@@ -159,7 +157,6 @@ describe("Prep List Auto-Generation", () => {
           createdAt: new Date(),
           publishedAt: null,
           error: null,
-          correlationId: null,
         },
       ]);
 
@@ -174,7 +171,6 @@ describe("Prep List Auto-Generation", () => {
         createdAt: new Date(),
         publishedAt: new Date(),
         error: null,
-        correlationId: null,
       });
 
       const mockGenerateFn = vi.fn().mockResolvedValue({
@@ -222,7 +218,6 @@ describe("Prep List Auto-Generation", () => {
           createdAt: new Date(),
           publishedAt: null,
           error: null,
-          correlationId: null,
         },
       ]);
 
@@ -237,7 +232,6 @@ describe("Prep List Auto-Generation", () => {
         createdAt: new Date(),
         publishedAt: null,
         error: "Generation failed",
-        correlationId: null,
       });
 
       const mockGenerateFn = vi.fn().mockResolvedValue({
@@ -277,7 +271,6 @@ describe("Prep List Auto-Generation", () => {
         createdAt: new Date(),
         publishedAt: null,
         error: null,
-        correlationId: null,
       }));
 
       mockFindMany.mockResolvedValue(events.slice(0, 10));
@@ -292,7 +285,6 @@ describe("Prep List Auto-Generation", () => {
         createdAt: new Date(),
         publishedAt: new Date(),
         error: null,
-        correlationId: null,
       });
 
       const mockGenerateFn = vi.fn().mockResolvedValue({
@@ -369,3 +361,4 @@ describe("Prep List Auto-Generation", () => {
     });
   });
 });
+

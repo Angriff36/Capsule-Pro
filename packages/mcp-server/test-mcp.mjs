@@ -16,6 +16,7 @@ const server = spawn(
   {
     cwd: "C:\\Projects\\capsule-pro",
     stdio: ["pipe", "pipe", "pipe"],
+    shell: true,
   }
 );
 

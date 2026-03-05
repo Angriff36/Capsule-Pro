@@ -205,6 +205,21 @@ Test Files: 14 passed, Tests: 667 passed
 
 ---
 
+## Agent 61 — 2026-03-04
+
+**Goal:** Lock down PrepTask.claim golden path — fix input-clobbering bug, add conformance test suite
+
+- [x] Explore codebase: manifest DSL, IR, RuntimeEngine pipeline, PrismaStore, route handlers, existing tests
+- [x] Identify root cause: `Object.assign(evalContext, enriched)` clobbers input params with instance values
+- [x] Write 11-test conformance suite (fails pre-fix on stationId)
+- [x] Fix runtime engine: re-apply input after context refresh (1 line)
+- [x] Correct 2 existing test assertions that accepted the bug
+- [x] Rebuild dist, copy to node_modules
+- [x] Verify: 18/18 claim tests pass, 707/707 manifest-runtime tests pass, tsc clean
+- [x] Write ledger entry (20 points), archive Agent 52
+
+---
+
 ## Agent 53 — 2026-03-01
 
 **Goal:** Eliminate 47 false-positive WRITE_ROUTE_BYPASSES_RUNTIME audit errors by recognizing executeManifestCommand as valid runtime usage
@@ -219,3 +234,56 @@ Test Files: 14 passed, Tests: 667 passed
 - [x] Verify kitchen tests: 24 files, 374 tests, 0 failures
 - [x] Write ledger entry, archive Agent 48
 - [x] Commit changes
+
+---
+
+## Agent 62 — 2026-03-05
+
+**Goal:** Fix `inspect_command` guard expression display so literals render as human-readable values instead of `[object Object]`, and add regression tests for `expressionToString`.
+
+### Classification
+
+**Issue Layer**:
+- [ ] Spec violation
+- [x] IR violation
+- [ ] Runtime violation
+- [ ] Projection mismatch
+- [ ] Integration bug
+
+**Governing Authority:** IR expression structure in `packages/manifest-ir/ir/kitchen/kitchen.ir.json` (nested literal nodes under `literal.value`).
+
+**Contract Impact:**
+- [ ] Language contract violation
+- [x] Missing conformance coverage
+- [ ] Runtime implementation bug
+- [ ] Projection artifact mismatch
+- [x] Pure integration issue
+
+### Plan
+- [ ] Update `expressionToString` literal handling in `packages/mcp-server/src/plugins/ir-introspection.ts` for nested IR literal objects.
+- [ ] Add regression tests for `expressionToString` (null, string, number, boolean, and nested binary expressions).
+- [ ] Run MCP package tests: `pnpm vitest run` from `packages/mcp-server/`.
+- [ ] Run repo typecheck: `pnpm tsc --noEmit`.
+- [ ] Append session ledger entry to `tasks/ledger.md`.
+
+---
+
+## Agent 62 — 2026-03-05 (PrepTask.claim single-write migration)
+
+**Goal:** Migrate `apps/api/app/api/kitchen/tasks/[id]/claim/route.ts` from dual-write (runtime + direct Prisma transaction) to runtime/store-only writes.
+
+- [x] Read `tasks/ledger.md` and load required context standards
+- [x] Remove direct Prisma writes from claim route and keep response contract
+- [x] Ensure claim side effects are persisted via `PrepTaskPrismaStore.update`
+- [x] Run targeted claim/runtime conformance tests (18/18 passing)
+- [x] Run kitchen suite (`pnpm --filter api test __tests__/kitchen/ -- --run`) and capture failures
+- [x] Run `pnpm tsc --noEmit`
+- [x] Run `pnpm biome check apps/api/app/api/kitchen/tasks/[id]/claim/route.ts`
+- [x] Append session ledger entry to `tasks/ledger.md`
+
+### Review
+
+- Route now executes `claimPrepTask(...)` and returns persisted claim from DB readback; no direct post-command Prisma writes remain in route.
+- `PrepTaskPrismaStore.update` now persists claim-adjacent side effects for claim transitions: claim record (existing behavior), progress entry, and `kitchen.task.claimed` outbox event.
+- Targeted claim conformance/runtime tests pass (18/18).
+- Full kitchen suite still has pre-existing failures in `manifest-build-determinism.test.ts` and `manifest-runtime-node.invariant.test.ts`.

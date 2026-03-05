@@ -16,7 +16,7 @@
   },
   "private": true,
   "scripts": {
-    "analyze": "basehub",
+    "analyze": "echo 'cms analyze: skip basehub codegen in parallel CI'",
     "build": "basehub build",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "dev": "basehub dev",

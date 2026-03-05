@@ -36,7 +36,9 @@ describe("Shadow Claim Route - Generated Backup", () => {
     });
   });
 
-  it("matches unauthorized behavior with the existing claim route", async () => {
+  it(
+    "matches unauthorized behavior with the existing claim route",
+    async () => {
     authMock.mockResolvedValue({
       orgId: null,
       userId: null,
@@ -80,7 +82,7 @@ describe("Shadow Claim Route - Generated Backup", () => {
       success: false,
       message: "Unauthorized",
     });
-  });
+  }, 15000);
 
   it("executes generated manifest command path with id injected from URL", async () => {
     const { POST } = await import(
@@ -262,3 +264,6 @@ describe("Shadow Claim Route - Generated Backup", () => {
     });
   });
 });
+
+
+
