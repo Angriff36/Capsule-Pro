@@ -2,8 +2,6 @@
 
 import { database } from "@repo/database";
 import { requireTenantId } from "../../../lib/tenant";
-import { getTemplateById } from "../config/board-templates";
-import { withRetry } from "../lib/retry-utils";
 import type {
   BoardAnnotation,
   BoardGroup,
@@ -134,8 +132,6 @@ export interface CreateBoardInput {
   eventId?: string;
   isTemplate?: boolean;
   tags?: string[];
-  /** Optional template ID to apply pre-built configuration */
-  templateId?: string;
 }
 
 export interface UpdateBoardInput {
@@ -191,82 +187,64 @@ export async function getCommandBoard(
 ): Promise<CommandBoardWithCards | null> {
   const tenantId = await requireTenantId();
 
-  try {
-    const board = await withRetry(
-      () =>
-        database.commandBoard.findUnique({
-          where: {
-            tenantId_id: {
-              tenantId,
-              id: boardId,
-            },
-          },
-          include: {
-            cards: true,
-          },
-        }),
-      { maxRetries: 1, delayMs: 2000 }
-    );
+  const board = await database.commandBoard.findUnique({
+    where: {
+      tenantId_id: {
+        tenantId,
+        id: boardId,
+      },
+    },
+    include: {
+      cards: true,
+    },
+  });
 
-    if (!board) {
-      return null;
-    }
-
-    return {
-      ...dbBoardToBoard(board),
-      cards: board.cards.map(
-        (card): CommandBoardCard => ({
-          id: card.id,
-          tenantId: card.tenantId,
-          boardId: card.boardId,
-          title: card.title,
-          content: card.content,
-          cardType: card.cardType as CardType,
-          status: card.status as CardStatus,
-          position: {
-            x: card.positionX,
-            y: card.positionY,
-            width: card.width,
-            height: card.height,
-            zIndex: card.zIndex,
-          },
-          color: card.color,
-          metadata: (card.metadata as Record<string, unknown>) || {},
-          createdAt: card.createdAt,
-          updatedAt: card.updatedAt,
-          deletedAt: card.deletedAt,
-        })
-      ),
-    };
-  } catch (error) {
-    console.error("[getCommandBoard] Failed to fetch board:", error);
+  if (!board) {
     return null;
   }
+
+  return {
+    ...dbBoardToBoard(board),
+    cards: board.cards.map(
+      (card): CommandBoardCard => ({
+        id: card.id,
+        tenantId: card.tenantId,
+        boardId: card.boardId,
+        title: card.title,
+        content: card.content,
+        cardType: card.cardType as CardType,
+        status: card.status as CardStatus,
+        position: {
+          x: card.positionX,
+          y: card.positionY,
+          width: card.width,
+          height: card.height,
+          zIndex: card.zIndex,
+        },
+        color: card.color,
+        metadata: (card.metadata as Record<string, unknown>) || {},
+        createdAt: card.createdAt,
+        updatedAt: card.updatedAt,
+        deletedAt: card.deletedAt,
+      })
+    ),
+  };
 }
 
 export async function listCommandBoards(): Promise<CommandBoard[]> {
   const tenantId = await requireTenantId();
 
-  try {
-    const boards = await withRetry(
-      () =>
-        database.commandBoard.findMany({
-          where: {
-            tenantId,
-            deletedAt: null,
-          },
-          orderBy: {
-            createdAt: "desc",
-          },
-        }),
-      { maxRetries: 1, delayMs: 2000 }
-    );
+  const boards = await database.commandBoard.findMany({
+    where: {
+      tenantId,
+      deletedAt: null,
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
 
-    return boards.map(dbBoardToBoard);
-  } catch (error) {
-    console.error("[listCommandBoards] Failed to list boards:", error);
-    return [];
-  }
+  return boards.map(dbBoardToBoard);
 }
 
 export async function createCommandBoard(
@@ -275,46 +253,26 @@ export async function createCommandBoard(
   try {
     const tenantId = await requireTenantId();
 
-    // Look up template if specified
-    const template = input.templateId
-      ? getTemplateById(input.templateId)
-      : undefined;
-
-    // Apply template settings or use defaults
-    const scope = template?.scope ?? undefined;
-    const autoPopulate = template?.autoPopulate ?? false;
-    const tags = input.tags ?? template?.tags ?? [];
-    const name = input.name;
-
-    const board = await withRetry(
-      () =>
-        database.commandBoard.create({
-          data: {
-            tenantId,
-            id: crypto.randomUUID(),
-            name,
-            description: input.description || null,
-            eventId: input.eventId || null,
-            isTemplate: input.isTemplate,
-            tags,
-            scope: scope ? JSON.parse(JSON.stringify(scope)) : undefined,
-            autoPopulate,
-          },
-        }),
-      { maxRetries: 1, delayMs: 2000 }
-    );
+    const board = await database.commandBoard.create({
+      data: {
+        tenantId,
+        id: crypto.randomUUID(),
+        name: input.name,
+        description: input.description || null,
+        eventId: input.eventId || null,
+        isTemplate: input.isTemplate,
+        tags: input.tags || [],
+      },
+    });
 
     return {
       success: true,
       board: dbBoardToBoard(board),
     };
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Failed to create board";
-    console.error("[createCommandBoard] Failed to create board:", error);
     return {
       success: false,
-      error: errorMessage,
+      error: error instanceof Error ? error.message : "Failed to create board",
     };
   }
 }
@@ -325,42 +283,33 @@ export async function updateCommandBoard(
   try {
     const tenantId = await requireTenantId();
 
-    const board = await withRetry(
-      () =>
-        database.commandBoard.update({
-          where: {
-            tenantId_id: {
-              tenantId,
-              id: input.id,
-            },
-          },
-          data: {
-            ...(input.name !== undefined && { name: input.name }),
-            ...(input.description !== undefined && {
-              description: input.description,
-            }),
-            ...(input.status !== undefined && { status: input.status }),
-            ...(input.eventId !== undefined && { eventId: input.eventId }),
-            ...(input.isTemplate !== undefined && {
-              isTemplate: input.isTemplate,
-            }),
-            ...(input.tags !== undefined && { tags: input.tags }),
-          },
+    const board = await database.commandBoard.update({
+      where: {
+        tenantId_id: {
+          tenantId,
+          id: input.id,
+        },
+      },
+      data: {
+        ...(input.name !== undefined && { name: input.name }),
+        ...(input.description !== undefined && {
+          description: input.description,
         }),
-      { maxRetries: 1, delayMs: 2000 }
-    );
+        ...(input.status !== undefined && { status: input.status }),
+        ...(input.eventId !== undefined && { eventId: input.eventId }),
+        ...(input.isTemplate !== undefined && { isTemplate: input.isTemplate }),
+        ...(input.tags !== undefined && { tags: input.tags }),
+      },
+    });
 
     return {
       success: true,
       board: dbBoardToBoard(board),
     };
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Failed to update board";
-    console.error("[updateCommandBoard] Failed to update board:", error);
     return {
       success: false,
-      error: errorMessage,
+      error: error instanceof Error ? error.message : "Failed to update board",
     };
   }
 }
@@ -371,30 +320,23 @@ export async function deleteCommandBoard(
   try {
     const tenantId = await requireTenantId();
 
-    await withRetry(
-      () =>
-        database.commandBoard.update({
-          where: {
-            tenantId_id: {
-              tenantId,
-              id: boardId,
-            },
-          },
-          data: {
-            deletedAt: new Date(),
-          },
-        }),
-      { maxRetries: 1, delayMs: 2000 }
-    );
+    await database.commandBoard.update({
+      where: {
+        tenantId_id: {
+          tenantId,
+          id: boardId,
+        },
+      },
+      data: {
+        deletedAt: new Date(),
+      },
+    });
 
     return { success: true };
   } catch (error) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Failed to delete board";
-    console.error("[deleteCommandBoard] Failed to delete board:", error);
     return {
       success: false,
-      error: errorMessage,
+      error: error instanceof Error ? error.message : "Failed to delete board",
     };
   }
 }

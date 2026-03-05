@@ -1,7 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
@@ -18,7 +17,6 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../lib/tenant";
 
@@ -374,26 +372,6 @@ const AnalyticsPage = async () => {
       </div>
 
       <Separator />
-
-      <section className="space-y-4">
-        <h2 className="text-sm font-medium text-muted-foreground">
-          Report Studio
-        </h2>
-        <Card>
-          <CardHeader>
-            <CardTitle>Custom Report Builder</CardTitle>
-            <CardDescription>
-              Build drag-and-drop reports with visualizations, scheduling, and
-              automated distribution.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button asChild>
-              <Link href="/analytics/custom-reports">Open Builder</Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </section>
 
       <section className="space-y-4">
         <h2 className="text-sm font-medium text-muted-foreground">

@@ -28,9 +28,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
 import { resolveEntities } from "../actions/resolve-entities";
-import { updateEntity } from "../actions/update-entity";
 import type { EntityType, ResolvedEntity } from "../types/entities";
 import {
   ENTITY_TYPE_COLORS,
@@ -44,7 +42,7 @@ import { GenericDetail } from "./detail-views/generic-detail";
 import { TaskDetail } from "./detail-views/task-detail";
 
 // ============================================================================
-// Entity Detail Panel — Slide-over sheet for viewing and editing entity details
+// Entity Detail Panel — Slide-over sheet for viewing entity details
 // ============================================================================
 
 interface EntityDetailPanelProps {
@@ -52,8 +50,6 @@ interface EntityDetailPanelProps {
   entityId: string;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  /** Callback when an entity is successfully updated */
-  onEntityUpdated?: () => void;
 }
 
 // ============================================================================
@@ -191,34 +187,17 @@ function ErrorState({ message, onRetry }: ErrorStateProps) {
 // Detail View Router
 // ============================================================================
 
-interface DetailViewRouterProps {
-  entity: ResolvedEntity;
-  onFieldChange?: (field: string, value: string) => Promise<void>;
-}
-
 /** Routes to the correct detail view based on entity type */
-function DetailViewRouter({ entity, onFieldChange }: DetailViewRouterProps) {
+function DetailViewRouter({ entity }: { entity: ResolvedEntity }) {
   switch (entity.type) {
     case "event":
-      return <EventDetail data={entity.data} onFieldChange={onFieldChange} />;
+      return <EventDetail data={entity.data} />;
     case "client":
       return <ClientDetail data={entity.data} />;
     case "prep_task":
-      return (
-        <TaskDetail
-          data={entity.data}
-          onFieldChange={onFieldChange}
-          taskType="prep_task"
-        />
-      );
+      return <TaskDetail data={entity.data} taskType="prep_task" />;
     case "kitchen_task":
-      return (
-        <TaskDetail
-          data={entity.data}
-          onFieldChange={onFieldChange}
-          taskType="kitchen_task"
-        />
-      );
+      return <TaskDetail data={entity.data} taskType="kitchen_task" />;
     case "employee":
       return <EmployeeDetail data={entity.data} />;
     default:
@@ -236,7 +215,6 @@ export function EntityDetailPanel({
   entityId,
   open,
   onOpenChange,
-  onEntityUpdated,
 }: EntityDetailPanelProps) {
   const [entity, setEntity] = useState<ResolvedEntity | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -272,14 +250,6 @@ export function EntityDetailPanel({
         );
         setError(errorMsg);
         setEntity(null);
-        // Show toast for transient errors
-        if (
-          errorMsg.includes("network") ||
-          errorMsg.includes("timeout") ||
-          errorMsg.includes("fetch")
-        ) {
-          toast.error("Network error loading entity details");
-        }
         return;
       }
 
@@ -307,8 +277,6 @@ export function EntityDetailPanel({
       );
       setError(errorMsg);
       setEntity(null);
-      // Show toast for unexpected errors
-      toast.error("Failed to load entity details");
     } finally {
       setIsLoading(false);
     }
@@ -327,39 +295,6 @@ export function EntityDetailPanel({
     }
   }, [open, entityType, entityId, fetchEntity]);
 
-  /** Handle field changes via the update-entity action */
-  const handleFieldChange = useCallback(
-    async (field: string, value: string) => {
-      try {
-        const result = await updateEntity({
-          entityType,
-          entityId,
-          field,
-          value: value === "" ? null : value,
-        });
-
-        if (!result.success) {
-          // Show toast for the error
-          toast.error(result.error ?? "Failed to update");
-          throw new Error(result.error ?? "Failed to update");
-        }
-
-        // Refresh the entity data
-        await fetchEntity();
-
-        // Notify parent to refresh board data
-        onEntityUpdated?.();
-      } catch (error) {
-        // Re-throw to let the editable field component know it failed
-        if (error instanceof Error) {
-          throw error;
-        }
-        throw new Error("Failed to update field");
-      }
-    },
-    [entityType, entityId, fetchEntity, onEntityUpdated]
-  );
-
   const title = entity ? getEntityTitle(entity) : typeLabel;
 
   return (
@@ -374,9 +309,7 @@ export function EntityDetailPanel({
             <Icon className={cn("size-5", colors.icon)} />
             <SheetTitle className="truncate">{title}</SheetTitle>
           </div>
-          <SheetDescription>
-            {typeLabel} Details — Click any field to edit
-          </SheetDescription>
+          <SheetDescription>{typeLabel} Details</SheetDescription>
         </SheetHeader>
 
         {/* Content */}
@@ -386,10 +319,7 @@ export function EntityDetailPanel({
           ) : error ? (
             <ErrorState message={error} onRetry={fetchEntity} />
           ) : entity ? (
-            <DetailViewRouter
-              entity={entity}
-              onFieldChange={handleFieldChange}
-            />
+            <DetailViewRouter entity={entity} />
           ) : null}
         </div>
 

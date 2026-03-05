@@ -52,5 +52,4 @@ export * from "./generated/client";
 export { Prisma, PrismaClient } from "./generated/client";
 export * from "./src/critical-path";
 export * from "./src/ingredient-resolution";
-export * from "./src/communication-preferences";
 export * from "./tenant";

@@ -3,13 +3,11 @@
 import {
   Background,
   BackgroundVariant,
-  type Connection,
   Controls,
   type EdgeChange,
   MiniMap,
   type Node,
   type NodeChange,
-  Panel,
   ReactFlow,
   SelectionMode,
   useEdgesState,
@@ -25,7 +23,6 @@ import {
   FolderSearch,
   LayoutGrid,
   Users,
-  X,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -41,7 +38,6 @@ import {
   updateProjectionPosition,
 } from "../actions/projections";
 import { BulkActionToolbar } from "../components/bulk-action-toolbar";
-import { ConnectionDialog } from "../components/connection-dialog";
 import { useBoardSync } from "../hooks/use-board-sync";
 import { useLiveblocksSync } from "../hooks/use-liveblocks-sync";
 import { edgeTypes, nodeTypes } from "../nodes/node-types";
@@ -253,183 +249,6 @@ function BoardFlowInner({
   const [selectedProjections, setSelectedProjections] = useState<
     BoardProjection[]
   >([]);
-
-  // ---- Manual connection state ----
-
-  // Track pending connection for the dialog
-  const [pendingConnection, setPendingConnection] = useState<{
-    source: BoardProjection;
-    target: BoardProjection;
-  } | null>(null);
-  const [isConnectionDialogOpen, setIsConnectionDialogOpen] = useState(false);
-
-  // ---- Path highlighting state ----
-
-  // Track the node that initiated path highlighting (null = no highlight)
-  const [highlightedPathSource, setHighlightedPathSource] = useState<
-    string | null
-  >(null);
-
-  // Compute connected nodes and edges for path highlighting using graph traversal
-  const pathHighlightState = useMemo(() => {
-    if (!highlightedPathSource) {
-      return {
-        connectedNodeIds: new Set<string>(),
-        connectedEdgeIds: new Set<string>(),
-      };
-    }
-
-    const connectedNodeIds = new Set<string>();
-    const connectedEdgeIds = new Set<string>();
-
-    // Build adjacency maps for bidirectional traversal
-    const nodeToEdges = new Map<string, Set<string>>();
-    const adjacency = new Map<string, Set<string>>();
-
-    // Initialize maps
-    for (const node of projections) {
-      nodeToEdges.set(node.id, new Set());
-      adjacency.set(node.id, new Set());
-    }
-
-    // Populate from derived connections
-    for (const conn of derivedConnections) {
-      const edgeId = conn.id;
-      const sourceId = conn.fromProjectionId;
-      const targetId = conn.toProjectionId;
-
-      if (nodeToEdges.has(sourceId)) {
-        nodeToEdges.get(sourceId)?.add(edgeId);
-      }
-      if (nodeToEdges.has(targetId)) {
-        nodeToEdges.get(targetId)?.add(edgeId);
-      }
-      if (adjacency.has(sourceId) && adjacency.has(targetId)) {
-        adjacency.get(sourceId)?.add(targetId);
-        adjacency.get(targetId)?.add(sourceId);
-        connectedEdgeIds.add(edgeId);
-      }
-    }
-
-    // Populate from annotations (manual connections)
-    for (const annotation of annotations) {
-      if (annotation.annotationType !== "connection") {
-        continue;
-      }
-      if (!(annotation.fromProjectionId && annotation.toProjectionId)) {
-        continue;
-      }
-
-      const edgeId = `annotation-${annotation.id}`;
-      const sourceId = annotation.fromProjectionId;
-      const targetId = annotation.toProjectionId;
-
-      if (nodeToEdges.has(sourceId)) {
-        nodeToEdges.get(sourceId)?.add(edgeId);
-      }
-      if (nodeToEdges.has(targetId)) {
-        nodeToEdges.get(targetId)?.add(edgeId);
-      }
-      if (adjacency.has(sourceId) && adjacency.has(targetId)) {
-        adjacency.get(sourceId)?.add(targetId);
-        adjacency.get(targetId)?.add(sourceId);
-        connectedEdgeIds.add(edgeId);
-      }
-    }
-
-    // BFS traversal to find all connected nodes
-    const queue = [highlightedPathSource];
-    const visited = new Set<string>();
-    visited.add(highlightedPathSource);
-    connectedNodeIds.add(highlightedPathSource);
-
-    while (queue.length > 0) {
-      const current = queue.shift()!;
-      const neighbors = adjacency.get(current);
-
-      if (neighbors) {
-        for (const neighbor of neighbors) {
-          if (!visited.has(neighbor)) {
-            visited.add(neighbor);
-            connectedNodeIds.add(neighbor);
-            queue.push(neighbor);
-          }
-        }
-      }
-    }
-
-    // Filter edges to only include those between connected nodes
-    const finalConnectedEdgeIds = new Set<string>();
-    for (const edgeId of connectedEdgeIds) {
-      // Check derived connections
-      const derivedConn = derivedConnections.find((c) => c.id === edgeId);
-      if (derivedConn) {
-        if (
-          connectedNodeIds.has(derivedConn.fromProjectionId) &&
-          connectedNodeIds.has(derivedConn.toProjectionId)
-        ) {
-          finalConnectedEdgeIds.add(edgeId);
-        }
-        continue;
-      }
-
-      // Check annotations
-      const annotationConn = annotations.find(
-        (a) => `annotation-${a.id}` === edgeId
-      );
-      if (
-        annotationConn &&
-        annotationConn.fromProjectionId &&
-        annotationConn.toProjectionId &&
-        connectedNodeIds.has(annotationConn.fromProjectionId) &&
-        connectedNodeIds.has(annotationConn.toProjectionId)
-      ) {
-        finalConnectedEdgeIds.add(edgeId);
-      }
-    }
-
-    return {
-      connectedNodeIds,
-      connectedEdgeIds: finalConnectedEdgeIds,
-    };
-  }, [highlightedPathSource, projections, derivedConnections, annotations]);
-
-  // Clear path highlighting
-  const clearPathHighlight = useCallback(() => {
-    setHighlightedPathSource(null);
-  }, []);
-
-  // Handle node click for path highlighting
-  const handleNodeClick = useCallback(
-    (_event: React.MouseEvent, node: Node) => {
-      // Toggle: if clicking the same node, clear highlight
-      if (highlightedPathSource === node.id) {
-        setHighlightedPathSource(null);
-      } else {
-        setHighlightedPathSource(node.id);
-      }
-    },
-    [highlightedPathSource]
-  );
-
-  // Handle pane click (click on empty space) to clear highlight
-  const handlePaneClick = useCallback(() => {
-    if (highlightedPathSource) {
-      setHighlightedPathSource(null);
-    }
-  }, [highlightedPathSource]);
-
-  // Handle Escape key to clear highlight
-  useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape" && highlightedPathSource) {
-        setHighlightedPathSource(null);
-      }
-    }
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [highlightedPathSource]);
 
   // Handle selection changes from ReactFlow
   const handleSelectionChange = useCallback(
@@ -758,9 +577,6 @@ function BoardFlowInner({
   }, [activePreviewMutations]);
 
   const renderedNodes = useMemo(() => {
-    // Check if path highlighting is active
-    const isPathHighlighting = highlightedPathSource !== null;
-
     const persistedNodes = nodes
       .filter((node) => !previewState.removedNodeIds.has(node.id))
       .map((node) => {
@@ -802,32 +618,9 @@ function BoardFlowInner({
           }
         }
 
-        // Determine path highlighting styling
-        let pathHighlightStyle: React.CSSProperties = {};
-        let pathHighlightClassName = "";
-
-        if (isPathHighlighting) {
-          const isConnected = pathHighlightState.connectedNodeIds.has(node.id);
-          if (isConnected) {
-            // Connected node - add highlight ring
-            pathHighlightStyle = {
-              boxShadow:
-                "0 0 0 3px #3b82f6, 0 4px 12px rgba(59, 130, 246, 0.3)",
-            };
-            pathHighlightClassName = "path-highlighted";
-          } else {
-            // Not connected - dim the node
-            pathHighlightStyle = {
-              opacity: 0.35,
-            };
-            pathHighlightClassName = "path-dimmed";
-          }
-        }
-
         if (
           !(moved || highlightColor) &&
-          Object.keys(simulationStyle).length === 0 &&
-          Object.keys(pathHighlightStyle).length === 0
+          Object.keys(simulationStyle).length === 0
         ) {
           return node;
         }
@@ -835,8 +628,7 @@ function BoardFlowInner({
         return {
           ...node,
           position: moved ?? node.position,
-          className:
-            `${node.className ?? ""} ${simulationClassName} ${pathHighlightClassName}`.trim(),
+          className: `${node.className ?? ""} ${simulationClassName}`.trim(),
           style: {
             ...node.style,
             ...(highlightColor
@@ -845,7 +637,6 @@ function BoardFlowInner({
                 }
               : {}),
             ...simulationStyle,
-            ...pathHighlightStyle,
           },
         };
       });
@@ -910,43 +701,12 @@ function BoardFlowInner({
     boardMode,
     simulationDelta,
     simulationState,
-    highlightedPathSource,
-    pathHighlightState,
   ]);
 
   const renderedEdges = useMemo(() => {
-    // Check if path highlighting is active
-    const isPathHighlighting = highlightedPathSource !== null;
-
-    const persistedEdges = edges
-      .filter((edge) => !previewState.removedEdgeIds.has(edge.id))
-      .map((edge) => {
-        // Apply path highlighting to edges
-        if (isPathHighlighting) {
-          const isConnected = pathHighlightState.connectedEdgeIds.has(edge.id);
-          if (isConnected) {
-            // Connected edge - highlight with increased stroke width
-            return {
-              ...edge,
-              style: {
-                ...edge.style,
-                strokeWidth: 3,
-                stroke: (edge.style?.stroke as string) ?? "#3b82f6",
-              },
-              animated: true,
-            };
-          }
-          // Not connected - dim the edge
-          return {
-            ...edge,
-            style: {
-              ...edge.style,
-              opacity: 0.25,
-            },
-          };
-        }
-        return edge;
-      });
+    const persistedEdges = edges.filter(
+      (edge) => !previewState.removedEdgeIds.has(edge.id)
+    );
 
     const ghostEdges: BoardEdge[] = previewState.previewAddEdges.map(
       (mutation) => ({
@@ -980,7 +740,7 @@ function BoardFlowInner({
     );
 
     return [...persistedEdges, ...ghostEdges];
-  }, [edges, previewState, highlightedPathSource, pathHighlightState]);
+  }, [edges, previewState]);
 
   // ---- Realtime sync via Liveblocks ----
 
@@ -1137,62 +897,6 @@ function BoardFlowInner({
     },
     [onEdgesChange]
   );
-
-  // ---- Handle manual connection creation ----
-
-  const handleConnect = useCallback(
-    (connection: Connection) => {
-      // Find the source and target projections
-      const sourceProjection = projections.find(
-        (p) => p.id === connection.source
-      );
-      const targetProjection = projections.find(
-        (p) => p.id === connection.target
-      );
-
-      if (!(sourceProjection && targetProjection)) {
-        toast.error("Could not find source or target entity");
-        return;
-      }
-
-      // Check if connection already exists (derived or manual)
-      const existingDerived = derivedConnections.find(
-        (c) =>
-          (c.fromProjectionId === connection.source &&
-            c.toProjectionId === connection.target) ||
-          (c.fromProjectionId === connection.target &&
-            c.toProjectionId === connection.source)
-      );
-      const existingAnnotation = annotations.find(
-        (a) =>
-          a.annotationType === "connection" &&
-          ((a.fromProjectionId === connection.source &&
-            a.toProjectionId === connection.target) ||
-            (a.fromProjectionId === connection.target &&
-              a.toProjectionId === connection.source))
-      );
-
-      if (existingDerived || existingAnnotation) {
-        toast.info("A connection between these entities already exists");
-        return;
-      }
-
-      // Open the connection dialog to get connection details
-      setPendingConnection({
-        source: sourceProjection,
-        target: targetProjection,
-      });
-      setIsConnectionDialogOpen(true);
-    },
-    [projections, derivedConnections, annotations]
-  );
-
-  // Handle successful connection creation
-  const handleConnectionCreated = useCallback(() => {
-    // Trigger a refresh to pick up the new annotation
-    onProjectionAdded?.(undefined as unknown as BoardProjection);
-    toast.success("Connection created");
-  }, [onProjectionAdded]);
 
   // ---- Handle node deletion via keyboard ----
 
@@ -1474,12 +1178,9 @@ function BoardFlowInner({
         multiSelectionKeyCode="Shift"
         nodes={renderedNodes}
         nodeTypes={nodeTypes}
-        onConnect={handleConnect}
         onEdgesChange={handleEdgesChange}
-        onNodeClick={handleNodeClick}
         onNodesChange={handleNodesChange}
         onNodesDelete={handleDelete}
-        onPaneClick={handlePaneClick}
         onSelectionChange={handleSelectionChange}
         panActivationKeyCode="Space"
         panOnDrag={[1, 2]}
@@ -1497,20 +1198,6 @@ function BoardFlowInner({
         />
         <Controls />
         <MiniMap maskColor="rgba(0,0,0,0.1)" nodeColor={minimapNodeColor} />
-        {/* Path highlight clear button */}
-        {highlightedPathSource && (
-          <Panel className="!top-4 !right-4" position="top-right">
-            <Button
-              className="gap-1.5 shadow-md"
-              onClick={clearPathHighlight}
-              size="sm"
-              variant="secondary"
-            >
-              <X className="size-3.5" />
-              Clear highlight
-            </Button>
-          </Panel>
-        )}
       </ReactFlow>
 
       {/* Bulk action toolbar for multi-select */}
@@ -1523,16 +1210,6 @@ function BoardFlowInner({
         }
         onUndo={handleBulkEditUndo}
         selectedProjections={selectedProjections}
-      />
-
-      {/* Connection dialog for manual connections */}
-      <ConnectionDialog
-        boardId={boardId}
-        onConnectionCreated={handleConnectionCreated}
-        onOpenChange={setIsConnectionDialogOpen}
-        open={isConnectionDialogOpen}
-        sourceProjection={pendingConnection?.source ?? null}
-        targetProjection={pendingConnection?.target ?? null}
       />
     </div>
   );

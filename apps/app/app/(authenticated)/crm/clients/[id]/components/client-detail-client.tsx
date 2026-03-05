@@ -23,14 +23,12 @@ import {
 } from "@repo/design-system/components/ui/tabs";
 import {
   ArrowLeftIcon,
-  BellIcon,
   CalendarIcon,
   DollarSignIcon,
   KanbanIcon,
   MailIcon,
   MessageSquareIcon,
   PhoneIcon,
-  SettingsIcon,
   TagIcon,
   TrashIcon,
   UserIcon,
@@ -39,11 +37,9 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import type { CommunicationPreferences } from "@repo/database";
 import { AddToBoardDialog } from "../../../../command-board/components/add-to-board-dialog";
 import { deleteClient } from "../../actions";
 import { CommunicationsTab } from "./tabs/communications-tab";
-import { CommunicationPreferencesTab } from "./tabs/communication-preferences-tab";
 import { ContactInfoTab } from "./tabs/contact-info-tab";
 import { ContactsTab } from "./tabs/contacts-tab";
 import { EventsTab } from "./tabs/events-tab";
@@ -114,10 +110,9 @@ interface ClientDetailProps {
     eventCount: number;
     totalRevenue: { total: string } | null;
   };
-  communicationPreferences: CommunicationPreferences;
 }
 
-export function ClientDetailClient({ client, communicationPreferences }: ClientDetailProps) {
+export function ClientDetailClient({ client }: ClientDetailProps) {
   const router = useRouter();
   const params = useParams();
   const clientId = (params?.id as string) ?? "";
@@ -299,7 +294,7 @@ export function ClientDetailClient({ client, communicationPreferences }: ClientD
 
       {/* Tabs */}
       <Tabs onValueChange={setActiveTab} value={activeTab}>
-        <TabsList className="grid w-full grid-cols-7">
+        <TabsList className="grid w-full grid-cols-6">
           <TabsTrigger value="contact">
             <UserIcon className="h-4 w-4 mr-2" />
             Contact
@@ -316,12 +311,8 @@ export function ClientDetailClient({ client, communicationPreferences }: ClientD
             <MessageSquareIcon className="h-4 w-4 mr-2" />
             Communications
           </TabsTrigger>
-          <TabsTrigger value="comm-preferences">
-            <BellIcon className="h-4 w-4 mr-2" />
-            Comm Settings
-          </TabsTrigger>
           <TabsTrigger value="preferences">
-            <SettingsIcon className="h-4 w-4 mr-2" />
+            <TagIcon className="h-4 w-4 mr-2" />
             Preferences
           </TabsTrigger>
           <TabsTrigger value="financial">
@@ -344,13 +335,6 @@ export function ClientDetailClient({ client, communicationPreferences }: ClientD
 
         <TabsContent className="mt-6" value="communications">
           <CommunicationsTab clientId={clientId} />
-        </TabsContent>
-
-        <TabsContent className="mt-6" value="comm-preferences">
-          <CommunicationPreferencesTab
-            clientId={clientId}
-            initialPreferences={communicationPreferences}
-          />
         </TabsContent>
 
         <TabsContent className="mt-6" value="preferences">

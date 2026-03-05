@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { getClientById, getClientCommunicationPreferences } from "../actions";
+import { getClientById } from "../actions";
 import { ClientDetailClient } from "./components/client-detail-client";
 
 export default async function ClientDetailPage({
@@ -11,9 +11,8 @@ export default async function ClientDetailPage({
 
   try {
     const client = await getClientById(id);
-    const communicationPreferences = await getClientCommunicationPreferences(id);
 
-    return <ClientDetailClient client={client} communicationPreferences={communicationPreferences} />;
+    return <ClientDetailClient client={client} />;
   } catch (_error) {
     notFound();
   }

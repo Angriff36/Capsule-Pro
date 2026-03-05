@@ -179,11 +179,10 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
     });
 
     const newClaimedBy = data.claimedBy as string | undefined;
-    let createdClaim: KitchenTaskClaim | null = null;
 
     if (newClaimedBy && !activeClaim) {
       // Create new claim
-      createdClaim = await this.prisma.kitchenTaskClaim.create({
+      await this.prisma.kitchenTaskClaim.create({
         data: {
           tenantId: this.tenantId,
           taskId: id,
@@ -213,7 +212,7 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
         data: { releasedAt: new Date() },
       });
 
-      createdClaim = await this.prisma.kitchenTaskClaim.create({
+      await this.prisma.kitchenTaskClaim.create({
         data: {
           tenantId: this.tenantId,
           taskId: id,
@@ -221,43 +220,6 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
           claimedAt: data.claimedAt
             ? new Date(data.claimedAt as number)
             : new Date(),
-        },
-      });
-    }
-
-    const claimedFromOpenOrPending =
-      updated.status === "in_progress" &&
-      existing.status !== "in_progress" &&
-      Boolean(createdClaim) &&
-      typeof data.stationId === "string";
-
-    if (claimedFromOpenOrPending && createdClaim && newClaimedBy) {
-      await this.prisma.kitchenTaskProgress.create({
-        data: {
-          tenantId: this.tenantId,
-          taskId: id,
-          employeeId: newClaimedBy,
-          progressType: "status_change",
-          oldStatus: existing.status,
-          newStatus: "in_progress",
-          notes: `Task claimed by ${newClaimedBy}`,
-        },
-      });
-
-      await this.prisma.outboxEvent.create({
-        data: {
-          tenantId: this.tenantId,
-          aggregateType: "KitchenTask",
-          aggregateId: id,
-          eventType: "kitchen.task.claimed",
-          payload: {
-            taskId: id,
-            claimId: createdClaim.id,
-            employeeId: newClaimedBy,
-            status: "in_progress",
-            constraintOutcomes: [],
-          } as Prisma.InputJsonValue,
-          status: "pending",
         },
       });
     }
@@ -1384,219 +1346,6 @@ export class AllergenWarningPrismaStore implements Store<EntityInstance> {
   }
 }
 
-// ---------------------------------------------------------------------------
-// EventPrismaStore
-// ---------------------------------------------------------------------------
-// WHY: The Event entity has a dedicated Prisma model in tenant_events schema
-// with typed columns (Date, Decimal, String[]) that require explicit mapping
-// from the flat manifest EntityInstance format. The generic PrismaJsonStore
-// would try to write to a generic json_store table which doesn't exist for Events.
-// ---------------------------------------------------------------------------
-
-const toNull = (v: unknown): string | null => {
-  if (
-    v === null ||
-    v === undefined ||
-    v === "null" ||
-    v === "undefined" ||
-    v === ""
-  )
-    return null;
-  return String(v);
-};
-
-const toNullNum = (v: unknown): number | null => {
-  if (
-    v === null ||
-    v === undefined ||
-    v === "null" ||
-    v === "undefined" ||
-    v === ""
-  )
-    return null;
-  const n = Number(v);
-  return Number.isNaN(n) ? null : n;
-};
-
-const toStringArray = (v: unknown): string[] => {
-  if (!v) return [];
-  if (Array.isArray(v)) return v.map(String);
-  if (typeof v === "string") {
-    if (v === "null" || v === "") return [];
-    return v
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean);
-  }
-  return [];
-};
-
-export class EventPrismaStore implements Store<EntityInstance> {
-  constructor(
-    private readonly prisma: PrismaClient,
-    private readonly tenantId: string
-  ) {}
-
-  private mapToEntity(row: Record<string, unknown>): EntityInstance {
-    return {
-      id: String(row.id),
-      tenantId: String(row.tenantId ?? row.tenant_id),
-      eventNumber: row.eventNumber ?? null,
-      title: row.title ?? "Untitled Event",
-      clientId: row.clientId ?? null,
-      locationId: row.locationId ?? null,
-      venueId: row.venueId ?? null,
-      venueEntityId: row.venueEntityId ?? null,
-      eventType: row.eventType ?? "",
-      eventDate:
-        row.eventDate instanceof Date ? row.eventDate.getTime() : row.eventDate,
-      guestCount: Number(row.guestCount ?? 1),
-      status: row.status ?? "confirmed",
-      budget: row.budget != null ? Number(row.budget) : null,
-      ticketPrice: row.ticketPrice != null ? Number(row.ticketPrice) : null,
-      ticketTier: row.ticketTier ?? null,
-      eventFormat: row.eventFormat ?? null,
-      accessibilityOptions: Array.isArray(row.accessibilityOptions)
-        ? row.accessibilityOptions
-        : [],
-      featuredMediaUrl: row.featuredMediaUrl ?? null,
-      assignedTo: row.assignedTo ?? null,
-      venueName: row.venueName ?? null,
-      venueAddress: row.venueAddress ?? null,
-      notes: row.notes ?? null,
-      tags: Array.isArray(row.tags) ? row.tags : [],
-      createdAt:
-        row.createdAt instanceof Date
-          ? row.createdAt.toISOString()
-          : row.createdAt,
-      updatedAt:
-        row.updatedAt instanceof Date
-          ? row.updatedAt.toISOString()
-          : row.updatedAt,
-    } as EntityInstance;
-  }
-
-  async getAll(): Promise<EntityInstance[]> {
-    // biome-ignore lint/suspicious/noExplicitAny: prisma dynamic access
-    const rows = await (this.prisma as any).event.findMany({
-      where: { tenantId: this.tenantId, deletedAt: null },
-    });
-    return rows.map((r: Record<string, unknown>) => this.mapToEntity(r));
-  }
-
-  async getById(id: string): Promise<EntityInstance | undefined> {
-    // biome-ignore lint/suspicious/noExplicitAny: prisma dynamic access
-    const row = await (this.prisma as any).event.findFirst({
-      where: { tenantId: this.tenantId, id, deletedAt: null },
-    });
-    return row ? this.mapToEntity(row) : undefined;
-  }
-
-  async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
-    const eventDateRaw = (data as Record<string, unknown>).eventDate;
-    const eventDate = eventDateRaw
-      ? new Date(
-          typeof eventDateRaw === "number" ? eventDateRaw : Number(eventDateRaw)
-        )
-      : new Date();
-
-    // biome-ignore lint/suspicious/noExplicitAny: prisma dynamic access
-    const row = await (this.prisma as any).event.create({
-      data: {
-        tenantId: this.tenantId,
-        eventNumber: toNull((data as Record<string, unknown>).eventNumber),
-        title: String(
-          (data as Record<string, unknown>).title ?? "Untitled Event"
-        ),
-        clientId: toNull((data as Record<string, unknown>).clientId),
-        locationId: toNull((data as Record<string, unknown>).locationId),
-        venueId: toNull((data as Record<string, unknown>).venueId),
-        venueEntityId: toNull((data as Record<string, unknown>).venueEntityId),
-        eventType: String(
-          (data as Record<string, unknown>).eventType ?? "general"
-        ),
-        eventDate,
-        guestCount:
-          toNullNum((data as Record<string, unknown>).guestCount) ?? 1,
-        status: String((data as Record<string, unknown>).status ?? "confirmed"),
-        budget: toNullNum((data as Record<string, unknown>).budget),
-        ticketPrice: toNullNum((data as Record<string, unknown>).ticketPrice),
-        ticketTier: toNull((data as Record<string, unknown>).ticketTier),
-        eventFormat: toNull((data as Record<string, unknown>).eventFormat),
-        accessibilityOptions: toStringArray(
-          (data as Record<string, unknown>).accessibilityOptions
-        ),
-        featuredMediaUrl: toNull(
-          (data as Record<string, unknown>).featuredMediaUrl
-        ),
-        assignedTo: toNull((data as Record<string, unknown>).assignedTo),
-        venueName: toNull((data as Record<string, unknown>).venueName),
-        venueAddress: toNull((data as Record<string, unknown>).venueAddress),
-        notes: toNull((data as Record<string, unknown>).notes),
-        tags: toStringArray((data as Record<string, unknown>).tags),
-      },
-    });
-    return this.mapToEntity(row);
-  }
-
-  async update(
-    id: string,
-    data: Partial<EntityInstance>
-  ): Promise<EntityInstance | undefined> {
-    const updateData: Record<string, unknown> = {};
-    const d = data as Record<string, unknown>;
-    if (d.title !== undefined) updateData.title = String(d.title);
-    if (d.eventType !== undefined) updateData.eventType = String(d.eventType);
-    if (d.status !== undefined) updateData.status = String(d.status);
-    if (d.guestCount !== undefined)
-      updateData.guestCount = toNullNum(d.guestCount) ?? 1;
-    if (d.eventDate !== undefined)
-      updateData.eventDate = new Date(Number(d.eventDate));
-    if (d.clientId !== undefined) updateData.clientId = toNull(d.clientId);
-    if (d.locationId !== undefined)
-      updateData.locationId = toNull(d.locationId);
-    if (d.venueId !== undefined) updateData.venueId = toNull(d.venueId);
-    if (d.budget !== undefined) updateData.budget = toNullNum(d.budget);
-    if (d.ticketPrice !== undefined)
-      updateData.ticketPrice = toNullNum(d.ticketPrice);
-    if (d.notes !== undefined) updateData.notes = toNull(d.notes);
-    if (d.tags !== undefined) updateData.tags = toStringArray(d.tags);
-    if (d.venueName !== undefined) updateData.venueName = toNull(d.venueName);
-    if (d.venueAddress !== undefined)
-      updateData.venueAddress = toNull(d.venueAddress);
-    if (d.assignedTo !== undefined)
-      updateData.assignedTo = toNull(d.assignedTo);
-    if (d.eventFormat !== undefined)
-      updateData.eventFormat = toNull(d.eventFormat);
-    if (d.ticketTier !== undefined)
-      updateData.ticketTier = toNull(d.ticketTier);
-
-    // biome-ignore lint/suspicious/noExplicitAny: prisma dynamic access
-    const row = await (this.prisma as any).event.update({
-      where: { tenantId_id: { tenantId: this.tenantId, id } },
-      data: updateData,
-    });
-    return this.mapToEntity(row);
-  }
-
-  async delete(id: string): Promise<boolean> {
-    // biome-ignore lint/suspicious/noExplicitAny: prisma dynamic access
-    await (this.prisma as any).event.update({
-      where: { tenantId_id: { tenantId: this.tenantId, id } },
-      data: { deletedAt: new Date() },
-    });
-    return true;
-  }
-
-  async clear(): Promise<void> {
-    // biome-ignore lint/suspicious/noExplicitAny: prisma dynamic access
-    await (this.prisma as any).event.updateMany({
-      where: { tenantId: this.tenantId, deletedAt: null },
-      data: { deletedAt: new Date() },
-    });
-  }
-}
-
 /**
  * Create a Prisma store provider for Kitchen-Ops entities
  *
@@ -1639,8 +1388,6 @@ export function createPrismaStoreProvider(
         return new InventoryItemPrismaStore(prisma, tenantId);
       case "KitchenTask":
         return new KitchenTaskPrismaStore(prisma, tenantId);
-      case "Event":
-        return new EventPrismaStore(prisma, tenantId);
       default:
         console.error(
           `[createPrismaStoreProvider] No store for entity "${entityName}" — commands will fail`

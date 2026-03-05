@@ -1066,24 +1066,17 @@ export function EventDetailsClient({
 
   const handleGenerateBreakdown = useCallback(
     async (customInstructions?: string) => {
-      try {
-        await runGenerateBreakdown(
-          {
-            eventId: event.id,
-            setIsGenerating,
-            setGenerationProgress,
-            setBreakdown,
-            setShowBreakdownModal,
-            onRefresh: router.refresh,
-          },
-          customInstructions
-        );
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Failed to generate tasks";
-        toast.error(message);
-        throw error; // Re-throw so modal knows to handle it
-      }
+      await runGenerateBreakdown(
+        {
+          eventId: event.id,
+          setIsGenerating,
+          setGenerationProgress,
+          setBreakdown,
+          setShowBreakdownModal,
+          onRefresh: router.refresh,
+        },
+        customInstructions
+      );
     },
     [event.id, router.refresh]
   );
