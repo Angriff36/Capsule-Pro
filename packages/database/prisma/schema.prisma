@@ -104,6 +104,9 @@ model Account {
   adminChatParticipants   AdminChatParticipant[]
   adminChatMessages       AdminChatMessage[]
   chartOfAccounts         ChartOfAccount[]
+  expenseReports          ExpenseReport[]
+  expenseReceipts         ExpenseReceipt[]
+  expenseExports          ExpenseExport[]
   manifestEntities        ManifestEntity[]
 
   @@map("accounts")
@@ -3391,4 +3394,136 @@ model ManifestIdempotency {
   @@index([expiresAt])
   @@map("manifest_idempotency")
   @@schema("tenant")
+}
+
+// Expense Reporting System
+// Entities: ExpenseReport, ExpenseReceipt, ExpenseExport
+// Schema: tenant_accounting
+
+enum ExpenseReportStatus {
+  draft
+  submitted
+  approved
+  rejected
+  exported
+
+  @@schema("tenant_accounting")
+}
+
+enum ExpenseExportFormat {
+  CSV
+  QBO
+  XLSX
+
+  @@schema("tenant_accounting")
+}
+
+model ExpenseReport {
+  tenantId         String               @map("tenant_id") @db.Uuid
+  id               String               @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employeeId       String               @map("employee_id") @db.Uuid
+  employeeName     String               @default("") @map("employee_name")
+  eventId          String?              @map("event_id") @db.Uuid
+  eventName        String               @default("") @map("event_name")
+  title            String
+  status           ExpenseReportStatus  @default(draft)
+  totalAmount      Decimal              @default(0) @map("total_amount") @db.Decimal(12, 2)
+  currency         String               @default("USD") @db.Char(3)
+  notes            String?              @db.Text
+  submittedAt      DateTime?            @map("submitted_at") @db.Timestamptz(6)
+  approvedAt       DateTime?            @map("approved_at") @db.Timestamptz(6)
+  approvedBy       String?              @map("approved_by") @db.Uuid
+  approverName     String               @default("") @map("approver_name")
+  rejectedAt       DateTime?            @map("rejected_at") @db.Timestamptz(6)
+  rejectedBy       String?              @map("rejected_by") @db.Uuid
+  rejectionReason  String?              @map("rejection_reason") @db.Text
+  exportedAt       DateTime?            @map("exported_at") @db.Timestamptz(6)
+  exportFormat     String?              @map("export_format")
+  exportUrl        String?              @map("export_url")
+  createdAt        DateTime             @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime             @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt        DateTime?            @map("deleted_at") @db.Timestamptz(6)
+
+  tenant    Account          @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  receipts  ExpenseReceipt[]
+  exports   ExpenseExport[]
+
+  @@id([tenantId, id])
+  @@unique([id])
+  @@index([tenantId])
+  @@index([tenantId, employeeId])
+  @@index([tenantId, status])
+  @@index([tenantId, eventId])
+  @@map("expense_reports")
+  @@schema("tenant_accounting")
+}
+
+model ExpenseReceipt {
+  tenantId           String    @map("tenant_id") @db.Uuid
+  id                 String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  expenseReportId    String    @map("expense_report_id") @db.Uuid
+  vendorName         String    @map("vendor_name")
+  amount             Decimal   @db.Decimal(12, 2)
+  currency           String    @default("USD") @db.Char(3)
+  transactionDate    DateTime  @map("transaction_date") @db.Timestamptz(6)
+  category           String    @default("")
+  glAccountId        String    @map("gl_account_id") @db.Uuid
+  glAccountNumber    String    @default("") @map("gl_account_number")
+  glAccountName      String    @default("") @map("gl_account_name")
+  businessPurpose    String    @map("business_purpose") @db.Text
+  receiptUrl         String?   @map("receipt_url")
+  receiptStoragePath String?   @map("receipt_storage_path")
+  ocrVendor          String?   @map("ocr_vendor")
+  ocrAmount          Decimal?  @map("ocr_amount") @db.Decimal(12, 2)
+  ocrDate            DateTime? @map("ocr_date") @db.Timestamptz(6)
+  ocrConfidence      Float?    @map("ocr_confidence")
+  ocrRawData         Json?     @map("ocr_raw_data")
+  isDuplicate        Boolean   @default(false) @map("is_duplicate")
+  duplicateOfId      String?   @map("duplicate_of_id") @db.Uuid
+  notes              String?   @db.Text
+  eventId            String?   @map("event_id") @db.Uuid
+  eventName          String    @default("") @map("event_name")
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  tenant        Account       @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  expenseReport ExpenseReport @relation(fields: [expenseReportId], references: [id])
+
+  @@id([tenantId, id])
+  @@unique([id])
+  @@index([tenantId])
+  @@index([tenantId, expenseReportId])
+  @@index([tenantId, glAccountId])
+  @@index([tenantId, eventId])
+  @@index([tenantId, transactionDate])
+  @@map("expense_receipts")
+  @@schema("tenant_accounting")
+}
+
+model ExpenseExport {
+  tenantId        String              @map("tenant_id") @db.Uuid
+  id              String              @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  expenseReportId String              @map("expense_report_id") @db.Uuid
+  format          ExpenseExportFormat @default(CSV)
+  status          String              @default("pending")
+  downloadUrl     String?             @map("download_url")
+  storagePath     String?             @map("storage_path")
+  recordCount     Int                 @default(0) @map("record_count")
+  requestedBy     String?             @map("requested_by") @db.Uuid
+  generatedAt     DateTime?           @map("generated_at") @db.Timestamptz(6)
+  expiresAt       DateTime?           @map("expires_at") @db.Timestamptz(6)
+  errorMessage    String?             @map("error_message") @db.Text
+  metadata        Json?
+  createdAt       DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  tenant        Account       @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  expenseReport ExpenseReport @relation(fields: [expenseReportId], references: [id])
+
+  @@id([tenantId, id])
+  @@unique([id])
+  @@index([tenantId])
+  @@index([tenantId, expenseReportId])
+  @@map("expense_exports")
+  @@schema("tenant_accounting")
 }

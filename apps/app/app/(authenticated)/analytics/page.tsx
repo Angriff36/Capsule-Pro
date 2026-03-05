@@ -18,7 +18,9 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { getTenantIdForOrg } from "../../lib/tenant";
+import { Receipt, TrendingUp, Users, UtensilsCrossed, DollarSign } from "lucide-react";
 
 const currencyFormatter = new Intl.NumberFormat("en-US", {
   style: "currency",
@@ -370,6 +372,107 @@ const AnalyticsPage = async () => {
           A single dashboard for events, kitchen, and finance performance.
         </p>
       </div>
+
+      <Separator />
+
+      {/* Analytics Modules */}
+      <section className="space-y-4">
+        <h2 className="text-sm font-medium text-muted-foreground">
+          Analytics Modules
+        </h2>
+        <div className="grid gap-4 md:grid-cols-5">
+          <Link
+            href="/analytics/expense-reports"
+            className="group"
+          >
+            <Card className="transition-colors hover:border-primary">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Receipt className="h-5 w-5 text-primary" />
+                  <CardTitle className="text-base">Expense Reports</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground text-xs">
+                  Submit, track, and export expense reports
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link
+            href="/analytics/finance"
+            className="group"
+          >
+            <Card className="transition-colors hover:border-primary">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <DollarSign className="h-5 w-5 text-primary" />
+                  <CardTitle className="text-base">Finance</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground text-xs">
+                  Cash flow, margins, and financial alerts
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link
+            href="/analytics/sales"
+            className="group"
+          >
+            <Card className="transition-colors hover:border-primary">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-primary" />
+                  <CardTitle className="text-base">Sales</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground text-xs">
+                  Sales pipeline and conversion metrics
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link
+            href="/analytics/kitchen"
+            className="group"
+          >
+            <Card className="transition-colors hover:border-primary">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <UtensilsCrossed className="h-5 w-5 text-primary" />
+                  <CardTitle className="text-base">Kitchen</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground text-xs">
+                  Kitchen performance and waste tracking
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+          <Link
+            href="/analytics/clients"
+            className="group"
+          >
+            <Card className="transition-colors hover:border-primary">
+              <CardHeader>
+                <div className="flex items-center gap-2">
+                  <Users className="h-5 w-5 text-primary" />
+                  <CardTitle className="text-base">Clients</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground text-xs">
+                  Client LTV and retention analytics
+                </p>
+              </CardContent>
+            </Card>
+          </Link>
+        </div>
+      </section>
 
       <Separator />
 

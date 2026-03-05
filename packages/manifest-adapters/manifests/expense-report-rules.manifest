@@ -1,0 +1,523 @@
+// Accounting - Expense Report Rules
+// Manifest spec for expense report lifecycle: receipt capture → categorization → approval → export
+// Integrates with: Event (optional linkage), ChartOfAccount (GL codes), User (submitter/approver)
+
+entity ExpenseReport {
+  property required id: string
+  property required tenantId: string
+  property employeeId: string = ""
+  property employeeName: string = ""
+  property eventId: string = ""
+  property eventName: string = ""
+  property title: string = ""
+  property status: string = "draft"
+  property totalAmount: number = 0
+  property currency: string = "USD"
+  property notes: string = ""
+  property submittedAt: number = 0
+  property approvedAt: number = 0
+  property approvedBy: string = ""
+  property approverName: string = ""
+  property rejectedAt: number = 0
+  property rejectedBy: string = ""
+  property rejectionReason: string = ""
+  property exportedAt: number = 0
+  property exportFormat: string = ""
+  property exportUrl: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isDraft: boolean = self.status == "draft"
+  computed isSubmitted: boolean = self.status == "submitted"
+  computed isApproved: boolean = self.status == "approved"
+  computed isRejected: boolean = self.status == "rejected"
+  computed isExported: boolean = self.status == "exported"
+  computed isEditable: boolean = self.status == "draft" or self.status == "rejected"
+  computed isEventLinked: boolean = self.eventId != "" and self.eventId != null
+  computed isReadyForSubmit: boolean = self.totalAmount > 0
+
+  constraint validEmployeeId: self.employeeId != null and self.employeeId != "" "Employee ID is required"
+  constraint validTitle: self.title != null and self.title != "" "Report title is required"
+  constraint validStatus: self.status in ["draft", "submitted", "approved", "rejected", "exported"] "Status must be valid"
+
+  constraint blockEditIfSubmitted:block self.status == "submitted" or self.status == "approved" or self.status == "exported" {
+    messageTemplate: "Cannot edit expense report in '{status}' status"
+    details: {
+      status: self.status
+      reportId: self.id
+    }
+  }
+
+  constraint warnNoReceipts:warn self.totalAmount == 0 {
+    messageTemplate: "Expense report '{title}' has no receipts — cannot be submitted"
+    details: {
+      title: self.title
+      reportId: self.id
+    }
+  }
+
+  command create(employeeId: string, employeeName: string, title: string, eventId: string, eventName: string, notes: string) {
+    guard employeeId != null and employeeId != "" "Employee ID is required"
+    guard title != null and title != "" "Report title is required"
+
+    mutate employeeId = employeeId
+    mutate employeeName = employeeName
+    mutate title = title
+    mutate eventId = eventId
+    mutate eventName = eventName
+    mutate notes = notes
+    mutate status = "draft"
+    mutate totalAmount = 0
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit ExpenseReportCreated
+  }
+
+  command update(title: string, notes: string, eventId: string, eventName: string) {
+    guard self.status == "draft" or self.status == "rejected" "Can only update draft or rejected reports"
+    guard title != null and title != "" "Report title is required"
+
+    mutate title = title
+    mutate notes = notes
+    mutate eventId = eventId
+    mutate eventName = eventName
+    mutate updatedAt = now()
+
+    emit ExpenseReportUpdated
+  }
+
+  command recalculateTotal(newTotal: number) {
+    mutate totalAmount = newTotal
+    mutate updatedAt = now()
+
+    emit ExpenseReportTotalUpdated
+  }
+
+  command submit(employeeId: string) {
+    guard self.status == "draft" or self.status == "rejected" "Can only submit draft or rejected reports"
+    guard self.totalAmount > 0 "Cannot submit report with no receipts"
+    guard self.employeeId == employeeId "Only the report owner can submit"
+
+    mutate status = "submitted"
+    mutate submittedAt = now()
+    mutate updatedAt = now()
+
+    emit ExpenseReportSubmitted
+  }
+
+  command approve(approverId: string, approverName: string) {
+    guard self.status == "submitted" "Can only approve submitted reports"
+
+    mutate status = "approved"
+    mutate approvedAt = now()
+    mutate approvedBy = approverId
+    mutate approverName = approverName
+    mutate updatedAt = now()
+
+    emit ExpenseReportApproved
+  }
+
+  command reject(rejectedBy: string, reason: string) {
+    guard self.status == "submitted" "Can only reject submitted reports"
+    guard reason != null and reason != "" "Rejection reason is required"
+
+    mutate status = "rejected"
+    mutate rejectedAt = now()
+    mutate rejectedBy = rejectedBy
+    mutate rejectionReason = reason
+    mutate updatedAt = now()
+
+    emit ExpenseReportRejected
+  }
+
+  command markExported(format: string, exportUrl: string) {
+    guard self.status == "approved" "Can only export approved reports"
+
+    mutate status = "exported"
+    mutate exportFormat = format
+    mutate exportUrl = exportUrl
+    mutate exportedAt = now()
+    mutate updatedAt = now()
+
+    emit ExpenseReportExported
+  }
+
+  store ExpenseReport in memory
+}
+
+entity ExpenseReceipt {
+  property required id: string
+  property required tenantId: string
+  property required expenseReportId: string
+  property vendorName: string = ""
+  property amount: number = 0
+  property currency: string = "USD"
+  property transactionDate: number = 0
+  property category: string = ""
+  property glAccountId: string = ""
+  property glAccountNumber: string = ""
+  property glAccountName: string = ""
+  property businessPurpose: string = ""
+  property receiptUrl: string = ""
+  property receiptStoragePath: string = ""
+  property ocrVendor: string = ""
+  property ocrAmount: number = 0
+  property ocrDate: number = 0
+  property ocrConfidence: number = 0
+  property ocrRawData: string = "{}"
+  property isDuplicate: boolean = false
+  property duplicateOfId: string = ""
+  property notes: string = ""
+  property eventId: string = ""
+  property eventName: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+
+  computed hasReceipt: boolean = self.receiptUrl != "" and self.receiptUrl != null
+  computed hasGlAccount: boolean = self.glAccountId != "" and self.glAccountId != null
+  computed hasBusinessPurpose: boolean = self.businessPurpose != "" and self.businessPurpose != null
+  computed isIrsCompliant: boolean = self.amount < 75 or self.hasReceipt == true
+  computed isEventLinked: boolean = self.eventId != "" and self.eventId != null
+  computed isAccountantReady: boolean = self.hasReceipt and self.hasGlAccount and self.hasBusinessPurpose and self.vendorName != "" and self.transactionDate > 0
+
+  constraint validAmount: self.amount > 0 "Amount must be greater than zero"
+  constraint validVendor: self.vendorName != null and self.vendorName != "" "Vendor name is required"
+  constraint validTransactionDate: self.transactionDate > 0 "Transaction date is required"
+  constraint requireGlAccount: self.glAccountId != null and self.glAccountId != "" "GL account (expense code) is required"
+  constraint requireBusinessPurpose: self.businessPurpose != null and self.businessPurpose != "" "Specific business purpose is required — e.g. 'Q3 client meeting with Acme Corp' not just 'business meal'"
+
+  constraint warnReceiptRequired:warn self.amount >= 75 and self.receiptUrl == "" {
+    messageTemplate: "IRS requires receipt for expenses $75 or over — attach receipt for ${amount} at {vendor}"
+    details: {
+      amount: self.amount
+      vendor: self.vendorName
+      receiptId: self.id
+    }
+  }
+
+  constraint warnVaguePurpose:warn self.businessPurpose != "" and self.businessPurpose != null {
+    messageTemplate: "Business purpose should be specific (include who, what, and why)"
+    details: {
+      businessPurpose: self.businessPurpose
+      vendor: self.vendorName
+    }
+  }
+
+  constraint blockDuplicateSubmit:block self.isDuplicate == true {
+    messageTemplate: "This receipt appears to be a duplicate of receipt {duplicateId}"
+    details: {
+      duplicateId: self.duplicateOfId
+      amount: self.amount
+      vendor: self.vendorName
+      transactionDate: self.transactionDate
+    }
+  }
+
+  command create(expenseReportId: string, vendorName: string, amount: number, transactionDate: number, category: string, glAccountId: string, glAccountNumber: string, glAccountName: string, businessPurpose: string, notes: string, eventId: string, eventName: string) {
+    guard expenseReportId != null and expenseReportId != "" "Expense report ID is required"
+    guard vendorName != null and vendorName != "" "Vendor name is required"
+    guard amount > 0 "Amount must be greater than zero"
+    guard transactionDate > 0 "Transaction date is required"
+    guard glAccountId != null and glAccountId != "" "GL account is required"
+    guard businessPurpose != null and businessPurpose != "" "Business purpose is required"
+
+    mutate expenseReportId = expenseReportId
+    mutate vendorName = vendorName
+    mutate amount = amount
+    mutate transactionDate = transactionDate
+    mutate category = category
+    mutate glAccountId = glAccountId
+    mutate glAccountNumber = glAccountNumber
+    mutate glAccountName = glAccountName
+    mutate businessPurpose = businessPurpose
+    mutate notes = notes
+    mutate eventId = eventId
+    mutate eventName = eventName
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit ExpenseReceiptCreated
+  }
+
+  command attachReceipt(receiptUrl: string, receiptStoragePath: string) {
+    guard receiptUrl != null and receiptUrl != "" "Receipt URL is required"
+
+    mutate receiptUrl = receiptUrl
+    mutate receiptStoragePath = receiptStoragePath
+    mutate updatedAt = now()
+
+    emit ExpenseReceiptAttached
+  }
+
+  command applyOcrData(ocrVendor: string, ocrAmount: number, ocrDate: number, ocrConfidence: number, ocrRawData: string) {
+    mutate ocrVendor = ocrVendor
+    mutate ocrAmount = ocrAmount
+    mutate ocrDate = ocrDate
+    mutate ocrConfidence = ocrConfidence
+    mutate ocrRawData = ocrRawData
+    mutate updatedAt = now()
+
+    emit ExpenseReceiptOcrApplied
+  }
+
+  command update(vendorName: string, amount: number, transactionDate: number, category: string, glAccountId: string, glAccountNumber: string, glAccountName: string, businessPurpose: string, notes: string, eventId: string, eventName: string) {
+    guard vendorName != null and vendorName != "" "Vendor name is required"
+    guard amount > 0 "Amount must be greater than zero"
+    guard transactionDate > 0 "Transaction date is required"
+    guard glAccountId != null and glAccountId != "" "GL account is required"
+    guard businessPurpose != null and businessPurpose != "" "Business purpose is required"
+
+    mutate vendorName = vendorName
+    mutate amount = amount
+    mutate transactionDate = transactionDate
+    mutate category = category
+    mutate glAccountId = glAccountId
+    mutate glAccountNumber = glAccountNumber
+    mutate glAccountName = glAccountName
+    mutate businessPurpose = businessPurpose
+    mutate notes = notes
+    mutate eventId = eventId
+    mutate eventName = eventName
+    mutate updatedAt = now()
+
+    emit ExpenseReceiptUpdated
+  }
+
+  command flagDuplicate(duplicateOfId: string) {
+    mutate isDuplicate = true
+    mutate duplicateOfId = duplicateOfId
+    mutate updatedAt = now()
+
+    emit ExpenseReceiptFlaggedDuplicate
+  }
+
+  command clearDuplicateFlag() {
+    mutate isDuplicate = false
+    mutate duplicateOfId = ""
+    mutate updatedAt = now()
+
+    emit ExpenseReceiptDuplicateFlagCleared
+  }
+
+  command remove() {
+    mutate updatedAt = now()
+
+    emit ExpenseReceiptRemoved
+  }
+
+  store ExpenseReceipt in memory
+}
+
+entity ExpenseExport {
+  property required id: string
+  property required tenantId: string
+  property required expenseReportId: string
+  property format: string = "CSV"
+  property status: string = "pending"
+  property downloadUrl: string = ""
+  property storagePath: string = ""
+  property recordCount: number = 0
+  property generatedAt: number = 0
+  property expiresAt: number = 0
+  property requestedBy: string = ""
+  property errorMessage: string = ""
+  property metadata: string = "{}"
+  property createdAt: number = 0
+  property updatedAt: number = 0
+
+  computed isPending: boolean = self.status == "pending"
+  computed isReady: boolean = self.status == "ready"
+  computed hasFailed: boolean = self.status == "failed"
+  computed isExpired: boolean = self.expiresAt > 0 and now() > self.expiresAt
+
+  constraint validFormat: self.format in ["CSV", "QBO", "XLSX"] "Export format must be CSV, QBO, or XLSX"
+  constraint validExpenseReportId: self.expenseReportId != null and self.expenseReportId != "" "Expense report ID is required"
+
+  command create(expenseReportId: string, format: string, requestedBy: string) {
+    guard expenseReportId != null and expenseReportId != "" "Expense report ID is required"
+    guard format in ["CSV", "QBO", "XLSX"] "Format must be CSV, QBO, or XLSX"
+
+    mutate expenseReportId = expenseReportId
+    mutate format = format
+    mutate requestedBy = requestedBy
+    mutate status = "pending"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit ExpenseExportCreated
+  }
+
+  command markReady(downloadUrl: string, storagePath: string, recordCount: number) {
+    guard self.status == "pending" "Export must be in pending state"
+
+    mutate status = "ready"
+    mutate downloadUrl = downloadUrl
+    mutate storagePath = storagePath
+    mutate recordCount = recordCount
+    mutate generatedAt = now()
+    mutate updatedAt = now()
+
+    emit ExpenseExportReady
+  }
+
+  command markFailed(errorMessage: string) {
+    mutate status = "failed"
+    mutate errorMessage = errorMessage
+    mutate updatedAt = now()
+
+    emit ExpenseExportFailed
+  }
+
+  store ExpenseExport in memory
+}
+
+// Policies
+policy ExpenseReportSubmit execute: user.role in ["staff", "event_coordinator", "manager", "admin"] "All staff can submit expense reports"
+policy ExpenseReportApprove execute: user.role in ["manager", "admin"] "Only managers and admins can approve expense reports"
+policy ExpenseReportExport execute: user.role in ["manager", "admin", "finance"] "Managers, admins, and finance can export expense reports"
+policy ExpenseReportView execute: user.role in ["staff", "event_coordinator", "manager", "admin", "finance"] "All authenticated users can view their own expense reports"
+
+// ExpenseReport events
+event ExpenseReportCreated: "accounting.expense_report.created" {
+  reportId: string
+  tenantId: string
+  employeeId: string
+  employeeName: string
+  title: string
+  eventId: string
+  createdAt: number
+}
+
+event ExpenseReportUpdated: "accounting.expense_report.updated" {
+  reportId: string
+  tenantId: string
+  title: string
+  updatedAt: number
+}
+
+event ExpenseReportTotalUpdated: "accounting.expense_report.total_updated" {
+  reportId: string
+  tenantId: string
+  totalAmount: number
+  updatedAt: number
+}
+
+event ExpenseReportSubmitted: "accounting.expense_report.submitted" {
+  reportId: string
+  tenantId: string
+  employeeId: string
+  totalAmount: number
+  submittedAt: number
+}
+
+event ExpenseReportApproved: "accounting.expense_report.approved" {
+  reportId: string
+  tenantId: string
+  approverId: string
+  approverName: string
+  totalAmount: number
+  approvedAt: number
+}
+
+event ExpenseReportRejected: "accounting.expense_report.rejected" {
+  reportId: string
+  tenantId: string
+  rejectedBy: string
+  reason: string
+  rejectedAt: number
+}
+
+event ExpenseReportExported: "accounting.expense_report.exported" {
+  reportId: string
+  tenantId: string
+  format: string
+  exportUrl: string
+  exportedAt: number
+}
+
+// ExpenseReceipt events
+event ExpenseReceiptCreated: "accounting.expense_receipt.created" {
+  receiptId: string
+  tenantId: string
+  expenseReportId: string
+  vendorName: string
+  amount: number
+  glAccountId: string
+  createdAt: number
+}
+
+event ExpenseReceiptAttached: "accounting.expense_receipt.attached" {
+  receiptId: string
+  tenantId: string
+  expenseReportId: string
+  receiptUrl: string
+  updatedAt: number
+}
+
+event ExpenseReceiptOcrApplied: "accounting.expense_receipt.ocr_applied" {
+  receiptId: string
+  tenantId: string
+  ocrVendor: string
+  ocrAmount: number
+  ocrConfidence: number
+  updatedAt: number
+}
+
+event ExpenseReceiptUpdated: "accounting.expense_receipt.updated" {
+  receiptId: string
+  tenantId: string
+  expenseReportId: string
+  amount: number
+  updatedAt: number
+}
+
+event ExpenseReceiptFlaggedDuplicate: "accounting.expense_receipt.flagged_duplicate" {
+  receiptId: string
+  tenantId: string
+  duplicateOfId: string
+  updatedAt: number
+}
+
+event ExpenseReceiptDuplicateFlagCleared: "accounting.expense_receipt.duplicate_flag_cleared" {
+  receiptId: string
+  tenantId: string
+  updatedAt: number
+}
+
+event ExpenseReceiptRemoved: "accounting.expense_receipt.removed" {
+  receiptId: string
+  tenantId: string
+  expenseReportId: string
+  amount: number
+  updatedAt: number
+}
+
+// ExpenseExport events
+event ExpenseExportCreated: "accounting.expense_export.created" {
+  exportId: string
+  tenantId: string
+  expenseReportId: string
+  format: string
+  requestedBy: string
+  createdAt: number
+}
+
+event ExpenseExportReady: "accounting.expense_export.ready" {
+  exportId: string
+  tenantId: string
+  expenseReportId: string
+  format: string
+  downloadUrl: string
+  recordCount: number
+  generatedAt: number
+}
+
+event ExpenseExportFailed: "accounting.expense_export.failed" {
+  exportId: string
+  tenantId: string
+  expenseReportId: string
+  errorMessage: string
+  updatedAt: number
+}

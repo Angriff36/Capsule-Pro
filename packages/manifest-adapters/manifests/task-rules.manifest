@@ -1,0 +1,337 @@
+// Kitchen Ops - Unified Task Rules
+// Single task entity for all kitchen operations (prep, general, etc.)
+// Claim state lives on the entity. One state machine. One set of commands.
+
+entity Task {
+  property required id: string
+  property required tenantId: string
+  property required title: string
+  property summary: string = ""
+  property required status: string = "open"
+  property required taskType: string = "general"
+
+  // Assignment / claim (always inline on entity)
+  property claimedBy: string = ""
+  property claimedAt: number = 0
+  property stationId: string = ""
+
+  // Scheduling
+  property priority: number = 5
+  property complexity: number = 5
+  property dueDate: number = 0
+  property startByDate: number = 0
+
+  // Prep-specific (optional, ignored for general tasks)
+  property eventId: string = ""
+  property prepListId: string = ""
+  property quantityTotal: number = 0
+  property quantityCompleted: number = 0
+  property quantityUnitId: string = ""
+  property servingsTotal: number = 0
+  property ingredients: string = ""
+
+  // Metadata
+  property tags: string = ""
+  property notes: string = ""
+  property completedAt: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+
+  // Computed
+  computed isClaimed: boolean = self.claimedBy != ""
+  computed isOverdue: boolean = self.dueDate != 0 and now() > self.dueDate and self.status != "done"
+  computed isCompleted: boolean = self.status == "done"
+  computed isUrgent: boolean = self.priority <= 2
+  computed isHighPriority: boolean = self.priority <= 3
+  computed percentComplete: number = self.quantityTotal > 0 ? (self.quantityCompleted / self.quantityTotal) * 100 : 0
+
+  // State machine: one set of transitions for all task types
+  transition status from "open" to ["in_progress", "cancelled"]
+  transition status from "in_progress" to ["open", "done", "cancelled"]
+  // "done" and "cancelled" are terminal
+
+  // Constraints
+  constraint validStatus: self.status in ["open", "in_progress", "done", "cancelled"] "Invalid task status"
+  constraint validPriority: self.priority >= 1 and self.priority <= 5 "Priority must be between 1 and 5"
+  constraint validComplexity: self.complexity >= 1 and self.complexity <= 5 "Complexity must be between 1 and 5"
+  constraint positiveQuantity: self.quantityTotal >= 0 "Quantity must be non-negative"
+
+  constraint warnOverdue:warn self.isOverdue {
+    messageTemplate: "Task '{taskTitle}' is overdue"
+    details: {
+      taskTitle: self.title
+      dueDate: self.dueDate
+    }
+  }
+
+  // === Commands ===
+
+  command create(title: string, summary: string, taskType: string, priority: number, complexity: number, eventId: string, prepListId: string, quantityTotal: number, quantityUnitId: string, servingsTotal: number, startByDate: number, dueDate: number, notes: string, ingredients: string, tags: string) {
+    guard title != null and title != "" "Title is required"
+    guard priority >= 1 and priority <= 5 "Priority must be between 1 and 5"
+    guard complexity >= 1 and complexity <= 5 "Complexity must be between 1 and 5"
+
+    mutate title = title
+    mutate summary = summary
+    mutate taskType = taskType
+    mutate status = "open"
+    mutate priority = priority
+    mutate complexity = complexity
+    mutate eventId = eventId
+    mutate prepListId = prepListId
+    mutate quantityTotal = quantityTotal
+    mutate quantityUnitId = quantityUnitId
+    mutate servingsTotal = servingsTotal
+    mutate startByDate = startByDate
+    mutate dueDate = dueDate
+    mutate notes = notes
+    mutate ingredients = ingredients
+    mutate tags = tags
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit TaskCreated
+  }
+
+  command claim(userId: string, stationId: string) {
+    guard userId != null and userId != "" "User ID is required"
+    guard self.status == "open" "Task must be open to claim"
+    guard self.claimedBy == "" "Task is already claimed"
+
+    mutate claimedBy = userId
+    mutate claimedAt = now()
+    mutate stationId = stationId
+    mutate status = "in_progress"
+    mutate updatedAt = now()
+
+    emit TaskClaimed
+  }
+
+  command unclaim(userId: string, reason: string) {
+    guard userId != null and userId != "" "User ID is required"
+    guard self.status == "in_progress" "Can only unclaim in-progress tasks"
+    guard self.claimedBy != "" "Task is not claimed"
+
+    mutate status = "open"
+    mutate claimedBy = ""
+    mutate claimedAt = 0
+    mutate stationId = ""
+    mutate updatedAt = now()
+
+    emit TaskUnclaimed
+  }
+
+  command complete(userId: string, quantityCompleted: number) {
+    guard self.status == "in_progress" "Can only complete in-progress tasks"
+
+    mutate status = "done"
+    mutate quantityCompleted = quantityCompleted
+    mutate completedAt = now()
+    mutate updatedAt = now()
+
+    emit TaskCompleted
+  }
+
+  command release(userId: string, reason: string) {
+    guard userId != null and userId != ""
+    guard self.status == "in_progress" "Can only release in-progress tasks"
+
+    mutate status = "open"
+    mutate claimedBy = ""
+    mutate claimedAt = 0
+    mutate stationId = ""
+    mutate updatedAt = now()
+
+    emit TaskReleased
+  }
+
+  command reassign(newUserId: string, requestedBy: string) {
+    guard newUserId != null and newUserId != ""
+    guard requestedBy != null and requestedBy != ""
+    guard self.status in ["open", "in_progress"]
+
+    mutate claimedBy = newUserId
+    mutate claimedAt = now()
+    mutate updatedAt = now()
+
+    emit TaskReassigned
+  }
+
+  command cancel(reason: string, canceledBy: string) {
+    guard self.status != "done" and self.status != "cancelled" "Cannot cancel completed or already cancelled tasks"
+
+    mutate status = "cancelled"
+    mutate updatedAt = now()
+
+    emit TaskCancelled
+  }
+
+  command updatePriority(priority: number) {
+    guard priority >= 1 and priority <= 5 "Priority must be between 1 and 5"
+
+    mutate priority = priority
+    mutate updatedAt = now()
+
+    emit TaskPriorityUpdated
+  }
+
+  command updateComplexity(complexity: number) {
+    guard complexity >= 1 and complexity <= 5 "Complexity must be between 1 and 5"
+
+    mutate complexity = complexity
+    mutate updatedAt = now()
+
+    emit TaskComplexityUpdated
+  }
+
+  command updateQuantity(quantityTotal: number, quantityCompleted: number) {
+    guard quantityTotal >= 0
+    guard quantityCompleted >= 0
+    guard quantityCompleted <= quantityTotal
+
+    mutate quantityTotal = quantityTotal
+    mutate quantityCompleted = quantityCompleted
+    mutate updatedAt = now()
+
+    emit TaskQuantityUpdated
+  }
+
+  command addTag(tag: string) {
+    guard tag != null and tag != ""
+
+    mutate tags = self.tags + "," + tag
+    mutate updatedAt = now()
+
+    emit TaskTagAdded
+  }
+
+  command removeTag(tag: string) {
+    guard tag != null and tag != ""
+
+    mutate updatedAt = now()
+
+    emit TaskTagRemoved
+  }
+
+  command updateDueDate(dueDate: number) {
+    mutate dueDate = dueDate
+    mutate updatedAt = now()
+
+    emit TaskDueDateUpdated
+  }
+
+  command updateNotes(notes: string) {
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit TaskNotesUpdated
+  }
+
+  store Task in memory
+}
+
+// Policies — one set, consistent context shape
+// All policies check user.role. Tenant is enforced at the route/adapter layer, not in manifest policy.
+policy StaffCanManageTasks execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Staff can manage tasks"
+policy ManagersCanCancel execute: user.role in ["kitchen_lead", "manager", "admin"] "Only leads and above can cancel tasks"
+policy AnyoneCanView execute: true "Anyone can view tasks"
+
+// Events — unified naming: kitchen.task.*
+event TaskCreated: "kitchen.task.created" {
+  taskId: string
+  tenantId: string
+  title: string
+  taskType: string
+  priority: number
+  eventId: string
+  createdAt: number
+}
+
+event TaskClaimed: "kitchen.task.claimed" {
+  taskId: string
+  userId: string
+  stationId: string
+  claimedAt: number
+}
+
+event TaskUnclaimed: "kitchen.task.unclaimed" {
+  taskId: string
+  userId: string
+  reason: string
+  unclaimedAt: number
+}
+
+event TaskCompleted: "kitchen.task.completed" {
+  taskId: string
+  userId: string
+  quantityCompleted: number
+  completedAt: number
+}
+
+event TaskReleased: "kitchen.task.released" {
+  taskId: string
+  userId: string
+  reason: string
+  releasedAt: number
+}
+
+event TaskReassigned: "kitchen.task.reassigned" {
+  taskId: string
+  previousUserId: string
+  newUserId: string
+  reassignedBy: string
+  reassignedAt: number
+}
+
+event TaskCancelled: "kitchen.task.cancelled" {
+  taskId: string
+  reason: string
+  cancelledBy: string
+  cancelledAt: number
+}
+
+event TaskPriorityUpdated: "kitchen.task.priority.updated" {
+  taskId: string
+  oldPriority: number
+  newPriority: number
+  updatedAt: number
+}
+
+event TaskComplexityUpdated: "kitchen.task.complexity.updated" {
+  taskId: string
+  oldComplexity: number
+  newComplexity: number
+  updatedAt: number
+}
+
+event TaskQuantityUpdated: "kitchen.task.quantity.updated" {
+  taskId: string
+  oldQuantityTotal: number
+  newQuantityTotal: number
+  quantityCompleted: number
+  updatedAt: number
+}
+
+event TaskTagAdded: "kitchen.task.tag.added" {
+  taskId: string
+  tag: string
+  addedAt: number
+}
+
+event TaskTagRemoved: "kitchen.task.tag.removed" {
+  taskId: string
+  tag: string
+  removedAt: number
+}
+
+event TaskDueDateUpdated: "kitchen.task.duedate.updated" {
+  taskId: string
+  oldDueDate: number
+  newDueDate: number
+  updatedAt: number
+}
+
+event TaskNotesUpdated: "kitchen.task.notes.updated" {
+  taskId: string
+  updatedAt: number
+}
