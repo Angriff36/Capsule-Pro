@@ -1,0 +1,162 @@
+{
+  "description": "Curated Tier-2 board command surface for Capsule-Pro. Lifecycle and operational verbs only. Excludes admin-only, internal tooling, training, chat/memory.",
+  "source": "MCP query_ir_summary + inspect_command",
+  "commands": [
+    {
+      "entityName": "Event",
+      "commandName": "create",
+      "guardsCount": 0,
+      "notes": "Create new event"
+    },
+    {
+      "entityName": "Event",
+      "commandName": "update",
+      "guardsCount": 0,
+      "notes": "Update event details"
+    },
+    {
+      "entityName": "Event",
+      "commandName": "confirm",
+      "guardsCount": 0,
+      "notes": "Confirm event"
+    },
+    {
+      "entityName": "Event",
+      "commandName": "cancel",
+      "guardsCount": 0,
+      "notes": "Cancel event"
+    },
+    {
+      "entityName": "Event",
+      "commandName": "finalize",
+      "guardsCount": 0,
+      "notes": "Finalize event"
+    },
+    {
+      "entityName": "PrepTask",
+      "commandName": "claim",
+      "guardsCount": 3,
+      "notes": "Claim prep task for user/station"
+    },
+    {
+      "entityName": "PrepTask",
+      "commandName": "unclaim",
+      "guardsCount": 0,
+      "notes": "Release claim on prep task"
+    },
+    {
+      "entityName": "PrepTask",
+      "commandName": "start",
+      "guardsCount": 0,
+      "notes": "Start prep task"
+    },
+    {
+      "entityName": "PrepTask",
+      "commandName": "complete",
+      "guardsCount": 0,
+      "notes": "Complete prep task"
+    },
+    {
+      "entityName": "PrepTask",
+      "commandName": "reassign",
+      "guardsCount": 0,
+      "notes": "Reassign prep task"
+    },
+    {
+      "entityName": "KitchenTask",
+      "commandName": "claim",
+      "guardsCount": 2,
+      "notes": "Claim kitchen task"
+    },
+    {
+      "entityName": "KitchenTask",
+      "commandName": "start",
+      "guardsCount": 0,
+      "notes": "Start kitchen task"
+    },
+    {
+      "entityName": "KitchenTask",
+      "commandName": "complete",
+      "guardsCount": 0,
+      "notes": "Complete kitchen task"
+    },
+    {
+      "entityName": "KitchenTask",
+      "commandName": "reassign",
+      "guardsCount": 0,
+      "notes": "Reassign kitchen task"
+    },
+    {
+      "entityName": "PrepList",
+      "commandName": "finalize",
+      "guardsCount": 0,
+      "notes": "Finalize prep list"
+    },
+    {
+      "entityName": "PrepList",
+      "commandName": "markCompleted",
+      "guardsCount": 0,
+      "notes": "Mark prep list completed"
+    },
+    {
+      "entityName": "InventoryItem",
+      "commandName": "reserve",
+      "guardsCount": 0,
+      "notes": "Reserve inventory"
+    },
+    {
+      "entityName": "InventoryItem",
+      "commandName": "consume",
+      "guardsCount": 0,
+      "notes": "Consume inventory"
+    },
+    {
+      "entityName": "InventoryItem",
+      "commandName": "restock",
+      "guardsCount": 0,
+      "notes": "Restock inventory"
+    },
+    {
+      "entityName": "InventoryItem",
+      "commandName": "adjust",
+      "guardsCount": 0,
+      "notes": "Adjust inventory quantity"
+    },
+    {
+      "entityName": "EventStaff",
+      "commandName": "assign",
+      "guardsCount": 0,
+      "notes": "Assign staff to event"
+    },
+    {
+      "entityName": "EventStaff",
+      "commandName": "unassign",
+      "guardsCount": 0,
+      "notes": "Unassign staff from event"
+    },
+    {
+      "entityName": "CateringOrder",
+      "commandName": "confirm",
+      "guardsCount": 0,
+      "notes": "Confirm catering order"
+    },
+    {
+      "entityName": "CateringOrder",
+      "commandName": "startPrep",
+      "guardsCount": 0,
+      "notes": "Start prep for order"
+    },
+    {
+      "entityName": "CateringOrder",
+      "commandName": "markComplete",
+      "guardsCount": 0,
+      "notes": "Mark order complete"
+    },
+    {
+      "entityName": "Schedule",
+      "commandName": "release",
+      "guardsCount": 0,
+      "notes": "Release/publish schedule"
+    }
+  ]
+}

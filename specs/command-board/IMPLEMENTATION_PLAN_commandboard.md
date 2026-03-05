@@ -49,7 +49,7 @@ Work items ordered by impact and dependency. Each item references its spec.
 | 21  | Board templates                          | `SPEC_product-direction.md`      | 4-6 hr | NOT STARTED |
 | 22  | Manual connection creation               | `SPEC_connections.md` §2.2       | 2 hr   | NOT STARTED |
 | 23  | Connection filtering                     | `SPEC_connections.md` §2.3       | 2 hr   | NOT STARTED |
-| 24  | Path highlighting                        | `SPEC_connections.md` §3.2       | 2 hr   | NOT STARTED |
+| 24  | Path highlighting                        | `SPEC_connections.md` §3.2       | 2 hr   | **DONE** |
 | 25  | Undo/Redo system (React Flow compatible) | `BUGS.md` BUG-03                 | 4-6 hr | **DONE** |
 | 26  | Live card updates (polling/realtime)     | `SPEC_product-direction.md`      | 4-6 hr | **DONE** |
 | 27  | Edit-in-place in detail panel            | `SPEC_entity-detail-panel.md` §3 | 4-6 hr | NOT STARTED |

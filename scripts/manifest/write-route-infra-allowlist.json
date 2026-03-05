@@ -266,6 +266,11 @@
       "prefix": "/api/staff/budgets/alerts",
       "methods": ["POST"],
       "comment": "Uses executeManifestCommand — BudgetAlert.acknowledge/resolve"
+    },
+    {
+      "prefix": "/api/sentry-fixer/process",
+      "methods": ["POST", "GET"],
+      "comment": "Infrastructure: Sentry issue job processor + health check (no domain writes)"
     }
   ]
 }

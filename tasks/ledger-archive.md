@@ -260,3 +260,29 @@ Burn down `WRITE_ROUTE_BYPASSES_RUNTIME` audit errors: convert legacy write rout
 **Points tally:** 12 points (was 20, -8 for Phase 2 revert)
 
 ---
+
+# Agent 56
+
+**Agent ID:** 56
+**Date/Time:** 2026-02-28 20:45
+**Base branch/commit:** codex/manifest-cli-doctor @ 01c6b2afa
+
+**Goal:**
+Record Agent 55's session, then — after user correction — perform honest A/B decomposition of the 171→99 error trajectory.
+
+**Points tally:** -1 points
+
+---
+
+# Agent 57
+
+**Agent ID:** 57
+**Date/Time:** 2026-02-28 23:30
+**Base branch/commit:** codex/manifest-cli-doctor
+
+**Goal:**
+Continue burning down `WRITE_ROUTE_BYPASSES_RUNTIME` errors via genuine route conversions (A-category only). 99→69 errors, 31 methods converted across 3 sessions.
+
+**Points tally:** 21 points
+
+---

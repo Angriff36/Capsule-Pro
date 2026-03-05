@@ -24,7 +24,7 @@ Last updated: 2025-02-07
 ### Technology Stack
 
 - **Database**: PostgreSQL (hosted on Neon)
-- **ORM**: Prisma with `relationMode = "prisma"`
+- **ORM**: Prisma with `relationMode = "foreignKeys"`
 - **Migration Tool**: Prisma Migrate (NOT `db push`)
 - **Multi-tenancy**: Shared database with `tenant_id` column isolation
 - **Authentication**: Clerk (handles user auth and session management)
@@ -68,10 +68,11 @@ Last updated: 2025-02-07
 - ✅ 108 foreign key constraints added in migration `20260129120000_add_foreign_keys`
 - ✅ Referential integrity enforced by PostgreSQL
 - ✅ Composite foreign keys: `(tenant_id, parent_id)` → `(tenant_id, id)`
-- ⚠️ Prisma uses `relationMode = "prisma"` (doesn't auto-generate FK constraints)
-- ⚠️ FK constraints added manually in migrations
+- ✅ Prisma uses `relationMode = "foreignKeys"` (native DB foreign key support)
+- ✅ Prisma auto-generates FK constraints in migrations
 
 **Example**:
+
 ```sql
 ALTER TABLE tenant_crm.client_contacts
 ADD CONSTRAINT fk_client_contacts_client
@@ -103,20 +104,21 @@ ON DELETE CASCADE;
 
 ### 5. Prisma Configuration
 
-**Decision**: `relationMode = "prisma"`
+**Decision**: `relationMode = "foreignKeys"`
 
 ```prisma
 datasource db {
   provider     = "postgresql"
-  relationMode = "prisma"  // Prisma manages relations in app code
+  relationMode = "foreignKeys"  // Native DB foreign key constraints
   schemas      = ["core", "platform", "tenant", ...]
 }
 ```
 
 **Implications**:
-- Prisma does NOT auto-generate foreign key constraints
-- Foreign keys must be added manually in migrations
-- Database still enforces referential integrity (good!)
+
+- Prisma auto-generates foreign key constraints in migrations
+- Database enforces referential integrity via native FK constraints
+- Standard referential actions supported: Cascade, Restrict, SetNull, NoAction
 - Prisma client handles relation queries
 
 ### 6. UUID Generation
@@ -170,6 +172,7 @@ model Example {
 ```
 
 **Critical Rules** (from CLAUDE.md):
+
 - ✅ Field names: camelCase with `@map("snake_case")`
 - ❌ NEVER: snake_case directly in Prisma schema
 - ✅ UUIDs: `gen_random_uuid()` only
@@ -186,33 +189,39 @@ model Example {
 ### Step-by-Step Process
 
 1. **Edit Prisma Schema**
+
    ```bash
    # Edit packages/database/prisma/schema.prisma
    ```
 
 2. **Update Schema Registry**
+
    ```bash
    # Update packages/database/schema-registry-v2.txt BEFORE migration
    ```
 
 3. **Generate Migration**
+
    ```bash
    pnpm migrate
    # Runs: prisma format + prisma generate + prisma migrate dev
    ```
 
 4. **Edit Generated Migration**
+
    ```bash
    # Add required SQL to packages/database/prisma/migrations/<timestamp>_<name>/migration.sql
    # Examples: triggers, partial indexes, custom functions, backfills
    ```
 
 5. **Add Checklist Entry**
+
    ```bash
    # Append entry to packages/database/DATABASE_PRE_MIGRATION_CHECKLIST.md
    ```
 
 6. **Deploy Migration**
+
    ```bash
    pnpm db:deploy
    # Must happen BEFORE db:check/dev to avoid drift
@@ -266,16 +275,19 @@ ON DELETE CASCADE;
 ### 3. ON DELETE Behaviors
 
 **CASCADE**: Child records deleted when parent deleted (composition relationships)
+
 ```sql
 ON DELETE CASCADE  -- Line items, comments, assignments
 ```
 
 **SET NULL**: Child records lose reference but survive (optional relationships)
+
 ```sql
 ON DELETE SET NULL  -- Assignee references, event/location links
 ```
 
 **RESTRICT**: Parent cannot be deleted if children exist (critical entities)
+
 ```sql
 ON DELETE RESTRICT  -- Employee in time entries, inventory items in transactions
 ```
@@ -330,6 +342,7 @@ END $$;
 ```
 
 **Benefits**:
+
 - Safe to re-run if migration fails partway
 - No errors if constraints already exist
 - Idempotent execution in CI/CD pipelines
@@ -445,22 +458,22 @@ The database uses **9 PostgreSQL schemas** for logical separation:
 
 ### Core Schemas
 
-| Schema | Purpose | Tenant Scoped? |
-|--------|---------|----------------|
-| `core` | Types, enums, functions | No |
-| `platform` | Account, audit logs | No (Account IS the tenant) |
+| Schema     | Purpose                 | Tenant Scoped?             |
+| ---------- | ----------------------- | -------------------------- |
+| `core`     | Types, enums, functions | No                         |
+| `platform` | Account, audit logs     | No (Account IS the tenant) |
 
 ### Tenant Schemas
 
-| Schema | Purpose | Example Tables |
-|--------|---------|----------------|
-| `tenant` | Core tenant data | Location, Employee, Settings |
-| `tenant_admin` | Admin & reporting | Report, Workflow, Notification |
-| `tenant_crm` | CRM operations | Client, Lead, Proposal |
-| `tenant_events` | Event management | Event, BattleBoard, EventImport |
-| `tenant_inventory` | Inventory ops | InventoryItem, PurchaseOrder, Shipment |
-| `tenant_kitchen` | Kitchen operations | Recipe, PrepTask, KitchenTask |
-| `tenant_staff` | Staff management | Schedule, TimeEntry, Shift |
+| Schema             | Purpose            | Example Tables                         |
+| ------------------ | ------------------ | -------------------------------------- |
+| `tenant`           | Core tenant data   | Location, Employee, Settings           |
+| `tenant_admin`     | Admin & reporting  | Report, Workflow, Notification         |
+| `tenant_crm`       | CRM operations     | Client, Lead, Proposal                 |
+| `tenant_events`    | Event management   | Event, BattleBoard, EventImport        |
+| `tenant_inventory` | Inventory ops      | InventoryItem, PurchaseOrder, Shipment |
+| `tenant_kitchen`   | Kitchen operations | Recipe, PrepTask, KitchenTask          |
+| `tenant_staff`     | Staff management   | Schedule, TimeEntry, Shift             |
 
 ### Schema Pattern
 
@@ -532,6 +545,7 @@ All 21 migrations are documented in `docs/database/migrations/`:
 8. ✅ Always add checklist entry before committing
 
 **Before making schema changes**:
+
 1. Read `schema-registry-v2.txt`
 2. Read CLAUDE.md "Database Changes" section
 3. Follow the workflow above
@@ -540,4 +554,3 @@ All 21 migrations are documented in `docs/database/migrations/`:
 ---
 
 Last updated: 2025-02-07
-

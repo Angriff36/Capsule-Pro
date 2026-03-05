@@ -40,6 +40,7 @@ const ENTITIES_WITH_SPECIFIC_STORES = new Set([
     "Station",
     "InventoryItem",
     "KitchenTask",
+    "Event",
 ]);
 /** Default precompiled IR path (relative to monorepo root). */
 const DEFAULT_IR_PATH = "packages/manifest-ir/ir/kitchen/kitchen.ir.json";

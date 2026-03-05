@@ -1,8 +1,9 @@
 SCHEMA REGISTRY v2 (Enterprise Catering Platform)
 ==================================================
-Last updated: 2026-02-16
+Last updated: 2026-03-04
 Canonical source of truth for all database objects.
 Update this file BEFORE generating any migration.
+Prisma relationMode: foreignKeys (changed from "prisma" on 2026-03-04)
 
 NOTE: This registry reflects the actual database state as of 2025-01-15.
 All tables listed here exist in the Neon database migrations.
