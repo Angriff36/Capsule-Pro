@@ -79,7 +79,7 @@
   "private": true,
   "scripts": {
     "analyze": "cross-env ANALYZE=true npm run build",
-    "build": "node -e \"require('node:fs').rmSync('.next', { recursive: true, force: true })\" && next build",
+    "build": "node scripts/prepare-route-surface-manifest.mjs && node -e \"require('node:fs').rmSync('.next', { recursive: true, force: true })\" && next build",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "dev": "cross-env NEXT_DIST_DIR=.next-dev next dev -p 2221",
     "start": "next start",

@@ -186,6 +186,10 @@ let nextConfig: NextConfig = withToolbar(
       "@capsule-pro/sales-reporting",
       "@clerk/backend",
     ],
+    outputFileTracingIncludes: {
+      "/*": ["./.generated/routes.manifest.json"],
+      "/api/command-board/chat": ["./.generated/routes.manifest.json"],
+    },
     webpack: (webpackConfig: WebpackConfig, context: WebpackContext) => {
       if (process.env.NODE_ENV === "production") {
         webpackConfig.cache = false;

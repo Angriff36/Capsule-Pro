@@ -1,11 +1,9 @@
 import { createHash } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { join, resolve } from "node:path";
 
-const ROUTE_SURFACE_MANIFEST_RELATIVE_PATH = join(
-  "packages",
-  "manifest-ir",
-  "dist",
+const APP_LOCAL_ROUTE_SURFACE_PATH = join(
+  ".generated",
   "routes.manifest.json"
 );
 
@@ -112,68 +110,25 @@ let hasLoggedCatalogDiagnostics = false;
 
 const WRITE_METHODS = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
-function listCandidateWorkspaceRoots(): string[] {
-  const roots: string[] = [];
-
-  // 1. Check env var override first (for Vercel/production deployments)
-  const envRoot = process.env.MANIFEST_REPO_ROOT;
-  if (envRoot) {
-    roots.push(envRoot);
-  }
-
-  // 2. Walk up from current working directory
-  let current = process.cwd();
-  while (true) {
-    roots.push(current);
-    const parent = dirname(current);
-    if (parent === current) {
-      break;
-    }
-    current = parent;
-  }
-
-  // 3. Also walk up from this file's directory (for Vercel where cwd differs)
-  // In ESM, use import.meta.url; in CJS, use __dirname
-  let fileDir: string | undefined;
-  try {
-    fileDir = __dirname; // available in CJS (Next.js API routes compile to CJS)
-  } catch {
-    // ESM - would need import.meta.url, but skip for now
-  }
-  if (fileDir) {
-    current = fileDir;
-    while (true) {
-      if (!roots.includes(current)) {
-        roots.push(current);
-      }
-      const parent = dirname(current);
-      if (parent === current) {
-        break;
-      }
-      current = parent;
-    }
-  }
-
-  return roots;
-}
-
 function resolveManifestPath(): string {
-  for (const root of listCandidateWorkspaceRoots()) {
-    if (existsSync(join(root, "pnpm-workspace.yaml"))) {
-      const manifestPath = resolve(root, ROUTE_SURFACE_MANIFEST_RELATIVE_PATH);
-      if (!existsSync(manifestPath)) {
-        throw new Error(
-          `[manifest-command-tools] Missing required manifest route surface file: ${manifestPath}`
-        );
-      }
-      return manifestPath;
+  const explicitPath = process.env.ROUTES_MANIFEST_PATH;
+  if (explicitPath) {
+    const resolved = resolve(explicitPath);
+    if (existsSync(resolved)) {
+      return resolved;
     }
+  }
+
+  const appLocalPath = resolve(process.cwd(), APP_LOCAL_ROUTE_SURFACE_PATH);
+  if (existsSync(appLocalPath)) {
+    return appLocalPath;
   }
 
   throw new Error(
-    "[manifest-command-tools] Could not locate repository root (pnpm-workspace.yaml) from current working directory. " +
-    "Fix: Set MANIFEST_REPO_ROOT environment variable to the repo root path, " +
-    "or ensure pnpm-workspace.yaml is included in the deployment."
+    "[manifest-command-tools] Missing route surface manifest. Expected app-local file at " +
+      `${appLocalPath}. ` +
+      "Fix: run build step that copies packages/manifest-ir/dist/routes.manifest.json into apps/app/.generated/routes.manifest.json " +
+      "or set ROUTES_MANIFEST_PATH to a valid file."
   );
 }
 
