@@ -22,7 +22,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../lib/tenant";
 import { Header } from "../components/header";
-import { EventCard } from "./components/event-card";
+import { EventsList } from "./components/events-list";
 import { EventsPageWithSuggestions } from "./components/events-suggestions";
 import { EventsPageClient } from "./events-page-client";
 
@@ -174,29 +174,19 @@ const EventsPage = async () => {
             </Empty>
           </section>
         ) : (
-          <section className="space-y-4">
-            <h2 className="text-sm font-medium text-muted-foreground">
-              Events ({events.length})
-            </h2>
-            <div className="grid gap-6 lg:grid-cols-2 2xl:grid-cols-3">
-              {events.map((event) => (
-                <EventCard
-                  event={{
-                    id: event.id,
-                    title: event.title,
-                    eventNumber: event.eventNumber,
-                    status: event.status,
-                    eventType: event.eventType,
-                    eventDate: event.eventDate.toISOString(),
-                    guestCount: event.guestCount,
-                    venueName: event.venueName,
-                    tags: event.tags,
-                  }}
-                  key={`${event.tenantId}-${event.id}`}
-                />
-              ))}
-            </div>
-          </section>
+          <EventsList
+            events={events.map((event) => ({
+              id: event.id,
+              title: event.title,
+              eventNumber: event.eventNumber,
+              status: event.status,
+              eventType: event.eventType ?? "event",
+              eventDate: event.eventDate.toISOString(),
+              guestCount: event.guestCount ?? 0,
+              venueName: event.venueName,
+              tags: event.tags ?? [],
+            }))}
+          />
         )}
       </div>
     </>
