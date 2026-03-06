@@ -148,20 +148,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[Emergency bridge — running bridge was not updated]
-Files: apps/app/app/(authenticated)/command-board/lib/risk-utils.ts (create), apps/app/app/(authenticated)/command-board/components/board-shell.tsx (edit), apps/app/app/(authenticated)/command-board/actions/resolve-risks.ts (create), apps/app/app/(authenticated)/command-board/lib/financial-utils.ts (create), apps/app/app/(authenticated)/command-board/actions/derive-financial-projections.ts (edit), tasks/library-audit-fixes.md (create)
-Facts: [issue] # Third-Party Library Audit Report - 2026-03-05
-
-## CRITICAL ISSUE: Next.js 15 S; [fact] # Next.js Configuration Audit
-
-## allowedDevOrigins - CORRECT FORMAT
-
-The `allow; [fact] # Prisma/Database Audit - GOOD IMPLEMENTATION
-
-## Status: FOLLOWS OFFICIAL PATTE; [fact] # Clerk Authentication Audit - NEEDS ERROR HANDLING
-
-## Status: FOLLOWS PATTERNS; [fact] # React/ReactFlow Audit - GOOD IMPLEMENTATION
-
-## Status: FOLLOWS OFFICIAL PATTE
+[pre-compact bridge — saved before context compaction]
+(no changes or facts recorded in this session segment)
 
 # === END COGNILAYER ===
