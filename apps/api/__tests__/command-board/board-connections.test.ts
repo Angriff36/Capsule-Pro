@@ -136,6 +136,9 @@ describe("Command Board Connection Tests", () => {
         id: TEST_USER_ID,
         tenantId: TEST_TENANT_ID,
         role: "admin",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User",
       });
 
       const mockRuntime = {
@@ -169,6 +172,9 @@ describe("Command Board Connection Tests", () => {
         id: TEST_USER_ID,
         tenantId: TEST_TENANT_ID,
         role: "admin",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User",
       });
 
       const mockRuntime = {
@@ -216,6 +222,9 @@ describe("Command Board Connection Tests", () => {
         id: TEST_USER_ID,
         tenantId: TEST_TENANT_ID,
         role: "admin",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User",
       });
 
       // Mock existing connection
@@ -248,6 +257,9 @@ describe("Command Board Connection Tests", () => {
         id: TEST_USER_ID,
         tenantId: TEST_TENANT_ID,
         role: "admin",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User",
       });
 
       // No existing connection for B→A
@@ -289,6 +301,9 @@ describe("Command Board Connection Tests", () => {
         id: TEST_USER_ID,
         tenantId: TEST_TENANT_ID,
         role: "admin",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User",
       });
 
       const mockRuntime = {
@@ -345,6 +360,9 @@ describe("Command Board Connection Tests", () => {
         id: TEST_USER_ID,
         tenantId: TEST_TENANT_ID,
         role: "admin",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User",
       });
 
       const mockRuntime = {
@@ -523,6 +541,9 @@ describe("Command Board Connection Tests", () => {
         id: TEST_USER_ID,
         tenantId: TEST_TENANT_ID,
         role: "admin",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User",
       });
 
       const mockRuntime = {

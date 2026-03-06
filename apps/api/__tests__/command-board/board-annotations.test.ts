@@ -120,6 +120,9 @@ describe("Command Board Annotation Tests", () => {
         id: TEST_USER_ID,
         tenantId: TEST_TENANT_ID,
         role: "admin",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User"
       });
 
       const mockRuntime = {
@@ -148,6 +151,9 @@ describe("Command Board Annotation Tests", () => {
         id: TEST_USER_ID,
         tenantId: TEST_TENANT_ID,
         role: "admin",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User"
       });
 
       const annotation = createMockAnnotation({
@@ -177,6 +183,9 @@ describe("Command Board Annotation Tests", () => {
         id: TEST_USER_ID,
         tenantId: TEST_TENANT_ID,
         role: "admin",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User"
       });
 
       const styledAnnotation = createMockAnnotation({
@@ -224,6 +233,9 @@ describe("Command Board Annotation Tests", () => {
         id: TEST_USER_ID,
         tenantId: TEST_TENANT_ID,
         role: "admin",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User"
       });
 
       // Board not found
@@ -254,6 +266,9 @@ describe("Command Board Annotation Tests", () => {
         id: TEST_USER_ID,
         tenantId: TEST_TENANT_ID,
         role: "admin",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User"
       });
 
       const updatedAnnotation = createMockAnnotation({
@@ -280,6 +295,9 @@ describe("Command Board Annotation Tests", () => {
         id: TEST_USER_ID,
         tenantId: TEST_TENANT_ID,
         role: "admin",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User"
       });
 
       const updatedAnnotation = createMockAnnotation({
@@ -305,6 +323,9 @@ describe("Command Board Annotation Tests", () => {
         id: TEST_USER_ID,
         tenantId: TEST_TENANT_ID,
         role: "admin",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User"
       });
 
       const existingMetadata = { priority: "low", tags: ["a", "b"] };
@@ -328,6 +349,9 @@ describe("Command Board Annotation Tests", () => {
         id: TEST_USER_ID,
         tenantId: TEST_TENANT_ID,
         role: "admin",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User"
       });
 
       const updatedAnnotation = createMockAnnotation({
@@ -369,6 +393,9 @@ describe("Command Board Annotation Tests", () => {
         id: TEST_USER_ID,
         tenantId: TEST_TENANT_ID,
         role: "admin",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User"
       });
 
       mockAnnotation.findFirst.mockResolvedValue(null);
@@ -402,6 +429,9 @@ describe("Command Board Annotation Tests", () => {
         id: TEST_USER_ID,
         tenantId: TEST_TENANT_ID,
         role: "admin",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User"
       });
 
       const deletedAnnotation = createMockAnnotation({
@@ -440,6 +470,9 @@ describe("Command Board Annotation Tests", () => {
         id: TEST_USER_ID,
         tenantId: TEST_TENANT_ID,
         role: "admin",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User"
       });
 
       mockAnnotation.findFirst.mockResolvedValue(null);
@@ -461,6 +494,9 @@ describe("Command Board Annotation Tests", () => {
         id: TEST_USER_ID,
         tenantId: TEST_TENANT_ID,
         role: "admin",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User"
       });
 
       // Annotation belongs to different tenant
@@ -586,6 +622,9 @@ describe("Command Board Annotation Tests", () => {
         id: TEST_USER_ID,
         tenantId: TEST_TENANT_ID,
         role: "admin",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User"
       });
 
       const mockRuntime = {
@@ -605,6 +644,9 @@ describe("Command Board Annotation Tests", () => {
         id: TEST_USER_ID,
         tenantId: TEST_TENANT_ID,
         role: "admin",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User"
       });
 
       // Projection not found
@@ -639,6 +681,9 @@ describe("Command Board Annotation Tests", () => {
         id: TEST_USER_ID,
         tenantId: TEST_TENANT_ID,
         role: "admin",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User"
       });
 
       // Try to access annotation from different tenant

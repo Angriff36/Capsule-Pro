@@ -28,10 +28,10 @@ vi.mock("@repo/database", () => ({
       findMany: vi.fn(),
     },
     inventoryAlert: {
-      findMany: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
     },
     inventoryItem: {
-      findMany: vi.fn(),
+      findMany: vi.fn().mockResolvedValue([]),
     },
   },
   Prisma: {

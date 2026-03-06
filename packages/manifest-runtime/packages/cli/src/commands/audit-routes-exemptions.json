@@ -1212,5 +1212,133 @@
     "owner": "kitchen-team",
     "expires": "2026-09-01",
     "allowPermanent": true
+  },
+  {
+    "path": "app/api/inventory/cycle-count/sessions/[sessionId]/records/route.ts",
+    "methods": ["POST"],
+    "reason": "Cycle count records — uses executeManifestCommand but outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/inventory/cycle-count/sessions/[sessionId]/finalize/route.ts",
+    "methods": ["POST"],
+    "reason": "Cycle count finalize — uses executeManifestCommand but outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/events/budgets/[id]/line-items/[lineItemId]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Event budget line items — uses executeManifestCommand but outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/crm/clients/[id]/interactions/[interactionId]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "CRM client interactions — uses executeManifestCommand but outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/collaboration/notifications/email/workflows/[id]/route.ts",
+    "methods": ["PUT", "DELETE"],
+    "reason": "Email workflow config — infrastructure, not domain command",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/administrative/chat/threads/[threadId]/messages/route.ts",
+    "methods": ["POST"],
+    "reason": "Chat messages — uses executeManifestCommand but outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/kitchen/prep-lists/[id]/items/[itemId]/complete/route.ts",
+    "methods": ["POST"],
+    "reason": "Prep list item complete — uses executeManifestCommand but outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/inventory/purchase-orders/[id]/items/[itemId]/quantity/route.ts",
+    "methods": ["PUT"],
+    "reason": "PO item quantity — uses executeManifestCommand but outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/inventory/purchase-orders/[id]/items/[itemId]/quality/route.ts",
+    "methods": ["PUT"],
+    "reason": "PO item quality — uses executeManifestCommand but outside commands/ namespace",
+    "category": "manifest-runtime",
+    "owner": "backend-team",
+    "expiresOn": "2026-09-01"
+  },
+  {
+    "path": "app/api/analytics/kitchen/route.ts",
+    "methods": ["GET"],
+    "reason": "Kitchen analytics — read-only aggregation, not domain mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/analytics/finance/route.ts",
+    "methods": ["GET"],
+    "reason": "Finance analytics — read-only aggregation, not domain mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/analytics/events/profitability/route.ts",
+    "methods": ["GET"],
+    "reason": "Event profitability analytics — read-only aggregation, not domain mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/analytics/staff/summary/route.ts",
+    "methods": ["GET"],
+    "reason": "Staff analytics summary — read-only aggregation, not domain mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/analytics/staff/employees/[employeeId]/route.ts",
+    "methods": ["GET"],
+    "reason": "Employee performance analytics — read-only aggregation, not domain mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/analytics/custom-reports/route.ts",
+    "methods": ["GET", "POST"],
+    "reason": "Custom reports — read-only aggregation + report config, not domain mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
+  },
+  {
+    "path": "app/api/analytics/events/profitability/route.ts",
+    "methods": ["GET"],
+    "reason": "Event profitability — read-only aggregation, not domain mutation",
+    "category": "infrastructure",
+    "owner": "platform-team",
+    "allowPermanent": true
   }
 ]

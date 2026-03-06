@@ -333,8 +333,13 @@ export function auditRouteFileContent(
     options.locationField
   );
 
+  // Normalize file path once for exemption checks
+  const normalizedFile = normalizeRoutePath(file);
+
   for (const method of methods) {
     if (WRITE_METHODS.has(method) && !hasRunCommand) {
+      // WRITE_ROUTE_BYPASSES_RUNTIME is a quality/hygiene rule, NOT an ownership rule.
+      // It fires regardless of exemption status (exemptions only suppress ownership rules).
       findings.push({
         file,
         severity: "error",
@@ -402,7 +407,6 @@ export function auditRouteFileContent(
 
   // --- Ownership rules (require ownershipContext) ---
   if (ownershipContext) {
-    const normalizedFile = normalizeRoutePath(file);
     const inCommandsNs = isInCommandsNamespace(normalizedFile);
     const hasWriteMethod = methods.some((m) => WRITE_METHODS.has(m));
 

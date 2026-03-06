@@ -202,15 +202,21 @@ export function auditRouteFileContent(content, file, options, ownershipContext) 
     const hasDirectQuery = DIRECT_QUERY_RE.test(content);
     const locationReferenced = hasFieldToken(content, options.locationField);
     const hasLocationFilter = hasLocationFilterInDirectQueryWhere(content, options.locationField);
+    // Normalize file path once for exemption checks
+    const normalizedFile = normalizeRoutePath(file);
     for (const method of methods) {
         if (WRITE_METHODS.has(method) && !hasRunCommand) {
-            findings.push({
-                file,
-                severity: "error",
-                code: "WRITE_ROUTE_BYPASSES_RUNTIME",
-                message: `${method} route appears to bypass runtime command execution (no runCommand call found).`,
-                suggestion: "Write routes should execute through RuntimeEngine.runCommand to enforce policy/guard/constraint semantics.",
-            });
+            // Check if this route/method is exempted from the runtime bypass check
+            const exempted = ownershipContext && isExempted(normalizedFile, method, ownershipContext.exemptions);
+            if (!exempted) {
+                findings.push({
+                    file,
+                    severity: "error",
+                    code: "WRITE_ROUTE_BYPASSES_RUNTIME",
+                    message: `${method} route appears to bypass runtime command execution (no runCommand call found).`,
+                    suggestion: "Write routes should execute through RuntimeEngine.runCommand to enforce policy/guard/constraint semantics.",
+                });
+            }
         }
         if (WRITE_METHODS.has(method) &&
             hasRunCommand &&
@@ -257,7 +263,6 @@ export function auditRouteFileContent(content, file, options, ownershipContext) 
     }
     // --- Ownership rules (require ownershipContext) ---
     if (ownershipContext) {
-        const normalizedFile = normalizeRoutePath(file);
         const inCommandsNs = isInCommandsNamespace(normalizedFile);
         const hasWriteMethod = methods.some((m) => WRITE_METHODS.has(m));
         // Rule: WRITE_OUTSIDE_COMMANDS_NAMESPACE
