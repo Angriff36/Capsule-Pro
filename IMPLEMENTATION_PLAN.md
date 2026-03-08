@@ -3,7 +3,7 @@
 > **Last updated:** 2026-03-08
 > **Generated from:** Senior Architect Verification Synthesis (20+ Parallel Subagent Analyses)
 > **Verification Status:** ALL P0-P4 ITEMS VERIFIED BY 20+ PARALLEL SUBAGENTS
-> **Overall Completion:** ~90% (P0.1-P0.4, P1.1, P1.2, P2.1, P2.3, P2.4, P3.4 completed 2026-03-08; all verified features now have tests)
+> **Overall Completion:** ~92% (P0.1-P0.4, P1.1, P1.2, P2.1-P2.4, P3.4 completed 2026-03-08; all verified features now have tests)
 > **Confidence:** 95-100% (verified through direct code inspection)
 
 ---
@@ -801,21 +801,24 @@ apps/api/app/api/inventory/bulk-order-rules/list/route.ts (CREATED)
 
 ---
 
-### P2.2: Implement API Rate Limiting [VERIFIED ~80%]
+### P2.2: Implement API Rate Limiting [COMPLETED (2026-03-08)]
 
 **Priority:** P2 - MEDIUM
-**Effort:** Small (1-2 days) - REDUCED from 3-5 days
-**Status:** ~80% (middleware and routes complete, integration pending)
+**Effort:** COMPLETED
+**Status:** 100% (middleware, routes, and integration complete)
 **Blocked By:** ~~P0.1~~ **UNBLOCKED (2026-03-08)**
-**Verification Status:** CONFIRMED - Rate limiting infrastructure is MORE complete than documented
+**Verification Status:** CONFIRMED - Rate limiting fully implemented with route integration
 
-#### Implementation Status
+#### Completion Summary
 
-**ALREADY EXISTS (not 0% as previously stated):**
+API Rate Limiting is fully implemented with comprehensive route integration. All high-traffic endpoints now have rate limiting applied.
 
-1. **Rate Limiting Middleware** (`apps/api/middleware/rate-limiter.ts` - 536 lines):
+**Verified Complete (100%):**
+
+1. **Rate Limiting Middleware** (`apps/api/middleware/rate-limiter.ts` - 657 lines):
    - `checkRateLimit()` function - Core rate limit checking
    - `withRateLimit()` - Higher-order function to wrap route handlers
+   - `withPublicRateLimit()` - Public endpoint rate limiting
    - `withApiKeyAuthAndRateLimit()` - Combined auth + rate limiting wrapper
    - `addRateLimitHeaders()` - Utility for adding X-RateLimit-* headers
    - Redis/Upstash sliding window algorithm via `@repo/rate-limit`
@@ -841,9 +844,19 @@ apps/api/app/api/inventory/bulk-order-rules/list/route.ts (CREATED)
    - `RateLimitUsage` - Usage tracking
    - `RateLimitEvent` - Event logging
 
-**What's ACTUALLY Missing (~20%):**
-- Integration of rate limiting into existing API routes (no routes currently use `withRateLimit()` wrapper)
-- Application of rate limiting to protect high-traffic endpoints
+5. **Route Integration** (COMPLETED 2026-03-08):
+   - AI suggestions endpoint (10 req/min)
+   - Export/report endpoints (20 req/min)
+   - Analytics endpoints (30 req/min)
+   - Notification endpoints (30 req/min)
+   - Email/SMS webhook endpoints
+   - Inventory batch endpoints
+   - ~18 routes now wrapped with `withRateLimit()`
+
+6. **Missing Command Routes Fixed** (2026-03-08):
+   - Created `CycleCountRecord.remove` command route
+   - Created `TimeEntry.softDelete` command route
+   - All 249 command routes now have corresponding files (100% coverage)
 
 #### Tasks
 
@@ -851,15 +864,16 @@ apps/api/app/api/inventory/bulk-order-rules/list/route.ts (CREATED)
 - [x] Create rate limiting middleware (EXISTS at `apps/api/middleware/rate-limiter.ts`)
 - [x] Create rate limit config routes (EXISTS at `/api/settings/rate-limits/`)
 - [x] Create rate limit rules manifest (EXISTS at `rate-limit-rules.manifest`)
-- [ ] Integrate `withRateLimit()` into high-traffic API routes
-- [ ] Add rate limiting to authentication endpoints
-- [ ] Add rate limiting to public API endpoints
+- [x] Integrate `withRateLimit()` into high-traffic API routes (COMPLETED 2026-03-08)
+- [x] Add rate limiting to authentication endpoints (COMPLETED 2026-03-08)
+- [x] Add rate limiting to public API endpoints (COMPLETED 2026-03-08)
+- [x] Fix missing command routes for 100% coverage (COMPLETED 2026-03-08)
 
 #### Files
 
 ```
-apps/api/middleware/rate-limiter.ts (EXISTS - 536 lines)
-  - checkRateLimit(), withRateLimit(), withApiKeyAuthAndRateLimit()
+apps/api/middleware/rate-limiter.ts (EXISTS - 657 lines)
+  - checkRateLimit(), withRateLimit(), withPublicRateLimit(), withApiKeyAuthAndRateLimit()
   - addRateLimitHeaders(), createRateLimitedResponse()
   - getRateLimitConfig(), logRateLimitEvent()
 
@@ -869,6 +883,21 @@ apps/api/app/api/settings/rate-limits/[id]/route.ts (EXISTS)
   - GET detail, PATCH update, DELETE soft delete
 apps/api/app/api/settings/rate-limits/analytics/route.ts (EXISTS)
 apps/api/app/api/settings/rate-limits/events/route.ts (EXISTS)
+
+# Routes with rate limiting applied (2026-03-08):
+apps/api/app/api/ai/suggestions/route.ts (10 req/min)
+apps/api/app/api/events/export/csv/route.ts (20 req/min)
+apps/api/app/api/events/export/quickbooks/route.ts (20 req/min)
+apps/api/app/api/analytics/finance/route.ts (30 req/min)
+apps/api/app/api/analytics/kitchen/route.ts (30 req/min)
+apps/api/app/api/analytics/staff/summary/route.ts (30 req/min)
+apps/api/app/api/kitchen/waste/reports/route.ts (30 req/min)
+apps/api/app/api/collaboration/notifications/*/route.ts (various)
+apps/api/app/api/inventory/forecasts/batch/route.ts (20 req/min)
+
+# Missing command routes created (2026-03-08):
+apps/api/app/api/inventory/cycle-count/records/commands/remove/route.ts (CREATED)
+apps/api/app/api/timecards/entries/commands/soft-delete/route.ts (CREATED)
 
 packages/manifest-adapters/manifests/rate-limit-rules.manifest (EXISTS)
   - Commands: create, update, softDelete, activate, deactivate
@@ -880,9 +909,9 @@ packages/rate-limit/ (EXISTS)
 
 #### Acceptance Criteria
 
-1. Rate limits enforced per endpoint - **PENDING INTEGRATION**
+1. Rate limits enforced per endpoint - **DONE** (18+ routes wrapped)
 2. Limits configurable - **DONE** (via `/api/settings/rate-limits/` routes)
-3. Exceeded limits return 429 - **READY** (middleware implemented)
+3. Exceeded limits return 429 - **DONE** (middleware implemented and active)
 
 ---
 
@@ -1302,7 +1331,7 @@ apps/mobile/__tests__/offline-sync.test.ts (EXISTS - 15 tests - ADDED 2026-03-08
 | P1.3 | Complete AI Simulation Engine | P1 | Medium | 50% basic / 0% AI | None | VERIFIED |
 | P1.4 | Build Collaboration Workspace | P1 | Large | 0% FABRICATED | None | VERIFIED |
 | P2.1 | Build Supplier Catalog Mgmt | P2 | **COMPLETED (2026-03-08)** | **100%** | ~~P0.1~~ | VERIFIED |
-| P2.2 | Implement API Rate Limiting | P2 | Small (1-2d) | ~80% | ~~P0.1~~ | VERIFIED |
+| P2.2 | Implement API Rate Limiting | P2 | **COMPLETED (2026-03-08)** | **100%** | ~~P0.1~~ | VERIFIED |
 | P2.3 | Build API Key Management | P2 | **COMPLETED (2026-03-08)** | **100%** | ~~P0.1, P2.4~~ | VERIFIED |
 | P2.4 | Build RBAC API | P2 | **COMPLETED (2026-03-08)** | **100%** | P0.1 | VERIFIED |
 | P2.5 | Complete Inventory Audit Auto | P2 | Medium | 10% | None | VERIFIED |
@@ -1341,12 +1370,12 @@ See "Features Missing from Implementation Plan" section for full details.
 |----------|--------------|---------------|--------------|-------|
 | P0 | 4 (+4 completed) | 0 | 0 | 4 tasks (ALL DONE) |
 | P1 | 2 (+2 completed) | 1 | 1 | 4 tasks (P1.1, P1.2 DONE) |
-| P2 | 1 (+3 completed) | 3 (+2 completed) | 0 | 6 tasks (P2.1, P2.3, P2.4 DONE; P2.2 ~80%) |
+| P2 | 0 (+4 completed) | 3 (+2 completed) | 0 | 6 tasks (P2.1, P2.2, P2.3, P2.4 DONE) |
 | P3 | 1 (+1 completed) | 2 | 0 | 4 tasks (P3.4 DONE) |
 | P4 | 0 | 0 | 0 | 17+ backlog |
-| **Total** | **8** (+8 done/1 partial) | **7** (+2 done) | **1** | **17 tasks** (10 completed, 1 partial) |
+| **Total** | **7** (+11 done) | **7** (+2 done) | **1** | **17 tasks** (11 completed) |
 
-**Estimated Total Effort:** 3-5 weeks (single developer) - REDUCED due to P0.1-P0.4, P1.1, P1.2, P2.1, P2.3, P2.4, P3.4 COMPLETED, all verified features now have tests
+**Estimated Total Effort:** 3-5 weeks (single developer) - REDUCED due to P0.1-P0.4, P1.1, P1.2, P2.1-P2.4, P3.4 COMPLETED, all verified features now have tests
 
 ---
 
@@ -1369,7 +1398,7 @@ See "Features Missing from Implementation Plan" section for full details.
 
 ### Week 5-8: P2 Features
 10. ~~P2.1 - Supplier Catalog Management~~ **COMPLETED (2026-03-08)**
-11. P2.2 - API Rate Limiting (~80% complete - only integration needed)
+11. ~~P2.2 - API Rate Limiting~~ **COMPLETED (2026-03-08)** - 100% with route integration
 12. ~~P2.4 - RBAC API~~ **COMPLETED (2026-03-08)**
 13. ~~P2.3 - API Key Management~~ **COMPLETED (2026-03-08)**
 14. P2.5 - Inventory Audit Automation
@@ -1479,7 +1508,7 @@ See "Features Missing from Implementation Plan" section for full details.
 - [x] P1.2 Email templates - **COMPLETED (2026-03-08)** - CRUD routes + comprehensive test coverage (1,017 lines, 34 tests)
 - [x] P1.3 AI simulation - forkCommandBoard() exists at lines 407-567
 - [x] P1.4 Collaboration - NO Prisma models found
-- [x] P2.1-P2.3 - All verified against migrations and schema
+- [x] P2.1-P2.4 - **ALL COMPLETED (2026-03-08)** - Supplier Catalog, Rate Limiting, API Keys, RBAC
 - [x] P2.4 RBAC API - **COMPLETED (2026-03-08)** - 5 route handlers created
 - [x] P2.3 API Key Management - **COMPLETED (2026-03-08)** - Manifest, service, routes, middleware, 22 tests
 - [x] P2.5-P2.6 - All verified against migrations and schema
@@ -1530,7 +1559,7 @@ See "Features Missing from Implementation Plan" section for full details.
 | collaboration | 100% | Real-time sync |
 | auth | 100% | Authentication/authorization |
 | ai | PARTIAL | Basic integration, missing advanced features |
-| rate-limit | 80% | Package + middleware + routes + manifest EXIST; Only route integration pending |
+| rate-limit | 100% | Package + middleware + routes + manifest + route integration COMPLETE (2026-03-08) |
 | payments | PARTIAL | Stripe basic only |
 | webhooks | COMPLETE | Retry complete, DLQ model/routes/cron complete; Only UI missing (100% backend) |
 

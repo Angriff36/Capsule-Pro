@@ -1,3 +1,7 @@
+// Auto-generated Next.js command handler for CycleCountRecord.remove
+// Generated from Manifest IR - DO NOT EDIT
+// Writes MUST flow through runtime.runCommand() to enforce guards, policies, and constraints
+
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
@@ -23,20 +27,22 @@ export async function POST(request: NextRequest) {
       return manifestErrorResponse("Tenant not found", 400);
     }
 
+    // Resolve internal user from Clerk auth
     const currentUser = await database.user.findFirst({
       where: {
         AND: [{ tenantId }, { authUserId: clerkId }],
       },
     });
+
     if (!currentUser) {
       return manifestErrorResponse("User not found in database", 400);
     }
 
     const body = await request.json();
 
-    console.log("[pricing-tiers/create] Executing command:", {
-      entityName: "PricingTier",
-      command: "create",
+    console.log("[cycle-count-record/remove] Executing command:", {
+      entityName: "CycleCountRecord",
+      command: "remove",
       userId: currentUser.id,
       userRole: currentUser.role,
       tenantId,
@@ -44,14 +50,21 @@ export async function POST(request: NextRequest) {
 
     const runtime = await createManifestRuntime({
       user: { id: currentUser.id, tenantId, role: currentUser.role },
-      entityName: "PricingTier",
+      entityName: "CycleCountRecord",
     });
 
-    const result = await runtime.runCommand("create", body, {
-      entityName: "PricingTier",
+    const result = await runtime.runCommand("remove", body, {
+      entityName: "CycleCountRecord",
     });
 
     if (!result.success) {
+      console.error("[cycle-count-record/remove] Command failed:", {
+        policyDenial: result.policyDenial,
+        guardFailure: result.guardFailure,
+        error: result.error,
+        userRole: currentUser.role,
+      });
+
       if (result.policyDenial) {
         return manifestErrorResponse(
           `Access denied: ${result.policyDenial.policyName} (role=${currentUser.role})`,
@@ -72,7 +85,7 @@ export async function POST(request: NextRequest) {
       events: result.emittedEvents,
     });
   } catch (error) {
-    console.error("[pricing-tiers/create] Error:", error);
+    console.error("[cycle-count-record/remove] Error:", error);
     captureException(error);
     return manifestErrorResponse("Internal server error", 500);
   }

@@ -356,6 +356,51 @@
       "prefix": "/api/timecards/bulk",
       "methods": ["POST"],
       "comment": "Infrastructure: Bulk timecard operations using TimeEntry manifest commands"
+    },
+    {
+      "prefix": "/api/collaboration/notifications/email/send",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Email sending endpoint with rate limiting"
+    },
+    {
+      "prefix": "/api/collaboration/notifications/email/webhook",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Email webhook handler for delivery tracking"
+    },
+    {
+      "prefix": "/api/collaboration/notifications/sms/send",
+      "methods": ["POST"],
+      "comment": "Infrastructure: SMS sending endpoint with rate limiting"
+    },
+    {
+      "prefix": "/api/collaboration/notifications/sms/webhook",
+      "methods": ["POST"],
+      "comment": "Infrastructure: SMS webhook handler for delivery tracking"
+    },
+    {
+      "prefix": "/api/collaboration/notifications/sms/preferences",
+      "methods": ["POST"],
+      "comment": "Infrastructure: SMS preference management using database directly"
+    },
+    {
+      "prefix": "/api/events/export/quickbooks",
+      "methods": ["POST"],
+      "comment": "Infrastructure: QuickBooks export with rate limiting"
+    },
+    {
+      "prefix": "/api/inventory/purchase-orders/export/quickbooks",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Purchase order QuickBooks export with rate limiting"
+    },
+    {
+      "pattern": "^/api/public/contracts/[^/]+/sign$",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Public contract signing with rate limiting"
+    },
+    {
+      "pattern": "^/api/public/proposals/[^/]+/respond$",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Public proposal response with rate limiting"
     }
   ]
 }

@@ -233,7 +233,11 @@ describe("Test B: generated route content determinism", () => {
       if (!hasGeneratedMarker(content)) continue;
 
       // Every generated command route must export a POST handler
-      if (!/export\s+(?:async\s+)?function\s+POST\s*\(/.test(content)) {
+      // Supports both: export async function POST(...) and export const POST = withRateLimit(...)
+      const hasValidPostExport =
+        /export\s+(?:async\s+)?function\s+POST\s*\(/.test(content) ||
+        /export\s+const\s+POST\s*=/.test(content);
+      if (!hasValidPostExport) {
         invalid.push(
           `${domain}/commands/${kebabCommand}/route.ts — missing POST export`
         );

@@ -9,6 +9,8 @@ import {
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
+export const runtime = "nodejs";
+
 export async function POST(request: NextRequest) {
   try {
     const { orgId, userId: clerkId } = await auth();
