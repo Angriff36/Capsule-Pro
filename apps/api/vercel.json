@@ -9,6 +9,10 @@
     {
       "path": "/api/cron/webhook-retry",
       "schedule": "*/5 * * * *"
+    },
+    {
+      "path": "/api/cron/inventory-audit",
+      "schedule": "0 6 * * *"
     }
   ]
 }

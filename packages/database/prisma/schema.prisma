@@ -72,6 +72,7 @@ model Account {
   cycleCountRecords         CycleCountRecord[]
   varianceReports           VarianceReport[]
   cycleCountAuditLogs       CycleCountAuditLog[]
+  auditSchedules            AuditSchedule[]
   purchaseOrders            PurchaseOrder[]
   purchaseOrderItems        PurchaseOrderItem[]
   shipments                 Shipment[]
@@ -1796,6 +1797,10 @@ model VarianceReport {
   adjustmentAmount Decimal?  @map("adjustment_amount") @db.Decimal(12, 3)
   adjustmentDate   DateTime? @map("adjustment_date") @db.Timestamptz(6)
   notes            String?
+  rootCause        String?   @map("root_cause")
+  resolutionNotes  String?   @map("resolution_notes")
+  resolvedById     String?   @map("resolved_by_id") @db.Uuid
+  resolvedAt       DateTime? @map("resolved_at") @db.Timestamptz(6)
   generatedAt      DateTime  @default(now()) @map("generated_at") @db.Timestamptz(6)
   createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
@@ -2635,6 +2640,59 @@ enum sms_status {
   delivered
   failed
 
+  @@schema("tenant_admin")
+}
+
+/// SMS automation rule for event-triggered SMS notifications
+model sms_automation_rules {
+  tenant_id         String                      @db.Uuid
+  id                String                      @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name              String
+  description       String?                     @db.Text
+  trigger_type      sms_automation_trigger_type
+  trigger_config    Json                        @default("{}")
+  template_id       String?                     @db.Uuid
+  custom_message    String?                     @db.Text
+  recipient_type    sms_recipient_type          @default(employee)
+  recipient_config  Json                        @default("{}")
+  is_active         Boolean                     @default(true) @map("is_active")
+  priority          Int                         @default(100)
+  created_at        DateTime                    @default(now()) @db.Timestamptz(6)
+  updated_at        DateTime                    @default(now()) @updatedAt @db.Timestamptz(6)
+  deleted_at        DateTime?                   @db.Timestamptz(6)
+
+  @@id([tenant_id, id])
+  @@index([tenant_id, is_active])
+  @@index([tenant_id, trigger_type])
+  @@index([tenant_id, priority])
+  @@map("sms_automation_rules")
+  @@schema("tenant_admin")
+}
+
+enum sms_automation_trigger_type {
+  task_assigned
+  task_completed
+  task_overdue
+  shift_assigned
+  shift_reminder
+  shift_changed
+  clock_in_reminder
+  clock_out_reminder
+  prep_list_published
+  inventory_low
+  custom_event
+
+  @@map("sms_automation_trigger_type")
+  @@schema("tenant_admin")
+}
+
+enum sms_recipient_type {
+  employee
+  role_based
+  custom_phone
+  manager
+
+  @@map("sms_recipient_type")
   @@schema("tenant_admin")
 }
 
@@ -4511,5 +4569,29 @@ model BulkOrderRule {
   @@index([tenantId, catalogEntryId])
   @@index([tenantId, ruleType])
   @@map("bulk_order_rules")
+  @@schema("tenant_inventory")
+}
+
+/// Audit schedule configuration for recurring inventory audits
+model AuditSchedule {
+  tenantId    String    @map("tenant_id") @db.Uuid
+  id          String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  frequency   String    // daily, weekly, monthly
+  dayOfWeek   Int?      @map("day_of_week") // 0-6 (Sunday-Saturday) for weekly
+  dayOfMonth  Int?      @map("day_of_month") // 1-31 for monthly
+  time        String    // HH:MM format (24-hour)
+  isActive    Boolean   @default(true) @map("is_active")
+  createdBy   String    @map("created_by") @db.Uuid
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  tenant Account @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@index([tenantId, isActive])
+  @@index([tenantId, frequency])
+  @@map("audit_schedules")
   @@schema("tenant_inventory")
 }

@@ -383,6 +383,41 @@
       "comment": "Infrastructure: SMS preference management using database directly"
     },
     {
+      "prefix": "/api/communications/sms/automation-rules",
+      "methods": ["POST", "PUT", "PATCH", "DELETE"],
+      "comment": "Uses executeManifestCommand — SmsAutomationRule.create/update/activate/deactivate/softDelete"
+    },
+    {
+      "prefix": "/api/inventory/audit/schedule",
+      "methods": ["GET", "POST", "PATCH", "DELETE"],
+      "comment": "Infrastructure: Audit schedule management for automated inventory audits"
+    },
+    {
+      "prefix": "/api/inventory/audit/discrepancies",
+      "methods": ["GET", "POST", "PATCH"],
+      "comment": "Infrastructure: Discrepancy listing and resolution workflow for inventory audits"
+    },
+    {
+      "prefix": "/api/inventory/audit/discrepancies/:id",
+      "methods": ["GET", "PATCH"],
+      "comment": "Infrastructure: Single discrepancy details and update"
+    },
+    {
+      "prefix": "/api/inventory/audit/discrepancies/:id/resolve",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Mark discrepancy as resolved with root cause analysis"
+    },
+    {
+      "prefix": "/api/inventory/audit/reports",
+      "methods": ["GET", "POST"],
+      "comment": "Infrastructure: Audit summary reports with variance analysis"
+    },
+    {
+      "prefix": "/api/inventory/audit/reports/:id",
+      "methods": ["GET", "DELETE"],
+      "comment": "Infrastructure: Saved report retrieval and deletion"
+    },
+    {
       "prefix": "/api/events/export/quickbooks",
       "methods": ["POST"],
       "comment": "Infrastructure: QuickBooks export with rate limiting"

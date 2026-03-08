@@ -1,0 +1,150 @@
+// SMS Automation - SMS Automation Rules
+// Manifest spec for event-triggered SMS automation rules
+
+entity SmsAutomationRule {
+  property required id: string
+  property required tenantId: string
+  property required name: string = ""
+  property description: string = ""
+  property required triggerType: string = "custom_event"
+  property triggerConfig: string = "{}"
+  property templateId: string = ""
+  property customMessage: string = ""
+  property recipientType: string = "employee"
+  property recipientConfig: string = "{}"
+  property isActive: boolean = true
+  property priority: number = 100
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isDeleted: boolean = self.deletedAt > 0
+  computed hasTemplate: boolean = self.templateId != null and self.templateId != ""
+  computed hasCustomMessage: boolean = self.customMessage != null and self.customMessage != ""
+  computed hasTriggerConfig: boolean = self.triggerConfig != null and self.triggerConfig != "" and self.triggerConfig != "{}"
+  computed isEnabled: boolean = self.isActive == true and self.deletedAt == 0
+
+  constraint requireName: self.name != null and self.name != "" "Rule name is required"
+  constraint validTriggerType: self.triggerType != null and self.triggerType != "" "Trigger type is required"
+  constraint hasMessageOrTemplate: (self.templateId != null and self.templateId != "") or (self.customMessage != null and self.customMessage != "") "Either template or custom message is required"
+
+  command create(name: string, description: string, triggerType: string, triggerConfig: string, templateId: string, customMessage: string, recipientType: string, recipientConfig: string, isActive: boolean, priority: number) {
+    guard name != null and name != "" "Rule name is required"
+    guard triggerType != null and triggerType != "" "Trigger type is required"
+    guard (templateId != null and templateId != "") or (customMessage != null and customMessage != "") "Either template or custom message is required"
+
+    mutate name = name
+    mutate description = description
+    mutate triggerType = triggerType
+    mutate triggerConfig = triggerConfig
+    mutate templateId = templateId
+    mutate customMessage = customMessage
+    mutate recipientType = recipientType
+    mutate recipientConfig = recipientConfig
+    mutate isActive = isActive
+    mutate priority = priority
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit SmsAutomationRuleCreated
+  }
+
+  command update(name: string, description: string, triggerConfig: string, templateId: string, customMessage: string, recipientType: string, recipientConfig: string, isActive: boolean, priority: number) {
+    guard self.deletedAt == 0 "Cannot update a deleted rule"
+    guard name != null and name != "" "Rule name is required"
+    guard (templateId != null and templateId != "") or (customMessage != null and customMessage != "") "Either template or custom message is required"
+
+    mutate name = name
+    mutate description = description
+    mutate triggerConfig = triggerConfig
+    mutate templateId = templateId
+    mutate customMessage = customMessage
+    mutate recipientType = recipientType
+    mutate recipientConfig = recipientConfig
+    mutate isActive = isActive
+    mutate priority = priority
+    mutate updatedAt = now()
+
+    emit SmsAutomationRuleUpdated
+  }
+
+  command activate() {
+    guard self.deletedAt == 0 "Cannot activate a deleted rule"
+    guard self.isActive == false "Rule is already active"
+
+    mutate isActive = true
+    mutate updatedAt = now()
+
+    emit SmsAutomationRuleActivated
+  }
+
+  command deactivate() {
+    guard self.deletedAt == 0 "Cannot deactivate a deleted rule"
+    guard self.isActive == true "Rule is already inactive"
+
+    mutate isActive = false
+    mutate updatedAt = now()
+
+    emit SmsAutomationRuleDeactivated
+  }
+
+  command softDelete() {
+    guard self.deletedAt == 0 "Rule is already deleted"
+
+    mutate deletedAt = now()
+    mutate isActive = false
+    mutate updatedAt = now()
+
+    emit SmsAutomationRuleDeleted
+  }
+
+  store SmsAutomationRule in memory
+}
+
+// Policy definitions
+policy SmsAutomationManagement execute: user.role in ["manager", "admin"] "Managers can manage SMS automation rules"
+policy SmsAutomationCreate execute: user.role in ["manager", "admin"] "Managers can create SMS automation rules"
+policy SmsAutomationUpdate execute: user.role in ["manager", "admin"] "Managers can update SMS automation rules"
+policy SmsAutomationDelete execute: user.role in ["admin"] "Only admins can delete SMS automation rules"
+
+// Event definitions
+event SmsAutomationRuleCreated: "sms.automation.rule.created" {
+  ruleId: string
+  tenantId: string
+  name: string
+  triggerType: string
+  isActive: boolean
+  priority: number
+  createdAt: number
+}
+
+event SmsAutomationRuleUpdated: "sms.automation.rule.updated" {
+  ruleId: string
+  tenantId: string
+  name: string
+  triggerType: string
+  isActive: boolean
+  priority: number
+  updatedAt: number
+}
+
+event SmsAutomationRuleActivated: "sms.automation.rule.activated" {
+  ruleId: string
+  tenantId: string
+  name: string
+  activatedAt: number
+}
+
+event SmsAutomationRuleDeactivated: "sms.automation.rule.deactivated" {
+  ruleId: string
+  tenantId: string
+  name: string
+  deactivatedAt: number
+}
+
+event SmsAutomationRuleDeleted: "sms.automation.rule.deleted" {
+  ruleId: string
+  tenantId: string
+  name: string
+  deletedAt: number
+}

@@ -6,6 +6,9 @@ import {
   MyWorkScreen,
   PrepListDetailScreen,
   PrepListsScreen,
+  ProfileScreen,
+  SearchScreen,
+  SettingsScreen,
   TasksScreen,
   TodayScreen,
 } from "../screens";
@@ -29,6 +32,18 @@ function ListChecksIcon({ focused }: { focused: boolean }) {
 
 function BriefcaseIcon({ focused }: { focused: boolean }) {
   return <Text style={[styles.icon, focused && styles.iconActive]}>💼</Text>;
+}
+
+function SearchIcon({ focused }: { focused: boolean }) {
+  return <Text style={[styles.icon, focused && styles.iconActive]}>🔍</Text>;
+}
+
+function UserIcon({ focused }: { focused: boolean }) {
+  return <Text style={[styles.icon, focused && styles.iconActive]}>👤</Text>;
+}
+
+function SettingsIcon({ focused }: { focused: boolean }) {
+  return <Text style={[styles.icon, focused && styles.iconActive]}>⚙️</Text>;
 }
 
 // Stack navigator for Prep Lists tab (to handle detail screen)
@@ -98,6 +113,33 @@ export default function AppNavigator() {
             title: "My Work",
             tabBarLabel: "My Work",
             tabBarIcon: ({ focused }) => <BriefcaseIcon focused={focused} />,
+          }}
+        />
+        <Tab.Screen
+          component={SearchScreen}
+          name="SearchTab"
+          options={{
+            title: "Search",
+            tabBarLabel: "Search",
+            tabBarIcon: ({ focused }) => <SearchIcon focused={focused} />,
+          }}
+        />
+        <Tab.Screen
+          component={ProfileScreen}
+          name="ProfileTab"
+          options={{
+            title: "Profile",
+            tabBarLabel: "Profile",
+            tabBarIcon: ({ focused }) => <UserIcon focused={focused} />,
+          }}
+        />
+        <Tab.Screen
+          component={SettingsScreen}
+          name="SettingsTab"
+          options={{
+            title: "Settings",
+            tabBarLabel: "Settings",
+            tabBarIcon: ({ focused }) => <SettingsIcon focused={focused} />,
           }}
         />
       </Tab.Navigator>

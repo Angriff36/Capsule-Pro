@@ -8,15 +8,17 @@ const DEFAULT_API_BASE_URL =
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL ?? DEFAULT_API_BASE_URL;
 
-interface FetchOptions extends RequestInit {
+interface FetchOptions extends Omit<RequestInit, "body"> {
   token?: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  body?: any;
 }
 
 export async function apiClient<T>(
   endpoint: string,
   options: FetchOptions = {}
 ): Promise<T> {
-  const { token, ...fetchOptions } = options;
+  const { token, body, ...fetchOptions } = options;
 
   const url = `${API_BASE_URL}${endpoint}`;
 
@@ -32,6 +34,7 @@ export async function apiClient<T>(
   const response = await fetch(url, {
     ...fetchOptions,
     headers,
+    body: body ? JSON.stringify(body) : undefined,
   });
 
   if (!response.ok) {

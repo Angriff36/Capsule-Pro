@@ -137,21 +137,24 @@ export interface FilterState {
   myStation: string | null;
 }
 
-// Navigation types
-export interface RootTabParamList {
+// Navigation types - use type alias for React Navigation compatibility
+export type RootTabParamList = {
   TodayTab: undefined;
   TasksTab: undefined;
   PrepListsTab: undefined;
   MyWorkTab: undefined;
-}
+  SearchTab: undefined;
+  ProfileTab: undefined;
+  SettingsTab: undefined;
+};
 
 export interface PrepListDetailParams {
   id: string;
   eventId?: string;
 }
 
-// Stack navigation types
-export interface PrepListStackParamList {
+// Stack navigation types - use type alias for React Navigation compatibility
+export type PrepListStackParamList = {
   PrepListsIndex: undefined;
   PrepListDetail: PrepListDetailParams;
-}
+};
