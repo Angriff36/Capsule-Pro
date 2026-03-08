@@ -4218,3 +4218,263 @@ enum webhook_delivery_status {
   @@map("webhook_delivery_status")
   @@schema("tenant_admin")
 }
+
+// ============================================================================
+// Platform Schema Models
+// ============================================================================
+
+/// API Key for tenant authentication
+model ApiKey {
+  tenantId        String    @map("tenant_id") @db.Uuid
+  id              String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String
+  keyPrefix       String    @map("key_prefix")
+  hashedKey       String    @map("hashed_key")
+  scopes          String[]
+  lastUsedAt      DateTime? @map("last_used_at") @db.Timestamptz(6)
+  expiresAt       DateTime? @map("expires_at") @db.Timestamptz(6)
+  revokedAt       DateTime? @map("revoked_at") @db.Timestamptz(6)
+  createdByUserId String    @map("created_by_user_id") @db.Uuid
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@unique([tenantId, name])
+  @@index([tenantId, keyPrefix])
+  @@index([tenantId, createdByUserId])
+  @@index([tenantId, expiresAt])
+  @@map("api_keys")
+  @@schema("platform")
+}
+
+// ============================================================================
+// Tenant Admin Schema Models
+// ============================================================================
+
+/// Telemetry for manifest command execution
+model ManifestCommandTelemetry {
+  tenantId         String   @map("tenant_id") @db.Uuid
+  id               String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  commandName      String   @map("command_name")
+  entityName       String   @map("entity_name")
+  instanceId       String?  @map("instance_id") @db.Uuid
+  status           String
+  errorMessage     String?  @map("error_message")
+  errorCode        String?  @map("error_code")
+  durationMs       Int?     @map("duration_ms")
+  guardEvalMs      Int?     @map("guard_eval_ms")
+  actionExecMs     Int?     @map("action_exec_ms")
+  guardsEvaluated  Int?     @default(0) @map("guards_evaluated")
+  guardsPassed     Int?     @default(0) @map("guards_passed")
+  guardsFailed     Int?     @default(0) @map("guards_failed")
+  failedGuards     Json?    @map("failed_guards")
+  idempotencyKey   String?  @map("idempotency_key")
+  wasIdempotentHit Boolean  @default(false) @map("was_idempotent_hit")
+  eventsEmitted    Int?     @default(0) @map("events_emitted")
+  performedBy      String?  @map("performed_by") @db.Uuid
+  correlationId    String?  @map("correlation_id")
+  causationId      String?  @map("causation_id")
+  requestId        String?  @map("request_id")
+  ipAddress        String?  @map("ip_address")
+  executedAt       DateTime @default(now()) @map("executed_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, commandName, executedAt])
+  @@index([tenantId, entityName, executedAt])
+  @@index([tenantId, status, executedAt])
+  @@index([tenantId, performedBy, executedAt])
+  @@index([tenantId, correlationId])
+  @@index([executedAt])
+  @@map("manifest_command_telemetry")
+  @@schema("tenant_admin")
+}
+
+/// Rate limit configuration for API endpoints
+model RateLimitConfig {
+  tenantId        String    @map("tenant_id") @db.Uuid
+  id              String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name            String
+  endpointPattern String    @map("endpoint_pattern")
+  windowMs        Int       @map("window_ms")
+  maxRequests     Int       @map("max_requests")
+  burstAllowance  Int?      @map("burst_allowance")
+  priority        Int       @default(0)
+  isActive        Boolean   @default(true) @map("is_active")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@unique([tenantId, name])
+  @@index([tenantId, isActive])
+  @@index([tenantId, priority])
+  @@map("rate_limit_configs")
+  @@schema("tenant_admin")
+}
+
+/// Rate limit usage tracking
+model RateLimitUsage {
+  tenantId        String   @map("tenant_id") @db.Uuid
+  id              String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  endpoint        String
+  method          String
+  bucketStart     DateTime @map("bucket_start") @db.Timestamptz(6)
+  requestCount    Int      @default(0) @map("request_count")
+  blockedCount    Int      @default(0) @map("blocked_count")
+  avgResponseTime Int?     @map("avg_response_time")
+  maxResponseTime Int?     @map("max_response_time")
+  userHashes      String[] @map("user_hashes")
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@unique([tenantId, endpoint, method, bucketStart])
+  @@index([tenantId, bucketStart])
+  @@index([tenantId, endpoint])
+  @@map("rate_limit_usage")
+  @@schema("tenant_admin")
+}
+
+/// Rate limit event log
+model RateLimitEvent {
+  tenantId         String   @map("tenant_id") @db.Uuid
+  id               String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  endpoint         String
+  method           String
+  allowed          Boolean
+  windowStart      DateTime @map("window_start") @db.Timestamptz(6)
+  windowEnd        DateTime @map("window_end") @db.Timestamptz(6)
+  requestsInWindow Int      @map("requests_in_window")
+  limit            Int
+  userId           String?  @map("user_id") @db.Uuid
+  userAgent        String?  @map("user_agent")
+  ipHash           String?  @map("ip_hash")
+  responseTime     Int?     @map("response_time")
+  timestamp        DateTime @default(now()) @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, timestamp])
+  @@index([tenantId, endpoint])
+  @@index([tenantId, allowed])
+  @@index([tenantId, userId])
+  @@map("rate_limit_events")
+  @@schema("tenant_admin")
+}
+
+// ============================================================================
+// Tenant Staff Schema Models
+// ============================================================================
+
+/// Role-based policy configuration
+model RolePolicy {
+  tenantId    String    @map("tenant_id") @db.Uuid
+  id          String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  roleId      String    @map("role_id") @db.Uuid
+  roleName    String    @map("role_name")
+  permissions Json
+  description String?
+  isActive    Boolean   @default(true) @map("is_active")
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@unique([tenantId, roleId])
+  @@index([tenantId, isActive])
+  @@map("role_policies")
+  @@schema("tenant_staff")
+}
+
+// ============================================================================
+// Tenant Inventory Schema Models
+// ============================================================================
+
+/// Vendor catalog entries for inventory
+model VendorCatalog {
+  tenantId             String    @map("tenant_id") @db.Uuid
+  id                   String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  supplierId           String    @map("supplier_id") @db.Uuid
+  itemNumber           String    @map("item_number")
+  itemName             String    @map("item_name")
+  description          String?
+  category             String?
+  baseUnitCost         Decimal   @map("base_unit_cost") @db.Decimal(12, 2)
+  currency             String    @default("USD")
+  unitOfMeasure        String    @map("unit_of_measure")
+  leadTimeDays         Int?      @map("lead_time_days")
+  leadTimeMinDays      Int?      @map("lead_time_min_days")
+  leadTimeMaxDays      Int?      @map("lead_time_max_days")
+  minimumOrderQuantity Decimal?  @map("minimum_order_quantity") @db.Decimal(12, 3)
+  orderMultiple        Decimal?  @map("order_multiple") @db.Decimal(12, 3)
+  isActive             Boolean   @default(true) @map("is_active")
+  effectiveFrom        DateTime? @map("effective_from") @db.Timestamptz(6)
+  effectiveTo          DateTime? @map("effective_to") @db.Timestamptz(6)
+  supplierSku          String?   @map("supplier_sku")
+  notes                String?
+  tags                 String[]
+  lastCostUpdate       DateTime? @map("last_cost_update") @db.Timestamptz(6)
+  createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt            DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@unique([tenantId, supplierId, itemNumber])
+  @@index([tenantId, supplierId])
+  @@index([tenantId, itemNumber])
+  @@index([tenantId, category])
+  @@map("vendor_catalog")
+  @@schema("tenant_inventory")
+}
+
+/// Pricing tiers for vendor catalog items
+model PricingTier {
+  tenantId        String    @map("tenant_id") @db.Uuid
+  id              String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  catalogEntryId  String    @map("catalog_entry_id") @db.Uuid
+  tierName        String    @map("tier_name")
+  minQuantity     Decimal   @map("min_quantity") @db.Decimal(12, 3)
+  maxQuantity     Decimal?  @map("max_quantity") @db.Decimal(12, 3)
+  unitCost        Decimal   @map("unit_cost") @db.Decimal(12, 2)
+  discountPercent Decimal?  @map("discount_percent") @db.Decimal(5, 2)
+  effectiveFrom   DateTime? @map("effective_from") @db.Timestamptz(6)
+  effectiveTo     DateTime? @map("effective_to") @db.Timestamptz(6)
+  isActive        Boolean   @default(true) @map("is_active")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, catalogEntryId])
+  @@index([tenantId, catalogEntryId, minQuantity])
+  @@map("pricing_tiers")
+  @@schema("tenant_inventory")
+}
+
+/// Bulk order rules for vendor catalog items
+model BulkOrderRule {
+  tenantId          String    @map("tenant_id") @db.Uuid
+  id                String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  catalogEntryId    String    @map("catalog_entry_id") @db.Uuid
+  ruleName          String    @map("rule_name")
+  minimumQuantity   Decimal   @map("minimum_quantity") @db.Decimal(12, 3)
+  ruleType          String    @map("rule_type")
+  thresholdQuantity Decimal?  @map("threshold_quantity") @db.Decimal(12, 3)
+  action            String
+  discountPercent   Decimal?  @map("discount_percent") @db.Decimal(5, 2)
+  freeItemQuantity  Int?      @map("free_item_quantity")
+  shippingIncluded  Boolean   @default(false) @map("shipping_included")
+  priority          Int       @default(0)
+  effectiveFrom     DateTime? @map("effective_from") @db.Timestamptz(6)
+  effectiveTo       DateTime? @map("effective_to") @db.Timestamptz(6)
+  isActive          Boolean   @default(true) @map("is_active")
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt         DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  @@id([tenantId, id])
+  @@index([tenantId, catalogEntryId])
+  @@index([tenantId, ruleType])
+  @@map("bulk_order_rules")
+  @@schema("tenant_inventory")
+}
