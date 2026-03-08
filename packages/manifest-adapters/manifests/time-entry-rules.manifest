@@ -102,6 +102,15 @@ entity TimeEntry {
     emit TimeEntryAdded
   }
 
+  command softDelete(reason: string, userId: string) {
+    guard self.deletedAt == 0 "Time entry is already deleted"
+
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit TimeEntryDeleted
+  }
+
   store TimeEntry in memory
 }
 
@@ -184,6 +193,7 @@ entity TimecardEditRequest {
 
 policy StaffCanClockInOut execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "All staff can clock in and out"
 policy ManagersCanAddEntries execute: user.role in ["kitchen_lead", "manager", "admin"] "Leads and managers can add manual time entries"
+policy ManagersCanDeleteEntries execute: user.role in ["manager", "admin"] "Only managers can delete time entries"
 policy StaffCanRequestEdit execute: user.role in ["staff", "kitchen_staff", "kitchen_lead", "manager", "admin"] "All staff can request timecard edits"
 policy ManagersCanApproveEdits execute: user.role in ["manager", "admin"] "Only managers can approve timecard edits"
 
@@ -216,6 +226,15 @@ event TimeEntryAdded: "staff.timeentry.added" {
   totalHours: number
   breakMinutes: number
   createdAt: number
+}
+
+event TimeEntryDeleted: "staff.timeentry.deleted" {
+  timeEntryId: string
+  tenantId: string
+  employeeId: string
+  deletedBy: string
+  reason: string
+  deletedAt: number
 }
 
 event TimecardEditRequested: "staff.timecard.edit.requested" {

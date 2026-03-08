@@ -211,6 +211,16 @@ entity CycleCountRecord {
     emit CycleCountRecordVerified
   }
 
+  command remove(userId: string) {
+    guard not self.isVerified "Cannot remove verified records"
+    guard self.deletedAt == 0 "Record is already removed"
+
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit CycleCountRecordRemoved
+  }
+
   store CycleCountRecord in memory
 }
 
@@ -384,6 +394,15 @@ event CycleCountRecordVerified: "inventory.cyclecount.record.verified" {
   variancePct: number
   verifiedById: string
   verifiedAt: number
+}
+
+event CycleCountRecordRemoved: "inventory.cyclecount.record.removed" {
+  recordId: string
+  sessionId: string
+  itemId: string
+  itemName: string
+  userId: string
+  removedAt: number
 }
 
 event VarianceReportCreated: "inventory.variance.report.created" {

@@ -1196,6 +1196,11 @@ export function cycleCountRecordCreatePath(): string {
   return "/api/cyclecountrecord/create";
 }
 
+/** POST /api/cyclecountrecord/remove */
+export function cycleCountRecordRemovePath(): string {
+  return "/api/cyclecountrecord/remove";
+}
+
 /** POST /api/cyclecountrecord/update */
 export function cycleCountRecordUpdatePath(): string {
   return "/api/cyclecountrecord/update";
@@ -2436,6 +2441,11 @@ export function timeEntryClockOutPath(): string {
   return "/api/timeentry/clock-out";
 }
 
+/** POST /api/timeentry/soft-delete */
+export function timeEntrySoftDeletePath(): string {
+  return "/api/timeentry/soft-delete";
+}
+
 /** POST /api/timeoffrequest/approve */
 export function timeOffRequestApprovePath(): string {
   return "/api/timeoffrequest/approve";
@@ -2812,6 +2822,7 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "ContractSignature.create", path: "/api/contractsignature/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "ContractSignature.softDelete", path: "/api/contractsignature/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "CycleCountRecord.create", path: "/api/cyclecountrecord/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CycleCountRecord.remove", path: "/api/cyclecountrecord/remove", method: "POST", source: "command", auth: true, tenant: true },
   { id: "CycleCountRecord.update", path: "/api/cyclecountrecord/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "CycleCountRecord.verify", path: "/api/cyclecountrecord/verify", method: "POST", source: "command", auth: true, tenant: true },
   { id: "CycleCountSession.cancel", path: "/api/cyclecountsession/cancel", method: "POST", source: "command", auth: true, tenant: true },
@@ -3060,6 +3071,7 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "TimeEntry.addEntry", path: "/api/timeentry/add-entry", method: "POST", source: "command", auth: true, tenant: true },
   { id: "TimeEntry.clockIn", path: "/api/timeentry/clock-in", method: "POST", source: "command", auth: true, tenant: true },
   { id: "TimeEntry.clockOut", path: "/api/timeentry/clock-out", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "TimeEntry.softDelete", path: "/api/timeentry/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "TimeOffRequest.approve", path: "/api/timeoffrequest/approve", method: "POST", source: "command", auth: true, tenant: true },
   { id: "TimeOffRequest.cancel", path: "/api/timeoffrequest/cancel", method: "POST", source: "command", auth: true, tenant: true },
   { id: "TimeOffRequest.create", path: "/api/timeoffrequest/create", method: "POST", source: "command", auth: true, tenant: true },

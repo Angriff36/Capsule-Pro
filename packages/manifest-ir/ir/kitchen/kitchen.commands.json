@@ -386,6 +386,11 @@
   },
   {
     "entity": "CycleCountRecord",
+    "command": "remove",
+    "commandId": "CycleCountRecord.remove"
+  },
+  {
+    "entity": "CycleCountRecord",
     "command": "update",
     "commandId": "CycleCountRecord.update"
   },
@@ -1623,6 +1628,11 @@
     "entity": "TimeEntry",
     "command": "clockOut",
     "commandId": "TimeEntry.clockOut"
+  },
+  {
+    "entity": "TimeEntry",
+    "command": "softDelete",
+    "commandId": "TimeEntry.softDelete"
   },
   {
     "entity": "TimeOffRequest",

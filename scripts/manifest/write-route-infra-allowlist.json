@@ -276,6 +276,16 @@
       "pattern": "^/api/kitchen/tasks/[^/]+$",
       "methods": ["PATCH", "DELETE"],
       "comment": "Uses executeManifestCommand — KitchenTask.start/complete/cancel/release/updatePriority/updateComplexity"
+    },
+    {
+      "pattern": "^/api/timecards/[^/]+$",
+      "methods": ["PUT", "DELETE"],
+      "comment": "Uses executeManifestCommand — TimeEntry.clockOut/softDelete"
+    },
+    {
+      "pattern": "^/api/inventory/cycle-count/records/[^/]+$",
+      "methods": ["PUT", "DELETE"],
+      "comment": "Uses executeManifestCommand — CycleCountRecord.update/remove"
     }
   ]
 }

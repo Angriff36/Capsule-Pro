@@ -3,7 +3,7 @@
  *
  * GET    /api/inventory/cycle-count/records/[id]      - Get a single record
  * PUT    /api/inventory/cycle-count/records/[id]      - Update a record (manifest command)
- * DELETE /api/inventory/cycle-count/records/[id]      - Verify a record (manifest command)
+ * DELETE /api/inventory/cycle-count/records/[id]      - Remove a record (manifest command)
  */
 
 import { auth } from "@repo/auth/server";
@@ -143,21 +143,20 @@ export async function PUT(
 }
 
 /**
- * DELETE /api/inventory/cycle-count/records/[id] - Verify a record
+ * DELETE /api/inventory/cycle-count/records/[id] - Remove a record
  */
-// TODO: No dedicated "remove" command exists for CycleCountRecord. Using "verify" as closest match. Consider adding a "remove" command to the manifest.
 export async function DELETE(
   request: NextRequest,
   context: { params: Promise<{ id: string }> }
 ) {
   const { id } = await context.params;
   console.log(
-    "[CycleCountRecord/DELETE] Delegating to manifest verify command",
+    "[CycleCountRecord/DELETE] Delegating to manifest remove command",
     { id }
   );
   return executeManifestCommand(request, {
     entityName: "CycleCountRecord",
-    commandName: "verify",
+    commandName: "remove",
     params: { id },
     transformBody: (_body) => ({ id }),
   });

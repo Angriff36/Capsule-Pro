@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-03-01T07:55:02.449Z",
+  "generatedAt": "2026-03-08T11:12:38.298Z",
   "basePath": "/api",
   "routes": [
     {
@@ -5278,6 +5278,26 @@
       "tenant": true
     },
     {
+      "id": "CycleCountRecord.remove",
+      "path": "/api/inventory/cycle-count/records/commands/remove",
+      "method": "POST",
+      "params": [
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "CycleCountRecord",
+        "command": "remove"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "CycleCountRecord.update",
       "path": "/api/inventory/cycle-count/records/commands/update",
       "method": "POST",
@@ -6190,67 +6210,67 @@
           "name": "clientId",
           "type": "string",
           "location": "body",
-          "required": false
+          "required": true
         },
         {
           "name": "eventNumber",
           "type": "string",
           "location": "body",
-          "required": false
+          "required": true
         },
         {
           "name": "title",
           "type": "string",
           "location": "body",
-          "required": false
+          "required": true
         },
         {
           "name": "eventType",
           "type": "string",
           "location": "body",
-          "required": false
+          "required": true
         },
         {
           "name": "eventDate",
           "type": "number",
           "location": "body",
-          "required": false
+          "required": true
         },
         {
           "name": "guestCount",
           "type": "number",
           "location": "body",
-          "required": false
+          "required": true
         },
         {
           "name": "venueName",
           "type": "string",
           "location": "body",
-          "required": false
+          "required": true
         },
         {
           "name": "venueAddress",
           "type": "string",
           "location": "body",
-          "required": false
+          "required": true
         },
         {
           "name": "notes",
           "type": "string",
           "location": "body",
-          "required": false
+          "required": true
         },
         {
           "name": "tags",
           "type": "string",
           "location": "body",
-          "required": false
+          "required": true
         },
         {
           "name": "status",
           "type": "string",
           "location": "body",
-          "required": false
+          "required": true
         }
       ],
       "source": {
@@ -13371,6 +13391,32 @@
         "kind": "command",
         "entity": "TimeEntry",
         "command": "clockOut"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "TimeEntry.softDelete",
+      "path": "/api/timecards/entries/commands/soft-delete",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "TimeEntry",
+        "command": "softDelete"
       },
       "auth": true,
       "tenant": true

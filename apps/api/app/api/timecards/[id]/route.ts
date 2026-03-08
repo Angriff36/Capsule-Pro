@@ -151,53 +151,18 @@ export async function PUT(
   });
 }
 
-// TODO: No dedicated "delete/cancel" command exists for TimeEntry. Consider adding one to the manifest.
 export async function DELETE(
-  _request: Request,
-  { params }: { params: Promise<{ id: string }> }
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
 ) {
-  const { orgId } = await auth();
-  if (!orgId) {
-    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-  }
-
-  const tenantId = await getTenantIdForOrg(orgId);
-  const { id } = await params;
-
-  try {
-    const existingEntry = await database.timeEntry.findFirst({
-      where: {
-        tenantId,
-        id,
-        deleted_at: null,
-      },
-    });
-
-    if (!existingEntry) {
-      return NextResponse.json(
-        { message: "Time entry not found" },
-        { status: 404 }
-      );
-    }
-
-    await database.timeEntry.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id,
-        },
-      },
-      data: {
-        deleted_at: new Date(),
-      },
-    });
-
-    return NextResponse.json({ message: "Time entry deleted" });
-  } catch (error) {
-    console.error("Error deleting time entry:", error);
-    return NextResponse.json(
-      { message: "Failed to delete time entry" },
-      { status: 500 }
-    );
-  }
+  const { id } = await context.params;
+  console.log("[TimeEntry/DELETE] Delegating to manifest softDelete command", {
+    id,
+  });
+  return executeManifestCommand(request, {
+    entityName: "TimeEntry",
+    commandName: "softDelete",
+    params: { id },
+    transformBody: (body) => ({ ...body, id }),
+  });
 }
