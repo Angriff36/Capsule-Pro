@@ -3,7 +3,7 @@
 > **Last updated:** 2026-03-08
 > **Generated from:** Senior Architect Verification Synthesis (20+ Parallel Subagent Analyses)
 > **Verification Status:** ALL P0-P4 ITEMS VERIFIED BY 20+ PARALLEL SUBAGENTS
-> **Overall Completion:** ~55% (P0.1, P0.2 completed 2026-03-08)
+> **Overall Completion:** ~65% (P0.1, P0.2, P0.3, P0.4 completed 2026-03-08)
 > **Confidence:** 95-100% (verified through direct code inspection)
 
 ---
@@ -192,9 +192,9 @@ Based on analysis of 104 feature.json files, these features exist in the codebas
 
 ## CRITICAL FINDINGS
 
-### 1. SCHEMA-MIGRATION DRIFT (P0 - VERIFIED - BLOCKS 5+ FEATURES)
+### 1. SCHEMA-MIGRATION DRIFT (P0 - VERIFIED - BLOCKS 5+ FEATURES) - **RESOLVED (2026-03-08)**
 
-**VERIFIED:** 5 migrations create 9 tables WITHOUT Prisma models:
+**VERIFIED:** 5 migrations created 9 tables WITHOUT Prisma models - ALL FIXED:
 
 | Migration | Missing Model | Columns | Impact | Status |
 |-----------|---------------|---------|--------|--------|
@@ -204,7 +204,7 @@ Based on analysis of 104 feature.json files, these features exist in the codebas
 | `20260304150000_add_role_policy_model` | RolePolicy | 11 | Blocks RBAC | **COMPLETED (2026-03-08)** |
 | `20260306000000_add_vendor_catalog_management` | VendorCatalog, PricingTier, BulkOrderRule | 3 tables | Blocks vendor catalog | **COMPLETED (2026-03-08)** |
 
-### 2. PRODUCTION BLOCKERS (P0 - ALL VERIFIED - Causes 400 Errors)
+### 2. PRODUCTION BLOCKERS (P0 - ALL COMPLETED - No Longer Cause 400 Errors)
 
 **P0.2: Kitchen Tasks Reopen - COMPLETED (2026-03-08)**
 - File: `apps/api/app/api/kitchen/tasks/[id]/route.ts` lines 16-20
@@ -212,21 +212,20 @@ Based on analysis of 104 feature.json files, these features exist in the codebas
 - **COMPLETED:** Added mapping + handling for `release` command's `reason` parameter
 - No longer returns 400 error when trying to reopen tasks
 
-**P0.3: Timecards Delete - VERIFIED**
-- File: `apps/api/app/api/timecards/[id]/route.ts` line 154
-- DELETE uses direct DB update (`database.timeEntry.update`), bypasses manifest system
-- **VERIFIED:** TimeEntry manifest has no "softDelete" command
-- **VERIFIED:** TODO comment at line 154 acknowledges issue
-- No audit trail for deletions
-- FIX: Add softDelete command to manifest, replace direct DB update
+**P0.3: Timecards Delete - COMPLETED (2026-03-08)**
+- File: `apps/api/app/api/timecards/[id]/route.ts`
+- **COMPLETED:** Added "softDelete" command to time-entry-rules.manifest
+- **COMPLETED:** Added ManagersCanDeleteEntries policy and TimeEntryDeleted event
+- **COMPLETED:** Updated route to use executeManifestCommand instead of direct DB update
+- **COMPLETED:** Audit trail now created, guards enforced
 
-**P0.4: Cycle Count Records Delete - VERIFIED**
-- File: `apps/api/app/api/inventory/cycle-count/records/[id]/route.ts` line 148
-- DELETE uses "verify" command instead of "remove"
-- **VERIFIED:** CycleCountRecord manifest has `create`, `update`, `verify` but NO `remove` command
-- **VERIFIED:** TODO comment at line 148 acknowledges issue
-- Semantically incorrect - DELETE verifies instead of deletes
-- FIX: Add remove command to manifest, update route
+**P0.4: Cycle Count Records Delete - COMPLETED (2026-03-08)**
+- File: `apps/api/app/api/inventory/cycle-count/records/[id]/route.ts`
+- **COMPLETED:** Added "remove" command to cycle-count-rules.manifest
+- **COMPLETED:** Added guard to prevent removing verified records
+- **COMPLETED:** Added CycleCountRecordRemoved event
+- **COMPLETED:** Updated DELETE to use "remove" instead of "verify" command
+- **COMPLETED:** Semantically correct - now removes instead of verifies
 
 ### 3. VERIFIED WORKING FEATURES (100% COMPLETE - ALL VERIFIED)
 
@@ -359,14 +358,25 @@ const STATUS_TO_COMMAND: Record<string, string> = {
 
 ---
 
-### P0.3: Fix Timecards Delete [VERIFIED]
+### P0.3: Fix Timecards Delete [COMPLETED (2026-03-08)]
 
 **Priority:** P0 - CRITICAL (technical debt)
 **Effort:** Small (1 day)
 **Dependencies:** None
-**Verification Status:** CONFIRMED - TODO comment at line 154, no softDelete command in manifest
+**Status:** COMPLETED (2026-03-08)
 
-#### Problem
+#### Completion Summary
+
+**Fixed by:** Adding "softDelete" command to TimeEntry manifest, adding ManagersCanDeleteEntries policy, adding TimeEntryDeleted event, and updating route to use executeManifestCommand.
+
+**Changes made:**
+1. Added "softDelete" command to time-entry-rules.manifest with proper policy guards
+2. Added ManagersCanDeleteEntries policy at line 71-75
+3. Added TimeEntryDeleted event at lines 77-83
+4. Updated DELETE route to use executeManifestCommand instead of direct DB update
+5. Removed workaround code and TODO comment
+
+#### Original Problem
 
 File: `apps/api/app/api/timecards/[id]/route.ts` line 154
 
@@ -379,40 +389,53 @@ await database.timeEntry.update({
 });
 ```
 
-DELETE bypasses manifest with direct DB update, bypassing guards and audit.
+DELETE bypassed manifest with direct DB update, bypassing guards and audit.
 
 #### Tasks
 
-- [ ] Add "softDelete" command to TimeEntry manifest
-- [ ] Replace direct DB update with `executeManifestCommand`
-- [ ] Remove workaround code
+- [x] Add "softDelete" command to TimeEntry manifest
+- [x] Replace direct DB update with `executeManifestCommand`
+- [x] Remove workaround code
+- [x] Add ManagersCanDeleteEntries policy
+- [x] Add TimeEntryDeleted event
 
 #### Files
 
 ```
 apps/api/app/api/timecards/[id]/route.ts
-  - Lines 155-200: Replace with executeManifestCommand
+  - Lines 155-200: Replaced with executeManifestCommand (COMPLETED)
 
 packages/manifest-adapters/manifests/time-entry-rules.manifest
-  - Add "softDelete" command spec
+  - Added "softDelete" command spec (COMPLETED)
 ```
 
 #### Acceptance Criteria
 
-1. DELETE /api/timecards/:id uses manifest command
-2. Guards are enforced
-3. Audit trail is created
+1. DELETE /api/timecards/:id uses manifest command - VERIFIED
+2. Guards are enforced - VERIFIED
+3. Audit trail is created - VERIFIED
 
 ---
 
-### P0.4: Fix Cycle Count Records Delete [VERIFIED]
+### P0.4: Fix Cycle Count Records Delete [COMPLETED (2026-03-08)]
 
 **Priority:** P0 - CRITICAL
 **Effort:** Small (1 day)
 **Dependencies:** None
-**Verification Status:** CONFIRMED - TODO comment at line 148, using "verify" instead of "remove"
+**Status:** COMPLETED (2026-03-08)
 
-#### Problem
+#### Completion Summary
+
+**Fixed by:** Adding "remove" command to CycleCountRecord manifest, adding guard to prevent removing verified records, adding CycleCountRecordRemoved event, and updating route to use "remove" command.
+
+**Changes made:**
+1. Added "remove" command to cycle-count-rules.manifest with guard against verified records
+2. Added cannotRemoveVerifiedRecords guard at lines 77-80
+3. Added CycleCountRecordRemoved event at lines 82-88
+4. Updated DELETE handler to use "remove" instead of "verify" command
+5. Removed TODO comment acknowledging issue
+
+#### Original Problem
 
 File: `apps/api/app/api/inventory/cycle-count/records/[id]/route.ts` line 148
 
@@ -421,29 +444,31 @@ File: `apps/api/app/api/inventory/cycle-count/records/[id]/route.ts` line 148
 const commandName = "verify"; // WRONG - semantically incorrect
 ```
 
-DELETE uses "verify" command semantically incorrectly.
+DELETE used "verify" command semantically incorrectly.
 
 #### Tasks
 
-- [ ] Add "remove" command to CycleCountRecord manifest
-- [ ] Update DELETE handler to use "remove" command
-- [ ] Add guard to prevent removing verified records
+- [x] Add "remove" command to CycleCountRecord manifest
+- [x] Update DELETE handler to use "remove" command
+- [x] Add guard to prevent removing verified records
+- [x] Add CycleCountRecordRemoved event
+- [x] Remove workaround code
 
 #### Files
 
 ```
 apps/api/app/api/inventory/cycle-count/records/[id]/route.ts
-  - Lines 149-164: Change commandName from "verify" to "remove"
+  - Lines 149-164: Changed commandName from "verify" to "remove" (COMPLETED)
 
 packages/manifest-adapters/manifests/cycle-count-rules.manifest
-  - Add "remove" command spec with guard
+  - Added "remove" command spec with guard (COMPLETED)
 ```
 
 #### Acceptance Criteria
 
-1. DELETE uses "remove" command
-2. Cannot delete verified records (guard)
-3. Soft delete applied
+1. DELETE uses "remove" command - VERIFIED
+2. Cannot delete verified records (guard) - VERIFIED
+3. Soft delete applied - VERIFIED
 
 ---
 
@@ -1094,8 +1119,8 @@ apps/mobile/__tests__/offline-sync.test.ts (create)
 |----|---------|----------|--------|---------------|------------|----------|
 | P0.1 | Fix Schema-Migration Drift | P0 | Medium | **COMPLETED (2026-03-08)** | None | VERIFIED |
 | P0.2 | Fix Kitchen Tasks Reopen | P0 | Small (2-4h) | COMPLETED (2026-03-08) | None | VERIFIED |
-| P0.3 | Fix Timecards Delete | P0 | Small | BYPASSES MANIFEST | None | VERIFIED |
-| P0.4 | Fix Cycle Count Records Delete | P0 | Small | WRONG COMMAND | None | VERIFIED |
+| P0.3 | Fix Timecards Delete | P0 | Small | **COMPLETED (2026-03-08)** | None | VERIFIED |
+| P0.4 | Fix Cycle Count Records Delete | P0 | Small | **COMPLETED (2026-03-08)** | None | VERIFIED |
 | P1.1 | Complete Webhook DLQ | P1 | Small | 70% | None | VERIFIED |
 | P1.2 | Create Email Templates API | P1 | Small | 80-90% | None | VERIFIED |
 | P1.3 | Complete AI Simulation Engine | P1 | Medium | 50% basic / 0% AI | None | VERIFIED |
@@ -1137,24 +1162,24 @@ See "Features Missing from Implementation Plan" section for full details.
 
 | Priority | Small (1-2d) | Medium (3-5d) | Large (1-3w) | Total |
 |----------|--------------|---------------|--------------|-------|
-| P0 | 2 (+1 completed) | 1 (+1 completed) | 0 | 3 tasks (P0.1, P0.2 DONE) |
+| P0 | 4 (+2 completed) | 0 | 0 | 3 tasks (P0.1, P0.2, P0.3, P0.4 DONE) |
 | P1 | 2 | 1 | 1 | 4 tasks |
 | P2 | 0 | 6 | 0 | 6 tasks |
 | P3 | 1 | 3 | 0 | 4 tasks |
 | P4 | 0 | 0 | 0 | 17+ backlog |
-| **Total** | **5** (+1 done) | **11** (+1 done) | **1** | **17 tasks** (2 completed) |
+| **Total** | **7** (+4 done) | **11** | **1** | **17 tasks** (4 completed) |
 
-**Estimated Total Effort:** 6-10 weeks (single developer) - REDUCED due to P0.1, P0.2 COMPLETED and P2.1-P2.4 now unblocked
+**Estimated Total Effort:** 5-9 weeks (single developer) - FURTHER REDUCED due to P0.1, P0.2, P0.3, P0.4 COMPLETED and P2.1-P2.4 now unblocked
 
 ---
 
 ## Recommended Execution Order
 
-### Week 1: P0 Critical Fixes (Data Integrity)
+### Week 1: P0 Critical Fixes (Data Integrity) - **ALL COMPLETED (2026-03-08)**
 1. ~~P0.1 - Schema-Migration Drift~~ **COMPLETED (2026-03-08)** - Unblocked P2.1-P2.4
 2. ~~P0.2 - Kitchen Tasks Reopen~~ **COMPLETED (2026-03-08)**
-3. P0.4 - Cycle Count Records Delete
-4. P0.3 - Timecards Delete
+3. ~~P0.4 - Cycle Count Records Delete~~ **COMPLETED (2026-03-08)**
+4. ~~P0.3 - Timecards Delete~~ **COMPLETED (2026-03-08)**
 
 ### Week 2: P1 Quick Wins
 5. P1.1 - Complete Webhook DLQ
@@ -1182,15 +1207,15 @@ See "Features Missing from Implementation Plan" section for full details.
 
 ## Technical Debt Summary
 
-### Missing Manifest Commands (2)
-1. **softDelete for TimeEntry** - `time-entry-rules.manifest` needs softDelete command
-2. **remove for CycleCountRecord** - `cycle-count-rules.manifest` needs remove command
+### Missing Manifest Commands (0)
+~~1. **softDelete for TimeEntry** - `time-entry-rules.manifest` needs softDelete command~~ **COMPLETED (2026-03-08)**
+~~2. **remove for CycleCountRecord** - `cycle-count-rules.manifest` needs remove command~~ **COMPLETED (2026-03-08)**
 
 ### Missing Manifest Mappings (0)
 ~~1. **KitchenTask "pending" -> "release"** - STATUS_TO_COMMAND mapping in `apps/api/app/api/kitchen/tasks/[id]/route.ts` lines 16-20~~ **COMPLETED (2026-03-08)**
 
-### Routes Bypassing Manifest (1)
-1. **timecards delete** - Uses direct DB update at `apps/api/app/api/timecards/[id]/route.ts` line 154
+### Routes Bypassing Manifest (0)
+~~1. **timecards delete** - Uses direct DB update at `apps/api/app/api/timecards/[id]/route.ts` line 154~~ **COMPLETED (2026-03-08)**
 
 ### Schema Drift (0 tables) - **RESOLVED (2026-03-08)**
 - ~~5 migrations create 9 tables without Prisma models~~ **FIXED** - All 9 models added to schema.prisma
@@ -1205,8 +1230,6 @@ See "Features Missing from Implementation Plan" section for full details.
 
 | File | Line | Comment | Priority |
 |------|------|---------|----------|
-| `apps/api/app/api/timecards/[id]/route.ts` | 154 | Missing delete command - uses direct DB update | P0.3 |
-| `apps/api/app/api/inventory/cycle-count/records/[id]/route.ts` | 148 | Missing remove command - using "verify" instead | P0.4 |
 | `apps/api/app/api/kitchen/tasks/[id]/route.ts` | 55 | ~~Incorrect TODO (command exists)~~ **REMOVED (2026-03-08)** | Low - cleanup |
 | `apps/api/app/api/kitchen/tasks/[id]/route.ts` | 127 | Missing commands for title/summary/dueDate/tags | Medium |
 | `apps/api/app/api/events/documents/parse/route.ts` | 931 | Commented code block | Low - cleanup |
@@ -1230,11 +1253,11 @@ See "Features Missing from Implementation Plan" section for full details.
 |------|---------|
 | `packages/database/prisma/schema.prisma` | ~~Add 9 missing models~~ **COMPLETED (2026-03-08)** |
 | `apps/api/app/api/kitchen/tasks/[id]/route.ts` | ~~Add "pending": "release" mapping~~ **COMPLETED (2026-03-08)** |
-| `apps/api/app/api/timecards/[id]/route.ts` | Replace direct DB with manifest (line 154) |
-| `apps/api/app/api/inventory/cycle-count/records/[id]/route.ts` | Fix delete command (line 148) |
+| `apps/api/app/api/timecards/[id]/route.ts` | ~~Replace direct DB with manifest~~ **COMPLETED (2026-03-08)** |
+| `apps/api/app/api/inventory/cycle-count/records/[id]/route.ts` | ~~Fix delete command~~ **COMPLETED (2026-03-08)** |
 | `packages/manifest-adapters/manifests/kitchen-task-rules.manifest` | Release command exists (lines 74-82) - no changes needed |
-| `packages/manifest-adapters/manifests/time-entry-rules.manifest` | Add softDelete command |
-| `packages/manifest-adapters/manifests/cycle-count-rules.manifest` | Add remove command |
+| `packages/manifest-adapters/manifests/time-entry-rules.manifest` | ~~Add softDelete command~~ **COMPLETED (2026-03-08)** |
+| `packages/manifest-adapters/manifests/cycle-count-rules.manifest` | ~~Add remove command~~ **COMPLETED (2026-03-08)** |
 | `apps/app/app/(authenticated)/command-board/actions/boards.ts` | Existing forkCommandBoard (lines 407-567) - leverage for P1.3 |
 
 ---
@@ -1260,8 +1283,8 @@ See "Features Missing from Implementation Plan" section for full details.
 ### Verification Checklist
 - [x] P0.1 Schema drift - **COMPLETED (2026-03-08)** - 9 models added, prisma generate succeeded
 - [x] P0.2 Kitchen tasks - **COMPLETED (2026-03-08)** - mapping added, reason param handled
-- [x] P0.3 Timecards - TODO at line 154 verified
-- [x] P0.4 Cycle count - TODO at line 148 verified
+- [x] P0.3 Timecards - **COMPLETED (2026-03-08)** - softDelete command added, route updated
+- [x] P0.4 Cycle count - **COMPLETED (2026-03-08)** - remove command added, route updated
 - [x] P1.1 Webhook DLQ - Retry logic complete, DLQ missing
 - [x] P1.2 Email templates - Model exists, REST routes missing
 - [x] P1.3 AI simulation - forkCommandBoard() exists at lines 407-567
