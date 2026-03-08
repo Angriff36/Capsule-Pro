@@ -1326,14 +1326,6 @@
     "allowPermanent": true
   },
   {
-    "path": "app/api/analytics/custom-reports/route.ts",
-    "methods": ["GET", "POST"],
-    "reason": "Custom reports — read-only aggregation + report config, not domain mutation",
-    "category": "infrastructure",
-    "owner": "platform-team",
-    "allowPermanent": true
-  },
-  {
     "path": "app/api/analytics/events/profitability/route.ts",
     "methods": ["GET"],
     "reason": "Event profitability — read-only aggregation, not domain mutation",

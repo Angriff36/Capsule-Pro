@@ -1,8 +1,36 @@
 import { config, withAnalyzer } from "@repo/next-config";
 import { withLogging, withSentry } from "@repo/observability/next-config";
 import type { NextConfig } from "next";
-import type { Configuration } from "webpack";
 import { env } from "@/env";
+
+/**
+ * Webpack configuration type (subset of webpack's Configuration)
+ * Defined inline to avoid requiring @types/webpack as a dependency
+ */
+interface WebpackConfiguration {
+  externals?:
+    | string
+    | RegExp
+    | Record<string, unknown>
+    | Array<
+        | string
+        | RegExp
+        | Record<string, unknown>
+        | ((
+            data: { context: string; request: string },
+            callback: (err?: Error | null, result?: string | boolean) => void
+          ) => void)
+      >
+    | ((
+        data: { context: string; request: string },
+        callback: (err?: Error | null, result?: string | boolean) => void
+      ) => void);
+  ignoreWarnings?: Array<
+    | string
+    | RegExp
+    | { module?: string | RegExp; message?: string | RegExp }
+  >;
+}
 
 const OPENTELEMETRY_EXCLUDE = /@opentelemetry/;
 const SENTRY_EXCLUDE = /@sentry/;
@@ -73,7 +101,7 @@ let nextConfig: NextConfig = withLogging({
     "@capsule-pro/sales-reporting",
   ],
   webpack: (
-    webpackConfig: Configuration,
+    webpackConfig: WebpackConfiguration,
     { isServer }: { isServer: boolean }
   ) => {
     if (isServer) {
@@ -114,7 +142,7 @@ let nextConfig: NextConfig = withLogging({
       webpackConfig.externals = [
         ...baseExternals,
         pdfjsExternal,
-      ] as Configuration["externals"];
+      ] as WebpackConfiguration["externals"];
 
       // Suppress 'Critical dependency' and large string warnings
       webpackConfig.ignoreWarnings = [

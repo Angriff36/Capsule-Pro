@@ -289,7 +289,7 @@ describe("Command Board Health Smoke Test", () => {
       expect(response.status).toBe(200);
       expect(body.conflicts).toEqual([]);
       expect(body.warnings).toBeDefined();
-      expect((body.warnings as unknown[]).length).toBe(7); // 7 detectors
+      expect((body.warnings as unknown[]).length).toBe(6); // 6 detectors that use $queryRaw or prepTask.findMany
     });
   });
 

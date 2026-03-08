@@ -14,6 +14,7 @@ interface RouteContext {
  * guards, so we don't need to duplicate transition validation here.
  */
 const STATUS_TO_COMMAND: Record<string, string> = {
+  pending: "release",
   in_progress: "start",
   done: "complete",
   cancelled: "cancel",
@@ -52,9 +53,6 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     const commandName = STATUS_TO_COMMAND[newStatus];
 
     if (!commandName) {
-      // TODO: "pending" status (reopen) doesn't have a dedicated manifest command yet.
-      // For now, log and return an error. When a "reopen" command is added to the
-      // manifest, map it here.
       console.error(
         `[KitchenTask/PATCH] No manifest command mapped for target status: "${newStatus}"`,
         { taskId: id, requestedStatus: newStatus }
@@ -84,6 +82,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         ...(commandName === "cancel" && {
           reason: reqBody.reason || "Cancelled via task update",
           canceledBy: ctx.userId,
+        }),
+        // release command requires reason
+        ...(commandName === "release" && {
+          reason: reqBody.reason || "Released via task update",
         }),
       }),
     });

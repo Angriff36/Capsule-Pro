@@ -11,6 +11,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { NextRequest } from "next/server";
 
 // Mock the database before importing
 vi.mock("@repo/database", () => ({
@@ -341,7 +342,7 @@ describe("Command Board Connection Tests", () => {
 
       mockConnection.findMany.mockResolvedValue(activeConnections as any);
 
-      const request = new Request("http://localhost/api/command-board/connections/list");
+       const request = new NextRequest("http://localhost/api/command-board/connections/list");
       const response = await listConnections(request);
       const body = await response.json();
 
@@ -391,7 +392,7 @@ describe("Command Board Connection Tests", () => {
 
       mockConnection.findMany.mockResolvedValue(mockConnections as any);
 
-      const request = new Request("http://localhost/api/command-board/connections/list");
+       const request = new NextRequest("http://localhost/api/command-board/connections/list");
       const response = await listConnections(request);
       const body = await response.json();
 
@@ -405,7 +406,7 @@ describe("Command Board Connection Tests", () => {
 
       mockConnection.findMany.mockResolvedValue([]);
 
-      const request = new Request("http://localhost/api/command-board/connections/list");
+       const request = new NextRequest("http://localhost/api/command-board/connections/list");
       const response = await listConnections(request);
       const body = await response.json();
 
@@ -425,7 +426,7 @@ describe("Command Board Connection Tests", () => {
 
       mockConnection.findMany.mockResolvedValue([connection] as any);
 
-      const request = new Request("http://localhost/api/command-board/connections/list");
+       const request = new NextRequest("http://localhost/api/command-board/connections/list");
       const response = await listConnections(request);
       const body = await response.json();
 
@@ -442,7 +443,7 @@ describe("Command Board Connection Tests", () => {
 
       mockConnection.findMany.mockResolvedValue([]);
 
-      const request = new Request("http://localhost/api/command-board/connections/list");
+       const request = new NextRequest("http://localhost/api/command-board/connections/list");
       await listConnections(request);
 
       expect(mockConnection.findMany).toHaveBeenCalledWith(
@@ -487,7 +488,7 @@ describe("Command Board Connection Tests", () => {
     it("should return 401 for unauthenticated requests", async () => {
       mockAuth.mockResolvedValue({ orgId: null, userId: null });
 
-      const request = new Request("http://localhost/api/command-board/connections/list");
+       const request = new NextRequest("http://localhost/api/command-board/connections/list");
       const response = await listConnections(request);
 
       expect(response.status).toBe(401);
@@ -497,7 +498,7 @@ describe("Command Board Connection Tests", () => {
       mockAuth.mockResolvedValue({ orgId: TEST_ORG_ID, userId: TEST_USER_ID });
       mockGetTenantIdForOrg.mockResolvedValue(null as never);
 
-      const request = new Request("http://localhost/api/command-board/connections/list");
+       const request = new NextRequest("http://localhost/api/command-board/connections/list");
       const response = await listConnections(request);
 
       expect(response.status).toBe(400);
@@ -508,6 +509,9 @@ describe("Command Board Connection Tests", () => {
         id: TEST_USER_ID,
         tenantId: TEST_TENANT_ID,
         role: "viewer",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User",
       });
 
       const mockRuntime = {
@@ -530,7 +534,7 @@ describe("Command Board Connection Tests", () => {
 
       mockConnection.findMany.mockRejectedValue(new Error("Database error"));
 
-      const request = new Request("http://localhost/api/command-board/connections/list");
+       const request = new NextRequest("http://localhost/api/command-board/connections/list");
       const response = await listConnections(request);
 
       expect(response.status).toBe(500);

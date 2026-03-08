@@ -581,6 +581,9 @@ describe("Command Board Annotation Tests", () => {
         id: TEST_USER_ID,
         tenantId: TEST_TENANT_ID,
         role: "viewer",
+        email: "test@example.com",
+        firstName: "Test",
+        lastName: "User",
       });
 
       const mockRuntime = {

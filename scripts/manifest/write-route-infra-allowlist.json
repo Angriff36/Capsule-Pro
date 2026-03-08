@@ -271,6 +271,11 @@
       "prefix": "/api/sentry-fixer/process",
       "methods": ["POST", "GET"],
       "comment": "Infrastructure: Sentry issue job processor + health check (no domain writes)"
+    },
+    {
+      "pattern": "^/api/kitchen/tasks/[^/]+$",
+      "methods": ["PATCH", "DELETE"],
+      "comment": "Uses executeManifestCommand — KitchenTask.start/complete/cancel/release/updatePriority/updateComplexity"
     }
   ]
 }
