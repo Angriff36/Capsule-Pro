@@ -326,6 +326,36 @@
       "prefix": "/api/inventory/supplier-catalogs",
       "methods": ["POST", "PUT", "DELETE"],
       "comment": "Uses database directly with manifest pattern — VendorCatalog.create/update/softDelete"
+    },
+    {
+      "prefix": "/api/settings/rate-limits",
+      "methods": ["POST", "PATCH", "DELETE"],
+      "comment": "Infrastructure: Rate limit configuration CRUD for tenant-specific limits"
+    },
+    {
+      "prefix": "/api/payroll/export",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Export routes for QuickBooks integration"
+    },
+    {
+      "prefix": "/api/sales-reporting/generate",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Sales report generation"
+    },
+    {
+      "prefix": "/api/staff/shifts/bulk-assignment",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Bulk shift assignment using ScheduleShift.create command"
+    },
+    {
+      "prefix": "/api/staff/availability/batch",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Batch availability updates using EmployeeAvailability.update command"
+    },
+    {
+      "prefix": "/api/timecards/bulk",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Bulk timecard operations using TimeEntry manifest commands"
     }
   ]
 }

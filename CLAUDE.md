@@ -148,7 +148,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[auto-bridge snapshot @ 10 changes]
-Files: apps/api/app/api/inventory/bulk-order-rules/commands/update/route.ts (create), apps/api/app/api/inventory/bulk-order-rules/commands/create/route.ts (create), apps/api/app/api/inventory/pricing-tiers/list/route.ts (create), apps/api/app/api/inventory/pricing-tiers/commands/softDelete/route.ts (create), apps/api/app/api/inventory/pricing-tiers/commands/update/route.ts (create), apps/api/app/api/inventory/pricing-tiers/commands/create/route.ts (create), apps/api/app/api/inventory/supplier-catalogs/list/route.ts (create), apps/api/app/api/inventory/supplier-catalogs/commands/softDelete/route.ts (create), apps/api/app/api/inventory/supplier-catalogs/commands/update/route.ts (create), apps/api/app/api/inventory/supplier-catalogs/commands/create/route.ts (create)
+[Emergency bridge — running bridge was not updated]
+Files: apps/api/middleware/rate-limiter.ts (create), packages/manifest-adapters/manifests/rate-limit-rules.manifest (create), apps/api/app/api/settings/rate-limits/route.ts (create), apps/api/app/api/settings/rate-limits/[id]/route.ts (create), apps/api/app/api/settings/rate-limits/analytics/route.ts (create), apps/api/app/api/settings/rate-limits/events/route.ts (create)
 
 # === END COGNILAYER ===

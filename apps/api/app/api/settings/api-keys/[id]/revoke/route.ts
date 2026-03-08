@@ -5,13 +5,9 @@
  */
 
 import { database } from "@repo/database";
-import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { requireCurrentUser } from "@/app/lib/tenant";
-
-interface RouteContext {
-  params: Promise<{ id: string }>;
-}
+import { withRateLimit } from "@/middleware/rate-limiter";
 
 export const runtime = "nodejs";
 
@@ -22,66 +18,76 @@ export const runtime = "nodejs";
  * Unlike soft delete, revocation is for security purposes (compromised key).
  * A revoked key cannot be used for authentication.
  */
-export async function POST(_request: NextRequest, context: RouteContext) {
-  try {
-    const currentUser = await requireCurrentUser();
-    const { id } = await context.params;
+export const POST = withRateLimit(
+  async (_request, context) => {
+    try {
+      const currentUser = await requireCurrentUser();
+      const params = await context.params;
+      if (!params) {
+        return NextResponse.json(
+          { message: "Invalid request" },
+          { status: 400 }
+        );
+      }
+      const id = String(params.id);
 
-    // Check if key exists and belongs to tenant
-    const existing = await database.apiKey.findUnique({
-      where: {
-        tenantId_id: {
-          tenantId: currentUser.tenantId,
-          id,
+      // Check if key exists and belongs to tenant
+      const existing = await database.apiKey.findUnique({
+        where: {
+          tenantId_id: {
+            tenantId: currentUser.tenantId,
+            id,
+          },
         },
-      },
-    });
+      });
 
-    if (!existing || existing.deletedAt) {
+      if (!existing || existing.deletedAt) {
+        return NextResponse.json(
+          { message: "API key not found" },
+          { status: 404 }
+        );
+      }
+
+      if (existing.revokedAt) {
+        return NextResponse.json(
+          { message: "API key is already revoked" },
+          { status: 400 }
+        );
+      }
+
+      // Revoke the key
+      const revoked = await database.apiKey.update({
+        where: {
+          tenantId_id: {
+            tenantId: currentUser.tenantId,
+            id,
+          },
+        },
+        data: {
+          revokedAt: new Date(),
+        },
+        select: {
+          id: true,
+          name: true,
+          keyPrefix: true,
+          revokedAt: true,
+        },
+      });
+
+      console.log("[ApiKeys/revoke] Revoked API key", {
+        tenantId: currentUser.tenantId,
+        keyId: id,
+        userId: currentUser.id,
+      });
+
+      return NextResponse.json(revoked);
+    } catch (error) {
+      console.error("[ApiKeys/revoke] Error:", error);
       return NextResponse.json(
-        { message: "API key not found" },
-        { status: 404 }
+        { message: "Failed to revoke API key" },
+        { status: 500 }
       );
     }
-
-    if (existing.revokedAt) {
-      return NextResponse.json(
-        { message: "API key is already revoked" },
-        { status: 400 }
-      );
-    }
-
-    // Revoke the key
-    const revoked = await database.apiKey.update({
-      where: {
-        tenantId_id: {
-          tenantId: currentUser.tenantId,
-          id,
-        },
-      },
-      data: {
-        revokedAt: new Date(),
-      },
-      select: {
-        id: true,
-        name: true,
-        keyPrefix: true,
-        revokedAt: true,
-      },
-    });
-
-    console.log("[ApiKeys/revoke] Revoked API key", {
-      tenantId: currentUser.tenantId,
-      keyId: id,
-      userId: currentUser.id,
-    });
-
-    return NextResponse.json(revoked);
-  } catch (error) {
-    console.error("[ApiKeys/revoke] Error:", error);
-    return NextResponse.json(
-      { message: "Failed to revoke API key" },
-      { status: 500 }
-    );
-  }
-}
+  },
+  { limit: 10, window: "1m" }
+);

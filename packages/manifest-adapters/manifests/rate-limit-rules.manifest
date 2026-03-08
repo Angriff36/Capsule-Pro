@@ -1,0 +1,143 @@
+// Administration - Rate Limit Rules
+// Manifest spec for rate limit configuration management
+// SECURITY: All commands require admin role. Rate limits are per-tenant.
+
+entity RateLimitConfig {
+  property required id: string
+  property required tenantId: string
+  property name: string = ""
+  property endpointPattern: string = ""
+  property windowMs: number = 60000
+  property maxRequests: number = 100
+  property burstAllowance: number = 0
+  property priority: number = 0
+  property isActive: boolean = true
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isDeleted: boolean = self.deletedAt > 0
+  computed isActiveConfig: boolean = self.isActive and self.deletedAt == 0
+  computed hasBurstAllowance: boolean = self.burstAllowance > 0
+  computed windowSeconds: number = self.windowMs / 1000
+  computed windowMinutes: number = self.windowMs / 60000
+
+  constraint requireName: self.name != null and self.name != "" "Rate limit name is required"
+  constraint requireEndpointPattern: self.endpointPattern != null and self.endpointPattern != "" "Endpoint pattern is required"
+  constraint validWindowMs: self.windowMs > 0 "Window duration must be positive"
+  constraint validMaxRequests: self.maxRequests > 0 "Maximum requests must be positive"
+  constraint validBurstAllowance: self.burstAllowance >= 0 "Burst allowance cannot be negative"
+  constraint validPriority: self.priority >= 0 and self.priority <= 100 "Priority must be between 0 and 100"
+
+  command create(name: string, endpointPattern: string, windowMs: number, maxRequests: number, burstAllowance: number = 0, priority: number = 0) {
+    guard validWindowMs
+    guard validMaxRequests
+    guard validBurstAllowance
+    guard validPriority
+    mutate name = name
+    mutate endpointPattern = endpointPattern
+    mutate windowMs = windowMs
+    mutate maxRequests = maxRequests
+    mutate burstAllowance = burstAllowance
+    mutate priority = priority
+    mutate isActive = true
+    mutate createdAt = now()
+    mutate updatedAt = now()
+    emit RateLimitConfigCreated
+  }
+
+  command update(name: string, endpointPattern: string, windowMs: number, maxRequests: number, burstAllowance: number = 0, priority: number = 0, isActive: boolean = true) {
+    guard validWindowMs
+    guard validMaxRequests
+    guard validBurstAllowance
+    guard validPriority
+    mutate name = name
+    mutate endpointPattern = endpointPattern
+    mutate windowMs = windowMs
+    mutate maxRequests = maxRequests
+    mutate burstAllowance = burstAllowance
+    mutate priority = priority
+    mutate isActive = isActive
+    mutate updatedAt = now()
+    emit RateLimitConfigUpdated
+  }
+
+  command softDelete(reason: string = "") {
+    guard notDeleted
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+    emit RateLimitConfigDeleted
+  }
+
+  command activate {
+    guard notDeleted
+    mutate isActive = true
+    mutate updatedAt = now()
+    emit RateLimitConfigActivated
+  }
+
+  command deactivate {
+    guard notDeleted
+    mutate isActive = false
+    mutate updatedAt = now()
+    emit RateLimitConfigDeactivated
+  }
+
+  guard notDeleted: self.deletedAt == 0 "Cannot modify deleted rate limit configuration"
+
+  store RateLimitConfig in memory
+}
+
+// SECURITY REQUIREMENT: All rate limit management commands require admin role.
+// This ensures only authorized personnel can configure rate limits.
+policy AdminCanManageRateLimits execute: user.role in ["admin"] "Only admins can manage rate limit configurations"
+
+event RateLimitConfigCreated: "admin.rate_limit.created" {
+  rateLimitConfigId: string
+  tenantId: string
+  name: string
+  endpointPattern: string
+  windowMs: number
+  maxRequests: number
+  burstAllowance: number
+  priority: number
+  createdAt: number
+}
+
+event RateLimitConfigUpdated: "admin.rate_limit.updated" {
+  rateLimitConfigId: string
+  tenantId: string
+  name: string
+  endpointPattern: string
+  windowMs: number
+  maxRequests: number
+  burstAllowance: number
+  priority: number
+  isActive: boolean
+  updatedAt: number
+}
+
+event RateLimitConfigDeleted: "admin.rate_limit.deleted" {
+  rateLimitConfigId: string
+  tenantId: string
+  name: string
+  endpointPattern: string
+  reason: string
+  deletedAt: number
+}
+
+event RateLimitConfigActivated: "admin.rate_limit.activated" {
+  rateLimitConfigId: string
+  tenantId: string
+  name: string
+  endpointPattern: string
+  updatedAt: number
+}
+
+event RateLimitConfigDeactivated: "admin.rate_limit.deactivated" {
+  rateLimitConfigId: string
+  tenantId: string
+  name: string
+  endpointPattern: string
+  updatedAt: number
+}

@@ -4,6 +4,7 @@ import { database } from "@repo/database";
 import { generateText } from "ai";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { withRateLimit } from "@/middleware/rate-limiter";
 
 // AI model configuration
 const AI_MODEL = "gpt-4o-mini";
@@ -402,60 +403,64 @@ function generateFallbackSummary(eventData: EventSummaryData): {
   };
 }
 
-export async function GET(
-  _request: Request,
-  { params }: { params: Promise<{ eventId: string }> }
-) {
-  try {
-    // Auth check
-    const { orgId } = await auth();
-    if (!orgId) {
-      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
-    }
+export const GET = withRateLimit<{ eventId: string }>(
+  async (
+    _request: Request,
+    context: { params?: Promise<{ eventId: string }> }
+  ) => {
+    try {
+      // Auth check
+      const { orgId } = await auth();
+      if (!orgId) {
+        return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+      }
 
-    const tenantId = await getTenantIdForOrg(orgId);
-    const { eventId } = await params;
+      const tenantId = await getTenantIdForOrg(orgId);
+      const params = context.params ? await context.params : { eventId: "" };
+      const { eventId } = params;
 
-    // Validate eventId
-    if (!eventId) {
+      // Validate eventId
+      if (!eventId) {
+        return NextResponse.json(
+          { message: "Event ID is required" },
+          { status: 400 }
+        );
+      }
+
+      // Fetch event data
+      const eventData = await getEventDataForSummary(tenantId, eventId);
+
+      // Generate summary
+      const { summary, wordCount, highlights, criticalInfo } =
+        await generateEventSummary(eventData);
+
+      // Return response
+      return NextResponse.json({
+        eventId,
+        summary,
+        wordCount,
+        highlights,
+        criticalInfo,
+        generatedAt: new Date(),
+        eventTitle: eventData.title,
+        eventDate: eventData.eventDate,
+        model: AI_MODEL,
+      });
+    } catch (error: unknown) {
+      console.error("Event summary generation error:", error);
+
+      if (error instanceof Error && error.message === "Event not found") {
+        return NextResponse.json({ message: "Event not found" }, { status: 404 });
+      }
+
       return NextResponse.json(
-        { message: "Event ID is required" },
-        { status: 400 }
+        {
+          message: "Failed to generate event summary",
+          error: error instanceof Error ? error.message : "Unknown error",
+        },
+        { status: 500 }
       );
     }
-
-    // Fetch event data
-    const eventData = await getEventDataForSummary(tenantId, eventId);
-
-    // Generate summary
-    const { summary, wordCount, highlights, criticalInfo } =
-      await generateEventSummary(eventData);
-
-    // Return response
-    return NextResponse.json({
-      eventId,
-      summary,
-      wordCount,
-      highlights,
-      criticalInfo,
-      generatedAt: new Date(),
-      eventTitle: eventData.title,
-      eventDate: eventData.eventDate,
-      model: AI_MODEL,
-    });
-  } catch (error: unknown) {
-    console.error("Event summary generation error:", error);
-
-    if (error instanceof Error && error.message === "Event not found") {
-      return NextResponse.json({ message: "Event not found" }, { status: 404 });
-    }
-
-    return NextResponse.json(
-      {
-        message: "Failed to generate event summary",
-        error: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
-  }
-}
+  },
+  { limit: 10, window: "1m" }
+);

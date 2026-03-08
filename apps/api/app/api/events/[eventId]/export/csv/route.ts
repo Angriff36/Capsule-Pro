@@ -12,10 +12,7 @@ import type { PrismaClient as Database } from "@repo/database";
 import { database } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-
-type RouteParams = Promise<{
-  eventId: string;
-}>;
+import { withRateLimit } from "@/middleware/rate-limiter";
 
 /**
  * Helper function to escape CSV values
@@ -245,92 +242,98 @@ function generateFilename(
  *   Default: "summary"
  * - download: boolean - If true, returns as downloadable file; otherwise as text
  */
-export async function GET(
-  request: Request,
-  { params }: { params: RouteParams }
-) {
-  try {
-    const { eventId } = await params;
-    const { orgId, userId } = await auth();
+export const GET = withRateLimit<{ eventId: string }>(
+  async (
+    request: Request,
+    context: { params?: Promise<{ eventId: string }> }
+  ): Promise<NextResponse<unknown>> => {
+    try {
+      if (!context.params) {
+        return NextResponse.json({ error: "Missing route params" }, { status: 400 });
+      }
+      const { eventId } = await context.params;
+      const { orgId, userId } = await auth();
 
-    if (!(orgId && userId)) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+      if (!(orgId && userId)) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
 
-    const tenantId = await getTenantIdForOrg(orgId);
+      const tenantId = await getTenantIdForOrg(orgId);
 
-    // Parse include parameter
-    const url = new URL(request.url);
-    const includeParam = url.searchParams.get("include") || "summary";
-    const sections = includeParam.split(",").map((s) => s.trim());
-    const shouldDownload = url.searchParams.get("download") === "true";
+      // Parse include parameter
+      const url = new URL(request.url);
+      const includeParam = url.searchParams.get("include") || "summary";
+      const sections = includeParam.split(",").map((s) => s.trim());
+      const shouldDownload = url.searchParams.get("download") === "true";
 
-    // Fetch event details
-    const event = await database.event.findUnique({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id: eventId,
-        },
-      },
-    });
-
-    if (!event || event.deletedAt) {
-      return NextResponse.json({ error: "Event not found" }, { status: 404 });
-    }
-
-    // Build CSV content
-    const csvRows: string[] = [];
-
-    // Add BOM for Excel UTF-8 compatibility
-    csvRows.push("\uFEFF");
-
-    // Always include event summary
-    csvRows.push(...buildEventSummarySection(event));
-
-    // Build additional sections based on query parameters
-    if (sections.includes("menu")) {
-      csvRows.push(...(await buildMenuSection(database, tenantId, eventId)));
-    }
-
-    if (sections.includes("staff")) {
-      csvRows.push(...(await buildStaffSection(database, tenantId, eventId)));
-    }
-
-    if (sections.includes("guests")) {
-      csvRows.push(...(await buildGuestsSection(database, tenantId, eventId)));
-    }
-
-    // Combine rows with newlines
-    const csvContent = csvRows.join("\n");
-
-    // Generate filename
-    const filename = generateFilename(event);
-
-    if (shouldDownload) {
-      // Return as downloadable file
-      return new NextResponse(csvContent, {
-        headers: {
-          "Content-Type": "text/csv; charset=utf-8",
-          "Content-Disposition": `attachment; filename="${filename}"`,
+      // Fetch event details
+      const event = await database.event.findUnique({
+        where: {
+          tenantId_id: {
+            tenantId,
+            id: eventId,
+          },
         },
       });
-    }
 
-    // Return as JSON with content
-    return NextResponse.json({
-      filename,
-      content: csvContent,
-      contentType: "text/csv; charset=utf-8",
-    });
-  } catch (error) {
-    console.error("Failed to export event CSV:", error);
-    return NextResponse.json(
-      {
-        error: "Failed to export event",
-        message: error instanceof Error ? error.message : "Unknown error",
-      },
-      { status: 500 }
-    );
-  }
-}
+      if (!event || event.deletedAt) {
+        return NextResponse.json({ error: "Event not found" }, { status: 404 });
+      }
+
+      // Build CSV content
+      const csvRows: string[] = [];
+
+      // Add BOM for Excel UTF-8 compatibility
+      csvRows.push("\uFEFF");
+
+      // Always include event summary
+      csvRows.push(...buildEventSummarySection(event));
+
+      // Build additional sections based on query parameters
+      if (sections.includes("menu")) {
+        csvRows.push(...(await buildMenuSection(database, tenantId, eventId)));
+      }
+
+      if (sections.includes("staff")) {
+        csvRows.push(...(await buildStaffSection(database, tenantId, eventId)));
+      }
+
+      if (sections.includes("guests")) {
+        csvRows.push(...(await buildGuestsSection(database, tenantId, eventId)));
+      }
+
+      // Combine rows with newlines
+      const csvContent = csvRows.join("\n");
+
+      // Generate filename
+      const filename = generateFilename(event);
+
+      if (shouldDownload) {
+        // Return as downloadable file
+        return new NextResponse(csvContent, {
+          headers: {
+            "Content-Type": "text/csv; charset=utf-8",
+            "Content-Disposition": `attachment; filename="${filename}"`,
+          },
+        });
+      }
+
+      // Return as JSON with content
+      return NextResponse.json({
+        filename,
+        content: csvContent,
+        contentType: "text/csv; charset=utf-8",
+      });
+    } catch (error) {
+      console.error("Failed to export event CSV:", error);
+      return NextResponse.json(
+        {
+          error: "Failed to export event",
+          message: error instanceof Error ? error.message : "Unknown error",
+        },
+        { status: 500 }
+      );
+    }
+  },
+  { limit: 20, window: "1m" }
+);
