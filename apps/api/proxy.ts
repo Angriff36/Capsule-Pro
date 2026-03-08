@@ -1,4 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from "@repo/auth/server";
+import type { NextMiddleware } from "next/server";
 
 const isPublicRoute = createRouteMatcher([
   "/webhooks(.*)",
@@ -6,7 +7,7 @@ const isPublicRoute = createRouteMatcher([
   "/api/health",
 ]);
 
-export default clerkMiddleware(async (auth, req) => {
+const middleware: NextMiddleware = clerkMiddleware(async (auth, req) => {
   // If hitting the API directly from a browser without a session,
   // return a JSON 401 instead of redirect HTML.
   if (isPublicRoute(req)) {
@@ -21,6 +22,8 @@ export default clerkMiddleware(async (auth, req) => {
     });
   }
 });
+
+export default middleware;
 
 export const config = {
   // Narrow matcher to only API and tRPC routes

@@ -3,7 +3,7 @@
   "irHash": "",
   "compilerVersion": "0.3.8",
   "schemaVersion": "1.0",
-  "compiledAt": "2026-03-08T11:12:36.486Z",
+  "compiledAt": "2026-03-08T15:10:46.141Z",
   "sources": [
     "admin-chat-participant-rules.manifest",
     "admin-task-rules.manifest",
@@ -18,6 +18,7 @@
     "container-rules.manifest",
     "cycle-count-rules.manifest",
     "dish-rules.manifest",
+    "email-template-rules.manifest",
     "email-workflow-rules.manifest",
     "employee-availability-rules.manifest",
     "employee-certification-rules.manifest",

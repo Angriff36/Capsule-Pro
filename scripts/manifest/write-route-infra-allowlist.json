@@ -291,6 +291,11 @@
       "pattern": "^/api/inventory/cycle-count/records/[^/]+$",
       "methods": ["PUT", "DELETE"],
       "comment": "Uses executeManifestCommand — CycleCountRecord.update/remove"
+    },
+    {
+      "prefix": "/api/collaboration/notifications/email/templates",
+      "methods": ["POST", "PUT", "DELETE"],
+      "comment": "Uses executeManifestCommand — EmailTemplate.create/update/softDelete"
     }
   ]
 }

@@ -1,0 +1,98 @@
+// Collaboration Domain - Email Template Rules
+// Manifest spec for email template CRUD
+
+entity EmailTemplate {
+  property required id: string
+  property required tenantId: string
+  property name: string = ""
+  property templateType: string = "custom"
+  property subject: string = ""
+  property body: string = ""
+  property mergeFields: string = "[]"
+  property isActive: boolean = true
+  property isDefault: boolean = false
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isDeleted: boolean = self.deletedAt > 0
+
+  constraint requireName: self.name != "" "Template name is required"
+  constraint requireSubject: self.subject != "" "Template subject is required"
+
+  command create(name: string, templateType: string, subject: string, body: string, mergeFields: string, isActive: boolean, isDefault: boolean) {
+    guard name != null and name != "" "Template name is required"
+    guard subject != null and subject != "" "Template subject is required"
+
+    mutate name = name
+    mutate templateType = templateType
+    mutate subject = subject
+    mutate body = body
+    mutate mergeFields = mergeFields
+    mutate isActive = isActive
+    mutate isDefault = isDefault
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit EmailTemplateCreated
+  }
+
+  command update(name: string, templateType: string, subject: string, body: string, mergeFields: string, isActive: boolean, isDefault: boolean) {
+    guard self.deletedAt == 0 "Cannot update a deleted template"
+    guard name != null and name != "" "Template name is required"
+    guard subject != null and subject != "" "Template subject is required"
+
+    mutate name = name
+    mutate templateType = templateType
+    mutate subject = subject
+    mutate body = body
+    mutate mergeFields = mergeFields
+    mutate isActive = isActive
+    mutate isDefault = isDefault
+    mutate updatedAt = now()
+
+    emit EmailTemplateUpdated
+  }
+
+  command softDelete() {
+    guard self.deletedAt == 0 "Template is already deleted"
+
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit EmailTemplateDeleted
+  }
+}
+
+// Policy definitions
+policy EmailTemplateRead read: user.role in ["staff", "manager", "admin"] "Staff can read email templates"
+policy EmailTemplateWrite write: user.role in ["manager", "admin"] "Only managers and admins can modify email templates"
+policy EmailTemplateCreate execute: user.role in ["manager", "admin"] "Only managers and admins can create email templates"
+policy EmailTemplateDelete execute: user.role in ["admin"] "Only admins can delete email templates"
+
+// Event definitions
+event EmailTemplateCreated: "email_template.created" {
+  templateId: string
+  tenantId: string
+  name: string
+  templateType: string
+  createdBy: string
+  createdAt: number
+}
+
+event EmailTemplateUpdated: "email_template.updated" {
+  templateId: string
+  tenantId: string
+  name: string
+  templateType: string
+  updatedBy: string
+  updatedAt: number
+}
+
+event EmailTemplateDeleted: "email_template.deleted" {
+  templateId: string
+  tenantId: string
+  name: string
+  deletedBy: string
+  deletedAt: number
+}

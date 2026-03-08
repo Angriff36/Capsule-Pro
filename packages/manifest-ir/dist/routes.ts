@@ -237,6 +237,16 @@ export function dishDetailPath(id: string): string {
   return "/api/dish/" + encodeURIComponent(id);
 }
 
+/** GET /api/emailtemplate/list */
+export function emailTemplateListPath(): string {
+  return "/api/emailtemplate/list";
+}
+
+/** GET /api/emailtemplate/:id */
+export function emailTemplateDetailPath(id: string): string {
+  return "/api/emailtemplate/" + encodeURIComponent(id);
+}
+
 /** GET /api/emailworkflow/list */
 export function emailWorkflowListPath(): string {
   return "/api/emailworkflow/list";
@@ -1259,6 +1269,21 @@ export function dishUpdateLeadTimePath(): string {
 /** POST /api/dish/update-pricing */
 export function dishUpdatePricingPath(): string {
   return "/api/dish/update-pricing";
+}
+
+/** POST /api/emailtemplate/create */
+export function emailTemplateCreatePath(): string {
+  return "/api/emailtemplate/create";
+}
+
+/** POST /api/emailtemplate/soft-delete */
+export function emailTemplateSoftDeletePath(): string {
+  return "/api/emailtemplate/soft-delete";
+}
+
+/** POST /api/emailtemplate/update */
+export function emailTemplateUpdatePath(): string {
+  return "/api/emailtemplate/update";
 }
 
 /** POST /api/emailworkflow/create */
@@ -2631,6 +2656,8 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "CycleCountSession.get.detail", path: "/api/cyclecountsession/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Dish.get.list", path: "/api/dish/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Dish.get.detail", path: "/api/dish/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "EmailTemplate.get.list", path: "/api/emailtemplate/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "EmailTemplate.get.detail", path: "/api/emailtemplate/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EmailWorkflow.get.list", path: "/api/emailworkflow/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EmailWorkflow.get.detail", path: "/api/emailworkflow/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "EmployeeAvailability.get.list", path: "/api/employeeavailability/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -2835,6 +2862,9 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "Dish.update", path: "/api/dish/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Dish.updateLeadTime", path: "/api/dish/update-lead-time", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Dish.updatePricing", path: "/api/dish/update-pricing", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EmailTemplate.create", path: "/api/emailtemplate/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EmailTemplate.softDelete", path: "/api/emailtemplate/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "EmailTemplate.update", path: "/api/emailtemplate/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EmailWorkflow.create", path: "/api/emailworkflow/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EmailWorkflow.softDelete", path: "/api/emailworkflow/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "EmailWorkflow.update", path: "/api/emailworkflow/update", method: "POST", source: "command", auth: true, tenant: true },

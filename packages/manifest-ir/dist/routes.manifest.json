@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-03-08T11:12:38.298Z",
+  "generatedAt": "2026-03-08T15:10:47.862Z",
   "basePath": "/api",
   "routes": [
     {
@@ -690,6 +690,36 @@
       "source": {
         "kind": "entity-read",
         "entity": "Dish"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EmailTemplate.get.list",
+      "path": "/api/emailtemplate/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "EmailTemplate"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EmailTemplate.get.detail",
+      "path": "/api/emailtemplate/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "EmailTemplate"
       },
       "auth": true,
       "tenant": true
@@ -5743,6 +5773,131 @@
         "kind": "command",
         "entity": "Dish",
         "command": "updatePricing"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EmailTemplate.create",
+      "path": "/api/emailtemplate/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "templateType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "subject",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "mergeFields",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "isDefault",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EmailTemplate",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EmailTemplate.softDelete",
+      "path": "/api/emailtemplate/soft-delete",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "EmailTemplate",
+        "command": "softDelete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "EmailTemplate.update",
+      "path": "/api/emailtemplate/update",
+      "method": "POST",
+      "params": [
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "templateType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "subject",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "body",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "mergeFields",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "isDefault",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "EmailTemplate",
+        "command": "update"
       },
       "auth": true,
       "tenant": true

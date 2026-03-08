@@ -5,7 +5,7 @@
     "irHash": "",
     "compilerVersion": "0.3.8",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-03-08T11:12:36.486Z",
+    "compiledAt": "2026-03-08T15:10:46.141Z",
     "sources": [
       "admin-chat-participant-rules.manifest",
       "admin-task-rules.manifest",
@@ -20,6 +20,7 @@
       "container-rules.manifest",
       "cycle-count-rules.manifest",
       "dish-rules.manifest",
+      "email-template-rules.manifest",
       "email-workflow-rules.manifest",
       "employee-availability-rules.manifest",
       "employee-certification-rules.manifest",
@@ -9447,6 +9448,241 @@
             }
           },
           "severity": "warn",
+          "overrideable": false
+        }
+      ],
+      "policies": []
+    },
+    {
+      "name": "EmailTemplate",
+      "properties": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "name",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "templateType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "custom"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "subject",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "body",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "mergeFields",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "[]"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "isActive",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "boolean",
+            "value": true
+          },
+          "modifiers": []
+        },
+        {
+          "name": "isDefault",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "boolean",
+            "value": false
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "deletedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        }
+      ],
+      "computedProperties": [
+        {
+          "name": "isDeleted",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "deletedAt"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          },
+          "dependencies": []
+        }
+      ],
+      "relationships": [],
+      "commands": [
+        "create",
+        "update",
+        "softDelete"
+      ],
+      "constraints": [
+        {
+          "name": "requireName",
+          "code": "requireName",
+          "expression": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "name"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Template name is required",
+          "overrideable": false
+        },
+        {
+          "name": "requireSubject",
+          "code": "requireSubject",
+          "expression": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "subject"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Template subject is required",
           "overrideable": false
         }
       ],
@@ -38708,6 +38944,160 @@
       ]
     },
     {
+      "name": "EmailTemplateCreated",
+      "channel": "email_template.created",
+      "payload": [
+        {
+          "name": "templateId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "templateType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "createdBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "EmailTemplateUpdated",
+      "channel": "email_template.updated",
+      "payload": [
+        {
+          "name": "templateId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "templateType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "updatedBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "EmailTemplateDeleted",
+      "channel": "email_template.deleted",
+      "payload": [
+        {
+          "name": "templateId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "deletedBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "deletedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
       "name": "EmailWorkflowCreated",
       "channel": "collaboration.email-workflow.created",
       "payload": [
@@ -67517,6 +67907,561 @@
       ],
       "emits": [
         "DishLeadTimeUpdated"
+      ]
+    },
+    {
+      "name": "create",
+      "entity": "EmailTemplate",
+      "parameters": [
+        {
+          "name": "name",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "templateType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "subject",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "body",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "mergeFields",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "isDefault",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "name"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "name"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "subject"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "subject"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Template name is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Template subject is required"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "name",
+          "expression": {
+            "kind": "identifier",
+            "name": "name"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "templateType",
+          "expression": {
+            "kind": "identifier",
+            "name": "templateType"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "subject",
+          "expression": {
+            "kind": "identifier",
+            "name": "subject"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "body",
+          "expression": {
+            "kind": "identifier",
+            "name": "body"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "mergeFields",
+          "expression": {
+            "kind": "identifier",
+            "name": "mergeFields"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isActive",
+          "expression": {
+            "kind": "identifier",
+            "name": "isActive"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isDefault",
+          "expression": {
+            "kind": "identifier",
+            "name": "isDefault"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "createdAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "EmailTemplateCreated"
+      ]
+    },
+    {
+      "name": "update",
+      "entity": "EmailTemplate",
+      "parameters": [
+        {
+          "name": "name",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "templateType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "subject",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "body",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "mergeFields",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "isDefault",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "name"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "name"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "subject"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "subject"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Cannot update a deleted template"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Template name is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Template subject is required"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "name",
+          "expression": {
+            "kind": "identifier",
+            "name": "name"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "templateType",
+          "expression": {
+            "kind": "identifier",
+            "name": "templateType"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "subject",
+          "expression": {
+            "kind": "identifier",
+            "name": "subject"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "body",
+          "expression": {
+            "kind": "identifier",
+            "name": "body"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "mergeFields",
+          "expression": {
+            "kind": "identifier",
+            "name": "mergeFields"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isActive",
+          "expression": {
+            "kind": "identifier",
+            "name": "isActive"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isDefault",
+          "expression": {
+            "kind": "identifier",
+            "name": "isDefault"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "EmailTemplateUpdated"
+      ]
+    },
+    {
+      "name": "softDelete",
+      "entity": "EmailTemplate",
+      "parameters": [],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Template is already deleted"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "deletedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "EmailTemplateDeleted"
       ]
     },
     {
@@ -115557,6 +116502,150 @@
         }
       },
       "message": "Only leads and managers can update dish pricing"
+    },
+    {
+      "name": "EmailTemplateRead",
+      "action": "read",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "staff"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "Staff can read email templates"
+    },
+    {
+      "name": "EmailTemplateWrite",
+      "action": "write",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "Only managers and admins can modify email templates"
+    },
+    {
+      "name": "EmailTemplateCreate",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "Only managers and admins can create email templates"
+    },
+    {
+      "name": "EmailTemplateDelete",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "Only admins can delete email templates"
     },
     {
       "name": "EmailWorkflowManagement",

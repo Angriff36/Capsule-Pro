@@ -7,7 +7,7 @@
       "schedule": "0 0 * * *"
     },
     {
-      "path": "/cron/webhook-retry",
+      "path": "/api/cron/webhook-retry",
       "schedule": "*/5 * * * *"
     }
   ]

@@ -3,5 +3,11 @@
     "allow": [
       "Bash(wc:*)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": [
+    "capsule-pro",
+    "capsule-pro-admin",
+    "chrome-devtools",
+    "context7"
+  ]
 }

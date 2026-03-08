@@ -1,0 +1,90 @@
+// Bulk Order Rules
+// Manifest spec for bulk order management
+// Version: @angriff36/manifest v0.3.35
+
+entity BulkOrderRule {
+    property required id: string
+    property required tenantId: string
+    property required catalogEntryId: string
+    property ruleName: string
+    property required minimumQuantity: number
+    property required ruleType: string
+    property thresholdQuantity: number = 0
+    property action: string
+    property discountPercent: number = 0
+    property freeItemQuantity: number = 0
+    property shippingIncluded: boolean = false
+    property priority: number = 0
+    property effectiveFrom: number = 0
+    property effectiveTo: number = 0
+    property isActive: boolean = true
+    property createdAt: number = 0
+    property updatedAt: number = 0
+    property deletedAt: number = 0
+
+    // Commands
+    command create(userId: string, catalogEntryId: string, ruleName: string, minimumQuantity: number, ruleType: string, action: string, thresholdQuantity: number?, discountPercent: number?, freeItemQuantity: number?, shippingIncluded: boolean?, priority: number?) {
+        guard self.catalogEntryExists
+        guard self.isActive
+        constraint ruleNameRequired: self.ruleName != ""
+        constraint minimumQuantityRequired: self.minimumQuantity >= 1
+        constraint ruleTypeRequired: self.ruleType in ["discount", "free_shipping", "threshold"]
+        constraint hasValidAction: self.action in ["discount", "free_shipping"]
+    }
+
+    command update(userId: string, reason: string, catalogEntryId: string?, ruleName: string?, minimumQuantity: number?, ruleType: string?, action: string?, discountPercent: number?, freeItemQuantity: number?, shippingIncluded: boolean?, priority: number?, effectiveFrom: number?, effectiveTo: number?, isActive: boolean?) {
+        guard self.catalogEntryExists
+        guard self.isActive
+    }
+
+    command softDelete(userId: string, reason: string) {
+        guard self.catalogEntryIsActive
+        mutate isActive = false
+        mutate deletedAt = now()
+    }
+
+    // Events
+    event BulkOrderRuleCreated {
+        userId: string
+        catalogEntryId: string
+        ruleName: string
+        minimumQuantity: number
+        ruleType: string
+        action: string
+        thresholdQuantity: number?
+        discountPercent: number?
+        freeItemQuantity: number?
+        shippingIncluded: boolean
+        priority: number?
+    }
+
+    event BulkOrderRuleUpdated {
+        userId: string
+        catalogEntryId: string
+        ruleName: string
+        minimumQuantity: number
+        ruleType: string
+        action: string
+        thresholdQuantity: number?
+        discountPercent: number?
+        freeItemQuantity: number?
+        shippingIncluded: boolean
+        priority: number?
+        reason: string
+    }
+
+    event BulkOrderRuleDeactivated {
+        userId: string
+        catalogEntryId: string
+        ruleName: string
+        minimumQuantity: number
+        ruleType: string
+        action: string
+        thresholdQuantity: number?
+        discountPercent: number?
+        freeItemQuantity: number?
+        shippingIncluded: boolean
+        priority: number?
+        reason: string
+    }
+}

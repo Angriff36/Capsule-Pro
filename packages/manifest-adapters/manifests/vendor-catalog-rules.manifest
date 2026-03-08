@@ -1,0 +1,98 @@
+// Vendor Catalog Rules
+// Manifest spec for vendor catalog management
+// Version: @angriff36/manifest v0.3.35
+
+entity VendorCatalog {
+    property required id: string
+    property required tenantId: string
+    property required supplierId: string
+    property required itemNumber: string
+    property required itemName: string
+    property description: string = ""
+    property category: string = ""
+    property baseUnitCost: number
+    property currency: string = "USD"
+    property required unitOfMeasure: string
+    property leadTimeDays: number = 0
+    property leadTimeMinDays: number = 0
+    property leadTimeMaxDays: number = 0
+    property minimumOrderQuantity: number = 0
+    property orderMultiple: number = 0
+    property isActive: boolean = true
+    property effectiveFrom: number = 0
+    property effectiveTo: number = 0
+    property supplierSku: string = ""
+    property notes: string = ""
+    property tags: string[] = []
+    property lastCostUpdate: number = 0
+    property createdAt: number = 0
+    property updatedAt: number = 0
+    property deletedAt: number = 0
+
+    transition status from "active" to "inactive"
+
+
+    // Commands
+    command create(
+        userId: string,
+        reason: string,
+        notes: string
+    ) {
+        guard self.supplierIsActive
+        constraint itemNumberUnique: self.itemNumber "Item number must to be unique"
+        constraint itemNameRequired: self.itemName != ""
+        constraint categoryIn self.category
+        constraint hasValidUnitCost: self.baseUnitCost >= 0
+        constraint hasValidCurrency: self.currency in ["USD", "EUR", "JPY", "CAD"]
+        constraint hasValidUnitOfMeasure: self.unitOfMeasure in ["each", "case", "lb", "oz", "kg", "units", "cases"]
+
+    command update(userId: string, reason: string, itemNumber: string?, itemName: string?, category: string?, baseUnitCost: number?, currency: string?, unitOfMeasure: string?, leadTimeDays: number?, leadTimeMinDays: number?, leadTimeMaxDays: number?, minimumOrderQuantity: number?, orderMultiple: number?, isActive: boolean?, effectiveFrom: number?, effectiveTo: number?, supplierSku: string?, notes: string?, tags: string[]?, lastCostUpdate: number?) {
+        guard self.supplierIsActive
+        guard self.supplierHasValidCost
+        guard self.isActive
+    }
+
+    command softDelete(userId: string, reason: string) {
+        guard self.supplierIsActive
+        mutate deletedAt = now()
+    }
+
+    // Events
+    event VendorCatalogCreated {
+        userId: string
+        supplierId: string
+        itemNumber: string
+        itemName: string
+        baseUnitCost: number
+        currency: string
+        unitOfMeasure: string
+    }
+
+    event VendorCatalogUpdated {
+        userId: string
+        reason: string
+        itemNumber: string?
+        itemName: string?
+        category: string?
+        baseUnitCost: number?
+        currency: string?
+        unitOfMeasure: string?
+        leadTimeDays: number?
+        leadTimeMinDays: number?
+        leadTimeMaxDays: number?
+        minimumOrderQuantity: number?
+        orderMultiple: number?
+        isActive: boolean?
+        effectiveFrom: number?
+        effectiveTo: number?
+        supplierSku: string?
+        notes: string?
+        tags: string[]?
+        lastCostUpdate: number?
+    }
+
+    event VendorCatalogDeactivated {
+        userId: string
+        reason: string
+    }
+}

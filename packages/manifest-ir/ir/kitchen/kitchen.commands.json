@@ -450,6 +450,21 @@
     "commandId": "Dish.updatePricing"
   },
   {
+    "entity": "EmailTemplate",
+    "command": "create",
+    "commandId": "EmailTemplate.create"
+  },
+  {
+    "entity": "EmailTemplate",
+    "command": "softDelete",
+    "commandId": "EmailTemplate.softDelete"
+  },
+  {
+    "entity": "EmailTemplate",
+    "command": "update",
+    "commandId": "EmailTemplate.update"
+  },
+  {
     "entity": "EmailWorkflow",
     "command": "create",
     "commandId": "EmailWorkflow.create"

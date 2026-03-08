@@ -148,7 +148,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[auto-bridge snapshot @ 10 changes]
-Files: .automaker/features/facility-management-system/feature.json (edit), .automaker/features/multi-location-support/feature.json (edit), .automaker/features/quality-control-workflow/feature.json (edit), .automaker/features/menu-engineering-tools/feature.json (edit), .automaker/features/nutrition-label-generator/feature.json (edit), .automaker/features/operational-bottleneck-detector/feature.json (edit), .automaker/features/activity-feed-timeline/feature.json (edit), .automaker/features/soft-delete-recovery/feature.json (edit), .automaker/features/tenant-isolation-audit/feature.json (edit), .automaker/features/manifest-test-playground/feature.json (edit)
+[Emergency bridge — running bridge was not updated]
+Files: apps/api/__tests__/ai/suggestions.test.ts (create)
 
 # === END COGNILAYER ===

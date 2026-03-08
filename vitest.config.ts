@@ -79,5 +79,9 @@ export default defineConfig({
       root: "./packages/mcp-server",
       config: "./vitest.config.ts",
     },
+    {
+      name: "mobile",
+      root: "./apps/mobile",
+    },
   ],
 });
