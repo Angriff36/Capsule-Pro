@@ -122,6 +122,7 @@ model Account {
   emailLogs                 EmailLog[]
   outboundWebhooks          OutboundWebhook[]
   webhookDeliveryLogs       WebhookDeliveryLog[]
+  webhookDlqEntries         WebhookDeadLetterQueue[]
 
   @@map("accounts")
   @@schema("platform")
@@ -4214,8 +4215,42 @@ enum webhook_delivery_status {
   success
   failed
   retrying
+  dead_letter // Permanently failed, moved to DLQ for manual review
 
   @@map("webhook_delivery_status")
+  @@schema("tenant_admin")
+}
+
+/// Dead Letter Queue for permanently failed webhook deliveries
+/// Stores failed webhooks for manual review and reprocessing
+model WebhookDeadLetterQueue {
+  tenantId           String             @map("tenant_id") @db.Uuid
+  id                 String             @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  webhookId          String?            @map("webhook_id") @db.Uuid // Null if webhook was deleted
+  originalDeliveryId String             @map("original_delivery_id") @db.Uuid // Reference to original log
+  eventType          webhook_event_type
+  entityType         String             @map("entity_type")
+  entityId           String             @map("entity_id") @db.Uuid
+  payload            Json               @map("payload")
+  finalErrorMessage  String?            @map("final_error_message") @db.Text
+  totalAttempts      Int                @default(1) @map("total_attempts")
+  originalUrl        String             @map("original_url") @db.VarChar(2048) // URL at time of failure
+  movedToDlqAt       DateTime           @default(now()) @map("moved_to_dlq_at") @db.Timestamptz(6)
+  reviewedAt         DateTime?          @map("reviewed_at") @db.Timestamptz(6)
+  reviewedBy         String?            @map("reviewed_by") @db.Uuid // User who reviewed
+  resolution         String?            @map("resolution") @db.Text // Notes on resolution
+  resolvedAt         DateTime?          @map("resolved_at") @db.Timestamptz(6)
+  retriedAt          DateTime?          @map("retried_at") @db.Timestamptz(6) // If manually retried
+  createdAt          DateTime           @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime           @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  tenant             Account            @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@index([tenantId, webhookId])
+  @@index([tenantId, entityType, entityId])
+  @@index([tenantId, movedToDlqAt(sort: Desc)])
+  @@index([tenantId, reviewedAt])
+  @@map("webhook_dead_letter_queue")
   @@schema("tenant_admin")
 }
 

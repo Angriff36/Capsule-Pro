@@ -6,6 +6,11 @@
       "methods": ["POST", "PUT", "PATCH", "DELETE"]
     },
     {
+      "prefix": "/api/integrations/webhooks/",
+      "methods": ["POST", "PUT", "PATCH", "DELETE"],
+      "comment": "Infrastructure: Webhook retry processing and DLQ management"
+    },
+    {
       "prefix": "/api/auth/",
       "methods": ["POST", "PUT", "PATCH", "DELETE"]
     },

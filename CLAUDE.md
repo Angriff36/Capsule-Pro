@@ -149,6 +149,6 @@ Last: [first session]
 
 ## Last Session Bridge
 [auto-bridge snapshot @ 10 changes]
-Files: IMPLEMENTATION_PLAN.md (edit), apps/api/__tests__/command-board/smoke-board-health.test.ts (edit), packages/manifest-runtime/packages/cli/src/commands/audit-routes-exemptions.json (edit), apps/api/__tests__/command-board/board-connections.test.ts (edit), apps/api/app/api/kitchen/tasks/[id]/route.ts (edit)
+Files: .automaker/features/facility-management-system/feature.json (edit), .automaker/features/multi-location-support/feature.json (edit), .automaker/features/quality-control-workflow/feature.json (edit), .automaker/features/menu-engineering-tools/feature.json (edit), .automaker/features/nutrition-label-generator/feature.json (edit), .automaker/features/operational-bottleneck-detector/feature.json (edit), .automaker/features/activity-feed-timeline/feature.json (edit), .automaker/features/soft-delete-recovery/feature.json (edit), .automaker/features/tenant-isolation-audit/feature.json (edit), .automaker/features/manifest-test-playground/feature.json (edit)
 
 # === END COGNILAYER ===

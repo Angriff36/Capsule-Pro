@@ -71,7 +71,7 @@ All P0-P3 items were verified through direct code inspection:
 | inventory-forecasting | 100% | 100% | 915-line service + 4 routes |
 | event-profitability-analysis | 90-95% | 75-80% | VERIFIED: Global routes exist; MISSING per-event route `/api/events/[eventId]/profitability` and tests |
 | certification-tracking | 90% | 40% | Model + CRUD routes exist; MISSING shift validation, expiration cron, renewal workflow, frontend UI (uses raw SQL) |
-| webhook-retry-management | 70-75% | 70% | Retry complete, DLQ NOT implemented |
+| webhook-retry-management | 70-75% | ~90% | Retry + DLQ model/routes ALL IMPLEMENTED; Only cron job and UI missing |
 | email-automation-templates | 80-90% | 80-90% | `email_templates` model + workflow routes exist (unchanged) |
 | sms-automation-rules | 25% | 25% | SMS infra only, no rules API (unchanged) |
 | inventory-audit-automation | 10% | 10% | Audit log only, no automation (unchanged) |
@@ -476,52 +476,66 @@ packages/manifest-adapters/manifests/cycle-count-rules.manifest
 
 ---
 
-### P1.1: Complete Webhook DLQ Support [VERIFIED 70%]
+### P1.1: Complete Webhook DLQ Support [VERIFIED ~90%]
 
 **Priority:** P1 - HIGH
-**Effort:** Small (1-2 days)
-**Status:** 70% implemented
-**Verification Status:** CONFIRMED - Retry logic complete, DLQ table/routes/processing MISSING
+**Effort:** Small (0.5-1 day remaining)
+**Status:** ~90% implemented
+**Verification Status:** CONFIRMED - Retry logic complete, DLQ model/routes/reprocessing ALL IMPLEMENTED; Only cron job and UI missing
 
 #### Problem
 
-Webhook retry infrastructure is complete (exponential backoff, HMAC signatures, logging) but Dead Letter Queue (DLQ) is NOT implemented. Failed webhooks are just marked as "failed" with no recovery mechanism.
+Webhook retry infrastructure is complete (exponential backoff, HMAC signatures, logging) and Dead Letter Queue (DLQ) is now FULLY IMPLEMENTED for the backend. Only scheduled worker and UI remain.
 
 **Verified Complete:**
 - Retry logic with exponential backoff
 - HMAC signature validation
 - Comprehensive logging
 - Outbound webhook service (`packages/notifications/outbound-webhook-service.ts`)
+- ~~DLQ table/model~~ **IMPLEMENTED** - `WebhookDeadLetterQueue` model in schema.prisma (lines 4226+)
+- ~~`/api/integrations/webhooks/dlq/` routes~~ **ALL IMPLEMENTED:**
+  - `dlq/route.ts` - GET list DLQ entries with pagination
+  - `dlq/[id]/route.ts` - GET single entry, DELETE (mark resolved)
+  - `dlq/[id]/retry/route.ts` - POST manual retry with optional URL override
+  - `dlq/[id]/resolve/route.ts` - POST mark resolved with notes
+- ~~DLQ reprocessing logic~~ **IMPLEMENTED** in `apps/api/app/api/integrations/webhooks/retry/route.ts` (lines 197-213)
 
 **Missing:**
-- DLQ table/model
-- `/api/integrations/webhooks/dlq/` routes
-- Reprocessing logic
-- DLQ UI
+- Cron job/scheduled worker (needs Vercel Cron configuration)
+- DLQ UI for manual review
 
 #### Tasks
 
-- [ ] Create DLQ table/model for failed webhooks
-- [ ] Create `/api/integrations/webhooks/dlq/` routes
-- [ ] Add DLQ reprocessing logic
+- [x] ~~Create DLQ table/model for failed webhooks~~ **IMPLEMENTED** - WebhookDeadLetterQueue model exists
+- [x] ~~Create `/api/integrations/webhooks/dlq/` routes~~ **ALL IMPLEMENTED** (4 route files)
+- [x] ~~Add DLQ reprocessing logic~~ **IMPLEMENTED** in retry route
+- [ ] Add Vercel Cron job configuration for automatic retry processing
 - [ ] Add DLQ UI for manual review
 
 #### Files
 
 ```
-apps/api/app/api/integrations/webhooks/dlq/route.ts (create)
-apps/api/app/api/integrations/webhooks/dlq/[id]/route.ts (create)
+apps/api/app/api/integrations/webhooks/dlq/route.ts (IMPLEMENTED)
+apps/api/app/api/integrations/webhooks/dlq/[id]/route.ts (IMPLEMENTED)
+apps/api/app/api/integrations/webhooks/dlq/[id]/retry/route.ts (IMPLEMENTED)
+apps/api/app/api/integrations/webhooks/dlq/[id]/resolve/route.ts (IMPLEMENTED)
+apps/api/app/api/integrations/webhooks/retry/route.ts
+  - DLQ insertion logic at lines 197-213 (IMPLEMENTED)
 packages/database/prisma/schema.prisma
-  - Add WebhookDeadLetterQueue model
-packages/notifications/outbound-webhook-service.ts
-  - Add DLQ insertion logic for permanently failed webhooks
+  - WebhookDeadLetterQueue model (IMPLEMENTED)
+vercel.json (create/update)
+  - Add cron job configuration for webhook retry processing
+apps/app/app/(authenticated)/integrations/webhooks/dlq/ (create)
+  - DLQ management UI
 ```
 
 #### Acceptance Criteria
 
-1. Failed webhooks stored in DLQ
-2. Can manually retry from DLQ
-3. Can view DLQ contents
+1. ~~Failed webhooks stored in DLQ~~ **DONE**
+2. ~~Can manually retry from DLQ~~ **DONE** - via `/api/integrations/webhooks/dlq/[id]/retry`
+3. ~~Can view DLQ contents~~ **DONE** - via `/api/integrations/webhooks/dlq` GET endpoint
+4. Automatic retry processing via scheduled worker **PENDING**
+5. DLQ management UI **PENDING**
 
 ---
 
@@ -1121,7 +1135,7 @@ apps/mobile/__tests__/offline-sync.test.ts (create)
 | P0.2 | Fix Kitchen Tasks Reopen | P0 | Small (2-4h) | COMPLETED (2026-03-08) | None | VERIFIED |
 | P0.3 | Fix Timecards Delete | P0 | Small | **COMPLETED (2026-03-08)** | None | VERIFIED |
 | P0.4 | Fix Cycle Count Records Delete | P0 | Small | **COMPLETED (2026-03-08)** | None | VERIFIED |
-| P1.1 | Complete Webhook DLQ | P1 | Small | 70% | None | VERIFIED |
+| P1.1 | Complete Webhook DLQ | P1 | Small (~0.5-1d remaining) | ~90% | None | VERIFIED |
 | P1.2 | Create Email Templates API | P1 | Small | 80-90% | None | VERIFIED |
 | P1.3 | Complete AI Simulation Engine | P1 | Medium | 50% basic / 0% AI | None | VERIFIED |
 | P1.4 | Build Collaboration Workspace | P1 | Large | 0% FABRICATED | None | VERIFIED |
@@ -1285,7 +1299,7 @@ See "Features Missing from Implementation Plan" section for full details.
 - [x] P0.2 Kitchen tasks - **COMPLETED (2026-03-08)** - mapping added, reason param handled
 - [x] P0.3 Timecards - **COMPLETED (2026-03-08)** - softDelete command added, route updated
 - [x] P0.4 Cycle count - **COMPLETED (2026-03-08)** - remove command added, route updated
-- [x] P1.1 Webhook DLQ - Retry logic complete, DLQ missing
+- [x] P1.1 Webhook DLQ - Retry logic complete, DLQ model/routes/reprocessing ALL IMPLEMENTED; Only cron job and UI missing (~90%)
 - [x] P1.2 Email templates - Model exists, REST routes missing
 - [x] P1.3 AI simulation - forkCommandBoard() exists at lines 407-567
 - [x] P1.4 Collaboration - NO Prisma models found
@@ -1321,7 +1335,7 @@ See "Features Missing from Implementation Plan" section for full details.
 | Scheduling Module | ~50% | Shifts, Availability exist; Overtime prevention complete; Certification integration missing |
 | Analytics Module | ~40% | Kitchen/Events/Finance dashboards exist; Advanced analytics partial |
 | Mobile App | ~50% | Core screens (Today, Tasks, Prep Lists, My Work) IMPLEMENTED; Offline sync IMPLEMENTED; Push notifications, Search, Profile, Settings, Barcode NOT IMPLEMENTED |
-| Integrations | ~50% | Webhook retry FULLY IMPLEMENTED; Email automation FULLY IMPLEMENTED; SMS PARTIAL; Payment PARTIAL (Stripe basic); QuickBooks/Goodshuffle NOT IMPLEMENTED |
+| Integrations | ~60% | Webhook retry + DLQ FULLY IMPLEMENTED (backend ~90%, needs cron/UI); Email automation FULLY IMPLEMENTED; SMS PARTIAL; Payment PARTIAL (Stripe basic); QuickBooks/Goodshuffle NOT IMPLEMENTED |
 | Warehouse/Logistics | ~30% | All features (bin management, cross-dock, automation, visibility, risk assessment, procurement) PARTIAL/NOT IMPLEMENTED |
 
 ---
@@ -1339,7 +1353,7 @@ See "Features Missing from Implementation Plan" section for full details.
 | ai | PARTIAL | Basic integration, missing advanced features |
 | rate-limit | PARTIAL | Package exists, NOT integrated with API |
 | payments | PARTIAL | Stripe basic only |
-| webhooks | PARTIAL | Retry complete, DLQ missing |
+| webhooks | PARTIAL | Retry complete, DLQ model/routes complete; Only cron job and UI missing (~90%) |
 
 ---
 

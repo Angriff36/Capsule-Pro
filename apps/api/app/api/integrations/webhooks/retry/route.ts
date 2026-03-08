@@ -8,7 +8,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { database, type Prisma } from "@repo/database";
 import {
   determineNextStatus,
   sendWebhook,
@@ -194,6 +194,24 @@ export async function POST(request: NextRequest) {
         },
       });
 
+      // Move to DLQ if permanently failed
+      if (status === "failed") {
+        await database.webhookDeadLetterQueue.create({
+          data: {
+            tenantId,
+            webhookId: webhook.id,
+            originalDeliveryId: delivery.id,
+            eventType: delivery.eventType,
+            entityType: delivery.entityType,
+            entityId: delivery.entityId,
+            payload: delivery.payload as unknown as Prisma.InputJsonValue,
+            finalErrorMessage: result.errorMessage,
+            totalAttempts: newAttemptNumber,
+            originalUrl: webhook.url,
+          },
+        });
+      }
+
       // Update webhook stats
       const updates: {
         lastSuccessAt?: Date;
@@ -231,7 +249,7 @@ export async function POST(request: NextRequest) {
         deliveryLogId: delivery.id,
         success: result.success,
         attemptNumber: newAttemptNumber,
-        finalStatus: status,
+        finalStatus: status as DeliveryStatus,
       });
     }
 

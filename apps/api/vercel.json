@@ -5,6 +5,10 @@
     {
       "path": "/api/sentry-fixer/process",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/cron/webhook-retry",
+      "schedule": "*/5 * * * *"
     }
   ]
 }
