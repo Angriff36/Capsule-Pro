@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-03-08T15:10:47.862Z",
+  "generatedAt": "2026-03-08T17:41:16.243Z",
   "basePath": "/api",
   "routes": [
     {
@@ -125,6 +125,36 @@
       "tenant": true
     },
     {
+      "id": "ApiKey.get.list",
+      "path": "/api/apikey/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "ApiKey"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "ApiKey.get.detail",
+      "path": "/api/apikey/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "ApiKey"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "BattleBoard.get.list",
       "path": "/api/battleboard/list",
       "method": "GET",
@@ -210,6 +240,36 @@
       "source": {
         "kind": "entity-read",
         "entity": "BudgetLineItem"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "BulkOrderRule.get.list",
+      "path": "/api/bulkorderrule/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "BulkOrderRule"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "BulkOrderRule.get.detail",
+      "path": "/api/bulkorderrule/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "BulkOrderRule"
       },
       "auth": true,
       "tenant": true
@@ -1745,6 +1805,36 @@
       "tenant": true
     },
     {
+      "id": "PricingTier.get.list",
+      "path": "/api/pricingtier/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "PricingTier"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PricingTier.get.detail",
+      "path": "/api/pricingtier/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "PricingTier"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "Proposal.get.list",
       "path": "/api/proposal/list",
       "method": "GET",
@@ -2375,6 +2465,36 @@
       "tenant": true
     },
     {
+      "id": "VendorCatalog.get.list",
+      "path": "/api/vendorcatalog/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "VendorCatalog"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "VendorCatalog.get.detail",
+      "path": "/api/vendorcatalog/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "VendorCatalog"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "WasteEntry.get.list",
       "path": "/api/wasteentry/list",
       "method": "GET",
@@ -2890,6 +3010,153 @@
       "tenant": true
     },
     {
+      "id": "ApiKey.create",
+      "path": "/api/apikey/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "keyPrefix",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "hashedKey",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "scopes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "expiresAt",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "createdByUserId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "ApiKey",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "ApiKey.recordUsage",
+      "path": "/api/apikey/record-usage",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "ApiKey",
+        "command": "recordUsage"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "ApiKey.revoke",
+      "path": "/api/apikey/revoke",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "revokedBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "ApiKey",
+        "command": "revoke"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "ApiKey.softDelete",
+      "path": "/api/apikey/soft-delete",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "deletedBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "ApiKey",
+        "command": "softDelete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "ApiKey.update",
+      "path": "/api/apikey/update",
+      "method": "POST",
+      "params": [
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "scopes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "expiresAt",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "ApiKey",
+        "command": "update"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "BattleBoard.addDish",
       "path": "/api/events/battle-boards/commands/add-dish",
       "method": "POST",
@@ -3225,6 +3492,204 @@
       "source": {
         "kind": "command",
         "entity": "BudgetLineItem",
+        "command": "update"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "BulkOrderRule.create",
+      "path": "/api/bulkorderrule/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "catalogEntryId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "ruleName",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "minimumQuantity",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "ruleType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "thresholdQuantity",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "discountPercent",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "freeItemQuantity",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "shippingIncluded",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "priority",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "effectiveFrom",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "effectiveTo",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "BulkOrderRule",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "BulkOrderRule.softDelete",
+      "path": "/api/bulkorderrule/soft-delete",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "BulkOrderRule",
+        "command": "softDelete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "BulkOrderRule.update",
+      "path": "/api/bulkorderrule/update",
+      "method": "POST",
+      "params": [
+        {
+          "name": "catalogEntryId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "ruleName",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "minimumQuantity",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "ruleType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "thresholdQuantity",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "discountPercent",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "freeItemQuantity",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "shippingIncluded",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "priority",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "effectiveFrom",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "effectiveTo",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "BulkOrderRule",
         "command": "update"
       },
       "auth": true,
@@ -11254,6 +11719,156 @@
       "tenant": true
     },
     {
+      "id": "PricingTier.create",
+      "path": "/api/pricingtier/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "catalogEntryId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "tierName",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "minQuantity",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "maxQuantity",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "unitCost",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "discountPercent",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "effectiveFrom",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "effectiveTo",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PricingTier",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PricingTier.softDelete",
+      "path": "/api/pricingtier/soft-delete",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PricingTier",
+        "command": "softDelete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PricingTier.update",
+      "path": "/api/pricingtier/update",
+      "method": "POST",
+      "params": [
+        {
+          "name": "catalogEntryId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "tierName",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "minQuantity",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "maxQuantity",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "unitCost",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "discountPercent",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "effectiveFrom",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "effectiveTo",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PricingTier",
+        "command": "update"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "Proposal.accept",
       "path": "/api/crm/proposals/commands/accept",
       "method": "POST",
@@ -14234,6 +14849,282 @@
         "kind": "command",
         "entity": "VarianceReport",
         "command": "review"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "VendorCatalog.create",
+      "path": "/api/vendorcatalog/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "supplierId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "itemNumber",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "itemName",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "baseUnitCost",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "currency",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "unitOfMeasure",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "leadTimeDays",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "leadTimeMinDays",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "leadTimeMaxDays",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "minimumOrderQuantity",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "orderMultiple",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "effectiveFrom",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "effectiveTo",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "supplierSku",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "VendorCatalog",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "VendorCatalog.softDelete",
+      "path": "/api/vendorcatalog/soft-delete",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "VendorCatalog",
+        "command": "softDelete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "VendorCatalog.update",
+      "path": "/api/vendorcatalog/update",
+      "method": "POST",
+      "params": [
+        {
+          "name": "supplierId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "itemNumber",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "itemName",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "baseUnitCost",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "currency",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "unitOfMeasure",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "leadTimeDays",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "leadTimeMinDays",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "leadTimeMaxDays",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "minimumOrderQuantity",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "orderMultiple",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "effectiveFrom",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "effectiveTo",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "supplierSku",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "lastCostUpdate",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "VendorCatalog",
+        "command": "update"
       },
       "auth": true,
       "tenant": true

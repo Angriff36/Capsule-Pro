@@ -47,6 +47,16 @@ export function allergenWarningDetailPath(id: string): string {
   return "/api/allergenwarning/" + encodeURIComponent(id);
 }
 
+/** GET /api/apikey/list */
+export function apiKeyListPath(): string {
+  return "/api/apikey/list";
+}
+
+/** GET /api/apikey/:id */
+export function apiKeyDetailPath(id: string): string {
+  return "/api/apikey/" + encodeURIComponent(id);
+}
+
 /** GET /api/battleboard/list */
 export function battleBoardListPath(): string {
   return "/api/battleboard/list";
@@ -75,6 +85,16 @@ export function budgetLineItemListPath(): string {
 /** GET /api/budgetlineitem/:id */
 export function budgetLineItemDetailPath(id: string): string {
   return "/api/budgetlineitem/" + encodeURIComponent(id);
+}
+
+/** GET /api/bulkorderrule/list */
+export function bulkOrderRuleListPath(): string {
+  return "/api/bulkorderrule/list";
+}
+
+/** GET /api/bulkorderrule/:id */
+export function bulkOrderRuleDetailPath(id: string): string {
+  return "/api/bulkorderrule/" + encodeURIComponent(id);
 }
 
 /** GET /api/cateringorder/list */
@@ -587,6 +607,16 @@ export function prepTaskPlanWorkflowDetailPath(id: string): string {
   return "/api/preptaskplanworkflow/" + encodeURIComponent(id);
 }
 
+/** GET /api/pricingtier/list */
+export function pricingTierListPath(): string {
+  return "/api/pricingtier/list";
+}
+
+/** GET /api/pricingtier/:id */
+export function pricingTierDetailPath(id: string): string {
+  return "/api/pricingtier/" + encodeURIComponent(id);
+}
+
 /** GET /api/proposal/list */
 export function proposalListPath(): string {
   return "/api/proposal/list";
@@ -797,6 +827,16 @@ export function varianceReportDetailPath(id: string): string {
   return "/api/variancereport/" + encodeURIComponent(id);
 }
 
+/** GET /api/vendorcatalog/list */
+export function vendorCatalogListPath(): string {
+  return "/api/vendorcatalog/list";
+}
+
+/** GET /api/vendorcatalog/:id */
+export function vendorCatalogDetailPath(id: string): string {
+  return "/api/vendorcatalog/" + encodeURIComponent(id);
+}
+
 /** GET /api/wasteentry/list */
 export function wasteEntryListPath(): string {
   return "/api/wasteentry/list";
@@ -916,6 +956,31 @@ export function allergenWarningSoftDeletePath(): string {
   return "/api/allergenwarning/soft-delete";
 }
 
+/** POST /api/apikey/create */
+export function apiKeyCreatePath(): string {
+  return "/api/apikey/create";
+}
+
+/** POST /api/apikey/record-usage */
+export function apiKeyRecordUsagePath(): string {
+  return "/api/apikey/record-usage";
+}
+
+/** POST /api/apikey/revoke */
+export function apiKeyRevokePath(): string {
+  return "/api/apikey/revoke";
+}
+
+/** POST /api/apikey/soft-delete */
+export function apiKeySoftDeletePath(): string {
+  return "/api/apikey/soft-delete";
+}
+
+/** POST /api/apikey/update */
+export function apiKeyUpdatePath(): string {
+  return "/api/apikey/update";
+}
+
 /** POST /api/battleboard/add-dish */
 export function battleBoardAddDishPath(): string {
   return "/api/battleboard/add-dish";
@@ -974,6 +1039,21 @@ export function budgetLineItemRemovePath(): string {
 /** POST /api/budgetlineitem/update */
 export function budgetLineItemUpdatePath(): string {
   return "/api/budgetlineitem/update";
+}
+
+/** POST /api/bulkorderrule/create */
+export function bulkOrderRuleCreatePath(): string {
+  return "/api/bulkorderrule/create";
+}
+
+/** POST /api/bulkorderrule/soft-delete */
+export function bulkOrderRuleSoftDeletePath(): string {
+  return "/api/bulkorderrule/soft-delete";
+}
+
+/** POST /api/bulkorderrule/update */
+export function bulkOrderRuleUpdatePath(): string {
+  return "/api/bulkorderrule/update";
 }
 
 /** POST /api/cateringorder/cancel */
@@ -2136,6 +2216,21 @@ export function prepTaskPlanWorkflowStartSchedulingPath(): string {
   return "/api/preptaskplanworkflow/start-scheduling";
 }
 
+/** POST /api/pricingtier/create */
+export function pricingTierCreatePath(): string {
+  return "/api/pricingtier/create";
+}
+
+/** POST /api/pricingtier/soft-delete */
+export function pricingTierSoftDeletePath(): string {
+  return "/api/pricingtier/soft-delete";
+}
+
+/** POST /api/pricingtier/update */
+export function pricingTierUpdatePath(): string {
+  return "/api/pricingtier/update";
+}
+
 /** POST /api/proposal/accept */
 export function proposalAcceptPath(): string {
   return "/api/proposal/accept";
@@ -2561,6 +2656,21 @@ export function varianceReportReviewPath(): string {
   return "/api/variancereport/review";
 }
 
+/** POST /api/vendorcatalog/create */
+export function vendorCatalogCreatePath(): string {
+  return "/api/vendorcatalog/create";
+}
+
+/** POST /api/vendorcatalog/soft-delete */
+export function vendorCatalogSoftDeletePath(): string {
+  return "/api/vendorcatalog/soft-delete";
+}
+
+/** POST /api/vendorcatalog/update */
+export function vendorCatalogUpdatePath(): string {
+  return "/api/vendorcatalog/update";
+}
+
 /** POST /api/wasteentry/create */
 export function wasteEntryCreatePath(): string {
   return "/api/wasteentry/create";
@@ -2618,12 +2728,16 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "AlertsConfig.get.detail", path: "/api/alertsconfig/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "AllergenWarning.get.list", path: "/api/allergenwarning/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "AllergenWarning.get.detail", path: "/api/allergenwarning/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "ApiKey.get.list", path: "/api/apikey/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "ApiKey.get.detail", path: "/api/apikey/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "BattleBoard.get.list", path: "/api/battleboard/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "BattleBoard.get.detail", path: "/api/battleboard/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "BudgetAlert.get.list", path: "/api/budgetalert/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "BudgetAlert.get.detail", path: "/api/budgetalert/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "BudgetLineItem.get.list", path: "/api/budgetlineitem/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "BudgetLineItem.get.detail", path: "/api/budgetlineitem/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "BulkOrderRule.get.list", path: "/api/bulkorderrule/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "BulkOrderRule.get.detail", path: "/api/bulkorderrule/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "CateringOrder.get.list", path: "/api/cateringorder/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "CateringOrder.get.detail", path: "/api/cateringorder/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "ChartOfAccount.get.list", path: "/api/chartofaccount/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -2726,6 +2840,8 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "PrepTask.get.detail", path: "/api/preptask/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "PrepTaskPlanWorkflow.get.list", path: "/api/preptaskplanworkflow/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "PrepTaskPlanWorkflow.get.detail", path: "/api/preptaskplanworkflow/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "PricingTier.get.list", path: "/api/pricingtier/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "PricingTier.get.detail", path: "/api/pricingtier/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Proposal.get.list", path: "/api/proposal/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Proposal.get.detail", path: "/api/proposal/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "ProposalLineItem.get.list", path: "/api/proposallineitem/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -2768,6 +2884,8 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "User.get.detail", path: "/api/user/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "VarianceReport.get.list", path: "/api/variancereport/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "VarianceReport.get.detail", path: "/api/variancereport/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "VendorCatalog.get.list", path: "/api/vendorcatalog/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "VendorCatalog.get.detail", path: "/api/vendorcatalog/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "WasteEntry.get.list", path: "/api/wasteentry/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "WasteEntry.get.detail", path: "/api/wasteentry/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Workflow.get.list", path: "/api/workflow/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -2791,6 +2909,11 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "AllergenWarning.create", path: "/api/allergenwarning/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "AllergenWarning.resolve", path: "/api/allergenwarning/resolve", method: "POST", source: "command", auth: true, tenant: true },
   { id: "AllergenWarning.softDelete", path: "/api/allergenwarning/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ApiKey.create", path: "/api/apikey/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ApiKey.recordUsage", path: "/api/apikey/record-usage", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ApiKey.revoke", path: "/api/apikey/revoke", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ApiKey.softDelete", path: "/api/apikey/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ApiKey.update", path: "/api/apikey/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "BattleBoard.addDish", path: "/api/battleboard/add-dish", method: "POST", source: "command", auth: true, tenant: true },
   { id: "BattleBoard.create", path: "/api/battleboard/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "BattleBoard.finalize", path: "/api/battleboard/finalize", method: "POST", source: "command", auth: true, tenant: true },
@@ -2803,6 +2926,9 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "BudgetLineItem.create", path: "/api/budgetlineitem/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "BudgetLineItem.remove", path: "/api/budgetlineitem/remove", method: "POST", source: "command", auth: true, tenant: true },
   { id: "BudgetLineItem.update", path: "/api/budgetlineitem/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "BulkOrderRule.create", path: "/api/bulkorderrule/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "BulkOrderRule.softDelete", path: "/api/bulkorderrule/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "BulkOrderRule.update", path: "/api/bulkorderrule/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "CateringOrder.cancel", path: "/api/cateringorder/cancel", method: "POST", source: "command", auth: true, tenant: true },
   { id: "CateringOrder.confirm", path: "/api/cateringorder/confirm", method: "POST", source: "command", auth: true, tenant: true },
   { id: "CateringOrder.create", path: "/api/cateringorder/create", method: "POST", source: "command", auth: true, tenant: true },
@@ -3035,6 +3161,9 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "PrepTaskPlanWorkflow.startInstantiating", path: "/api/preptaskplanworkflow/start-instantiating", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PrepTaskPlanWorkflow.startReviewing", path: "/api/preptaskplanworkflow/start-reviewing", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PrepTaskPlanWorkflow.startScheduling", path: "/api/preptaskplanworkflow/start-scheduling", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PricingTier.create", path: "/api/pricingtier/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PricingTier.softDelete", path: "/api/pricingtier/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PricingTier.update", path: "/api/pricingtier/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Proposal.accept", path: "/api/proposal/accept", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Proposal.create", path: "/api/proposal/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Proposal.markViewed", path: "/api/proposal/mark-viewed", method: "POST", source: "command", auth: true, tenant: true },
@@ -3120,6 +3249,9 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "VarianceReport.approve", path: "/api/variancereport/approve", method: "POST", source: "command", auth: true, tenant: true },
   { id: "VarianceReport.create", path: "/api/variancereport/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "VarianceReport.review", path: "/api/variancereport/review", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "VendorCatalog.create", path: "/api/vendorcatalog/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "VendorCatalog.softDelete", path: "/api/vendorcatalog/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "VendorCatalog.update", path: "/api/vendorcatalog/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "WasteEntry.create", path: "/api/wasteentry/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "WasteEntry.softDelete", path: "/api/wasteentry/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "WasteEntry.update", path: "/api/wasteentry/update", method: "POST", source: "command", auth: true, tenant: true },

@@ -3,88 +3,127 @@
 // Version: @angriff36/manifest v0.3.35
 
 entity BulkOrderRule {
-    property required id: string
-    property required tenantId: string
-    property required catalogEntryId: string
-    property ruleName: string
-    property required minimumQuantity: number
-    property required ruleType: string
-    property thresholdQuantity: number = 0
-    property action: string
-    property discountPercent: number = 0
-    property freeItemQuantity: number = 0
-    property shippingIncluded: boolean = false
-    property priority: number = 0
-    property effectiveFrom: number = 0
-    property effectiveTo: number = 0
-    property isActive: boolean = true
-    property createdAt: number = 0
-    property updatedAt: number = 0
-    property deletedAt: number = 0
+  property required id: string
+  property required tenantId: string
+  property required catalogEntryId: string
+  property ruleName: string = ""
+  property required minimumQuantity: number = 1
+  property required ruleType: string = "discount"
+  property thresholdQuantity: number = 0
+  property action: string = "discount"
+  property discountPercent: number = 0
+  property freeItemQuantity: number = 0
+  property shippingIncluded: boolean = false
+  property priority: number = 0
+  property effectiveFrom: number = 0
+  property effectiveTo: number = 0
+  property isActive: boolean = true
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
 
-    // Commands
-    command create(userId: string, catalogEntryId: string, ruleName: string, minimumQuantity: number, ruleType: string, action: string, thresholdQuantity: number?, discountPercent: number?, freeItemQuantity: number?, shippingIncluded: boolean?, priority: number?) {
-        guard self.catalogEntryExists
-        guard self.isActive
-        constraint ruleNameRequired: self.ruleName != ""
-        constraint minimumQuantityRequired: self.minimumQuantity >= 1
-        constraint ruleTypeRequired: self.ruleType in ["discount", "free_shipping", "threshold"]
-        constraint hasValidAction: self.action in ["discount", "free_shipping"]
+  computed isDeleted: boolean = self.deletedAt > 0
+  computed isEffective: boolean = (self.effectiveFrom == 0 or self.effectiveFrom <= now()) and (self.effectiveTo == 0 or self.effectiveTo >= now())
+
+  constraint requireRuleName: self.ruleName != null and self.ruleName != "" "Rule name is required"
+  constraint requireMinimumQuantity: self.minimumQuantity >= 1 "Minimum quantity must be at least 1"
+  constraint requireRuleType: self.ruleType in ["discount", "free_shipping", "threshold"] "Rule type must be discount, free_shipping, or threshold"
+  constraint requireAction: self.action in ["discount", "free_shipping"] "Action must be discount or free_shipping"
+
+  command create(catalogEntryId: string, ruleName: string, minimumQuantity: number, ruleType: string, action: string, thresholdQuantity: number, discountPercent: number, freeItemQuantity: number, shippingIncluded: boolean, priority: number, effectiveFrom: number, effectiveTo: number) {
+    guard ruleName != null and ruleName != "" "Rule name is required"
+    guard minimumQuantity >= 1 "Minimum quantity must be at least 1"
+    guard ruleType in ["discount", "free_shipping", "threshold"] "Invalid rule type"
+    guard action in ["discount", "free_shipping"] "Invalid action"
+
+    mutate catalogEntryId = catalogEntryId
+    mutate ruleName = ruleName
+    mutate minimumQuantity = minimumQuantity
+    mutate ruleType = ruleType
+    mutate action = action
+    mutate thresholdQuantity = thresholdQuantity
+    mutate discountPercent = discountPercent
+    mutate freeItemQuantity = freeItemQuantity
+    mutate shippingIncluded = shippingIncluded
+    mutate priority = priority
+    mutate effectiveFrom = effectiveFrom
+    mutate effectiveTo = effectiveTo
+    mutate isActive = true
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit BulkOrderRuleCreated
+  }
+
+  command update(catalogEntryId: string, ruleName: string, minimumQuantity: number, ruleType: string, action: string, thresholdQuantity: number, discountPercent: number, freeItemQuantity: number, shippingIncluded: boolean, priority: number, effectiveFrom: number, effectiveTo: number, isActive: boolean) {
+    guard self.deletedAt == 0 "Cannot update a deleted rule"
+
+    mutate catalogEntryId = catalogEntryId
+    mutate ruleName = ruleName
+    mutate minimumQuantity = minimumQuantity
+    mutate ruleType = ruleType
+    mutate action = action
+    mutate thresholdQuantity = thresholdQuantity
+    mutate discountPercent = discountPercent
+    mutate freeItemQuantity = freeItemQuantity
+    mutate shippingIncluded = shippingIncluded
+    mutate priority = priority
+    mutate effectiveFrom = effectiveFrom
+    mutate effectiveTo = effectiveTo
+    mutate isActive = isActive
+    mutate updatedAt = now()
+
+    emit BulkOrderRuleUpdated
+  }
+
+  command softDelete(reason: string) {
+    guard self.deletedAt == 0 "Rule is already deleted"
+
+    constraint warnActiveRule:warn self.isActive {
+      messageTemplate: "Deleting active bulk order rule '{ruleName}'"
+      details: {
+        ruleName: self.ruleName
+        reason: reason
+      }
     }
 
-    command update(userId: string, reason: string, catalogEntryId: string?, ruleName: string?, minimumQuantity: number?, ruleType: string?, action: string?, discountPercent: number?, freeItemQuantity: number?, shippingIncluded: boolean?, priority: number?, effectiveFrom: number?, effectiveTo: number?, isActive: boolean?) {
-        guard self.catalogEntryExists
-        guard self.isActive
-    }
+    mutate isActive = false
+    mutate deletedAt = now()
+    mutate updatedAt = now()
 
-    command softDelete(userId: string, reason: string) {
-        guard self.catalogEntryIsActive
-        mutate isActive = false
-        mutate deletedAt = now()
-    }
+    emit BulkOrderRuleDeactivated
+  }
 
-    // Events
-    event BulkOrderRuleCreated {
-        userId: string
-        catalogEntryId: string
-        ruleName: string
-        minimumQuantity: number
-        ruleType: string
-        action: string
-        thresholdQuantity: number?
-        discountPercent: number?
-        freeItemQuantity: number?
-        shippingIncluded: boolean
-        priority: number?
-    }
+  store BulkOrderRule in memory
+}
 
-    event BulkOrderRuleUpdated {
-        userId: string
-        catalogEntryId: string
-        ruleName: string
-        minimumQuantity: number
-        ruleType: string
-        action: string
-        thresholdQuantity: number?
-        discountPercent: number?
-        freeItemQuantity: number?
-        shippingIncluded: boolean
-        priority: number?
-        reason: string
-    }
+event BulkOrderRuleCreated: "inventory.bulk-order-rule.created" {
+  ruleId: string
+  tenantId: string
+  catalogEntryId: string
+  ruleName: string
+  minimumQuantity: number
+  ruleType: string
+  action: string
+  createdAt: number
+}
 
-    event BulkOrderRuleDeactivated {
-        userId: string
-        catalogEntryId: string
-        ruleName: string
-        minimumQuantity: number
-        ruleType: string
-        action: string
-        thresholdQuantity: number?
-        discountPercent: number?
-        freeItemQuantity: number?
-        shippingIncluded: boolean
-        priority: number?
-        reason: string
-    }
+event BulkOrderRuleUpdated: "inventory.bulk-order-rule.updated" {
+  ruleId: string
+  tenantId: string
+  catalogEntryId: string
+  ruleName: string
+  minimumQuantity: number
+  ruleType: string
+  action: string
+  updatedAt: number
+}
+
+event BulkOrderRuleDeactivated: "inventory.bulk-order-rule.deactivated" {
+  ruleId: string
+  tenantId: string
+  catalogEntryId: string
+  ruleName: string
+  reason: string
+  deletedAt: number
 }

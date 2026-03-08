@@ -3,65 +3,115 @@
 // Version: @angriff36/manifest v0.3.35
 
 entity PricingTier {
-    property required id: string
-    property required tenantId: string
-    property required catalogEntryId: string
-    property tierName: string
-    property required minQuantity: number
-    property maxQuantity: number = 0
-    property required unitCost: number
-    property discountPercent: number = 0
-    property effectiveFrom: number = 0
-    property effectiveTo: number = 0
-    property isActive: boolean = true
-    property createdAt: number = 0
-    property updatedAt: number = 0
-    property deletedAt: number = 0
+  property required id: string
+  property required tenantId: string
+  property required catalogEntryId: string
+  property tierName: string = ""
+  property required minQuantity: number = 1
+  property maxQuantity: number = 0
+  property required unitCost: number = 0
+  property discountPercent: number = 0
+  property effectiveFrom: number = 0
+  property effectiveTo: number = 0
+  property isActive: boolean = true
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
 
-    // Commands
-    command create(userId: string, catalogEntryId: string, tierName: string, minQuantity: number, maxQuantity: number?, unitCost: number, discountPercent: number?) {
-        guard self.catalogEntryExists
-        constraint tierNameRequired: self.tierName != ""
-        constraint minQuantityRequired: self.minQuantity >= 1
-        constraint hasValidUnitCost: self.unitCost >= 1
+  computed isDeleted: boolean = self.deletedAt > 0
+  computed isEffective: boolean = (self.effectiveFrom == 0 or self.effectiveFrom <= now()) and (self.effectiveTo == 0 or self.effectiveTo >= now())
+
+  constraint requireTierName: self.tierName != null and self.tierName != "" "Tier name is required"
+  constraint requireMinQuantity: self.minQuantity >= 1 "Minimum quantity must be at least 1"
+  constraint requireUnitCost: self.unitCost >= 0 "Unit cost must be non-negative"
+
+  command create(catalogEntryId: string, tierName: string, minQuantity: number, maxQuantity: number, unitCost: number, discountPercent: number, effectiveFrom: number, effectiveTo: number) {
+    guard tierName != null and tierName != "" "Tier name is required"
+    guard minQuantity >= 1 "Minimum quantity must be at least 1"
+    guard unitCost >= 0 "Unit cost must be non-negative"
+
+    mutate catalogEntryId = catalogEntryId
+    mutate tierName = tierName
+    mutate minQuantity = minQuantity
+    mutate maxQuantity = maxQuantity
+    mutate unitCost = unitCost
+    mutate discountPercent = discountPercent
+    mutate effectiveFrom = effectiveFrom
+    mutate effectiveTo = effectiveTo
+    mutate isActive = true
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit PricingTierCreated
+  }
+
+  command update(catalogEntryId: string, tierName: string, minQuantity: number, maxQuantity: number, unitCost: number, discountPercent: number, effectiveFrom: number, effectiveTo: number, isActive: boolean) {
+    guard self.deletedAt == 0 "Cannot update a deleted pricing tier"
+
+    mutate catalogEntryId = catalogEntryId
+    mutate tierName = tierName
+    mutate minQuantity = minQuantity
+    mutate maxQuantity = maxQuantity
+    mutate unitCost = unitCost
+    mutate discountPercent = discountPercent
+    mutate effectiveFrom = effectiveFrom
+    mutate effectiveTo = effectiveTo
+    mutate isActive = isActive
+    mutate updatedAt = now()
+
+    emit PricingTierUpdated
+  }
+
+  command softDelete(reason: string) {
+    guard self.deletedAt == 0 "Pricing tier is already deleted"
+
+    constraint warnActiveTier:warn self.isActive {
+      messageTemplate: "Deleting active pricing tier '{tierName}'"
+      details: {
+        tierName: self.tierName
+        reason: reason
+      }
     }
 
-    command update(userId: string, reason: string, catalogEntryId: string?, tierName: string?, minQuantity: number?, maxQuantity: number?, unitCost: number?, discountPercent: number?, effectiveFrom: number?, effectiveTo: number?, isActive: boolean?) {
-        guard self.catalogEntryIsActive
-        guard self.isActive
-    }
+    mutate isActive = false
+    mutate deletedAt = now()
+    mutate updatedAt = now()
 
-    command softDelete(userId: string, reason: string) {
-        guard self.catalogEntryIsActive
-        mutate isActive = false
-        mutate deletedAt = now()
-    }
+    emit PricingTierDeactivated
+  }
 
-    // Events
-    event PricingTierCreated {
-        userId: string
-        catalogEntryId: string
-        tierName: string
-        minQuantity: number
-        maxQuantity: number?
-        unitCost: number
-        discountPercent: number?
-    }
+  store PricingTier in memory
+}
 
-    event PricingTierUpdated {
-        userId: string
-        catalogEntryId: string
-        tierName: string
-        minQuantity: number
-        maxQuantity: number?
-        unitCost: number
-        discountPercent: number?
-    }
+event PricingTierCreated: "inventory.pricing-tier.created" {
+  tierId: string
+  tenantId: string
+  catalogEntryId: string
+  tierName: string
+  minQuantity: number
+  maxQuantity: number
+  unitCost: number
+  discountPercent: number
+  createdAt: number
+}
 
-    event PricingTierDeactivated {
-        userId: string
-        catalogEntryId: string
-        tierName: string
-        reason: string
-    }
+event PricingTierUpdated: "inventory.pricing-tier.updated" {
+  tierId: string
+  tenantId: string
+  catalogEntryId: string
+  tierName: string
+  minQuantity: number
+  maxQuantity: number
+  unitCost: number
+  discountPercent: number
+  updatedAt: number
+}
+
+event PricingTierDeactivated: "inventory.pricing-tier.deactivated" {
+  tierId: string
+  tenantId: string
+  catalogEntryId: string
+  tierName: string
+  reason: string
+  deletedAt: number
 }

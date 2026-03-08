@@ -148,7 +148,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[Emergency bridge — running bridge was not updated]
-Files: apps/api/__tests__/ai/suggestions.test.ts (create)
+[auto-bridge snapshot @ 10 changes]
+Files: apps/api/app/api/inventory/bulk-order-rules/commands/update/route.ts (create), apps/api/app/api/inventory/bulk-order-rules/commands/create/route.ts (create), apps/api/app/api/inventory/pricing-tiers/list/route.ts (create), apps/api/app/api/inventory/pricing-tiers/commands/softDelete/route.ts (create), apps/api/app/api/inventory/pricing-tiers/commands/update/route.ts (create), apps/api/app/api/inventory/pricing-tiers/commands/create/route.ts (create), apps/api/app/api/inventory/supplier-catalogs/list/route.ts (create), apps/api/app/api/inventory/supplier-catalogs/commands/softDelete/route.ts (create), apps/api/app/api/inventory/supplier-catalogs/commands/update/route.ts (create), apps/api/app/api/inventory/supplier-catalogs/commands/create/route.ts (create)
 
 # === END COGNILAYER ===

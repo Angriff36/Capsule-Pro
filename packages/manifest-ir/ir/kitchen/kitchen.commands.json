@@ -95,6 +95,31 @@
     "commandId": "AllergenWarning.softDelete"
   },
   {
+    "entity": "ApiKey",
+    "command": "create",
+    "commandId": "ApiKey.create"
+  },
+  {
+    "entity": "ApiKey",
+    "command": "recordUsage",
+    "commandId": "ApiKey.recordUsage"
+  },
+  {
+    "entity": "ApiKey",
+    "command": "revoke",
+    "commandId": "ApiKey.revoke"
+  },
+  {
+    "entity": "ApiKey",
+    "command": "softDelete",
+    "commandId": "ApiKey.softDelete"
+  },
+  {
+    "entity": "ApiKey",
+    "command": "update",
+    "commandId": "ApiKey.update"
+  },
+  {
     "entity": "BattleBoard",
     "command": "addDish",
     "commandId": "BattleBoard.addDish"
@@ -153,6 +178,21 @@
     "entity": "BudgetLineItem",
     "command": "update",
     "commandId": "BudgetLineItem.update"
+  },
+  {
+    "entity": "BulkOrderRule",
+    "command": "create",
+    "commandId": "BulkOrderRule.create"
+  },
+  {
+    "entity": "BulkOrderRule",
+    "command": "softDelete",
+    "commandId": "BulkOrderRule.softDelete"
+  },
+  {
+    "entity": "BulkOrderRule",
+    "command": "update",
+    "commandId": "BulkOrderRule.update"
   },
   {
     "entity": "CateringOrder",
@@ -1315,6 +1355,21 @@
     "commandId": "PrepTaskPlanWorkflow.startScheduling"
   },
   {
+    "entity": "PricingTier",
+    "command": "create",
+    "commandId": "PricingTier.create"
+  },
+  {
+    "entity": "PricingTier",
+    "command": "softDelete",
+    "commandId": "PricingTier.softDelete"
+  },
+  {
+    "entity": "PricingTier",
+    "command": "update",
+    "commandId": "PricingTier.update"
+  },
+  {
     "entity": "Proposal",
     "command": "accept",
     "commandId": "Proposal.accept"
@@ -1738,6 +1793,21 @@
     "entity": "VarianceReport",
     "command": "review",
     "commandId": "VarianceReport.review"
+  },
+  {
+    "entity": "VendorCatalog",
+    "command": "create",
+    "commandId": "VendorCatalog.create"
+  },
+  {
+    "entity": "VendorCatalog",
+    "command": "softDelete",
+    "commandId": "VendorCatalog.softDelete"
+  },
+  {
+    "entity": "VendorCatalog",
+    "command": "update",
+    "commandId": "VendorCatalog.update"
   },
   {
     "entity": "WasteEntry",

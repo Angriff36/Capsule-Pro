@@ -1,0 +1,207 @@
+// Administration - API Key Rules
+// Manifest spec for API key lifecycle management
+// SECURITY: All commands require admin/manager role. Keys are hashed before storage.
+
+entity ApiKey {
+  property required id: string
+  property required tenantId: string
+  property name: string = ""
+  property keyPrefix: string = ""
+  property hashedKey: string = ""
+  property scopes: string = "[]"
+  property lastUsedAt: number = 0
+  property expiresAt: number = 0
+  property revokedAt: number = 0
+  property createdByUserId: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
+
+  computed isRevoked: boolean = self.revokedAt > 0
+  computed isExpired: boolean = self.expiresAt > 0 and self.expiresAt < now()
+  computed isDeleted: boolean = self.deletedAt > 0
+  computed isActive: boolean = self.revokedAt == 0 and self.deletedAt == 0 and (self.expiresAt == 0 or self.expiresAt > now())
+  computed isUsable: boolean = self.isActive and self.hashedKey != ""
+
+  constraint requireName: self.name != null and self.name != "" "API key name is required"
+  constraint requireKeyPrefix: self.keyPrefix != null and self.keyPrefix != "" "Key prefix is required"
+  constraint requireHashedKey: self.hashedKey != null and self.hashedKey != "" "Hashed key is required"
+  constraint requireCreatedBy: self.createdByUserId != null and self.createdByUserId != "" "Created by user ID is required"
+
+  command create(name: string, keyPrefix: string, hashedKey: string, scopes: string, expiresAt: number, createdByUserId: string) {
+    guard name != null and name != "" "API key name is required"
+    guard keyPrefix != null and keyPrefix != "" "Key prefix is required"
+    guard hashedKey != null and hashedKey != "" "Hashed key is required"
+    guard createdByUserId != null and createdByUserId != "" "Created by user ID is required"
+
+    constraint warnNoExpiration:warn expiresAt == 0 {
+      messageTemplate: "API key '{name}' has no expiration date set"
+      details: {
+        name: name
+        keyPrefix: keyPrefix
+      }
+    }
+
+    constraint warnNoScopes:warn scopes == "[]" or scopes == "" {
+      messageTemplate: "API key '{name}' has no scopes assigned"
+      details: {
+        name: name
+        keyPrefix: keyPrefix
+      }
+    }
+
+    mutate name = name
+    mutate keyPrefix = keyPrefix
+    mutate hashedKey = hashedKey
+    mutate scopes = scopes
+    mutate expiresAt = expiresAt
+    mutate createdByUserId = createdByUserId
+    mutate lastUsedAt = 0
+    mutate revokedAt = 0
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit ApiKeyCreated
+  }
+
+  command update(name: string, scopes: string, expiresAt: number) {
+    guard self.deletedAt == 0 "Cannot update a deleted API key"
+    guard self.revokedAt == 0 "Cannot update a revoked API key"
+
+    constraint warnNoExpiration:warn expiresAt == 0 {
+      messageTemplate: "API key '{name}' has no expiration date set"
+      details: {
+        name: name
+        keyPrefix: self.keyPrefix
+      }
+    }
+
+    constraint warnNoScopes:warn scopes == "[]" or scopes == "" {
+      messageTemplate: "API key '{name}' has no scopes assigned"
+      details: {
+        name: name
+        keyPrefix: self.keyPrefix
+      }
+    }
+
+    mutate name = name
+    mutate scopes = scopes
+    mutate expiresAt = expiresAt
+    mutate updatedAt = now()
+
+    emit ApiKeyUpdated
+  }
+
+  command revoke(reason: string, revokedBy: string) {
+    guard self.revokedAt == 0 "API key is already revoked"
+    guard self.deletedAt == 0 "Cannot revoke a deleted API key"
+
+    constraint warnRevokeActiveKey:warn self.isActive {
+      messageTemplate: "Revoking active API key '{name}'"
+      details: {
+        name: self.name
+        keyPrefix: self.keyPrefix
+        reason: reason
+      }
+    }
+
+    mutate revokedAt = now()
+    mutate updatedAt = now()
+
+    emit ApiKeyRevoked
+  }
+
+  command softDelete(reason: string, deletedBy: string) {
+    guard self.deletedAt == 0 "API key is already deleted"
+
+    constraint warnDeleteActiveKey:warn self.isActive {
+      messageTemplate: "Deleting active API key '{name}'"
+      details: {
+        name: self.name
+        keyPrefix: self.keyPrefix
+        reason: reason
+      }
+    }
+
+    mutate deletedAt = now()
+    mutate updatedAt = now()
+
+    emit ApiKeyDeleted
+  }
+
+  command recordUsage() {
+    guard self.revokedAt == 0 "Cannot record usage for a revoked API key"
+    guard self.deletedAt == 0 "Cannot record usage for a deleted API key"
+
+    constraint blockExpiredKey:block self.isExpired {
+      messageTemplate: "API key '{name}' has expired"
+      details: {
+        name: self.name
+        keyPrefix: self.keyPrefix
+        expiresAt: self.expiresAt
+      }
+    }
+
+    mutate lastUsedAt = now()
+    mutate updatedAt = now()
+
+    emit ApiKeyUsed
+  }
+
+  store ApiKey in memory
+}
+
+// SECURITY REQUIREMENT: All API key management commands require admin/manager role.
+// This ensures only authorized personnel can create, modify, or revoke API keys.
+policy AdminCanManageApiKeys execute: user.role in ["manager", "admin"] "Only managers and admins can manage API keys"
+policy AdminCanRevokeApiKeys execute: user.role in ["manager", "admin"] "Only managers and admins can revoke API keys"
+policy AdminCanDeleteApiKeys execute: user.role in ["admin"] "Only admins can delete API keys"
+
+event ApiKeyCreated: "admin.api_key.created" {
+  apiKeyId: string
+  tenantId: string
+  name: string
+  keyPrefix: string
+  scopes: string
+  expiresAt: number
+  createdByUserId: string
+  createdAt: number
+}
+
+event ApiKeyUpdated: "admin.api_key.updated" {
+  apiKeyId: string
+  tenantId: string
+  name: string
+  keyPrefix: string
+  scopes: string
+  expiresAt: number
+  updatedAt: number
+}
+
+event ApiKeyRevoked: "admin.api_key.revoked" {
+  apiKeyId: string
+  tenantId: string
+  name: string
+  keyPrefix: string
+  reason: string
+  revokedBy: string
+  revokedAt: number
+}
+
+event ApiKeyDeleted: "admin.api_key.deleted" {
+  apiKeyId: string
+  tenantId: string
+  name: string
+  keyPrefix: string
+  reason: string
+  deletedBy: string
+  deletedAt: number
+}
+
+event ApiKeyUsed: "admin.api_key.used" {
+  apiKeyId: string
+  tenantId: string
+  name: string
+  keyPrefix: string
+  lastUsedAt: number
+}

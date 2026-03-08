@@ -296,6 +296,36 @@
       "prefix": "/api/collaboration/notifications/email/templates",
       "methods": ["POST", "PUT", "DELETE"],
       "comment": "Uses executeManifestCommand — EmailTemplate.create/update/softDelete"
+    },
+    {
+      "prefix": "/api/settings/api-keys",
+      "methods": ["POST", "PUT", "DELETE"],
+      "comment": "Uses database directly with manifest pattern — ApiKey.create/update/revoke/softDelete"
+    },
+    {
+      "pattern": "^/api/settings/api-keys/[^/]+/revoke$",
+      "methods": ["POST"],
+      "comment": "Uses database directly — ApiKey.revoke"
+    },
+    {
+      "pattern": "^/api/settings/api-keys/[^/]+/rotate$",
+      "methods": ["POST"],
+      "comment": "Uses database directly — ApiKey.rotate (regenerates key)"
+    },
+    {
+      "prefix": "/api/inventory/bulk-order-rules",
+      "methods": ["POST", "PUT", "DELETE"],
+      "comment": "Uses database directly with manifest pattern — BulkOrderRule.create/update/softDelete"
+    },
+    {
+      "prefix": "/api/inventory/pricing-tiers",
+      "methods": ["POST", "PUT", "DELETE"],
+      "comment": "Uses database directly with manifest pattern — PricingTier.create/update/softDelete"
+    },
+    {
+      "prefix": "/api/inventory/supplier-catalogs",
+      "methods": ["POST", "PUT", "DELETE"],
+      "comment": "Uses database directly with manifest pattern — VendorCatalog.create/update/softDelete"
     }
   ]
 }

@@ -5,13 +5,15 @@
     "irHash": "",
     "compilerVersion": "0.3.8",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-03-08T15:10:46.141Z",
+    "compiledAt": "2026-03-08T17:41:14.355Z",
     "sources": [
       "admin-chat-participant-rules.manifest",
       "admin-task-rules.manifest",
       "alerts-config-rules.manifest",
       "allergen-warning-rules.manifest",
+      "api-key-rules.manifest",
       "battle-board-rules.manifest",
+      "bulk-order-rules.manifest",
       "catering-order-rules.manifest",
       "chart-of-account-rules.manifest",
       "client-interaction-rules.manifest",
@@ -48,6 +50,7 @@
       "prep-method-rules.manifest",
       "prep-task-plan-workflow.manifest",
       "prep-task-rules.manifest",
+      "pricing-tier-rules.manifest",
       "proposal-rules.manifest",
       "purchase-order-rules.manifest",
       "recipe-rules.manifest",
@@ -60,6 +63,7 @@
       "training-assignment-rules.manifest",
       "training-module-rules.manifest",
       "user-rules.manifest",
+      "vendor-catalog-rules.manifest",
       "waste-entry-rules.manifest",
       "workflow-rules.manifest"
     ]
@@ -1041,6 +1045,613 @@
       "policies": []
     },
     {
+      "name": "ApiKey",
+      "properties": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "name",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "keyPrefix",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "hashedKey",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "scopes",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "[]"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "lastUsedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "expiresAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "revokedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdByUserId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "deletedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        }
+      ],
+      "computedProperties": [
+        {
+          "name": "isRevoked",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "revokedAt"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "isExpired",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": ">",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "expiresAt"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 0
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "<",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "expiresAt"
+              },
+              "right": {
+                "kind": "call",
+                "callee": {
+                  "kind": "identifier",
+                  "name": "now"
+                },
+                "args": []
+              }
+            }
+          },
+          "dependencies": [
+            "now"
+          ]
+        },
+        {
+          "name": "isDeleted",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "deletedAt"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "isActive",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "and",
+              "left": {
+                "kind": "binary",
+                "operator": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "revokedAt"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "number",
+                    "value": 0
+                  }
+                }
+              },
+              "right": {
+                "kind": "binary",
+                "operator": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "deletedAt"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "number",
+                    "value": 0
+                  }
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "or",
+              "left": {
+                "kind": "binary",
+                "operator": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "expiresAt"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "number",
+                    "value": 0
+                  }
+                }
+              },
+              "right": {
+                "kind": "binary",
+                "operator": ">",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "expiresAt"
+                },
+                "right": {
+                  "kind": "call",
+                  "callee": {
+                    "kind": "identifier",
+                    "name": "now"
+                  },
+                  "args": []
+                }
+              }
+            }
+          },
+          "dependencies": [
+            "now"
+          ]
+        },
+        {
+          "name": "isUsable",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "isActive"
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "hashedKey"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": ""
+                }
+              }
+            }
+          },
+          "dependencies": []
+        }
+      ],
+      "relationships": [],
+      "commands": [
+        "create",
+        "update",
+        "revoke",
+        "softDelete",
+        "recordUsage"
+      ],
+      "constraints": [
+        {
+          "name": "requireName",
+          "code": "requireName",
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "name"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "name"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": ""
+                }
+              }
+            }
+          },
+          "severity": "block",
+          "message": "API key name is required",
+          "overrideable": false
+        },
+        {
+          "name": "requireKeyPrefix",
+          "code": "requireKeyPrefix",
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "keyPrefix"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "keyPrefix"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": ""
+                }
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Key prefix is required",
+          "overrideable": false
+        },
+        {
+          "name": "requireHashedKey",
+          "code": "requireHashedKey",
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "hashedKey"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "hashedKey"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": ""
+                }
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Hashed key is required",
+          "overrideable": false
+        },
+        {
+          "name": "requireCreatedBy",
+          "code": "requireCreatedBy",
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "createdByUserId"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "createdByUserId"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": ""
+                }
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Created by user ID is required",
+          "overrideable": false
+        }
+      ],
+      "policies": []
+    },
+    {
       "name": "BattleBoard",
       "properties": [
         {
@@ -1663,6 +2274,520 @@
             }
           },
           "severity": "block",
+          "overrideable": false
+        }
+      ],
+      "policies": []
+    },
+    {
+      "name": "BulkOrderRule",
+      "properties": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "catalogEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "ruleName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "minimumQuantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 1
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "ruleType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "discount"
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "thresholdQuantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "action",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "discount"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "discountPercent",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "freeItemQuantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "shippingIncluded",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "boolean",
+            "value": false
+          },
+          "modifiers": []
+        },
+        {
+          "name": "priority",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "effectiveFrom",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "effectiveTo",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "isActive",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "boolean",
+            "value": true
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "deletedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        }
+      ],
+      "computedProperties": [
+        {
+          "name": "isDeleted",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "deletedAt"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "isEffective",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "or",
+              "left": {
+                "kind": "binary",
+                "operator": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "effectiveFrom"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "number",
+                    "value": 0
+                  }
+                }
+              },
+              "right": {
+                "kind": "binary",
+                "operator": "<=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "effectiveFrom"
+                },
+                "right": {
+                  "kind": "call",
+                  "callee": {
+                    "kind": "identifier",
+                    "name": "now"
+                  },
+                  "args": []
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "or",
+              "left": {
+                "kind": "binary",
+                "operator": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "effectiveTo"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "number",
+                    "value": 0
+                  }
+                }
+              },
+              "right": {
+                "kind": "binary",
+                "operator": ">=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "effectiveTo"
+                },
+                "right": {
+                  "kind": "call",
+                  "callee": {
+                    "kind": "identifier",
+                    "name": "now"
+                  },
+                  "args": []
+                }
+              }
+            }
+          },
+          "dependencies": [
+            "now"
+          ]
+        }
+      ],
+      "relationships": [],
+      "commands": [
+        "create",
+        "update",
+        "softDelete"
+      ],
+      "constraints": [
+        {
+          "name": "requireRuleName",
+          "code": "requireRuleName",
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "ruleName"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "ruleName"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": ""
+                }
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Rule name is required",
+          "overrideable": false
+        },
+        {
+          "name": "requireMinimumQuantity",
+          "code": "requireMinimumQuantity",
+          "expression": {
+            "kind": "binary",
+            "operator": ">=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "minimumQuantity"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 1
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Minimum quantity must be at least 1",
+          "overrideable": false
+        },
+        {
+          "name": "requireRuleType",
+          "code": "requireRuleType",
+          "expression": {
+            "kind": "binary",
+            "operator": "in",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "ruleType"
+            },
+            "right": {
+              "kind": "array",
+              "elements": [
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "discount"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "free_shipping"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "threshold"
+                  }
+                }
+              ]
+            }
+          },
+          "severity": "block",
+          "message": "Rule type must be discount, free_shipping, or threshold",
+          "overrideable": false
+        },
+        {
+          "name": "requireAction",
+          "code": "requireAction",
+          "expression": {
+            "kind": "binary",
+            "operator": "in",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "action"
+            },
+            "right": {
+              "kind": "array",
+              "elements": [
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "discount"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "free_shipping"
+                  }
+                }
+              ]
+            }
+          },
+          "severity": "block",
+          "message": "Action must be discount or free_shipping",
           "overrideable": false
         }
       ],
@@ -25354,6 +26479,415 @@
       ]
     },
     {
+      "name": "PricingTier",
+      "properties": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "catalogEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "tierName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "minQuantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 1
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "maxQuantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "unitCost",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "discountPercent",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "effectiveFrom",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "effectiveTo",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "isActive",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "boolean",
+            "value": true
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "deletedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        }
+      ],
+      "computedProperties": [
+        {
+          "name": "isDeleted",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "deletedAt"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "isEffective",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "or",
+              "left": {
+                "kind": "binary",
+                "operator": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "effectiveFrom"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "number",
+                    "value": 0
+                  }
+                }
+              },
+              "right": {
+                "kind": "binary",
+                "operator": "<=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "effectiveFrom"
+                },
+                "right": {
+                  "kind": "call",
+                  "callee": {
+                    "kind": "identifier",
+                    "name": "now"
+                  },
+                  "args": []
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "or",
+              "left": {
+                "kind": "binary",
+                "operator": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "effectiveTo"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "number",
+                    "value": 0
+                  }
+                }
+              },
+              "right": {
+                "kind": "binary",
+                "operator": ">=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "effectiveTo"
+                },
+                "right": {
+                  "kind": "call",
+                  "callee": {
+                    "kind": "identifier",
+                    "name": "now"
+                  },
+                  "args": []
+                }
+              }
+            }
+          },
+          "dependencies": [
+            "now"
+          ]
+        }
+      ],
+      "relationships": [],
+      "commands": [
+        "create",
+        "update",
+        "softDelete"
+      ],
+      "constraints": [
+        {
+          "name": "requireTierName",
+          "code": "requireTierName",
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "tierName"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "tierName"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": ""
+                }
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Tier name is required",
+          "overrideable": false
+        },
+        {
+          "name": "requireMinQuantity",
+          "code": "requireMinQuantity",
+          "expression": {
+            "kind": "binary",
+            "operator": ">=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "minQuantity"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 1
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Minimum quantity must be at least 1",
+          "overrideable": false
+        },
+        {
+          "name": "requireUnitCost",
+          "code": "requireUnitCost",
+          "expression": {
+            "kind": "binary",
+            "operator": ">=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "unitCost"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Unit cost must be non-negative",
+          "overrideable": false
+        }
+      ],
+      "policies": []
+    },
+    {
       "name": "Proposal",
       "properties": [
         {
@@ -33485,6 +35019,696 @@
       "policies": []
     },
     {
+      "name": "VendorCatalog",
+      "properties": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "supplierId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "itemNumber",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "itemName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "description",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "category",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "baseUnitCost",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "currency",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "USD"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "unitOfMeasure",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "each"
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "leadTimeDays",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "leadTimeMinDays",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "leadTimeMaxDays",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "minimumOrderQuantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "orderMultiple",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "isActive",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "boolean",
+            "value": true
+          },
+          "modifiers": []
+        },
+        {
+          "name": "effectiveFrom",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "effectiveTo",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "supplierSku",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "notes",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "tags",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "[]"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "lastCostUpdate",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "deletedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        }
+      ],
+      "computedProperties": [
+        {
+          "name": "isDeleted",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": ">",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "deletedAt"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "isEffective",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "or",
+              "left": {
+                "kind": "binary",
+                "operator": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "effectiveFrom"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "number",
+                    "value": 0
+                  }
+                }
+              },
+              "right": {
+                "kind": "binary",
+                "operator": "<=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "effectiveFrom"
+                },
+                "right": {
+                  "kind": "call",
+                  "callee": {
+                    "kind": "identifier",
+                    "name": "now"
+                  },
+                  "args": []
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "or",
+              "left": {
+                "kind": "binary",
+                "operator": "==",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "effectiveTo"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "number",
+                    "value": 0
+                  }
+                }
+              },
+              "right": {
+                "kind": "binary",
+                "operator": ">=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "effectiveTo"
+                },
+                "right": {
+                  "kind": "call",
+                  "callee": {
+                    "kind": "identifier",
+                    "name": "now"
+                  },
+                  "args": []
+                }
+              }
+            }
+          },
+          "dependencies": [
+            "now"
+          ]
+        }
+      ],
+      "relationships": [],
+      "commands": [
+        "create",
+        "update",
+        "softDelete"
+      ],
+      "constraints": [
+        {
+          "name": "requireItemNumber",
+          "code": "requireItemNumber",
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "itemNumber"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "itemNumber"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": ""
+                }
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Item number is required",
+          "overrideable": false
+        },
+        {
+          "name": "requireItemName",
+          "code": "requireItemName",
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "itemName"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "itemName"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": ""
+                }
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Item name is required",
+          "overrideable": false
+        },
+        {
+          "name": "requireUnitOfMeasure",
+          "code": "requireUnitOfMeasure",
+          "expression": {
+            "kind": "binary",
+            "operator": "in",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "unitOfMeasure"
+            },
+            "right": {
+              "kind": "array",
+              "elements": [
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "each"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "case"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "lb"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "oz"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "kg"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "units"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "cases"
+                  }
+                }
+              ]
+            }
+          },
+          "severity": "block",
+          "message": "Invalid unit of measure",
+          "overrideable": false
+        },
+        {
+          "name": "validCurrency",
+          "code": "validCurrency",
+          "expression": {
+            "kind": "binary",
+            "operator": "in",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "currency"
+            },
+            "right": {
+              "kind": "array",
+              "elements": [
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "USD"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "EUR"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "JPY"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "CAD"
+                  }
+                }
+              ]
+            }
+          },
+          "severity": "block",
+          "message": "Invalid currency",
+          "overrideable": false
+        },
+        {
+          "name": "validUnitCost",
+          "code": "validUnitCost",
+          "expression": {
+            "kind": "binary",
+            "operator": ">=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "baseUnitCost"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Unit cost must be non-negative",
+          "overrideable": false
+        }
+      ],
+      "policies": []
+    },
+    {
       "name": "WasteEntry",
       "properties": [
         {
@@ -34278,7 +36502,17 @@
       "config": {}
     },
     {
+      "entity": "ApiKey",
+      "target": "memory",
+      "config": {}
+    },
+    {
       "entity": "BattleBoard",
+      "target": "memory",
+      "config": {}
+    },
+    {
+      "entity": "BulkOrderRule",
       "target": "memory",
       "config": {}
     },
@@ -34548,6 +36782,11 @@
       "config": {}
     },
     {
+      "entity": "PricingTier",
+      "target": "memory",
+      "config": {}
+    },
+    {
       "entity": "Proposal",
       "target": "memory",
       "config": {}
@@ -34644,6 +36883,11 @@
     },
     {
       "entity": "User",
+      "target": "memory",
+      "config": {}
+    },
+    {
+      "entity": "VendorCatalog",
       "target": "memory",
       "config": {}
     },
@@ -35222,6 +37466,308 @@
       ]
     },
     {
+      "name": "ApiKeyCreated",
+      "channel": "admin.api_key.created",
+      "payload": [
+        {
+          "name": "apiKeyId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "keyPrefix",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "scopes",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "expiresAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "createdByUserId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ApiKeyUpdated",
+      "channel": "admin.api_key.updated",
+      "payload": [
+        {
+          "name": "apiKeyId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "keyPrefix",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "scopes",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "expiresAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ApiKeyRevoked",
+      "channel": "admin.api_key.revoked",
+      "payload": [
+        {
+          "name": "apiKeyId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "keyPrefix",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "revokedBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "revokedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ApiKeyDeleted",
+      "channel": "admin.api_key.deleted",
+      "payload": [
+        {
+          "name": "apiKeyId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "keyPrefix",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "deletedBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "deletedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ApiKeyUsed",
+      "channel": "admin.api_key.used",
+      "payload": [
+        {
+          "name": "apiKeyId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "name",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "keyPrefix",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "lastUsedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
       "name": "BattleBoardCreated",
       "channel": "events.battle_board.created",
       "payload": [
@@ -35583,6 +38129,200 @@
         },
         {
           "name": "finalizedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "BulkOrderRuleCreated",
+      "channel": "inventory.bulk-order-rule.created",
+      "payload": [
+        {
+          "name": "ruleId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "catalogEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "ruleName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "minimumQuantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "ruleType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "BulkOrderRuleUpdated",
+      "channel": "inventory.bulk-order-rule.updated",
+      "payload": [
+        {
+          "name": "ruleId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "catalogEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "ruleName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "minimumQuantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "ruleType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "BulkOrderRuleDeactivated",
+      "channel": "inventory.bulk-order-rule.deactivated",
+      "payload": [
+        {
+          "name": "ruleId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "catalogEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "ruleName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "deletedAt",
           "type": {
             "name": "number",
             "nullable": false
@@ -47398,6 +50138,216 @@
       ]
     },
     {
+      "name": "PricingTierCreated",
+      "channel": "inventory.pricing-tier.created",
+      "payload": [
+        {
+          "name": "tierId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "catalogEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tierName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "minQuantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "maxQuantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "unitCost",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "discountPercent",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "PricingTierUpdated",
+      "channel": "inventory.pricing-tier.updated",
+      "payload": [
+        {
+          "name": "tierId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "catalogEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tierName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "minQuantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "maxQuantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "unitCost",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "discountPercent",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "PricingTierDeactivated",
+      "channel": "inventory.pricing-tier.deactivated",
+      "payload": [
+        {
+          "name": "tierId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "catalogEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tierName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "deletedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
       "name": "ProposalCreated",
       "channel": "crm.proposal.created",
       "payload": [
@@ -51714,6 +54664,208 @@
       ]
     },
     {
+      "name": "VendorCatalogCreated",
+      "channel": "inventory.vendor-catalog.created",
+      "payload": [
+        {
+          "name": "catalogId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "supplierId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "itemNumber",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "itemName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "baseUnitCost",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "currency",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "unitOfMeasure",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "VendorCatalogUpdated",
+      "channel": "inventory.vendor-catalog.updated",
+      "payload": [
+        {
+          "name": "catalogId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "supplierId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "itemNumber",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "itemName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "baseUnitCost",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "VendorCatalogDeactivated",
+      "channel": "inventory.vendor-catalog.deactivated",
+      "payload": [
+        {
+          "name": "catalogId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "supplierId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "itemNumber",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "itemName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "deletedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
       "name": "WasteEntryCreated",
       "channel": "kitchen.waste-entry.created",
       "payload": [
@@ -54288,6 +57440,1262 @@
     },
     {
       "name": "create",
+      "entity": "ApiKey",
+      "parameters": [
+        {
+          "name": "name",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "keyPrefix",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "hashedKey",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "scopes",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "expiresAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "createdByUserId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "name"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "name"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "keyPrefix"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "keyPrefix"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "hashedKey"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "hashedKey"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "createdByUserId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "createdByUserId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "name": "warnNoExpiration",
+          "code": "warnNoExpiration",
+          "expression": {
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "identifier",
+              "name": "expiresAt"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          },
+          "severity": "warn",
+          "overrideable": false
+        },
+        {
+          "name": "warnNoScopes",
+          "code": "warnNoScopes",
+          "expression": {
+            "kind": "binary",
+            "operator": "or",
+            "left": {
+              "kind": "binary",
+              "operator": "==",
+              "left": {
+                "kind": "identifier",
+                "name": "scopes"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "[]"
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "==",
+              "left": {
+                "kind": "identifier",
+                "name": "scopes"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": ""
+                }
+              }
+            }
+          },
+          "severity": "warn",
+          "overrideable": false
+        }
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "API key name is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Key prefix is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Hashed key is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Created by user ID is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "object",
+            "properties": [
+              {
+                "key": "messageTemplate",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "API key '{name}' has no expiration date set"
+                  }
+                }
+              },
+              {
+                "key": "details",
+                "value": {
+                  "kind": "object",
+                  "properties": [
+                    {
+                      "key": "name",
+                      "value": {
+                        "kind": "identifier",
+                        "name": "name"
+                      }
+                    },
+                    {
+                      "key": "keyPrefix",
+                      "value": {
+                        "kind": "identifier",
+                        "name": "keyPrefix"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "object",
+            "properties": [
+              {
+                "key": "messageTemplate",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "API key '{name}' has no scopes assigned"
+                  }
+                }
+              },
+              {
+                "key": "details",
+                "value": {
+                  "kind": "object",
+                  "properties": [
+                    {
+                      "key": "name",
+                      "value": {
+                        "kind": "identifier",
+                        "name": "name"
+                      }
+                    },
+                    {
+                      "key": "keyPrefix",
+                      "value": {
+                        "kind": "identifier",
+                        "name": "keyPrefix"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "name",
+          "expression": {
+            "kind": "identifier",
+            "name": "name"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "keyPrefix",
+          "expression": {
+            "kind": "identifier",
+            "name": "keyPrefix"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "hashedKey",
+          "expression": {
+            "kind": "identifier",
+            "name": "hashedKey"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "scopes",
+          "expression": {
+            "kind": "identifier",
+            "name": "scopes"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "expiresAt",
+          "expression": {
+            "kind": "identifier",
+            "name": "expiresAt"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "createdByUserId",
+          "expression": {
+            "kind": "identifier",
+            "name": "createdByUserId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "lastUsedAt",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "revokedAt",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "createdAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "ApiKeyCreated"
+      ]
+    },
+    {
+      "name": "update",
+      "entity": "ApiKey",
+      "parameters": [
+        {
+          "name": "name",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "scopes",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "expiresAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "revokedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "name": "warnNoExpiration",
+          "code": "warnNoExpiration",
+          "expression": {
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "identifier",
+              "name": "expiresAt"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          },
+          "severity": "warn",
+          "overrideable": false
+        },
+        {
+          "name": "warnNoScopes",
+          "code": "warnNoScopes",
+          "expression": {
+            "kind": "binary",
+            "operator": "or",
+            "left": {
+              "kind": "binary",
+              "operator": "==",
+              "left": {
+                "kind": "identifier",
+                "name": "scopes"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "[]"
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "==",
+              "left": {
+                "kind": "identifier",
+                "name": "scopes"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": ""
+                }
+              }
+            }
+          },
+          "severity": "warn",
+          "overrideable": false
+        }
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Cannot update a deleted API key"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Cannot update a revoked API key"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "object",
+            "properties": [
+              {
+                "key": "messageTemplate",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "API key '{name}' has no expiration date set"
+                  }
+                }
+              },
+              {
+                "key": "details",
+                "value": {
+                  "kind": "object",
+                  "properties": [
+                    {
+                      "key": "name",
+                      "value": {
+                        "kind": "identifier",
+                        "name": "name"
+                      }
+                    },
+                    {
+                      "key": "keyPrefix",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "keyPrefix"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "object",
+            "properties": [
+              {
+                "key": "messageTemplate",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "API key '{name}' has no scopes assigned"
+                  }
+                }
+              },
+              {
+                "key": "details",
+                "value": {
+                  "kind": "object",
+                  "properties": [
+                    {
+                      "key": "name",
+                      "value": {
+                        "kind": "identifier",
+                        "name": "name"
+                      }
+                    },
+                    {
+                      "key": "keyPrefix",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "keyPrefix"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "name",
+          "expression": {
+            "kind": "identifier",
+            "name": "name"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "scopes",
+          "expression": {
+            "kind": "identifier",
+            "name": "scopes"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "expiresAt",
+          "expression": {
+            "kind": "identifier",
+            "name": "expiresAt"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "ApiKeyUpdated"
+      ]
+    },
+    {
+      "name": "revoke",
+      "entity": "ApiKey",
+      "parameters": [
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "revokedBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "revokedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "name": "warnRevokeActiveKey",
+          "code": "warnRevokeActiveKey",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "isActive"
+          },
+          "severity": "warn",
+          "overrideable": false
+        }
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "API key is already revoked"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Cannot revoke a deleted API key"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "object",
+            "properties": [
+              {
+                "key": "messageTemplate",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "Revoking active API key '{name}'"
+                  }
+                }
+              },
+              {
+                "key": "details",
+                "value": {
+                  "kind": "object",
+                  "properties": [
+                    {
+                      "key": "name",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "name"
+                      }
+                    },
+                    {
+                      "key": "keyPrefix",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "keyPrefix"
+                      }
+                    },
+                    {
+                      "key": "reason",
+                      "value": {
+                        "kind": "identifier",
+                        "name": "reason"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "revokedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "ApiKeyRevoked"
+      ]
+    },
+    {
+      "name": "softDelete",
+      "entity": "ApiKey",
+      "parameters": [
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "deletedBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "name": "warnDeleteActiveKey",
+          "code": "warnDeleteActiveKey",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "isActive"
+          },
+          "severity": "warn",
+          "overrideable": false
+        }
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "API key is already deleted"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "object",
+            "properties": [
+              {
+                "key": "messageTemplate",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "Deleting active API key '{name}'"
+                  }
+                }
+              },
+              {
+                "key": "details",
+                "value": {
+                  "kind": "object",
+                  "properties": [
+                    {
+                      "key": "name",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "name"
+                      }
+                    },
+                    {
+                      "key": "keyPrefix",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "keyPrefix"
+                      }
+                    },
+                    {
+                      "key": "reason",
+                      "value": {
+                        "kind": "identifier",
+                        "name": "reason"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "deletedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "ApiKeyDeleted"
+      ]
+    },
+    {
+      "name": "recordUsage",
+      "entity": "ApiKey",
+      "parameters": [],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "revokedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "name": "blockExpiredKey",
+          "code": "blockExpiredKey",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "isExpired"
+          },
+          "severity": "block",
+          "overrideable": false
+        }
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Cannot record usage for a revoked API key"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Cannot record usage for a deleted API key"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "object",
+            "properties": [
+              {
+                "key": "messageTemplate",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "API key '{name}' has expired"
+                  }
+                }
+              },
+              {
+                "key": "details",
+                "value": {
+                  "kind": "object",
+                  "properties": [
+                    {
+                      "key": "name",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "name"
+                      }
+                    },
+                    {
+                      "key": "keyPrefix",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "keyPrefix"
+                      }
+                    },
+                    {
+                      "key": "expiresAt",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "expiresAt"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "lastUsedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "ApiKeyUsed"
+      ]
+    },
+    {
+      "name": "create",
       "entity": "BattleBoard",
       "parameters": [
         {
@@ -55277,6 +59685,804 @@
       ],
       "emits": [
         "BattleBoardFinalized"
+      ]
+    },
+    {
+      "name": "create",
+      "entity": "BulkOrderRule",
+      "parameters": [
+        {
+          "name": "catalogEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "ruleName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "minimumQuantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "ruleType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "thresholdQuantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "discountPercent",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "freeItemQuantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "shippingIncluded",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "priority",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "effectiveFrom",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "effectiveTo",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "ruleName"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "ruleName"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": ">=",
+          "left": {
+            "kind": "identifier",
+            "name": "minimumQuantity"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 1
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "in",
+          "left": {
+            "kind": "identifier",
+            "name": "ruleType"
+          },
+          "right": {
+            "kind": "array",
+            "elements": [
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "discount"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "free_shipping"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "threshold"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "in",
+          "left": {
+            "kind": "identifier",
+            "name": "action"
+          },
+          "right": {
+            "kind": "array",
+            "elements": [
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "discount"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "free_shipping"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Rule name is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Minimum quantity must be at least 1"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Invalid rule type"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Invalid action"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "catalogEntryId",
+          "expression": {
+            "kind": "identifier",
+            "name": "catalogEntryId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "ruleName",
+          "expression": {
+            "kind": "identifier",
+            "name": "ruleName"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "minimumQuantity",
+          "expression": {
+            "kind": "identifier",
+            "name": "minimumQuantity"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "ruleType",
+          "expression": {
+            "kind": "identifier",
+            "name": "ruleType"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "action",
+          "expression": {
+            "kind": "identifier",
+            "name": "action"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "thresholdQuantity",
+          "expression": {
+            "kind": "identifier",
+            "name": "thresholdQuantity"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "discountPercent",
+          "expression": {
+            "kind": "identifier",
+            "name": "discountPercent"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "freeItemQuantity",
+          "expression": {
+            "kind": "identifier",
+            "name": "freeItemQuantity"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "shippingIncluded",
+          "expression": {
+            "kind": "identifier",
+            "name": "shippingIncluded"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "priority",
+          "expression": {
+            "kind": "identifier",
+            "name": "priority"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "effectiveFrom",
+          "expression": {
+            "kind": "identifier",
+            "name": "effectiveFrom"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "effectiveTo",
+          "expression": {
+            "kind": "identifier",
+            "name": "effectiveTo"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isActive",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": true
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "createdAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "BulkOrderRuleCreated"
+      ]
+    },
+    {
+      "name": "update",
+      "entity": "BulkOrderRule",
+      "parameters": [
+        {
+          "name": "catalogEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "ruleName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "minimumQuantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "ruleType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "action",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "thresholdQuantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "discountPercent",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "freeItemQuantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "shippingIncluded",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "priority",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "effectiveFrom",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "effectiveTo",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Cannot update a deleted rule"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "catalogEntryId",
+          "expression": {
+            "kind": "identifier",
+            "name": "catalogEntryId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "ruleName",
+          "expression": {
+            "kind": "identifier",
+            "name": "ruleName"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "minimumQuantity",
+          "expression": {
+            "kind": "identifier",
+            "name": "minimumQuantity"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "ruleType",
+          "expression": {
+            "kind": "identifier",
+            "name": "ruleType"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "action",
+          "expression": {
+            "kind": "identifier",
+            "name": "action"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "thresholdQuantity",
+          "expression": {
+            "kind": "identifier",
+            "name": "thresholdQuantity"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "discountPercent",
+          "expression": {
+            "kind": "identifier",
+            "name": "discountPercent"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "freeItemQuantity",
+          "expression": {
+            "kind": "identifier",
+            "name": "freeItemQuantity"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "shippingIncluded",
+          "expression": {
+            "kind": "identifier",
+            "name": "shippingIncluded"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "priority",
+          "expression": {
+            "kind": "identifier",
+            "name": "priority"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "effectiveFrom",
+          "expression": {
+            "kind": "identifier",
+            "name": "effectiveFrom"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "effectiveTo",
+          "expression": {
+            "kind": "identifier",
+            "name": "effectiveTo"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isActive",
+          "expression": {
+            "kind": "identifier",
+            "name": "isActive"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "BulkOrderRuleUpdated"
+      ]
+    },
+    {
+      "name": "softDelete",
+      "entity": "BulkOrderRule",
+      "parameters": [
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "name": "warnActiveRule",
+          "code": "warnActiveRule",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "isActive"
+          },
+          "severity": "warn",
+          "overrideable": false
+        }
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Rule is already deleted"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "object",
+            "properties": [
+              {
+                "key": "messageTemplate",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "Deleting active bulk order rule '{ruleName}'"
+                  }
+                }
+              },
+              {
+                "key": "details",
+                "value": {
+                  "kind": "object",
+                  "properties": [
+                    {
+                      "key": "ruleName",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "ruleName"
+                      }
+                    },
+                    {
+                      "key": "reason",
+                      "value": {
+                        "kind": "identifier",
+                        "name": "reason"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isActive",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": false
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "deletedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "BulkOrderRuleDeactivated"
       ]
     },
     {
@@ -98892,6 +104098,620 @@
     },
     {
       "name": "create",
+      "entity": "PricingTier",
+      "parameters": [
+        {
+          "name": "catalogEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tierName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "minQuantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "maxQuantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "unitCost",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "discountPercent",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "effectiveFrom",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "effectiveTo",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "tierName"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "tierName"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": ">=",
+          "left": {
+            "kind": "identifier",
+            "name": "minQuantity"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 1
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": ">=",
+          "left": {
+            "kind": "identifier",
+            "name": "unitCost"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Tier name is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Minimum quantity must be at least 1"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Unit cost must be non-negative"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "catalogEntryId",
+          "expression": {
+            "kind": "identifier",
+            "name": "catalogEntryId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "tierName",
+          "expression": {
+            "kind": "identifier",
+            "name": "tierName"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "minQuantity",
+          "expression": {
+            "kind": "identifier",
+            "name": "minQuantity"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "maxQuantity",
+          "expression": {
+            "kind": "identifier",
+            "name": "maxQuantity"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "unitCost",
+          "expression": {
+            "kind": "identifier",
+            "name": "unitCost"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "discountPercent",
+          "expression": {
+            "kind": "identifier",
+            "name": "discountPercent"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "effectiveFrom",
+          "expression": {
+            "kind": "identifier",
+            "name": "effectiveFrom"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "effectiveTo",
+          "expression": {
+            "kind": "identifier",
+            "name": "effectiveTo"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isActive",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": true
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "createdAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "PricingTierCreated"
+      ]
+    },
+    {
+      "name": "update",
+      "entity": "PricingTier",
+      "parameters": [
+        {
+          "name": "catalogEntryId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tierName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "minQuantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "maxQuantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "unitCost",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "discountPercent",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "effectiveFrom",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "effectiveTo",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Cannot update a deleted pricing tier"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "catalogEntryId",
+          "expression": {
+            "kind": "identifier",
+            "name": "catalogEntryId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "tierName",
+          "expression": {
+            "kind": "identifier",
+            "name": "tierName"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "minQuantity",
+          "expression": {
+            "kind": "identifier",
+            "name": "minQuantity"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "maxQuantity",
+          "expression": {
+            "kind": "identifier",
+            "name": "maxQuantity"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "unitCost",
+          "expression": {
+            "kind": "identifier",
+            "name": "unitCost"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "discountPercent",
+          "expression": {
+            "kind": "identifier",
+            "name": "discountPercent"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "effectiveFrom",
+          "expression": {
+            "kind": "identifier",
+            "name": "effectiveFrom"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "effectiveTo",
+          "expression": {
+            "kind": "identifier",
+            "name": "effectiveTo"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isActive",
+          "expression": {
+            "kind": "identifier",
+            "name": "isActive"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "PricingTierUpdated"
+      ]
+    },
+    {
+      "name": "softDelete",
+      "entity": "PricingTier",
+      "parameters": [
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "name": "warnActiveTier",
+          "code": "warnActiveTier",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "isActive"
+          },
+          "severity": "warn",
+          "overrideable": false
+        }
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Pricing tier is already deleted"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "object",
+            "properties": [
+              {
+                "key": "messageTemplate",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "Deleting active pricing tier '{tierName}'"
+                  }
+                }
+              },
+              {
+                "key": "details",
+                "value": {
+                  "kind": "object",
+                  "properties": [
+                    {
+                      "key": "tierName",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "tierName"
+                      }
+                    },
+                    {
+                      "key": "reason",
+                      "value": {
+                        "kind": "identifier",
+                        "name": "reason"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isActive",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": false
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "deletedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "PricingTierDeactivated"
+      ]
+    },
+    {
+      "name": "create",
       "entity": "Proposal",
       "parameters": [
         {
@@ -113794,6 +119614,1057 @@
     },
     {
       "name": "create",
+      "entity": "VendorCatalog",
+      "parameters": [
+        {
+          "name": "supplierId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "itemNumber",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "itemName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "category",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "baseUnitCost",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "currency",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "unitOfMeasure",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "leadTimeDays",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "leadTimeMinDays",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "leadTimeMaxDays",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "minimumOrderQuantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "orderMultiple",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "effectiveFrom",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "effectiveTo",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "supplierSku",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tags",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "itemNumber"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "itemNumber"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "itemName"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "itemName"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "in",
+          "left": {
+            "kind": "identifier",
+            "name": "unitOfMeasure"
+          },
+          "right": {
+            "kind": "array",
+            "elements": [
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "each"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "case"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "lb"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "oz"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "kg"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "units"
+                }
+              },
+              {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "cases"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": ">=",
+          "left": {
+            "kind": "identifier",
+            "name": "baseUnitCost"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Item number is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Item name is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Invalid unit of measure"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Unit cost must be non-negative"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "supplierId",
+          "expression": {
+            "kind": "identifier",
+            "name": "supplierId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "itemNumber",
+          "expression": {
+            "kind": "identifier",
+            "name": "itemNumber"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "itemName",
+          "expression": {
+            "kind": "identifier",
+            "name": "itemName"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "description",
+          "expression": {
+            "kind": "identifier",
+            "name": "description"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "category",
+          "expression": {
+            "kind": "identifier",
+            "name": "category"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "baseUnitCost",
+          "expression": {
+            "kind": "identifier",
+            "name": "baseUnitCost"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "currency",
+          "expression": {
+            "kind": "identifier",
+            "name": "currency"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "unitOfMeasure",
+          "expression": {
+            "kind": "identifier",
+            "name": "unitOfMeasure"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "leadTimeDays",
+          "expression": {
+            "kind": "identifier",
+            "name": "leadTimeDays"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "leadTimeMinDays",
+          "expression": {
+            "kind": "identifier",
+            "name": "leadTimeMinDays"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "leadTimeMaxDays",
+          "expression": {
+            "kind": "identifier",
+            "name": "leadTimeMaxDays"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "minimumOrderQuantity",
+          "expression": {
+            "kind": "identifier",
+            "name": "minimumOrderQuantity"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "orderMultiple",
+          "expression": {
+            "kind": "identifier",
+            "name": "orderMultiple"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "effectiveFrom",
+          "expression": {
+            "kind": "identifier",
+            "name": "effectiveFrom"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "effectiveTo",
+          "expression": {
+            "kind": "identifier",
+            "name": "effectiveTo"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "supplierSku",
+          "expression": {
+            "kind": "identifier",
+            "name": "supplierSku"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "notes",
+          "expression": {
+            "kind": "identifier",
+            "name": "notes"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "tags",
+          "expression": {
+            "kind": "identifier",
+            "name": "tags"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isActive",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": true
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "createdAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "VendorCatalogCreated"
+      ]
+    },
+    {
+      "name": "update",
+      "entity": "VendorCatalog",
+      "parameters": [
+        {
+          "name": "supplierId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "itemNumber",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "itemName",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "category",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "baseUnitCost",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "currency",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "unitOfMeasure",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "leadTimeDays",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "leadTimeMinDays",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "leadTimeMaxDays",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "minimumOrderQuantity",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "orderMultiple",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "effectiveFrom",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "effectiveTo",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "supplierSku",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tags",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "lastCostUpdate",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Cannot update a deleted catalog entry"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "supplierId",
+          "expression": {
+            "kind": "identifier",
+            "name": "supplierId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "itemNumber",
+          "expression": {
+            "kind": "identifier",
+            "name": "itemNumber"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "itemName",
+          "expression": {
+            "kind": "identifier",
+            "name": "itemName"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "description",
+          "expression": {
+            "kind": "identifier",
+            "name": "description"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "category",
+          "expression": {
+            "kind": "identifier",
+            "name": "category"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "baseUnitCost",
+          "expression": {
+            "kind": "identifier",
+            "name": "baseUnitCost"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "currency",
+          "expression": {
+            "kind": "identifier",
+            "name": "currency"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "unitOfMeasure",
+          "expression": {
+            "kind": "identifier",
+            "name": "unitOfMeasure"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "leadTimeDays",
+          "expression": {
+            "kind": "identifier",
+            "name": "leadTimeDays"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "leadTimeMinDays",
+          "expression": {
+            "kind": "identifier",
+            "name": "leadTimeMinDays"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "leadTimeMaxDays",
+          "expression": {
+            "kind": "identifier",
+            "name": "leadTimeMaxDays"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "minimumOrderQuantity",
+          "expression": {
+            "kind": "identifier",
+            "name": "minimumOrderQuantity"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "orderMultiple",
+          "expression": {
+            "kind": "identifier",
+            "name": "orderMultiple"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isActive",
+          "expression": {
+            "kind": "identifier",
+            "name": "isActive"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "effectiveFrom",
+          "expression": {
+            "kind": "identifier",
+            "name": "effectiveFrom"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "effectiveTo",
+          "expression": {
+            "kind": "identifier",
+            "name": "effectiveTo"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "supplierSku",
+          "expression": {
+            "kind": "identifier",
+            "name": "supplierSku"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "notes",
+          "expression": {
+            "kind": "identifier",
+            "name": "notes"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "tags",
+          "expression": {
+            "kind": "identifier",
+            "name": "tags"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "lastCostUpdate",
+          "expression": {
+            "kind": "identifier",
+            "name": "lastCostUpdate"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "VendorCatalogUpdated"
+      ]
+    },
+    {
+      "name": "softDelete",
+      "entity": "VendorCatalog",
+      "parameters": [
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "constraints": [
+        {
+          "name": "warnActiveEntry",
+          "code": "warnActiveEntry",
+          "expression": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "isActive"
+          },
+          "severity": "warn",
+          "overrideable": false
+        }
+      ],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Catalog entry is already deleted"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "object",
+            "properties": [
+              {
+                "key": "messageTemplate",
+                "value": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "Deleting active catalog entry '{itemName}'"
+                  }
+                }
+              },
+              {
+                "key": "details",
+                "value": {
+                  "kind": "object",
+                  "properties": [
+                    {
+                      "key": "itemNumber",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "itemNumber"
+                      }
+                    },
+                    {
+                      "key": "itemName",
+                      "value": {
+                        "kind": "member",
+                        "object": {
+                          "kind": "identifier",
+                          "name": "self"
+                        },
+                        "property": "itemName"
+                      }
+                    },
+                    {
+                      "key": "reason",
+                      "value": {
+                        "kind": "identifier",
+                        "name": "reason"
+                      }
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isActive",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": false
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "deletedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "VendorCatalogDeactivated"
+      ]
+    },
+    {
+      "name": "create",
       "entity": "WasteEntry",
       "parameters": [
         {
@@ -115471,6 +122342,107 @@
         }
       },
       "message": "Only managers can override allergen warnings"
+    },
+    {
+      "name": "AdminCanManageApiKeys",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "Only managers and admins can manage API keys"
+    },
+    {
+      "name": "AdminCanRevokeApiKeys",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "Only managers and admins can revoke API keys"
+    },
+    {
+      "name": "AdminCanDeleteApiKeys",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "Only admins can delete API keys"
     },
     {
       "name": "BattleBoardManagement",

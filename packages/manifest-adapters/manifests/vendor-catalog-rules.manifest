@@ -3,96 +3,150 @@
 // Version: @angriff36/manifest v0.3.35
 
 entity VendorCatalog {
-    property required id: string
-    property required tenantId: string
-    property required supplierId: string
-    property required itemNumber: string
-    property required itemName: string
-    property description: string = ""
-    property category: string = ""
-    property baseUnitCost: number
-    property currency: string = "USD"
-    property required unitOfMeasure: string
-    property leadTimeDays: number = 0
-    property leadTimeMinDays: number = 0
-    property leadTimeMaxDays: number = 0
-    property minimumOrderQuantity: number = 0
-    property orderMultiple: number = 0
-    property isActive: boolean = true
-    property effectiveFrom: number = 0
-    property effectiveTo: number = 0
-    property supplierSku: string = ""
-    property notes: string = ""
-    property tags: string[] = []
-    property lastCostUpdate: number = 0
-    property createdAt: number = 0
-    property updatedAt: number = 0
-    property deletedAt: number = 0
+  property required id: string
+  property required tenantId: string
+  property required supplierId: string
+  property required itemNumber: string = ""
+  property required itemName: string = ""
+  property description: string = ""
+  property category: string = ""
+  property baseUnitCost: number = 0
+  property currency: string = "USD"
+  property required unitOfMeasure: string = "each"
+  property leadTimeDays: number = 0
+  property leadTimeMinDays: number = 0
+  property leadTimeMaxDays: number = 0
+  property minimumOrderQuantity: number = 0
+  property orderMultiple: number = 0
+  property isActive: boolean = true
+  property effectiveFrom: number = 0
+  property effectiveTo: number = 0
+  property supplierSku: string = ""
+  property notes: string = ""
+  property tags: string = "[]"
+  property lastCostUpdate: number = 0
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property deletedAt: number = 0
 
-    transition status from "active" to "inactive"
+  computed isDeleted: boolean = self.deletedAt > 0
+  computed isEffective: boolean = (self.effectiveFrom == 0 or self.effectiveFrom <= now()) and (self.effectiveTo == 0 or self.effectiveTo >= now())
 
+  constraint requireItemNumber: self.itemNumber != null and self.itemNumber != "" "Item number is required"
+  constraint requireItemName: self.itemName != null and self.itemName != "" "Item name is required"
+  constraint requireUnitOfMeasure: self.unitOfMeasure in ["each", "case", "lb", "oz", "kg", "units", "cases"] "Invalid unit of measure"
+  constraint validCurrency: self.currency in ["USD", "EUR", "JPY", "CAD"] "Invalid currency"
+  constraint validUnitCost: self.baseUnitCost >= 0 "Unit cost must be non-negative"
 
-    // Commands
-    command create(
-        userId: string,
-        reason: string,
-        notes: string
-    ) {
-        guard self.supplierIsActive
-        constraint itemNumberUnique: self.itemNumber "Item number must to be unique"
-        constraint itemNameRequired: self.itemName != ""
-        constraint categoryIn self.category
-        constraint hasValidUnitCost: self.baseUnitCost >= 0
-        constraint hasValidCurrency: self.currency in ["USD", "EUR", "JPY", "CAD"]
-        constraint hasValidUnitOfMeasure: self.unitOfMeasure in ["each", "case", "lb", "oz", "kg", "units", "cases"]
+  command create(supplierId: string, itemNumber: string, itemName: string, description: string, category: string, baseUnitCost: number, currency: string, unitOfMeasure: string, leadTimeDays: number, leadTimeMinDays: number, leadTimeMaxDays: number, minimumOrderQuantity: number, orderMultiple: number, effectiveFrom: number, effectiveTo: number, supplierSku: string, notes: string, tags: string) {
+    guard itemNumber != null and itemNumber != "" "Item number is required"
+    guard itemName != null and itemName != "" "Item name is required"
+    guard unitOfMeasure in ["each", "case", "lb", "oz", "kg", "units", "cases"] "Invalid unit of measure"
+    guard baseUnitCost >= 0 "Unit cost must be non-negative"
 
-    command update(userId: string, reason: string, itemNumber: string?, itemName: string?, category: string?, baseUnitCost: number?, currency: string?, unitOfMeasure: string?, leadTimeDays: number?, leadTimeMinDays: number?, leadTimeMaxDays: number?, minimumOrderQuantity: number?, orderMultiple: number?, isActive: boolean?, effectiveFrom: number?, effectiveTo: number?, supplierSku: string?, notes: string?, tags: string[]?, lastCostUpdate: number?) {
-        guard self.supplierIsActive
-        guard self.supplierHasValidCost
-        guard self.isActive
+    mutate supplierId = supplierId
+    mutate itemNumber = itemNumber
+    mutate itemName = itemName
+    mutate description = description
+    mutate category = category
+    mutate baseUnitCost = baseUnitCost
+    mutate currency = currency
+    mutate unitOfMeasure = unitOfMeasure
+    mutate leadTimeDays = leadTimeDays
+    mutate leadTimeMinDays = leadTimeMinDays
+    mutate leadTimeMaxDays = leadTimeMaxDays
+    mutate minimumOrderQuantity = minimumOrderQuantity
+    mutate orderMultiple = orderMultiple
+    mutate effectiveFrom = effectiveFrom
+    mutate effectiveTo = effectiveTo
+    mutate supplierSku = supplierSku
+    mutate notes = notes
+    mutate tags = tags
+    mutate isActive = true
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit VendorCatalogCreated
+  }
+
+  command update(supplierId: string, itemNumber: string, itemName: string, description: string, category: string, baseUnitCost: number, currency: string, unitOfMeasure: string, leadTimeDays: number, leadTimeMinDays: number, leadTimeMaxDays: number, minimumOrderQuantity: number, orderMultiple: number, isActive: boolean, effectiveFrom: number, effectiveTo: number, supplierSku: string, notes: string, tags: string, lastCostUpdate: number) {
+    guard self.deletedAt == 0 "Cannot update a deleted catalog entry"
+
+    mutate supplierId = supplierId
+    mutate itemNumber = itemNumber
+    mutate itemName = itemName
+    mutate description = description
+    mutate category = category
+    mutate baseUnitCost = baseUnitCost
+    mutate currency = currency
+    mutate unitOfMeasure = unitOfMeasure
+    mutate leadTimeDays = leadTimeDays
+    mutate leadTimeMinDays = leadTimeMinDays
+    mutate leadTimeMaxDays = leadTimeMaxDays
+    mutate minimumOrderQuantity = minimumOrderQuantity
+    mutate orderMultiple = orderMultiple
+    mutate isActive = isActive
+    mutate effectiveFrom = effectiveFrom
+    mutate effectiveTo = effectiveTo
+    mutate supplierSku = supplierSku
+    mutate notes = notes
+    mutate tags = tags
+    mutate lastCostUpdate = lastCostUpdate
+    mutate updatedAt = now()
+
+    emit VendorCatalogUpdated
+  }
+
+  command softDelete(reason: string) {
+    guard self.deletedAt == 0 "Catalog entry is already deleted"
+
+    constraint warnActiveEntry:warn self.isActive {
+      messageTemplate: "Deleting active catalog entry '{itemName}'"
+      details: {
+        itemNumber: self.itemNumber
+        itemName: self.itemName
+        reason: reason
+      }
     }
 
-    command softDelete(userId: string, reason: string) {
-        guard self.supplierIsActive
-        mutate deletedAt = now()
-    }
+    mutate isActive = false
+    mutate deletedAt = now()
+    mutate updatedAt = now()
 
-    // Events
-    event VendorCatalogCreated {
-        userId: string
-        supplierId: string
-        itemNumber: string
-        itemName: string
-        baseUnitCost: number
-        currency: string
-        unitOfMeasure: string
-    }
+    emit VendorCatalogDeactivated
+  }
 
-    event VendorCatalogUpdated {
-        userId: string
-        reason: string
-        itemNumber: string?
-        itemName: string?
-        category: string?
-        baseUnitCost: number?
-        currency: string?
-        unitOfMeasure: string?
-        leadTimeDays: number?
-        leadTimeMinDays: number?
-        leadTimeMaxDays: number?
-        minimumOrderQuantity: number?
-        orderMultiple: number?
-        isActive: boolean?
-        effectiveFrom: number?
-        effectiveTo: number?
-        supplierSku: string?
-        notes: string?
-        tags: string[]?
-        lastCostUpdate: number?
-    }
+  store VendorCatalog in memory
+}
 
-    event VendorCatalogDeactivated {
-        userId: string
-        reason: string
-    }
+event VendorCatalogCreated: "inventory.vendor-catalog.created" {
+  catalogId: string
+  tenantId: string
+  supplierId: string
+  itemNumber: string
+  itemName: string
+  baseUnitCost: number
+  currency: string
+  unitOfMeasure: string
+  createdAt: number
+}
+
+event VendorCatalogUpdated: "inventory.vendor-catalog.updated" {
+  catalogId: string
+  tenantId: string
+  supplierId: string
+  itemNumber: string
+  itemName: string
+  baseUnitCost: number
+  updatedAt: number
+}
+
+event VendorCatalogDeactivated: "inventory.vendor-catalog.deactivated" {
+  catalogId: string
+  tenantId: string
+  supplierId: string
+  itemNumber: string
+  itemName: string
+  reason: string
+  deletedAt: number
 }

@@ -22,8 +22,12 @@ export async function GET(request: NextRequest) {
 
 const alertsConfigs = await database.alertsConfig.findMany({
     where: {
-        tenantId
+        tenantId,
+        deleted_at: null
       },
+    orderBy: {
+      created_at: "desc",
+    },
   });
 
     return manifestSuccessResponse({ alertsConfigs });
