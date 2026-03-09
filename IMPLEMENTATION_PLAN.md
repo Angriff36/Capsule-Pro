@@ -92,6 +92,7 @@ All P0-P3 items were verified through direct code inspection:
 | api-rate-limiting | 0% | ~80% | VERIFIED: Middleware, routes, manifest, Prisma models ALL EXIST; Only integration pending |
 | ai-simulation-engine | 0% FABRICATED | **100%** | All simulation API routes + tests implemented (2026-03-08) |
 | mobile-app-features | 80-85% | **0%** (specific 4 features) | Core kitchen features complete; search, push, profile, settings NOT implemented |
+| multi-channel-marketing | verified | **0% FABRICATED** | NO Prisma models (Campaign, Channel, etc.), NO migration, routes were broken and removed |
 
 ### Testing Gap Analysis - **ALL FEATURES NOW HAVE TESTS (2026-03-08)**
 All 6 verified complete features now have comprehensive test coverage:
@@ -1324,35 +1325,52 @@ apps/mobile/package.json (UPDATED 2026-03-08 - added expo-notifications)
 
 ---
 
-### P3.2: Restore Deleted Marketing Routes
+### P3.2: Multi-Channel Marketing Routes
 
 **Priority:** P3 - LOW
-**Effort:** Medium (3-5 days)
-**Status:** DELETED (0%)
+**Effort:** Large (1-2 weeks)
+**Status:** 0% - NEEDS FULL IMPLEMENTATION (models + migration + routes)
 
-#### Problem
+#### Problem (VERIFIED 2026-03-08)
 
-5 marketing routes are staged for deletion. Frontend pages are orphaned and will fail at runtime.
+The marketing routes that existed were **COMPLETELY BROKEN** - they referenced non-existent Prisma models:
+- `Campaign`, `Channel`, `CampaignChannel`, `ContactList`, `MarketingRule` models do NOT exist
+- Migration `20260305144141_add_multi_channel_marketing` does NOT exist
+- No marketing manifest specs exist
 
-#### Deleted Files
+The routes would have failed at runtime with Prisma errors. They have been **REMOVED** since they were non-functional.
 
-- `/api/marketing/automation-rules/route.ts`
-- `/api/marketing/campaigns/[campaignId]/route.ts`
-- `/api/marketing/campaigns/route.ts`
-- `/api/marketing/channels/route.ts`
-- `/api/marketing/contact-lists/route.ts`
+#### Investigation Findings
+
+```
+VERIFIED NON-EXISTENT:
+- Prisma models: Campaign, Channel, CampaignChannel, ContactList, MarketingRule - NOT IN schema.prisma
+- Migration: 20260305144141_add_multi_channel_marketing - NOT IN prisma/migrations/
+- Manifest: No marketing.manifest file exists
+
+BROKEN ROUTES (REMOVED):
+- /api/marketing/automation-rules/route.ts - referenced non-existent MarketingRule model
+- /api/marketing/campaigns/[campaignId]/route.ts - referenced non-existent Campaign model
+- /api/marketing/campaigns/route.ts - referenced non-existent Campaign model
+- /api/marketing/channels/route.ts - referenced non-existent Channel model
+- /api/marketing/contact-lists/route.ts - referenced non-existent ContactList model
+```
 
 #### Tasks
 
-- [ ] Restore marketing CRUD routes
-- [ ] Ensure routes follow manifest pattern
-- [ ] Add marketing manifest specs
+- [ ] Create Prisma models for marketing (Campaign, Channel, CampaignChannel, ContactList, MarketingRule)
+- [ ] Create and run migration
+- [ ] Create marketing manifest specs
+- [ ] Implement marketing CRUD routes following manifest pattern
+- [ ] Add comprehensive tests
 
 #### Acceptance Criteria
 
-1. Marketing CRUD routes restored
-2. Tests pass
-3. Frontend pages work
+1. Prisma models defined and migrated
+2. Marketing manifest created
+3. Marketing CRUD routes functional
+4. Tests pass
+5. Frontend pages work
 
 ---
 
@@ -1484,7 +1502,7 @@ apps/mobile/__tests__/offline-sync.test.ts (EXISTS - 15 tests - ADDED 2026-03-08
 | P2.5 | Complete Inventory Audit Auto | P2 | **COMPLETED (2026-03-08)** | **100%** | None | VERIFIED |
 | P2.6 | Complete SMS Automation Rules | P2 | **COMPLETED (2026-03-08)** | **100%** | None | VERIFIED |
 | P3.1 | Complete Mobile App Features | P3 | **COMPLETED (2026-03-08)** | **100%** (all 4 features) | None | VERIFIED |
-| P3.2 | Restore Marketing Routes | P3 | Medium | DELETED | None | VERIFIED |
+| P3.2 | Multi-Channel Marketing Routes | P3 | Large | 0% FABRICATED - needs implementation | None | VERIFIED |
 | P3.3 | Audit Fabricated Features | P3 | **COMPLETED (2026-03-08)** | **100%** (12 reset, 3 confirmed) | None | VERIFIED |
 | P3.4 | Add Tests to Complete Features | P3 | **COMPLETED (2026-03-08)** | **100%** (all 5 have tests) | None | VERIFIED |
 
@@ -1557,7 +1575,7 @@ See "Features Missing from Implementation Plan" section for full details.
 
 ### Week 9-12: P3 Cleanup - **P3.1, P3.4 COMPLETED (2026-03-08)**
 16. ~~P3.1 - Complete Mobile App Features~~ **COMPLETED (2026-03-08)** - Search, Profile, Settings, Push Notifications
-17. P3.2 - Restore Marketing Routes
+17. P3.2 - Multi-Channel Marketing Routes (0% FABRICATED - needs full implementation)
 18. ~~P3.4 - Add Tests to Complete Features~~ **COMPLETED (2026-03-08)** - All 5 features now have tests
 
 ---
