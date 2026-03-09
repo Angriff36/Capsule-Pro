@@ -93,6 +93,12 @@ export const database: Record<string, unknown> = {
   station: createMockModel(),
   units: createMockModel(),
   recipe_steps: createMockModel(),
+  // Inventory forecasting models
+  inventoryForecast: createMockModel(),
+  reorderSuggestion: createMockModel(),
+  inventoryTransaction: createMockModel(),
+  // Event model for forecasting tests
+  event: createMockModel(),
 };
 
 // Mock tenantDatabase function

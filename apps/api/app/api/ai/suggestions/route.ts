@@ -560,6 +560,9 @@ export async function GET(request: Request) {
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
+    if (!tenantId) {
+      return NextResponse.json({ error: "No tenant found" }, { status: 401 });
+    }
 
     // Parse query parameters
     const { searchParams } = new URL(request.url);
