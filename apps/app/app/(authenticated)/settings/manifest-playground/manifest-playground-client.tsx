@@ -44,6 +44,7 @@ export function ManifestPlaygroundClient() {
     <div className="space-y-3">
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
       <ManifestTestPlayground
+        executionEnabled={false}
         entities={entities}
         onExecuteCommand={async (entityName, commandName, testData, options) => {
           const result: ExecutionResult = {
@@ -64,9 +65,9 @@ export function ManifestPlaygroundClient() {
         onLoadEntityDetail={fetchEntityDetail}
       />
       <p className="text-xs text-muted-foreground">
-        This playground currently runs in read-only mode (no command execution).
+        This playground currently runs in preview-only mode (no command
+        execution).
       </p>
     </div>
   );
 }
-

@@ -110,6 +110,21 @@ export function ManifestPolicyEditor({
 
   return (
     <div className="flex flex-col gap-6">
+      <Alert>
+        <Shield className="h-4 w-4" />
+        <div className="flex-1">
+          <AlertTitle>How to read this page</AlertTitle>
+          <AlertDescription>
+            <span className="font-medium">Actions</span> are things the system
+            can do. <span className="font-medium">Rules</span> can block or warn
+            before an action runs. <span className="font-medium">Checks</span>{" "}
+            are preconditions. <span className="font-medium">Permissions</span>{" "}
+            describe who is allowed. (Under the hood: commands, constraints,
+            guards, and policies.)
+          </AlertDescription>
+        </div>
+      </Alert>
+
       {/* Entity Header */}
       <Card>
         <CardHeader>
@@ -120,14 +135,14 @@ export function ManifestPolicyEditor({
                 {entity.displayName}
               </CardTitle>
               <CardDescription>
-                Manifest entity with {entity.commands.length} commands,{" "}
-                {totalConstraints} constraints, and {totalGuards} guards
+                What actions exist, what rules apply, and what checks run before
+                execution.
               </CardDescription>
             </div>
             <div className="flex gap-2">
-              <Badge variant="outline">{entity.commands.length} Commands</Badge>
-              <Badge variant="outline">{totalConstraints} Constraints</Badge>
-              <Badge variant="outline">{totalGuards} Guards</Badge>
+              <Badge variant="outline">{entity.commands.length} Actions</Badge>
+              <Badge variant="outline">{totalConstraints} Rules</Badge>
+              <Badge variant="outline">{totalGuards} Checks</Badge>
             </div>
           </div>
         </CardHeader>
@@ -136,10 +151,10 @@ export function ManifestPolicyEditor({
       {/* Main Editor Tabs */}
       <Tabs defaultValue="commands">
         <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="commands">Commands</TabsTrigger>
-          <TabsTrigger value="constraints">Constraints</TabsTrigger>
-          <TabsTrigger value="guards">Guards</TabsTrigger>
-          <TabsTrigger value="policies">Policies</TabsTrigger>
+          <TabsTrigger value="commands">Actions</TabsTrigger>
+          <TabsTrigger value="constraints">Rules</TabsTrigger>
+          <TabsTrigger value="guards">Checks</TabsTrigger>
+          <TabsTrigger value="policies">Permissions</TabsTrigger>
         </TabsList>
 
         {/* Commands Tab */}
@@ -167,10 +182,10 @@ export function ManifestPolicyEditor({
             <Card>
               <CardHeader>
                 <CardTitle className="text-sm font-medium">
-                  Entity-Level Constraints
+                  Entity-Level Rules
                 </CardTitle>
                 <CardDescription>
-                  These constraints apply to all operations on this entity
+                  These rules apply to all actions on this business object
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -202,10 +217,10 @@ export function ManifestPolicyEditor({
               <Card key={command.name}>
                 <CardHeader>
                   <CardTitle className="text-sm font-medium">
-                    {command.name} Constraints
+                    {command.name} Rules
                   </CardTitle>
                   <CardDescription>
-                    Constraints specific to the {command.name} command
+                    Rules specific to the {command.name} action
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
@@ -250,7 +265,7 @@ export function ManifestPolicyEditor({
                       <div>
                         <CardTitle className="text-sm font-medium flex items-center gap-2">
                           <Shield className="h-4 w-4" />
-                          {command.name} Guards
+                          {command.name} Checks
                         </CardTitle>
                         <CardDescription>
                           {command.guards.length} precondition
@@ -395,7 +410,7 @@ function CommandCard({
             {command.guards.length > 0 && (
               <div>
                 <h4 className="text-sm font-medium mb-2">
-                  Guards (Preconditions)
+                  Checks (Preconditions)
                 </h4>
                 <div className="space-y-2">
                   {command.guards.map((guard, index) => (
@@ -414,7 +429,7 @@ function CommandCard({
             {/* Constraints */}
             {command.constraints.length > 0 && (
               <div>
-                <h4 className="text-sm font-medium mb-2">Constraints</h4>
+                <h4 className="text-sm font-medium mb-2">Rules</h4>
                 <div className="space-y-2">
                   {command.constraints.map((constraint) => (
                     <ConstraintItem
@@ -575,7 +590,7 @@ function GuardItem({
     <Alert variant="default">
       <Shield className="h-4 w-4" />
       <div className="flex-1">
-        <AlertTitle className="text-xs">Guard #{index + 1}</AlertTitle>
+        <AlertTitle className="text-xs">Check #{index + 1}</AlertTitle>
         {guard.message && (
           <AlertDescription className="text-xs">
             {guard.message}

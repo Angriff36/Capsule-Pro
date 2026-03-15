@@ -187,8 +187,8 @@ export const modules: ModuleDefinition[] = [
         label: "Settings",
         items: [
           { title: "Overview", href: "/settings" },
-          { title: "Manifest Editor", href: "/settings/manifest-editor" },
-          { title: "Manifest Playground", href: "/settings/manifest-playground" },
+          { title: "Rules Explorer", href: "/settings/manifest-editor" },
+          { title: "Rules Playground", href: "/settings/manifest-playground" },
         ],
       },
     ],

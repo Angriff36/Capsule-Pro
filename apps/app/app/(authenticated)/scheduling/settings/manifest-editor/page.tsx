@@ -1,4 +1,5 @@
-import ManifestEditorPage from "../../../settings/manifest-editor/page";
+import { redirect } from "next/navigation";
 
-export default ManifestEditorPage;
-
+export default function ManifestEditorRedirect() {
+  redirect("/settings/manifest-editor");
+}

@@ -1,4 +1,5 @@
-import ManifestPlaygroundPage from "../../../settings/manifest-playground/page";
+import { redirect } from "next/navigation";
 
-export default ManifestPlaygroundPage;
-
+export default function ManifestPlaygroundRedirect() {
+  redirect("/settings/manifest-playground");
+}

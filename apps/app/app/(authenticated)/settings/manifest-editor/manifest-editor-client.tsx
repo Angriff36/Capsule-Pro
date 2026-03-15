@@ -77,11 +77,11 @@ export function ManifestEditorClient() {
     <div className="space-y-6">
       <Card className="p-4">
         <div className="space-y-2">
-          <Label>Entity</Label>
+          <Label>Business object</Label>
           {entities ? (
             <Select onValueChange={setSelectedEntity} value={selectedEntity}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select an entity" />
+                <SelectValue placeholder="Select a business object" />
               </SelectTrigger>
               <SelectContent>
                 {sortedEntities.map((e) => (
@@ -97,8 +97,9 @@ export function ManifestEditorClient() {
         </div>
         {error ? <p className="mt-3 text-sm text-destructive">{error}</p> : null}
         <p className="mt-3 text-xs text-muted-foreground">
-          Read-only explorer backed by compiled Manifest IR (guards/parameters are
-          not surfaced in this IR build yet).
+          Read-only explorer backed by compiled Manifest IR. Some details (like
+          parameters, checks, and permission rules) are not surfaced in this IR
+          build yet.
         </p>
       </Card>
 
@@ -110,4 +111,3 @@ export function ManifestEditorClient() {
     </div>
   );
 }
-

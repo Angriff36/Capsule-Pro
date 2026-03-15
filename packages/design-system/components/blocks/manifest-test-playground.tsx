@@ -64,6 +64,7 @@ import { toast } from "sonner";
 
 interface ManifestTestPlaygroundProps {
   entities: EntityListItem[];
+  executionEnabled?: boolean;
   onLoadEntityDetail?: (entityName: string) => Promise<EntityDetail>;
   onExecuteCommand?: (
     entityName: string,
@@ -84,6 +85,7 @@ interface EntityListItem {
 
 export function ManifestTestPlayground({
   entities,
+  executionEnabled = true,
   onLoadEntityDetail,
   onExecuteCommand,
   onLoadHistory,
@@ -237,15 +239,15 @@ export function ManifestTestPlayground({
         <div className="space-y-0.5">
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-2">
             <Flame className="h-8 w-8" />
-            Manifest Test Playground
+            Rules Playground
           </h1>
           <p className="text-muted-foreground">
-            Interactive testing environment for manifest commands with state
-            snapshots and execution history
+            Explore what actions exist and what example inputs look like.
           </p>
         </div>
         <div className="flex gap-2">
           <Button
+            disabled={!executionEnabled}
             onClick={() => setShowHistory(!showHistory)}
             variant={showHistory ? "default" : "outline"}
           >
@@ -254,7 +256,7 @@ export function ManifestTestPlayground({
           </Button>
           <Dialog>
             <DialogTrigger asChild>
-              <Button variant="outline">
+              <Button disabled={!executionEnabled} variant="outline">
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Load History
               </Button>
@@ -309,20 +311,29 @@ export function ManifestTestPlayground({
         </div>
       </div>
 
+      {!executionEnabled && (
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            Preview-only: running actions is disabled in this build.
+          </AlertDescription>
+        </Alert>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Left Column: Command Selection & Input */}
         <div className="space-y-4">
           {/* Entity & Command Selection */}
           <Card>
             <CardHeader>
-              <CardTitle>Command Selection</CardTitle>
+              <CardTitle>Action Selection</CardTitle>
               <CardDescription>
-                Choose an entity and command to execute
+                Pick a business object and an action
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="entity-select">Entity</Label>
+                <Label htmlFor="entity-select">Business object</Label>
                 <Select
                   disabled={entities.length === 0}
                   onValueChange={(value) => {
@@ -332,7 +343,7 @@ export function ManifestTestPlayground({
                   value={selectedEntity}
                 >
                   <SelectTrigger id="entity-select">
-                    <SelectValue placeholder="Select an entity..." />
+                    <SelectValue placeholder="Select a business object..." />
                   </SelectTrigger>
                   <SelectContent>
                     {entities.map((entity) => (
@@ -340,7 +351,7 @@ export function ManifestTestPlayground({
                         <div className="flex items-center justify-between w-full gap-4">
                           <span>{entity.displayName}</span>
                           <span className="text-xs text-muted-foreground">
-                            {entity.commands.length} commands
+                            {entity.commands.length} actions
                           </span>
                         </div>
                       </SelectItem>
@@ -350,7 +361,7 @@ export function ManifestTestPlayground({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="command-select">Command</Label>
+                <Label htmlFor="command-select">Action</Label>
                 <Select
                   disabled={
                     !selectedEntityCommands ||
@@ -360,7 +371,7 @@ export function ManifestTestPlayground({
                   value={selectedCommand}
                 >
                   <SelectTrigger id="command-select">
-                    <SelectValue placeholder="Select a command..." />
+                    <SelectValue placeholder="Select an action..." />
                   </SelectTrigger>
                   <SelectContent>
                     {selectedEntityCommands?.map((command) => (
@@ -377,7 +388,7 @@ export function ManifestTestPlayground({
                   <FileJson className="h-4 w-4" />
                   <AlertDescription className="text-xs">
                     {selectedCommandDetail.description ||
-                      `Execute ${selectedCommand} command`}
+                      `Run ${selectedCommand} action`}
                   </AlertDescription>
                 </Alert>
               )}
@@ -389,9 +400,9 @@ export function ManifestTestPlayground({
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle>Test Data</CardTitle>
+                  <CardTitle>Example Input</CardTitle>
                   <CardDescription>
-                    JSON input for the command parameters
+                    JSON input for the action
                   </CardDescription>
                 </div>
                 <div className="flex gap-2">
@@ -449,24 +460,26 @@ export function ManifestTestPlayground({
           {/* Execution Options */}
           <Card>
             <CardHeader>
-              <CardTitle>Execution Options</CardTitle>
+              <CardTitle>Preview Options</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center gap-2">
                 <input
                   checked={isDryRun}
+                  disabled={!executionEnabled}
                   id="dry-run"
                   onChange={(e) => setIsDryRun(e.target.checked)}
                   type="checkbox"
                 />
                 <Label className="cursor-pointer" htmlFor="dry-run">
-                  Dry Run (validate guards/constraints only, no execution)
+                  Preview only (checks rules; no changes are made)
                 </Label>
               </div>
 
               <Button
                 className="w-full"
                 disabled={
+                  !executionEnabled ||
                   !(selectedEntity && selectedCommand) ||
                   isExecuting ||
                   !!testDataError
@@ -481,10 +494,15 @@ export function ManifestTestPlayground({
                 ) : (
                   <>
                     <Play className="mr-2 h-4 w-4" />
-                    {isDryRun ? "Validate" : "Execute"} Command
+                    {isDryRun ? "Preview" : "Run"} Action
                   </>
                 )}
               </Button>
+              {!executionEnabled && (
+                <p className="text-xs text-muted-foreground">
+                  Running actions is disabled in this build.
+                </p>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -496,7 +514,7 @@ export function ManifestTestPlayground({
             <Card>
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <CardTitle>Execution Result</CardTitle>
+                  <CardTitle>Result</CardTitle>
                   <Badge
                     variant={
                       executionResult.success ? "default" : "destructive"
@@ -514,7 +532,7 @@ export function ManifestTestPlayground({
                   <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="output">Output</TabsTrigger>
                       <TabsTrigger value="guards">
-                        Guards
+                        Checks
                         {executionResult.guards.filter(
                           (g: { passed: boolean }) => !g.passed
                         ).length > 0 && (
@@ -528,7 +546,7 @@ export function ManifestTestPlayground({
                         )}
                       </TabsTrigger>
                       <TabsTrigger value="constraints">
-                        Constraints
+                        Rules
                         {executionResult.constraints.filter(
                           (c: { passed: boolean }) => !c.passed
                         ).length > 0 && (
@@ -541,7 +559,7 @@ export function ManifestTestPlayground({
                           </Badge>
                         )}
                       </TabsTrigger>
-                    <TabsTrigger value="policy">Policy</TabsTrigger>
+                    <TabsTrigger value="policy">Permissions</TabsTrigger>
                   </TabsList>
 
                   <TabsContent className="space-y-2" value="output">
@@ -550,7 +568,7 @@ export function ManifestTestPlayground({
                         <CollapsibleSection
                           expanded={expandedSections.has("output")}
                           onToggle={() => toggleSection("output")}
-                          title="Command Result"
+                          title="Result payload"
                         >
                           <pre className="bg-muted p-3 rounded text-xs overflow-x-auto">
                             {JSON.stringify(
@@ -760,12 +778,12 @@ export function ManifestTestPlayground({
           )}
 
           {/* Captured Snapshots */}
-          {capturedSnapshots.length > 0 && (
+          {executionEnabled && capturedSnapshots.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Captured Snapshots</CardTitle>
+                <CardTitle>Snapshots</CardTitle>
                 <CardDescription>
-                  State snapshots from successful executions
+                  State snapshots from successful runs
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
@@ -793,12 +811,12 @@ export function ManifestTestPlayground({
           )}
 
           {/* Execution History Panel */}
-          {showHistory && (
+          {executionEnabled && showHistory && (
             <Card>
               <CardHeader>
-                <CardTitle>Recent Executions</CardTitle>
+                <CardTitle>Recent Runs</CardTitle>
                 <CardDescription>
-                  Command execution history for{" "}
+                  Action run history for{" "}
                   {selectedEntity || "all entities"}
                 </CardDescription>
               </CardHeader>
@@ -850,22 +868,23 @@ export function ManifestTestPlayground({
         </CardHeader>
         <CardContent className="space-y-2 text-sm text-muted-foreground">
           <p>
-            The Manifest Test Playground allows you to interactively test
-            commands defined in the Manifest IR.
+            The Rules Playground helps you explore actions and the rules around
+            them.
           </p>
           <ul className="list-disc pl-5 space-y-1">
             <li>
-              <strong>Dry Run:</strong> Validates guards and constraints without
-              executing the command
+              <strong>Preview:</strong> Checks rules without making changes
             </li>
-            <li>
-              <strong>Snapshots:</strong> Captures state after successful
-              execution for replay
-            </li>
-            <li>
-              <strong>History:</strong> Maintains execution history for replay
-              and debugging
-            </li>
+            {executionEnabled && (
+              <li>
+                <strong>Snapshots:</strong> Captures state after successful runs
+              </li>
+            )}
+            {executionEnabled && (
+              <li>
+                <strong>History:</strong> Shows recent runs for replay/debugging
+              </li>
+            )}
           </ul>
           <p className="text-xs">
             See{" "}
