@@ -5,10 +5,15 @@ import { keys } from "./keys";
  * PostHog is only loaded when this function is called, keeping it out of the initial bundle.
  */
 export const initializeAnalytics = () => {
+  const env = keys();
+  const posthogKey = env.NEXT_PUBLIC_POSTHOG_KEY;
+  const posthogHost = env.NEXT_PUBLIC_POSTHOG_HOST;
+  if (!posthogKey || !posthogHost) return;
+
   // Lazy load PostHog to keep it out of the initial bundle
   import("posthog-js").then((posthog) => {
-    posthog.default.init(keys().NEXT_PUBLIC_POSTHOG_KEY, {
-      api_host: keys().NEXT_PUBLIC_POSTHOG_HOST,
+    posthog.default.init(posthogKey, {
+      api_host: posthogHost,
       defaults: "2025-05-24",
     });
   });

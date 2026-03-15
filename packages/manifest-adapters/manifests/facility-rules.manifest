@@ -1,0 +1,611 @@
+// Facility Management System - Facility Rules
+// Manifest spec for facility space booking, equipment allocation, utility tracking, and maintenance scheduling
+
+entity FacilitySpace {
+  property required id: string
+  property required tenantId: string
+  property required locationId: string
+  property required name: string
+  property required type: string = "general"
+  property required code: string = ""
+  property capacity: number = 0
+  property area: number = 0
+  property required floor: string = ""
+  property required section: string = ""
+  property required amenities: string[] = []
+  property required features: string = ""
+  property required isBookable: boolean = true
+  property required requiresApproval: boolean = false
+  property required minBookingHours: number = 1
+  property required maxBookingHours: number = 24
+  property required leadTimeHours: number = 0
+  property required operationalHours: string = ""
+  property required unavailableDates: string = ""
+  property required status: string = "active"
+  property required notes: string = ""
+  property required isActive: boolean = true
+  property required createdAt: number = 0
+  property required updatedAt: number = 0
+
+  computed isAvailable: boolean = self.status == "active" and self.isBookable
+  computed hasCapacity: boolean = self.capacity > 0
+
+  constraint validSpaceType: self.type in ["kitchen", "dining", "meeting", "storage", "prep", "baking", "cooling", "general"] "Invalid space type"
+  constraint validStatus: self.status in ["active", "maintenance", "inactive"] "Invalid status"
+  constraint positiveCapacity: self.capacity >= 0 "Capacity must be non-negative"
+  constraint positiveArea: self.area >= 0 "Area must be non-negative"
+  constraint validBookingLimits: self.minBookingHours > 0 and self.maxBookingHours > self.minBookingHours "Invalid booking hour limits"
+  constraint validLeadTime: self.leadTimeHours >= 0 "Lead time must be non-negative"
+
+  constraint warnInactiveBookableSpace:warn self.isBookable and self.status != "active" {
+    messageTemplate: "Space '{spaceName}' is bookable but has status '{status}'"
+    details: {
+      spaceName: self.name
+      status: self.status
+    }
+  }
+
+  constraint warnSpaceInMaintenance:warn self.status == "maintenance" and self.isBookable {
+    messageTemplate: "Space '{spaceName}' is under maintenance and should not be bookable"
+    details: {
+      spaceName: self.name
+    }
+  }
+
+  command create(locationId: string, name: string, type: string, code: string, capacity: number, area: number, floor: string, section: string, amenities: string[], features: string, isBookable: boolean, requiresApproval: boolean, minBookingHours: number, maxBookingHours: number, leadTimeHours: number, operationalHours: string, unavailableDates: string, notes: string) {
+    guard name != null and name != "" "Space name is required"
+    guard locationId != null and locationId != "" "Location ID is required"
+    guard type in ["kitchen", "dining", "meeting", "storage", "prep", "baking", "cooling", "general"] "Invalid space type"
+
+    mutate locationId = locationId
+    mutate name = name
+    mutate type = type
+    mutate code = code
+    mutate capacity = capacity
+    mutate area = area
+    mutate floor = floor
+    mutate section = section
+    mutate amenities = amenities
+    mutate features = features
+    mutate isBookable = isBookable
+    mutate requiresApproval = requiresApproval
+    mutate minBookingHours = minBookingHours
+    mutate maxBookingHours = maxBookingHours
+    mutate leadTimeHours = leadTimeHours
+    mutate operationalHours = operationalHours
+    mutate unavailableDates = unavailableDates
+    mutate notes = notes
+    mutate status = "active"
+    mutate isActive = true
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit FacilitySpaceCreated
+  }
+
+  command updateStatus(newStatus: string, reason: string, userId: string) {
+    guard newStatus in ["active", "maintenance", "inactive"] "Invalid status"
+    guard newStatus != self.status "Status is already set to {newStatus}"
+
+    constraint warnDeactivateActiveSpace:warn self.status == "active" and newStatus != "active" {
+      messageTemplate: "Deactivating space '{spaceName}' - check for upcoming bookings"
+      details: {
+        spaceName: self.name
+        oldStatus: self.status
+        newStatus: newStatus
+        reason: reason
+      }
+    }
+
+    mutate status = newStatus
+    mutate isActive = newStatus == "active"
+    mutate updatedAt = now()
+
+    emit FacilitySpaceStatusUpdated
+  }
+
+  command updateBookingSettings(isBookable: boolean, requiresApproval: boolean, minBookingHours: number, maxBookingHours: number, leadTimeHours: number, userId: string) {
+    guard minBookingHours != null and minBookingHours > 0 "Minimum booking hours must be positive"
+    guard maxBookingHours != null and maxBookingHours > minBookingHours "Maximum booking hours must exceed minimum"
+    guard leadTimeHours != null and leadTimeHours >= 0 "Lead time must be non-negative"
+
+    mutate isBookable = isBookable
+    mutate requiresApproval = requiresApproval
+    mutate minBookingHours = minBookingHours
+    mutate maxBookingHours = maxBookingHours
+    mutate leadTimeHours = leadTimeHours
+    mutate updatedAt = now()
+
+    emit FacilitySpaceBookingSettingsUpdated
+  }
+
+  store FacilitySpace in memory
+}
+
+entity FacilityBooking {
+  property required id: string
+  property required tenantId: string
+  property required spaceId: string
+  property required spaceName: string
+  property required bookedFor: string
+  property required bookedForName: string
+  property required bookedForEmail: string = ""
+  property required title: string
+  property required description: string = ""
+  property required bookingType: string = "standard"
+  property required status: string = "pending"
+  property required startAt: number = 0
+  property required endAt: number = 0
+  property required duration: number = 0
+  property required recurrence: string = ""
+  property required expectedAttendees: number = 0
+  property required actualAttendees: number = 0
+  property required requiresApproval: boolean = false
+  property required approvedBy: string = ""
+  property required approvedAt: number = 0
+  property required rejectionReason: string = ""
+  property required checkedInAt: number = 0
+  property required checkedInBy: string = ""
+  property required checkedOutAt: number = 0
+  property required checkedOutBy: string = ""
+  property required eventId: string = ""
+  property required eventType: string = ""
+  property required cost: number = 0
+  property required costCenter: string = ""
+  property required notes: string = ""
+  property required metadata: string = ""
+  property required createdAt: number = 0
+  property required updatedAt: number = 0
+
+  computed isUpcoming: boolean = self.startAt > now() and self.status != "cancelled"
+  computed isPast: boolean = self.endAt < now()
+  computed isCurrent: boolean = self.startAt <= now() and self.endAt >= now() and self.status == "confirmed"
+  computed durationHours: number = self.endAt > self.startAt ? (self.endAt - self.startAt) / 3600000 : 0
+  computed isOverdueCheckout: boolean = self.endAt < now() and self.status == "checked_in"
+
+  constraint validBookingType: self.bookingType in ["standard", "recurring", "blocker", "maintenance"] "Invalid booking type"
+  constraint validStatus: self.status in ["pending", "confirmed", "checked_in", "checked_out", "cancelled", "completed"] "Invalid booking status"
+  constraint validTiming: self.startAt > 0 and self.endAt > self.startAt "Invalid booking times"
+
+  constraint warnPastBookingPending:warn self.startAt < now() and self.status == "pending" {
+    messageTemplate: "Booking '{title}' has a start time in the past but is still pending"
+    details: {
+      title: self.title
+      startAt: self.startAt
+      status: self.status
+    }
+  }
+
+  constraint warnOverdueCheckout:warn self.isOverdueCheckout {
+    messageTemplate: "Booking '{title}' has not been checked out {hours} hours after end time"
+    details: {
+      title: self.title
+      hours: round((now() - self.endAt) / 3600000, 1)
+      endAt: self.endAt
+    }
+  }
+
+  command book(spaceId: string, spaceName: string, bookedFor: string, bookedForName: string, bookedForEmail: string, title: string, description: string, bookingType: string, startAt: number, endAt: number, recurrence: string, expectedAttendees: number, eventId: string, eventType: string, cost: number, costCenter: string, notes: string, metadata: string) {
+    guard spaceId != null and spaceId != "" "Space ID is required"
+    guard spaceName != null and spaceName != "" "Space name is required"
+    guard bookedFor != null and bookedFor != "" "Booked for user is required"
+    guard title != null and title != "" "Booking title is required"
+    guard startAt != null and startAt > 0 "Start time is required"
+    guard endAt != null and endAt > startAt "End time must be after start time"
+    guard bookingType in ["standard", "recurring", "blocker", "maintenance"] "Invalid booking type"
+
+    mutate spaceId = spaceId
+    mutate spaceName = spaceName
+    mutate bookedFor = bookedFor
+    mutate bookedForName = bookedForName
+    mutate bookedForEmail = bookedForEmail
+    mutate title = title
+    mutate description = description
+    mutate bookingType = bookingType
+    mutate startAt = startAt
+    mutate endAt = endAt
+    mutate duration = endAt - startAt
+    mutate recurrence = recurrence
+    mutate expectedAttendees = expectedAttendees
+    mutate actualAttendees = 0
+    mutate status = "pending"
+    mutate requiresApproval = false
+    mutate approvedBy = ""
+    mutate approvedAt = 0
+    mutate rejectionReason = ""
+    mutate checkedInAt = 0
+    mutate checkedInBy = ""
+    mutate checkedOutAt = 0
+    mutate checkedOutBy = ""
+    mutate eventId = eventId
+    mutate eventType = eventType
+    mutate cost = cost
+    mutate costCenter = costCenter
+    mutate notes = notes
+    mutate metadata = metadata
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit FacilityBookingCreated
+  }
+
+  command confirm(approvedBy: string, notes: string) {
+    guard self.status in ["pending", "cancelled"] "Can only confirm pending or cancelled bookings"
+
+    mutate status = "confirmed"
+    mutate approvedBy = approvedBy
+    mutate approvedAt = now()
+    mutate rejectionReason = ""
+    mutate updatedAt = now()
+
+    emit FacilityBookingConfirmed
+  }
+
+  command reject(reason: string, rejectedBy: string) {
+    guard self.status == "pending" "Can only reject pending bookings"
+
+    constraint warnRejectUpcoming:warn self.startAt > now() {
+      messageTemplate: "Rejecting upcoming booking '{title}' - notify booker"
+      details: {
+        title: self.title
+        startAt: self.startAt
+        reason: reason
+      }
+    }
+
+    mutate status = "cancelled"
+    mutate rejectionReason = reason
+    mutate approvedBy = rejectedBy
+    mutate approvedAt = now()
+    mutate updatedAt = now()
+
+    emit FacilityBookingRejected
+  }
+
+  command checkIn(userId: string, actualAttendees: number) {
+    guard self.status == "confirmed" "Booking must be confirmed to check in"
+    guard now() >= self.startAt - 1800000 "Cannot check in more than 30 minutes early"
+
+    mutate status = "checked_in"
+    mutate checkedInAt = now()
+    mutate checkedInBy = userId
+    mutate actualAttendees = actualAttendees > 0 ? actualAttendees : self.actualAttendees
+    mutate updatedAt = now()
+
+    emit FacilityBookingCheckedIn
+  }
+
+  command checkOut(userId: string, notes: string) {
+    guard self.status == "checked_in" "Booking must be checked in to check out"
+
+    mutate status = "checked_out"
+    mutate checkedOutAt = now()
+    mutate checkedOutBy = userId
+    mutate updatedAt = now()
+
+    emit FacilityBookingCheckedOut
+  }
+
+  command cancel(reason: string, cancelledBy: string) {
+    guard self.status in ["pending", "confirmed"] "Can only cancel pending or confirmed bookings"
+
+    constraint warnCancelLastMinute:warn self.startAt < now() + 86400000 {
+      messageTemplate: "Cancelling booking '{title}' less than 24 hours before start time"
+      details: {
+        title: self.title
+        startAt: self.startAt
+        reason: reason
+      }
+    }
+
+    mutate status = "cancelled"
+    mutate updatedAt = now()
+
+    emit FacilityBookingCancelled
+  }
+
+  command updateDetails(title: string, description: string, expectedAttendees: number, notes: string, userId: string) {
+    guard self.status in ["pending", "confirmed"] "Can only update pending or confirmed bookings"
+
+    mutate title = title
+    mutate description = description
+    mutate expectedAttendees = expectedAttendees
+    mutate notes = notes
+    mutate updatedAt = now()
+
+    emit FacilityBookingUpdated
+  }
+
+  store FacilityBooking in memory
+}
+
+entity UtilityMeter {
+  property required id: string
+  property required tenantId: string
+  property required locationId: string
+  property required spaceId: string = ""
+  property required meterType: string
+  property required utilityType: string
+  property required name: string
+  property required serialNumber: string = ""
+  property required manufacturer: string = ""
+  property required model: string = ""
+  property required unit: string = "kWh"
+  property required multiplier: number = 1
+  property required installDate: number = 0
+  property required installLocation: string = ""
+  property required serviceAccount: string = ""
+  property required utilityProvider: string = ""
+  property required rateSchedule: string = ""
+  property required status: string = "active"
+  property required notes: string = ""
+  property required createdAt: number = 0
+  property required updatedAt: number = 0
+
+  computed isActive: boolean = self.status == "active"
+
+  constraint validMeterType: self.meterType in ["electric", "gas", "water", "steam", "other"] "Invalid meter type"
+  constraint validStatus: self.status in ["active", "inactive", "removed"] "Invalid status"
+  constraint positiveMultiplier: self.multiplier > 0 "Multiplier must be positive"
+
+  command create(locationId: string, spaceId: string, meterType: string, utilityType: string, name: string, serialNumber: string, manufacturer: string, model: string, unit: string, multiplier: number, installDate: number, installLocation: string, serviceAccount: string, utilityProvider: string, rateSchedule: string, notes: string) {
+    guard locationId != null and locationId != "" "Location ID is required"
+    guard meterType in ["electric", "gas", "water", "steam", "other"] "Invalid meter type"
+    guard name != null and name != "" "Meter name is required"
+
+    mutate locationId = locationId
+    mutate spaceId = spaceId
+    mutate meterType = meterType
+    mutate utilityType = utilityType
+    mutate name = name
+    mutate serialNumber = serialNumber
+    mutate manufacturer = manufacturer
+    mutate model = model
+    mutate unit = unit
+    mutate multiplier = multiplier > 0 ? multiplier : 1
+    mutate installDate = installDate
+    mutate installLocation = installLocation
+    mutate serviceAccount = serviceAccount
+    mutate utilityProvider = utilityProvider
+    mutate rateSchedule = rateSchedule
+    mutate notes = notes
+    mutate status = "active"
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit UtilityMeterCreated
+  }
+
+  command updateStatus(newStatus: string, reason: string, userId: string) {
+    guard newStatus in ["active", "inactive", "removed"] "Invalid status"
+
+    mutate status = newStatus
+    mutate updatedAt = now()
+
+    emit UtilityMeterStatusUpdated
+  }
+
+  store UtilityMeter in memory
+}
+
+entity UtilityReading {
+  property required id: string
+  property required tenantId: string
+  property required meterId: string
+  property required meterName: string
+  property required readingDate: number = 0
+  property required readingValue: number = 0
+  property required previousValue: number = 0
+  property required usage: number = 0
+  property required cost: number = 0
+  property required rate: number = 0
+  property required readingType: string = "actual"
+  property required source: string = "manual"
+  property required readBy: string = ""
+  property required isEstimated: boolean = false
+  property required estimatedReason: string = ""
+  property required notes: string = ""
+  property required createdAt: number = 0
+  property required updatedAt: number = 0
+
+  computed hasUsage: boolean = self.usage > 0
+  computed hasCost: boolean = self.cost > 0
+
+  constraint validReadingType: self.readingType in ["actual", "estimated", "final"] "Invalid reading type"
+  constraint validSource: self.source in ["manual", "automated", "utility_provider"] "Invalid reading source"
+  constraint positiveReadingValue: self.readingValue >= 0 "Reading value must be non-negative"
+  constraint consistentEstimation: not (self.readingType == "actual" and self.isEstimated) "Actual readings cannot be estimated"
+
+  constraint warnEstimatedReading:warn self.isEstimated {
+    messageTemplate: "Estimated reading for meter '{meterName}' on {date} - actual reading recommended"
+    details: {
+      meterName: self.meterName
+      date: self.readingDate
+      reason: self.estimatedReason
+    }
+  }
+
+  constraint warnHighUsageSpike:warn self.usage > 0 and self.previousValue > 0 and (self.readingValue - self.previousValue) / self.previousValue > 0.5 {
+    messageTemplate: "Usage spike detected for meter '{meterName}': increase of {percent}%"
+    details: {
+      meterName: self.meterName
+      percent: round(((self.readingValue - self.previousValue) / self.previousValue) * 100, 1)
+      previousValue: self.previousValue
+      currentValue: self.readingValue
+    }
+  }
+
+  command record(meterId: string, meterName: string, readingDate: number, readingValue: number, previousValue: number, cost: number, rate: number, readingType: string, source: string, isEstimated: boolean, estimatedReason: string, notes: string, readBy: string) {
+    guard meterId != null and meterId != "" "Meter ID is required"
+    guard meterName != null and meterName != "" "Meter name is required"
+    guard readingDate != null and readingDate > 0 "Reading date is required"
+    guard readingValue != null and readingValue >= 0 "Reading value must be non-negative"
+    guard readingType in ["actual", "estimated", "final"] "Invalid reading type"
+
+    let calculatedUsage = 0
+    if previousValue >= 0 and readingValue >= previousValue {
+      calculatedUsage = readingValue - previousValue
+    }
+
+    mutate meterId = meterId
+    mutate meterName = meterName
+    mutate readingDate = readingDate
+    mutate readingValue = readingValue
+    mutate previousValue = previousValue
+    mutate usage = calculatedUsage
+    mutate cost = cost
+    mutate rate = rate
+    mutate readingType = readingType
+    mutate source = source
+    mutate readBy = readBy
+    mutate isEstimated = isEstimated
+    mutate estimatedReason = estimatedReason
+    mutate notes = notes
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit UtilityReadingRecorded
+  }
+
+  store UtilityReading in memory
+}
+
+// Policies
+policy FacilityManagersCanManageSpaces execute: user.role in ["facility_manager", "manager", "admin"] "Only facility managers can manage spaces"
+policy FacilityUsersCanBookSpaces execute: user.role in ["facility_user", "facility_manager", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Authorized users can book spaces"
+policy FacilityUsersCanViewBookings execute: user.role in ["facility_user", "facility_manager", "kitchen_staff", "kitchen_lead", "manager", "admin"] "Authorized users can view bookings"
+policy FacilityManagersCanManageUtilities execute: user.role in ["facility_manager", "manager", "admin"] "Only facility managers can manage utilities"
+
+// Events
+
+event FacilitySpaceCreated: "facility.space.created" {
+  spaceId: string
+  tenantId: string
+  locationId: string
+  name: string
+  type: string
+  createdAt: number
+}
+
+event FacilitySpaceStatusUpdated: "facility.space.status.updated" {
+  spaceId: string
+  spaceName: string
+  oldStatus: string
+  newStatus: string
+  reason: string
+  updatedBy: string
+  updatedAt: number
+}
+
+event FacilitySpaceBookingSettingsUpdated: "facility.space.booking.settings.updated" {
+  spaceId: string
+  spaceName: string
+  isBookable: boolean
+  requiresApproval: boolean
+  updatedBy: string
+  updatedAt: number
+}
+
+event FacilityBookingCreated: "facility.booking.created" {
+  bookingId: string
+  tenantId: string
+  spaceId: string
+  spaceName: string
+  bookedFor: string
+  bookedForName: string
+  title: string
+  startAt: number
+  endAt: number
+  bookingType: string
+  createdAt: number
+}
+
+event FacilityBookingConfirmed: "facility.booking.confirmed" {
+  bookingId: string
+  spaceId: string
+  spaceName: string
+  title: string
+  confirmedBy: string
+  confirmedAt: number
+}
+
+event FacilityBookingRejected: "facility.booking.rejected" {
+  bookingId: string
+  spaceId: string
+  spaceName: string
+  title: string
+  reason: string
+  rejectedBy: string
+  rejectedAt: number
+}
+
+event FacilityBookingCheckedIn: "facility.booking.checked_in" {
+  bookingId: string
+  spaceId: string
+  spaceName: string
+  title: string
+  checkedInBy: string
+  actualAttendees: number
+  checkedInAt: number
+}
+
+event FacilityBookingCheckedOut: "facility.booking.checked_out" {
+  bookingId: string
+  spaceId: string
+  spaceName: string
+  title: string
+  checkedOutBy: string
+  checkedOutAt: number
+}
+
+event FacilityBookingCancelled: "facility.booking.cancelled" {
+  bookingId: string
+  spaceId: string
+  spaceName: string
+  title: string
+  reason: string
+  cancelledBy: string
+  cancelledAt: number
+}
+
+event FacilityBookingUpdated: "facility.booking.updated" {
+  bookingId: string
+  spaceId: string
+  spaceName: string
+  title: string
+  updatedBy: string
+  updatedAt: number
+}
+
+event UtilityMeterCreated: "utility.meter.created" {
+  meterId: string
+  tenantId: string
+  locationId: string
+  name: string
+  meterType: string
+  utilityType: string
+  createdAt: number
+}
+
+event UtilityMeterStatusUpdated: "utility.meter.status.updated" {
+  meterId: string
+  meterName: string
+  oldStatus: string
+  newStatus: string
+  reason: string
+  updatedBy: string
+  updatedAt: number
+}
+
+event UtilityReadingRecorded: "utility.reading.recorded" {
+  readingId: string
+  tenantId: string
+  meterId: string
+  meterName: string
+  readingDate: number
+  readingValue: number
+  usage: number
+  cost: number
+  isEstimated: boolean
+  recordedAt: number
+}

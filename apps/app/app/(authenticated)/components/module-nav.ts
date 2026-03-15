@@ -183,6 +183,14 @@ export const modules: ModuleDefinition[] = [
           },
         ],
       },
+      {
+        label: "Settings",
+        items: [
+          { title: "Overview", href: "/settings" },
+          { title: "Manifest Editor", href: "/settings/manifest-editor" },
+          { title: "Manifest Playground", href: "/settings/manifest-playground" },
+        ],
+      },
     ],
   },
   {
@@ -221,6 +229,10 @@ export const modules: ModuleDefinition[] = [
 ];
 
 export const getModuleKeyFromPathname = (pathname: string): ModuleKey => {
+  if (pathname === "/settings" || pathname.startsWith("/settings/")) {
+    return "administrative";
+  }
+
   const match = modules.find(
     (module) =>
       pathname === module.href || pathname.startsWith(`${module.href}/`)

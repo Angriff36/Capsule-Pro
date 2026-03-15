@@ -3184,3 +3184,14 @@ export {
   processPendingPrepListGenerations,
   triggerPrepListAutoGeneration,
 } from "./prep-list-autogeneration.js";
+
+// ============ Optional Feature Modules ============
+
+export * as EntityGraph from "./entity-graph/index.js";
+export * from "./manifest-telemetry-collector.js";
+export * from "./permission-checker.js";
+export * from "./permission-guard.js";
+export * from "./prep-task-dependency-engine.js";
+export * from "./recipe-optimization-engine.js";
+export * from "./recipe-scaling-engine.js";
+export * as RulesEngine from "./rules-engine/index.js";

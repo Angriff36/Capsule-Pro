@@ -121,8 +121,8 @@ export interface TestResult {
       denied: boolean;
       policyName?: string;
       reason?: string;
-    }>
-}
+    };
+  };
   errors?: string[];
 }
 

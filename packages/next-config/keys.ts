@@ -1,8 +1,12 @@
 import { createEnv } from "@t3-oss/env-nextjs";
 import { z } from "zod";
 
-export const keys = () =>
-  createEnv({
+export const keys = () => {
+  const isProduction =
+    process.env.NODE_ENV === "production" ||
+    process.env.VERCEL_ENV === "production";
+
+  return createEnv({
     skipValidation: !!process.env.SKIP_ENV_VALIDATION,
     server: {
       ANALYZE: z.string().optional(),
@@ -31,9 +35,14 @@ export const keys = () =>
       VERCEL_URL: process.env.VERCEL_URL,
       VERCEL_REGION: process.env.VERCEL_REGION,
       VERCEL_PROJECT_PRODUCTION_URL: process.env.VERCEL_PROJECT_PRODUCTION_URL,
-      NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
-      NEXT_PUBLIC_WEB_URL: process.env.NEXT_PUBLIC_WEB_URL,
+      NEXT_PUBLIC_APP_URL: isProduction
+        ? process.env.NEXT_PUBLIC_APP_URL
+        : (process.env.NEXT_PUBLIC_APP_URL ?? "http://127.0.0.1:2221"),
+      NEXT_PUBLIC_WEB_URL: isProduction
+        ? process.env.NEXT_PUBLIC_WEB_URL
+        : (process.env.NEXT_PUBLIC_WEB_URL ?? "http://127.0.0.1:2222"),
       NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
       NEXT_PUBLIC_DOCS_URL: process.env.NEXT_PUBLIC_DOCS_URL,
     },
   });
+};
