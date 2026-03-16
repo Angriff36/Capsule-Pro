@@ -154,26 +154,68 @@ function listCandidateWorkspaceRoots(): string[] {
     }
   }
 
+  // 4. Add Vercel-specific paths
+  // Vercel deployments often have the code at /var/task
+  if (!roots.includes("/var/task")) {
+    roots.push("/var/task");
+  }
+  // Also try common monorepo paths relative to the API route
+  const vercelAppRoot = "/var/task/apps/app";
+  if (!roots.includes(vercelAppRoot)) {
+    roots.push(vercelAppRoot);
+  }
+  // Try /vercel/path which is sometimes used
+  if (!roots.includes("/vercel/path")) {
+    roots.push("/vercel/path");
+  }
+
   return roots;
 }
 
 function resolveManifestPath(): string {
-  for (const root of listCandidateWorkspaceRoots()) {
+  const candidateRoots = listCandidateWorkspaceRoots();
+  
+  // First, try to find repo root via pnpm-workspace.yaml
+  for (const root of candidateRoots) {
     if (existsSync(join(root, "pnpm-workspace.yaml"))) {
       const manifestPath = resolve(root, ROUTE_SURFACE_MANIFEST_RELATIVE_PATH);
-      if (!existsSync(manifestPath)) {
-        throw new Error(
-          `[manifest-command-tools] Missing required manifest route surface file: ${manifestPath}`
-        );
+      if (existsSync(manifestPath)) {
+        return manifestPath;
       }
+    }
+  }
+  
+  // Fallback: Try to find the manifest file directly at common locations
+  // This handles Vercel deployments where pnpm-workspace.yaml isn't included
+  const directManifestPaths = [
+    // Standard monorepo path
+    ROUTE_SURFACE_MANIFEST_RELATIVE_PATH,
+    // Vercel /var/task root
+    join("/var/task", ROUTE_SURFACE_MANIFEST_RELATIVE_PATH),
+    // From cwd
+    resolve(process.cwd(), ROUTE_SURFACE_MANIFEST_RELATIVE_PATH),
+    // From __dirname (API route location)
+    resolve(__dirname || process.cwd(), "..".repeat(7), ROUTE_SURFACE_MANIFEST_RELATIVE_PATH),
+  ];
+  
+  for (const manifestPath of directManifestPaths) {
+    if (existsSync(manifestPath)) {
+      return manifestPath;
+    }
+  }
+  
+  // Try each candidate root with the manifest path
+  for (const root of candidateRoots) {
+    const manifestPath = resolve(root, ROUTE_SURFACE_MANIFEST_RELATIVE_PATH);
+    if (existsSync(manifestPath)) {
       return manifestPath;
     }
   }
 
   throw new Error(
-    "[manifest-command-tools] Could not locate repository root (pnpm-workspace.yaml) from current working directory. " +
-    "Fix: Set MANIFEST_REPO_ROOT environment variable to the repo root path, " +
-    "or ensure pnpm-workspace.yaml is included in the deployment."
+    "[manifest-command-tools] Could not locate manifest file at expected paths. " +
+    "Tried: " + directManifestPaths.join(", ") + ". " +
+    "Fix: Set MANIFEST_REPO_ROOT environment variable, or ensure the manifest is bundled in deployment."
   );
 }
 
