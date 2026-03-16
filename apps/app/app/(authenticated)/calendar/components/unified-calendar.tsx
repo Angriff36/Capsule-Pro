@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, isToday, parseISO } from "date-fns";
-import { ChevronLeft, ChevronRight, Calendar, Clock, Users, MapPin, Briefcase, PartyPopper, X, Filter } from "lucide-react";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, isToday, parseISO, isValid } from "date-fns";
+import { ChevronLeft, ChevronRight, Calendar, Clock, Users, MapPin, Briefcase, PartyPopoper, X, Filter, Search, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
 import { Badge } from "@repo/design-system/components/ui/badge";
@@ -68,6 +68,8 @@ export function UnifiedCalendar({
   const [filters, setFilters] = useState<string[]>(["event", "shift", "timeoff", "deadline", "reminder"]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [availabilityDate, setAvailabilityDate] = useState<string>("");
+  const [availabilityResults, setAvailabilityResults] = useState<CalendarEvent[] | null>(null);
 
   // Fetch calendar data
   useEffect(() => {
@@ -140,6 +142,50 @@ export function UnifiedCalendar({
     return eachDayOfInterval({ start: calStart, end: calEnd });
   }, [currentDate]);
 
+  // Check availability for a specific date
+  const checkAvailability = (dateStr: string) => {
+    setAvailabilityDate(dateStr);
+    if (!dateStr) {
+      setAvailabilityResults(null);
+      return;
+    }
+    
+    try {
+      const checkDate = parseISO(dateStr);
+      if (!isValid(checkDate)) {
+        setAvailabilityResults(null);
+        return;
+      }
+      
+      const dayEvents = events.filter(event => isSameDay(event.start, checkDate));
+      setAvailabilityResults(dayEvents);
+    } catch {
+      setAvailabilityResults(null);
+    }
+  };
+
+  // Get availability status
+  const getAvailabilityStatus = () => {
+    if (!availabilityResults) return null;
+    
+    const hasEvents = availabilityResults.filter(e => e.type === "event").length;
+    const hasShifts = availabilityResults.filter(e => e.type === "shift").length;
+    const hasTimeOff = availabilityResults.filter(e => e.type === "timeoff").length;
+    
+    if (availabilityResults.length === 0) {
+      return { status: "available", label: "Fully Available", color: "text-emerald-500", icon: CheckCircle2 };
+    }
+    if (hasTimeOff > 0 && hasShifts === 0) {
+      return { status: "blocked", label: "Blocked - Time Off", color: "text-red-500", icon: XCircle };
+    }
+    if (hasEvents > 0 || hasShifts > 0) {
+      return { status: "busy", label: `${availabilityResults.length} items scheduled`, color: "text-amber-500", icon: AlertCircle };
+    }
+    return { status: "available", label: "Available", color: "text-emerald-500", icon: CheckCircle2 };
+  };
+
+  const availabilityStatus = getAvailabilityStatus();
+
   // Toggle filter
   const toggleFilter = (filter: string) => {
     setFilters(prev => 
@@ -184,6 +230,59 @@ export function UnifiedCalendar({
               <TabsTrigger value="day">Day</TabsTrigger>
             </TabsList>
           </Tabs>
+        </div>
+      </div>
+
+      {/* Check Availability Bar */}
+      <div className="flex items-center gap-4 p-4 border-b bg-emerald-50/50">
+        <div className="flex items-center gap-2">
+          <Search className="w-4 h-4 text-emerald-600" />
+          <span className="text-sm font-medium text-emerald-700">Check Availability:</span>
+        </div>
+        <div className="flex items-center gap-3">
+          <Input
+            type="date"
+            value={availabilityDate}
+            onChange={(e) => checkAvailability(e.target.value)}
+            className="w-48"
+            placeholder="Select date..."
+          />
+          {availabilityStatus && (
+            <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg ${
+              availabilityStatus.status === 'available' ? 'bg-emerald-100' :
+              availabilityStatus.status === 'busy' ? 'bg-amber-100' : 'bg-red-100'
+            }`}>
+              <availabilityStatus.icon className={`w-4 h-4 ${availabilityStatus.color}`} />
+              <span className={`text-sm font-medium ${availabilityStatus.color}`}>
+                {availabilityStatus.label}
+              </span>
+            </div>
+          )}
+          {availabilityResults && availabilityResults.length > 0 && (
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-500">Scheduled:</span>
+              {availabilityResults.slice(0, 3).map((event, i) => (
+                <Badge key={i} variant="outline" className="text-xs">
+                  {event.title}
+                </Badge>
+              ))}
+              {availabilityResults.length > 3 && (
+                <span className="text-xs text-gray-400">+{availabilityResults.length - 3} more</span>
+              )}
+            </div>
+          )}
+          {availabilityDate && (
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => {
+                setAvailabilityDate("");
+                setAvailabilityResults(null);
+              }}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          )}
         </div>
       </div>
 
