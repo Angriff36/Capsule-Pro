@@ -1,5 +1,6 @@
 export type ModuleKey =
   | "events"
+  | "calendar"
   | "kitchen"
   | "warehouse"
   | "scheduling"
@@ -43,6 +44,21 @@ export const modules: ModuleDefinition[] = [
     ],
   },
   {
+    key: "calendar",
+    label: "Calendar",
+    href: "/calendar",
+    sidebar: [
+      {
+        label: "Calendar",
+        items: [
+          { title: "Calendar View", href: "/calendar" },
+          { title: "Add Event", href: "/events/new" },
+          { title: "Schedule Shift", href: "/scheduling/shifts/new" },
+        ],
+      },
+    ],
+  },
+  {
     key: "events",
     label: "Events",
     href: "/events",
@@ -51,6 +67,7 @@ export const modules: ModuleDefinition[] = [
         label: "Events",
         items: [
           { title: "All Events", href: "/events" },
+          { title: "Calendar", href: "/calendar" },
           { title: "Kitchen Dashboard", href: "/events/kitchen-dashboard" },
         ],
       },
