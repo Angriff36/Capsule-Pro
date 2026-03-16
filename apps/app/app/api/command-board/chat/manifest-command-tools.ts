@@ -185,37 +185,29 @@ function resolveManifestPath(): string {
     }
   }
   
-  // Fallback: Try to find the manifest file directly at common locations
-  // This handles Vercel deployments where pnpm-workspace.yaml isn't included
-  const directManifestPaths = [
-    // Standard monorepo path
-    ROUTE_SURFACE_MANIFEST_RELATIVE_PATH,
-    // Vercel /var/task root
-    join("/var/task", ROUTE_SURFACE_MANIFEST_RELATIVE_PATH),
-    // From cwd
+  // Fallback: Try to find manifest directly from common Vercel/project paths
+  // This handles Vercel deployments where pnpm-workspace.yaml might not be present
+  const directPaths = [
     resolve(process.cwd(), ROUTE_SURFACE_MANIFEST_RELATIVE_PATH),
-    // From __dirname (API route location)
-    resolve(__dirname || process.cwd(), "..".repeat(7), ROUTE_SURFACE_MANIFEST_RELATIVE_PATH),
+    resolve(__dirname || ".", "..".repeat(7), ROUTE_SURFACE_MANIFEST_RELATIVE_PATH),
+    "/var/task/apps/app/" + ROUTE_SURFACE_MANIFEST_RELATIVE_PATH,
   ];
   
-  for (const manifestPath of directManifestPaths) {
-    if (existsSync(manifestPath)) {
-      return manifestPath;
-    }
-  }
-  
-  // Try each candidate root with the manifest path
-  for (const root of candidateRoots) {
-    const manifestPath = resolve(root, ROUTE_SURFACE_MANIFEST_RELATIVE_PATH);
+  for (const manifestPath of directPaths) {
     if (existsSync(manifestPath)) {
       return manifestPath;
     }
   }
 
+  // Last resort: try cwd with any relative path
+  const lastResortPath = resolve(process.cwd(), "..", "..", "..", "..", ROUTE_SURFACE_MANIFEST_RELATIVE_PATH);
+  if (existsSync(lastResortPath)) {
+    return lastResortPath;
+  }
+
   throw new Error(
-    "[manifest-command-tools] Could not locate manifest file at expected paths. " +
-    "Tried: " + directManifestPaths.join(", ") + ". " +
-    "Fix: Set MANIFEST_REPO_ROOT environment variable, or ensure the manifest is bundled in deployment."
+    "[manifest-command-tools] Could not locate manifest file. " +
+    "Checked paths: " + [...directPaths, lastResortPath].join(", ")
   );
 }
 
