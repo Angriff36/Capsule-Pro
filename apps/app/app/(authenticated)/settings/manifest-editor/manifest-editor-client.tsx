@@ -1,7 +1,5 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { ManifestPolicyEditor } from "@repo/design-system/components/blocks/manifest-policy-editor";
 import { Card } from "@repo/design-system/components/ui/card";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
@@ -13,6 +11,16 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 import type { EntityDetail, EntityListItem } from "@repo/types/manifest-editor";
+import dynamic from "next/dynamic";
+import { useEffect, useMemo, useState } from "react";
+
+const ManifestPolicyEditor = dynamic(
+  () =>
+    import("@repo/design-system/components/blocks/manifest-policy-editor").then(
+      (module) => module.ManifestPolicyEditor
+    ),
+  { ssr: false, loading: () => <Skeleton className="h-[600px] w-full" /> }
+);
 
 async function fetchEntities(): Promise<EntityListItem[]> {
   const res = await fetch("/api/settings/manifest-editor/entities/list");
@@ -95,7 +103,9 @@ export function ManifestEditorClient() {
             <Skeleton className="h-10 w-full" />
           )}
         </div>
-        {error ? <p className="mt-3 text-sm text-destructive">{error}</p> : null}
+        {error ? (
+          <p className="mt-3 text-sm text-destructive">{error}</p>
+        ) : null}
         <p className="mt-3 text-xs text-muted-foreground">
           Read-only explorer backed by compiled Manifest IR. Some details (like
           parameters, checks, and permission rules) are not surfaced in this IR

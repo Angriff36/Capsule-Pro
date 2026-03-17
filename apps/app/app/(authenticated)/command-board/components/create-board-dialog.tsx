@@ -13,23 +13,20 @@ import {
 import { Input } from "@repo/design-system/components/ui/input";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
+  Briefcase,
   Calendar,
   ChefHat,
-  Users,
-  Briefcase,
   ListTodo,
+  Loader2Icon,
   Package,
   Plus,
-  Loader2Icon,
+  Users,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { createCommandBoard } from "../actions/boards";
-import {
-  BOARD_TEMPLATES,
-  type BoardTemplate,
-} from "../config/board-templates";
+import { createCommandBoard } from "../actions/boards-create";
+import { BOARD_TEMPLATES, type BoardTemplate } from "../config/board-templates";
 
 interface CreateBoardDialogProps {
   trigger?: React.ReactNode;
@@ -52,9 +49,8 @@ export function CreateBoardDialog({ trigger }: CreateBoardDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
-  const [selectedTemplate, setSelectedTemplate] = useState<BoardTemplate | null>(
-    null
-  );
+  const [selectedTemplate, setSelectedTemplate] =
+    useState<BoardTemplate | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,7 +89,10 @@ export function CreateBoardDialog({ trigger }: CreateBoardDialogProps) {
   const handleTemplateSelect = (template: BoardTemplate) => {
     setSelectedTemplate(template);
     // Auto-fill name with prefix if name is empty or was previously set by a template
-    if (!name.trim() || BOARD_TEMPLATES.some((t) => name.startsWith(t.namePrefix ?? ""))) {
+    if (
+      !name.trim() ||
+      BOARD_TEMPLATES.some((t) => name.startsWith(t.namePrefix ?? ""))
+    ) {
       setName(template.namePrefix ?? "");
     }
   };
@@ -119,9 +118,9 @@ export function CreateBoardDialog({ trigger }: CreateBoardDialogProps) {
 
           {/* Template Selector */}
           <div className="py-4">
-            <label className="text-sm font-medium leading-none mb-3 block">
+            <p className="text-sm font-medium leading-none mb-3 block">
               Choose a Template
-            </label>
+            </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
               {BOARD_TEMPLATES.map((template) => {
                 const IconComponent = ICON_MAP[template.icon] || Plus;
@@ -129,10 +128,6 @@ export function CreateBoardDialog({ trigger }: CreateBoardDialogProps) {
 
                 return (
                   <button
-                    key={template.id}
-                    type="button"
-                    onClick={() => handleTemplateSelect(template)}
-                    disabled={isLoading}
                     className={`
                       flex flex-col items-start p-3 rounded-lg border text-left
                       transition-all duration-150 group
@@ -145,6 +140,10 @@ export function CreateBoardDialog({ trigger }: CreateBoardDialogProps) {
                       }
                       disabled:opacity-50 disabled:cursor-not-allowed
                     `}
+                    disabled={isLoading}
+                    key={template.id}
+                    onClick={() => handleTemplateSelect(template)}
+                    type="button"
                   >
                     <div className="flex items-center gap-2 mb-1">
                       <IconComponent
@@ -154,7 +153,9 @@ export function CreateBoardDialog({ trigger }: CreateBoardDialogProps) {
                             : "text-slate-500 dark:text-slate-400 group-hover:text-slate-700 dark:group-hover:text-slate-300"
                         }`}
                       />
-                      <span className="text-sm font-medium">{template.name}</span>
+                      <span className="text-sm font-medium">
+                        {template.name}
+                      </span>
                     </div>
                     <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
                       {template.description}
