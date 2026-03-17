@@ -177,6 +177,9 @@ let nextConfig: NextConfig = withToolbar(
     // pdfkit: Needs access to .afm font files from node_modules
     serverExternalPackages: [
       "pdfjs-dist",
+      "prisma",
+      "@prisma/client",
+      "@prisma/adapter-neon",
       "ably",
       "pdfkit",
       "vega",

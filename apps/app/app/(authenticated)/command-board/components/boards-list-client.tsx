@@ -27,7 +27,6 @@ import {
   DropdownMenuTrigger,
 } from "@repo/design-system/components/ui/dropdown-menu";
 import { Input } from "@repo/design-system/components/ui/input";
-import { formatDistanceToNow } from "date-fns";
 import {
   CalendarIcon,
   DotIcon,
@@ -36,49 +35,105 @@ import {
   PencilIcon,
   TrashIcon,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
-import type { CommandBoard } from "../actions/boards";
-import {
-  deleteCommandBoard,
-  listCommandBoards,
-  updateCommandBoard,
-} from "../actions/boards";
-import { CreateBoardDialog } from "./create-board-dialog";
+import type { CommandBoard } from "../actions/boards-crud";
+import { deleteCommandBoard, updateCommandBoard } from "../actions/boards-crud";
 
-export function BoardsListClient() {
+export type CommandBoardListItem = Omit<
+  CommandBoard,
+  "createdAt" | "updatedAt" | "deletedAt"
+> & {
+  createdAt: string;
+  createdAtRelative: string;
+  updatedAt: string;
+  deletedAt: string | null;
+};
+
+function normalizeDate(value: Date | string): string {
+  return typeof value === "string" ? value : value.toISOString();
+}
+
+function formatRelativeFromNow(isoDate: string): string {
+  const date = new Date(isoDate);
+  const diffSeconds = Math.round((date.getTime() - Date.now()) / 1000);
+
+  const abs = Math.abs(diffSeconds);
+  const rtf = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
+
+  if (abs < 60) {
+    return rtf.format(diffSeconds, "second");
+  }
+  const minutes = Math.round(diffSeconds / 60);
+  if (Math.abs(minutes) < 60) {
+    return rtf.format(minutes, "minute");
+  }
+  const hours = Math.round(minutes / 60);
+  if (Math.abs(hours) < 24) {
+    return rtf.format(hours, "hour");
+  }
+  const days = Math.round(hours / 24);
+  if (Math.abs(days) < 7) {
+    return rtf.format(days, "day");
+  }
+  const weeks = Math.round(days / 7);
+  if (Math.abs(weeks) < 5) {
+    return rtf.format(weeks, "week");
+  }
+  const months = Math.round(days / 30);
+  if (Math.abs(months) < 12) {
+    return rtf.format(months, "month");
+  }
+  const years = Math.round(days / 365);
+  return rtf.format(years, "year");
+}
+
+function toListItem(
+  board: CommandBoard | CommandBoardListItem
+): CommandBoardListItem {
+  const createdAt = normalizeDate(board.createdAt);
+  return {
+    ...board,
+    createdAt,
+    createdAtRelative:
+      "createdAtRelative" in board &&
+      typeof board.createdAtRelative === "string"
+        ? board.createdAtRelative
+        : formatRelativeFromNow(createdAt),
+    updatedAt: normalizeDate(board.updatedAt),
+    deletedAt: board.deletedAt ? normalizeDate(board.deletedAt) : null,
+  };
+}
+
+const CreateBoardDialog = dynamic(
+  () =>
+    import("./create-board-dialog").then((module) => module.CreateBoardDialog),
+  { ssr: false }
+);
+
+interface BoardsListClientProps {
+  initialBoards: CommandBoardListItem[];
+}
+
+export function BoardsListClient({ initialBoards }: BoardsListClientProps) {
   const router = useRouter();
-  const [boards, setBoards] = useState<CommandBoard[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [boards, setBoards] = useState<CommandBoardListItem[]>(initialBoards);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
 
   // Edit dialog state
-  const [editBoard, setEditBoard] = useState<CommandBoard | null>(null);
+  const [editBoard, setEditBoard] = useState<CommandBoardListItem | null>(null);
   const [editName, setEditName] = useState("");
   const [editDescription, setEditDescription] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
 
   // Delete dialog state
-  const [deleteBoard, setDeleteBoard] = useState<CommandBoard | null>(null);
+  const [deleteBoard, setDeleteBoard] = useState<CommandBoardListItem | null>(
+    null
+  );
   const [isDeleting, setIsDeleting] = useState(false);
-
-  const fetchBoards = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const data = await listCommandBoards();
-      setBoards(data);
-    } catch {
-      toast.error("Failed to load boards");
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchBoards();
-  }, [fetchBoards]);
 
   // Filter boards
   const filteredBoards = boards.filter((board) => {
@@ -109,17 +164,19 @@ export function BoardsListClient() {
         description: editDescription.trim() || undefined,
       });
 
-      if (result.success && result.board) {
-        toast.success("Board updated successfully");
-        setBoards((prev) =>
-          prev.map((b) => (b.id === editBoard.id ? result.board! : b))
-        );
-        setEditBoard(null);
-        setEditName("");
-        setEditDescription("");
-      } else {
+      if (!(result.success && result.board)) {
         toast.error(result.error || "Failed to update board");
+        return;
       }
+
+      const updatedBoard = result.board;
+      toast.success("Board updated successfully");
+      setBoards((prev) =>
+        prev.map((b) => (b.id === editBoard.id ? toListItem(updatedBoard) : b))
+      );
+      setEditBoard(null);
+      setEditName("");
+      setEditDescription("");
     } catch {
       toast.error("Failed to update board");
     } finally {
@@ -150,7 +207,7 @@ export function BoardsListClient() {
     }
   };
 
-  const openEditDialog = (board: CommandBoard) => {
+  const openEditDialog = (board: CommandBoardListItem) => {
     setEditBoard(board);
     setEditName(board.name);
     setEditDescription(board.description || "");
@@ -216,23 +273,10 @@ export function BoardsListClient() {
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        {isLoading && (
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Loader2Icon className="h-4 w-4 animate-spin" />
-            Loading...
-          </div>
-        )}
       </div>
 
       {/* Boards Grid */}
-      {isLoading && boards.length === 0 ? (
-        <div className="flex min-h-[400px] items-center justify-center">
-          <div className="flex flex-col items-center gap-4">
-            <Loader2Icon className="h-8 w-8 animate-spin text-muted-foreground" />
-            <p className="text-muted-foreground">Loading boards...</p>
-          </div>
-        </div>
-      ) : filteredBoards.length === 0 ? (
+      {filteredBoards.length === 0 ? (
         <div className="flex min-h-[400px] items-center justify-center">
           <div className="flex flex-col items-center gap-4 text-center">
             <div className="rounded-full bg-muted p-6">
@@ -317,11 +361,7 @@ export function BoardsListClient() {
                   </div>
                   <div className="flex items-center gap-1 text-xs text-muted-foreground">
                     <CalendarIcon className="h-3 w-3" />
-                    <span>
-                      {formatDistanceToNow(new Date(board.createdAt), {
-                        addSuffix: true,
-                      })}
-                    </span>
+                    <span>{board.createdAtRelative}</span>
                   </div>
                 </div>
                 {board.tags.length > 0 && (
