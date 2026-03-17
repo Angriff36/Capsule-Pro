@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, isToday, parseISO, isValid } from "date-fns";
-import { ChevronLeft, ChevronRight, Calendar, Clock, Users, MapPin, Briefcase, PartyPopoper, X, Filter, Search, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar, Clock, Users, MapPin, Briefcase, PartyPopper, X, Filter, Search, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
 import { Badge } from "@repo/design-system/components/ui/badge";

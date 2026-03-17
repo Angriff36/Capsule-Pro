@@ -51,7 +51,7 @@ const NotificationsTrigger = dynamic(
  */
 const NotificationsProvider = dynamic(
   () =>
-    import("@repo/notifications/components/provider").then(
+    import("./notifications-provider").then(
       (mod) => mod.NotificationsProvider
     ),
   {
