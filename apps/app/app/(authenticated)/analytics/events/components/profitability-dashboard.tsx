@@ -48,13 +48,14 @@ export function ProfitabilityDashboard({
             `/api/events/${eventId}/profitability`
           );
           const data = await response.json();
-          setMetrics(data);
+          setMetrics(data || null);
         } else {
           const response = await apiFetch(
             `/api/analytics/events/profitability?period=${selectedPeriod}`
           );
           const data = await response.json();
-          setHistorical(data);
+          // Ensure data is always an array
+          setHistorical(Array.isArray(data) ? data : []);
         }
       } catch (error) {
         console.error("Failed to load profitability data:", error);
