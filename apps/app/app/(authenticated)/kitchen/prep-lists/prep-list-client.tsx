@@ -32,6 +32,7 @@ import {
   ChefHat,
   Clock,
   Download,
+  FileText,
   Flame,
   Leaf,
   RefreshCw,
@@ -277,6 +278,7 @@ export function PrepListClient({
   const [prepList, setPrepList] = useState<PrepListGenerationResult | null>(
     initialPrepList
   );
+  const [savedPrepListId, setSavedPrepListId] = useState<string | null>(null);
   const [selectedEventId, setSelectedEventId] = useState<string>(eventId);
   const [batchMultiplier, setBatchMultiplier] = useState<number>(1);
   const [dietaryRestrictions, setDietaryRestrictions] = useState<string[]>([]);
@@ -347,6 +349,48 @@ export function PrepListClient({
     document.body.removeChild(link);
   }, [prepList]);
 
+  const [isDownloadingPdf, setIsDownloadingPdf] = useState(false);
+
+  const handleDownloadPdf = useCallback(async () => {
+    if (!savedPrepListId) {
+      toast.error("Please save the prep list first before exporting PDF");
+      return;
+    }
+
+    setIsDownloadingPdf(true);
+    try {
+      const response = await fetch(
+        `/api/kitchen/prep-lists/${savedPrepListId}/pdf`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`PDF generation failed: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${(prepList?.eventTitle ?? "prep_list").replace(/[^a-z0-9]/gi, "_")}_prep_list.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast.success("PDF downloaded successfully");
+    } catch (error) {
+      console.error("PDF download error:", error);
+      toast.error("Failed to generate PDF. Please try again.");
+      captureException(error);
+    } finally {
+      setIsDownloadingPdf(false);
+    }
+  }, [savedPrepListId, prepList]);
+
   const handleSave = useCallback(async () => {
     if (!prepList) {
       return;
@@ -402,6 +446,7 @@ export function PrepListClient({
       }
 
       const { prepListId } = await response.json();
+      setSavedPrepListId(prepListId);
 
       toast.success("Prep list saved to database", {
         description: "You can now access this prep list anytime",
@@ -464,12 +509,27 @@ export function PrepListClient({
             </div>
             <div className="flex items-center gap-2">
               <Button
-                aria-label="Export prep list"
+                aria-label="Export prep list as CSV"
                 onClick={handleExport}
                 size="icon"
                 variant="outline"
+                title="Export CSV"
               >
                 <Download className="h-4 w-4" />
+              </Button>
+              <Button
+                aria-label="Export prep list as PDF"
+                onClick={handleDownloadPdf}
+                size="icon"
+                variant="outline"
+                title="Export PDF (requires save first)"
+                disabled={isDownloadingPdf || !savedPrepListId}
+              >
+                {isDownloadingPdf ? (
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                ) : (
+                  <FileText className="h-4 w-4" />
+                )}
               </Button>
               <PrepListSaveButton
                 disabled={prepList.totalIngredients === 0}
