@@ -171,7 +171,7 @@ export async function generatePrepList(
       SELECT 
         ed.dish_id AS "dishId",
         d.name AS dishName,
-        d.recipeId,
+        d.recipe_id AS "recipeId",
         r.name AS recipe_name,
         rv.id AS recipeVersionId,
         rv.yield_quantity,
@@ -190,15 +190,15 @@ export async function generatePrepList(
         ON d.tenant_id = ed.tenant_id 
         AND d.id = ed.dish_id 
         AND d.deleted_at IS NULL
-      LEFT JOIN tenant_kitchen.recipes r 
-        ON r.tenant_id = d.tenant_id 
-        AND r.id = d.recipeId 
+      LEFT JOIN tenant_kitchen.recipes r
+        ON r.tenant_id = d.tenant_id
+        AND r.id = d.recipe_id
         AND r.deleted_at IS NULL
       LEFT JOIN LATERAL (
         SELECT rv.*
         FROM tenant_kitchen.recipe_versions rv
         WHERE rv.tenant_id = r.tenant_id
-          AND rv.recipeId = r.id
+          AND rv.recipe_id = r.id
           AND rv.deleted_at IS NULL
         ORDER BY rv.version_number DESC
         LIMIT 1
@@ -364,20 +364,20 @@ async function getAllRecipeIngredients(
         AND i.deleted_at IS NULL
       LEFT JOIN core.units u ON u.id = ri.unit_id
       CROSS JOIN LATERAL (
-        SELECT d.id, d.name, d.recipeId
+        SELECT d.id, d.name, d.recipe_id AS "recipeId"
         FROM unnest(${recipeVersionIds}::uuid[]) AS rv_id_inner
         JOIN tenant_kitchen.recipe_versions rv 
           ON rv.id = rv_id_inner 
           AND rv.deleted_at IS NULL
         JOIN tenant_kitchen.dishes d 
           ON d.tenant_id = rv.tenant_id 
-          AND d.recipeId = rv.recipeId 
+          AND d.recipe_id = rv.recipe_id 
           AND d.deleted_at IS NULL
-        WHERE d.recipeId IN (
+        WHERE d.recipe_id IN (
           SELECT r.id 
           FROM tenant_kitchen.recipes r 
           WHERE r.id IN (
-            SELECT rv.recipeId 
+            SELECT rv.recipe_id 
             FROM tenant_kitchen.recipe_versions rv 
             WHERE rv.id = rv_id
           )
