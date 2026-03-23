@@ -76,7 +76,11 @@ export function EventTimeline({
                   isClickable && "hover:bg-muted",
                   isCurrent && "bg-muted"
                 )}
-                onClick={() => isClickable && onStageClick(stage.id)}
+                onClick={() => {
+                  if (isClickable && onStageClick) {
+                    onStageClick(stage.id);
+                  }
+                }}
                 disabled={!isClickable}
               >
                 <div className="relative z-10 flex-shrink-0">

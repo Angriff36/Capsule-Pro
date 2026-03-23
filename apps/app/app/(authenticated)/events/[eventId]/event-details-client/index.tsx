@@ -1496,22 +1496,21 @@ export function EventDetailsClient({
             <div className="space-y-6">
               <EventSetupChecklist
                 eventId={event.id}
-                eventSlug={event.slug ?? undefined}
                 hasClient={!!event.clientId}
                 hasVenue={!!event.venueName}
                 hasMenu={eventDishes.length > 0}
-                hasStaff={sortedPrepTasks.some(t => t.assignedToId)}
+                hasStaff={staffCount > 0}
                 hasPrepList={sortedPrepTasks.length > 0}
                 hasContract={hasContract}
-                hasBudget={!!budget && budget.totalBudget > 0}
+                hasBudget={!!budget && (budget.total_budget_amount ?? 0) > 0}
                 eventDate={event.eventDate}
                 eventStatus={event.status ?? undefined}
               />
               <EventTimeline
                 currentStage={determineEventStage({
-                  createdAt: event.createdAt,
-                  clientId: event.clientId,
-                  venueName: event.venueName,
+                  createdAt: event.createdAt ?? undefined,
+                  clientId: event.clientId ?? undefined,
+                  venueName: event.venueName ?? undefined,
                   eventDishes: eventDishes,
                   prepTasks: sortedPrepTasks,
                   status: event.status ?? undefined,
