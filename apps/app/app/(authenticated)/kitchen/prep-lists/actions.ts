@@ -169,7 +169,7 @@ export async function generatePrepList(
   >(
     Prisma.sql`
       SELECT 
-        ed.dishId,
+        ed.dish_id AS "dishId",
         d.name AS dishName,
         d.recipeId,
         r.name AS recipe_name,
@@ -188,7 +188,7 @@ export async function generatePrepList(
       FROM tenant_events.event_dishes ed
       JOIN tenant_kitchen.dishes d 
         ON d.tenant_id = ed.tenant_id 
-        AND d.id = ed.dishId 
+        AND d.id = ed.dish_id 
         AND d.deleted_at IS NULL
       LEFT JOIN tenant_kitchen.recipes r 
         ON r.tenant_id = d.tenant_id 
