@@ -89,6 +89,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
   const [result, setResult] = useState<CompositeRouteResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [cachedFormData, setCachedFormData] = useState<FormData | null>(null);
+  const [yieldQtyError, setYieldQtyError] = useState<string | null>(null);
 
   // Create a lookup map from unit code to ID
   const unitCodeToId = new Map(units.map((u) => [u.code.toLowerCase(), u.id]));
@@ -167,6 +168,15 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
     setCachedFormData(data);
     setError(null);
     setResult(null);
+
+    // Validate yield quantity before submission
+    const yieldQty = Number.parseInt(getString(data, "yieldQuantity") || "0", 10);
+    if (!yieldQty || yieldQty <= 0) {
+      setError("Yield quantity must be a positive number greater than 0.");
+      setYieldQtyError("Yield quantity must be greater than 0");
+      return;
+    }
+    setYieldQtyError(null);
 
     const payload = buildCreatePayload(data);
 
@@ -290,16 +300,29 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
             <div className="grid gap-4 md:grid-cols-3">
               <div className="space-y-2">
                 <label className="text-sm font-medium" htmlFor="yieldQuantity">
-                  Yield quantity
+                  Yield quantity *
                 </label>
                 <input
-                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  className={`flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ${yieldQtyError ? 'border-red-500' : 'border-input'}`}
+                  defaultValue="1"
                   id="yieldQuantity"
                   min="1"
                   name="yieldQuantity"
+                  onChange={(e) => {
+                    const value = Number.parseInt(e.target.value || "0", 10);
+                    if (!value || value <= 0) {
+                      setYieldQtyError("Yield quantity must be greater than 0");
+                    } else {
+                      setYieldQtyError(null);
+                    }
+                  }}
                   placeholder="4"
+                  required
                   type="number"
                 />
+                {yieldQtyError && (
+                  <p className="text-xs text-red-500">{yieldQtyError}</p>
+                )}
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium" htmlFor="yieldUnit">
