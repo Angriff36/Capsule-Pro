@@ -12,6 +12,8 @@ import {
   Users,
   UtensilsCrossed,
   Warehouse,
+  ClipboardCheck,
+  FileBarChart,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -71,6 +73,16 @@ const navigationItems = [
     title: "Mobile",
     href: "/kitchen/mobile",
     icon: Smartphone,
+  },
+  {
+    title: "Quality Assurance",
+    href: "/kitchen/quality-assurance",
+    icon: ClipboardCheck,
+  },
+  {
+    title: "Nutrition Labels",
+    href: "/kitchen/nutrition-labels",
+    icon: FileBarChart,
   },
 ];
 

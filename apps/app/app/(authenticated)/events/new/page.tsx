@@ -1,8 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { notFound } from "next/navigation";
 import { Header } from "../../components/header";
-import { createEvent } from "../actions";
-import { EventForm } from "../components/event-form";
+import { NewEventClient } from "./new-event-client";
 
 const NewEventPage = async () => {
   const { orgId } = await auth();
@@ -14,9 +13,7 @@ const NewEventPage = async () => {
   return (
     <>
       <Header page="New event" pages={[{ label: "Events", href: "/events" }]} />
-      <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-        <EventForm action={createEvent} submitLabel="Create event" />
-      </div>
+      <NewEventClient orgId={orgId} />
     </>
   );
 };

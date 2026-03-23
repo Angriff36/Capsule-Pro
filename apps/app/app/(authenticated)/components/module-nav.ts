@@ -5,11 +5,17 @@ export type ModuleKey =
   | "warehouse"
   | "scheduling"
   | "staff"
+  | "staffing"
   | "payroll"
   | "administrative"
   | "crm"
   | "analytics"
-  | "command-board";
+  | "command-board"
+  | "logistics"
+  | "facilities"
+  | "procurement"
+  | "knowledge-base"
+  | "inventory";
 
 interface ModuleSidebarItem {
   title: string;
@@ -109,6 +115,15 @@ export const modules: ModuleDefinition[] = [
         ],
       },
       {
+        label: "Safety & Compliance",
+        items: [
+          { title: "Quality Assurance", href: "/kitchen/quality-assurance" },
+          { title: "IoT Monitoring", href: "/kitchen/iot" },
+          { title: "Equipment", href: "/kitchen/equipment" },
+          { title: "Nutrition Labels", href: "/kitchen/nutrition-labels" },
+        ],
+      },
+      {
         label: "Staff",
         items: [
           { title: "Team", href: "/kitchen/team" },
@@ -164,6 +179,19 @@ export const modules: ModuleDefinition[] = [
           { title: "Schedule", href: "/staff/schedule" },
           { title: "Availability", href: "/staff/availability" },
           { title: "Time Off", href: "/staff/time-off" },
+        ],
+      },
+    ],
+  },
+  {
+    key: "staffing",
+    label: "Staffing",
+    href: "/staffing/recommendations",
+    sidebar: [
+      {
+        label: "Staffing",
+        items: [
+          { title: "AI Recommendations", href: "/staffing/recommendations" },
         ],
       },
     ],
@@ -239,6 +267,79 @@ export const modules: ModuleDefinition[] = [
           { title: "Events", href: "/analytics/events" },
           { title: "Sales", href: "/analytics/sales" },
           { title: "Finance", href: "/analytics/finance" },
+        ],
+      },
+    ],
+  },
+  {
+    key: "logistics",
+    label: "Logistics",
+    href: "/logistics/routes",
+    sidebar: [
+      {
+        label: "Logistics",
+        items: [
+          { title: "Routes", href: "/logistics/routes" },
+        ],
+      },
+    ],
+  },
+  {
+    key: "facilities",
+    label: "Facilities",
+    href: "/facilities",
+    sidebar: [
+      {
+        label: "Facilities",
+        items: [
+          { title: "Overview", href: "/facilities" },
+          { title: "Work Orders", href: "/facilities?tab=work-orders" },
+          { title: "PM Schedules", href: "/facilities?tab=pm-schedules" },
+          { title: "Areas", href: "/facilities?tab=areas" },
+        ],
+      },
+    ],
+  },
+  {
+    key: "procurement",
+    label: "Procurement",
+    href: "/procurement",
+    sidebar: [
+      {
+        label: "Procurement",
+        items: [
+          { title: "Requisitions", href: "/procurement/requisitions" },
+          { title: "Vendor Contracts", href: "/procurement/vendor-contracts" },
+          { title: "Purchase Orders", href: "/warehouse/shipments" },
+        ],
+      },
+    ],
+  },
+  {
+    key: "knowledge-base",
+    label: "Knowledge Base",
+    href: "/knowledge-base",
+    sidebar: [
+      {
+        label: "Knowledge Base",
+        items: [
+          { title: "All Articles", href: "/knowledge-base" },
+        ],
+      },
+    ],
+  },
+  {
+    key: "inventory",
+    label: "Inventory",
+    href: "/inventory",
+    sidebar: [
+      {
+        label: "Inventory",
+        items: [
+          { title: "Items", href: "/inventory/items" },
+          { title: "Transfers", href: "/inventory/transfers" },
+          { title: "Recipe Costs", href: "/inventory/recipe-costs" },
+          { title: "Vendor Catalogs", href: "/inventory/vendor-catalogs" },
         ],
       },
     ],

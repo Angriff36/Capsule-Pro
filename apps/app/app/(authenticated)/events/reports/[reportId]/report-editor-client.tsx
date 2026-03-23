@@ -29,6 +29,7 @@ import {
   SparklesIcon,
   UsersIcon,
 } from "lucide-react";
+import { formatDate } from "../../../../lib/format";
 import { useRouter } from "next/navigation";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
@@ -318,11 +319,7 @@ export function ReportEditorClient({ report, event }: ReportEditorProps) {
             )}
             <div className="flex items-center gap-2 text-muted-foreground">
               <CalendarIcon className="h-4 w-4" />
-              <span>
-                {new Date(event.eventDate).toLocaleDateString("en-US", {
-                  dateStyle: "full",
-                })}
-              </span>
+              <span>{formatDate(event.eventDate)}</span>
             </div>
             <div className="flex items-center gap-2 text-muted-foreground">
               <UsersIcon className="h-4 w-4" />

@@ -28,16 +28,24 @@ import { Spinner } from "@repo/design-system/components/ui/spinner";
 import {
   AlertTriangleIcon,
   ChevronDownIcon,
+  ChevronRightIcon,
   ChevronUpIcon,
   ClockIcon,
+  CopyIcon,
   DownloadIcon,
   InfoIcon,
+  LoaderIcon,
+  PlayCircleIcon,
+  PlusIcon,
   RefreshCwIcon,
   SparklesIcon,
   StopCircleIcon,
+  TrashIcon,
   UserIcon,
+  XIcon,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
+import { formatDate, parseISODateToLocal } from "../../../lib/format";
 import type {
   TaskBreakdown,
   TaskBreakdownItem,
@@ -728,7 +736,7 @@ export function GenerateTaskBreakdownModal({
               <div>
                 <span className="text-muted-foreground">Date:</span>
                 <p className="font-medium">
-                  {dateFormatter.format(new Date(eventDate))}
+                  {formatDate(parseISODateToLocal(eventDate))}
                 </p>
               </div>
               <div>

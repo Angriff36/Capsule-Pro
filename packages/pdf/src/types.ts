@@ -245,12 +245,61 @@ export interface PackingListPDFData {
   };
 }
 
+export interface PrepListPDFData {
+  event: {
+    id: string;
+    title: string;
+    eventDate: Date;
+    guestCount: number;
+  };
+  prepList: {
+    eventId: string;
+    eventTitle: string;
+    eventDate: Date;
+    guestCount: number;
+    batchMultiplier: number;
+    totalIngredients: number;
+    totalEstimatedTime: number;
+    stationLists: Array<{
+      stationId: string;
+      stationName: string;
+      totalIngredients: number;
+      estimatedTime: number;
+      color: string;
+      ingredients: Array<{
+        ingredientId: string;
+        ingredientName: string;
+        scaledQuantity: number;
+        scaledUnit: string;
+        category?: string;
+        isOptional: boolean;
+        preparationNotes?: string;
+        allergens: string[];
+        dietarySubstitutions: string[];
+      }>;
+      tasks: Array<{
+        id: string;
+        name: string;
+        dueDate: Date;
+        status: string;
+        priority: number;
+      }>;
+    }>;
+  };
+  metadata: {
+    generatedAt: Date;
+    generatedBy: string;
+    version: string;
+  };
+}
+
 export type PDFData =
   | BattleBoardPDFData
   | ProposalPDFData
   | ContractPDFData
   | EventDetailPDFData
-  | PackingListPDFData;
+  | PackingListPDFData
+  | PrepListPDFData;
 
 export interface PDFTemplateProps<T = PDFData> {
   data: T;

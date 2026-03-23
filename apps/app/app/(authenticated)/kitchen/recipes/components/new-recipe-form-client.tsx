@@ -126,8 +126,14 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
     override?: { reasonCode: string; details: string }
   ) => {
     const yieldUnitCode =
-      getString(formData, "yieldUnit").toLowerCase() || "ea";
-    const yieldUnitId = unitCodeToId.get(yieldUnitCode) ?? units[0]?.id ?? 1;
+      getString(formData, "yieldUnit").toLowerCase() || "servings";
+    // Prefer servings, then each, then first unit, then fallback to 1
+    const yieldUnitId = unitCodeToId.get(yieldUnitCode) ??
+      unitCodeToId.get("servings") ??
+      unitCodeToId.get("each") ??
+      units.find(u => u.code.toLowerCase() === "servings")?.id ??
+      units.find(u => u.code.toLowerCase() === "each")?.id ??
+      units[0]?.id ?? 1;
 
     const ingredientsText = getString(formData, "ingredients");
     const stepsText = getString(formData, "steps");
@@ -301,7 +307,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
                 </label>
                 <select
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  defaultValue={units[0]?.code ?? "ea"}
+                  defaultValue={units.find(u => u.code.toLowerCase() === "servings")?.code ?? units.find(u => u.code.toLowerCase() === "each")?.code ?? units[0]?.code ?? "servings"}
                   name="yieldUnit"
                 >
                   {units.map((unit) => (

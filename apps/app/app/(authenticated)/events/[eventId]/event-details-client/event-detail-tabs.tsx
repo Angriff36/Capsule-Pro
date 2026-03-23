@@ -8,7 +8,7 @@ import {
 } from "@repo/design-system/components/ui/tabs";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import type { ReactNode } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { startTransition, useMemo } from "react";
 
 const TAB_VALUES = [
   "overview",
@@ -16,6 +16,7 @@ const TAB_VALUES = [
   "copilot",
   "guests",
   "operations",
+  "followups",
   "explore",
 ] as const;
 
@@ -27,6 +28,7 @@ interface EventDetailTabsProps {
   copilot: ReactNode;
   guests: ReactNode;
   operations: ReactNode;
+  followups: ReactNode;
   explore: ReactNode;
 }
 
@@ -48,24 +50,18 @@ export function EventDetailTabs({
   copilot,
   guests,
   operations,
+  followups,
   explore,
 }: EventDetailTabsProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [activeTab, setActiveTab] = useState<EventDetailTabValue>(DEFAULT_TAB);
 
-  const currentSearchParams = useMemo(
-    () => new URLSearchParams(searchParams?.toString() ?? ""),
+  // Derive active tab directly from URL - single source of truth
+  const activeTab = useMemo(
+    () => normalizeTab(searchParams?.get("tab") ?? null),
     [searchParams]
   );
-
-  useEffect(() => {
-    const queryTab = normalizeTab(searchParams?.get("tab") ?? null);
-    setActiveTab((previousTab) =>
-      previousTab === queryTab ? previousTab : queryTab
-    );
-  }, [searchParams]);
 
   const handleTabChange = (value: string) => {
     if (!pathname) {
@@ -73,9 +69,13 @@ export function EventDetailTabs({
     }
 
     const nextTab = normalizeTab(value);
-    setActiveTab(nextTab);
 
-    const nextSearchParams = new URLSearchParams(currentSearchParams);
+    // Skip if same tab
+    if (nextTab === activeTab) {
+      return;
+    }
+
+    const nextSearchParams = new URLSearchParams(searchParams?.toString() ?? "");
     if (nextTab === DEFAULT_TAB) {
       nextSearchParams.delete("tab");
     } else {
@@ -83,8 +83,11 @@ export function EventDetailTabs({
     }
 
     const query = nextSearchParams.toString();
-    router.replace(query ? `${pathname}?${query}` : pathname, {
-      scroll: false,
+    // Use startTransition to avoid blocking UI during navigation
+    startTransition(() => {
+      router.replace(query ? `${pathname}?${query}` : pathname, {
+        scroll: false,
+      });
     });
   };
 
@@ -107,6 +110,9 @@ export function EventDetailTabs({
             </TabsTrigger>
             <TabsTrigger className="shrink-0" value="operations">
               Operations
+            </TabsTrigger>
+            <TabsTrigger className="shrink-0" value="followups">
+              Follow-Ups
             </TabsTrigger>
             <TabsTrigger className="shrink-0" value="explore">
               Explore
@@ -133,6 +139,10 @@ export function EventDetailTabs({
 
       <TabsContent className="space-y-4" value="operations">
         {operations}
+      </TabsContent>
+
+      <TabsContent className="space-y-4" value="followups">
+        {followups}
       </TabsContent>
 
       <TabsContent className="space-y-4" value="explore">

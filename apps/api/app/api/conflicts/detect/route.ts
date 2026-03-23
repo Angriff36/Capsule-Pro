@@ -914,6 +914,22 @@ export async function POST(request: Request) {
     );
   }
 
+  // Validate tenantId is a valid UUID format (prevents "operator does not exist: uuid = text" errors)
+  const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (!UUID_REGEX.test(tenantId)) {
+    log.warn("[conflicts/detect] Invalid tenant ID format", {
+      correlationId,
+      errorCode: "INVALID_TENANT_ID",
+    });
+    return apiError(
+      "INVALID_TENANT_ID",
+      "Invalid tenant ID format",
+      "Your tenant ID is not in the expected format. Please contact support.",
+      400,
+      correlationId
+    );
+  }
+
   // Parse and validate request body
   let body: unknown;
   try {

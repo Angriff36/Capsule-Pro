@@ -27,12 +27,14 @@ const VERBOSE = process.argv.includes("--verbose");
 // ─── Domain routing: entity → API directory ───
 // Maps each entity to its domain directory under apps/api/app/api/
 const ENTITY_DOMAIN_MAP = {
-  // Phase 0: Kitchen Operations (existing)
+  // ─── Kitchen Operations ───
   PrepTask: "kitchen/prep-tasks",
+  PrepTaskPlanWorkflow: "kitchen/prep-task-plan-workflows",
   KitchenTask: "kitchen/kitchen-tasks",
   Recipe: "kitchen/recipes",
   RecipeVersion: "kitchen/recipe-versions",
   RecipeIngredient: "kitchen/recipe-ingredients",
+  RecipeStep: "kitchen/recipe-steps",
   Ingredient: "kitchen/ingredients",
   Dish: "kitchen/dishes",
   Menu: "kitchen/menus",
@@ -41,23 +43,30 @@ const ENTITY_DOMAIN_MAP = {
   PrepListItem: "kitchen/prep-list-items",
   Station: "kitchen/stations",
   InventoryItem: "kitchen/inventory",
-
-  // Phase 1: Kitchen Operations (new)
   PrepComment: "kitchen/prep-comments",
   Container: "kitchen/containers",
   PrepMethod: "kitchen/prep-methods",
-
-  // Phase 2: Events & Catering
+  WasteEntry: "kitchen/waste-entries",
+  AllergenWarning: "kitchen/allergen-warnings",
+  AlertsConfig: "kitchen/alerts-config",
+  OverrideAudit: "kitchen/override-audits",
+  // ─── Events & Catering ───
   Event: "events/event",
   EventProfitability: "events/profitability",
   EventSummary: "events/summaries",
   EventReport: "events/reports",
   EventBudget: "events/budgets",
   BudgetLineItem: "events/budget-line-items",
+  BudgetAlert: "events/budget-alerts",
   CateringOrder: "events/catering-orders",
   BattleBoard: "events/battle-boards",
-
-  // Phase 3: CRM & Sales
+  EventGuest: "events/guests",
+  EventContract: "events/contracts",
+  ContractSignature: "events/contract-signatures",
+  EventDish: "events/event-dishes",
+  EventStaff: "events/staff",
+  EventImportWorkflow: "events/import-workflows",
+  // ─── CRM & Sales ───
   Client: "crm/clients",
   ClientContact: "crm/client-contacts",
   ClientPreference: "crm/client-preferences",
@@ -65,8 +74,7 @@ const ENTITY_DOMAIN_MAP = {
   Proposal: "crm/proposals",
   ProposalLineItem: "crm/proposal-line-items",
   ClientInteraction: "crm/client-interactions",
-
-  // Phase 4: Purchasing & Inventory
+  // ─── Purchasing & Inventory ───
   PurchaseOrder: "inventory/purchase-orders",
   PurchaseOrderItem: "inventory/purchase-order-items",
   Shipment: "shipments/shipment",
@@ -76,24 +84,47 @@ const ENTITY_DOMAIN_MAP = {
   CycleCountSession: "inventory/cycle-count/sessions",
   CycleCountRecord: "inventory/cycle-count/records",
   VarianceReport: "inventory/cycle-count/variance-reports",
-
-  // Phase 5: Staff & Scheduling
+  BulkOrderRule: "inventory/bulk-order-rules",
+  PricingTier: "inventory/pricing-tiers",
+  VendorCatalog: "inventory/vendor-catalogs",
+  // ─── Staff & Scheduling ───
   User: "staff/employees",
   Schedule: "staff/schedules",
   ScheduleShift: "staff/shifts",
   TimeEntry: "timecards/entries",
   TimecardEditRequest: "timecards/edit-requests",
-
-  // Phase 6: Command Board
+  TimeOffRequest: "timecards/time-off-requests",
+  EmployeeAvailability: "staff/availability",
+  EmployeeCertification: "staff/certifications",
+  // ─── Payroll ───
+  PayrollPeriod: "payroll/periods",
+  PayrollRun: "payroll/runs",
+  PayrollApprovalHistory: "payroll/approval-history",
+  EmployeeDeduction: "payroll/deductions",
+  LaborBudget: "payroll/labor-budgets",
+  // ─── Training ───
+  TrainingAssignment: "training/assignments",
+  TrainingModule: "training/modules",
+  // ─── Command Board ───
   CommandBoard: "command-board/boards",
   CommandBoardCard: "command-board/cards",
   CommandBoardGroup: "command-board/groups",
   CommandBoardConnection: "command-board/connections",
   CommandBoardLayout: "command-board/layouts",
-
-  // Phase 7: Workflows & Notifications
+  // ─── Workflows & Notifications ───
   Workflow: "collaboration/workflows",
   Notification: "collaboration/notifications",
+  EmailTemplate: "communications/email-templates",
+  EmailWorkflow: "communications/email-workflows",
+  // ─── Administrative ───
+  AdminTask: "administrative/tasks",
+  AdminChatParticipant: "administrative/chat/participants",
+  // ─── Settings ───
+  ApiKey: "settings/api-keys",
+  // ─── Accounting ───
+  ChartOfAccount: "accounting/chart-of-accounts",
+  // ─── Role Policy ───
+  RolePolicy: "rolepolicy/policies",
 };
 
 // Entities that already have hand-written or previously generated command routes

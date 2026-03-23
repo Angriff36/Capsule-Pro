@@ -72,6 +72,35 @@ interface EventDishRow {
 }
 
 /**
+ * Counts assigned staff for the event.
+ * @tier 1 (Independent)
+ */
+export const getEventStaffCount = cache(async (tenantId: string, eventId: string) => {
+  return database.eventStaffAssignment.count({
+    where: {
+      tenantId,
+      eventId,
+      deletedAt: null,
+    },
+  });
+});
+
+/**
+ * Checks if event has any contracts (for setup checklist).
+ * @tier 1 (Independent)
+ */
+export const getEventHasContract = cache(async (tenantId: string, eventId: string) => {
+  const count = await database.eventContract.count({
+    where: {
+      tenantId,
+      eventId,
+      deletedAt: null,
+    },
+  });
+  return count > 0;
+});
+
+/**
  * Fetches all dishes associated with the event.
  * @tier 1 (Independent)
  */
@@ -444,13 +473,15 @@ export async function fetchAllEventDetailsData(
   // ==============================================================================
   // Tier 1: Execute all independent queries in parallel
   // ==============================================================================
-  const [event, rsvpCount, eventDishes, rawPrepTasks, relatedEvents] =
+  const [event, rsvpCount, eventDishes, rawPrepTasks, relatedEvents, hasContract, staffCount] =
     await Promise.all([
       getEvent(tenantId, eventId),
       getRsvpCount(tenantId, eventId),
       getEventDishes(tenantId, eventId),
       getPrepTasksRaw(tenantId, eventId),
       getRelatedEvents(tenantId, eventId),
+      getEventHasContract(tenantId, eventId),
+      getEventStaffCount(tenantId, eventId),
     ]);
 
   if (!event) {
@@ -637,5 +668,7 @@ export async function fetchAllEventDetailsData(
     relatedGuestCounts: Object.fromEntries(relatedGuestCountMap.entries()),
     recipeDetails,
     inventoryCoverage,
+    hasContract,
+    staffCount,
   };
 }

@@ -30,15 +30,23 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs";
+import {
   AlertTriangleIcon,
   ClipboardListIcon,
   DollarSignIcon,
   FileTextIcon,
   Lightbulb,
   PlusIcon,
+  SparklesIcon,
   TrashIcon,
   UtensilsIcon,
 } from "lucide-react";
+import { useState, useMemo } from "react";
 import {
   getBudgetStatusLabel,
   getVarianceColor,
@@ -190,6 +198,17 @@ export function DishVariantDialog({
   );
 }
 
+export interface RecipeForDishCreation {
+  id: string;
+  name: string;
+  category: string | null;
+}
+
+interface TemplateSuggestion {
+  name: string;
+  added: boolean;
+}
+
 interface MenuDishesSectionProps {
   eventDishes: EventDishRow[];
   availableDishes: AvailableDishOption[];
@@ -203,6 +222,13 @@ interface MenuDishesSectionProps {
   onAddDish: () => void;
   onRemoveDish: (linkId: string) => void;
   onOpenVariantDialog: (linkId: string, name: string) => void;
+  // Inline dish creation
+  recipes?: RecipeForDishCreation[];
+  onCreateDishInline?: (name: string, recipeId: string, category?: string, course?: string) => Promise<void>;
+  isCreatingDish?: boolean;
+  // Template suggestions - pre-computed with added status
+  templateSuggestions?: Array<{ name: string; added: boolean }>;
+  onAddSuggestedDish?: (suggestionName: string) => void;
 }
 
 export function MenuDishesSection({
@@ -218,6 +244,11 @@ export function MenuDishesSection({
   onAddDish,
   onRemoveDish,
   onOpenVariantDialog,
+  recipes = [],
+  onCreateDishInline,
+  isCreatingDish = false,
+  templateSuggestions = [],
+  onAddSuggestedDish,
 }: MenuDishesSectionProps) {
   const COURSES = [
     "appetizer",
@@ -229,81 +260,271 @@ export function MenuDishesSection({
     "other",
   ] as const;
 
+  // Inline dish creation state
+  const [activeTab, setActiveTab] = useState<"select" | "create">(
+    availableDishes.length === 0 && recipes.length > 0 ? "create" : "select"
+  );
+  const [newDishName, setNewDishName] = useState("");
+  const [newDishRecipeId, setNewDishRecipeId] = useState("");
+  const [newDishCategory, setNewDishCategory] = useState("");
+  const [newDishCourse, setNewDishCourse] = useState("");
+
+  // Reset form when dialog closes
+  const handleDialogClose = (open: boolean) => {
+    if (!open) {
+      setNewDishName("");
+      setNewDishRecipeId("");
+      setNewDishCategory("");
+      setNewDishCourse("");
+      setActiveTab(availableDishes.length === 0 && recipes.length > 0 ? "create" : "select");
+    }
+    onShowAddDialogChange(open);
+  };
+
+  const handleCreateDish = async () => {
+    if (!onCreateDishInline || !newDishName.trim() || !newDishRecipeId) return;
+    await onCreateDishInline(
+      newDishName.trim(),
+      newDishRecipeId,
+      newDishCategory.trim() || undefined,
+      newDishCourse || selectedCourse || undefined
+    );
+    // Reset form on success
+    setNewDishName("");
+    setNewDishRecipeId("");
+    setNewDishCategory("");
+    setNewDishCourse("");
+    handleDialogClose(false);
+  };
+
+  const canCreate = newDishName.trim().length > 0 && newDishRecipeId.length > 0;
+  const hasInlineCreation = onCreateDishInline && recipes.length > 0;
+
   const addDishDialog = (
-    <Dialog onOpenChange={onShowAddDialogChange} open={showAddDialog}>
+    <Dialog onOpenChange={handleDialogClose} open={showAddDialog}>
       <DialogTrigger asChild>
         <Button size="sm" variant="outline">
           <PlusIcon className="mr-2 size-3" />
           Add Dish
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Add Dish to Event</DialogTitle>
           <DialogDescription>
-            Select a dish from your menu to add to this event.
+            {hasInlineCreation
+              ? "Select an existing dish or create a new one."
+              : "Select a dish from your menu to add to this event."}
           </DialogDescription>
         </DialogHeader>
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="add-dish-select">
-              Dish
-            </label>
-            <Select
-              onValueChange={onSelectedDishIdChange}
-              value={selectedDishId}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select a dish" />
-              </SelectTrigger>
-              <SelectContent>
-                {availableDishes.length === 0 ? (
-                  <div className="p-2 text-sm text-muted-foreground">
-                    No dishes available. Create dishes in Kitchen Recipes first.
-                  </div>
-                ) : (
-                  availableDishes.map((d) => (
-                    <SelectItem key={d.id} value={d.id}>
-                      {d.name}
-                      {d.category ? ` (${d.category})` : ""}
-                    </SelectItem>
-                  ))
-                )}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium" htmlFor="add-course-select">
-              Course (optional)
-            </label>
-            <Select
-              onValueChange={onSelectedCourseChange}
-              value={selectedCourse}
-            >
-              <SelectTrigger aria-label="Select course" id="add-course-select">
-                <SelectValue placeholder="Select course" />
-              </SelectTrigger>
-              <SelectContent>
-                {COURSES.map((c) => (
-                  <SelectItem key={c} value={c}>
-                    {c.charAt(0).toUpperCase() + c.slice(1)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button
-            onClick={() => onShowAddDialogChange(false)}
-            variant="outline"
-          >
-            Cancel
-          </Button>
-          <Button disabled={!selectedDishId} onClick={onAddDish}>
-            Add Dish
-          </Button>
-        </DialogFooter>
+
+        {hasInlineCreation && (
+          <Tabs className="w-full" onValueChange={(v) => setActiveTab(v as "select" | "create")} value={activeTab}>
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="select">Select Existing</TabsTrigger>
+              <TabsTrigger value="create">Create New</TabsTrigger>
+            </TabsList>
+
+            <TabsContent className="space-y-4 py-4" value="select">
+              <div className="space-y-2">
+                <label className="text-sm font-medium" htmlFor="add-dish-select">
+                  Dish
+                </label>
+                <Select
+                  onValueChange={onSelectedDishIdChange}
+                  value={selectedDishId}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a dish" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableDishes.length === 0 ? (
+                      <div className="p-2 text-sm text-muted-foreground">
+                        No dishes available. Use &quot;Create New&quot; tab.
+                      </div>
+                    ) : (
+                      availableDishes.map((d) => (
+                        <SelectItem key={d.id} value={d.id}>
+                          {d.name}
+                          {d.category ? ` (${d.category})` : ""}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium" htmlFor="select-course">
+                  Course (optional)
+                </label>
+                <Select
+                  onValueChange={onSelectedCourseChange}
+                  value={selectedCourse}
+                >
+                  <SelectTrigger aria-label="Select course" id="select-course">
+                    <SelectValue placeholder="Select course" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COURSES.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c.charAt(0).toUpperCase() + c.slice(1)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <DialogFooter>
+                <Button onClick={() => handleDialogClose(false)} variant="outline">
+                  Cancel
+                </Button>
+                <Button disabled={!selectedDishId} onClick={onAddDish}>
+                  Add Dish
+                </Button>
+              </DialogFooter>
+            </TabsContent>
+
+            <TabsContent className="space-y-4 py-4" value="create">
+              <div className="space-y-2">
+                <label className="text-sm font-medium" htmlFor="new-dish-name">
+                  Dish Name <span className="text-destructive">*</span>
+                </label>
+                <Input
+                  id="new-dish-name"
+                  onChange={(e) => setNewDishName(e.target.value)}
+                  placeholder="e.g., Margherita Pizza"
+                  value={newDishName}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium" htmlFor="new-dish-recipe">
+                  Recipe <span className="text-destructive">*</span>
+                </label>
+                <Select
+                  onValueChange={setNewDishRecipeId}
+                  value={newDishRecipeId}
+                >
+                  <SelectTrigger id="new-dish-recipe">
+                    <SelectValue placeholder="Select a recipe" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {recipes.map((r) => (
+                      <SelectItem key={r.id} value={r.id}>
+                        {r.name}
+                        {r.category ? ` (${r.category})` : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium" htmlFor="new-dish-category">
+                    Category
+                  </label>
+                  <Input
+                    id="new-dish-category"
+                    onChange={(e) => setNewDishCategory(e.target.value)}
+                    placeholder="e.g., Main"
+                    value={newDishCategory}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium" htmlFor="new-dish-course">
+                    Course
+                  </label>
+                  <Select
+                    onValueChange={setNewDishCourse}
+                    value={newDishCourse}
+                  >
+                    <SelectTrigger id="new-dish-course">
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COURSES.map((c) => (
+                        <SelectItem key={c} value={c}>
+                          {c.charAt(0).toUpperCase() + c.slice(1)}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button onClick={() => handleDialogClose(false)} variant="outline">
+                  Cancel
+                </Button>
+                <Button disabled={!canCreate || isCreatingDish} onClick={handleCreateDish}>
+                  {isCreatingDish ? "Creating..." : "Create & Add"}
+                </Button>
+              </DialogFooter>
+            </TabsContent>
+          </Tabs>
+        )}
+
+        {!hasInlineCreation && (
+          <>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium" htmlFor="add-dish-select">
+                  Dish
+                </label>
+                <Select
+                  onValueChange={onSelectedDishIdChange}
+                  value={selectedDishId}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a dish" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableDishes.length === 0 ? (
+                      <div className="p-2 text-sm text-muted-foreground">
+                        No dishes available. Create dishes in Kitchen Recipes first.
+                      </div>
+                    ) : (
+                      availableDishes.map((d) => (
+                        <SelectItem key={d.id} value={d.id}>
+                          {d.name}
+                          {d.category ? ` (${d.category})` : ""}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium" htmlFor="add-course-select">
+                  Course (optional)
+                </label>
+                <Select
+                  onValueChange={onSelectedCourseChange}
+                  value={selectedCourse}
+                >
+                  <SelectTrigger aria-label="Select course" id="add-course-select">
+                    <SelectValue placeholder="Select course" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {COURSES.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c.charAt(0).toUpperCase() + c.slice(1)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                onClick={() => handleDialogClose(false)}
+                variant="outline"
+              >
+                Cancel
+              </Button>
+              <Button disabled={!selectedDishId} onClick={onAddDish}>
+                Add Dish
+              </Button>
+            </DialogFooter>
+          </>
+        )}
       </DialogContent>
     </Dialog>
   );
@@ -333,6 +554,46 @@ export function MenuDishesSection({
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         </div>
       )}
+      
+      {/* Template Suggestions Section */}
+      {!isLoading && templateSuggestions.length > 0 && (
+        <div className="mb-4 rounded-lg border border-primary/30 bg-primary/5 p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <SparklesIcon className="size-4 text-primary" />
+            <span className="font-medium text-sm">
+              Suggested Dishes from Template
+            </span>
+          </div>
+          <p className="mb-3 text-muted-foreground text-xs">
+            Quick-add suggestions based on the event template. Click to create and add to menu.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {templateSuggestions.map((suggestion, index) => (
+              <Button
+                key={index}
+                size="sm"
+                variant={suggestion.added ? "secondary" : "outline"}
+                className={suggestion.added ? "opacity-50" : ""}
+                disabled={suggestion.added || !onAddSuggestedDish}
+                onClick={() => onAddSuggestedDish?.(suggestion.name)}
+              >
+                {suggestion.added ? (
+                  <>
+                    <span className="mr-1">✓</span>
+                    {suggestion.name}
+                  </>
+                ) : (
+                  <>
+                    <PlusIcon className="mr-1 size-3" />
+                    {suggestion.name}
+                  </>
+                )}
+              </Button>
+            ))}
+          </div>
+        </div>
+      )}
+      
       {!isLoading && eventDishes.length > 0 && (
         <div className="grid gap-3">
           {eventDishes.map((dish) => (

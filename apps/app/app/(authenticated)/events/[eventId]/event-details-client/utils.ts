@@ -7,6 +7,22 @@
  */
 
 /**
+ * Parse an ISO date string to a local Date object without timezone shifts.
+ * Use this for date-only values (like event dates) stored as ISO strings.
+ *
+ * @param isoString - ISO date string like "2024-03-15T00:00:00.000Z"
+ * @returns Date object representing the same calendar date in local timezone
+ */
+export const parseISODateToLocal = (isoString: string | Date): Date => {
+  if (isoString instanceof Date) {
+    return isoString;
+  }
+  const dateStr = isoString.split('T')[0];
+  const [year, month, day] = dateStr.split('-').map(Number);
+  return new Date(year, month - 1, day);
+};
+
+/**
  * Hydration-safe currency formatter.
  * Memoize this in your component if using frequently.
  */

@@ -711,3 +711,104 @@ export const getDishes = async (): Promise<DishSummary[]> => {
 
   return dishes;
 };
+
+export interface RecipeForDishCreation {
+  id: string;
+  name: string;
+  category: string | null;
+}
+
+export const getRecipesForDishCreation = async (): Promise<
+  RecipeForDishCreation[]
+> => {
+  const tenantId = await requireTenantId();
+
+  const recipes = await database.$queryRaw<
+    {
+      id: string;
+      name: string;
+      category: string | null;
+    }[]
+  >(
+    Prisma.sql`
+      SELECT
+        id,
+        name,
+        category
+      FROM tenant_kitchen.recipes
+      WHERE tenant_id = ${tenantId}
+        AND deleted_at IS NULL
+      ORDER BY name ASC
+    `
+  );
+
+  return recipes;
+};
+
+export const createDishInline = async (
+  name: string,
+  recipeId: string,
+  category?: string,
+  description?: string
+): Promise<DishSummary> => {
+  const tenantId = await requireTenantId();
+
+  if (!name?.trim()) {
+    throw new Error("Dish name is required.");
+  }
+
+  if (!recipeId?.trim()) {
+    throw new Error("Recipe is required.");
+  }
+
+  // Verify recipe exists
+  const [recipe] = await database.$queryRaw<{ id: string; name: string }[]>(
+    Prisma.sql`
+      SELECT id, name
+      FROM tenant_kitchen.recipes
+      WHERE tenant_id = ${tenantId}
+        AND id = ${recipeId}
+        AND deleted_at IS NULL
+      LIMIT 1
+    `
+  );
+
+  if (!recipe) {
+    throw new Error("Recipe not found.");
+  }
+
+  const dishId = randomUUID();
+
+  await database.$executeRaw(
+    Prisma.sql`
+      INSERT INTO tenant_kitchen.dishes (
+        tenant_id,
+        id,
+        recipe_id,
+        name,
+        description,
+        category,
+        is_active
+      )
+      VALUES (
+        ${tenantId},
+        ${dishId},
+        ${recipeId},
+        ${name.trim()},
+        ${description?.trim() || null},
+        ${category?.trim() || null},
+        true
+      )
+    `
+  );
+
+  revalidatePath("/kitchen/recipes");
+  revalidatePath("/kitchen/recipes/menus");
+
+  return {
+    id: dishId,
+    name: name.trim(),
+    description: description?.trim() || null,
+    category: category?.trim() || null,
+  };
+};

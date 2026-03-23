@@ -27,6 +27,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { formatDate } from "../../../lib/format";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import { Header } from "../../components/header";
 
@@ -249,10 +250,7 @@ const EventReportsPage = async () => {
                       </CardTitle>
                       <CardDescription>
                         {report.event?.eventDate
-                          ? new Date(report.event.eventDate).toLocaleDateString(
-                              "en-US",
-                              { dateStyle: "medium" }
-                            )
+                          ? formatDate(report.event.eventDate)
                           : ""}
                       </CardDescription>
                     </CardHeader>

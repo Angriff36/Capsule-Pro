@@ -2,6 +2,15 @@
 
 import { Button } from "@repo/design-system/components/ui/button";
 import { Checkbox } from "@repo/design-system/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
@@ -12,13 +21,17 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import { captureException } from "@sentry/nextjs";
+import { PlusIcon } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState, useTransition } from "react";
 import {
   addDishToMenu,
+  createDishInline,
   createMenu,
   type DishSummary,
   getDishes,
+  getRecipesForDishCreation,
   updateMenu,
 } from "../actions";
 
@@ -264,6 +277,17 @@ function DishesSelector({
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoading, setIsLoading] = useState(true);
 
+  // Inline dish creation state
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [recipes, setRecipes] = useState<
+    { id: string; name: string; category: string | null }[]
+  >([]);
+  const [newDishName, setNewDishName] = useState("");
+  const [selectedRecipeId, setSelectedRecipeId] = useState("");
+  const [newDishCategory, setNewDishCategory] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+
   // Fetch dishes on mount
   React.useEffect(() => {
     const fetchDishes = async () => {
@@ -279,6 +303,57 @@ function DishesSelector({
     fetchDishes();
   }, []);
 
+  // Fetch recipes when dialog opens
+  React.useEffect(() => {
+    if (showCreateDialog && recipes.length === 0) {
+      getRecipesForDishCreation()
+        .then(setRecipes)
+        .catch((err) => {
+          captureException(err);
+          setCreateError("Failed to load recipes");
+        });
+    }
+  }, [showCreateDialog, recipes.length]);
+
+  const handleCreateDish = async () => {
+    if (!newDishName.trim()) {
+      setCreateError("Dish name is required");
+      return;
+    }
+    if (!selectedRecipeId) {
+      setCreateError("Please select a recipe");
+      return;
+    }
+
+    setIsCreating(true);
+    setCreateError(null);
+
+    try {
+      const newDish = await createDishInline(
+        newDishName.trim(),
+        selectedRecipeId,
+        newDishCategory.trim() || undefined
+      );
+
+      // Add to local dishes list
+      setDishes((prev) => [...prev, newDish]);
+
+      // Auto-select the new dish
+      onDishToggle(newDish);
+
+      // Reset form and close dialog
+      setNewDishName("");
+      setSelectedRecipeId("");
+      setNewDishCategory("");
+      setShowCreateDialog(false);
+    } catch (err) {
+      captureException(err);
+      setCreateError(err instanceof Error ? err.message : "Failed to create dish");
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
   const filteredDishes = dishes.filter(
     (dish) =>
       dish.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -287,11 +362,103 @@ function DishesSelector({
 
   return (
     <div className="space-y-4">
-      <Input
-        onChange={(e) => setSearchQuery(e.target.value)}
-        placeholder="Search dishes..."
-        value={searchQuery}
-      />
+      <div className="flex gap-2">
+        <Input
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search dishes..."
+          value={searchQuery}
+          className="flex-1"
+        />
+        <Dialog onOpenChange={setShowCreateDialog} open={showCreateDialog}>
+          <DialogTrigger asChild>
+            <Button size="sm" variant="outline">
+              <PlusIcon className="mr-1 size-4" />
+              New Dish
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Create New Dish</DialogTitle>
+              <DialogDescription>
+                Create a dish from an existing recipe. Dishes are what you add to menus.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="dishName">Dish Name *</Label>
+                <Input
+                  id="dishName"
+                  onChange={(e) => setNewDishName(e.target.value)}
+                  placeholder="e.g., Margherita Pizza"
+                  value={newDishName}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="recipe">Recipe *</Label>
+                <Select
+                  onValueChange={setSelectedRecipeId}
+                  value={selectedRecipeId}
+                >
+                  <SelectTrigger id="recipe">
+                    <SelectValue placeholder="Select a recipe..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {recipes.length === 0 ? (
+                      <div className="p-2 text-sm text-muted-foreground">
+                        No recipes available
+                      </div>
+                    ) : (
+                      recipes.map((recipe) => (
+                        <SelectItem key={recipe.id} value={recipe.id}>
+                          {recipe.name}
+                          {recipe.category && ` (${recipe.category})`}
+                        </SelectItem>
+                      ))
+                    )}
+                  </SelectContent>
+                </Select>
+                {recipes.length === 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    No recipes found.{" "}
+                    <Link
+                      className="text-primary underline"
+                      href="/kitchen/recipes/new"
+                    >
+                      Create a recipe first
+                    </Link>
+                  </p>
+                )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="dishCategory">Category (optional)</Label>
+                <Input
+                  id="dishCategory"
+                  onChange={(e) => setNewDishCategory(e.target.value)}
+                  placeholder="e.g., Pizza, Pasta, Salad"
+                  value={newDishCategory}
+                />
+              </div>
+              {createError && (
+                <p className="text-sm text-destructive">{createError}</p>
+              )}
+            </div>
+            <DialogFooter>
+              <Button
+                onClick={() => setShowCreateDialog(false)}
+                variant="outline"
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={isCreating || !newDishName.trim() || !selectedRecipeId}
+                onClick={handleCreateDish}
+              >
+                {isCreating ? "Creating..." : "Create Dish"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
 
       <div className="border rounded-md">
         <div className="max-h-96 overflow-y-auto">
@@ -303,7 +470,7 @@ function DishesSelector({
             <div className="p-4 text-center text-sm text-muted-foreground">
               {searchQuery
                 ? "No dishes found matching your search"
-                : "No dishes available"}
+                : "No dishes available. Click 'New Dish' to create one."}
             </div>
           ) : (
             <div className="divide-y">

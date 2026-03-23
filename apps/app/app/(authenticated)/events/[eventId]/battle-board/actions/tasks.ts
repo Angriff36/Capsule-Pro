@@ -272,10 +272,15 @@ export async function updateTimelineTask(input: UpdateTimelineTaskInput) {
   }
 
   updates.push("updated_at = NOW()");
-  values.push(tenantId, input.id, input.eventId);
-  paramIndex += 3;
 
-  const updateQuery = `UPDATE tenant_events.timeline_tasks SET ${updates.join(", ")} WHERE tenant_id = $${paramIndex - 2} AND id = $${paramIndex - 1} AND event_id = $${paramIndex}`;
+  // Add WHERE clause parameters - use current paramIndex for tenant_id
+  const tenantParamIndex = paramIndex;
+  const idParamIndex = paramIndex + 1;
+  const eventIdParamIndex = paramIndex + 2;
+
+  values.push(tenantId, input.id, input.eventId);
+
+  const updateQuery = `UPDATE tenant_events.timeline_tasks SET ${updates.join(", ")} WHERE tenant_id = $${tenantParamIndex} AND id = $${idParamIndex} AND event_id = $${eventIdParamIndex}`;
 
   await database.$executeRawUnsafe(updateQuery, values);
 

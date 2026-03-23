@@ -10,8 +10,10 @@ import { useSuggestions } from "../../../kitchen/lib/use-suggestions";
 import { updateEvent } from "../../actions";
 import {
   addDishToEvent,
+  createDishAndAddToEvent,
   createDishVariantForEvent,
   getAvailableDishes,
+  getRecipesForDishCreation,
   removeDishFromEvent,
 } from "../../actions/event-dishes";
 import {
@@ -25,6 +27,9 @@ import {
   saveTaskBreakdown,
   type TaskBreakdown,
 } from "../../actions/task-breakdown";
+import {
+  generateEventPrepList,
+} from "../../actions/prep-list-generation";
 import { GenerateEventSummaryModal } from "../../components/event-summary-display";
 import { GenerateTaskBreakdownModal } from "../../components/task-breakdown-display";
 import { EventEditorModal } from "../../event-editor-modal";
@@ -43,17 +48,21 @@ import type { PrepTaskSummaryClient } from "../prep-task-contract";
 import { EventDetailTabs } from "./event-detail-tabs";
 // Above-fold critical components loaded eagerly
 import { EventOverviewCard } from "./event-overview-card";
+import { EventSetupChecklist } from "../components/event-setup-checklist";
+import { EventTimeline, determineEventStage } from "../components/event-timeline";
 import { GuestManagementSection } from "./guest-management-section";
 // Lazy-loaded below-the-fold components for bundle optimization
 import { AIInsightsPanel } from "./lazy-ai-insights-panel";
 import { EventExplorer } from "./lazy-event-explorer";
 import { MenuIntelligenceSection } from "./menu-intelligence-section";
+import { getTemplateMenuSuggestions, EVENT_TEMPLATES } from "../../components/event-templates";
 import { OperationsSection } from "./operations-section";
 import { RecipeDrawer } from "./recipe-drawer";
 import {
   endOfDay,
   formatCurrency,
   formatDuration,
+  parseISODateToLocal,
   scaleIngredients,
   startOfDay,
 } from "./utils";
@@ -433,6 +442,35 @@ function useAvailableDishes(eventId: string, showDialog: boolean) {
   return { availableDishes, isLoadingDishes };
 }
 
+function useRecipesForDishCreation(showDialog: boolean) {
+  const [recipes, setRecipes] = useState<
+    { id: string; name: string; category: string | null }[]
+  >([]);
+
+  useEffect(() => {
+    if (!showDialog) {
+      return;
+    }
+    let cancelled = false;
+    getRecipesForDishCreation()
+      .then((result) => {
+        if (!cancelled) {
+          setRecipes(result ?? []);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setRecipes([]);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [showDialog]);
+
+  return { recipes };
+}
+
 function useSavedEvent(eventId: string) {
   const [isSaved, setIsSaved] = useState(false);
   const [saveReady, setSaveReady] = useState(false);
@@ -789,6 +827,8 @@ interface EventDetailsClientProps {
   relatedEvents: RelatedEventSummary[];
   relatedGuestCounts: Record<string, number>;
   rsvpCount: number;
+  hasContract?: boolean;
+  staffCount?: number;
 }
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: React component with many state pieces; complexity is inherent to the feature scope
@@ -803,8 +843,29 @@ export function EventDetailsClient({
   relatedEvents,
   relatedGuestCounts,
   rsvpCount: initialRsvpCount,
+  hasContract = false,
+  staffCount = 0,
 }: EventDetailsClientProps) {
   const router = useRouter();
+
+  // Timeline stage navigation - maps stages to tabs
+  const handleTimelineStageClick = useCallback((stage: string) => {
+    const stageToTab: Record<string, string> = {
+      "created": "overview",
+      "client-set": "overview",
+      "venue-set": "overview",
+      "menu-set": "menu",
+      "staff-assigned": "operations",
+      "prep-complete": "operations",
+      "event-day": "overview",
+      "follow-ups-sent": "followups",
+    };
+    const targetTab = stageToTab[stage] ?? "overview";
+    const url = targetTab === "overview"
+      ? `/events/${event.id}`
+      : `/events/${event.id}?tab=${targetTab}`;
+    router.push(url);
+  }, [event.id, router]);
 
   // Time state
   const [now, setNow] = useState(() => new Date());
@@ -830,6 +891,9 @@ export function EventDetailsClient({
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationProgress, setGenerationProgress] = useState("");
 
+  // Prep list state
+  const [isGeneratingPrepList, setIsGeneratingPrepList] = useState(false);
+
   // Summary state
   const { summary, setSummary, isLoadingSummary } = useEventSummary(event.id);
   const [showSummaryModal, setShowSummaryModal] = useState(false);
@@ -840,8 +904,37 @@ export function EventDetailsClient({
     event.id,
     showAddDishDialog
   );
+  const { recipes } = useRecipesForDishCreation(showAddDishDialog);
   const [selectedDishIdForAdd, setSelectedDishIdForAdd] = useState("");
   const [selectedCourse, setSelectedCourse] = useState("");
+  const [isCreatingDish, setIsCreatingDish] = useState(false);
+
+  // Inline dish creation handler
+  const handleCreateDishInline = useCallback(
+    async (name: string, recipeId: string, category?: string, course?: string) => {
+      setIsCreatingDish(true);
+      try {
+        const result = await createDishAndAddToEvent(
+          event.id,
+          name,
+          recipeId,
+          category,
+          course
+        );
+        if (result.success) {
+          toast.success(`Created "${name}" and added to event`);
+          router.refresh();
+        } else {
+          toast.error(result.error || "Failed to create dish");
+        }
+      } catch (err) {
+        toast.error(err instanceof Error ? err.message : "Failed to create dish");
+      } finally {
+        setIsCreatingDish(false);
+      }
+    },
+    [event.id, router]
+  );
 
   // Variant dialog state
   const [showVariantDialog, setShowVariantDialog] = useState(false);
@@ -915,7 +1008,7 @@ export function EventDetailsClient({
     return map;
   }, [inventoryCoverage]);
 
-  const eventDate = useMemo(() => new Date(event.eventDate), [event.eventDate]);
+  const eventDate = useMemo(() => parseISODateToLocal(event.eventDate), [event.eventDate]);
   const eventStart = useMemo(() => startOfDay(eventDate), [eventDate]);
   const eventEnd = useMemo(() => endOfDay(eventDate), [eventDate]);
   const isLive = now >= eventStart && now <= eventEnd;
@@ -1001,6 +1094,52 @@ export function EventDetailsClient({
         dietary_tags: dish.dietaryTags,
       })),
     [eventDishes]
+  );
+
+  // Template suggestions - compute which suggestions haven't been added yet
+  const templateSuggestions = useMemo(() => {
+    const suggestions = getTemplateMenuSuggestions((event as { templateId?: string | null }).templateId ?? null);
+    if (!suggestions) return [];
+    
+    // Create a set of existing dish names for quick lookup
+    const existingDishNames = new Set(eventDishes.map(d => d.name.toLowerCase()));
+    
+    return suggestions.map(suggestion => ({
+      name: suggestion,
+      added: existingDishNames.has(suggestion.toLowerCase()),
+    }));
+  }, [(event as { templateId?: string | null }).templateId, eventDishes]);
+
+  // Get template name for display
+  const templateName = useMemo(() => {
+    const templateId = (event as { templateId?: string | null }).templateId;
+    if (!templateId) return null;
+    const template = EVENT_TEMPLATES.find(t => t.id === templateId);
+    return template?.name ?? null;
+  }, [(event as { templateId?: string | null }).templateId]);
+
+  // Get template staffing defaults
+  const templateStaffing = useMemo(() => {
+    const templateId = (event as { templateId?: string | null }).templateId;
+    if (!templateId) return null;
+    const template = EVENT_TEMPLATES.find(t => t.id === templateId);
+    return template?.defaultStaffing ?? null;
+  }, [(event as { templateId?: string | null }).templateId]);
+
+  // Count assigned staff from event data
+  const currentStaffCount = staffCount;
+
+  // Handler for adding a suggested dish
+  const handleAddSuggestedDish = useCallback(
+    async (suggestionName: string) => {
+      // For now, just open the add dish dialog with a pre-filled name
+      // The user will need to select a recipe to create the dish
+      setShowAddDishDialog(true);
+      // Note: We could pre-fill the dish name in the dialog, but that would require
+      // additional state management. For now, the suggestion serves as a reference.
+      toast.info(`Select or create a dish for: ${suggestionName}`);
+    },
+    []
   );
 
   // Handlers
@@ -1099,6 +1238,27 @@ export function EventDetailsClient({
     }
   }, [breakdown, event.id, router]);
 
+  const handleGeneratePrepList = useCallback(async () => {
+    setIsGeneratingPrepList(true);
+    try {
+      const result = await generateEventPrepList({
+        eventId: event.id,
+      });
+      
+      if (result.success) {
+        toast.success(`Prep list generated with ${result.prepList?.totalIngredients ?? 0} ingredients`);
+        router.refresh();
+      } else {
+        toast.error(result.error || "Failed to generate prep list");
+      }
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Failed to generate prep list";
+      toast.error(message);
+    } finally {
+      setIsGeneratingPrepList(false);
+    }
+  }, [event.id, router]);
+
   const handleGenerateSummary =
     useCallback(async (): Promise<GeneratedEventSummary> => {
       const result = await generateEventSummary(event.id);
@@ -1175,7 +1335,7 @@ export function EventDetailsClient({
     id: event.id,
     title: event.title,
     description: event.notes ?? undefined,
-    date: new Date(event.eventDate).toISOString().slice(0, 10),
+    date: parseISODateToLocal(event.eventDate).toISOString().slice(0, 10),
     venueName: event.venueName ?? undefined,
     venueAddress: event.venueAddress ?? undefined,
     guestCount: event.guestCount ?? undefined,
@@ -1297,6 +1457,13 @@ export function EventDetailsClient({
               selectedCourse={selectedCourse}
               selectedDishIdForAdd={selectedDishIdForAdd}
               showAddDishDialog={showAddDishDialog}
+              recipes={recipes}
+              onCreateDishInline={handleCreateDishInline}
+              isCreatingDish={isCreatingDish}
+              templateSuggestions={templateSuggestions}
+              templateName={templateName}
+              eventId={event.id}
+              onAddSuggestedDish={handleAddSuggestedDish}
             />
           }
           operations={
@@ -1305,40 +1472,85 @@ export function EventDetailsClient({
               onOpenGenerateModal={() => setShowBreakdownModal(true)}
               prepTasks={sortedPrepTasks}
               taskSummary={taskSummary}
+              onGeneratePrepList={handleGeneratePrepList}
+              isGeneratingPrepList={isGeneratingPrepList}
+              templateName={templateName}
+              templateStaffing={templateStaffing}
+              currentStaffCount={currentStaffCount}
             />
           }
+          followups={
+            <div className="p-4">
+              <p className="text-muted-foreground mb-4">
+                Manage automated follow-up tasks for this event.
+              </p>
+              <a
+                href={`/events/${event.id}/follow-ups`}
+                className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              >
+                Open Follow-Ups Dashboard
+              </a>
+            </div>
+          }
           overview={
-            <EventOverviewCard
-              aggregatedIngredientsCount={aggregatedIngredients.length}
-              availability={availability}
-              capacity={capacity}
-              displayedTags={displayedTags}
-              event={event}
-              eventDate={eventDate}
-              eventStart={eventStart}
-              eventStatusLabel={eventStatusLabel}
-              featuredMediaUrl={featuredMediaUrl}
-              inventoryStats={inventoryStats}
-              isLimited={limited}
-              isLive={isLive}
-              isPast={isPast}
-              isSaved={isSaved}
-              isSoldOut={soldOut}
-              missingFields={missingFields}
-              onEditEvent={() => setShowEditEvent(true)}
-              onInviteTeam={handleInviteTeam}
-              onQuickRsvp={() => setQuickRsvpOpen(true)}
-              onShare={handleShare}
-              onToggleSave={handleToggleSave}
-              onUpdateDetails={() => setShowEditEvent(true)}
-              prepTasks={initialPrepTasks}
-              rsvpCount={rsvpCount}
-              saveReady={saveReady}
-              taskSummary={taskSummary}
-              ticketPriceLabel={ticketPriceLabel}
-              timeStatusLabel={timeStatusLabel}
-              timeZoneLabel={timeZoneLabel}
-            />
+            <div className="space-y-6">
+              <EventSetupChecklist
+                eventId={event.id}
+                eventSlug={event.slug ?? undefined}
+                hasClient={!!event.clientId}
+                hasVenue={!!event.venueName}
+                hasMenu={eventDishes.length > 0}
+                hasStaff={sortedPrepTasks.some(t => t.assignedToId)}
+                hasPrepList={sortedPrepTasks.length > 0}
+                hasContract={hasContract}
+                hasBudget={!!budget && budget.totalBudget > 0}
+                eventDate={event.eventDate}
+                eventStatus={event.status ?? undefined}
+              />
+              <EventTimeline
+                currentStage={determineEventStage({
+                  createdAt: event.createdAt,
+                  clientId: event.clientId,
+                  venueName: event.venueName,
+                  eventDishes: eventDishes,
+                  prepTasks: sortedPrepTasks,
+                  status: event.status ?? undefined,
+                  eventDate: event.eventDate,
+                })}
+                onStageClick={handleTimelineStageClick}
+              />
+              <EventOverviewCard
+                aggregatedIngredientsCount={aggregatedIngredients.length}
+                availability={availability}
+                capacity={capacity}
+                displayedTags={displayedTags}
+                event={event}
+                eventDate={eventDate}
+                eventStart={eventStart}
+                eventStatusLabel={eventStatusLabel}
+                featuredMediaUrl={featuredMediaUrl}
+                inventoryStats={inventoryStats}
+                isLimited={limited}
+                isLive={isLive}
+                isPast={isPast}
+                isSaved={isSaved}
+                isSoldOut={soldOut}
+                missingFields={missingFields}
+                onEditEvent={() => setShowEditEvent(true)}
+                onInviteTeam={handleInviteTeam}
+                onQuickRsvp={() => setQuickRsvpOpen(true)}
+                onShare={handleShare}
+                onToggleSave={handleToggleSave}
+                onUpdateDetails={() => setShowEditEvent(true)}
+                prepTasks={initialPrepTasks}
+                rsvpCount={rsvpCount}
+                saveReady={saveReady}
+                taskSummary={taskSummary}
+                ticketPriceLabel={ticketPriceLabel}
+                timeStatusLabel={timeStatusLabel}
+                timeZoneLabel={timeZoneLabel}
+              />
+            </div>
           }
         />
       </div>

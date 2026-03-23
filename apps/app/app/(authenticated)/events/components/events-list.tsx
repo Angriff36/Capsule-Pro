@@ -14,6 +14,10 @@ type EventListItem = {
   guestCount: number;
   venueName: string | null;
   tags: string[];
+  hasClient: boolean;
+  hasMenu: boolean;
+  hasPrepList: boolean;
+  hasContract: boolean;
 };
 
 export function EventsList({ events }: { events: EventListItem[] }) {

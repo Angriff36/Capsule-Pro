@@ -19,6 +19,7 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { MapPinIcon, UsersIcon } from "lucide-react";
+import { useTransition, useState } from "react";
 
 interface EventEditorModalProps {
   open: boolean;
@@ -49,6 +50,15 @@ export const EventEditorModal = ({
   event,
   onSave,
 }: EventEditorModalProps) => {
+  const [isPending, startTransition] = useTransition();
+
+  const handleSubmit = (formData: FormData) => {
+    startTransition(async () => {
+      await onSave(formData);
+      onOpenChange(false);
+    });
+  };
+
   return (
     <Dialog onOpenChange={onOpenChange} open={open}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[800px]">
@@ -61,10 +71,7 @@ export const EventEditorModal = ({
         </DialogHeader>
 
         <form
-          action={async (formData) => {
-            await onSave(formData);
-            onOpenChange(false);
-          }}
+          action={handleSubmit}
           className="flex flex-col gap-6"
         >
           {event?.id && <input name="eventId" type="hidden" value={event.id} />}
@@ -283,14 +290,19 @@ export const EventEditorModal = ({
 
           <div className="flex justify-end gap-3">
             <Button
+              disabled={isPending}
               onClick={() => onOpenChange(false)}
               type="button"
               variant="outline"
             >
               Cancel
             </Button>
-            <Button type="submit">
-              {event?.id ? "Save changes" : "Create Event"}
+            <Button disabled={isPending} type="submit">
+              {isPending
+                ? "Saving..."
+                : event?.id
+                  ? "Save changes"
+                  : "Create Event"}
             </Button>
           </div>
         </form>

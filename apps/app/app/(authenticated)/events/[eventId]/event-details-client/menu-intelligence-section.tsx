@@ -94,6 +94,19 @@ interface MenuIntelligenceSectionProps {
   onSelectedDishIdChange: (id: string) => void;
   onSelectedCourseChange: (course: string) => void;
   onOpenGenerateModal?: () => void;
+  // Inline dish creation
+  recipes?: Array<{
+    id: string;
+    name: string;
+    category: string | null;
+  }>;
+  onCreateDishInline?: (name: string, recipeId: string, category?: string, course?: string) => Promise<void>;
+  isCreatingDish?: boolean;
+  // Template suggestions
+  templateSuggestions?: Array<{ name: string; added: boolean }>;
+  templateName?: string | null;
+  eventId: string;
+  onAddSuggestedDish?: (suggestionName: string) => void;
 }
 
 export function MenuIntelligenceSection({
@@ -113,6 +126,11 @@ export function MenuIntelligenceSection({
   onShowAddDialogChange,
   onSelectedDishIdChange,
   onSelectedCourseChange,
+  recipes = [],
+  onCreateDishInline,
+  isCreatingDish = false,
+  templateSuggestions = [],
+  onAddSuggestedDish,
 }: MenuIntelligenceSectionProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -185,6 +203,11 @@ export function MenuIntelligenceSection({
             selectedCourse={selectedCourse}
             selectedDishId={selectedDishIdForAdd}
             showAddDialog={showAddDishDialog}
+            recipes={recipes}
+            onCreateDishInline={onCreateDishInline}
+            isCreatingDish={isCreatingDish}
+            templateSuggestions={templateSuggestions}
+            onAddSuggestedDish={onAddSuggestedDish}
           />
         </TabsContent>
 

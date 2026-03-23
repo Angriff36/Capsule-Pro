@@ -58,52 +58,70 @@ async function getCalendarData(tenantId: string, start: Date, end: Date) {
     details: `Type: ${e.eventType}`,
   })));
 
-  // Fetch shifts (from scheduling)
+  // Fetch shifts from tenant_staff.schedule_shifts
   try {
-    const shifts = await database.$queryRaw`
-      SELECT s.id, s.shift_date, s.shift_start, s.shift_end, s.role,
-             u.first_name, u.last_name
-      FROM scheduling.shifts s
-      LEFT JOIN public.users u ON s.user_id = u.id
-      WHERE s.tenant_id = ${tenantId}
-        AND s.shift_date >= ${start}
-        AND s.shift_date <= ${end}
-      ORDER BY s.shift_date ASC
-      LIMIT 100
-    ` as any[];
+    const shifts = await database.scheduleShift.findMany({
+      where: {
+        tenantId,
+        shift_start: {
+          gte: start,
+          lte: end,
+        },
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        shift_start: true,
+        shift_end: true,
+        role_during_shift: true,
+        employeeId: true,
+      },
+      orderBy: { shift_start: "asc" },
+      take: 100,
+    });
 
     if (shifts && shifts.length > 0) {
       events.push(...shifts.map(s => ({
         id: s.id,
-        title: `Shift: ${s.role || "Staff"}`,
-        start: new Date(s.shift_date + "T" + (s.shift_start || "09:00")),
-        end: s.shift_end ? new Date(s.shift_date + "T" + s.shift_end) : undefined,
+        title: `Shift: ${s.role_during_shift || "Staff"}`,
+        start: s.shift_start,
+        end: s.shift_end ?? undefined,
         type: "shift" as const,
-        assignedTo: s.first_name && s.last_name ? `${s.first_name} ${s.last_name}` : undefined,
-        details: s.role ? `Role: ${s.role}` : undefined,
+        details: s.role_during_shift ? `Role: ${s.role_during_shift}` : undefined,
       })));
     }
   } catch (error) {
-    // Shifts table might not exist or have different schema
+    // Shifts query failed
     console.log("No shifts found:", error);
   }
 
-  // Fetch time off requests
+  // Fetch time off requests from tenant_staff.employee_time_off_requests
   try {
-    const timeOff = await database.$queryRaw`
-      SELECT id, start_date, end_date, reason, status, user_id
-      FROM scheduling.time_off
-      WHERE tenant_id = ${tenantId}
-        AND start_date >= ${start}
-        AND start_date <= ${end}
-      ORDER BY start_date ASC
-      LIMIT 50
-    ` as any[];
+    const timeOff = await database.employeeTimeOffRequest.findMany({
+      where: {
+        tenant_id: tenantId,
+        start_date: {
+          gte: start,
+          lte: end,
+        },
+        deleted_at: null,
+      },
+      select: {
+        id: true,
+        start_date: true,
+        end_date: true,
+        reason: true,
+        status: true,
+        request_type: true,
+      },
+      orderBy: { start_date: "asc" },
+      take: 50,
+    });
 
     if (timeOff && timeOff.length > 0) {
       events.push(...timeOff.map(t => ({
         id: t.id,
-        title: "Time Off",
+        title: `${t.request_type?.replace(/_/g, " ") || "Time Off"}`,
         start: new Date(t.start_date),
         end: t.end_date ? new Date(t.end_date) : undefined,
         type: "timeoff" as const,

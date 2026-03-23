@@ -72,7 +72,10 @@ const getDate = (formData: FormData, key: string): Date | undefined => {
     return;
   }
 
-  const dateValue = new Date(`${value}T00:00:00`);
+  // Use noon UTC to avoid timezone shifts across midnight boundaries
+  // PostgreSQL @db.Date stores only the date portion, so the time doesn't matter
+  // but using noon ensures the date doesn't shift when converted between timezones
+  const dateValue = new Date(`${value}T12:00:00Z`);
   return Number.isNaN(dateValue.getTime()) ? undefined : dateValue;
 };
 
@@ -90,6 +93,15 @@ const getList = (formData: FormData, key: string): string[] =>
     .split(",")
     .map((item) => item.trim())
     .filter(Boolean);
+
+const getTemplateId = (formData: FormData): string | null => {
+  const value = formData.get("templateId");
+  if (typeof value !== "string") {
+    return null;
+  }
+  const trimmed = value.trim();
+  return trimmed.length > 0 ? trimmed : null;
+};
 
 const MISSING_FIELD_TAG_PREFIX = "needs:";
 
@@ -188,6 +200,7 @@ export const createEvent = async (
     accessibilityOptions: getList(formData, "accessibilityOptions"),
     featuredMediaUrl: getOptionalString(formData, "featuredMediaUrl"),
     tags: getTags(formData),
+    templateId: getTemplateId(formData),
   };
 
   const parsed = createEventSchema.safeParse(rawData);
@@ -222,7 +235,8 @@ export const createEvent = async (
           eventNumber,
           title: data.title,
           eventType: data.eventType,
-          eventDate: new Date(`${data.eventDate}T00:00:00`),
+          // Use noon UTC to avoid timezone shifts across midnight boundaries
+          eventDate: new Date(`${data.eventDate}T12:00:00Z`),
           guestCount: data.guestCount,
           status: data.status,
           budget: data.budget ?? null,
@@ -235,6 +249,7 @@ export const createEvent = async (
           venueAddress: data.venueAddress,
           notes: data.notes,
           tags: data.tags,
+          templateId: rawData.templateId,
         },
       });
 

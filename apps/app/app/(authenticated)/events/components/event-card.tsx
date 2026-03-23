@@ -11,7 +11,9 @@ import {
 } from "@repo/design-system/components/ui/card";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { CalendarDaysIcon, MapPinIcon, UsersIcon } from "lucide-react";
+import { Progress } from "@repo/design-system/components/ui/progress";
 import Link from "next/link";
+import { parseISODateToLocal } from "../../../lib/format";
 import { DeleteEventButton } from "./delete-event-button";
 
 const statusVariantMap = {
@@ -33,14 +35,28 @@ export interface EventCardEvent {
   guestCount: number;
   venueName: string | null;
   tags: string[];
+  hasClient: boolean;
+  hasMenu: boolean;
+  hasPrepList: boolean;
+  hasContract: boolean;
 }
 
 export function EventCard({ event }: { event: EventCardEvent }) {
-  const date = new Date(event.eventDate);
+  // Parse ISO date string to local Date to avoid timezone shifts
+  const date = parseISODateToLocal(event.eventDate);
   const displayTags = event.tags.filter((tag) => !tag.startsWith("needs:"));
   const variant =
     statusVariantMap[event.status as keyof typeof statusVariantMap] ??
     "outline";
+
+  // Calculate setup progress
+  const setupProgress = [
+    event.hasClient,
+    !!event.venueName,
+    event.hasMenu,
+    event.hasPrepList,
+  ].filter(Boolean).length;
+  const progressPercent = (setupProgress / 4) * 100;
 
   return (
     <Link className="block" href={`/events/${event.id}`}>
@@ -110,6 +126,12 @@ export function EventCard({ event }: { event: EventCardEvent }) {
               )}
             </div>
           )}
+          <div className="pt-2 mt-2 border-t border-border">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Progress value={progressPercent} className="h-1.5 flex-1" />
+              <span>{setupProgress}/4</span>
+            </div>
+          </div>
         </CardContent>
 
         <CardAction>

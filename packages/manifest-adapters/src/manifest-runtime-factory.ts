@@ -184,30 +184,33 @@ async function resolveUserRole(
     return user;
   }
 
-  try {
-    const record = await prisma.user.findFirst({
-      where: {
-        id: user.id,
-        tenantId: user.tenantId,
-        deletedAt: null,
-      },
-      select: { role: true },
-    });
+  // Clerk user IDs (e.g. user_...) are not UUIDs. Detect non-UUID format
+  // and skip the UUID-based lookup to avoid poisoning Neon transactions.
+  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user.id);
 
-    if (record?.role) {
-      return { ...user, role: record.role };
-    }
-  } catch (error) {
-    // Clerk user IDs (e.g. user_...) are not UUIDs. Some callers still pass
-    // auth IDs instead of internal DB UUIDs; fallback below resolves role by
-    // authUserId when UUID lookup fails.
-    const msg = error instanceof Error ? error.message : String(error);
-    if (!msg.includes("invalid input syntax for type uuid")) {
-      throw error;
+  if (isUuid) {
+    try {
+      const record = await prisma.user.findFirst({
+        where: {
+          id: user.id,
+          tenantId: user.tenantId,
+          deletedAt: null,
+        },
+        select: { role: true },
+      });
+
+      if (record?.role) {
+        return { ...user, role: record.role };
+      }
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error);
+      if (!msg.includes("invalid input syntax for type uuid")) {
+        throw error;
+      }
     }
   }
 
-  // Fallback lookup by authUserId for Clerk-style IDs.
+  // Lookup by authUserId for Clerk-style IDs (or as fallback for UUID lookup).
   const byAuthUser = await (
     prisma.user.findFirst as unknown as (
       args: unknown
@@ -264,11 +267,18 @@ export async function createManifestRuntime(
     );
   }
 
-  // Use override client when provided (for atomic multi-entity writes)
-  const prisma = deps.prismaOverride ?? deps.prisma;
+  // CRITICAL: Use the MAIN prisma client for internal lookups (user role resolution).
+  // Using the transaction client (prismaOverride) for lookups can poison Neon transactions
+  // when the lookup fails or returns unexpected results.
+  // The transaction client should ONLY be used for user-requested writes.
+  const prismaForLookups = deps.prisma;
+
+  // Use override client for writes when provided (for atomic multi-entity writes)
+  const prismaForWrites = deps.prismaOverride ?? deps.prisma;
 
   // 1. Resolve role from DB when not provided by the caller.
-  const resolvedUser = await resolveUserRole(prisma, ctx.user);
+  // ALWAYS use main client for lookups to avoid transaction poisoning.
+  const resolvedUser = await resolveUserRole(prismaForLookups, ctx.user);
 
   // 2. Load precompiled IR.
   const ir = getManifestIR();
@@ -289,7 +299,7 @@ export async function createManifestRuntime(
 
       // biome-ignore lint/suspicious/noExplicitAny: PrismaStoreConfig expects the full PrismaClient; callers inject a structurally-compatible superset.
       const config: PrismaStoreConfig = {
-        prisma: prisma as any,
+        prisma: prismaForWrites as any,
         entityName,
         tenantId: resolvedUser.tenantId,
         outboxWriter,
@@ -305,7 +315,7 @@ export async function createManifestRuntime(
     );
     // biome-ignore lint/suspicious/noExplicitAny: PrismaJsonStore expects the full PrismaClient; callers inject a structurally-compatible superset.
     return new PrismaJsonStore({
-      prisma: prisma as any,
+      prisma: prismaForWrites as any,
       tenantId: resolvedUser.tenantId,
       entityType: entityName,
     });
@@ -338,7 +348,7 @@ export async function createManifestRuntime(
         const aggregateId = (result.result as { id?: string })?.id || "unknown";
 
         const eventsToWrite = result.emittedEvents.map((event) => ({
-          eventType: event.name,
+          eventType: event.name || "unknown",
           payload: event.payload,
           aggregateId,
         }));
@@ -381,7 +391,7 @@ export async function createManifestRuntime(
   // biome-ignore lint/suspicious/noExplicitAny: PrismaIdempotencyStore expects the full PrismaClient; callers inject a structurally-compatible superset.
   const idempotencyStore = deps.idempotency
     ? new PrismaIdempotencyStore({
-        prisma: prisma as any,
+        prisma: prismaForWrites as any,
         tenantId: resolvedUser.tenantId,
       })
     : undefined;

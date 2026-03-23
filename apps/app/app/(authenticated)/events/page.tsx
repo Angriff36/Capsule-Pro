@@ -52,6 +52,7 @@ const EventsPage = async () => {
       venueName: true,
       tags: true,
       createdAt: true,
+      clientId: true,
     },
     orderBy: [{ eventDate: "desc" }, { createdAt: "desc" }],
   });
@@ -185,6 +186,10 @@ const EventsPage = async () => {
               guestCount: event.guestCount ?? 0,
               venueName: event.venueName,
               tags: event.tags ?? [],
+              hasClient: !!event.clientId,
+              hasMenu: false,  // Would need separate query
+              hasPrepList: false,  // Would need separate query
+              hasContract: false,  // Would need separate query,
             }))}
           />
         )}

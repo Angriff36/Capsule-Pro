@@ -15,6 +15,13 @@ interface EventFormProps {
     formData: FormData
   ) => Promise<CreateEventState>;
   submitLabel: string;
+  templateDefaults?: {
+    eventType?: string;
+    guestCount?: number;
+    serviceStyle?: string;
+    tags?: string[];
+    templateId?: string;
+  } | null;
 }
 
 const formatDateValue = (value?: Date | null): string => {
@@ -22,7 +29,13 @@ const formatDateValue = (value?: Date | null): string => {
     return "";
   }
 
-  return value.toISOString().slice(0, 10);
+  // Extract date components directly to avoid timezone shifts
+  // PostgreSQL DATE type stores just the date, so we need to extract
+  // the date portion as stored, not converted to UTC
+  const year = value.getFullYear();
+  const month = String(value.getMonth() + 1).padStart(2, '0');
+  const day = String(value.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
 
 const formatDecimalValue = (
@@ -35,7 +48,7 @@ const formatDecimalValue = (
   return value.toString();
 };
 
-export const EventForm = ({ event, action, submitLabel }: EventFormProps) => {
+export const EventForm = ({ event, action, submitLabel, templateDefaults }: EventFormProps) => {
   const isEdit = Boolean(event?.id);
   const [state, formAction, isPending] = useActionState(action, null);
 
@@ -47,6 +60,9 @@ export const EventForm = ({ event, action, submitLabel }: EventFormProps) => {
         </div>
       )}
       {isEdit ? <input name="eventId" type="hidden" value={event?.id} /> : null}
+      {templateDefaults?.templateId ? (
+        <input name="templateId" type="hidden" value={templateDefaults.templateId} />
+      ) : null}
       <div className="grid gap-6 md:grid-cols-2">
         <div className="flex flex-col gap-2">
           <label className="font-medium text-sm" htmlFor="eventNumber">
@@ -89,7 +105,7 @@ export const EventForm = ({ event, action, submitLabel }: EventFormProps) => {
             Event type
           </label>
           <Input
-            defaultValue={event?.eventType ?? ""}
+            defaultValue={event?.eventType ?? templateDefaults?.eventType ?? ""}
             id="eventType"
             name="eventType"
             placeholder="catering"
@@ -133,7 +149,7 @@ export const EventForm = ({ event, action, submitLabel }: EventFormProps) => {
             Guest count
           </label>
           <Input
-            defaultValue={event?.guestCount ?? 1}
+            defaultValue={event?.guestCount ?? templateDefaults?.guestCount ?? 1}
             id="guestCount"
             min={1}
             name="guestCount"
@@ -225,7 +241,7 @@ export const EventForm = ({ event, action, submitLabel }: EventFormProps) => {
             Tags (comma separated)
           </label>
           <Input
-            defaultValue={event?.tags?.join(", ") ?? ""}
+            defaultValue={event?.tags?.join(", ") ?? templateDefaults?.tags?.join(", ") ?? ""}
             id="tags"
             name="tags"
             placeholder="vip, offsite"

@@ -43,12 +43,14 @@ const pnpmBin = process.platform === "win32" ? "pnpm.cmd" : "pnpm";
 // Must stay in sync with ENTITY_DOMAIN_MAP in scripts/manifest/generate-all-routes.mjs
 // and ENTITY_DOMAIN_MAP in scripts/manifest/generate-route-manifest.ts.
 const ENTITY_DOMAIN_MAP = {
-  // Kitchen Operations
+  // ─── Kitchen Operations ───
   PrepTask: "kitchen/prep-tasks",
+  PrepTaskPlanWorkflow: "kitchen/prep-task-plan-workflows",
   KitchenTask: "kitchen/kitchen-tasks",
   Recipe: "kitchen/recipes",
   RecipeVersion: "kitchen/recipe-versions",
   RecipeIngredient: "kitchen/recipe-ingredients",
+  RecipeStep: "kitchen/recipe-steps",
   Ingredient: "kitchen/ingredients",
   Dish: "kitchen/dishes",
   Menu: "kitchen/menus",
@@ -64,19 +66,23 @@ const ENTITY_DOMAIN_MAP = {
   AllergenWarning: "kitchen/allergen-warnings",
   AlertsConfig: "kitchen/alerts-config",
   OverrideAudit: "kitchen/override-audits",
-  // Events & Catering
+  // ─── Events & Catering ───
   Event: "events/event",
   EventProfitability: "events/profitability",
   EventSummary: "events/summaries",
   EventReport: "events/reports",
   EventBudget: "events/budgets",
   BudgetLineItem: "events/budget-line-items",
+  BudgetAlert: "events/budget-alerts",
   CateringOrder: "events/catering-orders",
   BattleBoard: "events/battle-boards",
   EventGuest: "events/guests",
   EventContract: "events/contracts",
   ContractSignature: "events/contract-signatures",
-  // CRM & Sales
+  EventDish: "events/event-dishes",
+  EventStaff: "events/staff",
+  EventImportWorkflow: "events/import-workflows",
+  // ─── CRM & Sales ───
   Client: "crm/clients",
   ClientContact: "crm/client-contacts",
   ClientPreference: "crm/client-preferences",
@@ -84,7 +90,7 @@ const ENTITY_DOMAIN_MAP = {
   Proposal: "crm/proposals",
   ProposalLineItem: "crm/proposal-line-items",
   ClientInteraction: "crm/client-interactions",
-  // Purchasing & Inventory
+  // ─── Purchasing & Inventory ───
   PurchaseOrder: "inventory/purchase-orders",
   PurchaseOrderItem: "inventory/purchase-order-items",
   Shipment: "shipments/shipment",
@@ -94,21 +100,47 @@ const ENTITY_DOMAIN_MAP = {
   CycleCountSession: "inventory/cycle-count/sessions",
   CycleCountRecord: "inventory/cycle-count/records",
   VarianceReport: "inventory/cycle-count/variance-reports",
-  // Staff & Scheduling
+  BulkOrderRule: "inventory/bulk-order-rules",
+  PricingTier: "inventory/pricing-tiers",
+  VendorCatalog: "inventory/vendor-catalogs",
+  // ─── Staff & Scheduling ───
   User: "staff/employees",
   Schedule: "staff/schedules",
   ScheduleShift: "staff/shifts",
   TimeEntry: "timecards/entries",
   TimecardEditRequest: "timecards/edit-requests",
-  // Command Board
+  TimeOffRequest: "timecards/time-off-requests",
+  EmployeeAvailability: "staff/availability",
+  EmployeeCertification: "staff/certifications",
+  // ─── Payroll ───
+  PayrollPeriod: "payroll/periods",
+  PayrollRun: "payroll/runs",
+  PayrollApprovalHistory: "payroll/approval-history",
+  EmployeeDeduction: "payroll/deductions",
+  LaborBudget: "payroll/labor-budgets",
+  // ─── Training ───
+  TrainingAssignment: "training/assignments",
+  TrainingModule: "training/modules",
+  // ─── Command Board ───
   CommandBoard: "command-board/boards",
   CommandBoardCard: "command-board/cards",
   CommandBoardGroup: "command-board/groups",
   CommandBoardConnection: "command-board/connections",
   CommandBoardLayout: "command-board/layouts",
-  // Workflows & Notifications
+  // ─── Workflows & Notifications ───
   Workflow: "collaboration/workflows",
   Notification: "collaboration/notifications",
+  EmailTemplate: "communications/email-templates",
+  EmailWorkflow: "communications/email-workflows",
+  // ─── Administrative ───
+  AdminTask: "administrative/tasks",
+  AdminChatParticipant: "administrative/chat/participants",
+  // ─── Settings ───
+  ApiKey: "settings/api-keys",
+  // ─── Accounting ───
+  ChartOfAccount: "accounting/chart-of-accounts",
+  // ─── Role Policy ───
+  RolePolicy: "rolepolicy/policies",
 };
 
 // Build a reverse map: flat entity segment → domain path

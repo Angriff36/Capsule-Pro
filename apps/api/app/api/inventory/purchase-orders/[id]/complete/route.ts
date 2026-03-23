@@ -157,21 +157,30 @@ export async function POST(request: Request, context: RouteContext) {
         })
       );
 
-      // Update inventory item quantities (quantity on hand)
+      // Get all inventory items in one query (fix N+1)
+      const itemIds = updatedItems
+        .filter((item) => Number(item.quantityReceived) > 0)
+        .map((item) => item.itemId);
+
+      const inventoryItems = await tx.inventoryItem.findMany({
+        where: {
+          id: { in: itemIds },
+          tenantId,
+          deletedAt: null,
+        },
+      });
+
+      const inventoryItemMap = new Map(
+        inventoryItems.map((item) => [item.id, item])
+      );
+
+      // Update inventory item quantities in batch (fix N+1)
       await Promise.all(
         updatedItems.map(async (item) => {
           const quantityReceived = Number(item.quantityReceived);
 
           if (quantityReceived > 0) {
-            // Get current inventory item
-            const inventoryItem = await tx.inventoryItem.findFirst({
-              where: {
-                id: item.itemId,
-                tenantId,
-                deletedAt: null,
-              },
-            });
-
+            const inventoryItem = inventoryItemMap.get(item.itemId);
             if (inventoryItem) {
               const currentQuantity = Number(inventoryItem.quantityOnHand);
               const newQuantity = currentQuantity + quantityReceived;

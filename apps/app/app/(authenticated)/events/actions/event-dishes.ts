@@ -5,6 +5,173 @@ import { database, Prisma } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 
+// Recipe options for inline dish creation
+export interface RecipeForDishCreation {
+  id: string;
+  name: string;
+  category: string | null;
+}
+
+export async function getRecipesForDishCreation(): Promise<
+  RecipeForDishCreation[]
+> {
+  const { orgId } = await auth();
+  if (!orgId) {
+    throw new Error("Unauthorized");
+  }
+
+  const tenantId = await getTenantIdForOrg(orgId);
+
+  const recipes = await database.$queryRaw<
+    {
+      id: string;
+      name: string;
+      category: string | null;
+    }[]
+  >(
+    Prisma.sql`
+      SELECT
+        id,
+        name,
+        category
+      FROM tenant_kitchen.recipes
+      WHERE tenant_id = ${tenantId}
+        AND deleted_at IS NULL
+      ORDER BY name ASC
+    `
+  );
+
+  return recipes;
+}
+
+export interface InlineDishResult {
+  id: string;
+  name: string;
+  category: string | null;
+  recipe_name: string | null;
+}
+
+export async function createDishAndAddToEvent(
+  eventId: string,
+  name: string,
+  recipeId: string,
+  category?: string,
+  course?: string
+): Promise<{ success: boolean; dish?: InlineDishResult; error?: string }> {
+  const { orgId, userId } = await auth();
+  if (!(orgId && userId)) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  const tenantId = await getTenantIdForOrg(orgId);
+
+  if (!name?.trim()) {
+    return { success: false, error: "Dish name is required" };
+  }
+
+  if (!recipeId?.trim()) {
+    return { success: false, error: "Recipe is required" };
+  }
+
+  // Verify recipe exists
+  const [recipe] = await database.$queryRaw<{ id: string; name: string }[]>(
+    Prisma.sql`
+      SELECT id, name
+      FROM tenant_kitchen.recipes
+      WHERE tenant_id = ${tenantId}
+        AND id = ${recipeId}
+        AND deleted_at IS NULL
+      LIMIT 1
+    `
+  );
+
+  if (!recipe) {
+    return { success: false, error: "Recipe not found" };
+  }
+
+  try {
+    const dishId = await database.$executeRaw(Prisma.sql`
+      INSERT INTO tenant_kitchen.dishes (
+        tenant_id,
+        id,
+        recipe_id,
+        name,
+        description,
+        category,
+        is_active,
+        created_at,
+        updated_at
+      ) VALUES (
+        ${tenantId},
+        gen_random_uuid(),
+        ${recipeId},
+        ${name.trim()},
+        null,
+        ${category?.trim() || null},
+        true,
+        NOW(),
+        NOW()
+      )
+      RETURNING id
+    `);
+
+    // Get the created dish ID
+    const [createdDish] = await database.$queryRaw<{ id: string }[]>(
+      Prisma.sql`
+        SELECT id FROM tenant_kitchen.dishes
+        WHERE tenant_id = ${tenantId}
+          AND recipe_id = ${recipeId}
+          AND name = ${name.trim()}
+        ORDER BY created_at DESC
+        LIMIT 1
+      `
+    );
+
+    if (!createdDish) {
+      return { success: false, error: "Failed to create dish" };
+    }
+
+    // Add to event
+    await database.$executeRaw(Prisma.sql`
+      INSERT INTO tenant_events.event_dishes (
+        tenant_id,
+        id,
+        event_id,
+        dish_id,
+        course,
+        quantity_servings,
+        created_at,
+        updated_at
+      ) VALUES (
+        ${tenantId},
+        gen_random_uuid(),
+        ${eventId},
+        ${createdDish.id},
+        ${course ?? null},
+        1,
+        NOW(),
+        NOW()
+      )
+    `);
+
+    revalidatePath(`/events/${eventId}`);
+    revalidatePath("/kitchen/recipes");
+
+    return {
+      success: true,
+      dish: {
+        id: createdDish.id,
+        name: name.trim(),
+        category: category?.trim() || null,
+        recipe_name: recipe.name,
+      },
+    };
+  } catch (error) {
+    console.error("Error creating dish and adding to event:", error);
+    return { success: false, error: "Failed to create dish" };
+  }
+}
+
 export async function getEventDishes(eventId: string) {
   const { orgId } = await auth();
   if (!orgId) {

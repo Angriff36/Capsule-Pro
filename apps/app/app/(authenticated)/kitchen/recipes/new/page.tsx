@@ -18,13 +18,39 @@ const NewRecipePage = async () => {
     notFound();
   }
 
-  const units = await database.$queryRaw<UnitRow[]>(
+  // Fetch units and prioritize yield-appropriate units (servings, each, portions, etc.)
+  // Temperature units like celsius should not be defaults for recipe yield
+  const allUnits = await database.$queryRaw<UnitRow[]>(
     Prisma.sql`
       SELECT id, code, name
       FROM core.units
       ORDER BY code ASC
     `
   );
+
+  // Yield-appropriate units in priority order
+  const yieldUnitPriority = ["servings", "each", "portions", "pieces", "items", "dozen", "batch", "pan", "sheet"];
+
+  // Sort units: yield-appropriate first (in priority order), then rest alphabetically
+  const units = allUnits.sort((a, b) => {
+    const aPriority = yieldUnitPriority.indexOf(a.code.toLowerCase());
+    const bPriority = yieldUnitPriority.indexOf(b.code.toLowerCase());
+
+    // If both are in priority list, sort by priority
+    if (aPriority !== -1 && bPriority !== -1) {
+      return aPriority - bPriority;
+    }
+    // If only a is in priority list, a comes first
+    if (aPriority !== -1) {
+      return -1;
+    }
+    // If only b is in priority list, b comes first
+    if (bPriority !== -1) {
+      return 1;
+    }
+    // Neither in priority list, sort alphabetically
+    return a.code.localeCompare(b.code);
+  });
 
   return (
     <>

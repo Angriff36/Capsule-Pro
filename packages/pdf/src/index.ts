@@ -3,10 +3,12 @@ export { BattleBoardPDF } from "./templates/battle-board";
 export { ContractPDF } from "./templates/contract";
 export { EventDetailPDF } from "./templates/event-detail";
 export { PackingListPDF } from "./templates/packing-list";
+export { PrepListPDF } from "./templates/prep-list";
 export { ProposalPDF } from "./templates/proposal";
 export type {
   EventDetailPDFData,
   PackingListPDFData,
   PDFConfig,
   PDFGenerationOptions,
+  PrepListPDFData,
 } from "./types";

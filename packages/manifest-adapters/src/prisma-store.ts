@@ -51,34 +51,19 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
-    const tasks = (await this.prisma.prepTask.findMany({
+    // Use Prisma include to fetch claims in a single query (fixes N+1)
+    const tasksWithClaims = await this.prisma.prepTask.findMany({
       where: { tenantId: this.tenantId, deletedAt: null },
-    })) as PrepTask[];
+      include: {
+        claims: {
+          where: { releasedAt: null },
+          orderBy: { claimedAt: "desc" },
+        },
+      },
+    });
 
-    // Fetch claims separately and map them
-    const taskIds = tasks.map((t) => t.id);
-    const claims =
-      taskIds.length > 0
-        ? await this.prisma.kitchenTaskClaim.findMany({
-            where: {
-              tenantId: this.tenantId,
-              taskId: { in: taskIds },
-              releasedAt: null,
-            },
-            orderBy: { claimedAt: "desc" },
-          })
-        : [];
-
-    // Group claims by taskId
-    const claimsByTaskId = new Map<string, KitchenTaskClaim[]>();
-    for (const claim of claims) {
-      const existing = claimsByTaskId.get(claim.taskId) || [];
-      existing.push(claim);
-      claimsByTaskId.set(claim.taskId, existing);
-    }
-
-    return tasks.map((task) =>
-      this.mapToManifestEntity(task, claimsByTaskId.get(task.id) || [])
+    return tasksWithClaims.map((task) =>
+      this.mapToManifestEntity(task as PrepTask, task.claims || [])
     );
   }
 
@@ -979,6 +964,7 @@ export class KitchenTaskPrismaStore implements Store<EntityInstance> {
       where: { tenantId: this.tenantId, deletedAt: null },
     })) as KitchenTask[];
 
+    // Fetch claims in batch (not N+1 - uses single IN query)
     const taskIds = tasks.map((t) => t.id);
     const claims =
       taskIds.length > 0
@@ -2879,19 +2865,26 @@ export function createPrismaOutboxWriter(
   return async (tx: PrismaClient, events: unknown[]) => {
     for (const event of events) {
       const eventData = event as {
-        name: string;
+        name?: string;
+        eventType?: string;
         payload: { id?: string; taskId?: string };
+        aggregateId?: string;
       };
       await tx.outboxEvent.create({
         data: {
           tenantId,
           aggregateType: entityName,
-          eventType: eventData.name,
+          eventType: eventData.eventType || eventData.name || "unknown",
           payload: eventData.payload as Prisma.InputJsonValue,
           aggregateId:
-            eventData.payload.taskId || eventData.payload.id || "unknown",
+            eventData.aggregateId || eventData.payload.taskId || eventData.payload.id || "unknown",
           status: "pending",
         },
+      });
+    }
+  };
+}
+    },
       });
     }
   };

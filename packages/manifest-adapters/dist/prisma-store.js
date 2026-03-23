@@ -21,29 +21,17 @@ export class PrepTaskPrismaStore {
         this.tenantId = tenantId;
     }
     async getAll() {
-        const tasks = (await this.prisma.prepTask.findMany({
+        // Use Prisma include to fetch claims in a single query (fixes N+1)
+        const tasksWithClaims = await this.prisma.prepTask.findMany({
             where: { tenantId: this.tenantId, deletedAt: null },
-        }));
-        // Fetch claims separately and map them
-        const taskIds = tasks.map((t) => t.id);
-        const claims = taskIds.length > 0
-            ? await this.prisma.kitchenTaskClaim.findMany({
-                where: {
-                    tenantId: this.tenantId,
-                    taskId: { in: taskIds },
-                    releasedAt: null,
+            include: {
+                claims: {
+                    where: { releasedAt: null },
+                    orderBy: { claimedAt: "desc" },
                 },
-                orderBy: { claimedAt: "desc" },
-            })
-            : [];
-        // Group claims by taskId
-        const claimsByTaskId = new Map();
-        for (const claim of claims) {
-            const existing = claimsByTaskId.get(claim.taskId) || [];
-            existing.push(claim);
-            claimsByTaskId.set(claim.taskId, existing);
-        }
-        return tasks.map((task) => this.mapToManifestEntity(task, claimsByTaskId.get(task.id) || []));
+            },
+        });
+        return tasksWithClaims.map((task) => this.mapToManifestEntity(task, task.claims || []));
     }
     async getById(id) {
         const task = await this.prisma.prepTask.findFirst({
@@ -866,27 +854,17 @@ export class KitchenTaskPrismaStore {
         this.tenantId = tenantId;
     }
     async getAll() {
-        const tasks = (await this.prisma.kitchenTask.findMany({
+        // Use Prisma include to fetch claims in a single query (fixes N+1)
+        const tasksWithClaims = await this.prisma.kitchenTask.findMany({
             where: { tenantId: this.tenantId, deletedAt: null },
-        }));
-        const taskIds = tasks.map((t) => t.id);
-        const claims = taskIds.length > 0
-            ? await this.prisma.kitchenTaskClaim.findMany({
-                where: {
-                    tenantId: this.tenantId,
-                    taskId: { in: taskIds },
-                    releasedAt: null,
+            include: {
+                claims: {
+                    where: { releasedAt: null },
+                    orderBy: { claimedAt: "desc" },
                 },
-                orderBy: { claimedAt: "desc" },
-            })
-            : [];
-        const claimsByTaskId = new Map();
-        for (const claim of claims) {
-            const existing = claimsByTaskId.get(claim.taskId) || [];
-            existing.push(claim);
-            claimsByTaskId.set(claim.taskId, existing);
-        }
-        return tasks.map((task) => this.mapToManifestEntity(task, claimsByTaskId.get(task.id) || []));
+            },
+        });
+        return tasksWithClaims.map((task) => this.mapToManifestEntity(task, task.claims || []));
     }
     async getById(id) {
         const task = await this.prisma.kitchenTask.findFirst({
@@ -2504,9 +2482,9 @@ export function createPrismaOutboxWriter(entityName, tenantId) {
                 data: {
                     tenantId,
                     aggregateType: entityName,
-                    eventType: eventData.name,
+                    eventType: eventData.eventType || eventData.name || "unknown",
                     payload: eventData.payload,
-                    aggregateId: eventData.payload.taskId || eventData.payload.id || "unknown",
+                    aggregateId: eventData.aggregateId || eventData.payload.taskId || eventData.payload.id || "unknown",
                     status: "pending",
                 },
             });

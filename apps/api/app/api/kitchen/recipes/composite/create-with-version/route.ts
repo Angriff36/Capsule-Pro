@@ -1,4 +1,6 @@
 import type { ConstraintOutcome } from "@angriff36/manifest/ir";
+import * as nodeFs from "node:fs";
+const dbg = (msg: string) => { try { nodeFs.appendFileSync('/tmp/recipe-debug.log', `[${new Date().toISOString()}] ${msg}\n`); } catch {} };
 import { auth } from "@repo/auth/server";
 import {
   database,
@@ -100,18 +102,22 @@ interface CreateRecipeRequest {
 }
 
 export async function POST(request: NextRequest) {
+  dbg('POST handler entered');
   try {
     const { orgId, userId } = await auth();
+    dbg(`auth: orgId=${orgId} userId=${userId}`);
     if (!(userId && orgId)) {
       return manifestErrorResponse("Unauthorized", 401);
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
+    dbg(`tenantId: ${tenantId}`);
     if (!tenantId) {
       return manifestErrorResponse("Tenant not found", 400);
     }
 
     const body: CreateRecipeRequest = await request.json();
+    dbg(`body: name=${body.name} yieldQty=${body.yieldQuantity} yieldUnit=${body.yieldUnitId} tags=${JSON.stringify(body.tags)}`);
 
     // Validate required fields
     if (!body.name) {
@@ -135,35 +141,62 @@ export async function POST(request: NextRequest) {
     // Collect all constraint outcomes for potential override response
     let allConstraintOutcomes: ConstraintOutcome[] = [];
 
+    // Execute everything in a single transaction with manifest runtime
     const result = await database.$transaction(async (tx) => {
-      // Create manifest runtime with transaction client override
-      const runtime = await createManifestRuntime(
-        {
-          prisma: database,
-          prismaOverride: tx,
-          log,
-          captureException,
-          telemetry: sentryTelemetry,
-        },
-        {
-          user: { id: userId, tenantId },
-        }
-      );
+      dbg(`Creating runtime WITH transaction. recipeId=${recipeId} versionId=${versionId}`);
+      
+      // Create manifest runtime WITH transaction client
+      // The manifest runtime factory now correctly separates:
+      // - prismaForLookups (main client for internal user lookups)
+      // - prismaForWrites (transaction client for user-requested writes)
+      let runtime;
+      try {
+        runtime = await createManifestRuntime(
+          {
+            prisma: database,
+            prismaOverride: tx,
+            log,
+            captureException,
+            telemetry: sentryTelemetry,
+          },
+          {
+            user: { id: userId, tenantId },
+          }
+        );
+        dbg('Manifest runtime created OK with transaction');
+      } catch (runtimeErr) {
+        dbg(`Manifest runtime FAILED: ${runtimeErr instanceof Error ? runtimeErr.message : String(runtimeErr)}`);
+        throw runtimeErr;
+      }
 
       // 1. Create Recipe
-      const recipeResult = await runtime.runCommand(
-        "create",
-        {
-          id: recipeId,
+      let recipeResult;
+      try {
+        dbg(`1. Creating recipe: ${body.name} id=${recipeId} tags=${JSON.stringify(body.tags)}`);
+        recipeResult = await runtime.runCommand(
+          "create",
+          {
+            id: recipeId,
+            name: body.name,
+            category: body.category || "",
+            cuisineType: body.cuisineType || "",
+            description: body.description || "",
+            tags: body.tags || [],
+            isActive: true,
+          },
+          { entityName: "Recipe" }
+        );
+        dbg(`1. Recipe created OK: ${JSON.stringify(recipeResult?.outcome || 'no outcome').substring(0, 200)}`);
+      } catch (err) {
+        dbg(`1. Recipe creation FAILED: ${err instanceof Error ? err.message : String(err)}\nStack: ${err instanceof Error ? err.stack : 'none'}`);
+        log.error("[composite/create-with-version] Recipe creation failed:", {
+          error: err instanceof Error ? err.message : String(err),
+          stack: err instanceof Error ? err.stack : undefined,
+          recipeId,
           name: body.name,
-          category: body.category || "",
-          cuisineType: body.cuisineType || "",
-          description: body.description || "",
-          tags: body.tags || [],
-          isActive: true,
-        },
-        { entityName: "Recipe" }
-      );
+        });
+        throw err;
+      }
 
       // Collect constraint outcomes
       if (recipeResult.constraintOutcomes) {
@@ -194,29 +227,41 @@ export async function POST(request: NextRequest) {
       }
 
       // 2. Create RecipeVersion (version 1)
-      const versionResult = await runtime.runCommand(
-        "create",
-        {
-          id: versionId,
+      let versionResult;
+      try {
+        versionResult = await runtime.runCommand(
+          "create",
+          {
+            id: versionId,
+            recipeId,
+            name: body.name,
+            category: body.category || "",
+            cuisineType: body.cuisineType || "",
+            description: body.description || "",
+            tags: body.tags || [],
+            versionNumber: 1,
+            yieldQuantity: body.yieldQuantity,
+            yieldUnitId: body.yieldUnitId,
+            yieldDescription: body.yieldDescription || "",
+            prepTimeMinutes: body.prepTimeMinutes || 0,
+            cookTimeMinutes: body.cookTimeMinutes || 0,
+            restTimeMinutes: body.restTimeMinutes || 0,
+            difficultyLevel: body.difficultyLevel || 1,
+            instructions: body.instructions || "",
+            notes: body.notes || "",
+          },
+          { entityName: "RecipeVersion" }
+        );
+      } catch (err) {
+        log.error("[composite/create-with-version] RecipeVersion creation failed:", {
+          error: err instanceof Error ? err.message : String(err),
+          stack: err instanceof Error ? err.stack : undefined,
+          versionId,
           recipeId,
-          name: body.name,
-          category: body.category || "",
-          cuisineType: body.cuisineType || "",
-          description: body.description || "",
-          tags: body.tags || [],
-          versionNumber: 1,
-          yieldQuantity: body.yieldQuantity,
           yieldUnitId: body.yieldUnitId,
-          yieldDescription: body.yieldDescription || "",
-          prepTimeMinutes: body.prepTimeMinutes || 0,
-          cookTimeMinutes: body.cookTimeMinutes || 0,
-          restTimeMinutes: body.restTimeMinutes || 0,
-          difficultyLevel: body.difficultyLevel || 1,
-          instructions: body.instructions || "",
-          notes: body.notes || "",
-        },
-        { entityName: "RecipeVersion" }
-      );
+        });
+        throw err;
+      }
 
       // Collect constraint outcomes
       if (versionResult.constraintOutcomes) {
@@ -404,7 +449,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if this is a transaction aborted error - try to get more info
+    if (error instanceof Error && error.message.includes("current transaction is aborted")) {
+      log.error("[composite/create-with-version] Transaction aborted - original error lost. Request data:", {
+        body: body, // This will help debug what was sent
+      });
+    }
+
     console.error("[composite/create-with-version] Error:", error);
+    const fs = require('fs');
+    fs.appendFileSync('/tmp/recipe-error.log', `\n[${new Date().toISOString()}] ERROR: ${error instanceof Error ? error.message : String(error)}\nSTACK: ${error instanceof Error ? error.stack : 'no stack'}\n`);
     captureException(error);
 
     const message =

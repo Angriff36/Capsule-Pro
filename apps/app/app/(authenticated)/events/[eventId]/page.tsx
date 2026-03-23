@@ -70,6 +70,8 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
     relatedGuestCounts,
     recipeDetails,
     inventoryCoverage,
+    hasContract,
+    staffCount,
   } = data;
 
   // Normalize and validate prep tasks
@@ -139,12 +141,14 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
             event.ticketPrice === null ? null : Number(event.ticketPrice),
         }}
         eventDishes={eventDishes}
+        hasContract={hasContract}
         inventoryCoverage={inventoryCoverage}
         prepTasks={prepTasksForClient}
         recipeDetails={recipeDetails}
         relatedEvents={relatedEvents}
         relatedGuestCounts={relatedGuestCounts}
         rsvpCount={rsvpCount}
+        staffCount={staffCount}
         tenantId={tenantId}
       />
     </>
