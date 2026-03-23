@@ -42,6 +42,9 @@ import type {
   DetectorWarning,
 } from "./types";
 
+/** UUID validation regex - defined at top level for performance */
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 const SEVERITY_ORDER: Record<ConflictSeverity, number> = {
   low: 1,
   medium: 2,
@@ -915,11 +918,13 @@ export async function POST(request: Request) {
   }
 
   // Validate tenantId is a valid UUID format (prevents "operator does not exist: uuid = text" errors)
-  const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-  if (!UUID_REGEX.test(tenantId)) {
+  // Normalize: trim whitespace and convert to lowercase for consistent validation
+  const normalizedTenantId = tenantId.trim().toLowerCase();
+  if (!UUID_REGEX.test(normalizedTenantId)) {
     log.warn("[conflicts/detect] Invalid tenant ID format", {
       correlationId,
       errorCode: "INVALID_TENANT_ID",
+      tenantIdPreview: `${normalizedTenantId.slice(0, 8)}...`,
     });
     return apiError(
       "INVALID_TENANT_ID",
@@ -929,6 +934,8 @@ export async function POST(request: Request) {
       correlationId
     );
   }
+  // Use normalized tenant ID for all subsequent operations
+  const validatedTenantId = normalizedTenantId;
 
   // Parse and validate request body
   let body: unknown;
@@ -997,7 +1004,7 @@ export async function POST(request: Request) {
   if (!entityTypes || entityTypes.includes("scheduling")) {
     const result = await safeDetect(
       "scheduling",
-      () => detectSchedulingConflicts(tenantId, timeRange),
+      () => detectSchedulingConflicts(validatedTenantId, timeRange),
       warnings,
       correlationId
     );
@@ -1007,7 +1014,7 @@ export async function POST(request: Request) {
   if (!entityTypes || entityTypes.includes("staff")) {
     const result = await safeDetect(
       "staff",
-      () => detectStaffConflicts(tenantId, timeRange),
+      () => detectStaffConflicts(validatedTenantId, timeRange),
       warnings,
       correlationId
     );
@@ -1017,7 +1024,7 @@ export async function POST(request: Request) {
   if (!entityTypes || entityTypes.includes("inventory")) {
     const result = await safeDetect(
       "inventory",
-      () => detectInventoryConflicts(tenantId, timeRange),
+      () => detectInventoryConflicts(validatedTenantId, timeRange),
       warnings,
       correlationId
     );
@@ -1027,7 +1034,7 @@ export async function POST(request: Request) {
   if (!entityTypes || entityTypes.includes("equipment")) {
     const result = await safeDetect(
       "equipment",
-      () => detectEquipmentConflicts(tenantId, timeRange),
+      () => detectEquipmentConflicts(validatedTenantId, timeRange),
       warnings,
       correlationId
     );
@@ -1037,7 +1044,7 @@ export async function POST(request: Request) {
   if (!entityTypes || entityTypes.includes("timeline")) {
     const result = await safeDetect(
       "timeline",
-      () => detectTimelineConflicts(tenantId, timeRange),
+      () => detectTimelineConflicts(validatedTenantId, timeRange),
       warnings,
       correlationId
     );
@@ -1047,7 +1054,7 @@ export async function POST(request: Request) {
   if (!entityTypes || entityTypes.includes("venue")) {
     const result = await safeDetect(
       "venue",
-      () => detectVenueConflicts(tenantId, timeRange),
+      () => detectVenueConflicts(validatedTenantId, timeRange),
       warnings,
       correlationId
     );
@@ -1057,7 +1064,7 @@ export async function POST(request: Request) {
   if (!entityTypes || entityTypes.includes("financial")) {
     const result = await safeDetect(
       "financial",
-      () => detectFinancialConflicts(tenantId, timeRange),
+      () => detectFinancialConflicts(validatedTenantId, timeRange),
       warnings,
       correlationId
     );
@@ -1080,7 +1087,7 @@ export async function POST(request: Request) {
   const duration = Date.now() - startTime;
   log.info("[conflicts/detect] Conflict detection complete", {
     correlationId,
-    tenantId,
+    tenantId: validatedTenantId,
     conflictCount: conflicts.length,
     warningCount: warnings.length,
     durationMs: duration,
