@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTenantId } from "@/lib/auth";
-import { createManifestRuntime } from "@repo/manifest-adapters/manifest-runtime-factory";
-import { prisma } from "@repo/database";
+import { auth } from "@repo/auth/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { database } from "@repo/database";
 
 export async function GET(request: NextRequest) {
   try {
-    const tenantId = await getTenantId();
-    if (!tenantId) {
+    const { orgId, userId } = await auth();
+    if (!(userId && orgId)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const tenantId = await getTenantIdForOrg(orgId);
+    if (!tenantId) {
+      return NextResponse.json({ error: "Tenant not found" }, { status: 400 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -33,7 +38,7 @@ export async function GET(request: NextRequest) {
     }
 
     const [transfers, total] = await Promise.all([
-      prisma.inventoryTransfer.findMany({
+      database.inventoryTransfer.findMany({
         where,
         include: {
           items: true,
@@ -42,7 +47,7 @@ export async function GET(request: NextRequest) {
         take: limit,
         skip: offset,
       }),
-      prisma.inventoryTransfer.count({ where }),
+      database.inventoryTransfer.count({ where }),
     ]);
 
     return NextResponse.json({

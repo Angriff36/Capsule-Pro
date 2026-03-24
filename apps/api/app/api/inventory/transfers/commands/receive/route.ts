@@ -1,13 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTenantId } from "@/lib/auth";
-import { prisma } from "@repo/database";
-import { Decimal } from "@prisma/client/runtime/library";
+import { auth } from "@repo/auth/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { database, Prisma } from "@repo/database";
 
 export async function POST(request: NextRequest) {
   try {
-    const tenantId = await getTenantId();
-    if (!tenantId) {
+    const { orgId, userId } = await auth();
+    if (!(userId && orgId)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const tenantId = await getTenantIdForOrg(orgId);
+    if (!tenantId) {
+      return NextResponse.json({ error: "Tenant not found" }, { status: 400 });
     }
 
     const body = await request.json();
@@ -20,7 +25,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const transfer = await prisma.inventoryTransfer.findFirst({
+    const transfer = await database.inventoryTransfer.findFirst({
       where: { tenantId, id: transferId, deletedAt: null },
       include: {
         tenant: true,
@@ -38,7 +43,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    await prisma.$transaction(async (tx) => {
+    await database.$transaction(async (tx: Prisma.TransactionClient) => {
       // Update transfer status
       await tx.inventoryTransfer.update({
         where: { tenantId_id: { tenantId, id: transferId } },
@@ -55,7 +60,7 @@ export async function POST(request: NextRequest) {
         // Update transfer item
         await tx.inventoryTransferItem.updateMany({
           where: { tenantId, transferId, itemId },
-          data: { receivedQuantity: new Decimal(receivedQuantity) },
+          data: { receivedQuantity },
         });
 
         // Create inventory transaction (receipt)
@@ -64,8 +69,8 @@ export async function POST(request: NextRequest) {
             tenantId,
             itemId,
             transactionType: "transfer_in",
-            quantity: new Decimal(receivedQuantity),
-            unit_cost: new Decimal(0),
+            quantity: receivedQuantity,
+            unit_cost: 0,
             reference: transfer.transferNumber,
             referenceType: "inventory_transfer",
             referenceId: transferId,
@@ -80,8 +85,8 @@ export async function POST(request: NextRequest) {
             tenantId,
             itemId,
             transactionType: "transfer_out",
-            quantity: new Decimal(-receivedQuantity),
-            unit_cost: new Decimal(0),
+            quantity: -receivedQuantity,
+            unit_cost: 0,
             reference: transfer.transferNumber,
             referenceType: "inventory_transfer",
             referenceId: transferId,

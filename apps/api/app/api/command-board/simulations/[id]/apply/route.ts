@@ -14,7 +14,13 @@ import { database, EntityType } from "@repo/database";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import type { BoardDelta, BoardProjection, BoardGroup, BoardAnnotation } from "../../../types";
+import type {
+  BoardDelta,
+  BoardProjection,
+  BoardGroup,
+  BoardAnnotation,
+  EntityType as ApiEntityType,
+} from "../../../types";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -235,7 +241,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       id: p.id,
       tenant_id: p.tenantId,
       board_id: p.boardId,
-      entity_type: p.entityType,
+      entity_type: p.entityType as ApiEntityType,
       entity_id: p.entityId,
       position_x: p.positionX,
       position_y: p.positionY,
@@ -252,7 +258,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       id: p.id,
       tenant_id: p.tenantId,
       board_id: p.boardId,
-      entity_type: p.entityType,
+      entity_type: p.entityType as ApiEntityType,
       entity_id: p.entityId,
       position_x: p.positionX,
       position_y: p.positionY,

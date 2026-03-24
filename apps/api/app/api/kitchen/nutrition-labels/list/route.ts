@@ -42,6 +42,7 @@ export async function GET(request: NextRequest) {
           },
           orderBy: { versionNumber: "desc" },
           select: {
+            id: true,
             versionNumber: true,
             yieldQuantity: true,
           },

@@ -1,4 +1,5 @@
 // API route for listing preventive maintenance schedules
+import { Prisma } from "@repo/database";
 import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -32,8 +33,8 @@ export async function GET(request: NextRequest) {
       FROM tenant_facilities.preventive_maintenance_schedules
       WHERE tenant_id = ${tenantId}::uuid
         AND deleted_at IS NULL
-        ${status !== "all" ? database.Prisma.sql`AND status = ${status}` : database.Prisma.empty}
-        ${overdue ? database.Prisma.sql`AND next_due_at < NOW()` : database.Prisma.empty}
+        ${status !== "all" ? Prisma.sql`AND status = ${status}` : Prisma.empty}
+        ${overdue ? Prisma.sql`AND next_due_at < NOW()` : Prisma.empty}
       ORDER BY next_due_at ASC
     `;
 

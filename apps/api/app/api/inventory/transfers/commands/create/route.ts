@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { requireCurrentUser } from "@/lib/tenant";
-import { prisma } from "@repo/database";
+import { requireCurrentUser } from "@/app/lib/tenant";
+import { database, Prisma } from "@repo/database";
 
 export async function POST(request: NextRequest) {
   try {
@@ -27,13 +27,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate transfer number
-    const transferCount = await prisma.inventoryTransfer.count({
+    const transferCount = await database.inventoryTransfer.count({
       where: { tenantId: currentUser.tenantId },
     });
     const transferNumber = `TRF-${String(transferCount + 1).padStart(6, "0")}`;
 
     // Create transfer and items in a transaction
-    const transfer = await prisma.$transaction(async (tx) => {
+    const transfer = await database.$transaction(async (tx: Prisma.TransactionClient) => {
       const newTransfer = await tx.inventoryTransfer.create({
         data: {
           tenantId: currentUser.tenantId,

@@ -1,4 +1,5 @@
 // API route for listing maintenance work orders
+import { Prisma } from "@repo/database";
 import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -36,10 +37,10 @@ export async function GET(request: NextRequest) {
       FROM tenant_facilities.maintenance_work_orders
       WHERE tenant_id = ${tenantId}::uuid
         AND deleted_at IS NULL
-        ${status !== "all" ? database.Prisma.sql`AND status = ${status}` : database.Prisma.empty}
-        ${priority ? database.Prisma.sql`AND priority = ${priority}` : database.Prisma.empty}
-        ${areaId ? database.Prisma.sql`AND area_id = ${areaId}::uuid` : database.Prisma.empty}
-        ${workOrderType ? database.Prisma.sql`AND work_order_type = ${workOrderType}` : database.Prisma.empty}
+        ${status !== "all" ? Prisma.sql`AND status = ${status}` : Prisma.empty}
+        ${priority ? Prisma.sql`AND priority = ${priority}` : Prisma.empty}
+        ${areaId ? Prisma.sql`AND area_id = ${areaId}::uuid` : Prisma.empty}
+        ${workOrderType ? Prisma.sql`AND work_order_type = ${workOrderType}` : Prisma.empty}
       ORDER BY 
         CASE priority 
           WHEN 'critical' THEN 1 

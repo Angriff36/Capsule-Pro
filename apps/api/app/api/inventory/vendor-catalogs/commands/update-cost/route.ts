@@ -82,7 +82,8 @@ export async function POST(request: NextRequest) {
 
     // Process cost updates to related inventory items and recipes
     // This is a designated bypass - mechanical updates from a governed source
-    const catalogEntryId = body.id || result.result?.id;
+    const resultData = result.result as Record<string, unknown> | undefined;
+    const catalogEntryId = body.id || resultData?.id;
     if (catalogEntryId && body.newBaseUnitCost !== undefined) {
       try {
         const costUpdateResult = await processVendorCostUpdate(database, {
@@ -102,7 +103,7 @@ export async function POST(request: NextRequest) {
         // Include cost propagation results in the response
         return manifestSuccessResponse({
           result: {
-            ...result.result,
+            ...(resultData as object),
             costPropagation: costUpdateResult,
           },
           events: result.emittedEvents,
@@ -117,7 +118,7 @@ export async function POST(request: NextRequest) {
         // Return success but warn about cost propagation failure
         return manifestSuccessResponse({
           result: {
-            ...result.result,
+            ...(resultData as object),
             costPropagationError:
               "Failed to propagate costs to inventory items and recipes",
           },

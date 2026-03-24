@@ -1,10 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
-import { database } from "@repo/database";
-import { requireUser } from "@repo/auth";
+import { auth } from "@repo/auth/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { database } from "@/lib/database";
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await requireUser();
+    const { orgId, userId } = await auth();
+    if (!(userId && orgId)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const tenantId = await getTenantIdForOrg(orgId);
+    if (!tenantId) {
+      return NextResponse.json({ error: "Tenant not found" }, { status: 400 });
+    }
+
     const body = await request.json();
     const { versionId } = body;
 
@@ -19,7 +29,7 @@ export async function POST(request: NextRequest) {
     const version = await database.documentVersion.findFirst({
       where: {
         id: versionId,
-        tenantId: user.tenantId,
+        tenantId,
       },
     });
 
@@ -33,7 +43,7 @@ export async function POST(request: NextRequest) {
     // Create a new version with the old content (effectively restoring)
     const latestVersion = await database.documentVersion.findFirst({
       where: {
-        tenantId: user.tenantId,
+        tenantId,
         documentType: version.documentType,
         documentId: version.documentId,
       },
@@ -45,17 +55,17 @@ export async function POST(request: NextRequest) {
 
     const restoredVersion = await database.documentVersion.create({
       data: {
-        tenantId: user.tenantId,
+        tenantId,
         documentType: version.documentType,
         documentId: version.documentId,
         versionNumber: nextVersionNumber,
         content: version.content,
         changeSummary: `Restored from version ${version.versionNumber}`,
-        createdById: user.id,
+        createdById: userId,
       },
       include: {
         createdBy: {
-          select: { id: true, name: true, email: true },
+          select: { id: true, firstName: true, lastName: true, email: true },
         },
       },
     });

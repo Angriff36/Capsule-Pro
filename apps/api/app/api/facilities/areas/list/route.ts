@@ -1,4 +1,5 @@
 // API route for listing facility areas
+import { Prisma } from "@repo/database";
 import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -25,15 +26,6 @@ export async function GET(request: NextRequest) {
     const areaType = searchParams.get("areaType");
     const status = searchParams.get("status") || "active";
 
-    const where: any = {
-      tenantId,
-      deletedAt: null,
-    };
-
-    if (venueId) where.venueId = venueId;
-    if (areaType) where.areaType = areaType;
-    if (status !== "all") where.status = status;
-
     const areas = await database.$queryRaw`
       SELECT 
         id, venue_id, name, code, area_type, floor, description,
@@ -41,9 +33,9 @@ export async function GET(request: NextRequest) {
       FROM tenant_facilities.facility_areas
       WHERE tenant_id = ${tenantId}::uuid
         AND deleted_at IS NULL
-        ${venueId ? database.Prisma.sql`AND venue_id = ${venueId}::uuid` : database.Prisma.empty}
-        ${areaType ? database.Prisma.sql`AND area_type = ${areaType}` : database.Prisma.empty}
-        ${status !== "all" ? database.Prisma.sql`AND status = ${status}` : database.Prisma.empty}
+        ${venueId ? Prisma.sql`AND venue_id = ${venueId}::uuid` : Prisma.empty}
+        ${areaType ? Prisma.sql`AND area_type = ${areaType}` : Prisma.empty}
+        ${status !== "all" ? Prisma.sql`AND status = ${status}` : Prisma.empty}
       ORDER BY name
     `;
 

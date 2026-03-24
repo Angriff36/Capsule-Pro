@@ -375,3 +375,126 @@ export interface UpdateLayoutRequest {
   showGrid?: boolean;
   snapToGrid?: boolean;
 }
+
+// ============================================================================
+// Simulation Types (Phase 5.1)
+// ============================================================================
+
+/** Entity types that can be projected onto a board - matches Prisma enum */
+export type EntityType =
+  | "event"
+  | "client"
+  | "prep_task"
+  | "kitchen_task"
+  | "employee"
+  | "inventory_item"
+  | "recipe"
+  | "dish"
+  | "proposal"
+  | "shipment"
+  | "note"
+  | "risk"
+  | "financial_projection";
+
+/** Simulation status values */
+export const SIMULATION_STATUSES = ["active", "applied", "discarded"] as const;
+export type SimulationStatus = (typeof SIMULATION_STATUSES)[number];
+
+/** A single entity projected onto a board at a specific position (API snake_case format) */
+export interface BoardProjection {
+  id: string;
+  tenant_id: string;
+  board_id: string;
+  entity_type: EntityType;
+  entity_id: string;
+  position_x: number;
+  position_y: number;
+  width: number;
+  height: number;
+  z_index: number;
+  color_override: string | null;
+  collapsed: boolean;
+  group_id: string | null;
+  pinned: boolean;
+}
+
+/** A visual group container on the board (API snake_case format) */
+export interface BoardGroup {
+  id: string;
+  tenant_id: string;
+  board_id: string;
+  name: string;
+  color: string | null;
+  collapsed: boolean;
+  position_x: number;
+  position_y: number;
+  width: number;
+  height: number;
+  z_index: number;
+}
+
+/** A manual annotation (connection, label, or region) on the board (API snake_case format) */
+export interface BoardAnnotation {
+  id: string;
+  board_id: string;
+  annotation_type: string;
+  from_projection_id: string | null;
+  to_projection_id: string | null;
+  label: string | null;
+  color: string | null;
+  style: string | null;
+}
+
+/** Delta between original and simulated board state */
+export interface BoardDelta {
+  added_projections: BoardProjection[];
+  removed_projection_ids: string[];
+  modified_projections: Array<{
+    id: string;
+    field: string;
+    original: unknown;
+    simulated: unknown;
+  }>;
+  added_groups: BoardGroup[];
+  removed_group_ids: string[];
+  added_annotations: BoardAnnotation[];
+  removed_annotation_ids: string[];
+  summary: {
+    additions: number;
+    removals: number;
+    modifications: number;
+    total_changes: number;
+  };
+}
+
+/** Request to create a new simulation */
+export interface CreateSimulationRequest {
+  source_board_id: string;
+  simulation_name: string;
+}
+
+/** Simulation list item for listing endpoints */
+export interface SimulationListItem {
+  id: string;
+  tenant_id: string;
+  source_board_id: string;
+  simulation_name: string;
+  created_at: Date;
+  status: SimulationStatus;
+  projections_count: number;
+  groups_count: number;
+  annotations_count: number;
+}
+
+/** Full simulation context with all data */
+export interface SimulationContext {
+  id: string;
+  tenant_id: string;
+  source_board_id: string;
+  simulation_name: string;
+  created_at: Date;
+  status: SimulationStatus;
+  projections: BoardProjection[];
+  groups: BoardGroup[];
+  annotations: BoardAnnotation[];
+}

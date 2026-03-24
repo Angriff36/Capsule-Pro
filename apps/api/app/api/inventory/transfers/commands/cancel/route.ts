@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTenantId } from "@/lib/auth";
-import { prisma } from "@repo/database";
+import { auth } from "@repo/auth/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { database } from "@repo/database";
 
 export async function POST(request: NextRequest) {
   try {
-    const tenantId = await getTenantId();
-    if (!tenantId) {
+    const { orgId, userId } = await auth();
+    if (!(userId && orgId)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const tenantId = await getTenantIdForOrg(orgId);
+    if (!tenantId) {
+      return NextResponse.json({ error: "Tenant not found" }, { status: 400 });
     }
 
     const body = await request.json();
@@ -19,7 +25,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const transfer = await prisma.inventoryTransfer.findFirst({
+    const transfer = await database.inventoryTransfer.findFirst({
       where: { tenantId, id: transferId, deletedAt: null },
     });
 
@@ -34,7 +40,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const updatedTransfer = await prisma.inventoryTransfer.update({
+    const updatedTransfer = await database.inventoryTransfer.update({
       where: { tenantId_id: { tenantId, id: transferId } },
       data: {
         status: "cancelled",

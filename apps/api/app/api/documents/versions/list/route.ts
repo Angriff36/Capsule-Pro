@@ -1,12 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
-import { database } from "@repo/database";
-import { requireUser } from "@repo/auth";
+import { auth } from "@repo/auth/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { database } from "@/lib/database";
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await requireUser();
+    const { orgId, userId } = await auth();
+    if (!(userId && orgId)) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const tenantId = await getTenantIdForOrg(orgId);
+    if (!tenantId) {
+      return NextResponse.json({ error: "Tenant not found" }, { status: 400 });
+    }
+
     const { searchParams } = new URL(request.url);
-    const documentType = searchParams.get("documentType") as "contract" | "proposal" | null;
+    const documentType = searchParams.get("documentType");
     const documentId = searchParams.get("documentId");
 
     if (!documentType || !documentId) {
@@ -18,14 +28,14 @@ export async function GET(request: NextRequest) {
 
     const versions = await database.documentVersion.findMany({
       where: {
-        tenantId: user.tenantId,
+        tenantId,
         documentType,
         documentId,
       },
       orderBy: { versionNumber: "desc" },
       include: {
         createdBy: {
-          select: { id: true, name: true, email: true },
+          select: { id: true, firstName: true, lastName: true, email: true },
         },
       },
     });
