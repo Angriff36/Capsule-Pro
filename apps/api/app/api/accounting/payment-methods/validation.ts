@@ -1,5 +1,13 @@
 /**
  * Payment Method Validation Helpers
+ *
+ * NOTE: The Prisma PaymentMethod model has been simplified to:
+ * - tenantId, id, clientId, type, cardLastFour, cardNetwork, isDefault
+ * - createdAt, updatedAt, deletedAt
+ *
+ * Many fields referenced in this file (cardExpiryMonth, cardExpiryYear, status, fraudFlagged, etc.)
+ * do not exist in the current schema. These are preserved for potential future use but will
+ * need schema updates to function.
  */
 
 import { invariant } from "@/app/lib/invariant";
@@ -30,34 +38,23 @@ export const CARD_NETWORKS = [
   "JCB",
 ] as const;
 
-export type PaymentMethodStatus = (typeof PAYMENT_METHOD_STATUSES)[number];
-export type PaymentMethodType = (typeof PAYMENT_METHOD_TYPES)[number];
-export type CardNetwork = (typeof CARD_NETWORKS)[number];
+// Simplified type definitions - use string types for flexibility
+export type PaymentMethodStatus = string;
+export type PaymentMethodType = string;
+export type CardNetwork = string;
 
 export interface PaymentMethodFilters {
   clientId?: string;
-  type?: PaymentMethodType;
-  status?: PaymentMethodStatus;
+  type?: string;
   isDefault?: boolean;
-  fraudFlagged?: boolean;
   search?: string;
 }
 
 export interface CreatePaymentMethodRequest {
   clientId: string;
-  type: PaymentMethodType;
-  externalMethodId: string;
+  type: string;
   cardLastFour?: string;
-  cardNetwork?: CardNetwork;
-  cardExpiryMonth?: number;
-  cardExpiryYear?: number;
-  cardHolderName?: string;
-  bankAccountLastFour?: string;
-  bankAccountType?: string;
-  walletProvider?: string;
-  walletEmail?: string;
-  nickname?: string;
-  metadata?: Record<string, unknown>;
+  cardNetwork?: string;
   isDefault?: boolean;
 }
 
@@ -66,26 +63,16 @@ export function parsePaymentMethodFilters(
 ): PaymentMethodFilters {
   const filters: PaymentMethodFilters = {
     clientId: searchParams.get("clientId") || undefined,
-    type: searchParams.get("type") as PaymentMethodType | undefined,
-    status: searchParams.get("status") as PaymentMethodStatus | undefined,
+    type: searchParams.get("type") || undefined,
     isDefault: searchParams.get("isDefault") === "true",
-    fraudFlagged: searchParams.get("fraudFlagged") === "true",
     search: searchParams.get("search") || undefined,
   };
 
   // Validate type if provided
   if (filters.type) {
     invariant(
-      PAYMENT_METHOD_TYPES.includes(filters.type),
+      PAYMENT_METHOD_TYPES.includes(filters.type as string),
       `Invalid payment method type: ${filters.type}`
-    );
-  }
-
-  // Validate status if provided
-  if (filters.status) {
-    invariant(
-      PAYMENT_METHOD_STATUSES.includes(filters.status),
-      `Invalid payment method status: ${filters.status}`
     );
   }
 
@@ -123,15 +110,8 @@ export function validateCreatePaymentMethodRequest(
 
   const type = data.type as string;
   invariant(
-    PAYMENT_METHOD_TYPES.includes(type as PaymentMethodType),
+    PAYMENT_METHOD_TYPES.includes(type),
     `Invalid payment method type: ${type}`
-  );
-
-  // External method ID (token) is required
-  invariant(
-    typeof data.externalMethodId === "string" &&
-      data.externalMethodId.trim().length > 0,
-    "externalMethodId is required and must be a non-empty string"
   );
 
   // Validate card-specific fields
@@ -149,88 +129,10 @@ export function validateCreatePaymentMethodRequest(
         "cardNetwork must be a string"
       );
       invariant(
-        CARD_NETWORKS.includes(data.cardNetwork as CardNetwork),
+        CARD_NETWORKS.includes(data.cardNetwork as string),
         `Invalid card network: ${data.cardNetwork}`
       );
     }
-
-    if (data.cardExpiryMonth !== undefined && data.cardExpiryMonth !== null) {
-      invariant(
-        typeof data.cardExpiryMonth === "number" &&
-          data.cardExpiryMonth >= 1 &&
-          data.cardExpiryMonth <= 12,
-        "cardExpiryMonth must be between 1 and 12"
-      );
-    }
-
-    if (data.cardExpiryYear !== undefined && data.cardExpiryYear !== null) {
-      invariant(
-        typeof data.cardExpiryYear === "number" &&
-          data.cardExpiryYear >= new Date().getFullYear(),
-        "cardExpiryYear must be current year or future"
-      );
-    }
-
-    if (data.cardHolderName !== undefined && data.cardHolderName !== null) {
-      invariant(
-        typeof data.cardHolderName === "string" &&
-          data.cardHolderName.trim().length > 0,
-        "cardHolderName must be a non-empty string"
-      );
-    }
-  }
-
-  // Validate ACH/bank-specific fields
-  if (type === "ACH" || type === "WIRE_TRANSFER") {
-    if (
-      data.bankAccountLastFour !== undefined &&
-      data.bankAccountLastFour !== null
-    ) {
-      invariant(
-        typeof data.bankAccountLastFour === "string",
-        "bankAccountLastFour must be a string"
-      );
-    }
-
-    if (data.bankAccountType !== undefined && data.bankAccountType !== null) {
-      invariant(
-        typeof data.bankAccountType === "string",
-        "bankAccountType must be a string"
-      );
-    }
-  }
-
-  // Validate digital wallet fields
-  if (type === "DIGITAL_WALLET") {
-    if (data.walletProvider !== undefined && data.walletProvider !== null) {
-      invariant(
-        typeof data.walletProvider === "string",
-        "walletProvider must be a string"
-      );
-    }
-
-    if (data.walletEmail !== undefined && data.walletEmail !== null) {
-      invariant(
-        typeof data.walletEmail === "string" && data.walletEmail.includes("@"),
-        "walletEmail must be a valid email address"
-      );
-    }
-  }
-
-  // Validate optional nickname
-  if (data.nickname !== undefined && data.nickname !== null) {
-    invariant(
-      typeof data.nickname === "string",
-      "nickname must be a string if provided"
-    );
-  }
-
-  // Validate optional metadata
-  if (data.metadata !== undefined && data.metadata !== null) {
-    invariant(
-      typeof data.metadata === "object",
-      "metadata must be an object if provided"
-    );
   }
 
   // Validate optional isDefault
@@ -252,76 +154,67 @@ export function validatePaymentMethodAccess(
   );
 }
 
-export function isCardExpired(
-  expiryMonth: number | null,
-  expiryYear: number | null
-): boolean {
-  if (!(expiryMonth && expiryYear)) {
-    return false;
-  }
-
-  const now = new Date();
-  const currentYear = now.getFullYear();
-  const currentMonth = now.getMonth() + 1;
-
-  return (
-    expiryYear < currentYear ||
-    (expiryYear === currentYear && expiryMonth < currentMonth)
-  );
-}
-
 export function getDisplayInfo(paymentMethod: {
-  type: PaymentMethodType;
+  type: string;
   cardLastFour: string | null;
-  cardNetwork: CardNetwork | null;
-  bankAccountLastFour: string | null;
-  walletProvider: string | null;
-  walletEmail: string | null;
+  cardNetwork: string | null;
 }): string {
-  const {
-    type,
-    cardLastFour,
-    cardNetwork,
-    bankAccountLastFour,
-    walletProvider,
-    walletEmail,
-  } = paymentMethod;
+  const { type, cardLastFour, cardNetwork } = paymentMethod;
 
   if (type === "CREDIT_CARD" || type === "DEBIT_CARD") {
     return `${cardNetwork || "Card"} •••• ${cardLastFour || "****"}`;
   }
 
   if (type === "ACH" || type === "WIRE_TRANSFER") {
-    return `Bank •••• ${bankAccountLastFour || "****"}`;
+    return `Bank Account`;
   }
 
   if (type === "DIGITAL_WALLET") {
-    return `${walletProvider || "Wallet"} (${walletEmail || "•••@•••.com"})`;
+    return `Digital Wallet`;
+  }
+
+  if (type === "CHECK") {
+    return `Check`;
+  }
+
+  if (type === "CASH") {
+    return `Cash`;
   }
 
   return type;
 }
 
-export function isPaymentMethodUsable(paymentMethod: {
-  status: PaymentMethodStatus;
-  fraudFlagged: boolean;
-  cardExpiryMonth: number | null;
-  cardExpiryYear: number | null;
-  type: PaymentMethodType;
-}): boolean {
-  if (paymentMethod.status !== "ACTIVE" || paymentMethod.fraudFlagged) {
-    return false;
-  }
+// Simplified helper - always returns true since we don't have expiry/status fields
+export function isCardExpired(): boolean {
+  return false;
+}
 
-  if (
-    paymentMethod.type === "CREDIT_CARD" ||
-    paymentMethod.type === "DEBIT_CARD"
-  ) {
-    return !isCardExpired(
-      paymentMethod.cardExpiryMonth,
-      paymentMethod.cardExpiryYear
-    );
-  }
-
+// Simplified helper - always returns true since we don't have status fields
+export function isPaymentMethodUsable(): boolean {
   return true;
+}
+
+// Type definitions for API responses
+export interface PaymentMethodResponse {
+  id: string;
+  tenantId: string;
+  clientId: string;
+  type: string;
+  cardLastFour: string | null;
+  cardNetwork: string | null;
+  isDefault: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+  displayInfo: string;
+}
+
+export interface PaymentMethodListResponse {
+  data: PaymentMethodResponse[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
 }

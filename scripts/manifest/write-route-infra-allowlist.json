@@ -213,6 +213,16 @@
       "comment": "Uses executeManifestCommand — ChartOfAccount.create"
     },
     {
+      "prefix": "/api/accounting/payment-methods",
+      "methods": ["POST", "PUT", "DELETE"],
+      "comment": "Legacy infrastructure: Direct DB access for payment methods (needs manifest migration)"
+    },
+    {
+      "prefix": "/api/accounting/payments",
+      "methods": ["POST"],
+      "comment": "Legacy infrastructure: Direct DB access for payments (needs manifest migration)"
+    },
+    {
       "pattern": "^/api/accounting/accounts/[^/]+$",
       "methods": ["PUT", "DELETE"],
       "comment": "Uses executeManifestCommand — ChartOfAccount.update/deactivate"

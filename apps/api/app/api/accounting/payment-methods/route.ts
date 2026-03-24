@@ -1,7 +1,11 @@
 /**
  * Payment Methods API Routes
  *
- * Handles payment method storage and management
+ * Handles payment method storage and management.
+ *
+ * NOTE: The Prisma PaymentMethod model has been simplified to:
+ * - tenantId, id, clientId, type, cardLastFour, cardNetwork, isDefault
+ * - createdAt, updatedAt, deletedAt
  */
 
 import { database } from "@repo/database";
@@ -9,8 +13,6 @@ import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
 import {
   getDisplayInfo,
-  isCardExpired,
-  isPaymentMethodUsable,
   type PaymentMethodListResponse,
   type PaymentMethodResponse,
   parsePaginationParams,
@@ -34,7 +36,7 @@ export async function GET(request: NextRequest) {
 
     const skip = (page - 1) * limit;
 
-    // Build where clause
+    // Build where clause - only use fields that exist in the schema
     const where: Record<string, unknown> = {
       tenantId,
       deletedAt: null,
@@ -48,45 +50,19 @@ export async function GET(request: NextRequest) {
       where.type = filters.type;
     }
 
-    if (filters.status) {
-      where.status = filters.status;
-    }
-
     if (filters.isDefault !== undefined) {
       where.isDefault = filters.isDefault;
     }
 
-    if (filters.fraudFlagged !== undefined) {
-      where.fraudFlagged = filters.fraudFlagged;
-    }
+    // Note: search filter removed since nickname, cardHolderName, bankAccountLastFour, walletEmail don't exist
 
-    if (filters.search) {
-      where.OR = [
-        { nickname: { contains: filters.search, mode: "insensitive" } },
-        { cardHolderName: { contains: filters.search, mode: "insensitive" } },
-        { cardLastFour: { contains: filters.search } },
-        { bankAccountLastFour: { contains: filters.search } },
-        { walletEmail: { contains: filters.search, mode: "insensitive" } },
-      ];
-    }
-
-    // Get payment methods with related data
+    // Get payment methods
     const [paymentMethods, totalCount] = await Promise.all([
       database.paymentMethod.findMany({
         where,
         skip,
         take: limit,
         orderBy: { [sortBy]: sortDirection },
-        include: {
-          client: {
-            select: {
-              id: true,
-              company_name: true,
-              first_name: true,
-              last_name: true,
-            },
-          },
-        },
       }),
       database.paymentMethod.count({ where }),
     ]);
@@ -96,15 +72,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json<PaymentMethodListResponse>({
       data: paymentMethods.map((pm) => ({
         ...pm,
-        clientName:
-          pm.client?.company_name ||
-          [pm.client?.first_name, pm.client?.last_name]
-            .filter(Boolean)
-            .join(" ") ||
-          "",
         displayInfo: getDisplayInfo(pm),
-        isExpired: isCardExpired(pm.cardExpiryMonth, pm.cardExpiryYear),
-        isUsable: isPaymentMethodUsable(pm),
       })),
       pagination: {
         page,
@@ -160,48 +128,21 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Create payment method
+    // Create payment method - only use fields that exist in the schema
     const paymentMethod = await database.paymentMethod.create({
       data: {
         tenantId,
         clientId: body.clientId,
-        externalMethodId: body.externalMethodId,
         type: body.type,
-        cardLastFour: body.cardLastFour,
-        cardNetwork: body.cardNetwork,
-        cardExpiryMonth: body.cardExpiryMonth,
-        cardExpiryYear: body.cardExpiryYear,
-        cardHolderName: body.cardHolderName,
-        bankAccountLastFour: body.bankAccountLastFour,
-        bankAccountType: body.bankAccountType,
-        walletProvider: body.walletProvider,
-        walletEmail: body.walletEmail,
-        nickname: body.nickname,
-        metadata: body.metadata || {},
-        isDefault: body.isDefault,
-        status: "ACTIVE",
-      },
-      include: {
-        client: {
-          select: {
-            id: true,
-            company_name: true,
-            first_name: true,
-            last_name: true,
-            email: true,
-          },
-        },
+        cardLastFour: body.cardLastFour || null,
+        cardNetwork: body.cardNetwork || null,
+        isDefault: body.isDefault || false,
       },
     });
 
-    const response = {
+    const response: PaymentMethodResponse = {
       ...paymentMethod,
       displayInfo: getDisplayInfo(paymentMethod),
-      isExpired: isCardExpired(
-        paymentMethod.cardExpiryMonth,
-        paymentMethod.cardExpiryYear
-      ),
-      isUsable: isPaymentMethodUsable(paymentMethod),
     };
 
     return NextResponse.json<PaymentMethodResponse>(response, { status: 201 });

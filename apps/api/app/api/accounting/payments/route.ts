@@ -1,7 +1,13 @@
 /**
  * Payments API Routes
  *
- * Handles payment processing, refunds, and fraud detection
+ * Handles payment processing and refunds.
+ *
+ * NOTE: The Prisma Payment model has been simplified to:
+ * - tenantId, id, amount, currency, status, methodType, invoiceId, eventId, clientId
+ * - gatewayTransactionId, gatewayPaymentMethodId, processor
+ * - processedAt, completedAt, refundedAt
+ * - createdAt, updatedAt, deletedAt
  */
 
 import { database } from "@repo/database";
@@ -32,7 +38,7 @@ export async function GET(request: NextRequest) {
 
     const skip = (page - 1) * limit;
 
-    // Build where clause
+    // Build where clause - only use fields that exist in the schema
     const where: Record<string, unknown> = {
       tenantId,
       deletedAt: null,
@@ -44,10 +50,6 @@ export async function GET(request: NextRequest) {
 
     if (filters.methodType) {
       where.methodType = filters.methodType;
-    }
-
-    if (filters.fraudStatus) {
-      where.fraudStatus = filters.fraudStatus;
     }
 
     if (filters.invoiceId) {
@@ -82,38 +84,13 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    // Get payments with related data
+    // Get payments
     const [payments, totalCount] = await Promise.all([
       database.payment.findMany({
         where,
         skip,
         take: limit,
         orderBy: { [sortBy]: sortDirection },
-        include: {
-          invoice: {
-            select: {
-              id: true,
-              invoiceNumber: true,
-              total: true,
-            },
-          },
-          event: {
-            select: {
-              id: true,
-              title: true,
-              eventDate: true,
-            },
-          },
-          client: {
-            select: {
-              id: true,
-              company_name: true,
-              first_name: true,
-              last_name: true,
-              email: true,
-            },
-          },
-        },
       }),
       database.payment.count({ where }),
     ]);
@@ -123,13 +100,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json<PaymentListResponse>({
       data: payments.map((p) => ({
         ...p,
-        clientName:
-          p.client?.company_name ||
-          [p.client?.first_name, p.client?.last_name]
-            .filter(Boolean)
-            .join(" ") ||
-          null,
-        eventName: p.event?.title || null,
+        amount: p.amount.toString(),
       })),
       pagination: {
         page,
@@ -187,7 +158,7 @@ export async function POST(request: NextRequest) {
     // Generate payment reference
     const paymentNumber = generatePaymentNumber(tenantId);
 
-    // Create payment
+    // Create payment - only use fields that exist in the schema
     const payment = await database.payment.create({
       data: {
         tenantId,
@@ -196,41 +167,22 @@ export async function POST(request: NextRequest) {
         clientId: invoice.clientId,
         amount: body.amount,
         currency: body.currency || "USD",
+        status: "PENDING",
         methodType: body.methodType,
-        gatewayPaymentMethodId: body.paymentMethodId,
-        description: body.description,
-        metadata: body.metadata || {},
-        externalReference: paymentNumber,
+        gatewayPaymentMethodId: body.paymentMethodId || null,
+        gatewayTransactionId: paymentNumber,
+        processor: body.processor || null,
         processedAt: new Date(),
-      },
-      include: {
-        invoice: {
-          select: {
-            id: true,
-            invoiceNumber: true,
-            total: true,
-          },
-        },
-        event: {
-          select: {
-            id: true,
-            title: true,
-            eventDate: true,
-          },
-        },
-        client: {
-          select: {
-            id: true,
-            company_name: true,
-            first_name: true,
-            last_name: true,
-            email: true,
-          },
-        },
       },
     });
 
-    return NextResponse.json<PaymentResponse>(payment, { status: 201 });
+    return NextResponse.json<PaymentResponse>(
+      {
+        ...payment,
+        amount: payment.amount.toString(),
+      },
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Error creating payment:", error);
     return NextResponse.json(

@@ -352,3 +352,54 @@ export function getDaysUntilDue(dueDate: Date): number {
   const diffTime = due.getTime() - now.getTime();
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
+
+// Type definitions for API responses
+export interface InvoiceResponse {
+  id: string;
+  tenantId: string;
+  invoiceNumber: string;
+  invoiceType: string;
+  status: string;
+  clientId: string;
+  eventId: string;
+  subtotal: Decimal;
+  taxAmount: Decimal;
+  discountAmount: Decimal;
+  total: Decimal;
+  amountPaid: Decimal;
+  amountDue: Decimal;
+  paymentTerms: number;
+  dueDate: Date;
+  issuedAt: Date;
+  depositPercentage: Decimal | null;
+  depositRequired: Decimal | null;
+  depositPaid: Decimal | null;
+  notes: string | null;
+  lineItems: Array<{
+    description: string;
+    quantity: number;
+    unitPrice: number;
+    taxRate: number;
+  }> | null;
+  metadata: Record<string, unknown>;
+  sentAt: Date | null;
+  viewedAt: Date | null;
+  paidAt: Date | null;
+  voidedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+
+export interface InvoiceListResponse {
+  data: InvoiceResponse[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+// Decimal type alias for compatibility
+type Decimal = string | number | { toString(): string };

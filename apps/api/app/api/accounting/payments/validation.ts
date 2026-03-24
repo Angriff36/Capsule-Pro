@@ -1,5 +1,11 @@
 /**
  * Payment Validation Helpers
+ *
+ * NOTE: The Prisma Payment model has been simplified to:
+ * - tenantId, id, amount, currency, status, methodType, invoiceId, eventId, clientId
+ * - gatewayTransactionId, gatewayPaymentMethodId, processor
+ * - processedAt, completedAt, refundedAt
+ * - createdAt, updatedAt, deletedAt
  */
 
 import { invariant } from "@/app/lib/invariant";
@@ -25,23 +31,13 @@ export const PAYMENT_METHOD_TYPES = [
   "DIGITAL_WALLET",
 ] as const;
 
-export const FRAUD_STATUSES = [
-  "NOT_CHECKED",
-  "PASSED",
-  "FAILED",
-  "REVIEW_NEEDED",
-  "MANUAL_REVIEW",
-] as const;
-
 export type PaymentStatus = (typeof PAYMENT_STATUSES)[number];
 export type PaymentMethodType = (typeof PAYMENT_METHOD_TYPES)[number];
-export type FraudStatus = (typeof FRAUD_STATUSES)[number];
 
 export interface PaymentFilters {
   search?: string;
   status?: PaymentStatus;
   methodType?: PaymentMethodType;
-  fraudStatus?: FraudStatus;
   invoiceId?: string;
   eventId?: string;
   clientId?: string;
@@ -58,8 +54,7 @@ export interface CreatePaymentRequest {
   currency?: string;
   methodType: PaymentMethodType;
   paymentMethodId?: string;
-  description?: string;
-  metadata?: Record<string, unknown>;
+  processor?: string;
 }
 
 export function parsePaymentFilters(
@@ -69,7 +64,6 @@ export function parsePaymentFilters(
     search: searchParams.get("search") || undefined,
     status: searchParams.get("status") as PaymentStatus | undefined,
     methodType: searchParams.get("methodType") as PaymentMethodType | undefined,
-    fraudStatus: searchParams.get("fraudStatus") as FraudStatus | undefined,
     invoiceId: searchParams.get("invoiceId") || undefined,
     eventId: searchParams.get("eventId") || undefined,
     clientId: searchParams.get("clientId") || undefined,
@@ -96,14 +90,6 @@ export function parsePaymentFilters(
     invariant(
       PAYMENT_METHOD_TYPES.includes(filters.methodType),
       `Invalid method type: ${filters.methodType}`
-    );
-  }
-
-  // Validate fraudStatus if provided
-  if (filters.fraudStatus) {
-    invariant(
-      FRAUD_STATUSES.includes(filters.fraudStatus),
-      `Invalid fraud status: ${filters.fraudStatus}`
     );
   }
 
@@ -165,19 +151,11 @@ export function validateCreatePaymentRequest(
     );
   }
 
-  // Validate optional description
-  if (data.description !== undefined && data.description !== null) {
+  // Validate optional processor
+  if (data.processor !== undefined && data.processor !== null) {
     invariant(
-      typeof data.description === "string",
-      "description must be a string if provided"
-    );
-  }
-
-  // Validate optional metadata
-  if (data.metadata !== undefined && data.metadata !== null) {
-    invariant(
-      typeof data.metadata === "object",
-      "metadata must be an object if provided"
+      typeof data.processor === "string",
+      "processor must be a string if provided"
     );
   }
 }
@@ -201,59 +179,6 @@ export function validateRefundRequest(body: unknown): void {
     typeof data.reason === "string" && data.reason.trim().length > 0,
     "reason is required and must be a non-empty string"
   );
-}
-
-export function validateFraudStatusUpdate(body: unknown): void {
-  invariant(
-    body && typeof body === "object",
-    "Request body must be a valid object"
-  );
-
-  const data = body as Record<string, unknown>;
-
-  // Status is required
-  invariant(typeof data.status === "string", "status is required");
-
-  const status = data.status as string;
-  invariant(
-    FRAUD_STATUSES.includes(status as FraudStatus),
-    `Invalid fraud status: ${status}`
-  );
-
-  // Score is required
-  invariant(
-    typeof data.score === "number" && data.score >= 0 && data.score <= 100,
-    "score is required and must be between 0 and 100"
-  );
-
-  // Reasons must be an array
-  invariant(
-    Array.isArray(data.reasons),
-    "reasons is required and must be an array"
-  );
-}
-
-export function validateFraudReview(body: unknown): void {
-  invariant(
-    body && typeof body === "object",
-    "Request body must be a valid object"
-  );
-
-  const data = body as Record<string, unknown>;
-
-  // Approved is required
-  invariant(
-    typeof data.approved === "boolean",
-    "approved is required and must be a boolean"
-  );
-
-  // Notes are optional but must be a string if provided
-  if (data.notes !== undefined && data.notes !== null) {
-    invariant(
-      typeof data.notes === "string",
-      "notes must be a string if provided"
-    );
-  }
 }
 
 export function generatePaymentNumber(_tenantId: string): string {
@@ -316,3 +241,38 @@ export function validatePaymentBusinessRules(
       invariant(false, `Unknown payment operation: ${operation}`);
   }
 }
+
+// Type definitions for API responses
+export interface PaymentResponse {
+  id: string;
+  tenantId: string;
+  amount: Decimal;
+  currency: string;
+  status: string;
+  methodType: string;
+  invoiceId: string;
+  eventId: string;
+  clientId: string | null;
+  gatewayTransactionId: string | null;
+  gatewayPaymentMethodId: string | null;
+  processor: string | null;
+  processedAt: Date;
+  completedAt: Date | null;
+  refundedAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}
+
+export interface PaymentListResponse {
+  data: PaymentResponse[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+// Decimal type alias for compatibility
+type Decimal = string | number | { toString(): string };

@@ -1,7 +1,14 @@
 /**
  * Single Payment Method API Routes
  *
- * Handles operations on individual payment methods
+ * Handles operations on individual payment methods.
+ *
+ * NOTE: The Prisma PaymentMethod model has been simplified to:
+ * - tenantId, id, clientId, type, cardLastFour, cardNetwork, isDefault
+ * - createdAt, updatedAt, deletedAt
+ *
+ * Many fields referenced in this file (cardExpiryMonth, cardExpiryYear, status, etc.)
+ * do not exist in the current schema.
  */
 
 import { database } from "@repo/database";
@@ -34,17 +41,6 @@ export async function GET(request: NextRequest, context: RouteContext) {
         id,
         deletedAt: null,
       },
-      include: {
-        client: {
-          select: {
-            id: true,
-            company_name: true,
-            first_name: true,
-            last_name: true,
-            email: true,
-          },
-        },
-      },
     });
 
     if (!paymentMethod) {
@@ -54,14 +50,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
       );
     }
 
-    const response = {
+    const response: PaymentMethodResponse = {
       ...paymentMethod,
       displayInfo: getDisplayInfo(paymentMethod),
-      isExpired: isCardExpired(
-        paymentMethod.cardExpiryMonth,
-        paymentMethod.cardExpiryYear
-      ),
-      isUsable: isPaymentMethodUsable(paymentMethod),
     };
 
     return NextResponse.json<PaymentMethodResponse>(response);
@@ -116,19 +107,16 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       });
     }
 
-    // Update allowed fields only
-    const allowedFields = [
-      "nickname",
-      "isDefault",
-      "metadata",
-      "externalMethodId",
-    ] as const;
-
+    // Update allowed fields only - only fields that exist in the schema
     const updateData: Record<string, unknown> = {};
-    for (const field of allowedFields) {
-      if (body[field] !== undefined) {
-        updateData[field] = body[field];
-      }
+    if (body.cardLastFour !== undefined) {
+      updateData.cardLastFour = body.cardLastFour;
+    }
+    if (body.cardNetwork !== undefined) {
+      updateData.cardNetwork = body.cardNetwork;
+    }
+    if (body.isDefault !== undefined) {
+      updateData.isDefault = body.isDefault;
     }
 
     const updatedPaymentMethod = await database.paymentMethod.update({
@@ -139,27 +127,11 @@ export async function PUT(request: NextRequest, context: RouteContext) {
         },
       },
       data: updateData,
-      include: {
-        client: {
-          select: {
-            id: true,
-            company_name: true,
-            first_name: true,
-            last_name: true,
-            email: true,
-          },
-        },
-      },
     });
 
-    const response = {
+    const response: PaymentMethodResponse = {
       ...updatedPaymentMethod,
       displayInfo: getDisplayInfo(updatedPaymentMethod),
-      isExpired: isCardExpired(
-        updatedPaymentMethod.cardExpiryMonth,
-        updatedPaymentMethod.cardExpiryYear
-      ),
-      isUsable: isPaymentMethodUsable(updatedPaymentMethod),
     };
 
     return NextResponse.json<PaymentMethodResponse>(response);
@@ -174,7 +146,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 
 /**
  * DELETE /api/accounting/payment-methods/[id]
- * Delete (invalidate) a payment method
+ * Delete (soft delete) a payment method
  */
 export async function DELETE(request: NextRequest, context: RouteContext) {
   try {
@@ -198,30 +170,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
 
     validatePaymentMethodAccess(paymentMethod, tenantId);
 
-    // Don't allow deletion of default payment method if there are other methods
-    if (paymentMethod.isDefault) {
-      const otherMethodsCount = await database.paymentMethod.count({
-        where: {
-          tenantId,
-          clientId: paymentMethod.clientId,
-          id: { not: id },
-          status: "ACTIVE",
-          deletedAt: null,
-        },
-      });
-
-      if (otherMethodsCount > 0) {
-        return NextResponse.json(
-          {
-            error:
-              "Cannot delete default payment method. Set another as default first.",
-          },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Soft delete by marking as invalid
+    // Soft delete
     await database.paymentMethod.update({
       where: {
         tenantId_id: {
@@ -230,7 +179,6 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
         },
       },
       data: {
-        status: "INVALID",
         deletedAt: new Date(),
       },
     });
@@ -240,72 +188,6 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     console.error("Error deleting payment method:", error);
     return NextResponse.json(
       { error: "Failed to delete payment method" },
-      { status: 500 }
-    );
-  }
-}
-
-/**
- * POST /api/accounting/payment-methods/[id]/verify
- * Verify a payment method
- */
-export async function POST(request: NextRequest, context: RouteContext) {
-  try {
-    const tenantId = await requireTenantId();
-    const { id } = await context.params;
-    const body = await request.json();
-
-    const paymentMethod = await database.paymentMethod.findFirst({
-      where: {
-        tenantId,
-        id,
-        deletedAt: null,
-      },
-    });
-
-    if (!paymentMethod) {
-      return NextResponse.json(
-        { error: "Payment method not found" },
-        { status: 404 }
-      );
-    }
-
-    validatePaymentMethodAccess(paymentMethod, tenantId);
-
-    const verificationMethod = body.method || "manual";
-
-    // In a real implementation, this would call the payment gateway
-    // to verify the payment method (e.g., micro-deposit for ACH, CVV check for cards)
-
-    // For now, mark as verified
-    const updatedPaymentMethod = await database.paymentMethod.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id,
-        },
-      },
-      data: {
-        verifiedAt: new Date(),
-        verificationMethod,
-      },
-    });
-
-    const response = {
-      ...updatedPaymentMethod,
-      displayInfo: getDisplayInfo(updatedPaymentMethod),
-      isExpired: isCardExpired(
-        updatedPaymentMethod.cardExpiryMonth,
-        updatedPaymentMethod.cardExpiryYear
-      ),
-      isUsable: isPaymentMethodUsable(updatedPaymentMethod),
-    };
-
-    return NextResponse.json<PaymentMethodResponse>(response);
-  } catch (error) {
-    console.error("Error verifying payment method:", error);
-    return NextResponse.json(
-      { error: "Failed to verify payment method" },
       { status: 500 }
     );
   }
