@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { getTenantIdForOrg } from '@/app/lib/tenant';
 import { database } from '@/lib/database';
 import { auth } from '@repo/auth/server';
 
@@ -8,15 +9,20 @@ import { auth } from '@repo/auth/server';
  */
 export async function GET(request: NextRequest) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
+    const { orgId, userId } = await auth();
+    if (!(userId && orgId)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const tenantId = await getTenantIdForOrg(orgId);
+    if (!tenantId) {
+      return NextResponse.json({ error: 'Tenant not found' }, { status: 400 });
     }
 
     const { searchParams } = new URL(request.url);
     const locationId = searchParams.get('locationId');
 
-    const where: Record<string, unknown> = {};
+    const where: Record<string, unknown> = { tenantId };
     if (locationId) {
       where.locationId = locationId;
     }
@@ -42,9 +48,14 @@ export async function GET(request: NextRequest) {
  */
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth();
-    if (!userId) {
+    const { orgId, userId } = await auth();
+    if (!(userId && orgId)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const tenantId = await getTenantIdForOrg(orgId);
+    if (!tenantId) {
+      return NextResponse.json({ error: 'Tenant not found' }, { status: 400 });
     }
 
     const body = await request.json();
@@ -59,6 +70,7 @@ export async function POST(request: NextRequest) {
 
     const probe = await database.temperatureProbe.create({
       data: {
+        tenantId,
         name,
         probeId,
         locationId: locationId || null,

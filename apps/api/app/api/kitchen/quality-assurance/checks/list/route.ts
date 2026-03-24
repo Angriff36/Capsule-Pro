@@ -1,20 +1,46 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createManifestRuntime } from '@repo/manifest-adapters/manifest-runtime-factory';
+import { auth } from '@repo/auth/server';
+import { getTenantIdForOrg } from '@/app/lib/tenant';
+import { database } from '@/lib/database';
 
 export async function GET(request: NextRequest) {
-  const { searchParams } = new URL(request.url);
-  const eventType = searchParams.get('eventId');
-  const status = searchParams.get('status'); // pending, passed, failed, needs_review
-  const checkType = searchParams.get('checkType'); // receiving, storage, prep, cooking, cooling, holding, transport
+  try {
+    const { orgId, userId } = await auth();
+    if (!(userId && orgId)) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-  const runtime = await createManifestRuntime('kitchen/quality-assurance/checks/list');
-  
-  const result = await runtime.execute({
-    eventType,
-    status,
-    checkType,
-    includeItems: true,
-  });
+    const tenantId = await getTenantIdForOrg(orgId);
+    if (!tenantId) {
+      return NextResponse.json({ error: 'Tenant not found' }, { status: 400 });
+    }
 
-  return NextResponse.json(result);
+    const { searchParams } = new URL(request.url);
+    const eventId = searchParams.get('eventId');
+    const status = searchParams.get('status'); // pending, passed, failed, needs_review
+    const checkType = searchParams.get('checkType'); // receiving, storage, prep, cooking, cooling, holding, transport
+
+    const where: Record<string, unknown> = { tenantId };
+    if (eventId) where.eventId = eventId;
+    if (status) where.status = status;
+    if (checkType) where.checkType = checkType;
+
+    const checks = await database.qualityCheck.findMany({
+      where,
+      include: {
+        items: {
+          orderBy: { sortOrder: 'asc' },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    return NextResponse.json({ success: true, checks });
+  } catch (error) {
+    console.error('Error listing quality checks:', error);
+    return NextResponse.json(
+      { error: 'Failed to list quality checks' },
+      { status: 500 }
+    );
+  }
 }

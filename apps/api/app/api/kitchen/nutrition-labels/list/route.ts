@@ -1,20 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTenantId, requireCurrentUser } from "@repo/auth";
-import { database } from "@repo/database";
+import { auth } from "@repo/auth/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { database } from "@/lib/database";
 
 export async function GET(request: NextRequest) {
   try {
-    const user = await requireCurrentUser();
-    const tenantId = await getTenantId();
-    
-    if (!user || !tenantId) {
+    const { orgId, userId } = await auth();
+    if (!(userId && orgId)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const tenantId = await getTenantIdForOrg(orgId);
+    if (!tenantId) {
+      return NextResponse.json({ error: "Tenant not found" }, { status: 400 });
     }
 
     const { searchParams } = new URL(request.url);
     const recipeId = searchParams.get("recipeId");
 
-    // Get recipes with basic nutrition summary
+    // Get recipes
     const recipes = await database.recipe.findMany({
       where: {
         tenantId,
@@ -23,35 +27,47 @@ export async function GET(request: NextRequest) {
       select: {
         id: true,
         name: true,
-        yield: true,
         createdAt: true,
-        versions: {
-          orderBy: { version: "desc" },
-          take: 1,
-          select: {
-            version: true,
-            ingredients: {
-              select: {
-                name: true,
-                quantity: true,
-                unit: true,
-              },
-            },
-          },
-        },
       },
       orderBy: { name: "asc" },
     });
 
-    // Add ingredient count for each recipe
-    const recipesWithStats = recipes.map((recipe) => ({
-      id: recipe.id,
-      name: recipe.name,
-      yield: recipe.yield,
-      ingredientCount: recipe.versions[0]?.ingredients.length || 0,
-      hasNutritionData: true, // Will be calculated on demand
-      createdAt: recipe.createdAt,
-    }));
+    // Get ingredient counts for each recipe via RecipeVersion
+    const recipesWithStats = await Promise.all(
+      recipes.map(async (recipe) => {
+        const latestVersion = await database.recipeVersion.findFirst({
+          where: {
+            recipeId: recipe.id,
+            tenantId,
+          },
+          orderBy: { versionNumber: "desc" },
+          select: {
+            versionNumber: true,
+            yieldQuantity: true,
+          },
+        });
+
+        // Count ingredients for this version
+        let ingredientCount = 0;
+        if (latestVersion) {
+          ingredientCount = await database.recipeIngredient.count({
+            where: {
+              recipeVersionId: latestVersion.id,
+              tenantId,
+            },
+          });
+        }
+
+        return {
+          id: recipe.id,
+          name: recipe.name,
+          yield: latestVersion?.yieldQuantity ? Number(latestVersion.yieldQuantity) : null,
+          ingredientCount,
+          hasNutritionData: true, // Will be calculated on demand
+          createdAt: recipe.createdAt,
+        };
+      })
+    );
 
     return NextResponse.json({
       success: true,

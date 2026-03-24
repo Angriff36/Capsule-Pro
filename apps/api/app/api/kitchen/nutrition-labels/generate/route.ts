@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTenantId, requireCurrentUser } from "@repo/auth";
-import { database } from "@repo/database";
+import { auth } from "@repo/auth/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { database } from "@/lib/database";
 import { z } from "zod";
 
 const generateSchema = z.object({
@@ -124,30 +125,24 @@ function divideNutrition(nutrition: NutritionInfo, divisor: number): NutritionIn
 
 export async function POST(request: NextRequest) {
   try {
-    const user = await requireCurrentUser();
-    const tenantId = await getTenantId();
-    
-    if (!user || !tenantId) {
+    const { orgId, userId } = await auth();
+    if (!(userId && orgId)) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const tenantId = await getTenantIdForOrg(orgId);
+    if (!tenantId) {
+      return NextResponse.json({ error: "Tenant not found" }, { status: 400 });
     }
 
     const body = await request.json();
     const { recipeId, servings } = generateSchema.parse(body);
 
-    // Fetch recipe with ingredients
+    // Fetch recipe
     const recipe = await database.recipe.findFirst({
       where: {
         id: recipeId,
         tenantId,
-      },
-      include: {
-        versions: {
-          orderBy: { version: "desc" },
-          take: 1,
-          include: {
-            ingredients: true,
-          },
-        },
       },
     });
 
@@ -155,10 +150,36 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Recipe not found" }, { status: 404 });
     }
 
-    const latestVersion = recipe.versions[0];
+    // Fetch latest recipe version
+    const latestVersion = await database.recipeVersion.findFirst({
+      where: {
+        recipeId,
+        tenantId,
+      },
+      orderBy: { versionNumber: "desc" },
+    });
+
     if (!latestVersion) {
       return NextResponse.json({ error: "No recipe version found" }, { status: 400 });
     }
+
+    // Fetch ingredients for this version
+    const recipeIngredients = await database.recipeIngredient.findMany({
+      where: {
+        recipeVersionId: latestVersion.id,
+        tenantId,
+      },
+    });
+
+    // Fetch ingredient details
+    const ingredientIds = [...new Set(recipeIngredients.map(ri => ri.ingredientId))];
+    const ingredients = await database.ingredient.findMany({
+      where: {
+        id: { in: ingredientIds },
+        tenantId,
+      },
+    });
+    const ingredientMap = new Map(ingredients.map(i => [i.id, i]));
 
     // Calculate nutrition from ingredients
     const emptyNutrition: NutritionInfo = {
@@ -170,7 +191,10 @@ export async function POST(request: NextRequest) {
     const unknownIngredients: string[] = [];
     let totalNutrition = { ...emptyNutrition };
 
-    for (const ingredient of latestVersion.ingredients) {
+    for (const ri of recipeIngredients) {
+      const ingredient = ingredientMap.get(ri.ingredientId);
+      if (!ingredient) continue;
+
       const nutrition = findNutrition(ingredient.name);
       
       if (!nutrition) {
@@ -178,29 +202,15 @@ export async function POST(request: NextRequest) {
         continue;
       }
 
-      // Convert quantity to grams (simplified - assumes grams if unit is empty or 'g')
-      let grams = ingredient.quantity;
-      if (ingredient.unit && !["g", "gram", "grams", ""].includes(ingredient.unit.toLowerCase())) {
-        // Rough conversions for common units
-        if (["cup", "cups"].includes(ingredient.unit.toLowerCase())) {
-          grams = ingredient.quantity * 240; // ~240g per cup
-        } else if (["tbsp", "tablespoon", "tablespoons"].includes(ingredient.unit.toLowerCase())) {
-          grams = ingredient.quantity * 15;
-        } else if (["tsp", "teaspoon", "teaspoons"].includes(ingredient.unit.toLowerCase())) {
-          grams = ingredient.quantity * 5;
-        } else if (["oz", "ounce", "ounces"].includes(ingredient.unit.toLowerCase())) {
-          grams = ingredient.quantity * 28.35;
-        } else if (["lb", "pound", "pounds"].includes(ingredient.unit.toLowerCase())) {
-          grams = ingredient.quantity * 453.6;
-        }
-      }
+      // Convert quantity to grams (simplified)
+      let grams = Number(ri.quantity);
 
       const scaled = scaleNutrition(nutrition, grams);
       totalNutrition = addNutrition(totalNutrition, scaled);
     }
 
     // Calculate per-serving nutrition
-    const recipeYield = servings || recipe.yield || 1;
+    const recipeYield = servings || Number(latestVersion.yieldQuantity) || 1;
     const perServing = divideNutrition(totalNutrition, recipeYield);
 
     // Calculate % Daily Value (based on 2000 calorie diet)
