@@ -22,11 +22,10 @@ export async function GET(request: NextRequest) {
 
 const timecardEditRequests = await database.timecardEditRequest.findMany({
     where: {
-        tenant_id: tenantId,
-        deleted_at: null
+        tenantId: tenantId,
       },
     orderBy: {
-      created_at: "desc",
+      createdAt: "desc",
     },
   });
 

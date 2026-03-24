@@ -38,30 +38,24 @@ export async function GET(request: NextRequest) {
     if (status) {
       where.status = status;
     }
-    if (vendorId) {
-      where.vendorId = vendorId;
-    }
-    if (contractType) {
-      where.contractType = contractType;
-    }
     if (isExpiring === "true") {
       // Filter for contracts expiring within 30 days
       const thirtyDaysFromNow = new Date();
       thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30);
-      where.endDate = {
+      where.expiresAt = {
         lte: thirtyDaysFromNow,
         gte: new Date(),
       };
     }
 
     const [contracts, total] = await Promise.all([
-      database.vendorContract.findMany({
+      database.eventContract.findMany({
         where,
         take: Math.min(limit, 200),
         skip: offset,
         orderBy: { createdAt: "desc" },
       }),
-      database.vendorContract.count({ where }),
+      database.eventContract.count({ where }),
     ]);
 
     return Response.json({

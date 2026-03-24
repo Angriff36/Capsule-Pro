@@ -22,11 +22,11 @@ export async function GET(request: NextRequest) {
 
 const timeEntrys = await database.timeEntry.findMany({
     where: {
-        tenant_id: tenantId,
+        tenantId: tenantId,
         deleted_at: null
       },
     orderBy: {
-      created_at: "desc",
+      createdAt: "desc",
     },
   });
 

@@ -80,6 +80,7 @@ export interface ConflictApiError {
     | "AUTH_REQUIRED"
     | "UNAUTHORIZED"
     | "TENANT_NOT_FOUND"
+    | "INVALID_TENANT_ID"
     | "USER_NOT_FOUND"
     | "INVALID_REQUEST"
     | "VALIDATION_ERROR"

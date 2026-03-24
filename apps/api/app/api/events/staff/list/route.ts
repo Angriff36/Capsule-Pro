@@ -1,4 +1,4 @@
-// Auto-generated Next.js API route for EventStaff
+// Auto-generated Next.js API route for EventStaffAssignment
 // Generated from Manifest IR - DO NOT EDIT
 
 import type { NextRequest } from "next/server";
@@ -20,19 +20,19 @@ export async function GET(request: NextRequest) {
     return manifestErrorResponse("Tenant not found", 400);
   }
 
-const eventStaffs = await database.eventStaff.findMany({
+const eventStaffAssignments = await database.eventStaffAssignment.findMany({
     where: {
-        tenant_id: tenantId,
-        deleted_at: null
+        tenantId,
+        deletedAt: null
       },
     orderBy: {
-      created_at: "desc",
+      createdAt: "desc",
     },
   });
 
-    return manifestSuccessResponse({ eventStaffs });
+    return manifestSuccessResponse({ eventStaffAssignments });
   } catch (error) {
-    console.error("Error fetching eventStaffs:", error);
+    console.error("Error fetching eventStaffAssignments:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { createManifestRuntime } from '@repo/manifest-adapters/manifest-runtime-factory';
 
 /**
  * POST /api/staffing/recommendations
@@ -16,12 +15,6 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
-    const runtime = await createManifestRuntime({
-      request,
-      manifestName: 'workforce-ai-rules',
-      entityId: eventId,
-    });
 
     // Calculate staffing needs based on event parameters
     const baseStaffCount = Math.ceil(eventSize / 20); // 1 staff per 20 guests

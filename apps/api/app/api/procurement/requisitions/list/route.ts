@@ -45,18 +45,16 @@ export async function GET(request: NextRequest) {
     }
 
     const [requisitions, total] = await Promise.all([
-      database.purchaseRequisition.findMany({
+      database.purchaseOrder.findMany({
         where,
         take: Math.min(limit, 200),
         skip: offset,
         orderBy: { createdAt: "desc" },
         include: {
-          items: {
-            where: { deletedAt: null },
-          },
+          items: true,
         },
       }),
-      database.purchaseRequisition.count({ where }),
+      database.purchaseOrder.count({ where }),
     ]);
 
     return Response.json({

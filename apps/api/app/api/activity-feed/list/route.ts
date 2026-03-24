@@ -117,7 +117,7 @@ export async function GET(request: NextRequest) {
 
     const hasMore = offset + activities.length < totalCount;
 
-    return manifestSuccessResponse<ActivityFeedResponse>({
+    return manifestSuccessResponse({
       activities: activities as ActivityFeedItem[],
       hasMore,
       totalCount,

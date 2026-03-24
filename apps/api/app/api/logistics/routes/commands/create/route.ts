@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { database } from '@repo/database';
-import { getTenantId } from '@/lib/auth';
+import { requireTenantId } from '@/app/lib/tenant';
 
 export async function POST(request: NextRequest) {
   try {
-    const tenantId = await getTenantId();
-    if (!tenantId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const tenantId = await requireTenantId();
 
     const body = await request.json();
     const { name, description, eventId, scheduledDate, stops } = body;

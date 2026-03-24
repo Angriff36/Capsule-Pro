@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { database } from '@repo/database';
-import { getTenantId } from '@/lib/auth';
+import { requireTenantId } from '@/app/lib/tenant';
 
 export async function POST(request: NextRequest) {
   try {
-    const tenantId = await getTenantId();
-    if (!tenantId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const tenantId = await requireTenantId();
 
     const body = await request.json();
     const { routeId, status, stopId, stopStatus } = body;
@@ -41,7 +38,7 @@ export async function POST(request: NextRequest) {
       }
 
       const route = await database.deliveryRoute.update({
-        where: { tenantId, id: routeId },
+        where: { tenantId_id: { tenantId, id: routeId } },
         data: updateData,
       });
 
@@ -73,7 +70,7 @@ export async function POST(request: NextRequest) {
       }
 
       const stop = await database.routeStop.update({
-        where: { id: stopId },
+        where: { tenantId_id: { tenantId, id: stopId } },
         data: updateData,
       });
 

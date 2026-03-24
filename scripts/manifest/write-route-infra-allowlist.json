@@ -486,6 +486,21 @@
       "prefix": "/api/kitchen/equipment/alerts",
       "methods": ["POST", "PUT", "PATCH", "DELETE"],
       "comment": "Infrastructure: Equipment alert management using direct DB access"
+    },
+    {
+      "prefix": "/api/events/automated-followups/commands",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Automated follow-up commands (complete, create, generate, skip)"
+    },
+    {
+      "prefix": "/api/logistics/routes/commands",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Logistics route commands (create, update-status)"
+    },
+    {
+      "prefix": "/api/staffing/recommendations",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Staffing recommendations with direct DB access"
     }
   ]
 }

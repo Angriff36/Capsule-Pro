@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTenantId } from '@/lib/auth';
-import { database } from '@repo/database';
+import { requireTenantId } from '@/app/lib/tenant';
+import { database, Prisma } from '@repo/database';
 
 /**
  * GET /api/events/automated-followups/list
@@ -8,10 +8,7 @@ import { database } from '@repo/database';
  */
 export async function GET(request: NextRequest) {
   try {
-    const tenantId = await getTenantId();
-    if (!tenantId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    const tenantId = await requireTenantId();
 
     const { searchParams } = new URL(request.url);
     const eventId = searchParams.get('eventId');
@@ -40,8 +37,8 @@ export async function GET(request: NextRequest) {
       FROM tenant_events.event_followups ef
       LEFT JOIN tenant_events.events e ON e.tenant_id = ef.tenant_id AND e.id = ef.event_id
       WHERE ef.tenant_id = ${tenantId}::uuid
-      ${eventId ? database.Prisma.sql`AND ef.event_id = ${eventId}::uuid` : database.Prisma.empty}
-      ${status ? database.Prisma.sql`AND ef.status = ${status}` : database.Prisma.empty}
+      ${eventId ? Prisma.sql`AND ef.event_id = ${eventId}::uuid` : Prisma.empty}
+      ${status ? Prisma.sql`AND ef.status = ${status}` : Prisma.empty}
       ORDER BY ef.due_date ASC
       LIMIT ${limit} OFFSET ${offset}
     `;

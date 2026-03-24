@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     return manifestErrorResponse("Tenant not found", 400);
   }
 
-const timeOffRequests = await database.timeOffRequest.findMany({
+const timeOffRequests = await database.employeeTimeOffRequest.findMany({
     where: {
         tenant_id: tenantId,
         deleted_at: null
