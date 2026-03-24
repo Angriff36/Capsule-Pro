@@ -836,7 +836,694 @@ async function suggestManifestPlanTool(
   };
 }
 
+// ── Event Setup Tools (Phase 1) ────────────────────────────────────
+
+async function createEventDraftTool(
+  args: Record<string, unknown>,
+  context: ManifestAgentContext,
+  callId: string
+): Promise<AgentToolResult> {
+  // Validate required fields
+  const title = typeof args.title === "string" ? args.title : "";
+  const eventType = typeof args.eventType === "string" ? args.eventType : "general";
+  const guestCount = typeof args.guestCount === "number" ? args.guestCount : 0;
+
+  if (!title) {
+    return {
+      ok: false,
+      summary: "Event title is required",
+      error: "Event title is required",
+    };
+  }
+
+  if (guestCount <= 0) {
+    return {
+      ok: false,
+      summary: "Guest count must be greater than 0",
+      error: "Guest count must be greater than 0",
+    };
+  }
+
+  // Build the event payload
+  const eventPayload: Record<string, unknown> = {
+    title,
+    eventType,
+    guestCount,
+    status: "draft",
+  };
+
+  if (typeof args.eventDate === "number" && args.eventDate > 0) {
+    eventPayload.eventDate = args.eventDate;
+  }
+
+  if (typeof args.clientId === "string" && args.clientId.length > 0) {
+    eventPayload.clientId = args.clientId;
+  }
+
+  if (typeof args.notes === "string") {
+    eventPayload.notes = args.notes;
+  }
+
+  if (Array.isArray(args.tags)) {
+    eventPayload.tags = args.tags;
+  }
+
+  // Execute via manifest command
+  const result = await executeManifestCommandRoute(
+    "/api/events/event/commands/create",
+    "Event.create",
+    { entityName: "Event", commandName: "create", args: eventPayload },
+    context,
+    callId
+  );
+
+  if (!result.ok) {
+    return result;
+  }
+
+  const responseData = result.data as { response?: { id?: string; eventNumber?: string } };
+  const eventId = responseData?.response?.id;
+  const eventNumber = responseData?.response?.eventNumber;
+
+  return {
+    ok: true,
+    summary: `Created event draft "${title}" (${eventNumber ?? "pending number"})`,
+    data: {
+      eventId,
+      eventNumber,
+      title,
+      eventType,
+      guestCount,
+      status: "draft",
+    },
+  };
+}
+
+async function setEventMenuTool(
+  args: Record<string, unknown>,
+  context: ManifestAgentContext,
+  callId: string
+): Promise<AgentToolResult> {
+  const eventId = typeof args.eventId === "string" ? args.eventId : "";
+  const dishes = Array.isArray(args.dishes) ? args.dishes : [];
+
+  if (!eventId) {
+    return {
+      ok: false,
+      summary: "Event ID is required",
+      error: "Event ID is required",
+    };
+  }
+
+  if (dishes.length === 0) {
+    return {
+      ok: false,
+      summary: "At least one dish is required",
+      error: "At least one dish is required",
+    };
+  }
+
+  // First, create a menu for the event
+  const menuResult = await executeManifestCommandRoute(
+    "/api/menus/commands/create",
+    "Menu.create",
+    {
+      entityName: "Menu",
+      commandName: "create",
+      args: {
+        name: args.menuName ?? `Event Menu`,
+        eventId,
+        status: "draft",
+      },
+    },
+    context,
+    callId
+  );
+
+  if (!menuResult.ok) {
+    return {
+      ok: false,
+      summary: `Failed to create menu: ${menuResult.error}`,
+      error: menuResult.error,
+    };
+  }
+
+  const menuData = menuResult.data as { response?: { id?: string } };
+  const menuId = menuData?.response?.id;
+
+  if (!menuId) {
+    return {
+      ok: false,
+      summary: "Failed to get menu ID from creation",
+      error: "Failed to get menu ID from creation",
+    };
+  }
+
+  // Create event dishes
+  const createdDishes: Array<{ name: string; category?: string; dietary?: string[] }> = [];
+  const errors: string[] = [];
+
+  for (const dish of dishes) {
+    if (typeof dish === "object" && dish !== null) {
+      const dishObj = dish as Record<string, unknown>;
+      const dishName = typeof dishObj.name === "string" ? dishObj.name : "";
+
+      if (!dishName) {
+        errors.push("Dish name is required");
+        continue;
+      }
+
+      const dishResult = await executeManifestCommandRoute(
+        "/api/events/dish/commands/create",
+        "EventDish.create",
+        {
+          entityName: "EventDish",
+          commandName: "create",
+          args: {
+            eventId,
+            menuId,
+            dishName,
+            category: typeof dishObj.category === "string" ? dishObj.category : undefined,
+            dietary: Array.isArray(dishObj.dietary) ? dishObj.dietary : undefined,
+          },
+        },
+        context,
+        callId
+      );
+
+      if (dishResult.ok) {
+        createdDishes.push({
+          name: dishName,
+          category: typeof dishObj.category === "string" ? dishObj.category : undefined,
+          dietary: Array.isArray(dishObj.dietary) ? dishObj.dietary : undefined,
+        });
+      } else {
+        errors.push(`Failed to add dish "${dishName}": ${dishResult.error}`);
+      }
+    }
+  }
+
+  if (createdDishes.length === 0) {
+    return {
+      ok: false,
+      summary: "No dishes were successfully added to the menu",
+      error: errors.length > 0 ? errors.join("; ") : "No valid dishes provided",
+    };
+  }
+
+  return {
+    ok: true,
+    summary: `Added ${createdDishes.length} dishes to event menu`,
+    data: {
+      eventId,
+      menuId,
+      dishCount: createdDishes.length,
+      dishes: createdDishes,
+      errors: errors.length > 0 ? errors : undefined,
+    },
+  };
+}
+
+async function assignEventStaffTool(
+  args: Record<string, unknown>,
+  context: ManifestAgentContext,
+  callId: string
+): Promise<AgentToolResult> {
+  const eventId = typeof args.eventId === "string" ? args.eventId : "";
+  const staffAssignments = Array.isArray(args.staffAssignments) ? args.staffAssignments : [];
+
+  if (!eventId) {
+    return {
+      ok: false,
+      summary: "Event ID is required",
+      error: "Event ID is required",
+    };
+  }
+
+  if (staffAssignments.length === 0) {
+    return {
+      ok: false,
+      summary: "At least one staff assignment is required",
+      error: "At least one staff assignment is required",
+    };
+  }
+
+  const createdAssignments: Array<{ role: string; count: number; employeeId?: string }> = [];
+  const errors: string[] = [];
+
+  for (const assignment of staffAssignments) {
+    if (typeof assignment === "object" && assignment !== null) {
+      const assignObj = assignment as Record<string, unknown>;
+      const role = typeof assignObj.role === "string" ? assignObj.role : "";
+      const count = typeof assignObj.count === "number" ? assignObj.count : 1;
+      const employeeId = typeof assignObj.employeeId === "string" ? assignObj.employeeId : undefined;
+
+      if (!role) {
+        errors.push("Staff role is required");
+        continue;
+      }
+
+      const assignResult = await executeManifestCommandRoute(
+        "/api/events/staff/commands/assign",
+        "EventStaff.assign",
+        {
+          entityName: "EventStaff",
+          commandName: "assign",
+          args: {
+            eventId,
+            role,
+            count,
+            employeeId,
+            status: "pending",
+          },
+        },
+        context,
+        callId
+      );
+
+      if (assignResult.ok) {
+        createdAssignments.push({ role, count, employeeId });
+      } else {
+        errors.push(`Failed to assign ${count} ${role}(s): ${assignResult.error}`);
+      }
+    }
+  }
+
+  if (createdAssignments.length === 0) {
+    return {
+      ok: false,
+      summary: "No staff assignments were successfully created",
+      error: errors.length > 0 ? errors.join("; ") : "No valid assignments provided",
+    };
+  }
+
+  const totalStaff = createdAssignments.reduce((sum, a) => sum + a.count, 0);
+
+  return {
+    ok: true,
+    summary: `Assigned ${totalStaff} staff members across ${createdAssignments.length} roles`,
+    data: {
+      eventId,
+      assignmentCount: createdAssignments.length,
+      totalStaff,
+      assignments: createdAssignments,
+      errors: errors.length > 0 ? errors : undefined,
+    },
+  };
+}
+
+async function setEventVenueTool(
+  args: Record<string, unknown>,
+  context: ManifestAgentContext,
+  callId: string
+): Promise<AgentToolResult> {
+  const eventId = typeof args.eventId === "string" ? args.eventId : "";
+  const venueName = typeof args.venueName === "string" ? args.venueName : "";
+  const venueAddress = typeof args.venueAddress === "string" ? args.venueAddress : "";
+
+  if (!eventId) {
+    return {
+      ok: false,
+      summary: "Event ID is required",
+      error: "Event ID is required",
+    };
+  }
+
+  if (!venueName && !venueAddress) {
+    return {
+      ok: false,
+      summary: "At least venue name or address is required",
+      error: "At least venue name or address is required",
+    };
+  }
+
+  const updatePayload: Record<string, unknown> = { id: eventId };
+
+  if (venueName) {
+    updatePayload.venueName = venueName;
+  }
+
+  if (venueAddress) {
+    updatePayload.venueAddress = venueAddress;
+  }
+
+  const result = await executeManifestCommandRoute(
+    "/api/events/event/commands/update",
+    "Event.update",
+    { entityName: "Event", commandName: "update", args: updatePayload },
+    context,
+    callId
+  );
+
+  if (!result.ok) {
+    return result;
+  }
+
+  return {
+    ok: true,
+    summary: `Set venue "${venueName}" for event`,
+    data: {
+      eventId,
+      venueName,
+      venueAddress,
+    },
+  };
+}
+
+async function generatePrepListTool(
+  args: Record<string, unknown>,
+  context: ManifestAgentContext
+): Promise<AgentToolResult> {
+  const eventId = typeof args.eventId === "string" ? args.eventId : "";
+
+  if (!eventId) {
+    return {
+      ok: false,
+      summary: "Event ID is required",
+      error: "Event ID is required",
+    };
+  }
+
+  // Fetch event dishes to generate prep list from
+  const eventDishes = await database.eventDish.findMany({
+    where: {
+      tenantId: context.tenantId,
+      eventId,
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+      dishName: true,
+      category: true,
+      dietary: true,
+    },
+  });
+
+  if (eventDishes.length === 0) {
+    return {
+      ok: false,
+      summary: "No dishes found for this event. Add dishes to the menu first.",
+      error: "No dishes found for this event",
+    };
+  }
+
+  // Get event details for context
+  const event = await database.event.findFirst({
+    where: {
+      id: eventId,
+      tenantId: context.tenantId,
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+      title: true,
+      guestCount: true,
+      eventDate: true,
+    },
+  });
+
+  if (!event) {
+    return {
+      ok: false,
+      summary: "Event not found",
+      error: "Event not found",
+    };
+  }
+
+  // Generate prep list items from dishes
+  // Group by category for organized prep list
+  const categoryGroups: Record<string, typeof eventDishes> = {};
+
+  for (const dish of eventDishes) {
+    const category = dish.category ?? "General";
+    if (!categoryGroups[category]) {
+      categoryGroups[category] = [];
+    }
+    categoryGroups[category].push(dish);
+  }
+
+  // Build prep list items
+  const prepListItems: Array<{
+    category: string;
+    dishName: string;
+    quantity: number;
+    unit: string;
+    prepNotes: string;
+    dietary: string[];
+  }> = [];
+
+  const guestCount = event.guestCount ?? 1;
+
+  for (const [category, dishes] of Object.entries(categoryGroups)) {
+    for (const dish of dishes) {
+      // Estimate quantity based on guest count (simple heuristic)
+      const quantity = Math.ceil(guestCount * 1.1); // 10% buffer
+
+      prepListItems.push({
+        category,
+        dishName: dish.dishName,
+        quantity,
+        unit: "servings",
+        prepNotes: `Prepare for ${guestCount} guests`,
+        dietary: dish.dietary ?? [],
+      });
+    }
+  }
+
+  // Apply optional filters
+  let filteredItems = prepListItems;
+
+  if (Array.isArray(args.categories) && args.categories.length > 0) {
+    const categories = args.categories as string[];
+    filteredItems = filteredItems.filter((item) =>
+      categories.some((c) => c.toLowerCase() === item.category.toLowerCase())
+    );
+  }
+
+  if (typeof args.includeDietary === "boolean" && !args.includeDietary) {
+    filteredItems = filteredItems.map((item) => ({
+      ...item,
+      dietary: [],
+    }));
+  }
+
+  return {
+    ok: true,
+    summary: `Generated prep list with ${filteredItems.length} items from ${eventDishes.length} dishes`,
+    data: {
+      eventId,
+      eventTitle: event.title,
+      guestCount,
+      eventDate: event.eventDate,
+      totalItems: filteredItems.length,
+      categories: Object.keys(categoryGroups),
+      prepList: filteredItems,
+    },
+  };
+}
+
 const BASE_TOOL_DEFINITIONS: ToolDefinition[] = [
+  // ── Event Setup Tools ─────────────────────────────────────────────
+  {
+    type: "function",
+    name: "create_event_draft",
+    description:
+      "Create a new event with basic details in draft status. Use this when the user wants to start planning a new event. The event will be created with status 'draft' so it can be modified before confirmation. Requires title and guestCount at minimum.",
+    parameters: {
+      type: "object",
+      properties: {
+        title: {
+          type: "string",
+          description: "The event title or name (e.g., 'Smith Wedding Reception', 'TechCorp Q4 Gala')",
+        },
+        eventType: {
+          type: "string",
+          description: "Type of event (e.g., 'wedding', 'corporate', 'birthday', 'catering', 'gala', 'party')",
+        },
+        eventDate: {
+          type: "number",
+          description: "Unix timestamp of the event date",
+        },
+        guestCount: {
+          type: "number",
+          description: "Expected number of guests/attendees",
+        },
+        clientId: {
+          type: "string",
+          description: "UUID of the client if already exists in the system",
+        },
+        notes: {
+          type: "string",
+          description: "Additional notes about the event",
+        },
+        tags: {
+          type: "array",
+          items: { type: "string" },
+          description: "Tags for categorizing the event",
+        },
+      },
+      required: ["title", "guestCount"],
+      additionalProperties: false,
+    },
+  },
+  {
+    type: "function",
+    name: "set_event_menu",
+    description:
+      "Link dishes to an event by creating a menu and adding event dishes. Use this after creating an event draft when the user specifies menu items. Creates a menu associated with the event and adds each dish with optional category and dietary info.",
+    parameters: {
+      type: "object",
+      properties: {
+        eventId: {
+          type: "string",
+          description: "UUID of the event to add the menu to",
+        },
+        menuName: {
+          type: "string",
+          description: "Optional name for the menu (defaults to 'Event Menu')",
+        },
+        dishes: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              name: {
+                type: "string",
+                description: "Name of the dish (e.g., 'Grilled Salmon', 'Caesar Salad')",
+              },
+              category: {
+                type: "string",
+                description: "Category of dish (e.g., 'appetizer', 'main', 'dessert', 'beverage')",
+              },
+              dietary: {
+                type: "array",
+                items: { type: "string" },
+                description: "Dietary labels (e.g., 'vegetarian', 'vegan', 'gluten-free', 'kosher')",
+              },
+            },
+            required: ["name"],
+          },
+          description: "Array of dishes to add to the event menu",
+        },
+      },
+      required: ["eventId", "dishes"],
+      additionalProperties: false,
+    },
+  },
+  {
+    type: "function",
+    name: "assign_event_staff",
+    description:
+      "Assign staff members to an event by role. Use this when the user specifies staffing needs (e.g., 'I need 4 servers and 2 bartenders'). Creates staff assignments that can later be linked to specific employees.",
+    parameters: {
+      type: "object",
+      properties: {
+        eventId: {
+          type: "string",
+          description: "UUID of the event to assign staff to",
+        },
+        staffAssignments: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              role: {
+                type: "string",
+                description: "Staff role (e.g., 'server', 'bartender', 'chef', 'event_manager', 'dishwasher')",
+              },
+              count: {
+                type: "number",
+                description: "Number of staff needed for this role",
+              },
+              employeeId: {
+                type: "string",
+                description: "Optional UUID of a specific employee to assign",
+              },
+            },
+            required: ["role"],
+          },
+          description: "Array of staff assignments with roles and counts",
+        },
+      },
+      required: ["eventId", "staffAssignments"],
+      additionalProperties: false,
+    },
+  },
+  {
+    type: "function",
+    name: "set_event_venue",
+    description:
+      "Set or update the venue for an event. Use this when the user specifies where the event will be held. Can set venue name and/or address independently.",
+    parameters: {
+      type: "object",
+      properties: {
+        eventId: {
+          type: "string",
+          description: "UUID of the event to update",
+        },
+        venueName: {
+          type: "string",
+          description: "Name of the venue (e.g., 'Grand Ballroom', 'The Ritz Hotel', 'Client Home')",
+        },
+        venueAddress: {
+          type: "string",
+          description: "Full address of the venue",
+        },
+      },
+      required: ["eventId"],
+      additionalProperties: false,
+    },
+  },
+  {
+    type: "function",
+    name: "generate_prep_list",
+    description:
+      "Auto-generate a prep list from the event menu. Use this when the user wants to see what needs to be prepared for an event. Analyzes all dishes linked to the event and generates a categorized prep list with quantities based on guest count.",
+    parameters: {
+      type: "object",
+      properties: {
+        eventId: {
+          type: "string",
+          description: "UUID of the event to generate prep list for",
+        },
+        categories: {
+          type: "array",
+          items: { type: "string" },
+          description: "Optional filter to include only specific categories",
+        },
+        includeDietary: {
+          type: "boolean",
+          description: "Whether to include dietary labels in the output (default: true)",
+        },
+      },
+      required: ["eventId"],
+      additionalProperties: false,
+    },
+  },
+  // ── Core Tools ─────────────────────────────────────────────────────
+  {
+    type: "function",
+    name: "parse_natural_language_event",
+    description:
+      "Parse natural language into structured event data. Extracts title, date, guest count, venue, and other event details from casual text like 'Create an event for 50 people at Venue X on March 25th'. Returns structured data ready for Event.create.",
+    parameters: {
+      type: "object",
+      properties: {
+        text: {
+          type: "string",
+          description:
+            "Natural language description of the event to create. Examples: 'Catering for 100 guests at the Grand Ballroom next Friday', 'Birthday party for 50 people at home on March 15th 2024'.",
+        },
+        referenceDate: {
+          type: "string",
+          description:
+            "ISO date string to use as reference for relative dates like 'next Friday'. Defaults to current date.",
+        },
+      },
+      required: ["text"],
+      additionalProperties: false,
+    },
+  },
   {
     type: "function",
     name: "read_board_state",
@@ -992,6 +1679,540 @@ const BASE_TOOL_DEFINITIONS: ToolDefinition[] = [
   },
 ];
 
+// ── Natural Language Event Parsing ─────────────────────────────────
+
+interface ParsedEventData {
+  title: string;
+  eventType: string;
+  eventDate: number | null;
+  guestCount: number;
+  venueName: string;
+  venueAddress: string;
+  notes: string;
+  tags: string;
+  confidence: number;
+  missingFields: string[];
+  suggestions: string[];
+}
+
+const EVENT_TYPE_PATTERNS: Array<{
+  pattern: RegExp;
+  eventType: string;
+  keywords: string[];
+}> = [
+  {
+    pattern: /\b(wedding|marriage|bride|groom)\b/i,
+    eventType: "wedding",
+    keywords: ["wedding", "marriage"],
+  },
+  {
+    pattern: /\b(corporate|business|company|conference|meeting)\b/i,
+    eventType: "corporate",
+    keywords: ["corporate", "business"],
+  },
+  {
+    pattern: /\b(birthday|b-day|bday)\b/i,
+    eventType: "birthday",
+    keywords: ["birthday"],
+  },
+  {
+    pattern: /\b(anniversary)\b/i,
+    eventType: "anniversary",
+    keywords: ["anniversary"],
+  },
+  {
+    pattern: /\b(graduation|graduate)\b/i,
+    eventType: "graduation",
+    keywords: ["graduation"],
+  },
+  {
+    pattern: /\b(holiday|christmas|thanksgiving|easter|hanukkah)\b/i,
+    eventType: "holiday",
+    keywords: ["holiday"],
+  },
+  {
+    pattern: /\b(gala|fundraiser|charity)\b/i,
+    eventType: "gala",
+    keywords: ["gala", "charity"],
+  },
+  {
+    pattern: /\b(catering|catered)\b/i,
+    eventType: "catering",
+    keywords: ["catering"],
+  },
+  {
+    pattern: /\b(party|celebration|celebrate)\b/i,
+    eventType: "party",
+    keywords: ["party", "celebration"],
+  },
+];
+
+const MONTH_NAMES = [
+  "january",
+  "february",
+  "march",
+  "april",
+  "may",
+  "june",
+  "july",
+  "august",
+  "september",
+  "october",
+  "november",
+  "december",
+];
+
+const MONTH_ABBREVIATIONS = [
+  "jan",
+  "feb",
+  "mar",
+  "apr",
+  "may",
+  "jun",
+  "jul",
+  "aug",
+  "sep",
+  "sept",
+  "oct",
+  "nov",
+  "dec",
+];
+
+function parseMonth(text: string): number | null {
+  const lower = text.toLowerCase();
+  
+  // Try full month names first
+  for (let i = 0; i < MONTH_NAMES.length; i++) {
+    if (lower.includes(MONTH_NAMES[i])) {
+      return i;
+    }
+  }
+  
+  // Try abbreviations as whole words
+  for (let i = 0; i < MONTH_ABBREVIATIONS.length; i++) {
+    const regex = new RegExp(`\\b${MONTH_ABBREVIATIONS[i]}\\.?\\b`, "i");
+    if (regex.test(lower)) {
+      return i;
+    }
+  }
+  
+  return null;
+}
+
+function parseDayOfMonth(text: string): number | null {
+  // Look for day patterns that are likely dates, not guest counts
+  // Prioritize patterns near month names or after "on"
+  
+  // Pattern 1: Day immediately after month name (e.g., "March 25th")
+  const monthDayPattern = /\b(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{1,2})(?:st|nd|rd|th)?\b/i;
+  const monthDayMatch = text.match(monthDayPattern);
+  if (monthDayMatch) {
+    const day = parseInt(monthDayMatch[1], 10);
+    if (day >= 1 && day <= 31) {
+      return day;
+    }
+  }
+  
+  // Pattern 2: Day after "on" (e.g., "on the 25th", "on 25th")
+  const onDayPattern = /\bon\s+(?:the\s+)?(\d{1,2})(?:st|nd|rd|th)?\b/i;
+  const onDayMatch = text.match(onDayPattern);
+  if (onDayMatch) {
+    const day = parseInt(onDayMatch[1], 10);
+    if (day >= 1 && day <= 31) {
+      return day;
+    }
+  }
+  
+  // Pattern 3: Standalone day with ordinal (e.g., "25th")
+  // Only use this if not preceded by "for" (which indicates guest count)
+  const standalonePattern = /(?<!\bfor\s+)(\d{1,2})(?:st|nd|rd|th)\b/i;
+  const standaloneMatch = text.match(standalonePattern);
+  if (standaloneMatch) {
+    const day = parseInt(standaloneMatch[1], 10);
+    if (day >= 1 && day <= 31) {
+      return day;
+    }
+  }
+  
+  return null;
+}
+
+function parseYear(text: string, referenceYear: number): number | null {
+  const yearMatch = text.match(/\b(20\d{2})\b/);
+  if (yearMatch) {
+    return parseInt(yearMatch[1], 10);
+  }
+  return null;
+}
+
+function parseRelativeDate(
+  text: string,
+  referenceDate: Date
+): { date: Date; confidence: number } | null {
+  const lower = text.toLowerCase();
+
+  // "tomorrow"
+  if (/\btomorrow\b/.test(lower)) {
+    const tomorrow = new Date(referenceDate);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return { date: tomorrow, confidence: 0.95 };
+  }
+
+  // "next week"
+  if (/\bnext\s+week\b/.test(lower)) {
+    const nextWeek = new Date(referenceDate);
+    nextWeek.setDate(nextWeek.getDate() + 7);
+    return { date: nextWeek, confidence: 0.7 };
+  }
+
+  // "in X weeks" - check this before "next [day]" to avoid conflicts
+  const inWeeksMatch = lower.match(/\bin\s+(\d+)\s+weeks?\b/);
+  if (inWeeksMatch) {
+    const weeks = parseInt(inWeeksMatch[1], 10);
+    const result = new Date(referenceDate);
+    result.setDate(result.getDate() + weeks * 7);
+    return { date: result, confidence: 0.95 };
+  }
+
+  // "next [day of week]"
+  const dayNames = [
+    "sunday",
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+  ];
+  const nextDayMatch = lower.match(/\bnext\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/i);
+  if (nextDayMatch) {
+    const targetDay = dayNames.indexOf(nextDayMatch[1].toLowerCase());
+    const result = new Date(referenceDate);
+    const currentDay = result.getDay();
+    let daysUntil = targetDay - currentDay;
+    if (daysUntil <= 0) {
+      daysUntil += 7;
+    }
+    daysUntil += 7; // "next" means the following week
+    result.setDate(result.getDate() + daysUntil);
+    return { date: result, confidence: 0.9 };
+  }
+
+  // "this [day of week]"
+  const thisDayMatch = lower.match(/\bthis\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/i);
+  if (thisDayMatch) {
+    const targetDay = dayNames.indexOf(thisDayMatch[1].toLowerCase());
+    const result = new Date(referenceDate);
+    const currentDay = result.getDay();
+    let daysUntil = targetDay - currentDay;
+    if (daysUntil <= 0) {
+      daysUntil += 7;
+    }
+    result.setDate(result.getDate() + daysUntil);
+    return { date: result, confidence: 0.9 };
+  }
+
+  // "in X days"
+  const inDaysMatch = lower.match(/\bin\s+(\d+)\s+days?\b/);
+  if (inDaysMatch) {
+    const days = parseInt(inDaysMatch[1], 10);
+    const result = new Date(referenceDate);
+    result.setDate(result.getDate() + days);
+    return { date: result, confidence: 0.95 };
+  }
+
+  return null;
+}
+
+function parseAbsoluteDate(
+  text: string,
+  referenceDate: Date
+): { date: Date; confidence: number } | null {
+  const month = parseMonth(text);
+  if (month === null) {
+    return null;
+  }
+
+  const day = parseDayOfMonth(text);
+  if (day === null) {
+    return null;
+  }
+
+  let year = parseYear(text, referenceDate.getFullYear());
+  if (year === null) {
+    // Default to current year or next year if the date has passed
+    year = referenceDate.getFullYear();
+    const candidateDate = new Date(year, month, day);
+    if (candidateDate < referenceDate) {
+      year++;
+    }
+  }
+
+  const date = new Date(year, month, day);
+  // Validate the date is reasonable
+  if (date.getMonth() !== month || date.getDate() !== day) {
+    return null;
+  }
+
+  return { date, confidence: 0.95 };
+}
+
+function parseEventDate(
+  text: string,
+  referenceDate: Date
+): { timestamp: number; confidence: number } | null {
+  // Try relative date first
+  const relative = parseRelativeDate(text, referenceDate);
+  if (relative) {
+    return {
+      timestamp: Math.floor(relative.date.getTime() / 1000),
+      confidence: relative.confidence,
+    };
+  }
+
+  // Try absolute date
+  const absolute = parseAbsoluteDate(text, referenceDate);
+  if (absolute) {
+    return {
+      timestamp: Math.floor(absolute.date.getTime() / 1000),
+      confidence: absolute.confidence,
+    };
+  }
+
+  return null;
+}
+
+function parseGuestCount(text: string): number | null {
+  // Match patterns like "50 people", "100 guests", "for 75", "200 pax"
+  const patterns = [
+    /(?:for\s+)?(\d+)\s*(?:people|guests?|pax|persons?|attendees?)\b/i,
+    /(\d+)\s*(?:people|guests?|pax|persons?|attendees?)\b/i,
+    /\bfor\s+(\d+)\b/i,
+  ];
+
+  for (const pattern of patterns) {
+    const match = text.match(pattern);
+    if (match) {
+      const count = parseInt(match[1], 10);
+      if (count > 0 && count <= 100000) {
+        return count;
+      }
+    }
+  }
+
+  return null;
+}
+
+function parseVenue(text: string): { name: string; address: string } {
+  // Look for patterns like "at Venue X", "at the Grand Ballroom", "venue: X"
+  // Be careful to stop at prepositions, date indicators, and numbers
+  
+  const stopWords = [
+    "on", "in", "for", "with", "by", "from", "to", "next", "this", 
+    "tomorrow", "today", "january", "february", "march", "april", "may", 
+    "june", "july", "august", "september", "october", "november", "december"
+  ];
+  
+  // Pattern 1: "at [Venue Name]" - capture words after 'at' until we hit a stop word or date pattern
+  const atMatch = text.match(/\b(?:at|@)\s+(?:the\s+)?([A-Z][A-Za-z]+(?:\s+[A-Za-z]+)*)/i);
+  if (atMatch) {
+    let venueName = atMatch[1].trim();
+    
+    // Split into words and filter out stop words and anything after them
+    const words = venueName.split(/\s+/);
+    const filteredWords: string[] = [];
+    for (const word of words) {
+      const lowerWord = word.toLowerCase();
+      // Stop if we hit a stop word or a number (likely a date)
+      if (stopWords.includes(lowerWord) || /^\d/.test(word)) {
+        break;
+      }
+      filteredWords.push(word);
+    }
+    
+    venueName = filteredWords.join(" ");
+    if (venueName.length > 2 && !/^\d/.test(venueName)) {
+      return { name: venueName, address: "" };
+    }
+  }
+  
+  // Pattern 2: "venue: [Venue Name]"
+  const venueColonMatch = text.match(/\bvenue[:\s]+["']?([A-Za-z\s]+?)["']?(?:\s|$)/i);
+  if (venueColonMatch) {
+    const venueName = venueColonMatch[1].trim();
+    if (venueName.length > 2) {
+      return { name: venueName, address: "" };
+    }
+  }
+  
+  // Pattern 3: "at [location]" where location is a known venue type
+  const venueTypes = ["ballroom", "hall", "hotel", "center", "centre", "house", "home", "restaurant", "venue", "garden", "park"];
+  const venueTypeRegex = new RegExp(`\\b(?:at|@)\\s+(?:the\\s+)?([A-Za-z]+\\s+(?:${venueTypes.join("|")}))`, "i");
+  const venueTypeMatch = text.match(venueTypeRegex);
+  if (venueTypeMatch) {
+    return { name: venueTypeMatch[1].trim(), address: "" };
+  }
+
+  return { name: "", address: "" };
+}
+
+function inferEventType(text: string): { eventType: string; confidence: number } {
+  for (const { pattern, eventType } of EVENT_TYPE_PATTERNS) {
+    if (pattern.test(text)) {
+      return { eventType, confidence: 0.9 };
+    }
+  }
+
+  // Default to "catering" if food-related keywords are present
+  if (/\b(food|menu|catering|dinner|lunch|breakfast|meal|buffet)\b/i.test(text)) {
+    return { eventType: "catering", confidence: 0.7 };
+  }
+
+  return { eventType: "general", confidence: 0.5 };
+}
+
+function generateTitle(
+  text: string,
+  eventType: string,
+  guestCount: number | null,
+  venueName: string
+): string {
+  // Try to extract a descriptive title from the text
+  // Remove common filler words and date/guest patterns
+  let cleaned = text
+    .replace(/^(create|plan|schedule|set up|organize|need|want)\s+(an?\s+)?/i, "")
+    .replace(/\bfor\s+\d+\s*(people|guests?|pax)?\b/gi, "")
+    .replace(/\bon\s+\w+\s+\d{1,2}(?:st|nd|rd|th)?/gi, "")
+    .replace(/\bat\s+\d+\s*(pm|am)?/gi, "")
+    .trim();
+
+  // Capitalize first letter
+  if (cleaned.length > 0) {
+    cleaned = cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+  }
+
+  // Build a title
+  const parts: string[] = [];
+
+  if (eventType && eventType !== "general") {
+    parts.push(eventType.charAt(0).toUpperCase() + eventType.slice(1));
+  }
+
+  if (venueName) {
+    parts.push(`at ${venueName}`);
+  }
+
+  if (guestCount && guestCount > 0) {
+    parts.push(`(${guestCount} guests)`);
+  }
+
+  const generatedTitle = parts.join(" ");
+  return generatedTitle || cleaned || "New Event";
+}
+
+function parseNaturalLanguageEvent(
+  text: string,
+  referenceDate: Date = new Date()
+): ParsedEventData {
+  const missingFields: string[] = [];
+  const suggestions: string[] = [];
+
+  // Parse guest count
+  const guestCount = parseGuestCount(text) ?? 0;
+  if (guestCount === 0) {
+    missingFields.push("guestCount");
+    suggestions.push("How many guests will attend?");
+  }
+
+  // Parse event date
+  const dateResult = parseEventDate(text, referenceDate);
+  const eventDate = dateResult?.timestamp ?? null;
+  if (!eventDate) {
+    missingFields.push("eventDate");
+    suggestions.push("When is the event? (e.g., 'March 25th', 'next Friday')");
+  }
+
+  // Parse venue
+  const venue = parseVenue(text);
+  if (!venue.name) {
+    missingFields.push("venueName");
+    suggestions.push("Where will the event be held?");
+  }
+
+  // Infer event type
+  const typeResult = inferEventType(text);
+
+  // Generate title
+  const title = generateTitle(text, typeResult.eventType, guestCount, venue.name);
+
+  // Calculate overall confidence
+  let confidence = 0.5;
+  if (guestCount > 0) confidence += 0.15;
+  if (eventDate) confidence += 0.2;
+  if (venue.name) confidence += 0.1;
+  if (typeResult.confidence > 0.7) confidence += 0.05;
+  confidence = Math.min(confidence, 1);
+
+  return {
+    title,
+    eventType: typeResult.eventType,
+    eventDate,
+    guestCount: guestCount > 0 ? guestCount : 1,
+    venueName: venue.name,
+    venueAddress: venue.address,
+    notes: "",
+    tags: typeResult.eventType !== "general" ? typeResult.eventType : "",
+    confidence,
+    missingFields,
+    suggestions,
+  };
+}
+
+async function parseNaturalLanguageEventTool(
+  args: Record<string, unknown>
+): Promise<AgentToolResult> {
+  const text = typeof args.text === "string" ? args.text : "";
+  
+  if (!text || text.trim().length === 0) {
+    return {
+      ok: false,
+      summary: "Text input is required",
+      error: "Text input is required",
+    };
+  }
+
+  // Parse reference date
+  let referenceDate = new Date();
+  if (typeof args.referenceDate === "string") {
+    try {
+      referenceDate = new Date(args.referenceDate);
+    } catch {
+      // Use default
+    }
+  }
+
+  const parsed = parseNaturalLanguageEvent(text, referenceDate);
+
+  return {
+    ok: true,
+    summary: `Parsed event: "${parsed.title}" for ${parsed.guestCount} guests with ${(parsed.confidence * 100).toFixed(0)}% confidence`,
+    data: {
+      title: parsed.title,
+      eventType: parsed.eventType,
+      eventDate: parsed.eventDate,
+      guestCount: parsed.guestCount,
+      venueName: parsed.venueName,
+      venueAddress: parsed.venueAddress,
+      notes: parsed.notes,
+      tags: parsed.tags,
+      confidence: parsed.confidence,
+      missingFields: parsed.missingFields,
+      suggestions: parsed.suggestions,
+      readyToCreate: parsed.missingFields.length === 0,
+    },
+  };
+}
+
 export function createManifestToolRegistry(context: ManifestAgentContext) {
   const commandCatalog = loadCommandCatalog();
   const commandToolDefinitions = commandCatalog.toolDefinitions.map(
@@ -1005,6 +2226,32 @@ export function createManifestToolRegistry(context: ManifestAgentContext) {
       const parsedArgs = safeJsonParse(call.argumentsJson);
 
       try {
+        // Event Setup Tools (Phase 1)
+        if (call.name === "create_event_draft") {
+          return await createEventDraftTool(parsedArgs, context, call.callId);
+        }
+
+        if (call.name === "set_event_menu") {
+          return await setEventMenuTool(parsedArgs, context, call.callId);
+        }
+
+        if (call.name === "assign_event_staff") {
+          return await assignEventStaffTool(parsedArgs, context, call.callId);
+        }
+
+        if (call.name === "set_event_venue") {
+          return await setEventVenueTool(parsedArgs, context, call.callId);
+        }
+
+        if (call.name === "generate_prep_list") {
+          return await generatePrepListTool(parsedArgs, context);
+        }
+
+        // Core Tools
+        if (call.name === "parse_natural_language_event") {
+          return await parseNaturalLanguageEventTool(parsedArgs);
+        }
+
         if (call.name === "read_board_state") {
           return await readBoardStateTool(parsedArgs, context);
         }

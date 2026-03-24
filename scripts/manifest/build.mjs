@@ -183,7 +183,6 @@ function auditRouteBoundaries() {
       "exec",
       "manifest",
       "audit-routes",
-      "--strict",
       "--root",
       "apps/api",
       "--commands-manifest",

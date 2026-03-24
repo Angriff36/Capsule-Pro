@@ -1332,5 +1332,117 @@
     "category": "infrastructure",
     "owner": "platform-team",
     "allowPermanent": true
+  },
+  {
+    "path": "app/api/accounting/collections/cases/route.ts",
+    "methods": ["GET", "POST"],
+    "reason": "Collections cases CRUD — pending manifest migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-12-01"
+  },
+  {
+    "path": "app/api/accounting/collections/cases/[id]/route.ts",
+    "methods": ["GET", "PUT", "DELETE"],
+    "reason": "Collections cases CRUD — pending manifest migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-12-01"
+  },
+  {
+    "path": "app/api/accounting/invoices/route.ts",
+    "methods": ["GET", "POST"],
+    "reason": "Invoices CRUD — pending manifest migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-12-01"
+  },
+  {
+    "path": "app/api/accounting/invoices/[id]/route.ts",
+    "methods": ["GET", "PUT", "DELETE"],
+    "reason": "Invoices CRUD — pending manifest migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-12-01"
+  },
+  {
+    "path": "app/api/accounting/payments/route.ts",
+    "methods": ["GET", "POST"],
+    "reason": "Payments CRUD — pending manifest migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-12-01"
+  },
+  {
+    "path": "app/api/accounting/payments/[id]/route.ts",
+    "methods": ["GET", "PUT", "DELETE"],
+    "reason": "Payments CRUD — pending manifest migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-12-01"
+  },
+  {
+    "path": "app/api/accounting/payment-methods/route.ts",
+    "methods": ["GET", "POST"],
+    "reason": "Payment methods CRUD — pending manifest migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-12-01"
+  },
+  {
+    "path": "app/api/accounting/payment-methods/[id]/route.ts",
+    "methods": ["GET", "PUT", "DELETE"],
+    "reason": "Payment methods CRUD — pending manifest migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-12-01"
+  },
+  {
+    "path": "app/api/accounting/revenue-recognition/schedules/route.ts",
+    "methods": ["GET", "POST"],
+    "reason": "Revenue recognition CRUD — pending manifest migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-12-01"
+  },
+  {
+    "path": "app/api/accounting/revenue-recognition/schedules/[id]/route.ts",
+    "methods": ["GET", "PUT", "DELETE"],
+    "reason": "Revenue recognition CRUD — pending manifest migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-12-01"
+  },
+  {
+    "path": "app/api/activity-feed/list/route.ts",
+    "methods": ["GET", "POST"],
+    "reason": "Activity feed — pending manifest migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-12-01"
+  },
+  {
+    "path": "app/api/administrative/chat/participants/commands/archive/route.ts",
+    "methods": ["POST"],
+    "reason": "Chat commands — pending manifest migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-12-01"
+  },
+  {
+    "path": "app/api/administrative/chat/participants/commands/unarchive/route.ts",
+    "methods": ["POST"],
+    "reason": "Chat commands — pending manifest migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-12-01"
+  },
+  {
+    "path": "app/api/administrative/chat/participants/commands/clear-history/route.ts",
+    "methods": ["POST"],
+    "reason": "Chat commands — pending manifest migration",
+    "category": "legacy-migrate",
+    "owner": "backend-team",
+    "expiresOn": "2026-12-01"
   }
 ]

@@ -1,0 +1,130 @@
+// AI Copilot - Event Setup Rules
+// Manifest spec for AI-driven natural language event creation
+
+entity AiEventSetupSession {
+  property required id: string
+  property required tenantId: string
+  property required userId: string
+  property originalInput: string = ""
+  property parsedTitle: string = ""
+  property parsedEventType: string = ""
+  property parsedEventDate: number = 0
+  property parsedGuestCount: number = 0
+  property parsedVenueName: string = ""
+  property parsedVenueAddress: string = ""
+  property parsedNotes: string = ""
+  property parsedTags: string = ""
+  property status: string = "pending"
+  property confidence: number = 0
+  property missingFields: string = "[]"
+  property suggestions: string = "[]"
+  property createdEventId: string = ""
+  property createdAt: number = 0
+  property updatedAt: number = 0
+  property completedAt: number = 0
+
+  computed isPending: boolean = self.status == "pending"
+  computed isParsed: boolean = self.status == "parsed"
+  computed isConfirmed: boolean = self.status == "confirmed"
+  computed isCreated: boolean = self.status == "created"
+  computed isCancelled: boolean = self.status == "cancelled"
+  computed hasEvent: boolean = self.createdEventId != "" and self.createdEventId != null
+
+  constraint validStatus: self.status in ["pending", "parsed", "confirmed", "created", "cancelled"] "Status must be valid"
+  constraint validConfidence: self.confidence >= 0 and self.confidence <= 1 "Confidence must be between 0 and 1"
+
+  command parse(originalInput: string) {
+    guard originalInput != null and originalInput != "" "Original input is required"
+    
+    mutate originalInput = originalInput
+    mutate status = "parsed"
+    mutate updatedAt = now()
+    
+    emit AiEventSetupSessionParsed
+  }
+
+  command confirm(title: string, eventType: string, eventDate: number, guestCount: number, venueName: string, venueAddress: string, notes: string, tags: string) {
+    guard self.status == "parsed" "Can only confirm parsed sessions"
+    
+    mutate parsedTitle = title
+    mutate parsedEventType = eventType
+    mutate parsedEventDate = eventDate
+    mutate parsedGuestCount = guestCount
+    mutate parsedVenueName = venueName
+    mutate parsedVenueAddress = venueAddress
+    mutate parsedNotes = notes
+    mutate parsedTags = tags
+    mutate status = "confirmed"
+    mutate updatedAt = now()
+    
+    emit AiEventSetupSessionConfirmed
+  }
+
+  command markCreated(eventId: string) {
+    guard self.status == "confirmed" "Can only mark confirmed sessions as created"
+    guard eventId != null and eventId != "" "Event ID is required"
+    
+    mutate createdEventId = eventId
+    mutate status = "created"
+    mutate completedAt = now()
+    mutate updatedAt = now()
+    
+    emit AiEventSetupSessionCreated
+  }
+
+  command cancel(reason: string) {
+    guard self.status == "pending" or self.status == "parsed" "Can only cancel pending or parsed sessions"
+    
+    mutate status = "cancelled"
+    mutate notes = reason
+    mutate updatedAt = now()
+    
+    emit AiEventSetupSessionCancelled
+  }
+
+  command updateConfidence(confidence: number, missingFields: string, suggestions: string) {
+    mutate confidence = confidence
+    mutate missingFields = missingFields
+    mutate suggestions = suggestions
+    mutate updatedAt = now()
+    
+    emit AiEventSetupSessionUpdated
+  }
+
+  store AiEventSetupSession in memory
+}
+
+policy AiEventSetupExecute execute: user.role in ["event_coordinator", "manager", "admin", "staff"] "Staff and above can use AI event setup"
+
+event AiEventSetupSessionParsed: "ai-event-setup.session.parsed" {
+  sessionId: string
+  originalInput: string
+  parsedAt: number
+}
+
+event AiEventSetupSessionConfirmed: "ai-event-setup.session.confirmed" {
+  sessionId: string
+  title: string
+  eventDate: number
+  guestCount: number
+  confirmedAt: number
+}
+
+event AiEventSetupSessionCreated: "ai-event-setup.session.created" {
+  sessionId: string
+  eventId: string
+  title: string
+  createdAt: number
+}
+
+event AiEventSetupSessionCancelled: "ai-event-setup.session.cancelled" {
+  sessionId: string
+  reason: string
+  cancelledAt: number
+}
+
+event AiEventSetupSessionUpdated: "ai-event-setup.session.updated" {
+  sessionId: string
+  confidence: number
+  updatedAt: number
+}

@@ -126,58 +126,71 @@ entity CollectionCase {
     mutate status = status
     mutate notes = notes
     mutate updatedAt = now()
-    if (status == RESOLVED) {
-      mutate resolvedAt = now()
-    }
+    emit CollectionStatusChanged
+  }
+
+  command resolve(notes: string) {
+    mutate status = RESOLVED
+    mutate resolvedAt = now()
+    mutate notes = notes
+    mutate updatedAt = now()
     emit CollectionStatusChanged
   }
 
   command recordPayment(amount: decimal, paymentId: string, paymentDate: timestamp) {
     guard amount > 0 "Payment amount must be positive"
-    guard amount <= outstandingAmount "Payment cannot exceed outstanding amount"
-    let newCollected = collectedAmount + amount
-    let newOutstanding = outstandingAmount - amount
-    mutate collectedAmount = newCollected
-    mutate outstandingAmount = newOutstanding
+    guard amount <= self.outstandingAmount "Payment cannot exceed outstanding amount"
+    mutate collectedAmount = self.collectedAmount + amount
+    mutate outstandingAmount = self.outstandingAmount - amount
     mutate lastActivityAt = now()
     mutate updatedAt = now()
-    if (newOutstanding <= 0.01) {
-      mutate status = RESOLVED
-      mutate resolvedAt = now()
-      mutate closedAt = now()
-    }
     emit CollectionPaymentRecorded
   }
 
+  command markResolved() {
+    guard self.outstandingAmount <= 0.01 "Outstanding amount must be near zero"
+    mutate status = RESOLVED
+    mutate resolvedAt = now()
+    mutate closedAt = now()
+    mutate updatedAt = now()
+    emit CollectionResolved
+  }
+
   command escalateDunning() {
-    guard status == ACTIVE "Can only escalate active cases"
-    guard dunningStage < LEGAL "Cannot escalate beyond legal stage"
-    let nextStage = dunningStage + 1
-    mutate dunningStage = nextStage
-    if (nextStage == LEGAL) {
-      mutate status = LEGAL
-      mutate isEscalatedToLegal = true
-    }
-    if (nextStage >= FINAL_NOTICE) {
-      mutate priority = URGENT
-    } else if (nextStage >= REMINDER_2) {
-      mutate priority = HIGH
-    }
+    guard self.status == ACTIVE "Can only escalate active cases"
+    guard self.dunningStage < LEGAL "Cannot escalate beyond legal stage"
+    mutate dunningStage = self.dunningStage + 1
     mutate updatedAt = now()
     emit DunningEscalated
   }
 
+  command escalateToLegal() {
+    mutate status = LEGAL
+    mutate isEscalatedToLegal = true
+    mutate priority = URGENT
+    mutate updatedAt = now()
+    emit DunningEscalated
+  }
+
+  command setUrgentPriority() {
+    mutate priority = URGENT
+  }
+
+  command setHighPriority() {
+    mutate priority = HIGH
+  }
+
   command resetDunning(stage: DunningStage, reason: string) {
-    guard status in [ACTIVE, IN_PROGRESS] "Can only reset active/in-progress cases"
+    guard self.status in [ACTIVE, IN_PROGRESS] "Can only reset active/in-progress cases"
     mutate dunningStage = stage
-    mutate notes = notes + "\nDunning reset: " + reason
+    mutate notes = self.notes + "\nDunning reset: " + reason
     mutate updatedAt = now()
     emit DunningReset
   }
 
   flag createPaymentPlan(planId: string, nextPaymentDue: timestamp) {
-    guard hasPaymentPlan == false "Payment plan already exists"
-    guard status == ACTIVE "Can only create plan for active cases"
+    guard self.hasPaymentPlan == false "Payment plan already exists"
+    guard self.status == ACTIVE "Can only create plan for active cases"
     mutate hasPaymentPlan = true
     mutate paymentPlanId = planId
     mutate nextPaymentDue = nextPaymentDue
@@ -219,13 +232,12 @@ entity CollectionCase {
   }
 
   command writeOff(amount: decimal, reason: string, approvedBy: string) {
-    guard status in [ACTIVE, IN_PROGRESS, LEGAL] "Cannot write off resolved cases"
-    guard amount <= outstandingAmount "Write-off amount cannot exceed outstanding"
-    let newCollected = collectedAmount + (outstandingAmount - amount)
-    mutate collectedAmount = newCollected
+    guard self.status in [ACTIVE, IN_PROGRESS, LEGAL] "Cannot write off resolved cases"
+    guard amount <= self.outstandingAmount "Write-off amount cannot exceed outstanding"
+    mutate collectedAmount = self.collectedAmount + (self.outstandingAmount - amount)
     mutate outstandingAmount = amount
     mutate status = WRITTEN_OFF
-    mutate internalNotes = internalNotes + "\nWritten off: " + reason + " (approved by: " + approvedBy + ")"
+    mutate internalNotes = self.internalNotes + "\nWritten off: " + reason + " (approved by: " + approvedBy + ")"
     mutate closedAt = now()
     mutate updatedAt = now()
     emit CollectionWrittenOff
@@ -302,19 +314,19 @@ entity CollectionAction {
 
   # Commands
   command complete(outcome: string, promiseAmount: decimal, promiseDate: timestamp, nextActionDate: timestamp) {
-    guard status == PENDING "Can only complete pending actions"
+    guard self.status == PENDING "Can only complete pending actions"
     mutate status = COMPLETED
     mutate completedAt = now()
     mutate outcome = outcome
-    mutate promiseAmount = promiseAmount ?? this.promiseAmount
-    mutate promiseDate = promiseDate ?? this.promiseDate
+    mutate promiseAmount = promiseAmount
+    mutate promiseDate = promiseDate
     mutate nextActionDate = nextActionDate
     mutate updatedAt = now()
     emit ActionCompleted
   }
 
   command fail(reason: string) {
-    guard status == PENDING "Can only fail pending actions"
+    guard self.status == PENDING "Can only fail pending actions"
     mutate status = FAILED
     mutate outcome = "Failed: " + reason
     mutate completedAt = now()
@@ -372,8 +384,8 @@ entity CollectionPaymentPlan {
   property defaultedAt: timestamp
 
   # Computed properties
-  computed isCompleted: boolean = status == COMPLETED
-  computed isDefaulted: boolean = status == DEFAULTED
+  computed isCompleted: boolean = self.status == COMPLETED
+  computed isDefaulted: boolean = self.status == DEFAULTED
   computed completionPercentage: number = self.installmentCount > 0 ? (self.completedInstallments / self.installmentCount) * 100 : 0
   computed remainingAmount: decimal = (self.installmentCount - self.completedInstallments) * self.installmentAmount
   computed paidAmount: decimal = self.completedInstallments * self.installmentAmount
@@ -385,32 +397,35 @@ entity CollectionPaymentPlan {
 
   # Commands
   command recordInstallment(amount: decimal, paymentDate: timestamp) {
-    guard status == ACTIVE "Can only record payments for active plans"
-    guard amount == installmentAmount "Payment must match installment amount"
-    let newCompleted = completedInstallments + 1
-    mutate completedInstallments = newCompleted
-    mutate nextPaymentDate = calculateNextPayment(nextPaymentDate, frequency)
+    guard self.status == ACTIVE "Can only record payments for active plans"
+    guard amount == self.installmentAmount "Payment must match installment amount"
+    mutate completedInstallments = self.completedInstallments + 1
+    mutate nextPaymentDate = calculateNextPayment(self.nextPaymentDate, self.frequency)
     mutate updatedAt = now()
-    if (newCompleted >= installmentCount) {
-      mutate status = COMPLETED
-      mutate completedAt = now()
-    }
     emit InstallmentRecorded
   }
 
-  command default(reason: string) {
-    guard status == ACTIVE "Can only default active plans"
+  command markCompleted() {
+    guard self.status == ACTIVE "Can only complete active plans"
+    mutate status = COMPLETED
+    mutate completedAt = now()
+    mutate updatedAt = now()
+    emit PaymentPlanCompleted
+  }
+
+  command markDefaulted(reason: string) {
+    guard self.status == ACTIVE "Can only default active plans"
     mutate status = DEFAULTED
     mutate defaultedAt = now()
-    mutate notes = notes + "\nDefaulted: " + reason
+    mutate notes = self.notes + "\nDefaulted: " + reason
     mutate updatedAt = now()
     emit PaymentPlanDefaulted
   }
 
   command cancel(reason: string) {
-    guard status == ACTIVE "Can only cancel active plans"
+    guard self.status == ACTIVE "Can only cancel active plans"
     mutate status = CANCELLED
-    mutate notes = notes + "\nCancelled: " + reason
+    mutate notes = self.notes + "\nCancelled: " + reason
     mutate updatedAt = now()
     emit PaymentPlanCancelled
   }

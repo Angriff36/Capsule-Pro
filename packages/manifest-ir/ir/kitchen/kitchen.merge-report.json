@@ -1,16 +1,18 @@
 {
   "$schema": "https://manifest.dev/merge-report.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-03-24T03:27:30.871Z",
+  "generatedAt": "2026-03-24T08:47:30.591Z",
   "sources": [
     "admin-chat-participant-rules.manifest",
     "admin-task-rules.manifest",
+    "ai-event-setup-rules.manifest",
     "alerts-config-rules.manifest",
     "allergen-warning-rules.manifest",
     "api-key-rules.manifest",
     "battle-board-rules.manifest",
     "bulk-order-rules.manifest",
     "catering-order-rules.manifest",
+    "chart-of-account-rules.manifest",
     "client-interaction-rules.manifest",
     "client-rules.manifest",
     "command-board-rules.manifest",
@@ -66,11 +68,11 @@
   ],
   "totals": {
     "modules": 0,
-    "entities": 86,
-    "stores": 85,
-    "events": 368,
-    "commands": 370,
-    "policies": 144
+    "entities": 88,
+    "stores": 87,
+    "events": 376,
+    "commands": 378,
+    "policies": 146
   },
   "droppedDuplicates": [
     {

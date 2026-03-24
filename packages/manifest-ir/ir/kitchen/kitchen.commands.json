@@ -55,6 +55,31 @@
     "commandId": "AdminTask.update"
   },
   {
+    "entity": "AiEventSetupSession",
+    "command": "cancel",
+    "commandId": "AiEventSetupSession.cancel"
+  },
+  {
+    "entity": "AiEventSetupSession",
+    "command": "confirm",
+    "commandId": "AiEventSetupSession.confirm"
+  },
+  {
+    "entity": "AiEventSetupSession",
+    "command": "markCreated",
+    "commandId": "AiEventSetupSession.markCreated"
+  },
+  {
+    "entity": "AiEventSetupSession",
+    "command": "parse",
+    "commandId": "AiEventSetupSession.parse"
+  },
+  {
+    "entity": "AiEventSetupSession",
+    "command": "updateConfidence",
+    "commandId": "AiEventSetupSession.updateConfidence"
+  },
+  {
     "entity": "AlertsConfig",
     "command": "create",
     "commandId": "AlertsConfig.create"
@@ -223,6 +248,21 @@
     "entity": "CateringOrder",
     "command": "update",
     "commandId": "CateringOrder.update"
+  },
+  {
+    "entity": "ChartOfAccount",
+    "command": "create",
+    "commandId": "ChartOfAccount.create"
+  },
+  {
+    "entity": "ChartOfAccount",
+    "command": "deactivate",
+    "commandId": "ChartOfAccount.deactivate"
+  },
+  {
+    "entity": "ChartOfAccount",
+    "command": "update",
+    "commandId": "ChartOfAccount.update"
   },
   {
     "entity": "Client",

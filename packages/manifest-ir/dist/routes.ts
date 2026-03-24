@@ -27,6 +27,16 @@ export function adminTaskDetailPath(id: string): string {
   return "/api/admintask/" + encodeURIComponent(id);
 }
 
+/** GET /api/aieventsetupsession/list */
+export function aiEventSetupSessionListPath(): string {
+  return "/api/aieventsetupsession/list";
+}
+
+/** GET /api/aieventsetupsession/:id */
+export function aiEventSetupSessionDetailPath(id: string): string {
+  return "/api/aieventsetupsession/" + encodeURIComponent(id);
+}
+
 /** GET /api/alertsconfig/list */
 export function alertsConfigListPath(): string {
   return "/api/alertsconfig/list";
@@ -105,6 +115,16 @@ export function cateringOrderListPath(): string {
 /** GET /api/cateringorder/:id */
 export function cateringOrderDetailPath(id: string): string {
   return "/api/cateringorder/" + encodeURIComponent(id);
+}
+
+/** GET /api/chartofaccount/list */
+export function chartOfAccountListPath(): string {
+  return "/api/chartofaccount/list";
+}
+
+/** GET /api/chartofaccount/:id */
+export function chartOfAccountDetailPath(id: string): string {
+  return "/api/chartofaccount/" + encodeURIComponent(id);
 }
 
 /** GET /api/client/list */
@@ -926,6 +946,31 @@ export function adminTaskUpdatePath(): string {
   return "/api/admintask/update";
 }
 
+/** POST /api/aieventsetupsession/cancel */
+export function aiEventSetupSessionCancelPath(): string {
+  return "/api/aieventsetupsession/cancel";
+}
+
+/** POST /api/aieventsetupsession/confirm */
+export function aiEventSetupSessionConfirmPath(): string {
+  return "/api/aieventsetupsession/confirm";
+}
+
+/** POST /api/aieventsetupsession/mark-created */
+export function aiEventSetupSessionMarkCreatedPath(): string {
+  return "/api/aieventsetupsession/mark-created";
+}
+
+/** POST /api/aieventsetupsession/parse */
+export function aiEventSetupSessionParsePath(): string {
+  return "/api/aieventsetupsession/parse";
+}
+
+/** POST /api/aieventsetupsession/update-confidence */
+export function aiEventSetupSessionUpdateConfidencePath(): string {
+  return "/api/aieventsetupsession/update-confidence";
+}
+
 /** POST /api/alertsconfig/create */
 export function alertsConfigCreatePath(): string {
   return "/api/alertsconfig/create";
@@ -1094,6 +1139,21 @@ export function cateringOrderStartPrepPath(): string {
 /** POST /api/cateringorder/update */
 export function cateringOrderUpdatePath(): string {
   return "/api/cateringorder/update";
+}
+
+/** POST /api/chartofaccount/create */
+export function chartOfAccountCreatePath(): string {
+  return "/api/chartofaccount/create";
+}
+
+/** POST /api/chartofaccount/deactivate */
+export function chartOfAccountDeactivatePath(): string {
+  return "/api/chartofaccount/deactivate";
+}
+
+/** POST /api/chartofaccount/update */
+export function chartOfAccountUpdatePath(): string {
+  return "/api/chartofaccount/update";
 }
 
 /** POST /api/client/archive */
@@ -2739,6 +2799,8 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "AdminChatParticipant.get.detail", path: "/api/adminchatparticipant/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "AdminTask.get.list", path: "/api/admintask/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "AdminTask.get.detail", path: "/api/admintask/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "AiEventSetupSession.get.list", path: "/api/aieventsetupsession/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "AiEventSetupSession.get.detail", path: "/api/aieventsetupsession/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "AlertsConfig.get.list", path: "/api/alertsconfig/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "AlertsConfig.get.detail", path: "/api/alertsconfig/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "AllergenWarning.get.list", path: "/api/allergenwarning/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -2755,6 +2817,8 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "BulkOrderRule.get.detail", path: "/api/bulkorderrule/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "CateringOrder.get.list", path: "/api/cateringorder/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "CateringOrder.get.detail", path: "/api/cateringorder/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "ChartOfAccount.get.list", path: "/api/chartofaccount/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "ChartOfAccount.get.detail", path: "/api/chartofaccount/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Client.get.list", path: "/api/client/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Client.get.detail", path: "/api/client/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "ClientContact.get.list", path: "/api/clientcontact/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -2918,6 +2982,11 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "AdminTask.softDelete", path: "/api/admintask/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "AdminTask.startProgress", path: "/api/admintask/start-progress", method: "POST", source: "command", auth: true, tenant: true },
   { id: "AdminTask.update", path: "/api/admintask/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "AiEventSetupSession.cancel", path: "/api/aieventsetupsession/cancel", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "AiEventSetupSession.confirm", path: "/api/aieventsetupsession/confirm", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "AiEventSetupSession.markCreated", path: "/api/aieventsetupsession/mark-created", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "AiEventSetupSession.parse", path: "/api/aieventsetupsession/parse", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "AiEventSetupSession.updateConfidence", path: "/api/aieventsetupsession/update-confidence", method: "POST", source: "command", auth: true, tenant: true },
   { id: "AlertsConfig.create", path: "/api/alertsconfig/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "AlertsConfig.remove", path: "/api/alertsconfig/remove", method: "POST", source: "command", auth: true, tenant: true },
   { id: "AlertsConfig.update", path: "/api/alertsconfig/update", method: "POST", source: "command", auth: true, tenant: true },
@@ -2952,6 +3021,9 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "CateringOrder.markComplete", path: "/api/cateringorder/mark-complete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "CateringOrder.startPrep", path: "/api/cateringorder/start-prep", method: "POST", source: "command", auth: true, tenant: true },
   { id: "CateringOrder.update", path: "/api/cateringorder/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ChartOfAccount.create", path: "/api/chartofaccount/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ChartOfAccount.deactivate", path: "/api/chartofaccount/deactivate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ChartOfAccount.update", path: "/api/chartofaccount/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Client.archive", path: "/api/client/archive", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Client.create", path: "/api/client/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Client.reactivate", path: "/api/client/reactivate", method: "POST", source: "command", auth: true, tenant: true },

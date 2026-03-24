@@ -32,7 +32,36 @@ Rules:
 7. If a requested capability is unsupported by current command routes:
    - Include exactly "Not supported by current route surface" in errors[].
    - Include closest-supported sequence suggestions in nextSteps[].
-   - Optionally suggest the manifest entity command that would need to be added (never invent endpoints).`;
+   - Optionally suggest the manifest entity command that would need to be added (never invent endpoints).
+
+Event Creation Flow:
+When a user asks to create, schedule, or plan an event (e.g., "Create an event for 50 people at Venue X on March 25th"):
+1. First use parse_natural_language_event to extract structured data from their request.
+2. Review the parsed data and missingFields array.
+3. If readyToCreate is true, proceed to call Event.create with the parsed values:
+   - title: Use parsed.title or generate from context
+   - eventType: Use parsed.eventType (defaults to "general")
+   - eventDate: Use parsed.eventDate (Unix timestamp in seconds)
+   - guestCount: Use parsed.guestCount
+   - venueName: Use parsed.venueName
+   - venueAddress: Use parsed.venueAddress (if available)
+   - notes: Include any additional context from the request
+   - status: Set to "draft" for AI-created events unless user specifies otherwise
+4. If missingFields is not empty, ask the user for those specific details before creating.
+5. After successful Event.create, report the created event ID and summary.
+
+Event Type Detection:
+The parse_natural_language_event tool automatically detects these event types from context:
+- wedding: weddings, marriage events
+- corporate: business meetings, conferences, corporate events
+- birthday: birthday parties
+- anniversary: anniversary celebrations
+- graduation: graduation parties
+- holiday: Christmas, Thanksgiving, Easter, etc.
+- gala: galas, fundraisers, charity events
+- catering: catering orders, food service events
+- party: general parties and celebrations
+- general: fallback for unclear types`;
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
