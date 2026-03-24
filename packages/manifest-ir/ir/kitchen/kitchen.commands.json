@@ -225,21 +225,6 @@
     "commandId": "CateringOrder.update"
   },
   {
-    "entity": "ChartOfAccount",
-    "command": "create",
-    "commandId": "ChartOfAccount.create"
-  },
-  {
-    "entity": "ChartOfAccount",
-    "command": "deactivate",
-    "commandId": "ChartOfAccount.deactivate"
-  },
-  {
-    "entity": "ChartOfAccount",
-    "command": "update",
-    "commandId": "ChartOfAccount.update"
-  },
-  {
     "entity": "Client",
     "command": "archive",
     "commandId": "Client.archive"
@@ -1095,6 +1080,11 @@
     "commandId": "PayrollRun.updateStatus"
   },
   {
+    "entity": "PerformancePrediction",
+    "command": "create",
+    "commandId": "PerformancePrediction.create"
+  },
+  {
     "entity": "PrepComment",
     "command": "create",
     "commandId": "PrepComment.create"
@@ -1555,6 +1545,21 @@
     "commandId": "RolePolicy.update"
   },
   {
+    "entity": "SampleData",
+    "command": "clear",
+    "commandId": "SampleData.clear"
+  },
+  {
+    "entity": "SampleData",
+    "command": "reseed",
+    "commandId": "SampleData.reseed"
+  },
+  {
+    "entity": "SampleData",
+    "command": "seed",
+    "commandId": "SampleData.seed"
+  },
+  {
     "entity": "Schedule",
     "command": "close",
     "commandId": "Schedule.close"
@@ -1590,49 +1595,29 @@
     "commandId": "ScheduleShift.update"
   },
   {
-    "entity": "Shipment",
-    "command": "cancel",
-    "commandId": "Shipment.cancel"
+    "entity": "SmsAutomationRule",
+    "command": "activate",
+    "commandId": "SmsAutomationRule.activate"
   },
   {
-    "entity": "Shipment",
+    "entity": "SmsAutomationRule",
     "command": "create",
-    "commandId": "Shipment.create"
+    "commandId": "SmsAutomationRule.create"
   },
   {
-    "entity": "Shipment",
-    "command": "markDelivered",
-    "commandId": "Shipment.markDelivered"
+    "entity": "SmsAutomationRule",
+    "command": "deactivate",
+    "commandId": "SmsAutomationRule.deactivate"
   },
   {
-    "entity": "Shipment",
-    "command": "schedule",
-    "commandId": "Shipment.schedule"
+    "entity": "SmsAutomationRule",
+    "command": "softDelete",
+    "commandId": "SmsAutomationRule.softDelete"
   },
   {
-    "entity": "Shipment",
-    "command": "ship",
-    "commandId": "Shipment.ship"
-  },
-  {
-    "entity": "Shipment",
-    "command": "startPreparing",
-    "commandId": "Shipment.startPreparing"
-  },
-  {
-    "entity": "Shipment",
+    "entity": "SmsAutomationRule",
     "command": "update",
-    "commandId": "Shipment.update"
-  },
-  {
-    "entity": "ShipmentItem",
-    "command": "create",
-    "commandId": "ShipmentItem.create"
-  },
-  {
-    "entity": "ShipmentItem",
-    "command": "updateReceived",
-    "commandId": "ShipmentItem.updateReceived"
+    "commandId": "SmsAutomationRule.update"
   },
   {
     "entity": "Station",
@@ -1843,5 +1828,25 @@
     "entity": "Workflow",
     "command": "update",
     "commandId": "Workflow.update"
+  },
+  {
+    "entity": "WorkforceOptimization",
+    "command": "complete",
+    "commandId": "WorkforceOptimization.complete"
+  },
+  {
+    "entity": "WorkforceOptimization",
+    "command": "create",
+    "commandId": "WorkforceOptimization.create"
+  },
+  {
+    "entity": "WorkforceOptimization",
+    "command": "fail",
+    "commandId": "WorkforceOptimization.fail"
+  },
+  {
+    "entity": "WorkforceOptimization",
+    "command": "start",
+    "commandId": "WorkforceOptimization.start"
   }
 ]

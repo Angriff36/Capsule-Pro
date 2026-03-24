@@ -5,7 +5,7 @@
     "irHash": "",
     "compilerVersion": "0.3.8",
     "schemaVersion": "1.0",
-    "compiledAt": "2026-03-08T17:41:14.355Z",
+    "compiledAt": "2026-03-24T03:27:30.871Z",
     "sources": [
       "admin-chat-participant-rules.manifest",
       "admin-task-rules.manifest",
@@ -15,7 +15,6 @@
       "battle-board-rules.manifest",
       "bulk-order-rules.manifest",
       "catering-order-rules.manifest",
-      "chart-of-account-rules.manifest",
       "client-interaction-rules.manifest",
       "client-rules.manifest",
       "command-board-rules.manifest",
@@ -55,8 +54,9 @@
       "purchase-order-rules.manifest",
       "recipe-rules.manifest",
       "role-policy-rules.manifest",
+      "sample-data-rules.manifest",
       "schedule-rules.manifest",
-      "shipment-rules.manifest",
+      "sms-automation-rules.manifest",
       "station-rules.manifest",
       "time-entry-rules.manifest",
       "time-off-request-rules.manifest",
@@ -65,7 +65,8 @@
       "user-rules.manifest",
       "vendor-catalog-rules.manifest",
       "waste-entry-rules.manifest",
-      "workflow-rules.manifest"
+      "workflow-rules.manifest",
+      "workforce-ai-rules.manifest"
     ]
   },
   "modules": [],
@@ -3726,243 +3727,6 @@
             }
           },
           "severity": "warn",
-          "overrideable": false
-        }
-      ],
-      "policies": []
-    },
-    {
-      "name": "ChartOfAccount",
-      "properties": [
-        {
-          "name": "id",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "modifiers": [
-            "required"
-          ]
-        },
-        {
-          "name": "tenantId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "modifiers": [
-            "required"
-          ]
-        },
-        {
-          "name": "accountNumber",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "accountName",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "accountType",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "parentId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "description",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "isActive",
-          "type": {
-            "name": "boolean",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "boolean",
-            "value": true
-          },
-          "modifiers": []
-        },
-        {
-          "name": "createdAt",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
-          },
-          "modifiers": []
-        },
-        {
-          "name": "updatedAt",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
-          },
-          "modifiers": []
-        }
-      ],
-      "computedProperties": [
-        {
-          "name": "hasParent",
-          "type": {
-            "name": "boolean",
-            "nullable": false
-          },
-          "expression": {
-            "kind": "binary",
-            "operator": "!=",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "parentId"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": ""
-              }
-            }
-          },
-          "dependencies": []
-        }
-      ],
-      "relationships": [],
-      "commands": [
-        "create",
-        "update",
-        "deactivate"
-      ],
-      "constraints": [
-        {
-          "name": "requireAccountNumber",
-          "code": "requireAccountNumber",
-          "expression": {
-            "kind": "binary",
-            "operator": "!=",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "accountNumber"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": ""
-              }
-            }
-          },
-          "severity": "block",
-          "message": "Account number is required",
-          "overrideable": false
-        },
-        {
-          "name": "requireAccountName",
-          "code": "requireAccountName",
-          "expression": {
-            "kind": "binary",
-            "operator": "!=",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "accountName"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": ""
-              }
-            }
-          },
-          "severity": "block",
-          "message": "Account name is required",
-          "overrideable": false
-        },
-        {
-          "name": "requireAccountType",
-          "code": "requireAccountType",
-          "expression": {
-            "kind": "binary",
-            "operator": "!=",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "accountType"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": ""
-              }
-            }
-          },
-          "severity": "block",
-          "message": "Account type is required",
           "overrideable": false
         }
       ],
@@ -30895,6 +30659,142 @@
       "policies": []
     },
     {
+      "name": "SampleData",
+      "properties": [
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "seededAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "clearedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "isSeeded",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "boolean",
+            "value": false
+          },
+          "modifiers": []
+        },
+        {
+          "name": "eventsCreated",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "clientsCreated",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "usersCreated",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "recipesCreated",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        }
+      ],
+      "computedProperties": [
+        {
+          "name": "hasSampleData",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "isSeeded"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "boolean",
+                "value": true
+              }
+            }
+          },
+          "dependencies": []
+        }
+      ],
+      "relationships": [],
+      "commands": [
+        "seed",
+        "clear",
+        "reseed"
+      ],
+      "constraints": [],
+      "policies": []
+    },
+    {
       "name": "Schedule",
       "properties": [
         {
@@ -31557,7 +31457,7 @@
       "policies": []
     },
     {
-      "name": "Shipment",
+      "name": "SmsAutomationRule",
       "properties": [
         {
           "name": "id",
@@ -31580,29 +31480,21 @@
           ]
         },
         {
-          "name": "shipmentNumber",
+          "name": "name",
           "type": {
             "name": "string",
             "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
           },
           "modifiers": [
             "required"
           ]
         },
         {
-          "name": "status",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": "draft"
-          },
-          "modifiers": []
-        },
-        {
-          "name": "purchaseOrderId",
+          "name": "description",
           "type": {
             "name": "string",
             "nullable": false
@@ -31614,7 +31506,33 @@
           "modifiers": []
         },
         {
-          "name": "eventId",
+          "name": "triggerType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "custom_event"
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "triggerConfig",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "{}"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "templateId",
           "type": {
             "name": "string",
             "nullable": false
@@ -31626,7 +31544,7 @@
           "modifiers": []
         },
         {
-          "name": "supplierId",
+          "name": "customMessage",
           "type": {
             "name": "string",
             "nullable": false
@@ -31638,206 +31556,50 @@
           "modifiers": []
         },
         {
-          "name": "locationId",
+          "name": "recipientType",
           "type": {
             "name": "string",
             "nullable": false
           },
           "defaultValue": {
             "kind": "string",
-            "value": ""
+            "value": "employee"
           },
           "modifiers": []
         },
         {
-          "name": "scheduledDate",
+          "name": "recipientConfig",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "{}"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "isActive",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "boolean",
+            "value": true
+          },
+          "modifiers": []
+        },
+        {
+          "name": "priority",
           "type": {
             "name": "number",
             "nullable": false
           },
           "defaultValue": {
             "kind": "number",
-            "value": 0
-          },
-          "modifiers": []
-        },
-        {
-          "name": "shippedDate",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
-          },
-          "modifiers": []
-        },
-        {
-          "name": "estimatedDeliveryDate",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
-          },
-          "modifiers": []
-        },
-        {
-          "name": "actualDeliveryDate",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
-          },
-          "modifiers": []
-        },
-        {
-          "name": "totalItems",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
-          },
-          "modifiers": []
-        },
-        {
-          "name": "shippingCost",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
-          },
-          "modifiers": []
-        },
-        {
-          "name": "totalValue",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
-          },
-          "modifiers": []
-        },
-        {
-          "name": "trackingNumber",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "carrier",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "shippingMethod",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "deliveredBy",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "receivedBy",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "signature",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "notes",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "internalNotes",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "reference",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
+            "value": 100
           },
           "modifiers": []
         },
@@ -31880,142 +31642,7 @@
       ],
       "computedProperties": [
         {
-          "name": "isDraft",
-          "type": {
-            "name": "boolean",
-            "nullable": false
-          },
-          "expression": {
-            "kind": "binary",
-            "operator": "==",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "status"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": "draft"
-              }
-            }
-          },
-          "dependencies": []
-        },
-        {
-          "name": "isScheduled",
-          "type": {
-            "name": "boolean",
-            "nullable": false
-          },
-          "expression": {
-            "kind": "binary",
-            "operator": "==",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "status"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": "scheduled"
-              }
-            }
-          },
-          "dependencies": []
-        },
-        {
-          "name": "isInTransit",
-          "type": {
-            "name": "boolean",
-            "nullable": false
-          },
-          "expression": {
-            "kind": "binary",
-            "operator": "==",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "status"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": "in_transit"
-              }
-            }
-          },
-          "dependencies": []
-        },
-        {
-          "name": "isDelivered",
-          "type": {
-            "name": "boolean",
-            "nullable": false
-          },
-          "expression": {
-            "kind": "binary",
-            "operator": "==",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "status"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": "delivered"
-              }
-            }
-          },
-          "dependencies": []
-        },
-        {
-          "name": "isCancelled",
-          "type": {
-            "name": "boolean",
-            "nullable": false
-          },
-          "expression": {
-            "kind": "binary",
-            "operator": "==",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "status"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": "cancelled"
-              }
-            }
-          },
-          "dependencies": []
-        },
-        {
-          "name": "hasItems",
+          "name": "isDeleted",
           "type": {
             "name": "boolean",
             "nullable": false
@@ -32029,7 +31656,7 @@
                 "kind": "identifier",
                 "name": "self"
               },
-              "property": "totalItems"
+              "property": "deletedAt"
             },
             "right": {
               "kind": "literal",
@@ -32042,27 +31669,220 @@
           "dependencies": []
         },
         {
-          "name": "hasTracking",
+          "name": "hasTemplate",
           "type": {
             "name": "boolean",
             "nullable": false
           },
           "expression": {
             "kind": "binary",
-            "operator": "!=",
+            "operator": "and",
             "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "templateId"
               },
-              "property": "trackingNumber"
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
             },
             "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": ""
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "templateId"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": ""
+                }
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "hasCustomMessage",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "customMessage"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "customMessage"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": ""
+                }
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "hasTriggerConfig",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "and",
+              "left": {
+                "kind": "binary",
+                "operator": "!=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "triggerConfig"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
+                }
+              },
+              "right": {
+                "kind": "binary",
+                "operator": "!=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "triggerConfig"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": ""
+                  }
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "triggerConfig"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": "{}"
+                }
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "isEnabled",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "==",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "isActive"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "boolean",
+                  "value": true
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "==",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "deletedAt"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 0
+                }
               }
             }
           },
@@ -32073,444 +31893,198 @@
       "commands": [
         "create",
         "update",
-        "schedule",
-        "startPreparing",
-        "ship",
-        "markDelivered",
-        "cancel"
+        "activate",
+        "deactivate",
+        "softDelete"
       ],
       "constraints": [
         {
-          "name": "validStatus",
-          "code": "validStatus",
+          "name": "requireName",
+          "code": "requireName",
           "expression": {
             "kind": "binary",
-            "operator": "in",
+            "operator": "and",
             "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "status"
-            },
-            "right": {
-              "kind": "array",
-              "elements": [
-                {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "string",
-                    "value": "draft"
-                  }
-                },
-                {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "string",
-                    "value": "scheduled"
-                  }
-                },
-                {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "string",
-                    "value": "preparing"
-                  }
-                },
-                {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "string",
-                    "value": "in_transit"
-                  }
-                },
-                {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "string",
-                    "value": "delivered"
-                  }
-                },
-                {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "string",
-                    "value": "returned"
-                  }
-                },
-                {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "string",
-                    "value": "cancelled"
-                  }
-                }
-              ]
-            }
-          },
-          "severity": "block",
-          "message": "Invalid shipment status",
-          "overrideable": false
-        }
-      ],
-      "policies": []
-    },
-    {
-      "name": "ShipmentItem",
-      "properties": [
-        {
-          "name": "id",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "modifiers": [
-            "required"
-          ]
-        },
-        {
-          "name": "tenantId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "modifiers": [
-            "required"
-          ]
-        },
-        {
-          "name": "shipmentId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "modifiers": [
-            "required"
-          ]
-        },
-        {
-          "name": "itemId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "modifiers": [
-            "required"
-          ]
-        },
-        {
-          "name": "quantityShipped",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
-          },
-          "modifiers": []
-        },
-        {
-          "name": "quantityReceived",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
-          },
-          "modifiers": []
-        },
-        {
-          "name": "quantityDamaged",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
-          },
-          "modifiers": []
-        },
-        {
-          "name": "unitId",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
-          },
-          "modifiers": []
-        },
-        {
-          "name": "unitCost",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
-          },
-          "modifiers": []
-        },
-        {
-          "name": "totalCost",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
-          },
-          "modifiers": []
-        },
-        {
-          "name": "condition",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": "good"
-          },
-          "modifiers": []
-        },
-        {
-          "name": "conditionNotes",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "lotNumber",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "string",
-            "value": ""
-          },
-          "modifiers": []
-        },
-        {
-          "name": "expirationDate",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
-          },
-          "modifiers": []
-        },
-        {
-          "name": "createdAt",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
-          },
-          "modifiers": []
-        },
-        {
-          "name": "updatedAt",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
-          },
-          "modifiers": []
-        },
-        {
-          "name": "deletedAt",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "defaultValue": {
-            "kind": "number",
-            "value": 0
-          },
-          "modifiers": []
-        }
-      ],
-      "computedProperties": [
-        {
-          "name": "isFullyReceived",
-          "type": {
-            "name": "boolean",
-            "nullable": false
-          },
-          "expression": {
-            "kind": "binary",
-            "operator": ">=",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "quantityReceived"
-            },
-            "right": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "quantityShipped"
-            }
-          },
-          "dependencies": []
-        },
-        {
-          "name": "hasDamage",
-          "type": {
-            "name": "boolean",
-            "nullable": false
-          },
-          "expression": {
-            "kind": "binary",
-            "operator": ">",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "quantityDamaged"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "number",
-                "value": 0
-              }
-            }
-          },
-          "dependencies": []
-        },
-        {
-          "name": "receivedPercentage",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "expression": {
-            "kind": "conditional",
-            "condition": {
               "kind": "binary",
-              "operator": ">",
+              "operator": "!=",
               "left": {
                 "kind": "member",
                 "object": {
                   "kind": "identifier",
                   "name": "self"
                 },
-                "property": "quantityShipped"
+                "property": "name"
               },
               "right": {
                 "kind": "literal",
                 "value": {
-                  "kind": "number",
-                  "value": 0
+                  "kind": "null"
                 }
               }
             },
-            "consequent": {
+            "right": {
               "kind": "binary",
-              "operator": "*",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "name"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": ""
+                }
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Rule name is required",
+          "overrideable": false
+        },
+        {
+          "name": "validTriggerType",
+          "code": "validTriggerType",
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "triggerType"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "triggerType"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": ""
+                }
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Trigger type is required",
+          "overrideable": false
+        },
+        {
+          "name": "hasMessageOrTemplate",
+          "code": "hasMessageOrTemplate",
+          "expression": {
+            "kind": "binary",
+            "operator": "or",
+            "left": {
+              "kind": "binary",
+              "operator": "and",
               "left": {
                 "kind": "binary",
-                "operator": "/",
+                "operator": "!=",
                 "left": {
                   "kind": "member",
                   "object": {
                     "kind": "identifier",
                     "name": "self"
                   },
-                  "property": "quantityReceived"
+                  "property": "templateId"
                 },
                 "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
+                }
+              },
+              "right": {
+                "kind": "binary",
+                "operator": "!=",
+                "left": {
                   "kind": "member",
                   "object": {
                     "kind": "identifier",
                     "name": "self"
                   },
-                  "property": "quantityShipped"
+                  "property": "templateId"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": ""
+                  }
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "and",
+              "left": {
+                "kind": "binary",
+                "operator": "!=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "customMessage"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "null"
+                  }
                 }
               },
               "right": {
-                "kind": "literal",
-                "value": {
-                  "kind": "number",
-                  "value": 100
+                "kind": "binary",
+                "operator": "!=",
+                "left": {
+                  "kind": "member",
+                  "object": {
+                    "kind": "identifier",
+                    "name": "self"
+                  },
+                  "property": "customMessage"
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": ""
+                  }
                 }
-              }
-            },
-            "alternate": {
-              "kind": "literal",
-              "value": {
-                "kind": "number",
-                "value": 0
-              }
-            }
-          },
-          "dependencies": []
-        }
-      ],
-      "relationships": [],
-      "commands": [
-        "create",
-        "updateReceived"
-      ],
-      "constraints": [
-        {
-          "name": "positiveQuantityShipped",
-          "code": "positiveQuantityShipped",
-          "expression": {
-            "kind": "binary",
-            "operator": ">=",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "quantityShipped"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "number",
-                "value": 0
               }
             }
           },
           "severity": "block",
-          "message": "Quantity shipped cannot be negative",
+          "message": "Either template or custom message is required",
           "overrideable": false
         }
       ],
@@ -36478,6 +36052,626 @@
         }
       ],
       "policies": []
+    },
+    {
+      "name": "WorkforceOptimization",
+      "properties": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "locationId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "optimizationType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "status",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "pending"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "updatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "completedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        }
+      ],
+      "computedProperties": [
+        {
+          "name": "isPending",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "pending"
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "isInProgress",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "in_progress"
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "isCompleted",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "completed"
+              }
+            }
+          },
+          "dependencies": []
+        },
+        {
+          "name": "isFailed",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "==",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "failed"
+              }
+            }
+          },
+          "dependencies": []
+        }
+      ],
+      "relationships": [],
+      "commands": [
+        "create",
+        "start",
+        "complete",
+        "fail"
+      ],
+      "constraints": [
+        {
+          "name": "validOptimizationType",
+          "code": "validOptimizationType",
+          "expression": {
+            "kind": "binary",
+            "operator": "in",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "optimizationType"
+            },
+            "right": {
+              "kind": "array",
+              "elements": [
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "schedule"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "assignment"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "performance"
+                  }
+                }
+              ]
+            }
+          },
+          "severity": "block",
+          "message": "Invalid optimization type",
+          "overrideable": false
+        },
+        {
+          "name": "validStatus",
+          "code": "validStatus",
+          "expression": {
+            "kind": "binary",
+            "operator": "in",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "status"
+            },
+            "right": {
+              "kind": "array",
+              "elements": [
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "pending"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "in_progress"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "completed"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "failed"
+                  }
+                }
+              ]
+            }
+          },
+          "severity": "block",
+          "message": "Invalid status",
+          "overrideable": false
+        }
+      ],
+      "policies": []
+    },
+    {
+      "name": "PerformancePrediction",
+      "properties": [
+        {
+          "name": "id",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "modifiers": [
+            "required"
+          ]
+        },
+        {
+          "name": "employeeId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "predictionType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "predictionHorizon",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "predictionScore",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "confidence",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": "medium"
+          },
+          "modifiers": []
+        },
+        {
+          "name": "factors",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "string",
+            "value": ""
+          },
+          "modifiers": []
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        },
+        {
+          "name": "expiresAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "defaultValue": {
+            "kind": "number",
+            "value": 0
+          },
+          "modifiers": []
+        }
+      ],
+      "computedProperties": [
+        {
+          "name": "isExpired",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "expression": {
+            "kind": "binary",
+            "operator": "<",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "expiresAt"
+            },
+            "right": {
+              "kind": "call",
+              "callee": {
+                "kind": "identifier",
+                "name": "now"
+              },
+              "args": []
+            }
+          },
+          "dependencies": [
+            "now"
+          ]
+        }
+      ],
+      "relationships": [],
+      "commands": [
+        "create"
+      ],
+      "constraints": [
+        {
+          "name": "validPredictionType",
+          "code": "validPredictionType",
+          "expression": {
+            "kind": "binary",
+            "operator": "in",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "predictionType"
+            },
+            "right": {
+              "kind": "array",
+              "elements": [
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "productivity"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "attendance"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "overtime_risk"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "skill_match"
+                  }
+                }
+              ]
+            }
+          },
+          "severity": "block",
+          "message": "Invalid prediction type",
+          "overrideable": false
+        },
+        {
+          "name": "validConfidence",
+          "code": "validConfidence",
+          "expression": {
+            "kind": "binary",
+            "operator": "in",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "self"
+              },
+              "property": "confidence"
+            },
+            "right": {
+              "kind": "array",
+              "elements": [
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "low"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "medium"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "high"
+                  }
+                }
+              ]
+            }
+          },
+          "severity": "block",
+          "message": "Invalid confidence level",
+          "overrideable": false
+        },
+        {
+          "name": "validScore",
+          "code": "validScore",
+          "expression": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": ">=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "predictionScore"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 0
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "<=",
+              "left": {
+                "kind": "member",
+                "object": {
+                  "kind": "identifier",
+                  "name": "self"
+                },
+                "property": "predictionScore"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 100
+                }
+              }
+            }
+          },
+          "severity": "block",
+          "message": "Prediction score must be 0-100",
+          "overrideable": false
+        }
+      ],
+      "policies": []
     }
   ],
   "stores": [
@@ -36518,11 +36712,6 @@
     },
     {
       "entity": "CateringOrder",
-      "target": "memory",
-      "config": {}
-    },
-    {
-      "entity": "ChartOfAccount",
       "target": "memory",
       "config": {}
     },
@@ -36832,6 +37021,11 @@
       "config": {}
     },
     {
+      "entity": "SampleData",
+      "target": "memory",
+      "config": {}
+    },
+    {
       "entity": "ScheduleShift",
       "target": "memory",
       "config": {}
@@ -36842,12 +37036,7 @@
       "config": {}
     },
     {
-      "entity": "Shipment",
-      "target": "memory",
-      "config": {}
-    },
-    {
-      "entity": "ShipmentItem",
+      "entity": "SmsAutomationRule",
       "target": "memory",
       "config": {}
     },
@@ -36898,6 +37087,16 @@
     },
     {
       "entity": "Workflow",
+      "target": "memory",
+      "config": {}
+    },
+    {
+      "entity": "WorkforceOptimization",
+      "target": "memory",
+      "config": {}
+    },
+    {
+      "entity": "PerformancePrediction",
       "target": "memory",
       "config": {}
     }
@@ -38647,104 +38846,6 @@
         },
         {
           "name": "completedAt",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "required": true
-        }
-      ]
-    },
-    {
-      "name": "ChartOfAccountCreated",
-      "channel": "accounting.chart-of-account.created",
-      "payload": [
-        {
-          "name": "accountId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "tenantId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "accountNumber",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "accountName",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "accountType",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "createdAt",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "required": true
-        }
-      ]
-    },
-    {
-      "name": "ChartOfAccountUpdated",
-      "channel": "accounting.chart-of-account.updated",
-      "payload": [
-        {
-          "name": "accountId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "updatedAt",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "required": true
-        }
-      ]
-    },
-    {
-      "name": "ChartOfAccountDeactivated",
-      "channel": "accounting.chart-of-account.deactivated",
-      "payload": [
-        {
-          "name": "accountId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "updatedAt",
           "type": {
             "name": "number",
             "nullable": false
@@ -52402,6 +52503,136 @@
       ]
     },
     {
+      "name": "SampleDataSeeded",
+      "channel": "tenant.sampledata.seeded",
+      "payload": [
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "seededBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "seededAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "eventsCreated",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "clientsCreated",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "usersCreated",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "recipesCreated",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "SampleDataCleared",
+      "channel": "tenant.sampledata.cleared",
+      "payload": [
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "clearedBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "clearedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "SampleDataReseeded",
+      "channel": "tenant.sampledata.reseeded",
+      "payload": [
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "reseededBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "reseededAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
       "name": "ScheduleCreated",
       "channel": "staff.schedule.created",
       "payload": [
@@ -52748,11 +52979,11 @@
       ]
     },
     {
-      "name": "ShipmentCreated",
-      "channel": "purchasing.shipment.created",
+      "name": "SmsAutomationRuleCreated",
+      "channel": "sms.automation.rule.created",
       "payload": [
         {
-          "name": "shipmentId",
+          "name": "ruleId",
           "type": {
             "name": "string",
             "nullable": false
@@ -52768,7 +52999,7 @@
           "required": true
         },
         {
-          "name": "shipmentNumber",
+          "name": "name",
           "type": {
             "name": "string",
             "nullable": false
@@ -52776,7 +53007,7 @@
           "required": true
         },
         {
-          "name": "supplierId",
+          "name": "triggerType",
           "type": {
             "name": "string",
             "nullable": false
@@ -52784,9 +53015,17 @@
           "required": true
         },
         {
-          "name": "locationId",
+          "name": "isActive",
           "type": {
-            "name": "string",
+            "name": "boolean",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "priority",
+          "type": {
+            "name": "number",
             "nullable": false
           },
           "required": true
@@ -52802,11 +53041,11 @@
       ]
     },
     {
-      "name": "ShipmentUpdated",
-      "channel": "purchasing.shipment.updated",
+      "name": "SmsAutomationRuleUpdated",
+      "channel": "sms.automation.rule.updated",
       "payload": [
         {
-          "name": "shipmentId",
+          "name": "ruleId",
           "type": {
             "name": "string",
             "nullable": false
@@ -52814,7 +53053,7 @@
           "required": true
         },
         {
-          "name": "shipmentNumber",
+          "name": "tenantId",
           "type": {
             "name": "string",
             "nullable": false
@@ -52822,7 +53061,7 @@
           "required": true
         },
         {
-          "name": "trackingNumber",
+          "name": "name",
           "type": {
             "name": "string",
             "nullable": false
@@ -52830,9 +53069,25 @@
           "required": true
         },
         {
-          "name": "carrier",
+          "name": "triggerType",
           "type": {
             "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "priority",
+          "type": {
+            "name": "number",
             "nullable": false
           },
           "required": true
@@ -52848,127 +53103,11 @@
       ]
     },
     {
-      "name": "ShipmentDelivered",
-      "channel": "purchasing.shipment.delivered",
+      "name": "SmsAutomationRuleActivated",
+      "channel": "sms.automation.rule.activated",
       "payload": [
         {
-          "name": "shipmentId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "shipmentNumber",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "supplierId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "deliveredBy",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "receivedBy",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "totalItems",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "totalValue",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "deliveredAt",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "required": true
-        }
-      ]
-    },
-    {
-      "name": "ShipmentCancelled",
-      "channel": "purchasing.shipment.cancelled",
-      "payload": [
-        {
-          "name": "shipmentId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "shipmentNumber",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "userId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "reason",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "cancelledAt",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "required": true
-        }
-      ]
-    },
-    {
-      "name": "ShipmentScheduled",
-      "channel": "purchasing.shipment.scheduled",
-      "payload": [
-        {
-          "name": "shipmentId",
+          "name": "ruleId",
           "type": {
             "name": "string",
             "nullable": false
@@ -52984,7 +53123,7 @@
           "required": true
         },
         {
-          "name": "purchaseOrderId",
+          "name": "name",
           "type": {
             "name": "string",
             "nullable": false
@@ -52992,15 +53131,7 @@
           "required": true
         },
         {
-          "name": "userId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "scheduledAt",
+          "name": "activatedAt",
           "type": {
             "name": "number",
             "nullable": false
@@ -53010,11 +53141,11 @@
       ]
     },
     {
-      "name": "ShipmentPreparationStarted",
-      "channel": "purchasing.shipment.preparation_started",
+      "name": "SmsAutomationRuleDeactivated",
+      "channel": "sms.automation.rule.deactivated",
       "payload": [
         {
-          "name": "shipmentId",
+          "name": "ruleId",
           "type": {
             "name": "string",
             "nullable": false
@@ -53030,7 +53161,7 @@
           "required": true
         },
         {
-          "name": "purchaseOrderId",
+          "name": "name",
           "type": {
             "name": "string",
             "nullable": false
@@ -53038,15 +53169,7 @@
           "required": true
         },
         {
-          "name": "userId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "startedAt",
+          "name": "deactivatedAt",
           "type": {
             "name": "number",
             "nullable": false
@@ -53056,11 +53179,11 @@
       ]
     },
     {
-      "name": "ShipmentShipped",
-      "channel": "purchasing.shipment.shipped",
+      "name": "SmsAutomationRuleDeleted",
+      "channel": "sms.automation.rule.deleted",
       "payload": [
         {
-          "name": "shipmentId",
+          "name": "ruleId",
           "type": {
             "name": "string",
             "nullable": false
@@ -53076,7 +53199,7 @@
           "required": true
         },
         {
-          "name": "purchaseOrderId",
+          "name": "name",
           "type": {
             "name": "string",
             "nullable": false
@@ -53084,147 +53207,7 @@
           "required": true
         },
         {
-          "name": "trackingNumber",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "userId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "shippedAt",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "required": true
-        }
-      ]
-    },
-    {
-      "name": "ShipmentItemCreated",
-      "channel": "purchasing.shipment.item.created",
-      "payload": [
-        {
-          "name": "shipmentItemId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "shipmentId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "itemId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "quantityShipped",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "unitCost",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "createdAt",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "required": true
-        }
-      ]
-    },
-    {
-      "name": "ShipmentItemReceived",
-      "channel": "purchasing.shipment.item.received",
-      "payload": [
-        {
-          "name": "shipmentItemId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "shipmentId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "itemId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "quantityReceived",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "quantityDamaged",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "condition",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "userId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "receivedAt",
+          "name": "deletedAt",
           "type": {
             "name": "number",
             "nullable": false
@@ -55275,6 +55258,258 @@
         },
         {
           "name": "deactivatedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "WorkforceOptimizationCreated",
+      "channel": "workforce.optimization.created",
+      "payload": [
+        {
+          "name": "optimizationId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "locationId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "optimizationType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "WorkforceOptimizationStarted",
+      "channel": "workforce.optimization.started",
+      "payload": [
+        {
+          "name": "optimizationId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "startedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "WorkforceOptimizationCompleted",
+      "channel": "workforce.optimization.completed",
+      "payload": [
+        {
+          "name": "optimizationId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "completedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "WorkforceOptimizationFailed",
+      "channel": "workforce.optimization.failed",
+      "payload": [
+        {
+          "name": "optimizationId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "failedAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "error",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "PerformancePredictionCreated",
+      "channel": "workforce.prediction.created",
+      "payload": [
+        {
+          "name": "predictionId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "employeeId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "predictionType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "predictionScore",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "confidence",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "createdAt",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        }
+      ]
+    },
+    {
+      "name": "ScheduleAutoOptimized",
+      "channel": "workforce.schedule.auto_optimized",
+      "payload": [
+        {
+          "name": "scheduleId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "tenantId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "assignmentsCount",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "totalEstimatedCost",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "optimizedAt",
           "type": {
             "name": "number",
             "nullable": false
@@ -61907,480 +62142,6 @@
       ],
       "emits": [
         "CateringOrderCompleted"
-      ]
-    },
-    {
-      "name": "create",
-      "entity": "ChartOfAccount",
-      "parameters": [
-        {
-          "name": "accountNumber",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "accountName",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "accountType",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "parentId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "description",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        }
-      ],
-      "guards": [
-        {
-          "kind": "binary",
-          "operator": "and",
-          "left": {
-            "kind": "binary",
-            "operator": "!=",
-            "left": {
-              "kind": "identifier",
-              "name": "accountNumber"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "null"
-              }
-            }
-          },
-          "right": {
-            "kind": "binary",
-            "operator": "!=",
-            "left": {
-              "kind": "identifier",
-              "name": "accountNumber"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": ""
-              }
-            }
-          }
-        },
-        {
-          "kind": "binary",
-          "operator": "and",
-          "left": {
-            "kind": "binary",
-            "operator": "!=",
-            "left": {
-              "kind": "identifier",
-              "name": "accountName"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "null"
-              }
-            }
-          },
-          "right": {
-            "kind": "binary",
-            "operator": "!=",
-            "left": {
-              "kind": "identifier",
-              "name": "accountName"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": ""
-              }
-            }
-          }
-        },
-        {
-          "kind": "binary",
-          "operator": "and",
-          "left": {
-            "kind": "binary",
-            "operator": "!=",
-            "left": {
-              "kind": "identifier",
-              "name": "accountType"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "null"
-              }
-            }
-          },
-          "right": {
-            "kind": "binary",
-            "operator": "!=",
-            "left": {
-              "kind": "identifier",
-              "name": "accountType"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": ""
-              }
-            }
-          }
-        }
-      ],
-      "constraints": [],
-      "actions": [
-        {
-          "kind": "compute",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "Account number is required"
-            }
-          }
-        },
-        {
-          "kind": "compute",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "Account name is required"
-            }
-          }
-        },
-        {
-          "kind": "compute",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "Account type is required"
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "accountNumber",
-          "expression": {
-            "kind": "identifier",
-            "name": "accountNumber"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "accountName",
-          "expression": {
-            "kind": "identifier",
-            "name": "accountName"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "accountType",
-          "expression": {
-            "kind": "identifier",
-            "name": "accountType"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "parentId",
-          "expression": {
-            "kind": "identifier",
-            "name": "parentId"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "description",
-          "expression": {
-            "kind": "identifier",
-            "name": "description"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "isActive",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "boolean",
-              "value": true
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "createdAt",
-          "expression": {
-            "kind": "call",
-            "callee": {
-              "kind": "identifier",
-              "name": "now"
-            },
-            "args": []
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "updatedAt",
-          "expression": {
-            "kind": "call",
-            "callee": {
-              "kind": "identifier",
-              "name": "now"
-            },
-            "args": []
-          }
-        }
-      ],
-      "emits": [
-        "ChartOfAccountCreated"
-      ]
-    },
-    {
-      "name": "update",
-      "entity": "ChartOfAccount",
-      "parameters": [
-        {
-          "name": "accountName",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "accountNumber",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "accountType",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "parentId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "description",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "isActive",
-          "type": {
-            "name": "boolean",
-            "nullable": false
-          },
-          "required": true
-        }
-      ],
-      "guards": [
-        {
-          "kind": "binary",
-          "operator": "==",
-          "left": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
-            },
-            "property": "isActive"
-          },
-          "right": {
-            "kind": "literal",
-            "value": {
-              "kind": "boolean",
-              "value": true
-            }
-          }
-        }
-      ],
-      "constraints": [],
-      "actions": [
-        {
-          "kind": "compute",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "Cannot update an inactive account"
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "accountName",
-          "expression": {
-            "kind": "identifier",
-            "name": "accountName"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "accountNumber",
-          "expression": {
-            "kind": "identifier",
-            "name": "accountNumber"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "accountType",
-          "expression": {
-            "kind": "identifier",
-            "name": "accountType"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "parentId",
-          "expression": {
-            "kind": "identifier",
-            "name": "parentId"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "description",
-          "expression": {
-            "kind": "identifier",
-            "name": "description"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "isActive",
-          "expression": {
-            "kind": "identifier",
-            "name": "isActive"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "updatedAt",
-          "expression": {
-            "kind": "call",
-            "callee": {
-              "kind": "identifier",
-              "name": "now"
-            },
-            "args": []
-          }
-        }
-      ],
-      "emits": [
-        "ChartOfAccountUpdated"
-      ]
-    },
-    {
-      "name": "deactivate",
-      "entity": "ChartOfAccount",
-      "parameters": [],
-      "guards": [
-        {
-          "kind": "binary",
-          "operator": "==",
-          "left": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
-            },
-            "property": "isActive"
-          },
-          "right": {
-            "kind": "literal",
-            "value": {
-              "kind": "boolean",
-              "value": true
-            }
-          }
-        }
-      ],
-      "constraints": [],
-      "actions": [
-        {
-          "kind": "compute",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "Account is already inactive"
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "isActive",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "boolean",
-              "value": false
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "updatedAt",
-          "expression": {
-            "kind": "call",
-            "callee": {
-              "kind": "identifier",
-              "name": "now"
-            },
-            "args": []
-          }
-        }
-      ],
-      "emits": [
-        "ChartOfAccountDeactivated"
       ]
     },
     {
@@ -111502,6 +111263,490 @@
       ]
     },
     {
+      "name": "seed",
+      "entity": "SampleData",
+      "parameters": [
+        {
+          "name": "requestedBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "requestedBy"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "requestedBy"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "isSeeded"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": false
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "User ID is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Sample data already exists for this tenant"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isSeeded",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": true
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "seededAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "clearedAt",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "eventsCreated",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 2
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "clientsCreated",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 1
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "usersCreated",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 3
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "recipesCreated",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 1
+            }
+          }
+        }
+      ],
+      "emits": [
+        "SampleDataSeeded"
+      ]
+    },
+    {
+      "name": "clear",
+      "entity": "SampleData",
+      "parameters": [
+        {
+          "name": "requestedBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "requestedBy"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "requestedBy"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "isSeeded"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": true
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "User ID is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "No sample data to clear"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isSeeded",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": false
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "clearedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "eventsCreated",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "clientsCreated",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "usersCreated",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "recipesCreated",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "emits": [
+        "SampleDataCleared"
+      ]
+    },
+    {
+      "name": "reseed",
+      "entity": "SampleData",
+      "parameters": [
+        {
+          "name": "requestedBy",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "requestedBy"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "requestedBy"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "User ID is required"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isSeeded",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": true
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "seededAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "clearedAt",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "eventsCreated",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 2
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "clientsCreated",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 1
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "usersCreated",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 3
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "recipesCreated",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 1
+            }
+          }
+        }
+      ],
+      "emits": [
+        "SampleDataReseeded"
+      ]
+    },
+    {
       "name": "create",
       "entity": "ScheduleShift",
       "parameters": [
@@ -112624,10 +112869,10 @@
     },
     {
       "name": "create",
-      "entity": "Shipment",
+      "entity": "SmsAutomationRule",
       "parameters": [
         {
-          "name": "shipmentNumber",
+          "name": "name",
           "type": {
             "name": "string",
             "nullable": false
@@ -112635,7 +112880,7 @@
           "required": true
         },
         {
-          "name": "supplierId",
+          "name": "description",
           "type": {
             "name": "string",
             "nullable": false
@@ -112643,7 +112888,7 @@
           "required": true
         },
         {
-          "name": "locationId",
+          "name": "triggerType",
           "type": {
             "name": "string",
             "nullable": false
@@ -112651,7 +112896,7 @@
           "required": true
         },
         {
-          "name": "eventId",
+          "name": "triggerConfig",
           "type": {
             "name": "string",
             "nullable": false
@@ -112659,33 +112904,49 @@
           "required": true
         },
         {
-          "name": "scheduledDate",
+          "name": "templateId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "customMessage",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "recipientType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "recipientConfig",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "priority",
           "type": {
             "name": "number",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "carrier",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "shippingMethod",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "notes",
-          "type": {
-            "name": "string",
             "nullable": false
           },
           "required": true
@@ -112700,7 +112961,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "shipmentNumber"
+              "name": "name"
             },
             "right": {
               "kind": "literal",
@@ -112714,7 +112975,7 @@
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "shipmentNumber"
+              "name": "name"
             },
             "right": {
               "kind": "literal",
@@ -112724,1230 +112985,106 @@
               }
             }
           }
-        }
-      ],
-      "constraints": [],
-      "actions": [
-        {
-          "kind": "compute",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "Shipment number is required"
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "shipmentNumber",
-          "expression": {
-            "kind": "identifier",
-            "name": "shipmentNumber"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "supplierId",
-          "expression": {
-            "kind": "identifier",
-            "name": "supplierId"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "locationId",
-          "expression": {
-            "kind": "identifier",
-            "name": "locationId"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "eventId",
-          "expression": {
-            "kind": "identifier",
-            "name": "eventId"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "scheduledDate",
-          "expression": {
-            "kind": "identifier",
-            "name": "scheduledDate"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "carrier",
-          "expression": {
-            "kind": "identifier",
-            "name": "carrier"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "shippingMethod",
-          "expression": {
-            "kind": "identifier",
-            "name": "shippingMethod"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "notes",
-          "expression": {
-            "kind": "identifier",
-            "name": "notes"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "status",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "draft"
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "totalItems",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "number",
-              "value": 0
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "shippingCost",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "number",
-              "value": 0
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "totalValue",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "number",
-              "value": 0
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "createdAt",
-          "expression": {
-            "kind": "call",
-            "callee": {
-              "kind": "identifier",
-              "name": "now"
-            },
-            "args": []
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "updatedAt",
-          "expression": {
-            "kind": "call",
-            "callee": {
-              "kind": "identifier",
-              "name": "now"
-            },
-            "args": []
-          }
-        }
-      ],
-      "emits": [
-        "ShipmentCreated"
-      ]
-    },
-    {
-      "name": "update",
-      "entity": "Shipment",
-      "parameters": [
-        {
-          "name": "trackingNumber",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "carrier",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "shippingMethod",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "estimatedDeliveryDate",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "shippingCost",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "notes",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        }
-      ],
-      "guards": [
-        {
-          "kind": "binary",
-          "operator": "!=",
-          "left": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
-            },
-            "property": "status"
-          },
-          "right": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "delivered"
-            }
-          }
         },
         {
           "kind": "binary",
-          "operator": "!=",
+          "operator": "and",
           "left": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
-            },
-            "property": "status"
-          },
-          "right": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "cancelled"
-            }
-          }
-        }
-      ],
-      "constraints": [],
-      "actions": [
-        {
-          "kind": "compute",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "Cannot update a delivered shipment"
-            }
-          }
-        },
-        {
-          "kind": "compute",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "Cannot update a cancelled shipment"
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "trackingNumber",
-          "expression": {
-            "kind": "identifier",
-            "name": "trackingNumber"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "carrier",
-          "expression": {
-            "kind": "identifier",
-            "name": "carrier"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "shippingMethod",
-          "expression": {
-            "kind": "identifier",
-            "name": "shippingMethod"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "estimatedDeliveryDate",
-          "expression": {
-            "kind": "identifier",
-            "name": "estimatedDeliveryDate"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "shippingCost",
-          "expression": {
-            "kind": "identifier",
-            "name": "shippingCost"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "notes",
-          "expression": {
-            "kind": "identifier",
-            "name": "notes"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "updatedAt",
-          "expression": {
-            "kind": "call",
-            "callee": {
-              "kind": "identifier",
-              "name": "now"
-            },
-            "args": []
-          }
-        }
-      ],
-      "emits": [
-        "ShipmentUpdated"
-      ]
-    },
-    {
-      "name": "schedule",
-      "entity": "Shipment",
-      "parameters": [
-        {
-          "name": "userId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "scheduledDate",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "required": true
-        }
-      ],
-      "guards": [
-        {
-          "kind": "binary",
-          "operator": "==",
-          "left": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
-            },
-            "property": "status"
-          },
-          "right": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "draft"
-            }
-          }
-        }
-      ],
-      "constraints": [
-        {
-          "name": "blockNoItems",
-          "code": "blockNoItems",
-          "expression": {
             "kind": "binary",
-            "operator": "==",
+            "operator": "!=",
             "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "totalItems"
+              "kind": "identifier",
+              "name": "triggerType"
             },
             "right": {
               "kind": "literal",
               "value": {
-                "kind": "number",
-                "value": 0
+                "kind": "null"
               }
             }
           },
-          "severity": "block",
-          "overrideable": false
-        }
-      ],
-      "actions": [
-        {
-          "kind": "compute",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "Can only schedule draft shipments"
-            }
-          }
-        },
-        {
-          "kind": "compute",
-          "expression": {
-            "kind": "object",
-            "properties": [
-              {
-                "key": "messageTemplate",
-                "value": {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "string",
-                    "value": "Cannot schedule shipment with no items"
-                  }
-                }
-              },
-              {
-                "key": "details",
-                "value": {
-                  "kind": "object",
-                  "properties": [
-                    {
-                      "key": "shipmentId",
-                      "value": {
-                        "kind": "member",
-                        "object": {
-                          "kind": "identifier",
-                          "name": "self"
-                        },
-                        "property": "id"
-                      }
-                    },
-                    {
-                      "key": "purchaseOrderId",
-                      "value": {
-                        "kind": "member",
-                        "object": {
-                          "kind": "identifier",
-                          "name": "self"
-                        },
-                        "property": "purchaseOrderId"
-                      }
-                    }
-                  ]
-                }
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "identifier",
+              "name": "triggerType"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": ""
               }
-            ]
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "status",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "scheduled"
             }
           }
         },
-        {
-          "kind": "mutate",
-          "target": "updatedAt",
-          "expression": {
-            "kind": "call",
-            "callee": {
-              "kind": "identifier",
-              "name": "now"
-            },
-            "args": []
-          }
-        }
-      ],
-      "emits": [
-        "ShipmentScheduled"
-      ]
-    },
-    {
-      "name": "startPreparing",
-      "entity": "Shipment",
-      "parameters": [
-        {
-          "name": "userId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        }
-      ],
-      "guards": [
-        {
-          "kind": "binary",
-          "operator": "==",
-          "left": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
-            },
-            "property": "status"
-          },
-          "right": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "scheduled"
-            }
-          }
-        }
-      ],
-      "constraints": [],
-      "actions": [
-        {
-          "kind": "compute",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "Can only start preparing scheduled shipments"
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "status",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "preparing"
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "updatedAt",
-          "expression": {
-            "kind": "call",
-            "callee": {
-              "kind": "identifier",
-              "name": "now"
-            },
-            "args": []
-          }
-        }
-      ],
-      "emits": [
-        "ShipmentPreparationStarted"
-      ]
-    },
-    {
-      "name": "ship",
-      "entity": "Shipment",
-      "parameters": [
-        {
-          "name": "userId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "trackingNumber",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        }
-      ],
-      "guards": [
-        {
-          "kind": "binary",
-          "operator": "==",
-          "left": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
-            },
-            "property": "status"
-          },
-          "right": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "preparing"
-            }
-          }
-        }
-      ],
-      "constraints": [],
-      "actions": [
-        {
-          "kind": "compute",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "Can only ship shipments that are being prepared"
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "status",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "in_transit"
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "trackingNumber",
-          "expression": {
-            "kind": "identifier",
-            "name": "trackingNumber"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "updatedAt",
-          "expression": {
-            "kind": "call",
-            "callee": {
-              "kind": "identifier",
-              "name": "now"
-            },
-            "args": []
-          }
-        }
-      ],
-      "emits": [
-        "ShipmentShipped"
-      ]
-    },
-    {
-      "name": "markDelivered",
-      "entity": "Shipment",
-      "parameters": [
-        {
-          "name": "userId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "receivedBy",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "signature",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        }
-      ],
-      "guards": [
         {
           "kind": "binary",
           "operator": "or",
           "left": {
             "kind": "binary",
-            "operator": "==",
+            "operator": "and",
             "left": {
-              "kind": "member",
-              "object": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
                 "kind": "identifier",
-                "name": "self"
+                "name": "templateId"
               },
-              "property": "status"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": "in_transit"
-              }
-            }
-          },
-          "right": {
-            "kind": "binary",
-            "operator": "==",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "status"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": "scheduled"
-              }
-            }
-          }
-        }
-      ],
-      "constraints": [
-        {
-          "name": "blockNoItems",
-          "code": "blockNoItems",
-          "expression": {
-            "kind": "binary",
-            "operator": "==",
-            "left": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "totalItems"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "number",
-                "value": 0
-              }
-            }
-          },
-          "severity": "block",
-          "overrideable": false
-        }
-      ],
-      "actions": [
-        {
-          "kind": "compute",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "Can only deliver in-transit or scheduled shipments"
-            }
-          }
-        },
-        {
-          "kind": "compute",
-          "expression": {
-            "kind": "object",
-            "properties": [
-              {
-                "key": "messageTemplate",
+              "right": {
+                "kind": "literal",
                 "value": {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "string",
-                    "value": "Cannot mark shipment '{shipmentNumber}' as delivered with no items received"
-                  }
-                }
-              },
-              {
-                "key": "details",
-                "value": {
-                  "kind": "object",
-                  "properties": [
-                    {
-                      "key": "shipmentNumber",
-                      "value": {
-                        "kind": "member",
-                        "object": {
-                          "kind": "identifier",
-                          "name": "self"
-                        },
-                        "property": "shipmentNumber"
-                      }
-                    }
-                  ]
+                  "kind": "null"
                 }
               }
-            ]
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "status",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "delivered"
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "deliveredBy",
-          "expression": {
-            "kind": "identifier",
-            "name": "userId"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "receivedBy",
-          "expression": {
-            "kind": "identifier",
-            "name": "receivedBy"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "signature",
-          "expression": {
-            "kind": "identifier",
-            "name": "signature"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "actualDeliveryDate",
-          "expression": {
-            "kind": "call",
-            "callee": {
-              "kind": "identifier",
-              "name": "now"
             },
-            "args": []
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "updatedAt",
-          "expression": {
-            "kind": "call",
-            "callee": {
-              "kind": "identifier",
-              "name": "now"
-            },
-            "args": []
-          }
-        }
-      ],
-      "emits": [
-        "ShipmentDelivered"
-      ]
-    },
-    {
-      "name": "cancel",
-      "entity": "Shipment",
-      "parameters": [
-        {
-          "name": "userId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "reason",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        }
-      ],
-      "guards": [
-        {
-          "kind": "binary",
-          "operator": "!=",
-          "left": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
-            },
-            "property": "status"
-          },
-          "right": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "delivered"
-            }
-          }
-        },
-        {
-          "kind": "binary",
-          "operator": "!=",
-          "left": {
-            "kind": "member",
-            "object": {
-              "kind": "identifier",
-              "name": "self"
-            },
-            "property": "status"
-          },
-          "right": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "cancelled"
-            }
-          }
-        }
-      ],
-      "constraints": [
-        {
-          "name": "warnCancelInTransit",
-          "code": "warnCancelInTransit",
-          "expression": {
-            "kind": "binary",
-            "operator": "==",
-            "left": {
-              "kind": "member",
-              "object": {
+            "right": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
                 "kind": "identifier",
-                "name": "self"
+                "name": "templateId"
               },
-              "property": "status"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": "in_transit"
-              }
-            }
-          },
-          "severity": "warn",
-          "overrideable": false
-        }
-      ],
-      "actions": [
-        {
-          "kind": "compute",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "Cannot cancel a delivered shipment"
-            }
-          }
-        },
-        {
-          "kind": "compute",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "Shipment is already cancelled"
-            }
-          }
-        },
-        {
-          "kind": "compute",
-          "expression": {
-            "kind": "object",
-            "properties": [
-              {
-                "key": "messageTemplate",
+              "right": {
+                "kind": "literal",
                 "value": {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "string",
-                    "value": "Cancelling in-transit shipment '{shipmentNumber}' - carrier may need notification"
-                  }
-                }
-              },
-              {
-                "key": "details",
-                "value": {
-                  "kind": "object",
-                  "properties": [
-                    {
-                      "key": "shipmentNumber",
-                      "value": {
-                        "kind": "member",
-                        "object": {
-                          "kind": "identifier",
-                          "name": "self"
-                        },
-                        "property": "shipmentNumber"
-                      }
-                    },
-                    {
-                      "key": "carrier",
-                      "value": {
-                        "kind": "member",
-                        "object": {
-                          "kind": "identifier",
-                          "name": "self"
-                        },
-                        "property": "carrier"
-                      }
-                    },
-                    {
-                      "key": "trackingNumber",
-                      "value": {
-                        "kind": "member",
-                        "object": {
-                          "kind": "identifier",
-                          "name": "self"
-                        },
-                        "property": "trackingNumber"
-                      }
-                    }
-                  ]
+                  "kind": "string",
+                  "value": ""
                 }
               }
-            ]
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "status",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "cancelled"
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "notes",
-          "expression": {
-            "kind": "identifier",
-            "name": "reason"
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "updatedAt",
-          "expression": {
-            "kind": "call",
-            "callee": {
-              "kind": "identifier",
-              "name": "now"
-            },
-            "args": []
-          }
-        }
-      ],
-      "emits": [
-        "ShipmentCancelled"
-      ]
-    },
-    {
-      "name": "create",
-      "entity": "ShipmentItem",
-      "parameters": [
-        {
-          "name": "shipmentId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "itemId",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "quantityShipped",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "unitId",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "unitCost",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "lotNumber",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "expirationDate",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "required": true
-        }
-      ],
-      "guards": [
-        {
-          "kind": "binary",
-          "operator": "and",
-          "left": {
-            "kind": "binary",
-            "operator": "!=",
-            "left": {
-              "kind": "identifier",
-              "name": "shipmentId"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "null"
-              }
             }
           },
           "right": {
             "kind": "binary",
-            "operator": "!=",
+            "operator": "and",
             "left": {
-              "kind": "identifier",
-              "name": "shipmentId"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": ""
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "customMessage"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
               }
-            }
-          }
-        },
-        {
-          "kind": "binary",
-          "operator": "and",
-          "left": {
-            "kind": "binary",
-            "operator": "!=",
-            "left": {
-              "kind": "identifier",
-              "name": "itemId"
             },
             "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "null"
-              }
-            }
-          },
-          "right": {
-            "kind": "binary",
-            "operator": "!=",
-            "left": {
-              "kind": "identifier",
-              "name": "itemId"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": ""
-              }
-            }
-          }
-        },
-        {
-          "kind": "binary",
-          "operator": "and",
-          "left": {
-            "kind": "binary",
-            "operator": "!=",
-            "left": {
-              "kind": "identifier",
-              "name": "quantityShipped"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "null"
-              }
-            }
-          },
-          "right": {
-            "kind": "binary",
-            "operator": ">",
-            "left": {
-              "kind": "identifier",
-              "name": "quantityShipped"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "number",
-                "value": 0
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "customMessage"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": ""
+                }
               }
             }
           }
@@ -113961,7 +113098,7 @@
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "Shipment ID is required"
+              "value": "Rule name is required"
             }
           }
         },
@@ -113971,7 +113108,7 @@
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "Item ID is required"
+              "value": "Trigger type is required"
             }
           }
         },
@@ -113981,113 +113118,88 @@
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "Quantity shipped must be positive"
+              "value": "Either template or custom message is required"
             }
           }
         },
         {
           "kind": "mutate",
-          "target": "shipmentId",
+          "target": "name",
           "expression": {
             "kind": "identifier",
-            "name": "shipmentId"
+            "name": "name"
           }
         },
         {
           "kind": "mutate",
-          "target": "itemId",
+          "target": "description",
           "expression": {
             "kind": "identifier",
-            "name": "itemId"
+            "name": "description"
           }
         },
         {
           "kind": "mutate",
-          "target": "quantityShipped",
+          "target": "triggerType",
           "expression": {
             "kind": "identifier",
-            "name": "quantityShipped"
+            "name": "triggerType"
           }
         },
         {
           "kind": "mutate",
-          "target": "unitId",
+          "target": "triggerConfig",
           "expression": {
             "kind": "identifier",
-            "name": "unitId"
+            "name": "triggerConfig"
           }
         },
         {
           "kind": "mutate",
-          "target": "unitCost",
+          "target": "templateId",
           "expression": {
             "kind": "identifier",
-            "name": "unitCost"
+            "name": "templateId"
           }
         },
         {
           "kind": "mutate",
-          "target": "totalCost",
-          "expression": {
-            "kind": "binary",
-            "operator": "*",
-            "left": {
-              "kind": "identifier",
-              "name": "quantityShipped"
-            },
-            "right": {
-              "kind": "identifier",
-              "name": "unitCost"
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "quantityReceived",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "number",
-              "value": 0
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "quantityDamaged",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "number",
-              "value": 0
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "condition",
-          "expression": {
-            "kind": "literal",
-            "value": {
-              "kind": "string",
-              "value": "good"
-            }
-          }
-        },
-        {
-          "kind": "mutate",
-          "target": "lotNumber",
+          "target": "customMessage",
           "expression": {
             "kind": "identifier",
-            "name": "lotNumber"
+            "name": "customMessage"
           }
         },
         {
           "kind": "mutate",
-          "target": "expirationDate",
+          "target": "recipientType",
           "expression": {
             "kind": "identifier",
-            "name": "expirationDate"
+            "name": "recipientType"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "recipientConfig",
+          "expression": {
+            "kind": "identifier",
+            "name": "recipientConfig"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isActive",
+          "expression": {
+            "kind": "identifier",
+            "name": "isActive"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "priority",
+          "expression": {
+            "kind": "identifier",
+            "name": "priority"
           }
         },
         {
@@ -114116,49 +113228,81 @@
         }
       ],
       "emits": [
-        "ShipmentItemCreated"
+        "SmsAutomationRuleCreated"
       ]
     },
     {
-      "name": "updateReceived",
-      "entity": "ShipmentItem",
+      "name": "update",
+      "entity": "SmsAutomationRule",
       "parameters": [
         {
-          "name": "quantityReceived",
+          "name": "name",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "triggerConfig",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "templateId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "customMessage",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "recipientType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "recipientConfig",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": {
+            "name": "boolean",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "priority",
           "type": {
             "name": "number",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "quantityDamaged",
-          "type": {
-            "name": "number",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "condition",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "conditionNotes",
-          "type": {
-            "name": "string",
-            "nullable": false
-          },
-          "required": true
-        },
-        {
-          "name": "userId",
-          "type": {
-            "name": "string",
             "nullable": false
           },
           "required": true
@@ -114167,13 +113311,32 @@
       "guards": [
         {
           "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        },
+        {
+          "kind": "binary",
           "operator": "and",
           "left": {
             "kind": "binary",
             "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "quantityReceived"
+              "name": "name"
             },
             "right": {
               "kind": "literal",
@@ -114184,66 +113347,92 @@
           },
           "right": {
             "kind": "binary",
-            "operator": ">=",
+            "operator": "!=",
             "left": {
               "kind": "identifier",
-              "name": "quantityReceived"
+              "name": "name"
             },
             "right": {
               "kind": "literal",
               "value": {
-                "kind": "number",
-                "value": 0
+                "kind": "string",
+                "value": ""
+              }
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "or",
+          "left": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "templateId"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "templateId"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": ""
+                }
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "and",
+            "left": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "customMessage"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "null"
+                }
+              }
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "!=",
+              "left": {
+                "kind": "identifier",
+                "name": "customMessage"
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "string",
+                  "value": ""
+                }
               }
             }
           }
         }
       ],
-      "constraints": [
-        {
-          "name": "warnOverReceived",
-          "code": "warnOverReceived",
-          "expression": {
-            "kind": "binary",
-            "operator": ">",
-            "left": {
-              "kind": "identifier",
-              "name": "quantityReceived"
-            },
-            "right": {
-              "kind": "member",
-              "object": {
-                "kind": "identifier",
-                "name": "self"
-              },
-              "property": "quantityShipped"
-            }
-          },
-          "severity": "warn",
-          "overrideable": false
-        },
-        {
-          "name": "warnDamaged",
-          "code": "warnDamaged",
-          "expression": {
-            "kind": "binary",
-            "operator": ">",
-            "left": {
-              "kind": "identifier",
-              "name": "quantityDamaged"
-            },
-            "right": {
-              "kind": "literal",
-              "value": {
-                "kind": "number",
-                "value": 0
-              }
-            }
-          },
-          "severity": "warn",
-          "overrideable": false
-        }
-      ],
+      "constraints": [],
       "actions": [
         {
           "kind": "compute",
@@ -114251,157 +113440,100 @@
             "kind": "literal",
             "value": {
               "kind": "string",
-              "value": "Quantity received cannot be negative"
+              "value": "Cannot update a deleted rule"
             }
           }
         },
         {
           "kind": "compute",
           "expression": {
-            "kind": "object",
-            "properties": [
-              {
-                "key": "messageTemplate",
-                "value": {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "string",
-                    "value": "Received quantity ({received}) exceeds shipped quantity ({shipped})"
-                  }
-                }
-              },
-              {
-                "key": "details",
-                "value": {
-                  "kind": "object",
-                  "properties": [
-                    {
-                      "key": "itemId",
-                      "value": {
-                        "kind": "member",
-                        "object": {
-                          "kind": "identifier",
-                          "name": "self"
-                        },
-                        "property": "itemId"
-                      }
-                    },
-                    {
-                      "key": "received",
-                      "value": {
-                        "kind": "identifier",
-                        "name": "quantityReceived"
-                      }
-                    },
-                    {
-                      "key": "shipped",
-                      "value": {
-                        "kind": "member",
-                        "object": {
-                          "kind": "identifier",
-                          "name": "self"
-                        },
-                        "property": "quantityShipped"
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Rule name is required"
+            }
           }
         },
         {
           "kind": "compute",
           "expression": {
-            "kind": "object",
-            "properties": [
-              {
-                "key": "messageTemplate",
-                "value": {
-                  "kind": "literal",
-                  "value": {
-                    "kind": "string",
-                    "value": "Damaged items reported: {damaged} of {shipped} shipped"
-                  }
-                }
-              },
-              {
-                "key": "details",
-                "value": {
-                  "kind": "object",
-                  "properties": [
-                    {
-                      "key": "itemId",
-                      "value": {
-                        "kind": "member",
-                        "object": {
-                          "kind": "identifier",
-                          "name": "self"
-                        },
-                        "property": "itemId"
-                      }
-                    },
-                    {
-                      "key": "damaged",
-                      "value": {
-                        "kind": "identifier",
-                        "name": "quantityDamaged"
-                      }
-                    },
-                    {
-                      "key": "shipped",
-                      "value": {
-                        "kind": "member",
-                        "object": {
-                          "kind": "identifier",
-                          "name": "self"
-                        },
-                        "property": "quantityShipped"
-                      }
-                    },
-                    {
-                      "key": "condition",
-                      "value": {
-                        "kind": "identifier",
-                        "name": "condition"
-                      }
-                    }
-                  ]
-                }
-              }
-            ]
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Either template or custom message is required"
+            }
           }
         },
         {
           "kind": "mutate",
-          "target": "quantityReceived",
+          "target": "name",
           "expression": {
             "kind": "identifier",
-            "name": "quantityReceived"
+            "name": "name"
           }
         },
         {
           "kind": "mutate",
-          "target": "quantityDamaged",
+          "target": "description",
           "expression": {
             "kind": "identifier",
-            "name": "quantityDamaged"
+            "name": "description"
           }
         },
         {
           "kind": "mutate",
-          "target": "condition",
+          "target": "triggerConfig",
           "expression": {
             "kind": "identifier",
-            "name": "condition"
+            "name": "triggerConfig"
           }
         },
         {
           "kind": "mutate",
-          "target": "conditionNotes",
+          "target": "templateId",
           "expression": {
             "kind": "identifier",
-            "name": "conditionNotes"
+            "name": "templateId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "customMessage",
+          "expression": {
+            "kind": "identifier",
+            "name": "customMessage"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "recipientType",
+          "expression": {
+            "kind": "identifier",
+            "name": "recipientType"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "recipientConfig",
+          "expression": {
+            "kind": "identifier",
+            "name": "recipientConfig"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isActive",
+          "expression": {
+            "kind": "identifier",
+            "name": "isActive"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "priority",
+          "expression": {
+            "kind": "identifier",
+            "name": "priority"
           }
         },
         {
@@ -114418,7 +113550,272 @@
         }
       ],
       "emits": [
-        "ShipmentItemReceived"
+        "SmsAutomationRuleUpdated"
+      ]
+    },
+    {
+      "name": "activate",
+      "entity": "SmsAutomationRule",
+      "parameters": [],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "isActive"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": false
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Cannot activate a deleted rule"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Rule is already active"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isActive",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": true
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "SmsAutomationRuleActivated"
+      ]
+    },
+    {
+      "name": "deactivate",
+      "entity": "SmsAutomationRule",
+      "parameters": [],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "isActive"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": true
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Cannot deactivate a deleted rule"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Rule is already inactive"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isActive",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": false
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "SmsAutomationRuleDeactivated"
+      ]
+    },
+    {
+      "name": "softDelete",
+      "entity": "SmsAutomationRule",
+      "parameters": [],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "deletedAt"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "number",
+              "value": 0
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Rule is already deleted"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "deletedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "isActive",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "boolean",
+              "value": false
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "SmsAutomationRuleDeleted"
       ]
     },
     {
@@ -122089,6 +121486,611 @@
       "emits": [
         "WorkflowDeactivated"
       ]
+    },
+    {
+      "name": "create",
+      "entity": "WorkforceOptimization",
+      "parameters": [
+        {
+          "name": "locationId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "optimizationType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "!=",
+          "left": {
+            "kind": "identifier",
+            "name": "locationId"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "!=",
+          "left": {
+            "kind": "identifier",
+            "name": "optimizationType"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Location ID is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Optimization type is required"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "locationId",
+          "expression": {
+            "kind": "identifier",
+            "name": "locationId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "optimizationType",
+          "expression": {
+            "kind": "identifier",
+            "name": "optimizationType"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "status",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "pending"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "createdAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "WorkforceOptimizationCreated"
+      ]
+    },
+    {
+      "name": "start",
+      "entity": "WorkforceOptimization",
+      "parameters": [],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "status"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "pending"
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Can only start pending optimizations"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "status",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "in_progress"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "WorkforceOptimizationStarted"
+      ]
+    },
+    {
+      "name": "complete",
+      "entity": "WorkforceOptimization",
+      "parameters": [
+        {
+          "name": "results",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "==",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "self"
+            },
+            "property": "status"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "in_progress"
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Can only complete in-progress optimizations"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "status",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "completed"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "completedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "WorkforceOptimizationCompleted"
+      ]
+    },
+    {
+      "name": "fail",
+      "entity": "WorkforceOptimization",
+      "parameters": [
+        {
+          "name": "error",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "mutate",
+          "target": "status",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "failed"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "updatedAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        }
+      ],
+      "emits": [
+        "WorkforceOptimizationFailed"
+      ]
+    },
+    {
+      "name": "create",
+      "entity": "PerformancePrediction",
+      "parameters": [
+        {
+          "name": "employeeId",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "predictionType",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "predictionHorizon",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "predictionScore",
+          "type": {
+            "name": "number",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "confidence",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        },
+        {
+          "name": "factors",
+          "type": {
+            "name": "string",
+            "nullable": false
+          },
+          "required": true
+        }
+      ],
+      "guards": [
+        {
+          "kind": "binary",
+          "operator": "!=",
+          "left": {
+            "kind": "identifier",
+            "name": "employeeId"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "!=",
+          "left": {
+            "kind": "identifier",
+            "name": "predictionType"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "null"
+            }
+          }
+        },
+        {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": ">=",
+            "left": {
+              "kind": "identifier",
+              "name": "predictionScore"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 0
+              }
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "<=",
+            "left": {
+              "kind": "identifier",
+              "name": "predictionScore"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "number",
+                "value": 100
+              }
+            }
+          }
+        }
+      ],
+      "constraints": [],
+      "actions": [
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Employee ID is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Prediction type is required"
+            }
+          }
+        },
+        {
+          "kind": "compute",
+          "expression": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": "Prediction score must be 0-100"
+            }
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "employeeId",
+          "expression": {
+            "kind": "identifier",
+            "name": "employeeId"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "predictionType",
+          "expression": {
+            "kind": "identifier",
+            "name": "predictionType"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "predictionHorizon",
+          "expression": {
+            "kind": "identifier",
+            "name": "predictionHorizon"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "predictionScore",
+          "expression": {
+            "kind": "identifier",
+            "name": "predictionScore"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "confidence",
+          "expression": {
+            "kind": "identifier",
+            "name": "confidence"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "factors",
+          "expression": {
+            "kind": "identifier",
+            "name": "factors"
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "createdAt",
+          "expression": {
+            "kind": "call",
+            "callee": {
+              "kind": "identifier",
+              "name": "now"
+            },
+            "args": []
+          }
+        },
+        {
+          "kind": "mutate",
+          "target": "expiresAt",
+          "expression": {
+            "kind": "binary",
+            "operator": "+",
+            "left": {
+              "kind": "call",
+              "callee": {
+                "kind": "identifier",
+                "name": "now"
+              },
+              "args": []
+            },
+            "right": {
+              "kind": "binary",
+              "operator": "*",
+              "left": {
+                "kind": "binary",
+                "operator": "*",
+                "left": {
+                  "kind": "binary",
+                  "operator": "*",
+                  "left": {
+                    "kind": "binary",
+                    "operator": "*",
+                    "left": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "number",
+                        "value": 7
+                      }
+                    },
+                    "right": {
+                      "kind": "literal",
+                      "value": {
+                        "kind": "number",
+                        "value": 24
+                      }
+                    }
+                  },
+                  "right": {
+                    "kind": "literal",
+                    "value": {
+                      "kind": "number",
+                      "value": 60
+                    }
+                  }
+                },
+                "right": {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "number",
+                    "value": 60
+                  }
+                }
+              },
+              "right": {
+                "kind": "literal",
+                "value": {
+                  "kind": "number",
+                  "value": 1000
+                }
+              }
+            }
+          }
+        }
+      ],
+      "emits": [
+        "PerformancePredictionCreated"
+      ]
     }
   ],
   "policies": [
@@ -122736,42 +122738,6 @@
         }
       },
       "message": "Only catering managers and above can cancel orders"
-    },
-    {
-      "name": "AccountManagement",
-      "action": "execute",
-      "expression": {
-        "kind": "binary",
-        "operator": "in",
-        "left": {
-          "kind": "member",
-          "object": {
-            "kind": "identifier",
-            "name": "user"
-          },
-          "property": "role"
-        },
-        "right": {
-          "kind": "array",
-          "elements": [
-            {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": "manager"
-              }
-            },
-            {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": "admin"
-              }
-            }
-          ]
-        }
-      },
-      "message": "Managers can manage chart of accounts"
     },
     {
       "name": "SalesCanManageInteractions",
@@ -127222,6 +127188,87 @@
       "message": "Only admins and owners can manage role policies"
     },
     {
+      "name": "ManagersCanSeedSampleData",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "and",
+        "left": {
+          "kind": "binary",
+          "operator": "and",
+          "left": {
+            "kind": "binary",
+            "operator": "in",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "user"
+              },
+              "property": "role"
+            },
+            "right": {
+              "kind": "array",
+              "elements": [
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "manager"
+                  }
+                },
+                {
+                  "kind": "literal",
+                  "value": {
+                    "kind": "string",
+                    "value": "admin"
+                  }
+                }
+              ]
+            }
+          },
+          "right": {
+            "kind": "binary",
+            "operator": "!=",
+            "left": {
+              "kind": "member",
+              "object": {
+                "kind": "identifier",
+                "name": "user"
+              },
+              "property": "tenantId"
+            },
+            "right": {
+              "kind": "literal",
+              "value": {
+                "kind": "null"
+              }
+            }
+          }
+        },
+        "right": {
+          "kind": "binary",
+          "operator": "!=",
+          "left": {
+            "kind": "member",
+            "object": {
+              "kind": "identifier",
+              "name": "user"
+            },
+            "property": "tenantId"
+          },
+          "right": {
+            "kind": "literal",
+            "value": {
+              "kind": "string",
+              "value": ""
+            }
+          }
+        }
+      },
+      "message": "Only managers and admins can seed sample data"
+    },
+    {
       "name": "ManagersCanCreateSchedule",
       "action": "execute",
       "expression": {
@@ -127373,7 +127420,7 @@
       "message": "Only managers can close schedules"
     },
     {
-      "name": "ManagersCanCreateShipment",
+      "name": "SmsAutomationManagement",
       "action": "execute",
       "expression": {
         "kind": "binary",
@@ -127393,13 +127440,6 @@
               "kind": "literal",
               "value": {
                 "kind": "string",
-                "value": "kitchen_lead"
-              }
-            },
-            {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
                 "value": "manager"
               }
             },
@@ -127413,10 +127453,10 @@
           ]
         }
       },
-      "message": "Leads and managers can create shipments"
+      "message": "Managers can manage SMS automation rules"
     },
     {
-      "name": "StaffCanReceiveShipment",
+      "name": "SmsAutomationCreate",
       "action": "execute",
       "expression": {
         "kind": "binary",
@@ -127436,20 +127476,6 @@
               "kind": "literal",
               "value": {
                 "kind": "string",
-                "value": "kitchen_staff"
-              }
-            },
-            {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
-                "value": "kitchen_lead"
-              }
-            },
-            {
-              "kind": "literal",
-              "value": {
-                "kind": "string",
                 "value": "manager"
               }
             },
@@ -127463,10 +127489,10 @@
           ]
         }
       },
-      "message": "Staff can receive shipments"
+      "message": "Managers can create SMS automation rules"
     },
     {
-      "name": "ManagersCanCancelShipment",
+      "name": "SmsAutomationUpdate",
       "action": "execute",
       "expression": {
         "kind": "binary",
@@ -127499,7 +127525,36 @@
           ]
         }
       },
-      "message": "Only managers can cancel shipments"
+      "message": "Managers can update SMS automation rules"
+    },
+    {
+      "name": "SmsAutomationDelete",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "Only admins can delete SMS automation rules"
     },
     {
       "name": "ManagersCanModifyStation",
@@ -128318,6 +128373,90 @@
         }
       },
       "message": "Only admins can activate workflows"
+    },
+    {
+      "name": "ManagersCanRunOptimization",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "Only managers can run workforce optimization"
+    },
+    {
+      "name": "AllUsersCanViewPredictions",
+      "action": "execute",
+      "expression": {
+        "kind": "literal",
+        "value": {
+          "kind": "boolean",
+          "value": true
+        }
+      },
+      "message": "All authenticated users can view performance predictions"
+    },
+    {
+      "name": "ManagersCanViewAnalytics",
+      "action": "execute",
+      "expression": {
+        "kind": "binary",
+        "operator": "in",
+        "left": {
+          "kind": "member",
+          "object": {
+            "kind": "identifier",
+            "name": "user"
+          },
+          "property": "role"
+        },
+        "right": {
+          "kind": "array",
+          "elements": [
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "manager"
+              }
+            },
+            {
+              "kind": "literal",
+              "value": {
+                "kind": "string",
+                "value": "admin"
+              }
+            }
+          ]
+        }
+      },
+      "message": "Only managers can view workforce analytics"
     }
   ]
 }

@@ -1,16 +1,49 @@
 import type { Dictionary } from "@repo/internationalization";
 import { MoveDownLeft, MoveUpRight } from "lucide-react";
 
-// Valid locales from languine config - use base locale codes for Intl
-const VALID_LOCALES = ["en", "es", "fr", "de", "pt", "zh", "ja", "ko"] as const;
+// Valid locales from languine config - must match packages/internationalization/languine.json
+const VALID_LOCALES = ["en", "es", "de", "zh", "fr", "pt"] as const;
 
+/**
+ * Safely validates and normalizes a locale string for use with Intl APIs.
+ * Handles edge cases like whitespace, empty strings, and invalid locales.
+ * 
+ * @param locale - The locale string to validate (may be undefined or malformed)
+ * @returns A valid locale string safe for Intl APIs, defaults to "en"
+ */
 function safeLocale(locale: string | undefined): string {
-  if (!locale) return "en";
-  const base = locale.split("-")[0].toLowerCase();
-  if (VALID_LOCALES.includes(base as typeof VALID_LOCALES[number])) {
-    return base; // Return base locale for Intl compatibility
+  // Handle undefined/null/empty
+  if (!locale || typeof locale !== "string") {
+    return "en";
   }
+  
+  // Trim whitespace and get base locale (e.g., "en-US" -> "en")
+  const trimmed = locale.trim();
+  if (!trimmed) {
+    return "en";
+  }
+  
+  const base = trimmed.split("-")[0]?.toLowerCase() || "en";
+  
+  // Validate against known locales
+  if (VALID_LOCALES.includes(base as typeof VALID_LOCALES[number])) {
+    return base;
+  }
+  
   return "en";
+}
+
+/**
+ * Safely formats a number using Intl.NumberFormat with error handling.
+ * Falls back to basic string formatting if Intl fails.
+ */
+function safeFormatNumber(value: number, locale: string): string {
+  try {
+    return new Intl.NumberFormat(locale).format(value);
+  } catch {
+    // Fallback to basic formatting if Intl fails (shouldn't happen with safeLocale, but belt-and-suspenders)
+    return value.toLocaleString();
+  }
 }
 
 interface StatsProps {
@@ -49,9 +82,7 @@ export const Stats = ({ dictionary, locale }: StatsProps) => {
                   )}
                   <h2 className="flex max-w-xl flex-row items-end gap-4 text-left font-regular text-4xl tracking-tighter">
                     {item.type === "currency" && "$"}
-                    {new Intl.NumberFormat(safeLocaleValue).format(
-                      Number.parseFloat(item.metric)
-                    )}
+                    {safeFormatNumber(Number.parseFloat(item.metric), safeLocaleValue)}
                     <span className="text-muted-foreground text-sm tracking-normal">
                       {Number.parseFloat(item.delta) > 0 ? "+" : ""}
                       {item.delta}%

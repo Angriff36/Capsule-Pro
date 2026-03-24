@@ -3,7 +3,7 @@
   "irHash": "",
   "compilerVersion": "0.3.8",
   "schemaVersion": "1.0",
-  "compiledAt": "2026-03-08T17:41:14.355Z",
+  "compiledAt": "2026-03-24T03:27:30.871Z",
   "sources": [
     "admin-chat-participant-rules.manifest",
     "admin-task-rules.manifest",
@@ -13,7 +13,6 @@
     "battle-board-rules.manifest",
     "bulk-order-rules.manifest",
     "catering-order-rules.manifest",
-    "chart-of-account-rules.manifest",
     "client-interaction-rules.manifest",
     "client-rules.manifest",
     "command-board-rules.manifest",
@@ -53,8 +52,9 @@
     "purchase-order-rules.manifest",
     "recipe-rules.manifest",
     "role-policy-rules.manifest",
+    "sample-data-rules.manifest",
     "schedule-rules.manifest",
-    "shipment-rules.manifest",
+    "sms-automation-rules.manifest",
     "station-rules.manifest",
     "time-entry-rules.manifest",
     "time-off-request-rules.manifest",
@@ -63,6 +63,7 @@
     "user-rules.manifest",
     "vendor-catalog-rules.manifest",
     "waste-entry-rules.manifest",
-    "workflow-rules.manifest"
+    "workflow-rules.manifest",
+    "workforce-ai-rules.manifest"
   ]
 }

@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-03-08T17:41:16.243Z",
+  "generatedAt": "2026-03-24T03:27:32.794Z",
   "basePath": "/api",
   "routes": [
     {
@@ -300,36 +300,6 @@
       "source": {
         "kind": "entity-read",
         "entity": "CateringOrder"
-      },
-      "auth": true,
-      "tenant": true
-    },
-    {
-      "id": "ChartOfAccount.get.list",
-      "path": "/api/chartofaccount/list",
-      "method": "GET",
-      "params": [],
-      "source": {
-        "kind": "entity-read",
-        "entity": "ChartOfAccount"
-      },
-      "auth": true,
-      "tenant": true
-    },
-    {
-      "id": "ChartOfAccount.get.detail",
-      "path": "/api/chartofaccount/:id",
-      "method": "GET",
-      "params": [
-        {
-          "name": "id",
-          "type": "string",
-          "location": "path"
-        }
-      ],
-      "source": {
-        "kind": "entity-read",
-        "entity": "ChartOfAccount"
       },
       "auth": true,
       "tenant": true
@@ -1625,6 +1595,36 @@
       "tenant": true
     },
     {
+      "id": "PerformancePrediction.get.list",
+      "path": "/api/performanceprediction/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "PerformancePrediction"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PerformancePrediction.get.detail",
+      "path": "/api/performanceprediction/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "PerformancePrediction"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "PrepComment.get.list",
       "path": "/api/prepcomment/list",
       "method": "GET",
@@ -2105,6 +2105,36 @@
       "tenant": true
     },
     {
+      "id": "SampleData.get.list",
+      "path": "/api/sampledata/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "SampleData"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SampleData.get.detail",
+      "path": "/api/sampledata/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "SampleData"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "Schedule.get.list",
       "path": "/api/schedule/list",
       "method": "GET",
@@ -2165,20 +2195,20 @@
       "tenant": true
     },
     {
-      "id": "Shipment.get.list",
-      "path": "/api/shipment/list",
+      "id": "SmsAutomationRule.get.list",
+      "path": "/api/smsautomationrule/list",
       "method": "GET",
       "params": [],
       "source": {
         "kind": "entity-read",
-        "entity": "Shipment"
+        "entity": "SmsAutomationRule"
       },
       "auth": true,
       "tenant": true
     },
     {
-      "id": "Shipment.get.detail",
-      "path": "/api/shipment/:id",
+      "id": "SmsAutomationRule.get.detail",
+      "path": "/api/smsautomationrule/:id",
       "method": "GET",
       "params": [
         {
@@ -2189,37 +2219,7 @@
       ],
       "source": {
         "kind": "entity-read",
-        "entity": "Shipment"
-      },
-      "auth": true,
-      "tenant": true
-    },
-    {
-      "id": "ShipmentItem.get.list",
-      "path": "/api/shipmentitem/list",
-      "method": "GET",
-      "params": [],
-      "source": {
-        "kind": "entity-read",
-        "entity": "ShipmentItem"
-      },
-      "auth": true,
-      "tenant": true
-    },
-    {
-      "id": "ShipmentItem.get.detail",
-      "path": "/api/shipmentitem/:id",
-      "method": "GET",
-      "params": [
-        {
-          "name": "id",
-          "type": "string",
-          "location": "path"
-        }
-      ],
-      "source": {
-        "kind": "entity-read",
-        "entity": "ShipmentItem"
+        "entity": "SmsAutomationRule"
       },
       "auth": true,
       "tenant": true
@@ -2555,8 +2555,38 @@
       "tenant": true
     },
     {
+      "id": "WorkforceOptimization.get.list",
+      "path": "/api/workforceoptimization/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "WorkforceOptimization"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "WorkforceOptimization.get.detail",
+      "path": "/api/workforceoptimization/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "WorkforceOptimization"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "AdminChatParticipant.archive",
-      "path": "/api/adminchatparticipant/archive",
+      "path": "/api/administrative/chat/participants/commands/archive",
       "method": "POST",
       "params": [],
       "source": {
@@ -2569,7 +2599,7 @@
     },
     {
       "id": "AdminChatParticipant.clearHistory",
-      "path": "/api/adminchatparticipant/clear-history",
+      "path": "/api/administrative/chat/participants/commands/clear-history",
       "method": "POST",
       "params": [],
       "source": {
@@ -2582,7 +2612,7 @@
     },
     {
       "id": "AdminChatParticipant.unarchive",
-      "path": "/api/adminchatparticipant/unarchive",
+      "path": "/api/administrative/chat/participants/commands/unarchive",
       "method": "POST",
       "params": [],
       "source": {
@@ -2595,7 +2625,7 @@
     },
     {
       "id": "AdminTask.cancel",
-      "path": "/api/admintask/cancel",
+      "path": "/api/administrative/tasks/commands/cancel",
       "method": "POST",
       "params": [],
       "source": {
@@ -2608,7 +2638,7 @@
     },
     {
       "id": "AdminTask.complete",
-      "path": "/api/admintask/complete",
+      "path": "/api/administrative/tasks/commands/complete",
       "method": "POST",
       "params": [],
       "source": {
@@ -2621,7 +2651,7 @@
     },
     {
       "id": "AdminTask.create",
-      "path": "/api/admintask/create",
+      "path": "/api/administrative/tasks/commands/create",
       "method": "POST",
       "params": [
         {
@@ -2683,7 +2713,7 @@
     },
     {
       "id": "AdminTask.moveToTodo",
-      "path": "/api/admintask/move-to-todo",
+      "path": "/api/administrative/tasks/commands/move-to-todo",
       "method": "POST",
       "params": [],
       "source": {
@@ -2696,7 +2726,7 @@
     },
     {
       "id": "AdminTask.reopen",
-      "path": "/api/admintask/reopen",
+      "path": "/api/administrative/tasks/commands/reopen",
       "method": "POST",
       "params": [],
       "source": {
@@ -2709,7 +2739,7 @@
     },
     {
       "id": "AdminTask.softDelete",
-      "path": "/api/admintask/soft-delete",
+      "path": "/api/administrative/tasks/commands/soft-delete",
       "method": "POST",
       "params": [],
       "source": {
@@ -2722,7 +2752,7 @@
     },
     {
       "id": "AdminTask.startProgress",
-      "path": "/api/admintask/start-progress",
+      "path": "/api/administrative/tasks/commands/start-progress",
       "method": "POST",
       "params": [],
       "source": {
@@ -2735,7 +2765,7 @@
     },
     {
       "id": "AdminTask.update",
-      "path": "/api/admintask/update",
+      "path": "/api/administrative/tasks/commands/update",
       "method": "POST",
       "params": [
         {
@@ -3011,7 +3041,7 @@
     },
     {
       "id": "ApiKey.create",
-      "path": "/api/apikey/create",
+      "path": "/api/settings/api-keys/commands/create",
       "method": "POST",
       "params": [
         {
@@ -3061,7 +3091,7 @@
     },
     {
       "id": "ApiKey.recordUsage",
-      "path": "/api/apikey/record-usage",
+      "path": "/api/settings/api-keys/commands/record-usage",
       "method": "POST",
       "params": [],
       "source": {
@@ -3074,7 +3104,7 @@
     },
     {
       "id": "ApiKey.revoke",
-      "path": "/api/apikey/revoke",
+      "path": "/api/settings/api-keys/commands/revoke",
       "method": "POST",
       "params": [
         {
@@ -3100,7 +3130,7 @@
     },
     {
       "id": "ApiKey.softDelete",
-      "path": "/api/apikey/soft-delete",
+      "path": "/api/settings/api-keys/commands/soft-delete",
       "method": "POST",
       "params": [
         {
@@ -3126,7 +3156,7 @@
     },
     {
       "id": "ApiKey.update",
-      "path": "/api/apikey/update",
+      "path": "/api/settings/api-keys/commands/update",
       "method": "POST",
       "params": [
         {
@@ -3352,7 +3382,7 @@
     },
     {
       "id": "BudgetAlert.acknowledge",
-      "path": "/api/budgetalert/acknowledge",
+      "path": "/api/events/budget-alerts/commands/acknowledge",
       "method": "POST",
       "params": [
         {
@@ -3372,7 +3402,7 @@
     },
     {
       "id": "BudgetAlert.resolve",
-      "path": "/api/budgetalert/resolve",
+      "path": "/api/events/budget-alerts/commands/resolve",
       "method": "POST",
       "params": [],
       "source": {
@@ -3499,7 +3529,7 @@
     },
     {
       "id": "BulkOrderRule.create",
-      "path": "/api/bulkorderrule/create",
+      "path": "/api/inventory/bulk-order-rules/commands/create",
       "method": "POST",
       "params": [
         {
@@ -3585,7 +3615,7 @@
     },
     {
       "id": "BulkOrderRule.softDelete",
-      "path": "/api/bulkorderrule/soft-delete",
+      "path": "/api/inventory/bulk-order-rules/commands/soft-delete",
       "method": "POST",
       "params": [
         {
@@ -3605,7 +3635,7 @@
     },
     {
       "id": "BulkOrderRule.update",
-      "path": "/api/bulkorderrule/update",
+      "path": "/api/inventory/bulk-order-rules/commands/update",
       "method": "POST",
       "params": [
         {
@@ -3960,113 +3990,6 @@
       "source": {
         "kind": "command",
         "entity": "CateringOrder",
-        "command": "update"
-      },
-      "auth": true,
-      "tenant": true
-    },
-    {
-      "id": "ChartOfAccount.create",
-      "path": "/api/chartofaccount/create",
-      "method": "POST",
-      "params": [
-        {
-          "name": "accountNumber",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "accountName",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "accountType",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "parentId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "description",
-          "type": "string",
-          "location": "body",
-          "required": true
-        }
-      ],
-      "source": {
-        "kind": "command",
-        "entity": "ChartOfAccount",
-        "command": "create"
-      },
-      "auth": true,
-      "tenant": true
-    },
-    {
-      "id": "ChartOfAccount.deactivate",
-      "path": "/api/chartofaccount/deactivate",
-      "method": "POST",
-      "params": [],
-      "source": {
-        "kind": "command",
-        "entity": "ChartOfAccount",
-        "command": "deactivate"
-      },
-      "auth": true,
-      "tenant": true
-    },
-    {
-      "id": "ChartOfAccount.update",
-      "path": "/api/chartofaccount/update",
-      "method": "POST",
-      "params": [
-        {
-          "name": "accountName",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "accountNumber",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "accountType",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "parentId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "description",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "isActive",
-          "type": "boolean",
-          "location": "body",
-          "required": true
-        }
-      ],
-      "source": {
-        "kind": "command",
-        "entity": "ChartOfAccount",
         "command": "update"
       },
       "auth": true,
@@ -6244,7 +6167,7 @@
     },
     {
       "id": "EmailTemplate.create",
-      "path": "/api/emailtemplate/create",
+      "path": "/api/communications/email-templates/commands/create",
       "method": "POST",
       "params": [
         {
@@ -6300,7 +6223,7 @@
     },
     {
       "id": "EmailTemplate.softDelete",
-      "path": "/api/emailtemplate/soft-delete",
+      "path": "/api/communications/email-templates/commands/soft-delete",
       "method": "POST",
       "params": [],
       "source": {
@@ -6313,7 +6236,7 @@
     },
     {
       "id": "EmailTemplate.update",
-      "path": "/api/emailtemplate/update",
+      "path": "/api/communications/email-templates/commands/update",
       "method": "POST",
       "params": [
         {
@@ -6369,7 +6292,7 @@
     },
     {
       "id": "EmailWorkflow.create",
-      "path": "/api/emailworkflow/create",
+      "path": "/api/communications/email-workflows/commands/create",
       "method": "POST",
       "params": [
         {
@@ -6419,7 +6342,7 @@
     },
     {
       "id": "EmailWorkflow.softDelete",
-      "path": "/api/emailworkflow/soft-delete",
+      "path": "/api/communications/email-workflows/commands/soft-delete",
       "method": "POST",
       "params": [],
       "source": {
@@ -6432,7 +6355,7 @@
     },
     {
       "id": "EmailWorkflow.update",
-      "path": "/api/emailworkflow/update",
+      "path": "/api/communications/email-workflows/commands/update",
       "method": "POST",
       "params": [
         {
@@ -6476,7 +6399,7 @@
     },
     {
       "id": "EmployeeAvailability.create",
-      "path": "/api/employeeavailability/create",
+      "path": "/api/staff/availability/commands/create",
       "method": "POST",
       "params": [
         {
@@ -6532,7 +6455,7 @@
     },
     {
       "id": "EmployeeAvailability.softDelete",
-      "path": "/api/employeeavailability/soft-delete",
+      "path": "/api/staff/availability/commands/soft-delete",
       "method": "POST",
       "params": [],
       "source": {
@@ -6545,7 +6468,7 @@
     },
     {
       "id": "EmployeeAvailability.update",
-      "path": "/api/employeeavailability/update",
+      "path": "/api/staff/availability/commands/update",
       "method": "POST",
       "params": [
         {
@@ -6595,7 +6518,7 @@
     },
     {
       "id": "EmployeeCertification.create",
-      "path": "/api/employeecertification/create",
+      "path": "/api/staff/certifications/commands/create",
       "method": "POST",
       "params": [
         {
@@ -6645,7 +6568,7 @@
     },
     {
       "id": "EmployeeCertification.softDelete",
-      "path": "/api/employeecertification/soft-delete",
+      "path": "/api/staff/certifications/commands/soft-delete",
       "method": "POST",
       "params": [],
       "source": {
@@ -6658,7 +6581,7 @@
     },
     {
       "id": "EmployeeCertification.update",
-      "path": "/api/employeecertification/update",
+      "path": "/api/staff/certifications/commands/update",
       "method": "POST",
       "params": [
         {
@@ -6702,7 +6625,7 @@
     },
     {
       "id": "EmployeeDeduction.create",
-      "path": "/api/employeededuction/create",
+      "path": "/api/payroll/deductions/commands/create",
       "method": "POST",
       "params": [
         {
@@ -7428,7 +7351,7 @@
     },
     {
       "id": "EventDish.create",
-      "path": "/api/eventdish/create",
+      "path": "/api/events/event-dishes/commands/create",
       "method": "POST",
       "params": [
         {
@@ -7478,7 +7401,7 @@
     },
     {
       "id": "EventDish.remove",
-      "path": "/api/eventdish/remove",
+      "path": "/api/events/event-dishes/commands/remove",
       "method": "POST",
       "params": [
         {
@@ -7696,7 +7619,7 @@
     },
     {
       "id": "EventImportWorkflow.cancel",
-      "path": "/api/eventimportworkflow/cancel",
+      "path": "/api/events/import-workflows/commands/cancel",
       "method": "POST",
       "params": [
         {
@@ -7716,7 +7639,7 @@
     },
     {
       "id": "EventImportWorkflow.completeActivating",
-      "path": "/api/eventimportworkflow/complete-activating",
+      "path": "/api/events/import-workflows/commands/complete-activating",
       "method": "POST",
       "params": [
         {
@@ -7736,7 +7659,7 @@
     },
     {
       "id": "EventImportWorkflow.completeExtraction",
-      "path": "/api/eventimportworkflow/complete-extraction",
+      "path": "/api/events/import-workflows/commands/complete-extraction",
       "method": "POST",
       "params": [
         {
@@ -7756,7 +7679,7 @@
     },
     {
       "id": "EventImportWorkflow.completeParsing",
-      "path": "/api/eventimportworkflow/complete-parsing",
+      "path": "/api/events/import-workflows/commands/complete-parsing",
       "method": "POST",
       "params": [
         {
@@ -7782,7 +7705,7 @@
     },
     {
       "id": "EventImportWorkflow.completeProposing",
-      "path": "/api/eventimportworkflow/complete-proposing",
+      "path": "/api/events/import-workflows/commands/complete-proposing",
       "method": "POST",
       "params": [
         {
@@ -7802,7 +7725,7 @@
     },
     {
       "id": "EventImportWorkflow.completeReserving",
-      "path": "/api/eventimportworkflow/complete-reserving",
+      "path": "/api/events/import-workflows/commands/complete-reserving",
       "method": "POST",
       "params": [
         {
@@ -7822,7 +7745,7 @@
     },
     {
       "id": "EventImportWorkflow.completeValidation",
-      "path": "/api/eventimportworkflow/complete-validation",
+      "path": "/api/events/import-workflows/commands/complete-validation",
       "method": "POST",
       "params": [
         {
@@ -7848,7 +7771,7 @@
     },
     {
       "id": "EventImportWorkflow.create",
-      "path": "/api/eventimportworkflow/create",
+      "path": "/api/events/import-workflows/commands/create",
       "method": "POST",
       "params": [
         {
@@ -7874,7 +7797,7 @@
     },
     {
       "id": "EventImportWorkflow.fail",
-      "path": "/api/eventimportworkflow/fail",
+      "path": "/api/events/import-workflows/commands/fail",
       "method": "POST",
       "params": [
         {
@@ -7900,7 +7823,7 @@
     },
     {
       "id": "EventImportWorkflow.pause",
-      "path": "/api/eventimportworkflow/pause",
+      "path": "/api/events/import-workflows/commands/pause",
       "method": "POST",
       "params": [
         {
@@ -7920,7 +7843,7 @@
     },
     {
       "id": "EventImportWorkflow.resume",
-      "path": "/api/eventimportworkflow/resume",
+      "path": "/api/events/import-workflows/commands/resume",
       "method": "POST",
       "params": [],
       "source": {
@@ -7933,7 +7856,7 @@
     },
     {
       "id": "EventImportWorkflow.retry",
-      "path": "/api/eventimportworkflow/retry",
+      "path": "/api/events/import-workflows/commands/retry",
       "method": "POST",
       "params": [],
       "source": {
@@ -7946,7 +7869,7 @@
     },
     {
       "id": "EventImportWorkflow.startActivating",
-      "path": "/api/eventimportworkflow/start-activating",
+      "path": "/api/events/import-workflows/commands/start-activating",
       "method": "POST",
       "params": [],
       "source": {
@@ -7959,7 +7882,7 @@
     },
     {
       "id": "EventImportWorkflow.startExtracting",
-      "path": "/api/eventimportworkflow/start-extracting",
+      "path": "/api/events/import-workflows/commands/start-extracting",
       "method": "POST",
       "params": [],
       "source": {
@@ -7972,7 +7895,7 @@
     },
     {
       "id": "EventImportWorkflow.startParsing",
-      "path": "/api/eventimportworkflow/start-parsing",
+      "path": "/api/events/import-workflows/commands/start-parsing",
       "method": "POST",
       "params": [],
       "source": {
@@ -7985,7 +7908,7 @@
     },
     {
       "id": "EventImportWorkflow.startProposing",
-      "path": "/api/eventimportworkflow/start-proposing",
+      "path": "/api/events/import-workflows/commands/start-proposing",
       "method": "POST",
       "params": [],
       "source": {
@@ -7998,7 +7921,7 @@
     },
     {
       "id": "EventImportWorkflow.startReserving",
-      "path": "/api/eventimportworkflow/start-reserving",
+      "path": "/api/events/import-workflows/commands/start-reserving",
       "method": "POST",
       "params": [],
       "source": {
@@ -8011,7 +7934,7 @@
     },
     {
       "id": "EventImportWorkflow.startValidating",
-      "path": "/api/eventimportworkflow/start-validating",
+      "path": "/api/events/import-workflows/commands/start-validating",
       "method": "POST",
       "params": [],
       "source": {
@@ -8254,7 +8177,7 @@
     },
     {
       "id": "EventStaff.assign",
-      "path": "/api/eventstaff/assign",
+      "path": "/api/events/staff/commands/assign",
       "method": "POST",
       "params": [
         {
@@ -8304,7 +8227,7 @@
     },
     {
       "id": "EventStaff.unassign",
-      "path": "/api/eventstaff/unassign",
+      "path": "/api/events/staff/commands/unassign",
       "method": "POST",
       "params": [
         {
@@ -9397,7 +9320,7 @@
     },
     {
       "id": "LaborBudget.create",
-      "path": "/api/laborbudget/create",
+      "path": "/api/payroll/labor-budgets/commands/create",
       "method": "POST",
       "params": [
         {
@@ -9453,7 +9376,7 @@
     },
     {
       "id": "LaborBudget.softDelete",
-      "path": "/api/laborbudget/soft-delete",
+      "path": "/api/payroll/labor-budgets/commands/soft-delete",
       "method": "POST",
       "params": [],
       "source": {
@@ -9466,7 +9389,7 @@
     },
     {
       "id": "LaborBudget.update",
-      "path": "/api/laborbudget/update",
+      "path": "/api/payroll/labor-budgets/commands/update",
       "method": "POST",
       "params": [
         {
@@ -10174,7 +10097,7 @@
     },
     {
       "id": "PayrollApprovalHistory.create",
-      "path": "/api/payrollapprovalhistory/create",
+      "path": "/api/payroll/approval-history/commands/create",
       "method": "POST",
       "params": [
         {
@@ -10224,7 +10147,7 @@
     },
     {
       "id": "PayrollPeriod.create",
-      "path": "/api/payrollperiod/create",
+      "path": "/api/payroll/periods/commands/create",
       "method": "POST",
       "params": [
         {
@@ -10250,7 +10173,7 @@
     },
     {
       "id": "PayrollRun.updateStatus",
-      "path": "/api/payrollrun/update-status",
+      "path": "/api/payroll/runs/commands/update-status",
       "method": "POST",
       "params": [
         {
@@ -10276,6 +10199,56 @@
         "kind": "command",
         "entity": "PayrollRun",
         "command": "updateStatus"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PerformancePrediction.create",
+      "path": "/api/performanceprediction/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "employeeId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "predictionType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "predictionHorizon",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "predictionScore",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "confidence",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "factors",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PerformancePrediction",
+        "command": "create"
       },
       "auth": true,
       "tenant": true
@@ -11369,7 +11342,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.approvePlan",
-      "path": "/api/preptaskplanworkflow/approve-plan",
+      "path": "/api/kitchen/prep-task-plan-workflows/commands/approve-plan",
       "method": "POST",
       "params": [],
       "source": {
@@ -11382,7 +11355,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.cancel",
-      "path": "/api/preptaskplanworkflow/cancel",
+      "path": "/api/kitchen/prep-task-plan-workflows/commands/cancel",
       "method": "POST",
       "params": [
         {
@@ -11402,7 +11375,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.completeGeneration",
-      "path": "/api/preptaskplanworkflow/complete-generation",
+      "path": "/api/kitchen/prep-task-plan-workflows/commands/complete-generation",
       "method": "POST",
       "params": [
         {
@@ -11434,7 +11407,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.completeInstantiation",
-      "path": "/api/preptaskplanworkflow/complete-instantiation",
+      "path": "/api/kitchen/prep-task-plan-workflows/commands/complete-instantiation",
       "method": "POST",
       "params": [
         {
@@ -11466,7 +11439,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.completeReview",
-      "path": "/api/preptaskplanworkflow/complete-review",
+      "path": "/api/kitchen/prep-task-plan-workflows/commands/complete-review",
       "method": "POST",
       "params": [
         {
@@ -11510,7 +11483,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.completeScheduling",
-      "path": "/api/preptaskplanworkflow/complete-scheduling",
+      "path": "/api/kitchen/prep-task-plan-workflows/commands/complete-scheduling",
       "method": "POST",
       "params": [
         {
@@ -11530,7 +11503,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.create",
-      "path": "/api/preptaskplanworkflow/create",
+      "path": "/api/kitchen/prep-task-plan-workflows/commands/create",
       "method": "POST",
       "params": [
         {
@@ -11562,7 +11535,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.fail",
-      "path": "/api/preptaskplanworkflow/fail",
+      "path": "/api/kitchen/prep-task-plan-workflows/commands/fail",
       "method": "POST",
       "params": [
         {
@@ -11588,7 +11561,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.quickApprove",
-      "path": "/api/preptaskplanworkflow/quick-approve",
+      "path": "/api/kitchen/prep-task-plan-workflows/commands/quick-approve",
       "method": "POST",
       "params": [
         {
@@ -11608,7 +11581,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.rejectPlan",
-      "path": "/api/preptaskplanworkflow/reject-plan",
+      "path": "/api/kitchen/prep-task-plan-workflows/commands/reject-plan",
       "method": "POST",
       "params": [
         {
@@ -11628,7 +11601,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.retry",
-      "path": "/api/preptaskplanworkflow/retry",
+      "path": "/api/kitchen/prep-task-plan-workflows/commands/retry",
       "method": "POST",
       "params": [],
       "source": {
@@ -11641,7 +11614,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.startApproving",
-      "path": "/api/preptaskplanworkflow/start-approving",
+      "path": "/api/kitchen/prep-task-plan-workflows/commands/start-approving",
       "method": "POST",
       "params": [
         {
@@ -11661,7 +11634,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.startGenerating",
-      "path": "/api/preptaskplanworkflow/start-generating",
+      "path": "/api/kitchen/prep-task-plan-workflows/commands/start-generating",
       "method": "POST",
       "params": [],
       "source": {
@@ -11674,7 +11647,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.startInstantiating",
-      "path": "/api/preptaskplanworkflow/start-instantiating",
+      "path": "/api/kitchen/prep-task-plan-workflows/commands/start-instantiating",
       "method": "POST",
       "params": [],
       "source": {
@@ -11687,7 +11660,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.startReviewing",
-      "path": "/api/preptaskplanworkflow/start-reviewing",
+      "path": "/api/kitchen/prep-task-plan-workflows/commands/start-reviewing",
       "method": "POST",
       "params": [
         {
@@ -11707,7 +11680,7 @@
     },
     {
       "id": "PrepTaskPlanWorkflow.startScheduling",
-      "path": "/api/preptaskplanworkflow/start-scheduling",
+      "path": "/api/kitchen/prep-task-plan-workflows/commands/start-scheduling",
       "method": "POST",
       "params": [],
       "source": {
@@ -11720,7 +11693,7 @@
     },
     {
       "id": "PricingTier.create",
-      "path": "/api/pricingtier/create",
+      "path": "/api/inventory/pricing-tiers/commands/create",
       "method": "POST",
       "params": [
         {
@@ -11782,7 +11755,7 @@
     },
     {
       "id": "PricingTier.softDelete",
-      "path": "/api/pricingtier/soft-delete",
+      "path": "/api/inventory/pricing-tiers/commands/soft-delete",
       "method": "POST",
       "params": [
         {
@@ -11802,7 +11775,7 @@
     },
     {
       "id": "PricingTier.update",
-      "path": "/api/pricingtier/update",
+      "path": "/api/inventory/pricing-tiers/commands/update",
       "method": "POST",
       "params": [
         {
@@ -12849,7 +12822,7 @@
     },
     {
       "id": "RecipeStep.create",
-      "path": "/api/recipestep/create",
+      "path": "/api/kitchen/recipe-steps/commands/create",
       "method": "POST",
       "params": [
         {
@@ -12923,7 +12896,7 @@
     },
     {
       "id": "RecipeStep.remove",
-      "path": "/api/recipestep/remove",
+      "path": "/api/kitchen/recipe-steps/commands/remove",
       "method": "POST",
       "params": [
         {
@@ -12943,7 +12916,7 @@
     },
     {
       "id": "RecipeStep.updateInstruction",
-      "path": "/api/recipestep/update-instruction",
+      "path": "/api/kitchen/recipe-steps/commands/update-instruction",
       "method": "POST",
       "params": [
         {
@@ -13089,7 +13062,7 @@
     },
     {
       "id": "RolePolicy.grant",
-      "path": "/api/rolepolicy/grant",
+      "path": "/api/rolepolicy/policies/commands/grant",
       "method": "POST",
       "params": [
         {
@@ -13115,7 +13088,7 @@
     },
     {
       "id": "RolePolicy.revoke",
-      "path": "/api/rolepolicy/revoke",
+      "path": "/api/rolepolicy/policies/commands/revoke",
       "method": "POST",
       "params": [
         {
@@ -13141,7 +13114,7 @@
     },
     {
       "id": "RolePolicy.update",
-      "path": "/api/rolepolicy/update",
+      "path": "/api/rolepolicy/policies/commands/update",
       "method": "POST",
       "params": [
         {
@@ -13173,6 +13146,72 @@
         "kind": "command",
         "entity": "RolePolicy",
         "command": "update"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SampleData.clear",
+      "path": "/api/sampledata/clear",
+      "method": "POST",
+      "params": [
+        {
+          "name": "requestedBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "SampleData",
+        "command": "clear"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SampleData.reseed",
+      "path": "/api/sampledata/reseed",
+      "method": "POST",
+      "params": [
+        {
+          "name": "requestedBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "SampleData",
+        "command": "reseed"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SampleData.seed",
+      "path": "/api/sampledata/seed",
+      "method": "POST",
+      "params": [
+        {
+          "name": "requestedBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "SampleData",
+        "command": "seed"
       },
       "auth": true,
       "tenant": true
@@ -13408,138 +13447,173 @@
       "tenant": true
     },
     {
-      "id": "Shipment.cancel",
-      "path": "/api/shipments/shipment/commands/cancel",
+      "id": "SmsAutomationRule.activate",
+      "path": "/api/smsautomationrule/activate",
       "method": "POST",
-      "params": [
-        {
-          "name": "userId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "reason",
-          "type": "string",
-          "location": "body",
-          "required": true
-        }
-      ],
+      "params": [],
       "source": {
         "kind": "command",
-        "entity": "Shipment",
-        "command": "cancel"
+        "entity": "SmsAutomationRule",
+        "command": "activate"
       },
       "auth": true,
       "tenant": true
     },
     {
-      "id": "Shipment.create",
-      "path": "/api/shipments/shipment/commands/create",
+      "id": "SmsAutomationRule.create",
+      "path": "/api/smsautomationrule/create",
       "method": "POST",
       "params": [
         {
-          "name": "shipmentNumber",
+          "name": "name",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "supplierId",
+          "name": "description",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "locationId",
+          "name": "triggerType",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "eventId",
+          "name": "triggerConfig",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "scheduledDate",
+          "name": "templateId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "customMessage",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "recipientType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "recipientConfig",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "priority",
           "type": "number",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "carrier",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "shippingMethod",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "notes",
-          "type": "string",
           "location": "body",
           "required": true
         }
       ],
       "source": {
         "kind": "command",
-        "entity": "Shipment",
+        "entity": "SmsAutomationRule",
         "command": "create"
       },
       "auth": true,
       "tenant": true
     },
     {
-      "id": "Shipment.markDelivered",
-      "path": "/api/shipments/shipment/commands/mark-delivered",
+      "id": "SmsAutomationRule.deactivate",
+      "path": "/api/smsautomationrule/deactivate",
       "method": "POST",
-      "params": [
-        {
-          "name": "userId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "receivedBy",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "signature",
-          "type": "string",
-          "location": "body",
-          "required": true
-        }
-      ],
+      "params": [],
       "source": {
         "kind": "command",
-        "entity": "Shipment",
-        "command": "markDelivered"
+        "entity": "SmsAutomationRule",
+        "command": "deactivate"
       },
       "auth": true,
       "tenant": true
     },
     {
-      "id": "Shipment.schedule",
-      "path": "/api/shipments/shipment/commands/schedule",
+      "id": "SmsAutomationRule.softDelete",
+      "path": "/api/smsautomationrule/soft-delete",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "SmsAutomationRule",
+        "command": "softDelete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "SmsAutomationRule.update",
+      "path": "/api/smsautomationrule/update",
       "method": "POST",
       "params": [
         {
-          "name": "userId",
+          "name": "name",
           "type": "string",
           "location": "body",
           "required": true
         },
         {
-          "name": "scheduledDate",
+          "name": "description",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "triggerConfig",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "templateId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "customMessage",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "recipientType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "recipientConfig",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "priority",
           "type": "number",
           "location": "body",
           "required": true
@@ -13547,204 +13621,8 @@
       ],
       "source": {
         "kind": "command",
-        "entity": "Shipment",
-        "command": "schedule"
-      },
-      "auth": true,
-      "tenant": true
-    },
-    {
-      "id": "Shipment.ship",
-      "path": "/api/shipments/shipment/commands/ship",
-      "method": "POST",
-      "params": [
-        {
-          "name": "userId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "trackingNumber",
-          "type": "string",
-          "location": "body",
-          "required": true
-        }
-      ],
-      "source": {
-        "kind": "command",
-        "entity": "Shipment",
-        "command": "ship"
-      },
-      "auth": true,
-      "tenant": true
-    },
-    {
-      "id": "Shipment.startPreparing",
-      "path": "/api/shipments/shipment/commands/start-preparing",
-      "method": "POST",
-      "params": [
-        {
-          "name": "userId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        }
-      ],
-      "source": {
-        "kind": "command",
-        "entity": "Shipment",
-        "command": "startPreparing"
-      },
-      "auth": true,
-      "tenant": true
-    },
-    {
-      "id": "Shipment.update",
-      "path": "/api/shipments/shipment/commands/update",
-      "method": "POST",
-      "params": [
-        {
-          "name": "trackingNumber",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "carrier",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "shippingMethod",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "estimatedDeliveryDate",
-          "type": "number",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "shippingCost",
-          "type": "number",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "notes",
-          "type": "string",
-          "location": "body",
-          "required": true
-        }
-      ],
-      "source": {
-        "kind": "command",
-        "entity": "Shipment",
+        "entity": "SmsAutomationRule",
         "command": "update"
-      },
-      "auth": true,
-      "tenant": true
-    },
-    {
-      "id": "ShipmentItem.create",
-      "path": "/api/shipments/shipment-items/commands/create",
-      "method": "POST",
-      "params": [
-        {
-          "name": "shipmentId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "itemId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "quantityShipped",
-          "type": "number",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "unitId",
-          "type": "number",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "unitCost",
-          "type": "number",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "lotNumber",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "expirationDate",
-          "type": "number",
-          "location": "body",
-          "required": true
-        }
-      ],
-      "source": {
-        "kind": "command",
-        "entity": "ShipmentItem",
-        "command": "create"
-      },
-      "auth": true,
-      "tenant": true
-    },
-    {
-      "id": "ShipmentItem.updateReceived",
-      "path": "/api/shipments/shipment-items/commands/update-received",
-      "method": "POST",
-      "params": [
-        {
-          "name": "quantityReceived",
-          "type": "number",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "quantityDamaged",
-          "type": "number",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "condition",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "conditionNotes",
-          "type": "string",
-          "location": "body",
-          "required": true
-        },
-        {
-          "name": "userId",
-          "type": "string",
-          "location": "body",
-          "required": true
-        }
-      ],
-      "source": {
-        "kind": "command",
-        "entity": "ShipmentItem",
-        "command": "updateReceived"
       },
       "auth": true,
       "tenant": true
@@ -14193,7 +14071,7 @@
     },
     {
       "id": "TimeOffRequest.approve",
-      "path": "/api/timeoffrequest/approve",
+      "path": "/api/timecards/time-off-requests/commands/approve",
       "method": "POST",
       "params": [
         {
@@ -14213,7 +14091,7 @@
     },
     {
       "id": "TimeOffRequest.cancel",
-      "path": "/api/timeoffrequest/cancel",
+      "path": "/api/timecards/time-off-requests/commands/cancel",
       "method": "POST",
       "params": [],
       "source": {
@@ -14226,7 +14104,7 @@
     },
     {
       "id": "TimeOffRequest.create",
-      "path": "/api/timeoffrequest/create",
+      "path": "/api/timecards/time-off-requests/commands/create",
       "method": "POST",
       "params": [
         {
@@ -14270,7 +14148,7 @@
     },
     {
       "id": "TimeOffRequest.reject",
-      "path": "/api/timeoffrequest/reject",
+      "path": "/api/timecards/time-off-requests/commands/reject",
       "method": "POST",
       "params": [
         {
@@ -14296,7 +14174,7 @@
     },
     {
       "id": "TimeOffRequest.softDelete",
-      "path": "/api/timeoffrequest/soft-delete",
+      "path": "/api/timecards/time-off-requests/commands/soft-delete",
       "method": "POST",
       "params": [],
       "source": {
@@ -14309,7 +14187,7 @@
     },
     {
       "id": "TrainingAssignment.create",
-      "path": "/api/trainingassignment/create",
+      "path": "/api/training/assignments/commands/create",
       "method": "POST",
       "params": [
         {
@@ -14353,7 +14231,7 @@
     },
     {
       "id": "TrainingAssignment.softDelete",
-      "path": "/api/trainingassignment/soft-delete",
+      "path": "/api/training/assignments/commands/soft-delete",
       "method": "POST",
       "params": [],
       "source": {
@@ -14366,7 +14244,7 @@
     },
     {
       "id": "TrainingModule.create",
-      "path": "/api/trainingmodule/create",
+      "path": "/api/training/modules/commands/create",
       "method": "POST",
       "params": [
         {
@@ -14428,7 +14306,7 @@
     },
     {
       "id": "TrainingModule.softDelete",
-      "path": "/api/trainingmodule/soft-delete",
+      "path": "/api/training/modules/commands/soft-delete",
       "method": "POST",
       "params": [],
       "source": {
@@ -14441,7 +14319,7 @@
     },
     {
       "id": "TrainingModule.update",
-      "path": "/api/trainingmodule/update",
+      "path": "/api/training/modules/commands/update",
       "method": "POST",
       "params": [
         {
@@ -14855,7 +14733,7 @@
     },
     {
       "id": "VendorCatalog.create",
-      "path": "/api/vendorcatalog/create",
+      "path": "/api/inventory/vendor-catalogs/commands/create",
       "method": "POST",
       "params": [
         {
@@ -14977,7 +14855,7 @@
     },
     {
       "id": "VendorCatalog.softDelete",
-      "path": "/api/vendorcatalog/soft-delete",
+      "path": "/api/inventory/vendor-catalogs/commands/soft-delete",
       "method": "POST",
       "params": [
         {
@@ -14997,7 +14875,7 @@
     },
     {
       "id": "VendorCatalog.update",
-      "path": "/api/vendorcatalog/update",
+      "path": "/api/inventory/vendor-catalogs/commands/update",
       "method": "POST",
       "params": [
         {
@@ -15385,6 +15263,85 @@
         "kind": "command",
         "entity": "Workflow",
         "command": "update"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "WorkforceOptimization.complete",
+      "path": "/api/workforceoptimization/complete",
+      "method": "POST",
+      "params": [
+        {
+          "name": "results",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "WorkforceOptimization",
+        "command": "complete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "WorkforceOptimization.create",
+      "path": "/api/workforceoptimization/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "locationId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "optimizationType",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "WorkforceOptimization",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "WorkforceOptimization.fail",
+      "path": "/api/workforceoptimization/fail",
+      "method": "POST",
+      "params": [
+        {
+          "name": "error",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "WorkforceOptimization",
+        "command": "fail"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "WorkforceOptimization.start",
+      "path": "/api/workforceoptimization/start",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "WorkforceOptimization",
+        "command": "start"
       },
       "auth": true,
       "tenant": true

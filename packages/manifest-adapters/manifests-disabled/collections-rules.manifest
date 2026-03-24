@@ -101,11 +101,11 @@ entity CollectionCase {
   property closedAt: timestamp
 
   # Computed properties
-  computed collectionPercentage: number = (collectedAmount / originalAmount) * 100 if originalAmount > 0 else 0
-  computed isHighRisk: boolean = daysOverdue > 90 || status == LEGAL
-  computed isCritical: boolean = daysOverdue > 120 || (isEscalatedToLegal && status != RESOLVED)
-  computed needsAttention: boolean = status == ACTIVE && daysOverdue > 30 && collectionPercentage < 50
-  computed estimatedLoss: decimal = outstandingAmount if status == WRITTEN_OFF else 0
+  computed collectionPercentage: number = self.originalAmount > 0 ? (self.collectedAmount / self.originalAmount) * 100 : 0
+  computed isHighRisk: boolean = self.daysOverdue > 90 or self.status == LEGAL
+  computed isCritical: boolean = self.daysOverdue > 120 or (self.isEscalatedToLegal and self.status != RESOLVED)
+  computed needsAttention: boolean = self.status == ACTIVE and self.daysOverdue > 30 and self.collectionPercentage < 50
+  computed estimatedLoss: decimal = self.status == WRITTEN_OFF ? self.outstandingAmount : 0
 
   # Constraints
   constraint amount_positive: originalAmount > 0 "Original amount must be positive"
@@ -292,7 +292,7 @@ entity CollectionAction {
 
   # Computed properties
   computed isCompleted: boolean = status == COMPLETED
-  computed isOverdue: boolean = status == PENDING && scheduledFor < now()
+  computed isOverdue: boolean = self.status == PENDING and self.scheduledFor < now()
   computed daysUntilScheduled: number = days_between(now(), scheduledFor)
   computed hasPromiseToPay: boolean = promiseAmount > 0
 
@@ -374,14 +374,14 @@ entity CollectionPaymentPlan {
   # Computed properties
   computed isCompleted: boolean = status == COMPLETED
   computed isDefaulted: boolean = status == DEFAULTED
-  computed completionPercentage: number = (completedInstallments / installmentCount) * 100 if installmentCount > 0 else 0
-  computed remainingAmount: decimal = (installmentCount - completedInstallments) * installmentAmount
-  computed paidAmount: decimal = completedInstallments * installmentAmount
+  computed completionPercentage: number = self.installmentCount > 0 ? (self.completedInstallments / self.installmentCount) * 100 : 0
+  computed remainingAmount: decimal = (self.installmentCount - self.completedInstallments) * self.installmentAmount
+  computed paidAmount: decimal = self.completedInstallments * self.installmentAmount
 
   # Constraints
-  constraint amount_positive: totalAmount > 0 && installmentAmount > 0 "Amounts must be positive"
-  constraint installments_valid: installmentCount > 0 "Must have at least one installment"
-  constraint completed_valid: completedInstallments <= installmentCount "Completed cannot exceed total"
+  constraint amount_positive: self.totalAmount > 0 and self.installmentAmount > 0 "Amounts must be positive"
+  constraint installments_valid: self.installmentCount > 0 "Must have at least one installment"
+  constraint completed_valid: self.completedInstallments <= self.installmentCount "Completed cannot exceed total"
 
   # Commands
   command recordInstallment(amount: decimal, paymentDate: timestamp) {
