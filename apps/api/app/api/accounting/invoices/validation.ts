@@ -245,9 +245,9 @@ export function generateInvoiceNumber(_tenantId: string): string {
 }
 
 export function validateInvoiceAccess(
-  invoice: { tenantId: string; status: InvoiceStatus },
+  invoice: { tenantId: string; status: string },
   tenantId: string,
-  requiredStatus?: InvoiceStatus[]
+  requiredStatus?: string[]
 ): void {
   invariant(
     invoice.tenantId === tenantId,
@@ -263,7 +263,7 @@ export function validateInvoiceAccess(
 }
 
 export function validateInvoiceBusinessRules(
-  invoice: { status: InvoiceStatus; amountPaid: number; amountDue: number },
+  invoice: { status: string; amountPaid: number; amountDue: number },
   operation: "send" | "void" | "writeOff" | "applyPayment"
 ): void {
   switch (operation) {

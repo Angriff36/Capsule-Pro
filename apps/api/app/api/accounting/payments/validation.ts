@@ -189,9 +189,9 @@ export function generatePaymentNumber(_tenantId: string): string {
 }
 
 export function validatePaymentAccess(
-  payment: { tenantId: string; status: PaymentStatus },
+  payment: { tenantId: string; status: string },
   tenantId: string,
-  requiredStatus?: PaymentStatus[]
+  requiredStatus?: string[]
 ): void {
   invariant(
     payment.tenantId === tenantId,
@@ -207,7 +207,7 @@ export function validatePaymentAccess(
 }
 
 export function validatePaymentBusinessRules(
-  payment: { status: PaymentStatus; amount: number; refundedAt: Date | null },
+  payment: { status: string; refundedAt: Date | null },
   operation: "refund" | "chargeback" | "process"
 ): void {
   switch (operation) {

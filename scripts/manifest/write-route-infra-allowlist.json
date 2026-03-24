@@ -219,8 +219,13 @@
     },
     {
       "prefix": "/api/accounting/payments",
-      "methods": ["POST"],
+      "methods": ["POST", "PUT"],
       "comment": "Legacy infrastructure: Direct DB access for payments (needs manifest migration)"
+    },
+    {
+      "prefix": "/api/accounting/invoices",
+      "methods": ["POST", "PUT", "DELETE"],
+      "comment": "Legacy infrastructure: Direct DB access for invoices (needs manifest migration)"
     },
     {
       "pattern": "^/api/accounting/accounts/[^/]+$",

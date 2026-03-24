@@ -2,6 +2,13 @@
  * Single Payment API Routes
  *
  * Handles operations on individual payments
+ *
+ * NOTE: The Prisma Payment model has been simplified to:
+ * - tenantId, id, amount, currency, status, methodType, invoiceId, eventId, clientId
+ * - gatewayTransactionId, gatewayPaymentMethodId, processor
+ * - processedAt, completedAt, refundedAt
+ * - createdAt, updatedAt, deletedAt
+ * - No relations (invoice, event, client) - only IDs
  */
 
 import { database } from "@repo/database";
@@ -9,7 +16,6 @@ import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
 import {
   type PaymentResponse,
-  validateFraudStatusUpdate,
   validatePaymentAccess,
   validatePaymentBusinessRules,
   validateRefundRequest,
@@ -34,38 +40,16 @@ export async function GET(request: NextRequest, context: RouteContext) {
         id,
         deletedAt: null,
       },
-      include: {
-        invoice: {
-          select: {
-            id: true,
-            invoiceNumber: true,
-            total: true,
-          },
-        },
-        event: {
-          select: {
-            id: true,
-            title: true,
-            eventDate: true,
-          },
-        },
-        client: {
-          select: {
-            id: true,
-            company_name: true,
-            first_name: true,
-            last_name: true,
-            email: true,
-          },
-        },
-      },
     });
 
     if (!payment) {
       return NextResponse.json({ error: "Payment not found" }, { status: 404 });
     }
 
-    return NextResponse.json<PaymentResponse>(payment);
+    return NextResponse.json<PaymentResponse>({
+      ...payment,
+      amount: payment.amount.toString(),
+    });
   } catch (error) {
     console.error("Error fetching payment:", error);
     return NextResponse.json(
@@ -124,42 +108,50 @@ export async function PUT(request: NextRequest, context: RouteContext) {
         processedAt: new Date(),
         completedAt: isCompleted ? new Date() : null,
         gatewayTransactionId: gatewayResponse.transactionId,
-        processorResponseCode: gatewayResponse.code,
-        processorResponseMessage: gatewayResponse.message,
       },
     });
 
     // If payment completed, update invoice
-    if (isCompleted) {
-      await database.invoice.update({
+    if (isCompleted && payment.invoiceId) {
+      const invoice = await database.invoice.findFirst({
         where: {
-          tenantId_id: {
-            tenantId,
-            id: payment.invoiceId,
-          },
-        },
-        data: {
-          amountPaid: {
-            increment: payment.amount,
-          },
-          amountDue: {
-            decrement: payment.amount,
-          },
-          ...(Math.abs((payment.invoiceId ? 0 : 0) - payment.amount) < 0.01
-            ? {
-                status: "PAID",
-                paidAt: new Date(),
-              }
-            : {
-                status: "PARTIALLY_PAID",
-              }),
+          tenantId,
+          id: payment.invoiceId,
+          deletedAt: null,
         },
       });
+
+      if (invoice) {
+        const paymentAmount = Number(payment.amount);
+        const currentAmountPaid = Number(invoice.amountPaid);
+        const currentAmountDue = Number(invoice.amountDue);
+
+        await database.invoice.update({
+          where: {
+            tenantId_id: {
+              tenantId,
+              id: payment.invoiceId,
+            },
+          },
+          data: {
+            amountPaid: currentAmountPaid + paymentAmount,
+            amountDue: currentAmountDue - paymentAmount,
+            status:
+              Math.abs(currentAmountDue - paymentAmount) < 0.01
+                ? "PAID"
+                : "PARTIALLY_PAID",
+            ...(Math.abs(currentAmountDue - paymentAmount) < 0.01
+              ? { paidAt: new Date() }
+              : {}),
+          },
+        });
+      }
     }
 
-    return NextResponse.json<PaymentResponse>(
-      updatedPayment as PaymentResponse
-    );
+    return NextResponse.json<PaymentResponse>({
+      ...updatedPayment,
+      amount: updatedPayment.amount.toString(),
+    });
   } catch (error) {
     console.error("Error processing payment:", error);
     return NextResponse.json(
@@ -196,7 +188,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
     validatePaymentAccess(payment, tenantId);
     validatePaymentBusinessRules(payment, "refund");
 
-    const isFullRefund = body.amount >= payment.amount;
+    const paymentAmount = Number(payment.amount);
+    const isFullRefund = body.amount >= paymentAmount;
 
     // Update payment
     const updatedPayment = await database.payment.update({
@@ -209,89 +202,46 @@ export async function POST(request: NextRequest, context: RouteContext) {
       data: {
         status: isFullRefund ? "REFUNDED" : "PARTIALLY_REFUNDED",
         refundedAt: new Date(),
-        description: body.reason,
       },
     });
 
     // Update invoice to reflect refund
-    await database.invoice.update({
-      where: {
-        tenantId_id: {
+    if (payment.invoiceId) {
+      const invoice = await database.invoice.findFirst({
+        where: {
           tenantId,
           id: payment.invoiceId,
+          deletedAt: null,
         },
-      },
-      data: {
-        amountPaid: {
-          decrement: body.amount,
-        },
-        amountDue: {
-          increment: body.amount,
-        },
-      },
-    });
+      });
 
-    return NextResponse.json<PaymentResponse>(
-      updatedPayment as PaymentResponse
-    );
+      if (invoice) {
+        const currentAmountPaid = Number(invoice.amountPaid);
+        const currentAmountDue = Number(invoice.amountDue);
+
+        await database.invoice.update({
+          where: {
+            tenantId_id: {
+              tenantId,
+              id: payment.invoiceId,
+            },
+          },
+          data: {
+            amountPaid: currentAmountPaid - body.amount,
+            amountDue: currentAmountDue + body.amount,
+          },
+        });
+      }
+    }
+
+    return NextResponse.json<PaymentResponse>({
+      ...updatedPayment,
+      amount: updatedPayment.amount.toString(),
+    });
   } catch (error) {
     console.error("Error refunding payment:", error);
     return NextResponse.json(
       { error: "Failed to refund payment" },
-      { status: 500 }
-    );
-  }
-}
-
-/**
- * PATCH /api/accounting/payments/[id]/fraud
- * Update fraud status
- */
-export async function PATCH(request: NextRequest, context: RouteContext) {
-  try {
-    const tenantId = await requireTenantId();
-    const { id } = await context.params;
-    const body = await request.json();
-
-    validateFraudStatusUpdate(body);
-
-    const payment = await database.payment.findFirst({
-      where: {
-        tenantId,
-        id,
-        deletedAt: null,
-      },
-    });
-
-    if (!payment) {
-      return NextResponse.json({ error: "Payment not found" }, { status: 404 });
-    }
-
-    validatePaymentAccess(payment, tenantId);
-
-    // Update fraud status
-    const updatedPayment = await database.payment.update({
-      where: {
-        tenantId_id: {
-          tenantId,
-          id,
-        },
-      },
-      data: {
-        fraudStatus: body.status,
-        fraudScore: body.score,
-        fraudReasons: body.reasons,
-        ...(body.status === "FAILED" ? { status: "FAILED" } : {}),
-      },
-    });
-
-    return NextResponse.json<PaymentResponse>(
-      updatedPayment as PaymentResponse
-    );
-  } catch (error) {
-    console.error("Error updating fraud status:", error);
-    return NextResponse.json(
-      { error: "Failed to update fraud status" },
       { status: 500 }
     );
   }

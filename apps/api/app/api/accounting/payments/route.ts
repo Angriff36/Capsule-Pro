@@ -10,7 +10,7 @@
  * - createdAt, updatedAt, deletedAt
  */
 
-import { database } from "@repo/database";
+import { database, type Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
 import {
@@ -38,8 +38,8 @@ export async function GET(request: NextRequest) {
 
     const skip = (page - 1) * limit;
 
-    // Build where clause - only use fields that exist in the schema
-    const where: Record<string, unknown> = {
+    // Build where clause with proper typing
+    const where: Prisma.PaymentWhereInput = {
       tenantId,
       deletedAt: null,
     };
@@ -67,20 +67,26 @@ export async function GET(request: NextRequest) {
     if (filters.dateFrom || filters.dateTo) {
       where.processedAt = {};
       if (filters.dateFrom) {
-        where.processedAt.gte = new Date(filters.dateFrom);
+        (where.processedAt as Prisma.DateTimeFilter<"Payment">).gte = new Date(
+          filters.dateFrom
+        );
       }
       if (filters.dateTo) {
-        where.processedAt.lte = new Date(filters.dateTo);
+        (where.processedAt as Prisma.DateTimeFilter<"Payment">).lte = new Date(
+          filters.dateTo
+        );
       }
     }
 
     if (filters.amountFrom || filters.amountTo) {
       where.amount = {};
       if (filters.amountFrom) {
-        where.amount.gte = filters.amountFrom;
+        (where.amount as Prisma.DecimalFilter<"Payment">).gte =
+          filters.amountFrom;
       }
       if (filters.amountTo) {
-        where.amount.lte = filters.amountTo;
+        (where.amount as Prisma.DecimalFilter<"Payment">).lte =
+          filters.amountTo;
       }
     }
 

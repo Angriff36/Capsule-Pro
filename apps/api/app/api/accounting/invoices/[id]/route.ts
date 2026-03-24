@@ -51,17 +51,6 @@ export async function GET(request: NextRequest, context: RouteContext) {
             eventDate: true,
           },
         },
-        payments: {
-          select: {
-            id: true,
-            amount: true,
-            status: true,
-            processedAt: true,
-          },
-          orderBy: {
-            processedAt: "desc",
-          },
-        },
       },
     });
 
@@ -69,7 +58,20 @@ export async function GET(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Invoice not found" }, { status: 404 });
     }
 
-    return NextResponse.json<InvoiceResponse>(invoice);
+    return NextResponse.json<InvoiceResponse>({
+      ...invoice,
+      subtotal: invoice.subtotal.toString(),
+      taxAmount: invoice.taxAmount.toString(),
+      discountAmount: invoice.discountAmount.toString(),
+      total: invoice.total.toString(),
+      amountPaid: invoice.amountPaid.toString(),
+      amountDue: invoice.amountDue.toString(),
+      depositPercentage: invoice.depositPercentage?.toString() ?? null,
+      depositRequired: invoice.depositRequired?.toString() ?? null,
+      depositPaid: invoice.depositPaid?.toString() ?? null,
+      lineItems: invoice.lineItems as InvoiceResponse["lineItems"],
+      metadata: invoice.metadata as Record<string, unknown>,
+    });
   } catch (error) {
     console.error("Error fetching invoice:", error);
     return NextResponse.json(
@@ -104,7 +106,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     validateInvoiceAccess(invoice, tenantId, ["DRAFT"]);
 
     // Calculate new totals if line items provided
-    const updateData: Record<string, unknown> = { ...body };
+    const updateData: Record<string, unknown> = {};
     if (body.lineItems) {
       const { subtotal, taxAmount, total } = calculateInvoiceTotals(
         body.lineItems
@@ -112,8 +114,16 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       updateData.subtotal = subtotal;
       updateData.taxAmount = taxAmount;
       updateData.total = total;
-      updateData.amountDue = total - invoice.amountPaid;
+      updateData.amountDue = total - Number(invoice.amountPaid);
     }
+
+    // Copy other allowed fields
+    if (body.notes !== undefined) updateData.notes = body.notes;
+    if (body.internalNotes !== undefined)
+      updateData.internalNotes = body.internalNotes;
+    if (body.dueDate !== undefined) updateData.dueDate = new Date(body.dueDate);
+    if (body.paymentTerms !== undefined)
+      updateData.paymentTerms = body.paymentTerms;
 
     // Update invoice
     const updatedInvoice = await database.invoice.update({
@@ -145,7 +155,20 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       },
     });
 
-    return NextResponse.json<InvoiceResponse>(updatedInvoice);
+    return NextResponse.json<InvoiceResponse>({
+      ...updatedInvoice,
+      subtotal: updatedInvoice.subtotal.toString(),
+      taxAmount: updatedInvoice.taxAmount.toString(),
+      discountAmount: updatedInvoice.discountAmount.toString(),
+      total: updatedInvoice.total.toString(),
+      amountPaid: updatedInvoice.amountPaid.toString(),
+      amountDue: updatedInvoice.amountDue.toString(),
+      depositPercentage: updatedInvoice.depositPercentage?.toString() ?? null,
+      depositRequired: updatedInvoice.depositRequired?.toString() ?? null,
+      depositPaid: updatedInvoice.depositPaid?.toString() ?? null,
+      lineItems: updatedInvoice.lineItems as InvoiceResponse["lineItems"],
+      metadata: updatedInvoice.metadata as Record<string, unknown>,
+    });
   } catch (error) {
     console.error("Error updating invoice:", error);
     return NextResponse.json(
@@ -177,7 +200,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     validateInvoiceAccess(invoice, tenantId);
-    validateInvoiceBusinessRules(invoice, "send");
+    validateInvoiceBusinessRules(
+      {
+        status: invoice.status as InvoiceResponse["status"],
+        amountPaid: Number(invoice.amountPaid),
+        amountDue: Number(invoice.amountDue),
+      },
+      "send"
+    );
 
     // Update invoice status
     const updatedInvoice = await database.invoice.update({
@@ -200,9 +230,20 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // In a real implementation, this would send an email to the client
     // with invoice details and payment link
 
-    return NextResponse.json<InvoiceResponse>(
-      updatedInvoice as InvoiceResponse
-    );
+    return NextResponse.json<InvoiceResponse>({
+      ...updatedInvoice,
+      subtotal: updatedInvoice.subtotal.toString(),
+      taxAmount: updatedInvoice.taxAmount.toString(),
+      discountAmount: updatedInvoice.discountAmount.toString(),
+      total: updatedInvoice.total.toString(),
+      amountPaid: updatedInvoice.amountPaid.toString(),
+      amountDue: updatedInvoice.amountDue.toString(),
+      depositPercentage: updatedInvoice.depositPercentage?.toString() ?? null,
+      depositRequired: updatedInvoice.depositRequired?.toString() ?? null,
+      depositPaid: updatedInvoice.depositPaid?.toString() ?? null,
+      lineItems: updatedInvoice.lineItems as InvoiceResponse["lineItems"],
+      metadata: updatedInvoice.metadata as Record<string, unknown>,
+    });
   } catch (error) {
     console.error("Error sending invoice:", error);
     return NextResponse.json(
@@ -234,7 +275,14 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     }
 
     validateInvoiceAccess(invoice, tenantId);
-    validateInvoiceBusinessRules(invoice, "void");
+    validateInvoiceBusinessRules(
+      {
+        status: invoice.status as InvoiceResponse["status"],
+        amountPaid: Number(invoice.amountPaid),
+        amountDue: Number(invoice.amountDue),
+      },
+      "void"
+    );
 
     // Update invoice status to VOID
     const updatedInvoice = await database.invoice.update({
@@ -249,9 +297,20 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       },
     });
 
-    return NextResponse.json<InvoiceResponse>(
-      updatedInvoice as InvoiceResponse
-    );
+    return NextResponse.json<InvoiceResponse>({
+      ...updatedInvoice,
+      subtotal: updatedInvoice.subtotal.toString(),
+      taxAmount: updatedInvoice.taxAmount.toString(),
+      discountAmount: updatedInvoice.discountAmount.toString(),
+      total: updatedInvoice.total.toString(),
+      amountPaid: updatedInvoice.amountPaid.toString(),
+      amountDue: updatedInvoice.amountDue.toString(),
+      depositPercentage: updatedInvoice.depositPercentage?.toString() ?? null,
+      depositRequired: updatedInvoice.depositRequired?.toString() ?? null,
+      depositPaid: updatedInvoice.depositPaid?.toString() ?? null,
+      lineItems: updatedInvoice.lineItems as InvoiceResponse["lineItems"],
+      metadata: updatedInvoice.metadata as Record<string, unknown>,
+    });
   } catch (error) {
     console.error("Error voiding invoice:", error);
     return NextResponse.json(
