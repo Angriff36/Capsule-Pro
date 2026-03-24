@@ -189,6 +189,12 @@ let nextConfig: NextConfig = withToolbar(
       "@capsule-pro/sales-reporting",
       "@clerk/backend",
     ],
+    // Include manifest file in Vercel deployments for command-board chat
+    output: {
+      fileTracingIncludes: {
+        "/*": ["../../packages/manifest-ir/dist/routes.manifest.json"],
+      },
+    },
     webpack: (webpackConfig: WebpackConfig, context: WebpackContext) => {
       if (process.env.NODE_ENV === "production") {
         webpackConfig.cache = false;
