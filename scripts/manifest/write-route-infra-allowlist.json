@@ -436,6 +436,11 @@
       "pattern": "^/api/public/proposals/[^/]+/respond$",
       "methods": ["POST"],
       "comment": "Infrastructure: Public proposal response with rate limiting"
+    },
+    {
+      "prefix": "/api/ai-event-setup/",
+      "methods": ["POST"],
+      "comment": "AI Event Setup: NL parsing and session management using manifest pattern"
     }
   ]
 }

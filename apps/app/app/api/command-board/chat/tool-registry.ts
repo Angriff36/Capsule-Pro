@@ -2169,7 +2169,9 @@ function parseNaturalLanguageEvent(
 }
 
 async function parseNaturalLanguageEventTool(
-  args: Record<string, unknown>
+  args: Record<string, unknown>,
+  context: ManifestAgentContext,
+  callId: string
 ): Promise<AgentToolResult> {
   const text = typeof args.text === "string" ? args.text : "";
   
@@ -2181,34 +2183,77 @@ async function parseNaturalLanguageEventTool(
     };
   }
 
-  // Parse reference date
-  let referenceDate = new Date();
-  if (typeof args.referenceDate === "string") {
-    try {
-      referenceDate = new Date(args.referenceDate);
-    } catch {
-      // Use default
-    }
+  // Call the AiEventSetupSession.parse manifest command route
+  // This centralizes parsing logic and enables session tracking
+  const result = await executeManifestCommandRoute(
+    "/api/ai-event-setup/parse",
+    "AiEventSetupSession.parse",
+    {
+      entityName: "AiEventSetupSession",
+      commandName: "parse",
+      args: {
+        originalInput: text,
+        referenceDate: typeof args.referenceDate === "string" ? args.referenceDate : new Date().toISOString(),
+      },
+    },
+    context,
+    callId
+  );
+
+  if (!result.ok) {
+    return result;
   }
 
-  const parsed = parseNaturalLanguageEvent(text, referenceDate);
+  // Extract the parsed data from the response
+  // executeManifestCommandRoute returns: { routePath, response: { success, result, events } }
+  const responseData = result.data as { 
+    response?: {
+      success?: boolean;
+      result?: {
+        sessionId?: string;
+        parsedTitle?: string;
+        parsedEventType?: string;
+        parsedEventDate?: number | null;
+        parsedGuestCount?: number;
+        parsedVenueName?: string;
+        parsedVenueAddress?: string;
+        parsedNotes?: string;
+        parsedTags?: string;
+        confidence?: number;
+        missingFields?: string[];
+        suggestions?: string[];
+        readyToCreate?: boolean;
+      };
+    };
+  };
+  
+  const parsed = responseData?.response?.result;
+
+  if (!parsed) {
+    return {
+      ok: false,
+      summary: "Failed to parse event data from response",
+      error: "Failed to parse event data from response",
+    };
+  }
 
   return {
     ok: true,
-    summary: `Parsed event: "${parsed.title}" for ${parsed.guestCount} guests with ${(parsed.confidence * 100).toFixed(0)}% confidence`,
+    summary: `Parsed event: "${parsed.parsedTitle}" for ${parsed.parsedGuestCount} guests with ${((parsed.confidence ?? 0) * 100).toFixed(0)}% confidence`,
     data: {
-      title: parsed.title,
-      eventType: parsed.eventType,
-      eventDate: parsed.eventDate,
-      guestCount: parsed.guestCount,
-      venueName: parsed.venueName,
-      venueAddress: parsed.venueAddress,
-      notes: parsed.notes,
-      tags: parsed.tags,
+      sessionId: parsed.sessionId,
+      title: parsed.parsedTitle,
+      eventType: parsed.parsedEventType,
+      eventDate: parsed.parsedEventDate,
+      guestCount: parsed.parsedGuestCount,
+      venueName: parsed.parsedVenueName,
+      venueAddress: parsed.parsedVenueAddress,
+      notes: parsed.parsedNotes,
+      tags: parsed.parsedTags,
       confidence: parsed.confidence,
       missingFields: parsed.missingFields,
       suggestions: parsed.suggestions,
-      readyToCreate: parsed.missingFields.length === 0,
+      readyToCreate: parsed.readyToCreate,
     },
   };
 }
@@ -2249,7 +2294,7 @@ export function createManifestToolRegistry(context: ManifestAgentContext) {
 
         // Core Tools
         if (call.name === "parse_natural_language_event") {
-          return await parseNaturalLanguageEventTool(parsedArgs);
+          return await parseNaturalLanguageEventTool(parsedArgs, context, call.callId);
         }
 
         if (call.name === "read_board_state") {
