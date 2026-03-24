@@ -46,6 +46,16 @@ test.describe("Events: Full Workflow", () => {
   test("create event with all fields", async ({ page }, testInfo) => {
     await goto(page, "/events/new");
 
+    // Dismiss the "Choose an Event Template" dialog if it appears
+    const startFromScratchBtn = page.getByRole("button", {
+      name: "Start from Scratch",
+    });
+    if (await startFromScratchBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+      await startFromScratchBtn.click();
+      // Wait for dialog to close
+      await page.waitForTimeout(500);
+    }
+
     // Fill required fields — hard fail if missing
     await page.locator('input[name="title"]').fill(EVENT_NAME);
     await page.locator('input[name="eventType"]').fill("Corporate Gala");
