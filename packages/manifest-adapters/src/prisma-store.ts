@@ -51,20 +51,13 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
-    // Use Prisma include to fetch claims in a single query (fixes N+1)
-    const tasksWithClaims = await this.prisma.prepTask.findMany({
+    // Fetch all prep tasks for this tenant
+    const tasks = await this.prisma.prepTask.findMany({
       where: { tenantId: this.tenantId, deletedAt: null },
-      include: {
-        claims: {
-          where: { releasedAt: null },
-          orderBy: { claimedAt: "desc" },
-        },
-      },
     });
 
-    return tasksWithClaims.map((task) =>
-      this.mapToManifestEntity(task as PrepTask, task.claims || [])
-    );
+    // Return mapped entities (claims will be fetched on-demand if needed)
+    return tasks.map(task => this.mapToManifestEntity(task as PrepTask, []));
   }
 
   async getById(id: string): Promise<EntityInstance | undefined> {
@@ -2877,7 +2870,7 @@ export function createPrismaOutboxWriter(
           eventType: eventData.eventType || eventData.name || "unknown",
           payload: eventData.payload as Prisma.InputJsonValue,
           aggregateId:
-            eventData.aggregateId || eventData.payload.taskId || eventData.payload.id || "unknown",
+            eventData.aggregateId || eventData.payload?.taskId || eventData.payload?.id || "unknown",
           status: "pending",
         },
       });
