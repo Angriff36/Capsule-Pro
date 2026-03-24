@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # Exit on any error
 set -e
 
@@ -21,31 +21,15 @@ git stash push --quiet --keep-index --message "pre-commit-stash" || true
 STASHED=$?
 
 # Run formatter/linter only on staged files
-# Use --stdin-file-path piping is not available; instead chunk files to avoid
-# Windows command-line length limits (8191 chars) when many files are staged.
 FORMAT_EXIT_CODE=0
 if [ -n "$STAGED_FILES" ]; then
-  # Process files in chunks of 50 to stay well under Windows arg-length limits
-  chunk=()
-  count=0
-  while IFS= read -r file; do
-    chunk+=("$file")
-    count=$((count + 1))
-    if [ $count -eq 50 ]; then
-      pnpm dlx biome check --write --files-ignore-unknown=true "${chunk[@]}" || FORMAT_EXIT_CODE=$?
-      chunk=()
-      count=0
-    fi
-  done <<< "$STAGED_FILES"
-  # Process remaining files
-  if [ ${#chunk[@]} -gt 0 ]; then
-    pnpm dlx biome check --write --files-ignore-unknown=true "${chunk[@]}" || FORMAT_EXIT_CODE=$?
-  fi
+  # Process all staged files with biome (no chunking needed on Linux/macOS)
+  echo "$STAGED_FILES" | xargs pnpm dlx biome check --write --files-ignore-unknown=true || FORMAT_EXIT_CODE=$?
 fi
 
 # Restore working directory state
 if [ $STASHED -eq 0 ]; then
-  # Re-stage the formatted files (use -f since some may be in gitignored paths but were already tracked)
+  # Re-stage the formatted files
   if [ -n "$STAGED_FILES" ]; then
     echo "$STAGED_FILES" | while IFS= read -r file; do
       if [ -f "$file" ]; then
@@ -60,8 +44,7 @@ if [ $STASHED -eq 0 ]; then
   # Restore partial staging if files were partially staged
   if [ -n "$PARTIALLY_STAGED" ]; then
     for file in $PARTIALLY_STAGED; do
-      if [ -f "$file" ] && echo "$STAGED_FILES" | grep -q "^$file$"; then
-        # File was partially staged - need to unstage the unstaged parts
+      if [ -f "$file" ] && echo "$STAGED_FILES" | grep -q "^${file}$"; then
         git restore --staged "$file" 2>/dev/null || true
         git add -p "$file" < /dev/null 2>/dev/null || git add "$file"
       fi
