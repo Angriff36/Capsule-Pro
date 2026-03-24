@@ -2884,8 +2884,3 @@ export function createPrismaOutboxWriter(
     }
   };
 }
-    },
-      });
-    }
-  };
-}
