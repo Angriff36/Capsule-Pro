@@ -5,7 +5,7 @@ import { DesignSystemProvider } from "@repo/design-system";
 import { fonts } from "@repo/design-system/lib/fonts";
 import { cn } from "@repo/design-system/lib/utils";
 import { Toolbar } from "@repo/feature-flags/components/toolbar";
-import { getDictionary, locales } from "@repo/internationalization";
+import { getDictionary, isValidLocale } from "@repo/internationalization";
 import { notFound } from "next/navigation";
 import type { ReactNode } from "react";
 import { Footer } from "./components/footer";
@@ -16,12 +16,6 @@ interface RootLayoutProperties {
   readonly params: Promise<{
     locale: string;
   }>;
-}
-
-// Validate locale is supported
-function isValidLocale(locale: string): boolean {
-  const normalizedLocale = locale.split("-")[0].toLowerCase();
-  return locales.includes(normalizedLocale as typeof locales[number]);
 }
 
 const RootLayout = async ({ children, params }: RootLayoutProperties) => {

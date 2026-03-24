@@ -36,6 +36,14 @@ const BOT_PATTERNS = [
   /telegram/i,
 ];
 
+/**
+ * Normalizes a locale string by extracting the base locale and converting to lowercase.
+ * Handles cases like "en-US", "en_US", "EN", "En" -> "en"
+ */
+function normalizeLocale(locale: string): string {
+  return locale.split(/[-_]/)[0]?.toLowerCase() || "";
+}
+
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   
@@ -58,8 +66,11 @@ export function middleware(request: NextRequest) {
     return new NextResponse("Not Found", { status: 404 });
   }
   
-  // Check if the locale is valid
-  const isValidLocale = VALID_LOCALES.includes(potentialLocale);
+  // Normalize the locale before validation (handle "en-US", "EN", "en_US", etc.)
+  const normalizedLocale = normalizeLocale(potentialLocale);
+  
+  // Check if the normalized locale is valid
+  const isValidLocale = VALID_LOCALES.includes(normalizedLocale);
   
   if (!isValidLocale) {
     // Check if this might be a bot hitting an invalid URL
@@ -73,7 +84,9 @@ export function middleware(request: NextRequest) {
     
     // For humans, redirect to default locale (en) with the same path
     const url = request.nextUrl.clone();
-    url.pathname = `/en${pathname}`;
+    // Preserve the rest of the path after the invalid locale
+    const restOfPath = pathSegments.slice(1).join("/");
+    url.pathname = restOfPath ? `/en/${restOfPath}` : "/en";
     return NextResponse.redirect(url);
   }
   
