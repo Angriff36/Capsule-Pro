@@ -22,7 +22,7 @@ const createCaseSchema = z.object({
   daysOverdue: z.number().int().nonnegative().optional(),
   agingBucket: z.string().optional(),
   notes: z.string().optional(),
-  metadata: z.record(z.any()).optional(),
+  metadata: z.record(z.string(), z.any()).optional(),
 });
 
 type CreateCaseInput = z.infer<typeof createCaseSchema>;
@@ -91,8 +91,8 @@ export async function GET(request: NextRequest) {
       data: cases.map((c) => ({
         ...c,
         collectionPercentage:
-          c.originalAmount > 0
-            ? Number((c.collectedAmount / c.originalAmount) * 100)
+          Number(c.originalAmount) > 0
+            ? Number(c.collectedAmount) / Number(c.originalAmount) * 100
             : 0,
         isHighRisk: c.daysOverdue > 90 || c.status === "LEGAL",
         isCritical: c.daysOverdue > 120 || c.isEscalatedToLegal,
@@ -174,7 +174,7 @@ export async function POST(request: NextRequest) {
         daysOverdue: validated.daysOverdue ?? 0,
         agingBucket: validated.agingBucket,
         notes: validated.notes,
-        metadata: validated.metadata ?? {},
+        metadata: JSON.parse(JSON.stringify(validated.metadata ?? {})),
         assignedTo: null,
         hasPaymentPlan: false,
         isDisputed: false,
@@ -194,7 +194,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Validation failed", details: error.errors },
+        { error: "Validation failed", details: error.issues },
         { status: 400 }
       );
     }

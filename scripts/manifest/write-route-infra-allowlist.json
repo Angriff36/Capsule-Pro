@@ -451,6 +451,36 @@
       "prefix": "/api/ai-event-setup/",
       "methods": ["POST"],
       "comment": "AI Event Setup: NL parsing and session management using manifest pattern"
+    },
+    {
+      "prefix": "/api/accounting/collections/cases",
+      "methods": ["POST", "PATCH"],
+      "comment": "Infrastructure: Collection case management with direct DB access"
+    },
+    {
+      "pattern": "^/api/accounting/collections/cases/[^/]+$",
+      "methods": ["PATCH"],
+      "comment": "Infrastructure: Single collection case update"
+    },
+    {
+      "prefix": "/api/accounting/revenue-recognition/schedules",
+      "methods": ["POST", "PATCH"],
+      "comment": "Infrastructure: Revenue recognition schedule management"
+    },
+    {
+      "pattern": "^/api/accounting/revenue-recognition/schedules/[^/]+$",
+      "methods": ["PATCH"],
+      "comment": "Infrastructure: Single revenue schedule update"
+    },
+    {
+      "prefix": "/api/logistics/routes/commands/optimize",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Route optimization command using direct DB access"
+    },
+    {
+      "prefix": "/api/kitchen/equipment/alerts",
+      "methods": ["POST", "PUT", "PATCH", "DELETE"],
+      "comment": "Infrastructure: Equipment alert management using direct DB access"
     }
   ]
 }

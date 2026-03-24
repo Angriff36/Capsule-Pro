@@ -23,7 +23,6 @@ const escalateDunningSchema = z.object({
     "REMINDER_3",
     "FINAL_NOTICE",
     "COLLECTIONS",
-    "LEGAL",
   ]),
 });
 
@@ -82,11 +81,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
     return NextResponse.json({
       ...collectionCase,
       collectionPercentage:
-        collectionCase.originalAmount > 0
-          ? Number(
-              (collectionCase.collectedAmount / collectionCase.originalAmount) *
-                100
-            )
+        Number(collectionCase.originalAmount) > 0
+          ? Number(collectionCase.collectedAmount) / Number(collectionCase.originalAmount) * 100
           : 0,
       isHighRisk:
         collectionCase.daysOverdue > 90 || collectionCase.status === "LEGAL",
@@ -136,7 +132,6 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         where: { id },
         data: {
           assignedTo: body.userId,
-          assignedAt: new Date(),
           updatedAt: new Date(),
         },
       });
@@ -157,10 +152,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         data: {
           collectedAmount: newCollected,
           outstandingAmount: Math.max(0, newOutstanding),
-          status: isResolved ? "RESOLVED" : collectionCase.status,
-          resolvedAt: isResolved ? new Date() : null,
-          closedAt: isResolved ? new Date() : null,
-          lastActivityAt: new Date(),
+          status: isResolved ? "PAID" : collectionCase.status,
           updatedAt: new Date(),
         },
       });
@@ -173,14 +165,14 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       let newStatus = collectionCase.status;
       let newPriority = collectionCase.priority;
 
-      if (newStage === "LEGAL") {
-        newStatus = "LEGAL";
+      // COLLECTIONS stage indicates escalation to external collections
+      if (newStage === "COLLECTIONS") {
+        newPriority = "URGENT";
       }
 
       if (
         newStage === "FINAL_NOTICE" ||
-        newStage === "COLLECTIONS" ||
-        newStage === "LEGAL"
+        newStage === "COLLECTIONS"
       ) {
         newPriority = "URGENT";
       } else if (newStage === "REMINDER_2" || newStage === "REMINDER_3") {
@@ -221,8 +213,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         where: { id },
         data: {
           isDisputed: true,
-          disputeReason: body.reason || "",
-          status: "DISPUTED",
+          notes: collectionCase.notes
+            ? collectionCase.notes + "\nDispute reason: " + (body.reason || "No reason provided")
+            : "Dispute reason: " + (body.reason || "No reason provided"),
           updatedAt: new Date(),
         },
       });
@@ -234,8 +227,6 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         where: { id },
         data: {
           isDisputed: false,
-          disputeResolvedAt: new Date(),
-          status: "ACTIVE",
           notes: collectionCase.notes
             ? collectionCase.notes +
               "\nDispute resolved: " +
@@ -252,11 +243,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         where: { id },
         data: {
           isEscalatedToLegal: true,
-          legalCaseNumber: body.legalCaseNumber || null,
-          legalFirm: body.legalFirm || null,
           status: "LEGAL",
-          dunningStage: "LEGAL",
           priority: "URGENT",
+          notes: collectionCase.notes
+            ? collectionCase.notes + "\nEscalated to legal" + (body.legalCaseNumber ? ` (Case #: ${body.legalCaseNumber})` : "") + (body.legalFirm ? ` (Firm: ${body.legalFirm})` : "")
+            : "Escalated to legal" + (body.legalCaseNumber ? ` (Case #: ${body.legalCaseNumber})` : "") + (body.legalFirm ? ` (Firm: ${body.legalFirm})` : ""),
           updatedAt: new Date(),
         },
       });
@@ -278,9 +269,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         data: {
           collectedAmount: newCollected,
           outstandingAmount: amountToWriteOff,
-          status: "WRITTEN_OFF",
-          internalNotes: collectionCase.internalNotes
-            ? collectionCase.internalNotes +
+          status: "WRITE_OFF",
+          notes: collectionCase.notes
+            ? collectionCase.notes +
               "\nWritten off: " +
               validated.reason +
               " (approved by: " +
@@ -291,7 +282,6 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
               " (approved by: " +
               validated.approvedBy +
               ")",
-          closedAt: new Date(),
           updatedAt: new Date(),
         },
       });
@@ -314,8 +304,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       const updated = await database.collectionCase.update({
         where: { id },
         data: {
-          status: "RESOLVED",
-          closedAt: new Date(),
+          status: "CLOSED",
           notes: collectionCase.notes
             ? collectionCase.notes + "\nClosed: " + (body.resolution || "")
             : "Closed: " + (body.resolution || ""),
@@ -331,9 +320,10 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         where: { id },
         data: {
           hasPaymentPlan: true,
-          paymentPlanId: validated.planId,
-          nextPaymentDue: new Date(validated.nextPaymentDue),
           priority: "MEDIUM",
+          notes: collectionCase.notes
+            ? collectionCase.notes + "\nPayment plan created: " + validated.planId
+            : "Payment plan created: " + validated.planId,
           updatedAt: new Date(),
         },
       });
@@ -344,7 +334,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: "Validation failed", details: error.errors },
+        { error: "Validation failed", details: error.issues },
         { status: 400 }
       );
     }
