@@ -134,22 +134,28 @@ export async function GET(request: Request) {
     const clientMap = new Map(clients.map((c) => [c.id, c]));
     const leadMap = new Map(leads.map((l) => [l.id, l]));
 
-    const proposalsWithLineItems = await Promise.all(
-      proposals.map(async (proposal) => {
-        const lineItems = await database.proposalLineItem.findMany({
-          where: { proposalId: proposal.id },
-          orderBy: [{ sortOrder: "asc" }],
-        });
-        return {
-          ...proposal,
-          client: proposal.clientId
-            ? clientMap.get(proposal.clientId) || null
-            : null,
-          lead: proposal.leadId ? leadMap.get(proposal.leadId) || null : null,
-          lineItems,
-        };
-      })
+    // Batch fetch all line items for all proposals (fixes N+1 query)
+    const proposalIds = proposals.map((p) => p.id);
+    const allLineItems = await database.proposalLineItem.findMany({
+      where: { proposalId: { in: proposalIds } },
+      orderBy: [{ sortOrder: "asc" }],
+    });
+    const lineItemsByProposal = new Map(
+      allLineItems.map((item) => [item.proposalId, [] as typeof allLineItems])
     );
+    for (const item of allLineItems) {
+      const items = lineItemsByProposal.get(item.proposalId);
+      if (items) items.push(item);
+    }
+
+    const proposalsWithLineItems = proposals.map((proposal) => ({
+      ...proposal,
+      client: proposal.clientId
+        ? clientMap.get(proposal.clientId) || null
+        : null,
+      lead: proposal.leadId ? leadMap.get(proposal.leadId) || null : null,
+      lineItems: lineItemsByProposal.get(proposal.id) || [],
+    }));
 
     const totalCount = await database.proposal.count({ where: whereClause });
     const totalPages = Math.ceil(totalCount / limit);
