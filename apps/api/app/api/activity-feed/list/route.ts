@@ -99,13 +99,7 @@ export async function GET(request: NextRequest) {
 
     // Add date range filters if provided
     if (startDate || endDate) {
-      where.createdAt = {};
-      if (startDate) {
-        where.createdAt.gte = new Date(startDate);
-      }
-      if (endDate) {
-        where.createdAt.lte = new Date(endDate);
-      }
+      where.createdAt = { gte: startDate ? new Date(startDate) : undefined, lte: endDate ? new Date(endDate) : undefined } as any;
     }
 
     // Get total count for pagination

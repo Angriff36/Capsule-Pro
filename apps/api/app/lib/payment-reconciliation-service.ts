@@ -5,7 +5,7 @@
  * and managing the reconciliation workflow
  */
 
-import { db } from "@capsule-db";
+import { database } from "@repo/database";
 
 /**
  * Reconciliation status types
@@ -56,7 +56,7 @@ export async function createReconciliation(params: {
   gatewayTransactionId?: string;
   type?: ReconciliationType;
 }) {
-  return db.paymentReconciliation.create({
+  return database.paymentReconciliation.create({
     data: {
       tenantId: params.tenantId,
       paymentId: params.paymentId,
@@ -80,7 +80,7 @@ export async function autoMatchPayment(params: {
   gatewayData: GatewayWebhookData;
 }): Promise<MatchResult> {
   // Get the payment
-  const payment = await db.payment.findFirst({
+  const payment = await database.payment.findFirst({
     where: {
       tenantId: params.tenantId,
       id: params.paymentId,
@@ -93,7 +93,7 @@ export async function autoMatchPayment(params: {
   }
 
   // Get the invoice
-  const invoice = await db.invoice.findFirst({
+  const invoice = await database.invoice.findFirst({
     where: {
       tenantId: params.tenantId,
       id: payment.invoiceId,
@@ -161,7 +161,7 @@ export async function autoMatchPayment(params: {
   }
 
   // Create or update reconciliation record
-  const existingReconciliation = await db.paymentReconciliation.findFirst({
+  const existingReconciliation = await database.paymentReconciliation.findFirst({
     where: {
       tenantId: params.tenantId,
       paymentId: params.paymentId,
@@ -170,7 +170,7 @@ export async function autoMatchPayment(params: {
   });
 
   if (existingReconciliation) {
-    await db.paymentReconciliation.update({
+    await database.paymentReconciliation.update({
       where: { id: existingReconciliation.id },
       data: {
         actualAmount: params.gatewayData.amount,
@@ -212,7 +212,7 @@ export async function batchReconcile(params: {
 
   for (const paymentId of params.paymentIds) {
     try {
-      const payment = await db.payment.findFirst({
+      const payment = await database.payment.findFirst({
         where: {
           tenantId: params.tenantId,
           id: paymentId,
@@ -249,7 +249,7 @@ export async function batchReconcile(params: {
       }
 
       // Update batch ID
-      await db.paymentReconciliation.updateMany({
+      await database.paymentReconciliation.updateMany({
         where: {
           tenantId: params.tenantId,
           paymentId,
@@ -278,7 +278,7 @@ export async function getPendingReconciliations(params: {
   tenantId: string;
   limit?: number;
 }) {
-  return db.paymentReconciliation.findMany({
+  return database.paymentReconciliation.findMany({
     where: {
       tenantId: params.tenantId,
       status: { in: ["PENDING", "DISCREPANCY", "MANUAL_REVIEW"] },
@@ -309,7 +309,7 @@ export async function resolveDiscrepancy(params: {
   resolvedBy: string;
   notes?: string;
 }) {
-  return db.paymentReconciliation.update({
+  return database.paymentReconciliation.update({
     where: {
       tenantId_id: {
         tenantId: params.tenantId,
@@ -332,13 +332,13 @@ export async function resolveDiscrepancy(params: {
  */
 export async function getReconciliationStats(params: { tenantId: string }) {
   const [total, byStatus, pending, todayReconciled] = await Promise.all([
-    db.paymentReconciliation.count({
+    database.paymentReconciliation.count({
       where: {
         tenantId: params.tenantId,
         deletedAt: null,
       },
     }),
-    db.paymentReconciliation.groupBy({
+    database.paymentReconciliation.groupBy({
       by: ["status"],
       where: {
         tenantId: params.tenantId,
@@ -346,14 +346,14 @@ export async function getReconciliationStats(params: { tenantId: string }) {
       },
       _count: true,
     }),
-    db.paymentReconciliation.count({
+    database.paymentReconciliation.count({
       where: {
         tenantId: params.tenantId,
         status: { in: ["PENDING", "DISCREPANCY", "MANUAL_REVIEW"] },
         deletedAt: null,
       },
     }),
-    db.paymentReconciliation.count({
+    database.paymentReconciliation.count({
       where: {
         tenantId: params.tenantId,
         reconciliationDate: {

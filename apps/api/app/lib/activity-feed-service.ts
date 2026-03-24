@@ -253,13 +253,7 @@ export async function getActivities(
 
   // Add date range filters if provided
   if (options.startDate || options.endDate) {
-    where.createdAt = {};
-    if (options.startDate) {
-      where.createdAt.gte = options.startDate;
-    }
-    if (options.endDate) {
-      where.createdAt.lte = options.endDate;
-    }
+    where.createdAt = { gte: options.startDate, lte: options.endDate } as any;
   }
 
   const limit = Math.min(options.limit ?? 50, 200);
