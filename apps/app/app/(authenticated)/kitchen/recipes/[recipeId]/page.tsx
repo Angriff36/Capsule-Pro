@@ -320,6 +320,7 @@ const RecipeDetailPage = async ({
           ingredients={ingredients}
           recipe={recipe}
           recipeVersionId={recipeVersionId}
+          steps={_steps}
         />
       </div>
     </>
