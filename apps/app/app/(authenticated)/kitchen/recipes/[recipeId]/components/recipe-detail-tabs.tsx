@@ -881,7 +881,7 @@ function HistoryTabContent({
                     </span>
                   </div>
                 )}
-                {viewingDetail.tags.length > 0 && (
+                {viewingDetail?.tags?.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {viewingDetail.tags.map((tag) => (
                       <Badge key={tag} variant="secondary">
@@ -927,7 +927,7 @@ function HistoryTabContent({
               <div>
                 <h3 className="mb-2 font-semibold">Steps</h3>
                 <div className="space-y-2">
-                  {viewingDetail.steps.map((step) => (
+                  {viewingDetail.steps?.map((step) => (
                     <div
                       className="rounded-lg border p-3 text-sm"
                       key={step.id}
@@ -1221,7 +1221,7 @@ export function RecipeDetailTabs({
     fetchCostData();
   }, [recipeVersionId]);
 
-  const hasCostData = Boolean(costData && costData.ingredients.length > 0);
+  const hasCostData = Boolean(costData && costData.(ingredients?.length ?? 0) > 0);
 
   return (
     <Tabs className="w-full" defaultValue="overview">
@@ -1313,7 +1313,7 @@ export function RecipeDetailTabs({
               </div>
             )}
 
-            {recipe.tags && recipe.tags.length > 0 && (
+            {recipe?.tags?.length > 0 && (
               <div>
                 <h3 className="mb-2 font-semibold">Tags</h3>
                 <div className="flex flex-wrap gap-2">
@@ -1335,7 +1335,7 @@ export function RecipeDetailTabs({
             <CardTitle>Ingredients</CardTitle>
           </CardHeader>
           <CardContent>
-            {ingredients.length === 0 ? (
+            {(ingredients?.length ?? 0) === 0 ? (
               <p className="text-muted-foreground">No ingredients added yet.</p>
             ) : (
               <div className="grid gap-2 md:grid-cols-2 lg:grid-cols-3">
@@ -1360,10 +1360,10 @@ export function RecipeDetailTabs({
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Instructions</CardTitle>
-            {steps.length > 0 && (
+            {steps?.length > 0 && (
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 {/* Total duration badge */}
-                {steps.some((s) => s.duration_minutes) && (
+                {steps?.some((s) => s.duration_minutes) && (
                   <Badge className="gap-1" variant="outline">
                     <Clock className="h-3 w-3" />
                     Total:{" "}
@@ -1376,12 +1376,12 @@ export function RecipeDetailTabs({
                   </Badge>
                 )}
                 {/* CCP count */}
-                {steps.some((s) =>
+                {steps?.some((s) =>
                   isCriticalControlPoint(s.temperature_value, s.temperature_unit)
                 ) && (
                   <Badge className="gap-1 bg-amber-500" variant="default">
                     <AlertTriangle className="h-3 w-3" />
-                    {steps.filter((s) =>
+                    {steps?.filter((s) =>
                       isCriticalControlPoint(
                         s.temperature_value,
                         s.temperature_unit
@@ -1394,9 +1394,9 @@ export function RecipeDetailTabs({
             )}
           </CardHeader>
           <CardContent>
-            {steps.length > 0 ? (
+            {steps?.length > 0 ? (
               <div className="space-y-4">
-                {steps.map((step, index) => (
+                {steps?.map((step, index) => (
                   <StepCard index={index} key={step.step_number} step={step} />
                 ))}
               </div>
