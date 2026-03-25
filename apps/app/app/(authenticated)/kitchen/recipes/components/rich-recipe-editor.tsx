@@ -46,7 +46,7 @@ import {
   Utensils,
   X,
 } from "lucide-react";
-import { useSession } from "next-auth/react";
+// Auth handled at page level via server components
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -206,8 +206,8 @@ function IngredientRowItem({
       onUpdate(index, "subRecipeName", result.name);
     } else {
       onUpdate(index, "isSubRecipe", false);
-      onUpdate(index, "subRecipeId", null);
-      onUpdate(index, "subRecipeName", null);
+      onUpdate(index, "subRecipeId", "");
+      onUpdate(index, "subRecipeName", "");
     }
   };
 
@@ -337,7 +337,7 @@ function IngredientRowItem({
                   ) : null}
                   <span>{result.name}</span>
                   {result.isSubRecipe && (
-                    <Badge className="ml-auto" variant="outline" size="sm">
+                    <Badge className="ml-auto text-xs" variant="outline">
                       Recipe
                     </Badge>
                   )}
@@ -399,7 +399,7 @@ export function RichRecipeEditor({
   recipe,
   onSave,
 }: RichRecipeEditorProps) {
-  const { data: session } = useSession();
+  // Auth handled at page level
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [tagInput, setTagInput] = useState("");
   const [tags, setTags] = useState<string[]>(recipe?.tags ?? []);
@@ -546,7 +546,7 @@ export function RichRecipeEditor({
   };
 
   const handleSearchIngredients = async (query: string): Promise<string[]> => {
-    if (!session) return [];
+    // Auth checked at page level
     setIsSearching(true);
     try {
       const response = await apiFetch("/api/ingredients/search", {
@@ -569,7 +569,7 @@ export function RichRecipeEditor({
   const handleSearchRecipes = async (
     query: string
   ): Promise<Array<{ id: string; name: string }>> => {
-    if (!session) return [];
+    // Auth checked at page level
     setIsSearching(true);
     try {
       const response = await apiFetch(kitchenRecipesSearch(query));
@@ -916,8 +916,8 @@ export function RichRecipeEditor({
                     ingredient={ingredient}
                     isSearching={isSearching}
                     key={ingredient.id}
-                    onMoveDown={handleMoveIngredient}
-                    onMoveUp={handleMoveIngredient}
+                    onMoveDown={(index: number) => handleMoveIngredient(index, "down")}
+                    onMoveUp={(index: number) => handleMoveIngredient(index, "up")}
                     onRemove={handleRemoveIngredient}
                     onUpdate={handleUpdateIngredient}
                     onSearchIngredients={handleSearchIngredients}

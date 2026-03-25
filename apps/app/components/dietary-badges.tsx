@@ -14,7 +14,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@repo/design-system/components/ui/tooltip";
-import type { DietaryTag, DIETARY_TAG_CONFIG } from "@/app/lib/dietary-utils";
+import type { DietaryTag, DIETARY_TAG_CONFIG } from "@/lib/dietary-utils";
 
 export interface DietaryBadgeProps {
   /** Dietary tag type */
