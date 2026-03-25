@@ -45,7 +45,9 @@ import {
   AlertTriangle,
   ChevronDown,
   CheckCircle2,
+  Apple,
 } from "lucide-react";
+import { NutritionFactsPanel } from "@/components/nutrition-facts-panel";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -1223,10 +1225,11 @@ export function RecipeDetailTabs({
 
   return (
     <Tabs className="w-full" defaultValue="overview">
-      <TabsList className="grid w-full grid-cols-5">
+      <TabsList className="grid w-full grid-cols-6">
         <TabsTrigger value="overview">Overview</TabsTrigger>
         <TabsTrigger value="ingredients">Ingredients</TabsTrigger>
         <TabsTrigger value="steps">Steps</TabsTrigger>
+        <TabsTrigger value="nutrition">Nutrition</TabsTrigger>
         <TabsTrigger value="costing">Costing</TabsTrigger>
         <TabsTrigger value="history">History</TabsTrigger>
       </TabsList>
@@ -1410,6 +1413,33 @@ export function RecipeDetailTabs({
                 </p>
               </div>
             )}
+          </CardContent>
+        </Card>
+      </TabsContent>
+
+      <TabsContent className="space-y-4" value="nutrition">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Apple className="h-5 w-5" />
+              Nutrition Facts
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="max-w-sm">
+              <NutritionFactsPanel
+                calories={0}
+                carbs={0}
+                fat={0}
+                protein={0}
+                servingSize={`${recipe.yield_quantity ?? 1} ${recipe.yield_unit ?? "serving"}`}
+                servingsPerContainer={recipe.yield_quantity ?? 1}
+                sodium={0}
+              />
+            </div>
+            <p className="mt-4 text-sm text-muted-foreground">
+              Nutrition data will be calculated automatically from ingredient nutritional information when available.
+            </p>
           </CardContent>
         </Card>
       </TabsContent>

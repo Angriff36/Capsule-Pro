@@ -10,6 +10,7 @@ import {
 import { AlertCircle, ArrowLeft, DollarSign, Edit, Users } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { AllergenMatrix } from "@/components/allergen-matrix";
 import { Header } from "../../../../components/header";
 import { getMenuById } from "../actions";
 
@@ -286,7 +287,7 @@ export default async function MenuDetailPage({
               </Card>
             ))}
 
-            {menu.dishes.length === 0 && (
+            {menu.dishes.length === 0 &&(
               <Card>
                 <CardContent className="py-12 text-center">
                   <p className="text-muted-foreground">
@@ -302,6 +303,18 @@ export default async function MenuDetailPage({
               </Card>
             )}
           </div>
+
+          {/* Allergen Matrix Section */}
+          {menu.dishes.length > 0 && (
+            <div className="mt-8">
+              <AllergenMatrix
+                itemIds={menu.dishes.map((d) => d.dishId)}
+                itemType="dish"
+                showDietaryTags
+                showExport
+              />
+            </div>
+          )}
         </div>
       </main>
     </div>

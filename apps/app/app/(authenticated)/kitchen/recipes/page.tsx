@@ -45,6 +45,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { DietaryBadges } from "@/components/dietary-badges";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import { Header } from "../../components/header";
 import { updateRecipeImage } from "./actions";
@@ -563,6 +564,13 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                           </Badge>
                           <DifficultyRating rating={3} />
                         </div>
+                        {recipe.tags && recipe.tags.length > 0 && (
+                          <DietaryBadges
+                            compact
+                            size="sm"
+                            tags={recipe.tags}
+                          />
+                        )}
                         {recipe.description && (
                           <p className="line-clamp-2 text-muted-foreground text-sm">
                             {recipe.description}
@@ -622,11 +630,13 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                                 {dish.category.toUpperCase()}
                               </Badge>
                             ) : null}
-                            {(dish.dietary_tags ?? [])
-                              .slice(0, 2)
-                              .map((tag) => (
-                                <Badge key={tag}>{tag.toUpperCase()}</Badge>
-                              ))}
+                            {dish.dietary_tags && dish.dietary_tags.length > 0 && (
+                              <DietaryBadges
+                                compact
+                                size="sm"
+                                tags={dish.dietary_tags}
+                              />
+                            )}
                           </div>
                         </div>
                         <CardHeader className="space-y-2">
@@ -809,128 +819,111 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
 
             {activeTab === "costing" && (
               <div className="space-y-6">
-                {costingSummary.length === 0 ? (
-                  <Empty className="bg-card/50">
-                    <EmptyHeader>
-                      <EmptyMedia variant="icon">
-                        <UtensilsIcon />
-                      </EmptyMedia>
-                      <EmptyTitle>No costing data yet</EmptyTitle>
-                      <EmptyDescription>
-                        Add dishes with pricing and cost details to unlock
-                        powerful margin analysis. Track food costs, menu prices,
-                        and profitability across your entire operation.
-                      </EmptyDescription>
-                    </EmptyHeader>
-                    <EmptyContent>
-                      <Button asChild>
-                        <Link href="/kitchen/recipes/dishes/new">
-                          Add Your First Dish
-                        </Link>
-                      </Button>
-                    </EmptyContent>
-                  </Empty>
-                ) : (
-                  <>
-                    {/* Summary Stat Cards */}
-                    {costingStats && (
-                      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-                        <Card>
-                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
-                              Avg Food Cost
-                            </CardTitle>
-                            <CalculatorIcon className="h-4 w-4 text-muted-foreground" />
-                          </CardHeader>
-                          <CardContent>
-                            <div className="text-2xl font-bold">
-                              {formatPercent(costingStats.avgFoodCostPercent)}
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                              Target: &lt;35%
-                            </p>
-                          </CardContent>
-                        </Card>
-                        <Card>
-                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
-                              Total Recipe Value
-                            </CardTitle>
-                            <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
-                          </CardHeader>
-                          <CardContent>
-                            <div className="text-2xl font-bold">
-                              {currencyFormatter.format(
-                                costingStats.totalRecipeValue
-                              )}
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                              {costingStats.recipesWithCostData} of{" "}
-                              {costingStats.totalRecipes} recipes
-                            </p>
-                          </CardContent>
-                        </Card>
-                        <Card>
-                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
-                              Highest Margin
-                            </CardTitle>
-                            <TrendingUpIcon className="h-4 w-4 text-muted-foreground" />
-                          </CardHeader>
-                          <CardContent>
-                            <div className="text-2xl font-bold text-emerald-600">
-                              {costingStats.highestMarginDish
-                                ? formatPercent(
-                                    costingStats.highestMarginDish.margin
-                                  )
-                                : "-"}
-                            </div>
-                            <p className="text-xs text-muted-foreground truncate">
-                              {costingStats.highestMarginDish?.name ?? "-"}
-                            </p>
-                          </CardContent>
-                        </Card>
-                        <Card>
-                          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium">
-                              Cost Alerts
-                            </CardTitle>
-                            <Badge
-                              variant={
-                                costingStats.highFoodCostAlerts > 0
-                                  ? "destructive"
-                                  : "default"
-                              }
-                              className="h-6 w-6 rounded-full p-0 flex items-center justify-center text-xs"
-                            >
-                              {costingStats.highFoodCostAlerts}
-                            </Badge>
-                          </CardHeader>
-                          <CardContent>
-                            <div className="text-2xl font-bold">
-                              {costingStats.highFoodCostAlerts > 0
-                                ? "Action Needed"
-                                : "All Good"}
-                            </div>
-                            <p className="text-xs text-muted-foreground">
-                              {costingStats.highFoodCostAlerts} recipes over
-                              35% threshold
-                            </p>
-                          </CardContent>
-                        </Card>
+                {/* Summary Stat Cards - always show, with zeroes if no data */}
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">
+                        Avg Food Cost
+                      </CardTitle>
+                      <CalculatorIcon className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">
+                        {costingStats ? formatPercent(costingStats.avgFoodCostPercent) : "-"}
                       </div>
-                    )}
+                      <p className="text-xs text-muted-foreground">
+                        Target: &lt;35%
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">
+                        Total Recipe Value
+                      </CardTitle>
+                      <DollarSignIcon className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">
+                        {costingStats
+                          ? currencyFormatter.format(costingStats.totalRecipeValue)
+                          : currencyFormatter.format(0)}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {costingStats?.recipesWithCostData ?? 0} of{" "}
+                        {costingStats?.totalRecipes ?? dishes.length} recipes
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">
+                        Highest Margin
+                      </CardTitle>
+                      <TrendingUpIcon className="h-4 w-4 text-muted-foreground" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold text-emerald-600">
+                        {costingStats?.highestMarginDish
+                          ? formatPercent(costingStats.highestMarginDish.margin)
+                          : "-"}
+                      </div>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {costingStats?.highestMarginDish?.name ?? "-"}
+                      </p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium">
+                        Cost Alerts
+                      </CardTitle>
+                      <Badge
+                        variant={
+                          (costingStats?.highFoodCostAlerts ?? 0) > 0
+                            ? "destructive"
+                            : "default"
+                        }
+                        className="h-6 w-6 rounded-full p-0 flex items-center justify-center text-xs"
+                      >
+                        {costingStats?.highFoodCostAlerts ?? 0}
+                      </Badge>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-2xl font-bold">
+                        {(costingStats?.highFoodCostAlerts ?? 0) > 0
+                          ? "Action Needed"
+                          : "All Good"}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        {costingStats?.highFoodCostAlerts ?? 0} recipes over
+                        35% threshold
+                      </p>
+                    </CardContent>
+                  </Card>
+                </div>
 
-                    {/* Recipe Cost Comparison Table */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle>Recipe Cost Analysis</CardTitle>
-                        <CardDescription>
-                          Compare recipe costs, margins, and identify high food
-                          cost items
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
+                {/* Recipe Cost Analysis Table */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Recipe Cost Analysis</CardTitle>
+                    <CardDescription>
+                      Compare recipe costs, margins, and identify high food
+                      cost items
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {costingSummary.length === 0 ? (
+                      <div className="py-8 text-center text-muted-foreground">
+                        <DollarSignIcon className="mx-auto mb-4 h-12 w-12 opacity-50" />
+                        <p className="text-lg font-medium">No vendor cost data available</p>
+                        <p className="text-sm">
+                          Add vendor pricing to ingredients to see recipe cost analysis.
+                        </p>
+                      </div>
+                    ) : (
+                      <>
                         <Table>
                           <TableHeader>
                             <TableRow>
@@ -1052,36 +1045,36 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                             })}
                           </TableBody>
                         </Table>
-                      </CardContent>
-                    </Card>
 
-                    {/* Lowest Margin Alert */}
-                    {costingStats?.lowestMarginDish &&
-                      costingStats.lowestMarginDish.margin < 30 && (
-                        <Card className="border-amber-200 bg-amber-50 dark:bg-amber-950">
-                          <CardHeader>
-                            <CardTitle className="text-lg flex items-center gap-2">
-                              <Badge
-                                variant="outline"
-                                className="bg-amber-100 text-amber-800 border-amber-300"
-                              >
-                                Low Margin Alert
-                              </Badge>
-                              {costingStats.lowestMarginDish.name}
-                            </CardTitle>
-                            <CardDescription>
-                              This recipe has a margin of{" "}
-                              {formatPercent(
-                                costingStats.lowestMarginDish.margin
-                              )}
-                              . Consider reviewing ingredient costs or
-                              adjusting menu price.
-                            </CardDescription>
-                          </CardHeader>
-                        </Card>
-                      )}
-                  </>
-                )}
+                        {/* Lowest Margin Alert */}
+                        {costingStats?.lowestMarginDish &&
+                          costingStats.lowestMarginDish.margin < 30 && (
+                            <Card className="mt-4 border-amber-200 bg-amber-50 dark:bg-amber-950">
+                              <CardHeader>
+                                <CardTitle className="text-lg flex items-center gap-2">
+                                  <Badge
+                                    variant="outline"
+                                    className="bg-amber-100 text-amber-800 border-amber-300"
+                                  >
+                                    Low Margin Alert
+                                  </Badge>
+                                  {costingStats.lowestMarginDish.name}
+                                </CardTitle>
+                                <CardDescription>
+                                  This recipe has a margin of{" "}
+                                  {formatPercent(
+                                    costingStats.lowestMarginDish.margin
+                                  )}
+                                  . Consider reviewing ingredient costs or
+                                  adjusting menu price.
+                                </CardDescription>
+                              </CardHeader>
+                            </Card>
+                          )}
+                      </>
+                    )}
+                  </CardContent>
+                </Card>
               </div>
             )}
           </div>

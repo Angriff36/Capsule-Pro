@@ -32,6 +32,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import { AllergenManagementModal } from "./allergen-management-modal";
+import { AllergenMatrix } from "@/components/allergen-matrix";
 
 const { logger, captureException } = Sentry;
 
@@ -361,6 +362,7 @@ export default function AllergenManagementPage() {
               <TabsTrigger value="events">Events</TabsTrigger>
               <TabsTrigger value="dishes">Dishes</TabsTrigger>
               <TabsTrigger value="recipes">Recipes</TabsTrigger>
+              <TabsTrigger value="matrix">Allergen Matrix</TabsTrigger>
             </TabsList>
 
             {/* Allergen Warnings Tab */}
@@ -647,6 +649,11 @@ export default function AllergenManagementPage() {
                   )}
                 </CardContent>
               </Card>
+            </TabsContent>
+
+            {/* Allergen Matrix Tab */}
+            <TabsContent className="space-y-4" value="matrix">
+              <AllergenMatrix itemType="dish" showDietaryTags showExport />
             </TabsContent>
           </Tabs>
         </section>
