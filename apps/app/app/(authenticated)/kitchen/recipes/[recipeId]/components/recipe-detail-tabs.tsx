@@ -9,6 +9,11 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@repo/design-system/components/ui/collapsible";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -34,6 +39,12 @@ import {
   DollarSign,
   History as HistoryIcon,
   Users,
+  Thermometer,
+  Wrench,
+  Lightbulb,
+  AlertTriangle,
+  ChevronDown,
+  CheckCircle2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
@@ -214,10 +225,29 @@ interface RecipeVersionCompare {
   };
 }
 
+// Step interface for display (matches database schema)
+interface RecipeStepDisplay {
+  step_number: number;
+  instruction: string;
+  duration_minutes: number | null;
+  temperature_value: number | null;
+  temperature_unit: string | null;
+  equipment_needed: string[] | null;
+  tips: string | null;
+  video_url: string | null;
+  image_url: string | null;
+}
+
+// HACCP Critical Control Point temperature thresholds (Fahrenheit)
+const CCP_TEMP_THRESHOLDS = {
+  min: 135, // Minimum safe hot holding temp
+};
+
 interface RecipeDetailTabsProps {
   recipe: RecipeDetailRow;
   ingredients: IngredientRow[];
   recipeVersionId: string | null;
+  steps: RecipeStepDisplay[];
 }
 
 const formatMinutes = (minutes?: number | null) =>
@@ -228,6 +258,179 @@ const formatCurrency = (value: number) =>
     style: "currency",
     currency: "USD",
   }).format(value);
+
+/** Format duration for display (e.g., "15 min" or "1h 30m") */
+const formatDuration = (minutes: number | null): string | null => {
+  if (!minutes || minutes <= 0) return null;
+  if (minutes < 60) return `${minutes} min`;
+  const hours = Math.floor(minutes / 60);
+  const mins = minutes % 60;
+  return mins > 0 ? `${hours}h ${mins}m` : `${hours}h`;
+};
+
+/** Format temperature with unit */
+const formatTemperature = (
+  value: number | null,
+  unit: string | null
+): string | null => {
+  if (value === null || value === undefined) return null;
+  const displayUnit = unit === "C" ? "°C" : "°F";
+  return `${value}${displayUnit}`;
+};
+
+/** Check if step is a Critical Control Point based on temperature */
+const isCriticalControlPoint = (
+  tempValue: number | null,
+  tempUnit: string | null
+): boolean => {
+  if (tempValue === null || tempValue === undefined) return false;
+  // Convert to Fahrenheit for comparison if needed
+  const tempF = tempUnit === "C" ? (tempValue * 9) / 5 + 32 : tempValue;
+  return tempF >= CCP_TEMP_THRESHOLDS.min;
+};
+
+/** Enhanced step card component with timer, temperature, equipment, and tips */
+function StepCard({
+  step,
+  index,
+}: {
+  step: RecipeStepDisplay;
+  index: number;
+}) {
+  const [tipsOpen, setTipsOpen] = useState(false);
+  const [tempVerified, setTempVerified] = useState(false);
+  const hasDuration = step.duration_minutes && step.duration_minutes > 0;
+  const hasTemp =
+    step.temperature_value !== null && step.temperature_value !== undefined;
+  const hasEquipment =
+    step.equipment_needed && step.equipment_needed.length > 0;
+  const hasTips = step.tips && step.tips.trim().length > 0;
+  const isCCP = isCriticalControlPoint(
+    step.temperature_value,
+    step.temperature_unit
+  );
+
+  return (
+    <Card
+      className={`relative overflow-hidden transition-all ${
+        isCCP ? "border-amber-300 dark:border-amber-700" : ""
+      }`}
+    >
+      {/* CCP indicator bar at top */}
+      {isCCP && (
+        <div className="absolute left-0 top-0 h-full w-1 bg-amber-500" />
+      )}
+
+      <CardContent className="pt-6">
+        {/* Step header */}
+        <div className="flex items-start gap-4">
+          {/* Step number badge */}
+          <div
+            className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-semibold ${
+              isCCP
+                ? "bg-amber-500 text-white"
+                : "bg-primary text-primary-foreground"
+            }`}
+          >
+            {step.step_number}
+          </div>
+
+          <div className="flex-1 space-y-3">
+            {/* Metadata badges row */}
+            <div className="flex flex-wrap items-center gap-2">
+              {isCCP && (
+                <Badge className="gap-1 bg-amber-500" variant="default">
+                  <AlertTriangle className="h-3 w-3" />
+                  CCP
+                </Badge>
+              )}
+              {hasDuration && (
+                <Badge className="gap-1" variant="secondary">
+                  <Clock className="h-3 w-3" />
+                  {formatDuration(step.duration_minutes)}
+                </Badge>
+              )}
+              {hasTemp && (
+                <Badge
+                  className={`gap-1 ${isCCP ? "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200" : ""}`}
+                  variant={isCCP ? "outline" : "secondary"}
+                >
+                  <Thermometer className="h-3 w-3" />
+                  {formatTemperature(step.temperature_value, step.temperature_unit)}
+                </Badge>
+              )}
+            </div>
+
+            {/* Instruction text */}
+            <p className="text-foreground leading-relaxed">
+              {step.instruction}
+            </p>
+
+            {/* Equipment tags */}
+            {hasEquipment && (
+              <div className="flex flex-wrap gap-1.5">
+                {step.equipment_needed!.map((eq) => (
+                  <Badge className="gap-1 text-xs" key={eq} variant="outline">
+                    <Wrench className="h-3 w-3" />
+                    {eq}
+                  </Badge>
+                ))}
+              </div>
+            )}
+
+            {/* Tips collapsible */}
+            {hasTips && (
+              <Collapsible onOpenChange={setTipsOpen} open={tipsOpen}>
+                <CollapsibleTrigger asChild>
+                  <Button
+                    className="gap-2 text-muted-foreground"
+                    size="sm"
+                    type="button"
+                    variant="ghost"
+                  >
+                    <Lightbulb className="h-4 w-4" />
+                    {tipsOpen ? "Hide Tips" : "Show Tips"}
+                    <ChevronDown
+                      className={`h-4 w-4 transition-transform ${
+                        tipsOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  </Button>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="mt-2">
+                  <div className="rounded-md bg-muted/50 p-3 text-sm text-muted-foreground">
+                    {step.tips}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+            )}
+
+            {/* CCP verification checkbox */}
+            {isCCP && (
+              <div className="mt-3 flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 p-3 dark:border-amber-800 dark:bg-amber-950/20">
+                <button
+                  className={`flex h-5 w-5 items-center justify-center rounded border-2 ${
+                    tempVerified
+                      ? "border-green-500 bg-green-500 text-white"
+                      : "border-amber-400"
+                  }`}
+                  onClick={() => setTempVerified(!tempVerified)}
+                  type="button"
+                >
+                  {tempVerified && <CheckCircle2 className="h-3 w-3" />}
+                </button>
+                <span className="text-sm text-amber-700 dark:text-amber-400">
+                  Temperature verified:{" "}
+                  {formatTemperature(step.temperature_value, step.temperature_unit)}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 function CostingTabContent({
   recipeVersionId,
@@ -989,6 +1192,7 @@ export function RecipeDetailTabs({
   recipe,
   ingredients,
   recipeVersionId,
+  steps,
 }: RecipeDetailTabsProps) {
   const [costData, setCostData] = useState<RecipeCostBreakdown | null>(null);
   const [loading, setLoading] = useState(false);
@@ -1151,18 +1355,60 @@ export function RecipeDetailTabs({
 
       <TabsContent className="space-y-4" value="steps">
         <Card>
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle>Instructions</CardTitle>
+            {steps.length > 0 && (
+              <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                {/* Total duration badge */}
+                {steps.some((s) => s.duration_minutes) && (
+                  <Badge className="gap-1" variant="outline">
+                    <Clock className="h-3 w-3" />
+                    Total:{" "}
+                    {formatDuration(
+                      steps.reduce(
+                        (sum, s) => sum + (s.duration_minutes ?? 0),
+                        0
+                      )
+                    )}
+                  </Badge>
+                )}
+                {/* CCP count */}
+                {steps.some((s) =>
+                  isCriticalControlPoint(s.temperature_value, s.temperature_unit)
+                ) && (
+                  <Badge className="gap-1 bg-amber-500" variant="default">
+                    <AlertTriangle className="h-3 w-3" />
+                    {steps.filter((s) =>
+                      isCriticalControlPoint(
+                        s.temperature_value,
+                        s.temperature_unit
+                      )
+                    ).length}{" "}
+                    CCP
+                  </Badge>
+                )}
+              </div>
+            )}
           </CardHeader>
           <CardContent>
-            {recipe.instructions ? (
+            {steps.length > 0 ? (
+              <div className="space-y-4">
+                {steps.map((step, index) => (
+                  <StepCard index={index} key={step.step_number} step={step} />
+                ))}
+              </div>
+            ) : recipe.instructions ? (
               <div className="prose prose-sm max-w-none">
                 <p className="whitespace-pre-wrap">{recipe.instructions}</p>
               </div>
             ) : (
-              <p className="text-muted-foreground">
-                No instructions added yet.
-              </p>
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <ChefHat className="mb-4 h-12 w-12 text-muted-foreground" />
+                <h3 className="mb-2 text-lg font-semibold">No steps yet</h3>
+                <p className="text-sm text-muted-foreground">
+                  Add steps to your recipe for detailed instructions.
+                </p>
+              </div>
             )}
           </CardContent>
         </Card>
