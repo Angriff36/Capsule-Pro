@@ -49,6 +49,7 @@ import { SelectableList, ItemCheckbox } from "./components/selectable-list";
 import { RecipeFavoriteButton } from "./recipe-favorite-button";
 import { RecipesPageClient } from "./recipes-page-client";
 import RecipesRealtime from "./recipes-realtime";
+import { RecipeQuickRename } from "./recipe-quick-rename";
 import { RecipesToolbar } from "./recipes-toolbar";
 import {
   getCostingSummaryStats,
@@ -545,8 +546,11 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
 
                       {/* Recipe name - primary info */}
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm text-foreground truncate group-hover:text-[var(--brand-leafy-green)] transition-colors">
-                          {recipe.name}
+                        <div
+                          className="font-medium text-sm text-foreground truncate group-hover:text-[var(--brand-leafy-green)] transition-colors"
+                          title={recipe.name.length > 60 ? recipe.name : undefined}
+                        >
+                          {recipe.name.length > 60 ? `${recipe.name.slice(0, 60)}…` : recipe.name}
                         </div>
                         {recipe.description && (
                           <div className="text-xs text-muted-foreground truncate">
@@ -591,12 +595,16 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                       </div>
 
                       {/* Dietary tags */}
-                      {recipe.tags && recipe.tags.length > 0 && (
-                        <DietaryBadges compact size="sm" tags={recipe.tags} />
+                      {recipe.tags && recipe.tags.filter(t => t.toLowerCase() !== 'imported').length > 0 && (
+                        <DietaryBadges compact size="sm" tags={recipe.tags.filter(t => t.toLowerCase() !== 'imported')} />
                       )}
 
                       {/* Actions */}
                       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                        <RecipeQuickRename
+                          recipeId={recipe.id}
+                          recipeName={recipe.name}
+                        />
                         <RecipeEditButton
                           recipeId={recipe.id}
                           recipeName={recipe.name}

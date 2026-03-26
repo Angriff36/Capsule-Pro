@@ -888,3 +888,61 @@ export const bulkDeleteDishes = async (dishIds: string[]) => {
   }
   revalidatePath("/kitchen/recipes");
 };
+
+export const renameRecipe = async (recipeId: string, newName: string) => {
+  const tenantId = await requireTenantId();
+  const trimmedName = newName.trim();
+  if (!trimmedName) {
+    throw new Error("Recipe name cannot be empty.");
+  }
+  await database.$executeRaw`
+    UPDATE tenant_kitchen.recipes
+    SET name = ${trimmedName}, updated_at = NOW()
+    WHERE tenant_id = ${tenantId} AND id = ${recipeId}::uuid AND deleted_at IS NULL
+  `;
+  revalidatePath("/kitchen/recipes");
+  revalidatePath(`/kitchen/recipes/${recipeId}`);
+};
+
+export const updateDish = async (dishId: string, formData: FormData) => {
+  const tenantId = await requireTenantId();
+
+  const name = String(formData.get("name") || "").trim();
+  if (!name) {
+    throw new Error("Dish name is required.");
+  }
+
+  const category = String(formData.get("category") || "").trim() || null;
+  const description = String(formData.get("description") || "").trim() || null;
+  const dietaryTags = parseList(formData.get("dietaryTags"));
+  const allergens = parseList(formData.get("allergens"));
+  const pricePerPerson = parseNumber(formData.get("pricePerPerson"));
+  const costPerPerson = parseNumber(formData.get("costPerPerson"));
+  const minLead = parseNumber(formData.get("minPrepLeadDays"));
+  const maxLead = parseNumber(formData.get("maxPrepLeadDays"));
+  const portionSize = String(formData.get("portionSizeDescription") || "").trim() || null;
+  const serviceStyle = String(formData.get("serviceStyle") || "").trim() || null;
+  const isActive = formData.get("isActive") === "true";
+
+  await database.$executeRaw`
+    UPDATE tenant_kitchen.dishes
+    SET
+      name = ${name},
+      description = ${description},
+      category = ${category},
+      service_style = ${serviceStyle},
+      dietary_tags = ${dietaryTags.length > 0 ? dietaryTags : null},
+      allergens = ${allergens.length > 0 ? allergens : null},
+      price_per_person = ${pricePerPerson},
+      cost_per_person = ${costPerPerson},
+      min_prep_lead_days = ${minLead ?? 0},
+      max_prep_lead_days = ${maxLead},
+      portion_size_description = ${portionSize},
+      is_active = ${isActive},
+      updated_at = NOW()
+    WHERE tenant_id = ${tenantId} AND id = ${dishId}::uuid AND deleted_at IS NULL
+  `;
+
+  revalidatePath("/kitchen/recipes");
+  revalidatePath(`/kitchen/recipes/dishes/${dishId}`);
+};

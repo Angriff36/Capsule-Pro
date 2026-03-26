@@ -23,6 +23,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { Header } from "@/app/(authenticated)/components/header";
+import { EditDishDialog } from "./edit-dish-dialog";
 
 interface DishDetailRow {
   id: string;
@@ -174,6 +175,7 @@ export default async function DishDetailPage({
                   )}
                 </div>
               </div>
+              <EditDishDialog dish={dish} />
             </div>
 
             {dish.description && (

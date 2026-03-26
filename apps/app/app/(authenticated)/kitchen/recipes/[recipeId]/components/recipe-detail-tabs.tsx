@@ -1235,98 +1235,117 @@ export function RecipeDetailTabs({
       </TabsList>
 
       <TabsContent className="space-y-4" value="overview">
+        {/* Status and Category Header */}
         <Card>
-          <CardHeader>
-            <CardTitle>Recipe Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center gap-2">
-              <Badge variant={recipe.is_active ? "default" : "secondary"}>
+          <CardContent className="py-4">
+            <div className="flex flex-wrap items-center gap-2">
+              <Badge
+                className={
+                  recipe.is_active
+                    ? "bg-[var(--brand-leafy-green)]/20 text-[var(--brand-leafy-green)] border-[var(--brand-leafy-green)]/30"
+                    : ""
+                }
+                variant={recipe.is_active ? "default" : "secondary"}
+              >
                 {recipe.is_active ? "Active" : "Inactive"}
               </Badge>
               {recipe.category && (
-                <Badge variant="outline">{recipe.category}</Badge>
+                <Badge className="bg-[var(--brand-avocado-mash)]/20 text-[var(--brand-leafy-green)] border-0">
+                  {recipe.category}
+                </Badge>
               )}
             </div>
-
             {recipe.description && (
-              <p className="text-muted-foreground">{recipe.description}</p>
-            )}
-
-            <div className="grid gap-4 md:grid-cols-4">
-              <Card>
-                <CardContent className="flex items-center gap-3 pt-6">
-                  <Clock className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <div className="text-sm text-muted-foreground">
-                      Prep Time
-                    </div>
-                    <div className="font-semibold">
-                      {formatMinutes(recipe.prep_time_minutes)}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="flex items-center gap-3 pt-6">
-                  <ChefHat className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <div className="text-sm text-muted-foreground">
-                      Cook Time
-                    </div>
-                    <div className="font-semibold">
-                      {formatMinutes(recipe.cook_time_minutes)}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="flex items-center gap-3 pt-6">
-                  <Clock className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <div className="text-sm text-muted-foreground">
-                      Rest Time
-                    </div>
-                    <div className="font-semibold">
-                      {formatMinutes(recipe.rest_time_minutes)}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="flex items-center gap-3 pt-6">
-                  <Users className="h-5 w-5 text-muted-foreground" />
-                  <div>
-                    <div className="text-sm text-muted-foreground">Yield</div>
-                    <div className="font-semibold">
-                      {recipe.yield_quantity ?? "-"} {recipe.yield_unit ?? ""}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {recipe.notes && (
-              <div>
-                <h3 className="mb-2 font-semibold">Notes</h3>
-                <p className="text-muted-foreground">{recipe.notes}</p>
-              </div>
-            )}
-
-            {recipe?.tags?.length > 0 && (
-              <div>
-                <h3 className="mb-2 font-semibold">Tags</h3>
-                <div className="flex flex-wrap gap-2">
-                  {recipe.tags.map((tag) => (
-                    <Badge key={tag} variant="secondary">
-                      {tag}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
+              <p className="mt-3 text-muted-foreground">{recipe.description}</p>
             )}
           </CardContent>
         </Card>
+
+        {/* Grouped Info Cards */}
+        <div className="grid gap-4 md:grid-cols-2">
+          {/* Timing Card */}
+          <Card className="border-l-4 border-l-[var(--brand-golden-zest)]">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Clock className="h-4 w-4 text-[var(--brand-golden-zest)]" />
+                Timing
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wide">Prep</div>
+                  <div className="text-lg font-semibold text-foreground">
+                    {formatMinutes(recipe.prep_time_minutes)}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wide">Cook</div>
+                  <div className="text-lg font-semibold text-foreground">
+                    {formatMinutes(recipe.cook_time_minutes)}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wide">Rest</div>
+                  <div className="text-lg font-semibold text-foreground">
+                    {formatMinutes(recipe.rest_time_minutes)}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Yield Card */}
+          <Card className="border-l-4 border-l-[var(--brand-leafy-green)]">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <Users className="h-4 w-4 text-[var(--brand-leafy-green)]" />
+                Yield
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-[var(--brand-leafy-green)]">
+                {recipe.yield_quantity ?? "-"} <span className="text-base font-normal text-muted-foreground">{recipe.yield_unit ?? ""}</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Tags Card */}
+        {recipe?.tags?.filter((t) => t.toLowerCase() !== "imported").length > 0 && (
+          <Card className="border-l-4 border-l-[var(--brand-spiced-orange)]">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <ChefHat className="h-4 w-4 text-[var(--brand-spiced-orange)]" />
+                Tags
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                {recipe.tags.filter((t) => t.toLowerCase() !== "imported").map((tag) => (
+                  <Badge
+                    className="bg-[var(--brand-avocado-mash)]/20 text-[var(--brand-leafy-green)] border-0"
+                    key={tag}
+                  >
+                    {tag}
+                  </Badge>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Notes Card */}
+        {recipe.notes && (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium text-muted-foreground">Notes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="text-muted-foreground whitespace-pre-wrap">{recipe.notes}</p>
+            </CardContent>
+          </Card>
+        )}
       </TabsContent>
 
       <TabsContent className="space-y-4" value="ingredients">
