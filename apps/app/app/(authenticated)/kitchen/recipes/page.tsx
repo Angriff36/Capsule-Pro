@@ -37,6 +37,7 @@ import {
   CalculatorIcon,
   CheckCircleIcon,
   ChefHatIcon,
+  Clock,
   DollarSignIcon,
   PackageIcon,
   SettingsIcon,
@@ -482,14 +483,23 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
         </div>
 
         <section>
-          <h2 className="font-medium text-sm text-muted-foreground">
-            {activeTab === "recipes" && "Recipe Collection"}
-            {activeTab === "dishes" && "Dish Library"}
-            {activeTab === "ingredients" && "Ingredient Library"}
-            {activeTab === "menus" && "Menu Collection"}
-            {activeTab === "costing" && "Costing Analysis"}
-          </h2>
-          <div className="mt-4 rounded-3xl border bg-muted/40 p-4">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="h-6 w-1 rounded-full bg-primary" />
+            <h2 className="font-semibold text-base text-foreground">
+              {activeTab === "recipes" && "Recipe Collection"}
+              {activeTab === "dishes" && "Dish Library"}
+              {activeTab === "ingredients" && "Ingredient Library"}
+              {activeTab === "menus" && "Menu Collection"}
+              {activeTab === "costing" && "Costing Analysis"}
+            </h2>
+            <span className="text-xs text-muted-foreground">
+              {activeTab === "recipes" && `${recipeTotals?.count ?? 0} recipes`}
+              {activeTab === "dishes" && `${dishTotals?.count ?? 0} dishes`}
+              {activeTab === "ingredients" && `${ingredientTotals?.count ?? 0} ingredients`}
+              {activeTab === "menus" && `${menuTotals?.count ?? 0} menus`}
+            </span>
+          </div>
+          <div className="rounded-2xl border border-border/50 bg-card/50 p-5">
             {activeTab === "recipes" && (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
                 {recipes.length === 0 ? (
@@ -514,18 +524,31 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                     </EmptyContent>
                   </Empty>
                 ) : (
-                  recipes.map((recipe) => (
+                  recipes.map((recipe) => {
+                    const categoryColors: Record<string, string> = {
+                      "appetizer": "border-l-amber-500",
+                      "main course": "border-l-emerald-600",
+                      "main": "border-l-emerald-600",
+                      "dessert": "border-l-rose-400",
+                      "side": "border-l-sky-400",
+                      "beverage": "border-l-violet-400",
+                    };
+                    const borderColor = recipe.category
+                      ? categoryColors[recipe.category.toLowerCase()] || "border-l-primary"
+                      : "border-l-primary";
+
+                    return (
                     <Card
-                      className="group overflow-hidden shadow-sm transition-all duration-200 hover:translate-y-[-4px] hover:shadow-md"
+                      className={`group overflow-hidden border-l-4 ${borderColor} shadow-sm transition-all duration-200 hover:translate-y-[-2px] hover:shadow-lg hover:border-l-[6px]`}
                       data-testid="recipe-card"
                       key={recipe.id}
                     >
                       <Link href={`/kitchen/recipes/${recipe.id}`}>
-                        <AspectRatio
-                          className="relative w-full bg-muted"
-                          ratio={16 / 9}
-                        >
-                          {recipe.image_url ? (
+                        {recipe.image_url ? (
+                          <AspectRatio
+                            className="relative w-full bg-muted"
+                            ratio={16 / 9}
+                          >
                             <img
                               alt={recipe.name}
                               className="h-full w-full object-cover"
@@ -533,36 +556,53 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                               src={recipe.image_url}
                               width={426}
                             />
-                          ) : (
-                            <RecipeImagePlaceholder
-                              recipeName={recipe.name}
-                              uploadAction={updateRecipeImage.bind(
-                                null,
-                                recipe.id
-                              )}
-                            />
-                          )}
-                          <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/60 via-transparent to-transparent p-3 opacity-0 transition-opacity group-hover:opacity-100">
-                            <RecipeEditButton
-                              recipeId={recipe.id}
-                              recipeName={recipe.name}
-                            />
+                            <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/60 via-transparent to-transparent p-3 opacity-0 transition-opacity group-hover:opacity-100">
+                              <RecipeEditButton
+                                recipeId={recipe.id}
+                                recipeName={recipe.name}
+                              />
+                            </div>
+                            <RecipeFavoriteButton recipeName={recipe.name} />
+                          </AspectRatio>
+                        ) : (
+                          <div className="relative flex h-16 items-center justify-between bg-gradient-to-r from-primary/5 to-secondary/10 px-4">
+                            <ChefHatIcon className="h-8 w-8 text-primary/30" />
+                            <RecipeFavoriteButton recipeName={recipe.name} />
                           </div>
-                          <RecipeFavoriteButton recipeName={recipe.name} />
-                        </AspectRatio>
+                        )}
                       </Link>
-                      <CardHeader className="space-y-2">
-                        <CardTitle className="font-semibold text-lg">
-                          {recipe.name}
-                        </CardTitle>
-                        <div className="flex flex-wrap items-center gap-2">
+                      <CardHeader className="space-y-3 p-4">
+                        <div className="flex items-start justify-between gap-2">
+                          <CardTitle className="font-semibold text-base leading-tight line-clamp-2">
+                            {recipe.name}
+                          </CardTitle>
+                          <RecipeEditButton
+                            recipeId={recipe.id}
+                            recipeName={recipe.name}
+                          />
+                        </div>
+                        <div className="flex flex-wrap items-center gap-1.5">
                           {recipe.category ? (
-                            <Badge variant="secondary">{recipe.category}</Badge>
+                            <Badge className="bg-primary/10 text-primary border-0 text-xs font-medium">{recipe.category}</Badge>
                           ) : null}
-                          <Badge variant="outline">
-                            {formatMinutes(recipe.prep_time_minutes)}
-                          </Badge>
-                          <DifficultyRating rating={3} />
+                          {recipe.prep_time_minutes ? (
+                            <Badge variant="outline" className="gap-1 text-xs">
+                              <Clock className="h-3 w-3" />
+                              {formatMinutes(recipe.prep_time_minutes)}
+                            </Badge>
+                          ) : null}
+                          {recipe.cook_time_minutes ? (
+                            <Badge variant="outline" className="gap-1 text-xs">
+                              <UtensilsIcon className="h-3 w-3" />
+                              {formatMinutes(recipe.cook_time_minutes)}
+                            </Badge>
+                          ) : null}
+                        </div>
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                          <span>{recipe.ingredient_count} ingredients</span>
+                          {recipe.dish_count > 0 && (
+                            <span className="text-primary font-medium">{recipe.dish_count} dish{recipe.dish_count > 1 ? "es" : ""}</span>
+                          )}
                         </div>
                         {recipe.tags && recipe.tags.length > 0 && (
                           <DietaryBadges
@@ -571,14 +611,10 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                             tags={recipe.tags}
                           />
                         )}
-                        {recipe.description && (
-                          <p className="line-clamp-2 text-muted-foreground text-sm">
-                            {recipe.description}
-                          </p>
-                        )}
                       </CardHeader>
                     </Card>
-                  ))
+                  );})
+                  )
                 )}
               </div>
             )}
@@ -610,46 +646,48 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                 ) : (
                   dishes.map((dish) => {
                     const margin = getDishMargin(dish);
+                    const marginColor = margin !== null
+                      ? margin >= 60 ? "text-emerald-600" : margin >= 40 ? "text-amber-600" : "text-red-500"
+                      : "text-muted-foreground";
                     return (
-                      <Card className="overflow-hidden shadow-sm" key={dish.id}>
-                        <div className="relative h-40 w-full bg-muted">
-                          {dish.presentation_image_url ? (
+                      <Card className="group overflow-hidden border-l-4 border-l-secondary shadow-sm transition-all duration-200 hover:translate-y-[-2px] hover:shadow-lg" key={dish.id}>
+                        {dish.presentation_image_url ? (
+                          <div className="relative h-32 w-full bg-muted">
                             <img
                               alt={dish.name}
                               className="h-full w-full object-cover"
                               src={dish.presentation_image_url}
                             />
-                          ) : (
-                            <div className="flex h-full w-full items-center justify-center bg-linear-to-br from-slate-200 via-slate-100 to-white text-muted-foreground">
-                              <UtensilsIcon size={32} />
-                            </div>
-                          )}
-                          <div className="absolute bottom-3 left-3 flex flex-wrap gap-2">
+                          </div>
+                        ) : (
+                          <div className="flex h-14 items-center gap-3 bg-gradient-to-r from-secondary/10 to-primary/5 px-4">
+                            <UtensilsIcon className="h-6 w-6 text-secondary/50" />
                             {dish.category ? (
-                              <Badge variant="secondary">
-                                {dish.category.toUpperCase()}
-                              </Badge>
+                              <Badge className="bg-secondary/20 text-secondary-foreground border-0 text-xs">{dish.category}</Badge>
                             ) : null}
-                            {dish.dietary_tags && dish.dietary_tags.length > 0 && (
-                              <DietaryBadges
-                                compact
-                                size="sm"
-                                tags={dish.dietary_tags}
-                              />
-                            )}
+                          </div>
+                        )}
+                        <div className="px-4 pt-2">
+                          {dish.dietary_tags && dish.dietary_tags.length > 0 && (
+                            <DietaryBadges
+                              compact
+                              size="sm"
+                              tags={dish.dietary_tags}
+                            />
+                          )}
                           </div>
                         </div>
-                        <CardHeader className="space-y-2">
-                          <CardTitle className="font-semibold text-lg">
+                        <CardHeader className="space-y-1.5 p-4 pt-3">
+                          <CardTitle className="font-semibold text-base leading-tight line-clamp-2">
                             {dish.name}
                           </CardTitle>
-                          <div className="text-muted-foreground text-sm">
-                            Recipe: {dish.recipe_name ?? "Unlinked"}
+                          <div className="text-muted-foreground text-xs">
+                            Recipe: {dish.recipe_name ?? <span className="italic">Unlinked</span>}
                           </div>
                         </CardHeader>
-                        <CardContent className="grid grid-cols-3 gap-3 text-sm">
+                        <CardContent className="grid grid-cols-3 gap-3 p-4 pt-0 text-sm">
                           <div>
-                            <div className="text-muted-foreground">
+                            <div className="text-muted-foreground text-xs">
                               Food cost
                             </div>
                             <div className="font-semibold">
@@ -659,7 +697,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                             </div>
                           </div>
                           <div>
-                            <div className="text-muted-foreground">
+                            <div className="text-muted-foreground text-xs">
                               Menu price
                             </div>
                             <div className="font-semibold">
@@ -671,8 +709,8 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                             </div>
                           </div>
                           <div>
-                            <div className="text-muted-foreground">Margin</div>
-                            <div className="font-semibold text-emerald-600">
+                            <div className="text-muted-foreground text-xs">Margin</div>
+                            <div className={`font-bold ${marginColor}`}>
                               {formatPercent(margin)}
                             </div>
                           </div>
