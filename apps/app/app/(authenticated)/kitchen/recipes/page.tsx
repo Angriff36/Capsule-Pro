@@ -45,6 +45,7 @@ import { MenuCard } from "./components/menu-card";
 import { getMenus } from "./menus/actions";
 import { RecipeEditButton } from "./recipe-edit-button";
 import { SingleDeleteButton } from "./components/bulk-actions-bar";
+import { SelectableList, ItemCheckbox } from "./components/selectable-list";
 import { RecipeFavoriteButton } from "./recipe-favorite-button";
 import { RecipesPageClient } from "./recipes-page-client";
 import RecipesRealtime from "./recipes-realtime";
@@ -514,7 +515,8 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                     </EmptyContent>
                   </Empty>
                 ) : (
-                  recipes.map((recipe) => {
+                  <SelectableList items={recipes.map(r => ({ id: r.id, name: r.name }))} type="recipes">
+                  {recipes.map((recipe) => {
                     const categoryColors: Record<string, string> = {
                       "appetizer": "bg-amber-500",
                       "main course": "bg-emerald-600",
@@ -535,6 +537,9 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                       className="group flex items-center gap-3 p-3 border border-border/50 hover:border-border hover:bg-muted/30 transition-colors"
                       data-testid="recipe-card"
                     >
+                      {/* Selection checkbox */}
+                      <ItemCheckbox id={recipe.id} />
+
                       {/* Colored accent bar */}
                       <div className={`w-1 h-10 rounded-sm ${accentColor}`} />
 
@@ -605,6 +610,8 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                       </div>
                     </Link>
                   );})
+                  }
+                  </SelectableList>
                 )}
               </div>
             )}
@@ -634,7 +641,8 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                     </EmptyContent>
                   </Empty>
                 ) : (
-                  dishes.map((dish) => {
+                  <SelectableList items={dishes.map(d => ({ id: d.id, name: d.name }))} type="dishes">
+                  {dishes.map((dish) => {
                     const margin = getDishMargin(dish);
                     // Use brand colors for margin indicators
                     const marginColor = margin !== null
@@ -649,6 +657,9 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                         key={dish.id}
                         className="group flex items-center gap-3 p-3 border border-border/50 hover:border-border hover:bg-muted/30 transition-colors"
                       >
+                        {/* Selection checkbox */}
+                        <ItemCheckbox id={dish.id} />
+
                         {/* Margin indicator bar */}
                         <div className={`w-1 h-10 rounded-sm ${marginBg}`} />
 
@@ -725,6 +736,8 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                       </Link>
                     );
                   })
+                  }
+                  </SelectableList>
                 )}
               </div>
             )}
