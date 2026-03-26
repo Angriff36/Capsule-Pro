@@ -21,8 +21,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getTenantIdForOrg } from "../../../../lib/tenant";
-import { Header } from "../../../components/header";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { Header } from "@/app/(authenticated)/components/header";
 
 interface DishDetailRow {
   id: string;
