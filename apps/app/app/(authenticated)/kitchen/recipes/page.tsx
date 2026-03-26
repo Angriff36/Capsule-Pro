@@ -675,7 +675,6 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                               tags={dish.dietary_tags}
                             />
                           )}
-                          </div>
                         </div>
                         <CardHeader className="space-y-1.5 p-4 pt-3">
                           <CardTitle className="font-semibold text-base leading-tight line-clamp-2">
