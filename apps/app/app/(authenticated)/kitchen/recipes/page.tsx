@@ -614,7 +614,6 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                       </CardHeader>
                     </Card>
                   );})
-                  )
                 )}
               </div>
             )}
