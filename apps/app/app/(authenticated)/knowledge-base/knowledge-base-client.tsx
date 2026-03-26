@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { PlusIcon, MagnifyingGlassIcon, DocumentTextIcon } from "@heroicons/react/24/outline";
+import { Plus, Search, FileText } from "lucide-react";
 
 interface KnowledgeBaseEntry {
   id: string;
@@ -60,7 +60,7 @@ export default function KnowledgeBaseClient() {
       {/* Search and Filter Bar */}
       <div className="flex gap-4 mb-6">
         <div className="flex-1 relative">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
           <input
             type="text"
             placeholder="Search knowledge base..."
@@ -88,7 +88,7 @@ export default function KnowledgeBaseClient() {
         <div className="text-center py-12 text-gray-500">Loading...</div>
       ) : entries.length === 0 ? (
         <div className="text-center py-12 text-gray-500">
-          <DocumentTextIcon className="mx-auto h-12 w-12 text-gray-400" />
+          <FileText className="mx-auto h-12 w-12 text-gray-400" />
           <p className="mt-2">No entries found</p>
         </div>
       ) : (
