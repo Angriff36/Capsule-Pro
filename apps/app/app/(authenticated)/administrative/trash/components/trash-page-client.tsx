@@ -37,7 +37,7 @@ import {
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
-import { Header } from "../../components/header";
+import { Header } from "../../../components/header";
 import { DependencyAnalysisDialog } from "./dependency-analysis-dialog";
 
 interface TrashItem {
