@@ -120,7 +120,6 @@ export async function POST(
       WHERE tenant_id = ${tenantId}::uuid
         AND recipe_id = ${recipeId}::uuid
         AND deleted_at IS NULL
-      FOR UPDATE
     `;
 
     if (versionInfo.length === 0 || !versionInfo[0].max_version) {

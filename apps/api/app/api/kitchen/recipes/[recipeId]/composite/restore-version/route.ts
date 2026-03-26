@@ -62,14 +62,12 @@ export async function POST(
         max_version: bigint;
       }[]
     >`
-      SELECT v.*, MAX(v.version_number) as max_version
+      SELECT v.*, MAX(v.version_number) OVER() as max_version
       FROM tenant_kitchen.recipe_versions v
       WHERE v.tenant_id = ${tenantId}::uuid
         AND v.id = ${body.sourceVersionId}::uuid
         AND v.recipe_id = ${recipeId}::uuid
         AND v.deleted_at IS NULL
-      GROUP BY v.id
-      FOR UPDATE
     `;
 
     if (sourceVersion.length === 0) {
