@@ -27,7 +27,7 @@ interface SelectableListProps {
 export function SelectableList({ items, type, children }: SelectableListProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isPending, startTransition] = useTransition();
-  const [selectMode, setSelectMode] = useState(false);
+  const selectMode = true;
 
   const toggleItem = (id: string) => {
     setSelectedIds((prev) => {
@@ -67,83 +67,61 @@ export function SelectableList({ items, type, children }: SelectableListProps) {
 
   return (
     <div className="space-y-3">
-      {/* Selection controls */}
-      <div className="flex items-center gap-2">
-        <Button
-          variant={selectMode ? "secondary" : "ghost"}
-          size="sm"
-          className="gap-1.5 text-xs"
-          onClick={() => {
-            if (selectMode) clearSelection();
-            else setSelectMode(true);
-          }}
-        >
-          <CheckSquare className="h-3.5 w-3.5" />
-          {selectMode ? "Cancel" : "Select"}
-        </Button>
-
-        {selectMode && (
-          <>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-xs"
-              onClick={selectAll}
-            >
-              {selectedIds.size === items.length ? "Deselect all" : "Select all"}
-            </Button>
-
-            {selectedIds.size > 0 && (
-              <div className="flex items-center gap-2 ml-auto">
-                <span className="text-xs font-medium text-accent">
-                  {selectedIds.size} selected
-                </span>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant="destructive"
-                      size="sm"
-                      className="gap-1.5 text-xs"
-                      disabled={isPending}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" />
-                      Delete {selectedIds.size}
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>
-                        Delete {selectedIds.size} {type}?
-                      </AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This will soft-delete the selected {type}. They can be
-                        recovered from the cleanup page.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={handleBulkDelete}
-                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      >
-                        Delete {selectedIds.size}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearSelection}
-                  className="gap-1 text-xs"
+      {/* Bulk actions - visible when items selected */}
+      {selectedIds.size > 0 && (
+        <div className="flex items-center gap-2 rounded-lg border border-accent/30 bg-accent/5 px-3 py-2">
+          <Checkbox
+            checked={selectedIds.size === items.length}
+            onCheckedChange={selectAll}
+            className="h-4 w-4"
+          />
+          <span className="text-xs font-medium">
+            {selectedIds.size} of {items.length} selected
+          </span>
+          <div className="flex-1" />
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="destructive"
+                size="sm"
+                className="gap-1.5 text-xs h-7"
+                disabled={isPending}
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                Delete {selectedIds.size}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>
+                  Delete {selectedIds.size} {type}?
+                </AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will soft-delete the selected {type}. They can be
+                  recovered from the cleanup page.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleBulkDelete}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                 >
-                  <X className="h-3.5 w-3.5" />
-                </Button>
-              </div>
-            )}
-          </>
-        )}
-      </div>
+                  Delete {selectedIds.size}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={clearSelection}
+            className="text-xs h-7"
+          >
+            Clear
+          </Button>
+        </div>
+      )}
 
       {/* Item grid with optional checkboxes */}
       <SelectionContext.Provider value={{ selectMode, selectedIds, toggleItem }}>
