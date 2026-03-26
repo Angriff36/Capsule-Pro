@@ -844,3 +844,47 @@ export const getRecipeForEdit = async (
     })),
   };
 };
+
+export const deleteRecipe = async (recipeId: string) => {
+  const tenantId = await requireTenantId();
+  await database.$executeRaw`
+    UPDATE tenant_kitchen.recipes
+    SET deleted_at = NOW()
+    WHERE tenant_id = ${tenantId} AND id = ${recipeId}::uuid
+  `;
+  revalidatePath("/kitchen/recipes");
+};
+
+export const deleteDish = async (dishId: string) => {
+  const tenantId = await requireTenantId();
+  await database.$executeRaw`
+    UPDATE tenant_kitchen.dishes
+    SET deleted_at = NOW()
+    WHERE tenant_id = ${tenantId} AND id = ${dishId}::uuid
+  `;
+  revalidatePath("/kitchen/recipes");
+};
+
+export const bulkDeleteRecipes = async (recipeIds: string[]) => {
+  const tenantId = await requireTenantId();
+  for (const id of recipeIds) {
+    await database.$executeRaw`
+      UPDATE tenant_kitchen.recipes
+      SET deleted_at = NOW()
+      WHERE tenant_id = ${tenantId} AND id = ${id}::uuid
+    `;
+  }
+  revalidatePath("/kitchen/recipes");
+};
+
+export const bulkDeleteDishes = async (dishIds: string[]) => {
+  const tenantId = await requireTenantId();
+  for (const id of dishIds) {
+    await database.$executeRaw`
+      UPDATE tenant_kitchen.dishes
+      SET deleted_at = NOW()
+      WHERE tenant_id = ${tenantId} AND id = ${id}::uuid
+    `;
+  }
+  revalidatePath("/kitchen/recipes");
+};

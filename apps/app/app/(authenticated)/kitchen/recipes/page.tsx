@@ -44,6 +44,7 @@ import { Header } from "../../components/header";
 import { MenuCard } from "./components/menu-card";
 import { getMenus } from "./menus/actions";
 import { RecipeEditButton } from "./recipe-edit-button";
+import { SingleDeleteButton } from "./components/bulk-actions-bar";
 import { RecipeFavoriteButton } from "./recipe-favorite-button";
 import { RecipesPageClient } from "./recipes-page-client";
 import RecipesRealtime from "./recipes-realtime";
@@ -595,6 +596,11 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                           recipeId={recipe.id}
                           recipeName={recipe.name}
                         />
+                        <SingleDeleteButton
+                          id={recipe.id}
+                          name={recipe.name}
+                          type="recipe"
+                        />
                         <RecipeFavoriteButton recipeName={recipe.name} />
                       </div>
                     </Link>
@@ -706,6 +712,15 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                           <span className={dish.is_active ? "text-[var(--brand-leafy-green)] font-medium" : "text-muted-foreground"}>
                             {dish.is_active ? "Active" : "Paused"}
                           </span>
+                        </div>
+
+                        {/* Delete */}
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                          <SingleDeleteButton
+                            id={dish.id}
+                            name={dish.name}
+                            type="dish"
+                          />
                         </div>
                       </Link>
                     );
