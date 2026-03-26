@@ -17,6 +17,17 @@ import { Button } from '@repo/design-system/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
 import { Badge } from '@repo/design-system/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@repo/design-system/components/ui/dialog';
+import { Input } from '@repo/design-system/components/ui/input';
+import { Label } from '@repo/design-system/components/ui/label';
+import { Textarea } from '@repo/design-system/components/ui/textarea';
 
 interface RouteStop {
   id: string;
@@ -65,6 +76,9 @@ export function RoutesView() {
   const [loading, setLoading] = useState(true);
   const [optimizing, setOptimizing] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('all');
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [createForm, setCreateForm] = useState({ name: '', scheduledDate: '', description: '' });
+  const [creating, setCreating] = useState(false);
 
   useEffect(() => {
     loadRoutes();
@@ -79,6 +93,34 @@ export function RoutesView() {
       console.error('Failed to load routes:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleCreateRoute = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!createForm.name.trim()) return;
+
+    setCreating(true);
+    try {
+      const res = await fetch('/api/logistics/routes/commands/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: createForm.name,
+          description: createForm.description || null,
+          scheduledDate: createForm.scheduledDate || null,
+        }),
+      });
+      const data = await res.json();
+      if (data.route) {
+        setRoutes((prev) => [data.route, ...prev]);
+        setShowCreateDialog(false);
+        setCreateForm({ name: '', scheduledDate: '', description: '' });
+      }
+    } catch (error) {
+      console.error('Failed to create route:', error);
+    } finally {
+      setCreating(false);
     }
   };
 
@@ -168,7 +210,7 @@ export function RoutesView() {
             Optimize delivery and catering routes for multi-venue events
           </p>
         </div>
-        <Button>
+        <Button onClick={() => setShowCreateDialog(true)}>
           <Plus className="mr-2 h-4 w-4" />
           New Route
         </Button>
@@ -305,6 +347,55 @@ export function RoutesView() {
           )}
         </TabsContent>
       </Tabs>
+
+      {/* Create Route Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Create New Route</DialogTitle>
+            <DialogDescription>
+              Add a new delivery route for your event catering.
+            </DialogDescription>
+          </DialogHeader>
+          <form className="space-y-4" onSubmit={handleCreateRoute}>
+            <div className="space-y-2">
+              <Label htmlFor="routeName">Route Name</Label>
+              <Input
+                id="routeName"
+                placeholder="e.g., Downtown Lunch Route"
+                value={createForm.name}
+                onChange={(e) => setCreateForm((prev) => ({ ...prev, name: e.target.value }))}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="scheduledDate">Scheduled Date</Label>
+              <Input
+                id="scheduledDate"
+                type="date"
+                value={createForm.scheduledDate}
+                onChange={(e) => setCreateForm((prev) => ({ ...prev, scheduledDate: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                placeholder="Route details..."
+                value={createForm.description}
+                onChange={(e) => setCreateForm((prev) => ({ ...prev, description: e.target.value }))}
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowCreateDialog(false)}>Cancel</Button>
+              <Button type="submit" disabled={!createForm.name.trim() || creating}>
+                {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Create Route
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
