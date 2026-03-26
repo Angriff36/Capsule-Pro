@@ -96,7 +96,7 @@ export async function getVendorRecipeCostSummary(): Promise<{
           rv.yield_quantity,
           u.code AS yield_unit,
           COALESCE(rv.cost_per_yield, 0) AS cost_per_yield,
-          COALESCE(rv.totalCost, 0) AS total_cost,
+          COALESCE(rv.total_cost, 0) AS total_cost,
           rv.cost_calculated_at,
           COUNT(DISTINCT ri.id) AS ingredient_count
         FROM tenant_kitchen.recipes r
@@ -116,7 +116,7 @@ export async function getVendorRecipeCostSummary(): Promise<{
           AND ri.deleted_at IS NULL
         WHERE r.tenant_id = ${tenantId}
           AND r.deleted_at IS NULL
-        GROUP BY r.id, r.name, rv.id, rv.yield_quantity, u.code, rv.cost_per_yield, rv.totalCost, rv.cost_calculated_at
+        GROUP BY r.id, r.name, rv.id, rv.yield_quantity, u.code, rv.cost_per_yield, rv.total_cost, rv.cost_calculated_at
       ),
       dish_pricing AS (
         SELECT
@@ -137,15 +137,15 @@ export async function getVendorRecipeCostSummary(): Promise<{
         rc.recipe_version_id,
         rc.yield_quantity,
         rc.yield_unit,
-        rc.totalCost,
+        rc.total_cost,
         rc.cost_per_yield,
         CASE
-          WHEN dp.avg_menu_price > 0 THEN ROUND((rc.totalCost / NULLIF(rc.yield_quantity, 0)) / dp.avg_menu_price * 100, 2)
+          WHEN dp.avg_menu_price > 0 THEN ROUND((rc.total_cost / NULLIF(rc.yield_quantity, 0)) / dp.avg_menu_price * 100, 2)
           ELSE NULL
         END AS food_cost_percent,
         dp.avg_menu_price AS menu_price,
         CASE
-          WHEN dp.avg_menu_price > 0 THEN ROUND(((dp.avg_menu_price - (rc.totalCost / NULLIF(rc.yield_quantity, 0))) / dp.avg_menu_price) * 100, 2)
+          WHEN dp.avg_menu_price > 0 THEN ROUND(((dp.avg_menu_price - (rc.total_cost / NULLIF(rc.yield_quantity, 0))) / dp.avg_menu_price) * 100, 2)
           ELSE NULL
         END AS margin,
         rc.ingredient_count,
@@ -195,8 +195,6 @@ export async function getVendorRecipeCostBreakdown(
         recipe_version_id: string;
         total_cost: number;
         cost_per_yield: number;
-        portion_size: number | null;
-        portion_unit: string | null;
       }[]
     >`
       SELECT
@@ -206,10 +204,8 @@ export async function getVendorRecipeCostBreakdown(
         rv.yield_quantity,
         u.code AS yield_unit,
         rv.id AS recipe_version_id,
-        COALESCE(rv.totalCost, 0) AS total_cost,
-        COALESCE(rv.cost_per_yield, 0) AS cost_per_yield,
-        rv.portion_size,
-        pu.code AS portion_unit
+        COALESCE(rv.total_cost, 0) AS total_cost,
+        COALESCE(rv.cost_per_yield, 0) AS cost_per_yield
       FROM tenant_kitchen.recipes r
       LEFT JOIN LATERAL (
         SELECT rv.*
@@ -221,7 +217,6 @@ export async function getVendorRecipeCostBreakdown(
         LIMIT 1
       ) rv ON true
       LEFT JOIN core.units u ON u.id = rv.yield_unit_id
-      LEFT JOIN core.units pu ON pu.id = rv.portion_unit_id
       WHERE r.tenant_id = ${tenantId}
         AND r.id = ${recipeId}
         AND r.deleted_at IS NULL
@@ -241,8 +236,8 @@ export async function getVendorRecipeCostBreakdown(
           i.name AS ingredient_name,
           ri.quantity,
           u.code AS unit,
-          ri.wasteFactor,
-          (ri.quantity * ri.wasteFactor) AS adjusted_quantity,
+          ri.waste_factor,
+          (ri.quantity * ri.waste_factor) AS adjusted_quantity,
           COALESCE(
             (
               SELECT MIN(vc.base_unit_cost)
@@ -263,7 +258,7 @@ export async function getVendorRecipeCostBreakdown(
         FROM tenant_kitchen.recipe_ingredients ri
         INNER JOIN tenant_kitchen.ingredients i
           ON i.tenant_id = ri.tenant_id
-          AND i.id = ri.ingredientId
+          AND i.id = ri.ingredient_id
           AND i.deleted_at IS NULL
         LEFT JOIN core.units u ON u.id = ri.unit_id
         WHERE ri.tenant_id = ${tenantId}
@@ -338,7 +333,7 @@ export async function getVendorRecipeCostBreakdown(
         ON ri.tenant_id = vc.tenant_id
       INNER JOIN tenant_kitchen.ingredients i
         ON i.tenant_id = ri.tenant_id
-        AND i.id = ri.ingredientId
+        AND i.id = ri.ingredient_id
       WHERE vc.tenant_id = ${tenantId}
         AND vc.deleted_at IS NULL
         AND vc.is_active = true
@@ -442,7 +437,7 @@ export async function getCostingSummaryStats(): Promise<{
         SELECT
           r.id AS recipe_id,
           r.name AS recipe_name,
-          rv.totalCost,
+          rv.total_cost,
           rv.yield_quantity,
           rv.cost_per_yield
         FROM tenant_kitchen.recipes r
@@ -475,27 +470,27 @@ export async function getCostingSummaryStats(): Promise<{
         SELECT
           rc.recipe_id,
           rc.recipe_name,
-          rc.totalCost,
+          rc.total_cost,
           rc.yield_quantity,
           rc.cost_per_yield,
           dp.avg_menu_price,
           CASE
             WHEN dp.avg_menu_price > 0
-            THEN ((rc.totalCost / NULLIF(rc.yield_quantity, 0)) / dp.avg_menu_price) * 100
+            THEN ((rc.total_cost / NULLIF(rc.yield_quantity, 0)) / dp.avg_menu_price) * 100
             ELSE NULL
           END AS food_cost_percent,
           CASE
             WHEN dp.avg_menu_price > 0
-            THEN ((dp.avg_menu_price - (rc.totalCost / NULLIF(rc.yield_quantity, 0))) / dp.avg_menu_price) * 100
+            THEN ((dp.avg_menu_price - (rc.total_cost / NULLIF(rc.yield_quantity, 0))) / dp.avg_menu_price) * 100
             ELSE NULL
           END AS margin
         FROM recipe_costs rc
         LEFT JOIN dish_pricing dp ON dp.recipe_id = rc.recipe_id
-        WHERE rc.totalCost > 0
+        WHERE rc.total_cost > 0
       )
       SELECT
         COALESCE(AVG(cc.food_cost_percent), 0) AS avg_food_cost_percent,
-        COALESCE(SUM(cc.totalCost), 0) AS total_recipe_value,
+        COALESCE(SUM(cc.total_cost), 0) AS total_recipe_value,
         (
           SELECT cc.recipe_name
           FROM calculated_costs cc
