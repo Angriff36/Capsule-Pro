@@ -1,8 +1,8 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
 import { LabelSkeleton } from "@repo/design-system/components/ui/skeleton";
 import { FileText, Scale, Sparkles, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";

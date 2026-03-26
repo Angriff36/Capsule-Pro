@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import { useParams } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
+import { Button } from '@repo/design-system/components/ui/button';
+import { Badge } from '@repo/design-system/components/ui/badge';
 import { 
   CheckCircle2, 
   SkipForward, 
