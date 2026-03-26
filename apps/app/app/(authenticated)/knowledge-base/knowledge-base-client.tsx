@@ -1,7 +1,26 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Search, FileText } from "lucide-react";
+import { Plus, Search, FileText, Loader2 } from "lucide-react";
+import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/design-system/components/ui/dialog";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
+import { Textarea } from "@repo/design-system/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/design-system/components/ui/select";
 
 interface KnowledgeBaseEntry {
   id: string;
@@ -20,6 +39,16 @@ export default function KnowledgeBaseClient() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    title: '',
+    slug: '',
+    content: '',
+    category: '',
+    tags: '',
+    status: 'draft',
+  });
 
   useEffect(() => {
     fetchEntries();
@@ -48,13 +77,66 @@ export default function KnowledgeBaseClient() {
 
   const categories = [...new Set(entries.map((e) => e.category).filter(Boolean))] as string[];
 
+  const generateSlug = (title: string) => {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+  };
+
+  const handleCreateArticle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!createForm.title.trim() || !createForm.slug.trim()) return;
+
+    setCreating(true);
+    try {
+      const res = await fetch('/api/knowledge-base/entries/commands/create', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: createForm.title,
+          slug: createForm.slug,
+          content: createForm.content || null,
+          category: createForm.category || null,
+          tags: createForm.tags ? createForm.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+          status: createForm.status,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (createForm.status === 'published') {
+          setEntries((prev) => [data.data.entry, ...prev]);
+        }
+        setShowCreateDialog(false);
+        setCreateForm({
+          title: '',
+          slug: '',
+          content: '',
+          category: '',
+          tags: '',
+          status: 'draft',
+        });
+      }
+    } catch (error) {
+      console.error('Failed to create article:', error);
+    } finally {
+      setCreating(false);
+    }
+  };
+
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Knowledge Base</h1>
-        <p className="text-gray-600 mt-1">
-          Staff training materials and documentation
-        </p>
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Knowledge Base</h1>
+          <p className="text-gray-600 mt-1">
+            Staff training materials and documentation
+          </p>
+        </div>
+        <Button onClick={() => setShowCreateDialog(true)}>
+          <Plus className="h-4 w-4 mr-2" />
+          New Article
+        </Button>
       </div>
 
       {/* Search and Filter Bar */}
@@ -126,6 +208,93 @@ export default function KnowledgeBaseClient() {
           ))}
         </div>
       )}
+
+      {/* Create Article Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Create New Article</DialogTitle>
+            <DialogDescription>
+              Add a new article to the knowledge base for staff training.
+            </DialogDescription>
+          </DialogHeader>
+          <form className="space-y-4" onSubmit={handleCreateArticle}>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="title">Title *</Label>
+                <Input
+                  id="title"
+                  placeholder="e.g., How to Handle Customer Complaints"
+                  value={createForm.title}
+                  onChange={(e) => {
+                    setCreateForm((prev) => ({ ...prev, title: e.target.value }));
+                    if (!createForm.slug) {
+                      setCreateForm((prev) => ({ ...prev, slug: generateSlug(e.target.value) }));
+                    }
+                  }}
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="slug">Slug *</Label>
+                <Input
+                  id="slug"
+                  placeholder="auto-generated-from-title"
+                  value={createForm.slug}
+                  onChange={(e) => setCreateForm((prev) => ({ ...prev, slug: e.target.value }))}
+                  required
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Category</Label>
+                <Input
+                  placeholder="e.g., Training, SOPs, Policies"
+                  value={createForm.category}
+                  onChange={(e) => setCreateForm((prev) => ({ ...prev, category: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Status</Label>
+                <Select value={createForm.status} onValueChange={(v) => setCreateForm((prev) => ({ ...prev, status: v }))}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="draft">Draft</SelectItem>
+                    <SelectItem value="published">Published</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Tags (comma-separated)</Label>
+              <Input
+                placeholder="e.g., training, onboarding, safety"
+                value={createForm.tags}
+                onChange={(e) => setCreateForm((prev) => ({ ...prev, tags: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Content</Label>
+              <Textarea
+                placeholder="Write your article content here..."
+                value={createForm.content}
+                onChange={(e) => setCreateForm((prev) => ({ ...prev, content: e.target.value }))}
+                rows={10}
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowCreateDialog(false)}>Cancel</Button>
+              <Button type="submit" disabled={!createForm.title.trim() || !createForm.slug.trim() || creating}>
+                {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Create Article
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
