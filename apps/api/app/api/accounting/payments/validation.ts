@@ -256,7 +256,7 @@ export interface PaymentResponse {
   gatewayTransactionId: string | null;
   gatewayPaymentMethodId: string | null;
   processor: string | null;
-  processedAt: Date;
+  processedAt: Date | null;
   completedAt: Date | null;
   refundedAt: Date | null;
   createdAt: Date;

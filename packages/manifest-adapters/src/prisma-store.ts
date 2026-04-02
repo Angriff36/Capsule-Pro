@@ -404,6 +404,29 @@ export class RecipeVersionPrismaStore implements Store<EntityInstance> {
     return version ? this.mapToManifestEntity(version) : undefined;
   }
 
+  /**
+   * Get the latest RecipeVersion for a specific recipe (by versionNumber DESC).
+   * This replaces the need for raw SQL queries like MAX(version_number).
+   */
+  async getLatestByRecipeId(recipeId: string): Promise<EntityInstance | undefined> {
+    const version = await this.prisma.recipeVersion.findFirst({
+      where: { tenantId: this.tenantId, recipeId, deletedAt: null },
+      orderBy: { versionNumber: 'desc' },
+    });
+    return version ? this.mapToManifestEntity(version) : undefined;
+  }
+
+  /**
+   * Get all versions for a specific recipe, ordered by version number descending.
+   */
+  async getByRecipeId(recipeId: string): Promise<EntityInstance[]> {
+    const versions = await this.prisma.recipeVersion.findMany({
+      where: { tenantId: this.tenantId, recipeId, deletedAt: null },
+      orderBy: { versionNumber: 'desc' },
+    });
+    return versions.map((version) => this.mapToManifestEntity(version));
+  }
+
   async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
     const version = await this.prisma.recipeVersion.create({
       data: {

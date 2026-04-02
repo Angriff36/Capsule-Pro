@@ -47,6 +47,10 @@ jobs:
         run: node scripts/check-hardcoded-routes.mjs
         continue-on-error: true # TODO: Remove once all violations are migrated to route helpers
 
+      - name: Check @repo/ui imports (must use @repo/design-system)
+        run: node scripts/check-repo-ui-imports.mjs
+        continue-on-error: true # TODO: Remove once all violations are fixed
+
       - name: Run tests
         run: pnpm test
 

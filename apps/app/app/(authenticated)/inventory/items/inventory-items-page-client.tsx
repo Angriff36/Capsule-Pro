@@ -8,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Checkbox } from "@repo/design-system/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +17,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@repo/design-system/components/ui/dropdown-menu";
 import { Input } from "@repo/design-system/components/ui/input";
 import {
   Select,
@@ -33,10 +42,13 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import { PackageIcon, PlusIcon } from "lucide-react";
+import { PackageIcon, PlusIcon, MoreHorizontal, TrashIcon, UploadIcon } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import Link from "next/link";
 import {
+  batchDeleteItems,
+  batchUpdateItems,
   deleteInventoryItem,
   FSA_STATUSES,
   type FSAStatus,
@@ -77,6 +89,14 @@ export const InventoryItemsPageClient = () => {
   const [editItem, setEditItem] = useState<InventoryItemWithStatus | null>(
     null
   );
+
+  // Selection state
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [batchUpdateDialogOpen, setBatchUpdateDialogOpen] = useState(false);
+  const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
+  const [batchUpdateField, setBatchUpdateField] = useState<"category" | "fsa_status">("category");
+  const [batchUpdateValue, setBatchUpdateValue] = useState<string>("");
+  const [batchUpdating, setBatchUpdating] = useState(false);
 
   const loadItems = useCallback(async () => {
     setIsLoading(true);
@@ -154,6 +174,67 @@ export const InventoryItemsPageClient = () => {
     setIsCreateModalOpen(false);
     setEditItem(null);
   };
+
+  // Selection helpers
+  const toggleSelectAll = useCallback(() => {
+    if (selectedIds.size === filteredItems.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredItems.map((item) => item.id)));
+    }
+  }, [filteredItems, selectedIds.size]);
+
+  const toggleSelectItem = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }, []);
+
+  const clearSelection = useCallback(() => {
+    setSelectedIds(new Set());
+  }, []);
+
+  // Batch update handler
+  const handleBatchUpdate = useCallback(async () => {
+    if (!batchUpdateValue) return;
+    setBatchUpdating(true);
+    try {
+      const updates: Record<string, string> = {};
+      updates[batchUpdateField] = batchUpdateValue;
+      await batchUpdateItems(Array.from(selectedIds), updates as Parameters<typeof batchUpdateItems>[1]);
+      toast.success(`Updated ${selectedIds.size} items`);
+      setBatchUpdateDialogOpen(false);
+      setBatchUpdateValue("");
+      clearSelection();
+      loadItems();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to batch update items");
+    } finally {
+      setBatchUpdating(false);
+    }
+  }, [batchUpdateValue, batchUpdateField, selectedIds, clearSelection, loadItems]);
+
+  // Batch delete handler
+  const handleBatchDelete = useCallback(async () => {
+    setBatchUpdating(true);
+    try {
+      await batchDeleteItems(Array.from(selectedIds));
+      toast.success(`Deleted ${selectedIds.size} items`);
+      setBatchDeleteDialogOpen(false);
+      clearSelection();
+      loadItems();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to batch delete items");
+    } finally {
+      setBatchUpdating(false);
+    }
+  }, [selectedIds, clearSelection, loadItems]);
 
   // Calculate summary stats
   const totalValue = items.reduce((sum, item) => sum + item.total_value, 0);
@@ -299,11 +380,67 @@ export const InventoryItemsPageClient = () => {
           </div>
         </section>
 
+        {/* Batch Actions Bar */}
+        {selectedIds.size > 0 && (
+          <section>
+            <div className="flex items-center justify-between rounded-xl border bg-muted/50 p-4">
+              <div className="flex items-center gap-3">
+                <span className="text-sm font-medium">
+                  {selectedIds.size} item{selectedIds.size !== 1 ? "s" : ""} selected
+                </span>
+                <Button
+                  onClick={clearSelection}
+                  size="sm"
+                  variant="ghost"
+                >
+                  Clear
+                </Button>
+              </div>
+              <div className="flex items-center gap-2">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button size="sm" variant="outline">
+                      <UploadIcon className="mr-2 size-4" />
+                      Update Selected
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Update Field</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => { setBatchUpdateField("category"); setBatchUpdateDialogOpen(true); }}>
+                      Update Category
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => { setBatchUpdateField("fsa_status"); setBatchUpdateDialogOpen(true); }}>
+                      Update FSA Status
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <Button
+                  onClick={() => setBatchDeleteDialogOpen(true)}
+                  size="sm"
+                  variant="destructive"
+                >
+                  <TrashIcon className="mr-2 size-4" />
+                  Delete Selected
+                </Button>
+              </div>
+            </div>
+          </section>
+        )}
+
         {/* Inventory Items Table Section */}
         <section>
-          <h2 className="text-sm font-medium text-muted-foreground mb-4">
-            Inventory Items ({filteredItems.length})
-          </h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-medium text-muted-foreground">
+              Inventory Items ({filteredItems.length})
+            </h2>
+            <Button asChild size="sm" variant="outline">
+              <Link href="/inventory/import">
+                <UploadIcon className="mr-2 size-4" />
+                Import CSV
+              </Link>
+            </Button>
+          </div>
           {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <div className="size-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
@@ -344,6 +481,15 @@ export const InventoryItemsPageClient = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-10">
+                      <Checkbox
+                        checked={
+                          filteredItems.length > 0 &&
+                          selectedIds.size === filteredItems.length
+                        }
+                        onCheckedChange={toggleSelectAll}
+                      />
+                    </TableHead>
                     <TableHead>Item Number</TableHead>
                     <TableHead>Name</TableHead>
                     <TableHead>Category</TableHead>
@@ -358,6 +504,12 @@ export const InventoryItemsPageClient = () => {
                 <TableBody>
                   {filteredItems.map((item) => (
                     <TableRow key={item.id}>
+                      <TableCell>
+                        <Checkbox
+                          checked={selectedIds.has(item.id)}
+                          onCheckedChange={() => toggleSelectItem(item.id)}
+                        />
+                      </TableCell>
                       <TableCell className="font-mono text-sm">
                         {item.item_number}
                       </TableCell>

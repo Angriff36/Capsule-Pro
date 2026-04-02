@@ -71,7 +71,7 @@ export function parsePaymentMethodFilters(
   // Validate type if provided
   if (filters.type) {
     invariant(
-      PAYMENT_METHOD_TYPES.includes(filters.type as string),
+      (PAYMENT_METHOD_TYPES as readonly string[]).includes(filters.type),
       `Invalid payment method type: ${filters.type}`
     );
   }
@@ -110,7 +110,7 @@ export function validateCreatePaymentMethodRequest(
 
   const type = data.type as string;
   invariant(
-    PAYMENT_METHOD_TYPES.includes(type),
+    (PAYMENT_METHOD_TYPES as readonly string[]).includes(type),
     `Invalid payment method type: ${type}`
   );
 
@@ -129,7 +129,7 @@ export function validateCreatePaymentMethodRequest(
         "cardNetwork must be a string"
       );
       invariant(
-        CARD_NETWORKS.includes(data.cardNetwork as string),
+        (CARD_NETWORKS as readonly string[]).includes(data.cardNetwork as string),
         `Invalid card network: ${data.cardNetwork}`
       );
     }

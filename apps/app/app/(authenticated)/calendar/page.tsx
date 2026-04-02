@@ -1,11 +1,14 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { startOfMonth, endOfMonth, addMonths, subMonths } from "date-fns";
+import { RefreshCw } from "lucide-react";
 import { Header } from "../components/header";
 import { UnifiedCalendar, UnifiedCalendarSkeleton } from "./components/unified-calendar";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@repo/design-system/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
+import { Button } from "@repo/design-system/components/ui/button";
 import { getTenantIdForOrg } from "../../lib/tenant";
 
 interface CalendarEvent {
@@ -172,6 +175,12 @@ const CalendarPage = async () => {
               <TabsTrigger value="schedule">Schedule</TabsTrigger>
             </TabsList>
           </Tabs>
+          <Link href="/calendar/sync">
+            <Button variant="outline" size="sm">
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Sync
+            </Button>
+          </Link>
         </div>
       </Header>
 

@@ -90,7 +90,7 @@ function convertToBase64(uint8Array: Uint8Array): string {
 }
 
 async function generatePdfBlob(
-  pdfComponent: React.ReactElement<unknown>
+  pdfComponent: React.ReactElement<Record<string, unknown>>
 ): Promise<Blob> {
   const { pdf } = await import("@react-pdf/renderer");
   const doc = await pdf(pdfComponent);
@@ -98,7 +98,7 @@ async function generatePdfBlob(
 }
 
 async function generateBase64Pdf(
-  pdfComponent: React.ReactElement<unknown>
+  pdfComponent: React.ReactElement<Record<string, unknown>>
 ): Promise<string> {
   const blob = await generatePdfBlob(pdfComponent);
   const arrayBuffer = await blob.arrayBuffer();
@@ -112,7 +112,7 @@ function generatePrepListFilename(eventTitle: string, eventDate: Date): string {
 }
 
 async function handlePdfDownload(
-  pdfComponent: React.ReactElement<unknown>,
+  pdfComponent: React.ReactElement<Record<string, unknown>>,
   eventTitle: string,
   eventDate: Date
 ): Promise<NextResponse> {
@@ -126,7 +126,7 @@ async function handlePdfDownload(
 }
 
 async function handlePdfBase64(
-  pdfComponent: React.ReactElement<unknown>,
+  pdfComponent: React.ReactElement<Record<string, unknown>>,
   eventTitle: string,
   eventDate: Date
 ): Promise<NextResponse> {
@@ -222,7 +222,13 @@ async function preparePdfData(
       allergens: string[];
       dietarySubstitutions: string[];
     }>;
-    tasks: Array<unknown>;
+    tasks: Array<{
+      id: string;
+      name: string;
+      dueDate: Date;
+      status: string;
+      priority: number;
+    }>;
   }>();
 
   const stationNames: Record<string, string> = {
@@ -390,7 +396,7 @@ export async function GET(
       eventDate = prepared.eventDate;
     }
 
-    const pdfComponent = PrepListPDF({ data: pdfData }) as React.ReactElement<unknown>;
+    const pdfComponent = PrepListPDF({ data: pdfData }) as React.ReactElement<Record<string, unknown>>;
 
     const url = new URL(request.url);
     const shouldDownload = url.searchParams.get("download") === "true";

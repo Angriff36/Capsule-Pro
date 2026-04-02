@@ -93,7 +93,7 @@ export async function GET(request: NextRequest) {
 
     const hasMore = offset + entries.length < totalCount;
 
-    return manifestSuccessResponse<KnowledgeBaseListResponse>({
+    return manifestSuccessResponse({
       entries: entries as KnowledgeBaseEntry[],
       hasMore,
       totalCount,

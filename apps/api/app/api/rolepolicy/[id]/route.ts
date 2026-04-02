@@ -33,7 +33,7 @@ export async function GET(request: Request, context: RouteContext) {
 
     const { id } = await context.params;
 
-    const policy = await database.rolePolicy.findUnique({
+    const policy = await database.rolePolicy.findFirst({
       where: {
         tenantId_id: {
           tenantId,

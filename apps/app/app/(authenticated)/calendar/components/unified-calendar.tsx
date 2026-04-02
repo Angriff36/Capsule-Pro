@@ -1,8 +1,8 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, isToday, parseISO, isValid } from "date-fns";
-import { ChevronLeft, ChevronRight, Calendar, Clock, Users, MapPin, Briefcase, PartyPopper, X, Filter, Search, CheckCircle2, XCircle, AlertCircle } from "lucide-react";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameMonth, isSameDay, addMonths, subMonths, startOfWeek, endOfWeek, isToday, parseISO, isValid, setHours, setMinutes, startOfDay } from "date-fns";
+import { ChevronLeft, ChevronRight, Calendar, Clock, Users, MapPin, Briefcase, PartyPopper, X, Filter, Search, CheckCircle2, XCircle, AlertCircle, GripVertical } from "lucide-react";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
 import { Badge } from "@repo/design-system/components/ui/badge";
@@ -13,8 +13,21 @@ import {
   DialogContent, 
   DialogHeader, 
   DialogTitle,
-  DialogDescription 
+  DialogDescription,
+  DialogFooter
 } from "@repo/design-system/components/ui/dialog";
+import {
+  DndContext,
+  DragOverlay,
+  useDraggable,
+  useDroppable,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  DragStartEvent,
+} from "@dnd-kit/core";
+import { toast } from "sonner";
 
 interface CalendarEvent {
   id: string;
@@ -54,6 +67,107 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
   reminder: "Reminders",
 };
 
+// Event types that can be rescheduled via drag-and-drop
+const DRAGGABLE_EVENT_TYPES = ["event", "shift"];
+
+// Draggable event card wrapper
+interface DraggableEventProps {
+  event: CalendarEvent;
+  onClick: (event: CalendarEvent) => void;
+  isDayView?: boolean;
+}
+
+function DraggableEvent({ event, onClick, isDayView }: DraggableEventProps) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: `event-${event.id}`,
+    data: { event },
+  });
+
+  const isDraggable = DRAGGABLE_EVENT_TYPES.includes(event.type);
+
+  if (!isDraggable) {
+    // Non-draggable events (timeoff, deadline, reminder)
+    return (
+      <div
+        onClick={() => onClick(event)}
+        className={`
+          px-2 py-1 rounded text-xs cursor-pointer truncate
+          ${EVENT_COLORS[event.type] || "bg-gray-500"}
+          text-white
+          ${isDayView ? "py-2 text-sm" : ""}
+        `}
+        title={event.title}
+      >
+        {format(event.start, "HH:mm")} {event.title}
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      onClick={() => onClick(event)}
+      className={`
+        px-2 py-1 rounded text-xs cursor-grab truncate
+        ${EVENT_COLORS[event.type] || "bg-gray-500"}
+        text-white
+        ${isDayView ? "py-2 text-sm" : ""}
+        ${isDragging ? "opacity-50 ring-2 ring-blue-400" : "hover:opacity-90"}
+      `}
+      title={`${event.title} - Drag to reschedule`}
+      {...attributes}
+      {...listeners}
+    >
+      <span className="flex items-center gap-1">
+        <GripVertical className="w-3 h-3 opacity-60 flex-shrink-0" />
+        {format(event.start, "HH:mm")} {event.title}
+      </span>
+    </div>
+  );
+}
+
+// Droppable day cell wrapper
+interface DroppableDayCellProps {
+  day: Date;
+  isCurrentMonth: boolean;
+  isCurrentDay: boolean;
+  view: "month" | "week" | "day";
+  children: React.ReactNode;
+  activeEvent: CalendarEvent | null;
+}
+
+function DroppableDayCell({
+  day,
+  isCurrentMonth,
+  isCurrentDay,
+  view,
+  children,
+  activeEvent,
+}: DroppableDayCellProps) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: `day-${day.toISOString()}`,
+    data: { date: day },
+  });
+
+  const isActiveTarget = activeEvent && isOver;
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`
+        border rounded-lg transition-colors
+        ${view === "day" ? "min-h-[500px] p-4" : "min-h-[120px] p-2"}
+        ${isCurrentMonth ? "bg-white" : "bg-gray-50"}
+        ${isCurrentDay ? "ring-2 ring-emerald-500" : "border-gray-200"}
+        ${isActiveTarget ? "ring-2 ring-blue-400 bg-blue-50" : ""}
+        hover:border-gray-300
+      `}
+    >
+      {children}
+    </div>
+  );
+}
+
 export function UnifiedCalendar({ 
   tenantId, 
   initialEvents = [], 
@@ -70,6 +184,24 @@ export function UnifiedCalendar({
   const [isLoading, setIsLoading] = useState(false);
   const [availabilityDate, setAvailabilityDate] = useState<string>("");
   const [availabilityResults, setAvailabilityResults] = useState<CalendarEvent[] | null>(null);
+  
+  // Drag-and-drop state
+  const [activeEvent, setActiveEvent] = useState<CalendarEvent | null>(null);
+  const [rescheduleDialog, setRescheduleDialog] = useState<{
+    open: boolean;
+    event: CalendarEvent | null;
+    newDate: Date | null;
+  }>({ open: false, event: null, newDate: null });
+  const [isRescheduling, setIsRescheduling] = useState(false);
+
+  // DnD sensors - require 8px movement before drag starts to avoid accidental drags
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
 
   // Fetch calendar data
   useEffect(() => {
@@ -133,14 +265,27 @@ export function UnifiedCalendar({
 
   const goToToday = () => setCurrentDate(new Date());
 
-  // Generate calendar days
+  // Generate calendar days based on view
   const calendarDays = useMemo(() => {
+    if (view === "day") {
+      // Single day view
+      return [currentDate];
+    }
+    
+    if (view === "week") {
+      // Week view: 7 days starting from Sunday
+      const weekStart = startOfWeek(currentDate);
+      const weekEnd = endOfWeek(currentDate);
+      return eachDayOfInterval({ start: weekStart, end: weekEnd });
+    }
+    
+    // Month view (default)
     const monthStart = startOfMonth(currentDate);
     const monthEnd = endOfMonth(currentDate);
     const calStart = startOfWeek(monthStart);
     const calEnd = endOfWeek(monthEnd);
     return eachDayOfInterval({ start: calStart, end: calEnd });
-  }, [currentDate]);
+  }, [currentDate, view]);
 
   // Check availability for a specific date
   const checkAvailability = (dateStr: string) => {
@@ -199,6 +344,85 @@ export function UnifiedCalendar({
   const handleEventClick = (event: CalendarEvent) => {
     setSelectedEvent(event);
     setShowEventDialog(true);
+  };
+
+  // Drag-and-drop handlers
+  const handleDragStart = (event: DragStartEvent) => {
+    const draggedEvent = event.active.data.current?.event as CalendarEvent;
+    if (draggedEvent) {
+      setActiveEvent(draggedEvent);
+    }
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveEvent(null);
+
+    if (!over || !active) return;
+
+    const draggedEvent = active.data.current?.event as CalendarEvent;
+    const targetDate = over.data.current?.date as Date;
+
+    if (!draggedEvent || !targetDate) return;
+    
+    // Don't show dialog if dropped on same day
+    if (isSameDay(draggedEvent.start, targetDate)) return;
+
+    // Show confirmation dialog
+    setRescheduleDialog({
+      open: true,
+      event: draggedEvent,
+      newDate: targetDate,
+    });
+  };
+
+  const handleDragCancel = () => {
+    setActiveEvent(null);
+  };
+
+  // Reschedule event via API
+  const handleConfirmReschedule = async () => {
+    const { event, newDate } = rescheduleDialog;
+    if (!event || !newDate) return;
+
+    setIsRescheduling(true);
+    try {
+      // Preserve the original time from the event
+      const originalHours = event.start.getHours();
+      const originalMinutes = event.start.getMinutes();
+      const newEventDate = setMinutes(setHours(startOfDay(newDate), originalHours), originalMinutes);
+
+      const response = await fetch("/api/events/event/commands/update-date", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: event.id,
+          newEventDate: newEventDate.getTime(), // Send as timestamp in ms
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to reschedule event");
+      }
+
+      // Update local state
+      setEvents((prev) =>
+        prev.map((e) =>
+          e.id === event.id
+            ? { ...e, start: newEventDate }
+            : e
+        )
+      );
+
+      toast.success(`"${event.title}" rescheduled to ${format(newEventDate, "MMM d, yyyy")}`);
+      setRescheduleDialog({ open: false, event: null, newDate: null });
+    } catch (error) {
+      console.error("Failed to reschedule:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to reschedule event");
+    } finally {
+      setIsRescheduling(false);
+    }
   };
 
   return (
@@ -316,72 +540,94 @@ export function UnifiedCalendar({
 
       {/* Calendar Grid */}
       <div className="flex-1 overflow-auto p-4">
-        {/* Day Headers */}
-        <div className="grid grid-cols-7 gap-1 mb-2">
-          {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => (
-            <div key={day} className="text-center text-sm font-medium text-gray-500 py-2">
-              {day}
-            </div>
-          ))}
-        </div>
+        <DndContext
+          sensors={sensors}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+          onDragCancel={handleDragCancel}
+        >
+          {/* Day Headers */}
+          <div className={`grid gap-1 mb-2 ${view === 'day' ? 'grid-cols-1' : 'grid-cols-7'}`}>
+            {view === 'day' ? (
+              <div className="text-center text-sm font-medium text-gray-500 py-2">
+                {format(currentDate, "EEEE, MMMM d, yyyy")}
+              </div>
+            ) : (
+              ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(day => (
+                <div key={day} className="text-center text-sm font-medium text-gray-500 py-2">
+                  {day}
+                </div>
+              ))
+            )}
+          </div>
 
-        {/* Calendar Days */}
-        <div className="grid grid-cols-7 gap-1 auto-rows-fr min-h-[600px]">
-          {calendarDays.map(day => {
-            const dayEvents = getEventsForDay(day);
-            const isCurrentMonth = isSameMonth(day, currentDate);
-            const isCurrentDay = isToday(day);
-            
-            return (
+          {/* Calendar Days */}
+          <div className={`grid gap-1 auto-rows-fr min-h-[600px] ${view === 'day' ? 'grid-cols-1' : view === 'week' ? 'grid-cols-7' : 'grid-cols-7'}`}>
+            {calendarDays.map(day => {
+              const dayEvents = getEventsForDay(day);
+              const isCurrentMonth = view === 'week' || view === 'day' || isSameMonth(day, currentDate);
+              const isCurrentDay = isToday(day);
+              
+              return (
+                <DroppableDayCell
+                  key={day.toISOString()}
+                  day={day}
+                  isCurrentMonth={isCurrentMonth}
+                  isCurrentDay={isCurrentDay}
+                  view={view}
+                  activeEvent={activeEvent}
+                >
+                  <div className="flex items-center justify-between mb-1">
+                    <span className={`
+                      text-sm font-medium
+                      ${isCurrentDay ? 'bg-emerald-500 text-white w-7 h-7 rounded-full flex items-center justify-center' : ''}
+                      ${!isCurrentMonth ? 'text-gray-400' : 'text-gray-700'}
+                    `}>
+                      {view === 'day' ? format(day, "EEEE, MMMM d") : format(day, "d")}
+                    </span>
+                    {dayEvents.length > 0 && (
+                      <span className="text-xs text-gray-400">
+                        {dayEvents.length}
+                      </span>
+                    )}
+                  </div>
+                  
+                  <div className={`space-y-1 overflow-y-auto ${view === 'day' ? 'max-h-[400px]' : 'max-h-[90px]'}`}>
+                    {dayEvents.slice(0, view === 'day' ? 50 : 4).map(event => (
+                      <DraggableEvent
+                        key={event.id}
+                        event={event}
+                        onClick={handleEventClick}
+                        isDayView={view === 'day'}
+                      />
+                    ))}
+                    {dayEvents.length > (view === 'day' ? 50 : 4) && (
+                      <div className="text-xs text-gray-500 pl-1">
+                        +{dayEvents.length - (view === 'day' ? 50 : 4)} more
+                      </div>
+                    )}
+                  </div>
+                </DroppableDayCell>
+              );
+            })}
+          </div>
+
+          {/* Drag Overlay - shows event being dragged */}
+          <DragOverlay>
+            {activeEvent ? (
               <div
-                key={day.toISOString()}
                 className={`
-                  min-h-[120px] p-2 border rounded-lg transition-colors
-                  ${isCurrentMonth ? 'bg-white' : 'bg-gray-50'}
-                  ${isCurrentDay ? 'ring-2 ring-emerald-500' : 'border-gray-200'}
-                  hover:border-gray-300
+                  px-2 py-1 rounded text-xs truncate shadow-lg
+                  ${EVENT_COLORS[activeEvent.type] || "bg-gray-500"}
+                  text-white
+                  ring-2 ring-blue-400
                 `}
               >
-                <div className="flex items-center justify-between mb-1">
-                  <span className={`
-                    text-sm font-medium
-                    ${isCurrentDay ? 'bg-emerald-500 text-white w-7 h-7 rounded-full flex items-center justify-center' : ''}
-                    ${!isCurrentMonth ? 'text-gray-400' : 'text-gray-700'}
-                  `}>
-                    {format(day, "d")}
-                  </span>
-                  {dayEvents.length > 0 && (
-                    <span className="text-xs text-gray-400">
-                      {dayEvents.length}
-                    </span>
-                  )}
-                </div>
-                
-                <div className="space-y-1 overflow-y-auto max-h-[90px]">
-                  {dayEvents.slice(0, 4).map(event => (
-                    <div
-                      key={event.id}
-                      onClick={() => handleEventClick(event)}
-                      className={`
-                        px-2 py-1 rounded text-xs cursor-pointer truncate
-                        ${EVENT_COLORS[event.type] || 'bg-gray-500'}
-                        text-white
-                      `}
-                      title={event.title}
-                    >
-                      {format(event.start, "HH:mm")} {event.title}
-                    </div>
-                  ))}
-                  {dayEvents.length > 4 && (
-                    <div className="text-xs text-gray-500 pl-1">
-                      +{dayEvents.length - 4} more
-                    </div>
-                  )}
-                </div>
+                {format(activeEvent.start, "HH:mm")} {activeEvent.title}
               </div>
-            );
-          })}
-        </div>
+            ) : null}
+          </DragOverlay>
+        </DndContext>
       </div>
 
       {/* Event Detail Dialog */}
@@ -454,6 +700,68 @@ export function UnifiedCalendar({
               View Details
             </Button>
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reschedule Confirmation Dialog */}
+      <Dialog
+        open={rescheduleDialog.open}
+        onOpenChange={(open) =>
+          setRescheduleDialog((prev) => ({ ...prev, open }))
+        }
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Calendar className="w-5 h-5 text-blue-500" />
+              Reschedule Event
+            </DialogTitle>
+            <DialogDescription>
+              Confirm the new date for this event
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="p-4 bg-gray-50 rounded-lg space-y-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">Event:</span>
+                <span className="font-medium">{rescheduleDialog.event?.title}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">Current date:</span>
+                <span className="font-medium">
+                  {rescheduleDialog.event?.start &&
+                    format(rescheduleDialog.event.start, "EEEE, MMMM d, yyyy")}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-gray-500">New date:</span>
+                <span className="font-medium text-blue-600">
+                  {rescheduleDialog.newDate &&
+                    format(rescheduleDialog.newDate, "EEEE, MMMM d, yyyy")}
+                </span>
+              </div>
+            </div>
+
+            <p className="text-sm text-gray-500">
+              The event time ({rescheduleDialog.event?.start && format(rescheduleDialog.event.start, "h:mm a")}) will be preserved.
+            </p>
+          </div>
+
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() =>
+                setRescheduleDialog({ open: false, event: null, newDate: null })
+              }
+              disabled={isRescheduling}
+            >
+              Cancel
+            </Button>
+            <Button onClick={handleConfirmReschedule} disabled={isRescheduling}>
+              {isRescheduling ? "Rescheduling..." : "Confirm Reschedule"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

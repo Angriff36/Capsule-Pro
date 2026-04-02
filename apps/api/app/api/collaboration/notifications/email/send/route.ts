@@ -146,9 +146,18 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Failed to send email:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
+
+    // Sanitize known provider-not-configured errors before sending to client
+    const raw = error instanceof Error ? error.message : "Unknown error";
+    if (raw.includes("not configured")) {
+      return NextResponse.json(
+        { error: "Email service is not configured. Please contact your administrator." },
+        { status: 503 }
+      );
+    }
+
     return NextResponse.json(
-      { error: `Failed to send email: ${message}` },
+      { error: "Failed to send email. Please try again later." },
       { status: 500 }
     );
   }

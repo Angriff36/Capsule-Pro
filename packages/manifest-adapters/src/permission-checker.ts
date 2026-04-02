@@ -121,6 +121,9 @@ export function parsePermission(permission: Permission): {
   action: string;
   full: Permission;
 } {
+  if (!permission) {
+    return { domain: "", action: "", full: "" };
+  }
   const parts = permission.split(".");
   if (parts.length < 2) {
     return { domain: "", action: permission, full: permission };

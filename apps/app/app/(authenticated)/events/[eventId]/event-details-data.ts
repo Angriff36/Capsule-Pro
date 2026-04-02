@@ -189,6 +189,43 @@ export const getPrepTasksRaw = cache(
   }
 );
 
+interface PrepListRow {
+  id: string;
+  name: string;
+  status: string;
+  totalItems: number;
+  batchMultiplier: number;
+  isActive: boolean;
+  generatedAt: Date;
+  finalizedAt: Date | null;
+}
+
+/**
+ * Fetches all prep lists for the event.
+ * @tier 1 (Independent)
+ */
+export const getEventPrepLists = cache(
+  async (tenantId: string, eventId: string): Promise<PrepListRow[]> => {
+    return database.$queryRaw<PrepListRow[]>(
+      Prisma.sql`
+        SELECT id,
+               name,
+               status,
+               total_items AS "totalItems",
+               batch_multiplier AS "batchMultiplier",
+               is_active AS "isActive",
+               generated_at AS "generatedAt",
+               finalized_at AS "finalizedAt"
+        FROM tenant_kitchen.prep_lists
+        WHERE tenant_id = ${tenantId}
+          AND event_id = ${eventId}
+          AND deleted_at IS NULL
+        ORDER BY generated_at DESC
+      `
+    );
+  }
+);
+
 /**
  * Fetches related events (excluding current event).
  * @tier 1 (Independent)
@@ -473,7 +510,7 @@ export async function fetchAllEventDetailsData(
   // ==============================================================================
   // Tier 1: Execute all independent queries in parallel
   // ==============================================================================
-  const [event, rsvpCount, eventDishes, rawPrepTasks, relatedEvents, hasContract, staffCount] =
+  const [event, rsvpCount, eventDishes, rawPrepTasks, relatedEvents, hasContract, staffCount, prepLists] =
     await Promise.all([
       getEvent(tenantId, eventId),
       getRsvpCount(tenantId, eventId),
@@ -482,6 +519,7 @@ export async function fetchAllEventDetailsData(
       getRelatedEvents(tenantId, eventId),
       getEventHasContract(tenantId, eventId),
       getEventStaffCount(tenantId, eventId),
+      getEventPrepLists(tenantId, eventId),
     ]);
 
   if (!event) {
@@ -670,5 +708,6 @@ export async function fetchAllEventDetailsData(
     inventoryCoverage,
     hasContract,
     staffCount,
+    prepLists,
   };
 }

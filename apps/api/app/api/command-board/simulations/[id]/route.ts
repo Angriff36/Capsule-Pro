@@ -47,7 +47,7 @@ export async function GET(_request: Request, context: RouteContext) {
       );
     }
 
-    const board = await database.commandBoard.findUnique({
+    const board = await database.commandBoard.findFirst({
       where: {
         tenantId_id: {
           tenantId,
@@ -177,7 +177,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
     }
 
     // Verify it's a simulation board
-    const board = await database.commandBoard.findUnique({
+    const board = await database.commandBoard.findFirst({
       where: {
         tenantId_id: {
           tenantId,

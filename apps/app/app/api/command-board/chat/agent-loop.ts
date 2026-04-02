@@ -376,6 +376,77 @@ export function isBoardStateReadIntent(request: string): boolean {
   return hasReadSignal && !hasWriteSignal;
 }
 
+/**
+ * Detect if the user is asking a question / querying data rather than requesting a write action.
+ * Returns the best matching query tool name, or null if it's a write intent.
+ */
+export function detectQueryIntent(
+  request: string
+): string | null {
+  const lowered = request.trim().toLowerCase();
+  if (!lowered) {
+    return null;
+  }
+
+  // Strong write signals — skip query path
+  const hasWriteSignal =
+    /\b(create|add|update|edit|change|delete|remove|move|assign|schedule|set|plan|draft|book)\b/i.test(
+      lowered
+    );
+  if (hasWriteSignal) {
+    return null;
+  }
+
+  // Event / calendar queries
+  if (
+    /\b(event|calendar|scheduled|coming up|upcoming|this week|this month|next week|what.s happening)\b/i.test(
+      lowered
+    )
+  ) {
+    return "list_events";
+  }
+
+  // Staff queries
+  if (/\b(staff|team|employee|worker|who works|crew)\b/i.test(lowered)) {
+    return "list_staff";
+  }
+
+  // Client / CRM queries
+  if (/\b(client|customer|account|crm)\b/i.test(lowered)) {
+    return "list_clients";
+  }
+
+  // Inventory queries
+  if (
+    /\b(inventor|stock|item|supply|low stock|running low|reorder|par level)\b/i.test(
+      lowered
+    )
+  ) {
+    return "list_inventory";
+  }
+
+  // Kitchen task queries
+  if (/\b(kitchen|prep|task|cook|recipe)\b/i.test(lowered)) {
+    return "list_kitchen_tasks";
+  }
+
+  // Dashboard / overview queries
+  if (
+    /\b(overview|summary|dashboard|what needs|attention|status|how.s everything|what.s going on)\b/i.test(
+      lowered
+    )
+  ) {
+    return "get_dashboard_summary";
+  }
+
+  // Generic question patterns — default to dashboard
+  if (/^(what|how|show|list|tell|give|any)\b/i.test(lowered)) {
+    return "get_dashboard_summary";
+  }
+
+  return null;
+}
+
 function buildPlanningInstructions(
   catalog: CommandCatalog,
   userRequest: string,
@@ -1033,6 +1104,88 @@ export async function runManifestActionAgent(
   const toolExecutions: AgentToolExecution[] = [];
   const userRequest = latestUserMessage(params.messages);
 
+  // ── Query intent detection (read-only questions) ─────────────────
+  const queryTool = detectQueryIntent(userRequest);
+  if (queryTool) {
+    const queryArgs: Record<string, unknown> = {};
+
+    // For list_events, try to infer date range from user request
+    if (queryTool === "list_events") {
+      const now = new Date();
+      const endOfWeek = new Date(now);
+      endOfWeek.setDate(now.getDate() + (7 - now.getDay()));
+      if (/this week/i.test(userRequest)) {
+        queryArgs.fromDate = now.toISOString();
+        queryArgs.toDate = endOfWeek.toISOString();
+      } else if (/this month/i.test(userRequest)) {
+        const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+        queryArgs.fromDate = now.toISOString();
+        queryArgs.toDate = endOfMonth.toISOString();
+      } else if (/next week/i.test(userRequest)) {
+        const startNext = new Date(endOfWeek);
+        startNext.setDate(startNext.getDate() + 1);
+        const endNext = new Date(startNext);
+        endNext.setDate(endNext.getDate() + 6);
+        queryArgs.fromDate = startNext.toISOString();
+        queryArgs.toDate = endNext.toISOString();
+      }
+    }
+
+    // For inventory low stock
+    if (queryTool === "list_inventory" && /low|running|reorder/i.test(userRequest)) {
+      queryArgs.lowStockOnly = true;
+    }
+
+    log.info("[command-board-chat] Detected query intent", {
+      queryTool,
+      correlationId: params.context.correlationId,
+    });
+
+    const queryResult = await registry.executeToolCall({
+      name: queryTool,
+      argumentsJson: JSON.stringify(queryArgs),
+      callId: `${params.context.correlationId}:query`,
+    });
+
+    if (!queryResult.ok) {
+      return {
+        summary: queryResult.summary,
+        actionsTaken: [],
+        errors: [queryResult.error ?? queryResult.summary],
+        nextSteps: ["Try rephrasing your question or check if data exists."],
+      };
+    }
+
+    // Use the AI model to generate a natural language summary of the data
+    const dataJson = JSON.stringify(queryResult.data, null, 2);
+    const summaryResult = await callResponsesApi({
+      apiKey: params.apiKey,
+      model: params.model,
+      instructions: `You are Capsule AI, a helpful catering management assistant. The user asked a question and real data was retrieved from the database. Summarize the data in clear, conversational language. Be concise but include key details. Do NOT return JSON — respond in natural language.`,
+      input: [
+        { role: "user", content: userRequest },
+        {
+          role: "assistant",
+          content: `I queried the database and found: ${queryResult.summary}\n\nData:\n${dataJson}`,
+        },
+        {
+          role: "user",
+          content: "Please summarize this data for me in a helpful way.",
+        },
+      ],
+      tools: [],
+    });
+
+    const naturalSummary = extractAssistantText(summaryResult);
+    return {
+      summary: naturalSummary || queryResult.summary,
+      actionsTaken: [queryResult.summary],
+      errors: [],
+      nextSteps: [],
+    };
+  }
+
+  // ── Legacy board state read (kept for backward compat) ──────────
   if (isBoardStateReadIntent(userRequest)) {
     const readResult = await registry.executeToolCall({
       name: "read_board_state",

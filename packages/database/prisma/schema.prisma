@@ -92,6 +92,8 @@ model Account {
   commandBoardConnections        CommandBoardConnection[]
   boardProjections               BoardProjection[]
   notes                          Note[]
+  supplierSyncLogs               SupplierSyncLog[]
+  providerSyncs                  ProviderSync[]
   boardAnnotations               BoardAnnotation[]
   timelineTasks                  TimelineTask[]
   timecardEditRequests           TimecardEditRequest[]
@@ -1612,20 +1614,52 @@ model InventorySupplier {
   contact_person  String?
   email           String?
   phone           String?
-  payment_terms   String          @default("NET_30")
-  notes           String?
-  tags            String[]        @default([])
-  createdAt       DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt       DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt       DateTime?       @map("deleted_at") @db.Timestamptz(6)
-  tenant          Account         @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  shipments       Shipment[]      @relation("ShipmentSupplier")
-  items           InventoryItem[]
+  payment_terms       String          @default("NET_30")
+  connectorType       String?         @map("connector_type")
+  connectorCredentials Json            @default("{}") @map("connector_credentials") @db.JsonB
+  notes               String?
+  tags                String[]        @default([])
+  createdAt           DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt           DateTime?       @map("deleted_at") @db.Timestamptz(6)
+  tenant              Account         @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  shipments           Shipment[]      @relation("ShipmentSupplier")
+  items               InventoryItem[]
+  syncLogs            SupplierSyncLog[]
 
   @@id([tenantId, id])
   @@unique([tenantId, id])
   @@unique([tenantId, supplier_number])
   @@map("inventory_suppliers")
+  @@schema("tenant_inventory")
+}
+
+model SupplierSyncLog {
+  tenantId            String    @map("tenant_id") @db.Uuid
+  id                  String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  supplierId          String    @map("supplier_id") @db.Uuid
+  connectorId         String    @map("connector_id")
+  status              String    @default("pending")
+  productsSynced      Int       @default(0) @map("products_synced")
+  productsCreated     Int       @default(0) @map("products_created")
+  productsUpdated     Int       @default(0) @map("products_updated")
+  productsDeactivated Int       @default(0) @map("products_deactivated")
+  errors              Json      @default("[]") @db.JsonB
+  durationMs          Int       @default(0) @map("duration_ms")
+  triggeredBy         String?   @map("triggered_by")
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt           DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  tenant   Account          @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  supplier InventorySupplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@index([tenantId, supplierId], map: "supplier_sync_logs_tenant_supplier_idx")
+  @@index([connectorId], map: "supplier_sync_logs_connector_idx")
+  @@index([status], map: "supplier_sync_logs_status_idx")
+  @@index([createdAt], map: "supplier_sync_logs_created_at_idx")
+  @@map("supplier_sync_logs")
   @@schema("tenant_inventory")
 }
 
@@ -5427,4 +5461,33 @@ model RouteStop {
   @@index([routeId, status])
   @@map("route_stops")
   @@schema("tenant_logistics")
+}
+
+/// External calendar provider sync (Google Calendar, Outlook)
+model ProviderSync {
+  tenantId       String    @map("tenant_id") @db.Uuid
+  id             String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  provider       String    // "google" | "outlook"
+  providerUserId String?   @map("provider_user_id") // external account ID
+  accessToken    String?   @map("access_token") @db.Text
+  refreshToken   String?   @map("refresh_token") @db.Text
+  tokenExpiry    DateTime? @map("token_expiry") @db.Timestamptz(6)
+  calendarId     String?   @map("calendar_id") // primary calendar ID from provider
+  calendarName   String?   @map("calendar_name")
+  status         String    @default("disconnected") // disconnected | connected | error
+  lastSyncAt     DateTime? @map("last_sync_at") @db.Timestamptz(6)
+  lastSyncStatus String?   @map("last_sync_status")
+  lastSyncError  String?   @map("last_sync_error") @db.Text
+  syncDirection  String    @default("import") // import | export | two_way
+  enabled        Boolean   @default(true)
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenant         Account   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@unique([tenantId, provider])
+  @@index([tenantId, status])
+  @@map("provider_syncs")
+  @@schema("tenant_admin")
 }

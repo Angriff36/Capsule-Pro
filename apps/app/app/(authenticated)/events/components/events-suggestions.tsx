@@ -3,9 +3,9 @@
 import { Button } from "@repo/design-system/components/ui/button";
 import { Sparkles } from "lucide-react";
 import { useState } from "react";
-import type { SuggestedAction } from "../../command-board/actions/suggestions-types";
-import { SuggestionsPanel } from "../../command-board/components/suggestions-panel";
-import { useSuggestions } from "../../command-board/hooks/use-suggestions";
+import type { SuggestedAction } from "../../kitchen/lib/suggestions-types";
+import { SuggestionsPanel } from "../../kitchen/components/suggestions-panel";
+import { useSuggestions } from "../../kitchen/lib/use-suggestions";
 
 interface EventsPageWithSuggestionsProps {
   tenantId: string;

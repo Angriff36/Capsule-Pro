@@ -65,6 +65,15 @@ export declare class RecipeVersionPrismaStore implements Store<EntityInstance> {
     constructor(prisma: PrismaClient, tenantId: string);
     getAll(): Promise<EntityInstance[]>;
     getById(id: string): Promise<EntityInstance | undefined>;
+    /**
+     * Get the latest RecipeVersion for a specific recipe (by versionNumber DESC).
+     * This replaces the need for raw SQL queries like MAX(version_number).
+     */
+    getLatestByRecipeId(recipeId: string): Promise<EntityInstance | undefined>;
+    /**
+     * Get all versions for a specific recipe, ordered by version number descending.
+     */
+    getByRecipeId(recipeId: string): Promise<EntityInstance[]>;
     create(data: Partial<EntityInstance>): Promise<EntityInstance>;
     update(id: string, data: Partial<EntityInstance>): Promise<EntityInstance | undefined>;
     delete(id: string): Promise<boolean>;

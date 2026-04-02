@@ -1,4 +1,13 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "cd ../.. && pnpm turbo build --filter=app",
+  "installCommand": "corepack enable && corepack prepare pnpm@10.24.0 --activate && pnpm install",
   "ignoreCommand": "node scripts/skip-ci.js",
-  "buildCommand": "cd ../.. && pnpm turbo build --filter=app"
+  "framework": "nextjs",
+  "outputDirectory": ".next",
+  "functions": {
+    "app/api/**/*.ts": {
+      "regions": ["iad1"]
+    }
+  }
 }

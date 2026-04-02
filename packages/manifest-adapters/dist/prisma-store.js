@@ -21,17 +21,12 @@ export class PrepTaskPrismaStore {
         this.tenantId = tenantId;
     }
     async getAll() {
-        // Use Prisma include to fetch claims in a single query (fixes N+1)
-        const tasksWithClaims = await this.prisma.prepTask.findMany({
+        // Fetch all prep tasks for this tenant
+        const tasks = await this.prisma.prepTask.findMany({
             where: { tenantId: this.tenantId, deletedAt: null },
-            include: {
-                claims: {
-                    where: { releasedAt: null },
-                    orderBy: { claimedAt: "desc" },
-                },
-            },
         });
-        return tasksWithClaims.map((task) => this.mapToManifestEntity(task, task.claims || []));
+        // Return mapped entities (claims will be fetched on-demand if needed)
+        return tasks.map(task => this.mapToManifestEntity(task, []));
     }
     async getById(id) {
         const task = await this.prisma.prepTask.findFirst({
@@ -343,6 +338,27 @@ export class RecipeVersionPrismaStore {
             where: { tenantId: this.tenantId, id, deletedAt: null },
         });
         return version ? this.mapToManifestEntity(version) : undefined;
+    }
+    /**
+     * Get the latest RecipeVersion for a specific recipe (by versionNumber DESC).
+     * This replaces the need for raw SQL queries like MAX(version_number).
+     */
+    async getLatestByRecipeId(recipeId) {
+        const version = await this.prisma.recipeVersion.findFirst({
+            where: { tenantId: this.tenantId, recipeId, deletedAt: null },
+            orderBy: { versionNumber: 'desc' },
+        });
+        return version ? this.mapToManifestEntity(version) : undefined;
+    }
+    /**
+     * Get all versions for a specific recipe, ordered by version number descending.
+     */
+    async getByRecipeId(recipeId) {
+        const versions = await this.prisma.recipeVersion.findMany({
+            where: { tenantId: this.tenantId, recipeId, deletedAt: null },
+            orderBy: { versionNumber: 'desc' },
+        });
+        return versions.map((version) => this.mapToManifestEntity(version));
     }
     async create(data) {
         const version = await this.prisma.recipeVersion.create({
@@ -854,17 +870,28 @@ export class KitchenTaskPrismaStore {
         this.tenantId = tenantId;
     }
     async getAll() {
-        // Use Prisma include to fetch claims in a single query (fixes N+1)
-        const tasksWithClaims = await this.prisma.kitchenTask.findMany({
+        const tasks = (await this.prisma.kitchenTask.findMany({
             where: { tenantId: this.tenantId, deletedAt: null },
-            include: {
-                claims: {
-                    where: { releasedAt: null },
-                    orderBy: { claimedAt: "desc" },
+        }));
+        // Fetch claims in batch (not N+1 - uses single IN query)
+        const taskIds = tasks.map((t) => t.id);
+        const claims = taskIds.length > 0
+            ? await this.prisma.kitchenTaskClaim.findMany({
+                where: {
+                    tenantId: this.tenantId,
+                    taskId: { in: taskIds },
+                    releasedAt: null,
                 },
-            },
-        });
-        return tasksWithClaims.map((task) => this.mapToManifestEntity(task, task.claims || []));
+                orderBy: { claimedAt: "desc" },
+            })
+            : [];
+        const claimsByTaskId = new Map();
+        for (const claim of claims) {
+            const existing = claimsByTaskId.get(claim.taskId) || [];
+            existing.push(claim);
+            claimsByTaskId.set(claim.taskId, existing);
+        }
+        return tasks.map((task) => this.mapToManifestEntity(task, claimsByTaskId.get(task.id) || []));
     }
     async getById(id) {
         const task = await this.prisma.kitchenTask.findFirst({
@@ -2484,7 +2511,7 @@ export function createPrismaOutboxWriter(entityName, tenantId) {
                     aggregateType: entityName,
                     eventType: eventData.eventType || eventData.name || "unknown",
                     payload: eventData.payload,
-                    aggregateId: eventData.aggregateId || eventData.payload.taskId || eventData.payload.id || "unknown",
+                    aggregateId: eventData.aggregateId || eventData.payload?.taskId || eventData.payload?.id || "unknown",
                     status: "pending",
                 },
             });

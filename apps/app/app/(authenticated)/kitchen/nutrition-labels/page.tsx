@@ -3,7 +3,7 @@
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
-import { LabelSkeleton } from "@repo/design-system/components/ui/skeleton";
+import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 import { FileText, Scale, Sparkles, AlertTriangle, CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -144,7 +144,7 @@ export default function NutritionLabelsPage() {
             {loading ? (
               <div className="space-y-2">
                 {[1, 2, 3].map((i) => (
-                  <LabelSkeleton key={i} />
+                  <Skeleton key={i} />
                 ))}
               </div>
             ) : recipes.length === 0 ? (

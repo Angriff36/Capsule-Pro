@@ -261,7 +261,7 @@ function scanRouteConformance(): ScanResult {
     scannedFiles = routeFiles.length;
 
     for (const file of routeFiles) {
-      const relativePath = relative(join(projectRoot, "apps/api/app"), file);
+      const relativePath = relative(apiDir, file);
 
       const routePath = `/api/${relativePath
         .replace(/\\/g, "/")

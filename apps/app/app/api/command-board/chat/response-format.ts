@@ -17,10 +17,16 @@ export function formatStructuredAgentResponseForDisplay(
     lines.push(payload.summary.trim());
   }
 
+  // Only show sections if there are errors or if there's no summary
+  // (natural language responses from query path already contain all info in summary)
+  const hasErrors = payload.errors.length > 0;
+  const hasSummary = payload.summary.trim().length > 0;
+
   const sections = [
-    renderSection("Actions taken:", payload.actionsTaken),
+    // Only show actions if there are errors or no summary
+    ...(!hasSummary ? [renderSection("Actions taken:", payload.actionsTaken)] : []),
     renderSection("Errors:", payload.errors),
-    renderSection("Next steps:", payload.nextSteps),
+    ...(hasErrors ? [renderSection("Next steps:", payload.nextSteps)] : []),
   ].filter((section) => section.length > 0);
 
   for (const section of sections) {

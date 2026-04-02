@@ -6,6 +6,7 @@ const SettingsPage = () => (
       "Team roles and access permissions.",
       "Integration settings for third-party services.",
       "Security and compliance configuration.",
+      "Audit log for tracking changes.",
     ]}
     summary="Manage organization preferences, integrations, and access controls."
     title="Settings"

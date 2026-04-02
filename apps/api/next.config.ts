@@ -41,31 +41,39 @@ const distDir = process.env.NEXT_DIST_DIR?.trim() || ".next";
 let nextConfig: NextConfig = withLogging({
   ...config,
   distDir,
-  // Allow cross-origin requests from the app server in development
   async headers() {
-    if (process.env.NODE_ENV !== "production") {
-      return [
-        {
-          source: "/api/:path*",
-          headers: [
-            {
-              key: "Access-Control-Allow-Origin",
-              value: "http://127.0.0.1:2221",
-            },
-            {
-              key: "Access-Control-Allow-Methods",
-              value: "GET,POST,PUT,PATCH,DELETE,OPTIONS",
-            },
-            {
-              key: "Access-Control-Allow-Headers",
-              value: "Content-Type,Authorization,X-Requested-With",
-            },
-            { key: "Access-Control-Allow-Credentials", value: "true" },
-          ],
-        },
-      ];
+    const corsHeaders = process.env.NODE_ENV !== "production"
+      ? [
+          { key: "Access-Control-Allow-Origin", value: "http://127.0.0.1:2221" },
+          { key: "Access-Control-Allow-Methods", value: "GET,POST,PUT,PATCH,DELETE,OPTIONS" },
+          { key: "Access-Control-Allow-Headers", value: "Content-Type,Authorization,X-Requested-With" },
+          { key: "Access-Control-Allow-Credentials", value: "true" },
+        ]
+      : [];
+
+    const routes: Array<{ source: string; headers: Array<{ key: string; value: string }> }> = [];
+
+    // API CORS (dev only) — skip in production to avoid empty headers error
+    if (corsHeaders.length > 0) {
+      routes.push({
+        source: "/api/:path*",
+        headers: corsHeaders,
+      });
     }
-    return [];
+
+    // Security headers for all routes
+    routes.push({
+      source: "/(.*)",
+      headers: [
+        { key: "X-Frame-Options", value: "DENY" },
+        { key: "X-Content-Type-Options", value: "nosniff" },
+        { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+        { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+        { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+      ],
+    });
+
+    return routes;
   },
   // Disable type checking during build to avoid React type conflicts
   typescript: {
@@ -80,6 +88,7 @@ let nextConfig: NextConfig = withLogging({
     "@repo/security",
     "@repo/event-parser",
     "@repo/manifest",
+    "@repo/supplier-connectors",
   ],
   experimental: {
     optimizePackageImports: ["date-fns"],
@@ -154,6 +163,17 @@ let nextConfig: NextConfig = withLogging({
         },
       ];
     }
+
+    // Resolve .js imports to .ts in workspace packages (ESM convention)
+    // Also ensure extensionless imports resolve to .ts files
+    webpackConfig.resolve = {
+      ...webpackConfig.resolve,
+      extensionAlias: {
+        ".js": [".ts", ".tsx", ".js", ".jsx"],
+      },
+      extensions: [".ts", ".tsx", ".js", ".jsx", ".json", ".wasm"],
+    };
+
     return webpackConfig;
   },
 });

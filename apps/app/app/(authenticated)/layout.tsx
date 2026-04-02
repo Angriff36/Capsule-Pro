@@ -5,6 +5,11 @@ import { secure } from "@repo/security";
 import type { ReactNode } from "react";
 import { env } from "@/env";
 import { GlobalSidebar } from "./components/sidebar";
+import {
+  AiAssistantProvider,
+  AiAssistantButton,
+  AiAssistantPanel,
+} from "./components/ai-assistant";
 
 interface AppLayoutProperties {
   readonly children: ReactNode;
@@ -34,14 +39,18 @@ const AppLayout = async ({ children }: AppLayoutProperties) => {
 
   return (
     <SidebarProvider>
-      <GlobalSidebar userId={user.id}>
-        {betaFeature && (
-          <div className="m-4 rounded-full bg-blue-500 p-1.5 text-center text-sm text-white">
-            Beta feature now available
-          </div>
-        )}
-        {children}
-      </GlobalSidebar>
+      <AiAssistantProvider>
+        <GlobalSidebar userId={user.id}>
+          {betaFeature && (
+            <div className="m-4 rounded-full bg-blue-500 p-1.5 text-center text-sm text-white">
+              Beta feature now available
+            </div>
+          )}
+          {children}
+        </GlobalSidebar>
+        <AiAssistantButton />
+        <AiAssistantPanel />
+      </AiAssistantProvider>
     </SidebarProvider>
   );
 };

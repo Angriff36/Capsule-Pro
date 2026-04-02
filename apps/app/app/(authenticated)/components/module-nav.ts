@@ -10,12 +10,14 @@ export type ModuleKey =
   | "administrative"
   | "crm"
   | "analytics"
-  | "command-board"
   | "logistics"
   | "facilities"
   | "procurement"
   | "knowledge-base"
-  | "inventory";
+  | "inventory"
+  | "accounting"
+  | "marketing"
+  | "search";
 
 interface ModuleSidebarItem {
   title: string;
@@ -36,20 +38,6 @@ export interface ModuleDefinition {
 
 export const modules: ModuleDefinition[] = [
   {
-    key: "command-board",
-    label: "Command Board",
-    href: "/command-board",
-    sidebar: [
-      {
-        label: "Command Board",
-        items: [
-          { title: "All Boards", href: "/command-board" },
-          { title: "Create Board", href: "/command-board?create=true" },
-        ],
-      },
-    ],
-  },
-  {
     key: "calendar",
     label: "Calendar",
     href: "/calendar",
@@ -58,6 +46,7 @@ export const modules: ModuleDefinition[] = [
         label: "Calendar",
         items: [
           { title: "Calendar View", href: "/calendar" },
+          { title: "Calendar Sync", href: "/calendar/sync" },
           { title: "Add Event", href: "/events/new" },
           { title: "Schedule Shift", href: "/scheduling/shifts/new" },
         ],
@@ -112,6 +101,9 @@ export const modules: ModuleDefinition[] = [
           { title: "Prep Lists", href: "/kitchen/prep-lists" },
           { title: "Inventory", href: "/kitchen/inventory" },
           { title: "Waste Tracking", href: "/kitchen/waste" },
+          { title: "Allergens", href: "/kitchen/allergens" },
+          { title: "Stations", href: "/kitchen/stations" },
+          { title: "Tasks", href: "/kitchen/tasks" },
         ],
       },
       {
@@ -121,6 +113,7 @@ export const modules: ModuleDefinition[] = [
           { title: "IoT Monitoring", href: "/kitchen/iot" },
           { title: "Equipment", href: "/kitchen/equipment" },
           { title: "Nutrition Labels", href: "/kitchen/nutrition-labels" },
+          { title: "Allergen Warning Test", href: "/kitchen/allergen-warning-test" },
         ],
       },
       {
@@ -175,10 +168,13 @@ export const modules: ModuleDefinition[] = [
       {
         label: "Staff",
         items: [
+          { title: "Overview", href: "/staff" },
           { title: "Team", href: "/staff/team" },
           { title: "Schedule", href: "/staff/schedule" },
           { title: "Availability", href: "/staff/availability" },
           { title: "Time Off", href: "/staff/time-off" },
+          { title: "Performance", href: "/staff/performance" },
+          { title: "Training", href: "/staff/training" },
         ],
       },
     ],
@@ -192,6 +188,9 @@ export const modules: ModuleDefinition[] = [
         label: "Staffing",
         items: [
           { title: "AI Recommendations", href: "/staffing/recommendations" },
+          { title: "Coverage", href: "/staffing/coverage" },
+          { title: "Shifts", href: "/staffing/shifts" },
+          { title: "Availability", href: "/staffing/availability" },
         ],
       },
     ],
@@ -207,6 +206,11 @@ export const modules: ModuleDefinition[] = [
           { title: "Overview", href: "/payroll" },
           { title: "Timecards", href: "/payroll/timecards" },
           { title: "Payouts", href: "/payroll/payouts" },
+          { title: "Pay Runs", href: "/payroll/runs" },
+          { title: "Pay Periods", href: "/payroll/periods" },
+          { title: "Direct Deposit", href: "/payroll/direct-deposit" },
+          { title: "Tax Setup", href: "/payroll/tax-setup" },
+          { title: "Reports", href: "/payroll/reports" },
         ],
       },
     ],
@@ -234,6 +238,11 @@ export const modules: ModuleDefinition[] = [
           { title: "Overview", href: "/settings" },
           { title: "Rules Explorer", href: "/settings/manifest-editor" },
           { title: "Rules Playground", href: "/settings/manifest-playground" },
+          { title: "Team", href: "/settings/team" },
+          { title: "Integrations", href: "/settings/integrations" },
+          { title: "Security", href: "/settings/security" },
+          { title: "Email Templates", href: "/settings/email-templates" },
+          { title: "Audit Log", href: "/settings/audit-log" },
         ],
       },
     ],
@@ -247,9 +256,13 @@ export const modules: ModuleDefinition[] = [
         label: "CRM",
         items: [
           { title: "Overview", href: "/crm" },
+          { title: "Pipeline", href: "/crm/pipeline" },
           { title: "Clients", href: "/crm/clients" },
           { title: "Venues", href: "/crm/venues" },
+          { title: "Proposals", href: "/crm/proposals" },
+          { title: "Proposal Templates", href: "/crm/proposals/templates" },
           { title: "Communications", href: "/crm/communications" },
+          { title: "Lead Scoring", href: "/crm/scoring" },
         ],
       },
     ],
@@ -267,6 +280,9 @@ export const modules: ModuleDefinition[] = [
           { title: "Events", href: "/analytics/events" },
           { title: "Sales", href: "/analytics/sales" },
           { title: "Finance", href: "/analytics/finance" },
+          { title: "Staff", href: "/analytics/staff" },
+          { title: "Clients", href: "/analytics/clients" },
+          { title: "Activity Feed", href: "/analytics/activity-feed" },
         ],
       },
     ],
@@ -279,7 +295,13 @@ export const modules: ModuleDefinition[] = [
       {
         label: "Logistics",
         items: [
+          { title: "Overview", href: "/logistics" },
           { title: "Routes", href: "/logistics/routes" },
+          { title: "Dispatch", href: "/logistics/dispatch" },
+          { title: "Shipments", href: "/logistics/shipments" },
+          { title: "Tracking", href: "/logistics/tracking" },
+          { title: "Drivers", href: "/logistics/drivers" },
+          { title: "Vehicles", href: "/logistics/vehicles" },
         ],
       },
     ],
@@ -292,10 +314,10 @@ export const modules: ModuleDefinition[] = [
       {
         label: "Facilities",
         items: [
-          { title: "Overview", href: "/facilities" },
-          { title: "Work Orders", href: "/facilities?tab=work-orders" },
-          { title: "PM Schedules", href: "/facilities?tab=pm-schedules" },
-          { title: "Areas", href: "/facilities?tab=areas" },
+          { title: "Work Orders", href: "/facilities" },
+          { title: "PM Schedules", href: "/facilities/schedules" },
+          { title: "Areas", href: "/facilities/areas" },
+          { title: "Assets", href: "/facilities/assets" },
         ],
       },
     ],
@@ -308,9 +330,13 @@ export const modules: ModuleDefinition[] = [
       {
         label: "Procurement",
         items: [
+          { title: "Overview", href: "/procurement" },
           { title: "Requisitions", href: "/procurement/requisitions" },
+          { title: "Approvals", href: "/procurement/approvals" },
+          { title: "Budget", href: "/procurement/budget" },
           { title: "Vendor Contracts", href: "/procurement/vendor-contracts" },
-          { title: "Purchase Orders", href: "/warehouse/shipments" },
+          { title: "Vendors", href: "/procurement/vendors" },
+          { title: "Purchase Orders", href: "/procurement/purchase-orders" },
         ],
       },
     ],
@@ -337,9 +363,54 @@ export const modules: ModuleDefinition[] = [
         label: "Inventory",
         items: [
           { title: "Items", href: "/inventory/items" },
+          { title: "Scanner", href: "/inventory/scanner" },
           { title: "Transfers", href: "/inventory/transfers" },
           { title: "Recipe Costs", href: "/inventory/recipe-costs" },
           { title: "Vendor Catalogs", href: "/inventory/vendor-catalogs" },
+          { title: "Levels", href: "/inventory/levels" },
+          { title: "Forecasts", href: "/inventory/forecasts" },
+          { title: "Import", href: "/inventory/import" },
+        ],
+      },
+    ],
+  },
+  {
+    key: "accounting",
+    label: "Accounting",
+    href: "/accounting",
+    sidebar: [
+      {
+        label: "Accounting",
+        items: [
+          { title: "Overview", href: "/accounting" },
+          { title: "Chart of Accounts", href: "/accounting/chart-of-accounts" },
+        ],
+      },
+    ],
+  },
+  {
+    key: "marketing",
+    label: "Marketing",
+    href: "/marketing",
+    sidebar: [
+      {
+        label: "Marketing",
+        items: [
+          { title: "Overview", href: "/marketing" },
+          { title: "Campaigns", href: "/marketing/campaigns" },
+        ],
+      },
+    ],
+  },
+  {
+    key: "search",
+    label: "Search",
+    href: "/search",
+    sidebar: [
+      {
+        label: "Search",
+        items: [
+          { title: "Search", href: "/search" },
         ],
       },
     ],
@@ -350,11 +421,17 @@ export const getModuleKeyFromPathname = (pathname: string): ModuleKey => {
   if (pathname === "/settings" || pathname.startsWith("/settings/")) {
     return "administrative";
   }
+  if (pathname === "/search" || pathname.startsWith("/search/")) {
+    return "search";
+  }
+  if (pathname === "/cycle-counting" || pathname.startsWith("/cycle-counting/")) {
+    return "warehouse";
+  }
 
   const match = modules.find(
     (module) =>
       pathname === module.href || pathname.startsWith(`${module.href}/`)
   );
 
-  return match?.key ?? "command-board";
+  return match?.key ?? "calendar";
 };

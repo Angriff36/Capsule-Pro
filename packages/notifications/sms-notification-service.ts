@@ -161,6 +161,7 @@ async function updateSmsLog(
 
 /**
  * Gets the Twilio client
+ * Returns null if not configured instead of throwing.
  */
 async function getTwilioClient() {
   const env = keys();
@@ -168,7 +169,7 @@ async function getTwilioClient() {
   const authToken = env.TWILIO_AUTH_TOKEN;
 
   if (!(accountSid && authToken)) {
-    throw new Error("Twilio credentials not configured");
+    return null;
   }
 
   const twilio = await import("twilio");
@@ -177,19 +178,24 @@ async function getTwilioClient() {
 
 /**
  * Sends a single SMS message via Twilio
+ * Returns null if Twilio is not configured.
  */
 async function sendSingleSms(
   to: string,
   message: string
-): Promise<{ sid: string; status: string }> {
+): Promise<{ sid: string; status: string } | null> {
   const env = keys();
   const fromNumber = env.TWILIO_PHONE_NUMBER;
 
   if (!fromNumber) {
-    throw new Error("Twilio phone number not configured");
+    return null;
   }
 
   const client = await getTwilioClient();
+  if (!client) {
+    return null;
+  }
+
   const normalizedPhone = normalizePhoneNumber(to);
 
   const result = await client.messages.create({
@@ -267,6 +273,22 @@ export async function sendSmsNotification(
 
       // Send the SMS
       const twilioResult = await sendSingleSms(recipient.phoneNumber, message);
+
+      // If Twilio is not configured, fail gracefully
+      if (!twilioResult) {
+        await updateSmsLog(database, tenantId, logId, {
+          status: "failed",
+          errorMessage: "SMS service not configured",
+          failedAt: new Date(),
+        });
+
+        results.push({
+          success: false,
+          error: "SMS service not configured",
+          status: "failed",
+        });
+        continue;
+      }
 
       // Update log to sent
       await updateSmsLog(database, tenantId, logId, {

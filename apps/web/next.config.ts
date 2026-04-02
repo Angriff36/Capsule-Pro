@@ -9,6 +9,9 @@ const baseConfig = withToolbar(withLogging(config)) as NextConfig;
 
 let nextConfig: NextConfig = {
   ...baseConfig,
+  // Enable source maps for Sentry error tracking in production
+  // Source maps are deleted after upload to Sentry (configured in sentryConfig.sourcemaps.deleteSourcemapsAfterUpload)
+  productionBrowserSourceMaps: true,
   // Disable type checking during build to avoid React type conflicts
   typescript: {
     ignoreBuildErrors: true,

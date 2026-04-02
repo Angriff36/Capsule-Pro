@@ -42,6 +42,8 @@ interface PayrollLineItem {
   netPay: number;
   createdAt: Date;
   updatedAt: Date;
+  /** Tax withholdings by type (federal, state, social_security, medicare) */
+  taxesWithheld?: Record<string, number>;
 }
 
 interface PayrollLineItemsTableProps {
@@ -76,6 +78,38 @@ function getInitials(firstName: string | null, lastName: string | null) {
     .join("")
     .toUpperCase()
     .slice(0, 2);
+}
+
+/** Extract tax amount from deductions or taxesWithheld */
+function getTaxAmount(
+  item: PayrollLineItem,
+  taxType: string,
+): number {
+  // Check taxesWithheld first (explicit tax field)
+  if (item.taxesWithheld?.[taxType] !== undefined) {
+    return item.taxesWithheld[taxType];
+  }
+  // Fall back to deductions Record
+  return item.deductions?.[taxType] ?? 0;
+}
+
+/** Get total taxes withheld */
+function getTotalTaxes(item: PayrollLineItem): number {
+  if (item.taxesWithheld) {
+    return Object.values(item.taxesWithheld).reduce((s, v) => s + v, 0);
+  }
+  // Try to extract tax-related deductions
+  const taxKeys = ["federal", "state", "social_security", "medicare", "FICA"];
+  return Object.entries(item.deductions || {})
+    .filter(([k]) => taxKeys.some((t) => k.toLowerCase().includes(t.toLowerCase())))
+    .reduce((s, [, v]) => s + v, 0);
+}
+
+/** Get non-tax deductions */
+function getNonTaxDeductions(item: PayrollLineItem): number {
+  const totalDeductions = Object.values(item.deductions || {}).reduce((s, v) => s + v, 0);
+  const taxes = getTotalTaxes(item);
+  return Math.max(0, totalDeductions - taxes);
 }
 
 export default function PayrollLineItemsTable({
@@ -189,6 +223,9 @@ export default function PayrollLineItemsTable({
                   <TableHead className="text-right">Regular Rate</TableHead>
                   <TableHead className="text-right">OT Rate</TableHead>
                   <TableHead className="text-right">Gross Pay</TableHead>
+                  <TableHead className="text-right">Federal Tax</TableHead>
+                  <TableHead className="text-right">State Tax</TableHead>
+                  <TableHead className="text-right">FICA</TableHead>
                   <TableHead className="text-right">Deductions</TableHead>
                   <TableHead className="text-right">Net Pay</TableHead>
                 </TableRow>
@@ -198,7 +235,7 @@ export default function PayrollLineItemsTable({
                   <TableRow>
                     <TableCell
                       className="text-center text-muted-foreground"
-                      colSpan={8}
+                      colSpan={11}
                     >
                       No line items found
                     </TableCell>
@@ -259,7 +296,19 @@ export default function PayrollLineItemsTable({
                         {formatCurrency(item.grossPay)}
                       </TableCell>
                       <TableCell className="text-right text-muted-foreground">
-                        {formatCurrency(getTotalDeductions(item.deductions))}
+                        {formatCurrency(getTaxAmount(item, "federal"))}
+                      </TableCell>
+                      <TableCell className="text-right text-muted-foreground">
+                        {formatCurrency(getTaxAmount(item, "state"))}
+                      </TableCell>
+                      <TableCell className="text-right text-muted-foreground">
+                        {formatCurrency(
+                          getTaxAmount(item, "social_security") +
+                            getTaxAmount(item, "medicare"),
+                        )}
+                      </TableCell>
+                      <TableCell className="text-right text-muted-foreground">
+                        {formatCurrency(getNonTaxDeductions(item))}
                       </TableCell>
                       <TableCell className="text-right font-semibold">
                         {formatCurrency(item.netPay)}
@@ -274,7 +323,7 @@ export default function PayrollLineItemsTable({
           {/* Summary */}
           {filteredItems.length > 0 && (
             <div className="mt-4 pt-4 border-t">
-              <div className="grid gap-4 md:grid-cols-4 text-sm">
+              <div className="grid gap-4 md:grid-cols-5 text-sm">
                 <div>
                   <span className="text-muted-foreground">
                     Total Employees:
@@ -294,13 +343,26 @@ export default function PayrollLineItemsTable({
                 </div>
                 <div>
                   <span className="text-muted-foreground">
+                    Total Taxes:
+                  </span>{" "}
+                  <span className="font-medium text-red-600">
+                    {formatCurrency(
+                      filteredItems.reduce(
+                        (sum, item) => sum + getTotalTaxes(item),
+                        0
+                      )
+                    )}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground">
                     Total Deductions:
                   </span>{" "}
                   <span className="font-medium">
                     {formatCurrency(
                       filteredItems.reduce(
                         (sum, item) =>
-                          sum + getTotalDeductions(item.deductions),
+                          sum + getNonTaxDeductions(item),
                         0
                       )
                     )}

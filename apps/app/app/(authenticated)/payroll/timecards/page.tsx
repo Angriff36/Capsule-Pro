@@ -34,6 +34,7 @@ import {
   EditIcon,
   FlagIcon,
   Loader2Icon,
+  ZapIcon,
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
@@ -64,7 +65,9 @@ interface TimeEntry {
   approver_last_name: string | null;
   scheduled_hours: number | null;
   actual_hours: number | null;
+  weekly_hours: number | null;
   exception_type: string | null;
+  is_overtime: boolean | null;
   hourly_rate: number | null;
   total_cost: number | null;
   created_at: Date;
@@ -173,6 +176,7 @@ export default function TimecardsPage() {
     null
   );
   const [actionLoading, setActionLoading] = useState(false);
+  const [generateLoading, setGenerateLoading] = useState(false);
 
   const fetchTimecards = useCallback(async () => {
     setLoading(true);
@@ -356,6 +360,46 @@ export default function TimecardsPage() {
     setPagination((prev) => ({ ...prev, page: newPage }));
   };
 
+  const handleGenerateFromSchedules = async () => {
+    if (!startDate || !endDate) {
+      toast.error("Set a date range first to generate timecards from schedules");
+      return;
+    }
+    setGenerateLoading(true);
+    try {
+      const response = await apiFetch("/api/payroll/timecards/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          periodStart: startDate,
+          periodEnd: endDate,
+          dryRun: false,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to generate timecards");
+      }
+
+      const data = await response.json();
+      toast.success(
+        `Generated ${data.created} timecard(s) from schedules (${data.skipped} already existed)`
+      );
+      if (data.overtimeShifts && data.overtimeShifts.length > 0) {
+        toast.warning(
+          `${data.overtimeShifts.length} shift(s) flagged as overtime`,
+          { description: "Check the overtime column for details" }
+        );
+      }
+      fetchTimecards();
+    } catch (error) {
+      console.error("Error generating from schedules:", error);
+      toast.error("Failed to generate timecards from schedules");
+    } finally {
+      setGenerateLoading(false);
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -365,6 +409,19 @@ export default function TimecardsPage() {
             Review and approve employee time entries
           </p>
         </div>
+        <Button
+          disabled={generateLoading || !startDate || !endDate}
+          onClick={handleGenerateFromSchedules}
+          size="sm"
+          variant="outline"
+        >
+          {generateLoading ? (
+            <Loader2Icon className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <CalendarIcon className="mr-2 h-4 w-4" />
+          )}
+          Generate from Schedules
+        </Button>
       </div>
 
       <Separator />
@@ -454,6 +511,7 @@ export default function TimecardsPage() {
                       <TableHead>Date</TableHead>
                       <TableHead>Hours</TableHead>
                       <TableHead>Scheduled</TableHead>
+                      <TableHead>Weekly</TableHead>
                       <TableHead>Break</TableHead>
                       <TableHead>Cost</TableHead>
                       <TableHead>Status</TableHead>
@@ -557,6 +615,31 @@ export default function TimecardsPage() {
                           ) : (
                             <span className="text-muted-foreground text-sm">
                               N/A
+                            </span>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {entry.weekly_hours !== null ? (
+                            <div className="flex items-center gap-1.5">
+                              <span
+                                className={
+                                  entry.is_overtime
+                                    ? "font-medium text-orange-600"
+                                    : ""
+                                }
+                              >
+                                {formatHours(entry.weekly_hours)}
+                              </span>
+                              {entry.is_overtime && (
+                                <Badge className="gap-1" variant="destructive">
+                                  <ZapIcon className="h-3 w-3" />
+                                  OT
+                                </Badge>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">
+                              —
                             </span>
                           )}
                         </TableCell>

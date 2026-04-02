@@ -167,13 +167,14 @@ async function updateEmailLog(
 
 /**
  * Gets the Resend client
+ * Returns null if not configured instead of throwing.
  */
 async function getResendClient() {
   const env = keys();
   const resendToken = env.RESEND_TOKEN;
 
   if (!resendToken) {
-    throw new Error("Resend API token not configured");
+    return null;
   }
 
   const { Resend } = await import("resend");
@@ -182,14 +183,19 @@ async function getResendClient() {
 
 /**
  * Sends a single email via Resend
+ * Returns null if Resend is not configured.
  */
 async function sendSingleEmail(
   to: string,
   subject: string,
   htmlBody: string,
   recipientName?: string
-): Promise<{ id: string }> {
+): Promise<{ id: string } | null> {
   const client = await getResendClient();
+
+  if (!client) {
+    return null;
+  }
 
   const result = await client.emails.send({
     from: "Convoy <noreply@convoy.app>",
@@ -281,6 +287,22 @@ export async function sendEmailNotification(
         renderedBody,
         recipient.name
       );
+
+      // If Resend is not configured, fail gracefully
+      if (!resendResult) {
+        await updateEmailLog(database, tenantId, logId, {
+          status: "failed",
+          errorMessage: "Email service not configured",
+          failedAt: new Date(),
+        });
+
+        results.push({
+          success: false,
+          error: "Email service not configured",
+          status: "failed",
+        });
+        continue;
+      }
 
       // Update log to sent
       await updateEmailLog(database, tenantId, logId, {

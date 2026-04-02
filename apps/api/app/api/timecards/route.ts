@@ -77,6 +77,20 @@ export async function GET(request: Request) {
           FROM tenant_staff.schedule_shifts ss
           WHERE ss.tenant_id = ${tenantId}
             AND ss.deleted_at IS NULL
+        ),
+        weekly_totals AS (
+          SELECT
+            te2.employee_id,
+            DATE_TRUNC('week', te2.clock_in) AS week_start,
+            SUM(
+              EXTRACT(EPOCH FROM (te2.clock_out - te2.clock_in)) / 3600
+              - (te2.break_minutes / 60.0)
+            ) AS weekly_hours
+          FROM tenant_staff.time_entries te2
+          WHERE te2.tenant_id = ${tenantId}
+            AND te2.deleted_at IS NULL
+            AND te2.clock_out IS NOT NULL
+          GROUP BY te2.employee_id, DATE_TRUNC('week', te2.clock_in)
         )
         SELECT
           te.id,
@@ -108,6 +122,7 @@ export async function GET(request: Request) {
               EXTRACT(EPOCH FROM (te.clock_out - te.clock_in)) / 3600 - (te.break_minutes / 60.0)
             ELSE NULL
           END AS actual_hours,
+          COALESCE(wt.weekly_hours, 0) AS weekly_hours,
           CASE
             WHEN te.clock_out IS NULL THEN 'missing_clock_out'
             WHEN ss.shift_start IS NOT NULL AND te.clock_in < ss.shift_start - INTERVAL '15 minutes' THEN 'early_clock_in'
@@ -115,7 +130,14 @@ export async function GET(request: Request) {
             WHEN ss.shift_start IS NOT NULL AND te.clock_in > ss.shift_start + INTERVAL '30 minutes' THEN 'late_arrival'
             WHEN te.break_minutes > 60 THEN 'excessive_break'
             ELSE NULL
-          END AS exception_type
+          END AS exception_type,
+          CASE
+            WHEN COALESCE(wt.weekly_hours, 0) > 40 THEN true
+            WHEN te.clock_out IS NOT NULL
+              AND (EXTRACT(EPOCH FROM (te.clock_out - te.clock_in)) / 3600 - (te.break_minutes / 60.0)) > 8
+            THEN true
+            ELSE false
+          END AS is_overtime
         FROM tenant_staff.time_entries te
         JOIN tenant_staff.employees e
           ON e.tenant_id = te.tenant_id
@@ -126,6 +148,9 @@ export async function GET(request: Request) {
         LEFT JOIN scheduled_shifts ss
           ON ss.tenant_id = te.tenant_id
          AND ss.id = te.shift_id
+        LEFT JOIN weekly_totals wt
+          ON wt.employee_id = te.employee_id
+         AND wt.week_start = DATE_TRUNC('week', te.clock_in)
         LEFT JOIN tenant_staff.employees u
           ON u.tenant_id = te.tenant_id
          AND u.id = te.approved_by

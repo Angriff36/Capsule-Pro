@@ -4,6 +4,13 @@ import { getTenantIdForOrg } from '@/app/lib/tenant';
 import { database } from '@repo/database';
 
 /**
+ * Generate a unique ID using crypto.randomUUID
+ */
+function generateId(): string {
+  return crypto.randomUUID();
+}
+
+/**
  * POST /api/events/automated-followups/commands/create
  * Create a new automated follow-up task for an event
  */
@@ -29,7 +36,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const id = createId();
+    const id = generateId();
 
     await database.$executeRaw`
       INSERT INTO tenant_events.event_followups (

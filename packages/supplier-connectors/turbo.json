@@ -1,0 +1,10 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "typecheck": {
+      "outputs": []
+    }
+  },
+  "tags": ["layer:package", "scope:integration"]
+}

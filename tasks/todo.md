@@ -104,6 +104,20 @@ All 4 bugs are interconnected. Each partial fix exposes the next. Three strategi
 
 ---
 
+## Agent 87 — 2026-03-26
+
+**Goal:** Full Manual QA Pass - Capsule Pro (REAL BROWSER)
+
+- [ ] Open Capsule Pro app in a REAL browser (not headless)
+- [ ] Click EVERY button in the app
+- [ ] Fill out EVERY form
+- [ ] SUBMIT every form
+- [ ] Verify all functionality works end-to-end
+- [ ] Document any failures with screenshots and reproduction steps
+- [ ] Task requires @sentinel sign-off to close
+
+---
+
 ## Agent 46 — 2026-02-28
 
 **Goal:** Fix false-positive COMMAND_ROUTE_ORPHAN detection in manifest CLI audit

@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
     }
 
     const entry = await database.knowledgeBaseEntry.update({
-      where: { id },
+      where: { tenantId_id: { tenantId, id } },
       data: {
         title,
         content,

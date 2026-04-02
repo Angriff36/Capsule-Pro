@@ -37,6 +37,7 @@ import {
   type AvailableDishOption,
   DishVariantDialog,
   type EventBudgetForDisplay,
+  type PrepListSummary,
 } from "../event-details-sections";
 import type {
   EventDishSummary,
@@ -829,6 +830,7 @@ interface EventDetailsClientProps {
   rsvpCount: number;
   hasContract?: boolean;
   staffCount?: number;
+  prepLists?: PrepListSummary[];
 }
 
 // biome-ignore lint/complexity/noExcessiveCognitiveComplexity: React component with many state pieces; complexity is inherent to the feature scope
@@ -845,6 +847,7 @@ export function EventDetailsClient({
   rsvpCount: initialRsvpCount,
   hasContract = false,
   staffCount = 0,
+  prepLists = [],
 }: EventDetailsClientProps) {
   const router = useRouter();
 
@@ -1477,6 +1480,7 @@ export function EventDetailsClient({
               templateName={templateName}
               templateStaffing={templateStaffing}
               currentStaffCount={currentStaffCount}
+              prepLists={prepLists}
             />
           }
           followups={

@@ -20,23 +20,14 @@ export const sentryConfig: Parameters<typeof withSentryConfig>[1] = {
   sourcemaps: {
     disable: !hasSentryUploadConfig,
 
-    // Only upload source maps for files we actually care about
-    // This dramatically reduces upload time and build size
+    // Upload source maps for all app code
+    // Sentry will automatically handle framework chunks via .sentryignore
     assets: [
-      // Upload app code source maps
+      // App and pages code - the actual application
       ".next/static/chunks/app/**/*.js",
       ".next/static/chunks/pages/**/*.js",
-
-      // Skip framework chunks (React, Next.js internals)
-      "!.next/static/chunks/framework-*.js",
-      "!.next/static/chunks/main-*.js",
-      "!.next/static/chunks/webpack-*.js",
-      "!.next/static/chunks/polyfills-*.js",
-
-      // Skip node_modules chunks unless they're our workspace packages
-      "!.next/static/chunks/**/node_modules/**",
-      ".next/static/chunks/**/@repo/**/*.js",
-      ".next/static/chunks/**/@manifest/**/*.js",
+      // Workspace packages that get bundled
+      ".next/static/chunks/**/*.js",
     ],
 
     // Delete source maps after upload to keep deployment size small

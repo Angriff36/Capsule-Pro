@@ -1,19 +1,33 @@
 {
   "$schema": "https://turborepo.com/schema.json",
+  "globalPassThroughEnv": [
+    "BASEHUB_TOKEN",
+    "NEXT_PUBLIC_APP_URL",
+    "NEXT_PUBLIC_WEB_URL",
+    "NEXT_PUBLIC_API_URL",
+    "DATABASE_URL",
+    "CLERK_SECRET_KEY",
+    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+    "TURBO_TOKEN",
+    "TURBO_TEAM",
+    "SENTRY_ORG",
+    "SENTRY_PROJECT",
+    "SENTRY_AUTH_TOKEN",
+    "SENTRY_ENVIRONMENT",
+    "VERCEL",
+    "VERCEL_ENV",
+    "SKIP_ENV_VALIDATION",
+    "ANALYZE",
+    "NEXT_DIST_DIR"
+  ],
+  "globalEnv": [
+    "DATABASE_URL",
+    "SENTRY_ORG",
+    "SENTRY_PROJECT",
+    "SENTRY_AUTH_TOKEN"
+  ],
+  "globalDependencies": ["**/.env.*local"],
   "boundaries": {
-    "implicitDependencies": [
-      "@api/*",
-      "@angriff36/manifest/*",
-      "@repo/manifest-adapters",
-      "@repo/manifest-adapters/api-response",
-      "@repo/manifest-adapters/prisma-store",
-      "@repo/manifest-adapters/route-helpers",
-      "@repo/*",
-      "@repo/*/*",
-      "@storybook/react",
-      "server-only",
-      "webpack"
-    ],
     "tags": {
       "layer:app": {
         "dependencies": {
@@ -60,8 +74,10 @@
       }
     }
   },
-  "globalDependencies": ["**/.env.*local"],
   "ui": "tui",
+  "remoteCache": {
+    "enabled": true
+  },
   "envMode": "loose",
   "tasks": {
     "generate": {

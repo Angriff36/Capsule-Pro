@@ -978,6 +978,78 @@ export function SourceDocumentsSection({
   );
 }
 
+import Link from "next/link";
+import { ListChecksIcon, ArrowUpRightIcon } from "lucide-react";
+
+export interface PrepListSummary {
+  id: string;
+  name: string;
+  status: string;
+  totalItems: number;
+  batchMultiplier: number;
+  isActive: boolean;
+  generatedAt: Date;
+  finalizedAt: Date | null;
+}
+
+function getPrepListStatusVariant(status: string): "default" | "secondary" | "outline" | "destructive" {
+  switch (status) {
+    case "finalized": return "default";
+    case "completed": return "secondary";
+    case "cancelled": return "destructive";
+    default: return "outline"; // draft
+  }
+}
+
+interface PrepListsSectionProps {
+  prepLists: PrepListSummary[];
+}
+
+export function PrepListsSection({ prepLists }: PrepListsSectionProps) {
+  if (prepLists.length === 0) return null;
+
+  return (
+    <Card className="border-border/70 shadow-sm">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-base">
+          <ListChecksIcon className="size-4 text-emerald-600" />
+          Prep Lists
+        </CardTitle>
+        <p className="text-foreground/75 text-xs">
+          {prepLists.length} prep list{prepLists.length !== 1 ? "s" : ""} linked to this event
+        </p>
+      </CardHeader>
+      <CardContent className="pt-0">
+        <div className="grid gap-2">
+          {prepLists.map((list) => (
+            <Link
+              className="flex flex-wrap items-center justify-between gap-3 rounded-lg border px-3 py-2.5 transition-colors hover:bg-muted/50"
+              href={`/kitchen/prep-lists`}
+              key={list.id}
+            >
+              <div className="flex flex-col">
+                <span className="font-medium text-sm">{list.name}</span>
+                <span className="text-foreground/70 text-xs">
+                  {list.totalItems} item{list.totalItems !== 1 ? "s" : ""} · {list.batchMultiplier}x batch
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                {!list.isActive && (
+                  <span className="rounded bg-muted px-2 py-1 text-xs">Inactive</span>
+                )}
+                <Badge className="text-xs" variant={getPrepListStatusVariant(list.status)}>
+                  {list.status}
+                </Badge>
+                <ArrowUpRightIcon className="size-3 text-muted-foreground" />
+              </div>
+            </Link>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 interface PrepTasksSectionProps {
   prepTasks: PrepTaskSummaryClient[];
   onOpenGenerateModal: () => void;

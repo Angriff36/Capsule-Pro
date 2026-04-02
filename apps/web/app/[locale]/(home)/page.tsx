@@ -17,8 +17,8 @@ interface HomeProps {
   }>;
 }
 
-// ISR: Revalidate every hour - home page content changes infrequently
-export const revalidate = 3600;
+// ISR: Revalidate daily - home page content is static and changes infrequently
+export const revalidate = 86_400;
 
 export const generateMetadata = async ({
   params,

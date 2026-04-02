@@ -1,0 +1,602 @@
+"use client";
+
+import { useState, useEffect, useMemo } from "react";
+import {
+  Package,
+  Search,
+  Filter,
+  Plus,
+  Truck,
+  Clock,
+  CheckCircle2,
+  AlertCircle,
+  XCircle,
+  ArrowUpDown,
+  ExternalLink,
+  Loader2,
+  Calendar,
+  DollarSign,
+  MapPin,
+} from "lucide-react";
+import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@repo/design-system/components/ui/tabs";
+import { Input } from "@repo/design-system/components/ui/input";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/design-system/components/ui/dialog";
+import { Label } from "@repo/design-system/components/ui/label";
+import { Textarea } from "@repo/design-system/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/design-system/components/ui/select";
+
+// Types matching the API
+interface Shipment {
+  id: string;
+  shipmentNumber: string;
+  status: string;
+  eventId: string | null;
+  supplierId: string | null;
+  scheduledDate: string | null;
+  shippedDate: string | null;
+  estimatedDeliveryDate: string | null;
+  actualDeliveryDate: string | null;
+  totalItems: number;
+  shippingCost: number | null;
+  totalValue: number | null;
+  trackingNumber: string | null;
+  carrier: string | null;
+  shippingMethod: string | null;
+  notes: string | null;
+  createdAt: string;
+}
+
+const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
+  draft: { label: "Draft", color: "bg-gray-100 text-gray-700", icon: Package },
+  scheduled: { label: "Scheduled", color: "bg-blue-100 text-blue-700", icon: Calendar },
+  preparing: { label: "Preparing", color: "bg-amber-100 text-amber-700", icon: Clock },
+  in_transit: { label: "In Transit", color: "bg-purple-100 text-purple-700", icon: Truck },
+  delivered: { label: "Delivered", color: "bg-green-100 text-green-700", icon: CheckCircle2 },
+  returned: { label: "Returned", color: "bg-orange-100 text-orange-700", icon: AlertCircle },
+  cancelled: { label: "Cancelled", color: "bg-red-100 text-red-700", icon: XCircle },
+};
+
+const STATUS_ORDER = ["draft", "scheduled", "preparing", "in_transit", "delivered", "returned", "cancelled"];
+
+export function ShipmentsClient() {
+  const [shipments, setShipments] = useState<Shipment[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(null);
+  const [showDetailDialog, setShowDetailDialog] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [createForm, setCreateForm] = useState({
+    trackingNumber: "",
+    carrier: "",
+    shippingMethod: "standard",
+    scheduledDate: "",
+    estimatedDeliveryDate: "",
+    shippingCost: "",
+    notes: "",
+  });
+
+  useEffect(() => {
+    loadShipments();
+  }, []);
+
+  const loadShipments = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch("/api/shipments/shipment/list");
+      const data = await res.json();
+      setShipments(data.shipments || []);
+    } catch (error) {
+      console.error("Failed to load shipments:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreating(true);
+    try {
+      const res = await fetch("/api/shipments/shipment/commands/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          trackingNumber: createForm.trackingNumber || undefined,
+          carrier: createForm.carrier || undefined,
+          shippingMethod: createForm.shippingMethod || undefined,
+          scheduledDate: createForm.scheduledDate || undefined,
+          estimatedDeliveryDate: createForm.estimatedDeliveryDate || undefined,
+          shippingCost: createForm.shippingCost ? parseFloat(createForm.shippingCost) : undefined,
+          notes: createForm.notes || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (data.shipment) {
+        await loadShipments();
+        setShowCreateDialog(false);
+        setCreateForm({
+          trackingNumber: "",
+          carrier: "",
+          shippingMethod: "standard",
+          scheduledDate: "",
+          estimatedDeliveryDate: "",
+          shippingCost: "",
+          notes: "",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to create shipment:", error);
+    } finally {
+      setCreating(false);
+    }
+  };
+
+  const handleStatusUpdate = async (shipmentId: string, status: string) => {
+    try {
+      const commandMap: Record<string, string> = {
+        scheduled: "schedule",
+        preparing: "start-preparing",
+        in_transit: "ship",
+        delivered: "mark-delivered",
+        cancelled: "cancel",
+      };
+
+      const command = commandMap[status];
+      if (!command) return;
+
+      const res = await fetch(`/api/shipments/shipment/commands/${command}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ shipmentId }),
+      });
+      const data = await res.json();
+      if (data.shipment) {
+        setShipments((prev) =>
+          prev.map((s) => (s.id === shipmentId ? { ...s, status: data.shipment.status } : s))
+        );
+      }
+    } catch (error) {
+      console.error("Failed to update shipment status:", error);
+    }
+  };
+
+  const filteredShipments = useMemo(() => {
+    return shipments.filter((s) => {
+      const matchesTab = activeTab === "all" || s.status === activeTab;
+      const matchesSearch =
+        !searchQuery ||
+        s.shipmentNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.carrier?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        s.trackingNumber?.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesTab && matchesSearch;
+    });
+  }, [shipments, activeTab, searchQuery]);
+
+  const stats = useMemo(() => {
+    return {
+      total: shipments.length,
+      active: shipments.filter((s) => ["scheduled", "preparing", "in_transit"].includes(s.status)).length,
+      delivered: shipments.filter((s) => s.status === "delivered").length,
+      totalValue: shipments.reduce((sum, s) => sum + (Number(s.totalValue) || 0), 0),
+    };
+  }, [shipments]);
+
+  const getNextStatus = (currentStatus: string): string | null => {
+    const idx = STATUS_ORDER.indexOf(currentStatus);
+    if (idx === -1 || idx >= STATUS_ORDER.length - 2) return null; // Don't suggest "returned"
+    return STATUS_ORDER[idx + 1];
+  };
+
+  const formatDate = (dateStr: string | null) => {
+    if (!dateStr) return "—";
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+  const formatCurrency = (amount: number | null) => {
+    if (!amount) return "—";
+    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Number(amount));
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">Shipments</h1>
+          <p className="text-muted-foreground">
+            Track incoming and outgoing shipments across your supply chain.
+          </p>
+        </div>
+        <Button onClick={() => setShowCreateDialog(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          New Shipment
+        </Button>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Shipments</CardTitle>
+            <Package className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.total}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Active</CardTitle>
+            <Truck className="h-4 w-4 text-blue-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.active}</div>
+            <p className="text-xs text-muted-foreground">In progress</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Delivered</CardTitle>
+            <CheckCircle2 className="h-4 w-4 text-green-500" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats.delivered}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Value</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{formatCurrency(stats.totalValue)}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Search & Filter */}
+      <div className="flex items-center gap-4">
+        <div className="flex-1 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by shipment #, carrier, or tracking..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+      </div>
+
+      {/* Tabs & Table */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList>
+          <TabsTrigger value="all">All ({shipments.length})</TabsTrigger>
+          {STATUS_ORDER.slice(0, 5).map((status) => {
+            const count = shipments.filter((s) => s.status === status).length;
+            if (count === 0) return null;
+            const config = STATUS_CONFIG[status];
+            return (
+              <TabsTrigger key={status} value={status}>
+                {config?.label} ({count})
+              </TabsTrigger>
+            );
+          })}
+        </TabsList>
+
+        <TabsContent value={activeTab}>
+          {filteredShipments.length === 0 ? (
+            <Card>
+              <CardContent className="py-12 text-center text-muted-foreground">
+                <Package className="mx-auto h-12 w-12 mb-4 opacity-50" />
+                <p>No shipments found.</p>
+                {searchQuery && <p className="text-sm mt-1">Try adjusting your search.</p>}
+              </CardContent>
+            </Card>
+          ) : (
+            <div className="space-y-3">
+              {filteredShipments.map((shipment) => {
+                const statusConfig = STATUS_CONFIG[shipment.status] || STATUS_CONFIG.draft;
+                const StatusIcon = statusConfig.icon;
+                const nextStatus = getNextStatus(shipment.status);
+
+                return (
+                  <Card key={shipment.id} className="hover:shadow-sm transition-shadow">
+                    <CardContent className="p-4">
+                      <div className="flex items-center gap-4">
+                        {/* Status indicator */}
+                        <div className={`flex h-10 w-10 items-center justify-center rounded-full ${statusConfig.color}`}>
+                          <StatusIcon className="h-5 w-5" />
+                        </div>
+
+                        {/* Main info */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <button
+                              onClick={() => { setSelectedShipment(shipment); setShowDetailDialog(true); }}
+                              className="font-semibold hover:underline text-left"
+                            >
+                              {shipment.shipmentNumber}
+                            </button>
+                            <Badge className={statusConfig.color}>
+                              {statusConfig.label}
+                            </Badge>
+                          </div>
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            {shipment.carrier && (
+                              <span className="flex items-center gap-1">
+                                <Truck className="h-3 w-3" />
+                                {shipment.carrier}
+                              </span>
+                            )}
+                            {shipment.trackingNumber && (
+                              <span className="flex items-center gap-1">
+                                <MapPin className="h-3 w-3" />
+                                {shipment.trackingNumber}
+                              </span>
+                            )}
+                            <span>{shipment.totalItems} items</span>
+                            {shipment.totalValue && (
+                              <span className="flex items-center gap-1">
+                                <DollarSign className="h-3 w-3" />
+                                {formatCurrency(shipment.totalValue)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Dates */}
+                        <div className="hidden md:flex flex-col items-end text-sm text-muted-foreground gap-1">
+                          {shipment.scheduledDate && (
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3 w-3" />
+                              Scheduled: {formatDate(shipment.scheduledDate)}
+                            </span>
+                          )}
+                          {shipment.estimatedDeliveryDate && (
+                            <span>ETA: {formatDate(shipment.estimatedDeliveryDate)}</span>
+                          )}
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-2">
+                          {nextStatus && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleStatusUpdate(shipment.id, nextStatus)}
+                            >
+                              {nextStatus === "scheduled" && "Schedule"}
+                              {nextStatus === "preparing" && "Start Preparing"}
+                              {nextStatus === "in_transit" && "Ship"}
+                              {nextStatus === "delivered" && "Mark Delivered"}
+                            </Button>
+                          )}
+                          {shipment.status === "draft" && (
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => handleStatusUpdate(shipment.id, "cancelled")}
+                            >
+                              Cancel
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+
+      {/* Create Shipment Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Create New Shipment</DialogTitle>
+            <DialogDescription>
+              Add a new shipment to track in your logistics pipeline.
+            </DialogDescription>
+          </DialogHeader>
+          <form className="space-y-4" onSubmit={handleCreate}>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="trackingNumber">Tracking Number</Label>
+                <Input
+                  id="trackingNumber"
+                  placeholder="Optional"
+                  value={createForm.trackingNumber}
+                  onChange={(e) => setCreateForm((p) => ({ ...p, trackingNumber: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="carrier">Carrier</Label>
+                <Input
+                  id="carrier"
+                  placeholder="e.g., FedEx, UPS"
+                  value={createForm.carrier}
+                  onChange={(e) => setCreateForm((p) => ({ ...p, carrier: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="shippingMethod">Shipping Method</Label>
+                <Select
+                  value={createForm.shippingMethod}
+                  onValueChange={(v) => setCreateForm((p) => ({ ...p, shippingMethod: v }))}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="standard">Standard</SelectItem>
+                    <SelectItem value="express">Express</SelectItem>
+                    <SelectItem value="overnight">Overnight</SelectItem>
+                    <SelectItem value="freight">Freight</SelectItem>
+                    <SelectItem value="will_call">Will Call / Pickup</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="shippingCost">Shipping Cost</Label>
+                <Input
+                  id="shippingCost"
+                  type="number"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={createForm.shippingCost}
+                  onChange={(e) => setCreateForm((p) => ({ ...p, shippingCost: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="scheduledDate">Scheduled Date</Label>
+                <Input
+                  id="scheduledDate"
+                  type="date"
+                  value={createForm.scheduledDate}
+                  onChange={(e) => setCreateForm((p) => ({ ...p, scheduledDate: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="estimatedDeliveryDate">Est. Delivery</Label>
+                <Input
+                  id="estimatedDeliveryDate"
+                  type="date"
+                  value={createForm.estimatedDeliveryDate}
+                  onChange={(e) => setCreateForm((p) => ({ ...p, estimatedDeliveryDate: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="notes">Notes</Label>
+              <Textarea
+                id="notes"
+                placeholder="Internal notes about this shipment..."
+                value={createForm.notes}
+                onChange={(e) => setCreateForm((p) => ({ ...p, notes: e.target.value }))}
+                rows={3}
+              />
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setShowCreateDialog(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={creating}>
+                {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Create Shipment
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Shipment Detail Dialog */}
+      <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {selectedShipment?.shipmentNumber}
+              {selectedShipment && (
+                <Badge className={STATUS_CONFIG[selectedShipment.status]?.color}>
+                  {STATUS_CONFIG[selectedShipment.status]?.label}
+                </Badge>
+              )}
+            </DialogTitle>
+            <DialogDescription>Shipment details</DialogDescription>
+          </DialogHeader>
+          {selectedShipment && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p className="text-muted-foreground">Carrier</p>
+                  <p className="font-medium">{selectedShipment.carrier || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Method</p>
+                  <p className="font-medium capitalize">{selectedShipment.shippingMethod || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Tracking #</p>
+                  <p className="font-medium">{selectedShipment.trackingNumber || "—"}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Total Items</p>
+                  <p className="font-medium">{selectedShipment.totalItems}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Shipping Cost</p>
+                  <p className="font-medium">{formatCurrency(selectedShipment.shippingCost)}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Total Value</p>
+                  <p className="font-medium">{formatCurrency(selectedShipment.totalValue)}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Scheduled</p>
+                  <p className="font-medium">{formatDate(selectedShipment.scheduledDate)}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Est. Delivery</p>
+                  <p className="font-medium">{formatDate(selectedShipment.estimatedDeliveryDate)}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Shipped</p>
+                  <p className="font-medium">{formatDate(selectedShipment.shippedDate)}</p>
+                </div>
+                <div>
+                  <p className="text-muted-foreground">Delivered</p>
+                  <p className="font-medium">{formatDate(selectedShipment.actualDeliveryDate)}</p>
+                </div>
+              </div>
+              {selectedShipment.notes && (
+                <div>
+                  <p className="text-sm text-muted-foreground mb-1">Notes</p>
+                  <p className="text-sm bg-muted rounded-md p-3">{selectedShipment.notes}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}

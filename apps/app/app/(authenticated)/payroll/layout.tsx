@@ -27,12 +27,20 @@ const navigationItems = [
     label: "Payroll Runs",
   },
   {
+    href: "/payroll/tax-setup",
+    label: "Tax Setup",
+  },
+  {
     href: "/payroll/reports",
     label: "Reports",
   },
   {
     href: "/payroll/payouts",
     label: "Payouts",
+  },
+  {
+    href: "/payroll/direct-deposit",
+    label: "Direct Deposit",
   },
 ];
 

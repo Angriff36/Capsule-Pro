@@ -30,7 +30,7 @@ export const GET = withRateLimit(
       }
       const id = String(params.id);
 
-      const apiKey = await database.apiKey.findUnique({
+      const apiKey = await database.apiKey.findFirst({
         where: {
           tenantId_id: {
             tenantId: currentUser.tenantId,
@@ -91,7 +91,7 @@ export const PUT = withRateLimit(
       const id = String(params.id);
 
       // Check if key exists and belongs to tenant
-      const existing = await database.apiKey.findUnique({
+      const existing = await database.apiKey.findFirst({
         where: {
           tenantId_id: {
             tenantId: currentUser.tenantId,
@@ -221,7 +221,7 @@ export const DELETE = withRateLimit(
       const id = String(params.id);
 
       // Check if key exists and belongs to tenant
-      const existing = await database.apiKey.findUnique({
+      const existing = await database.apiKey.findFirst({
         where: {
           tenantId_id: {
             tenantId: currentUser.tenantId,

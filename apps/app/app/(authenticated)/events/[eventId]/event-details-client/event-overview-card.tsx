@@ -16,7 +16,7 @@ import {
   ActivityIcon,
   CalendarDaysIcon,
   CalendarPlusIcon,
-  KanbanIcon,
+
   Link as LinkIcon,
   MapPinIcon,
   PartyPopperIcon,
@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { AddToBoardDialog } from "../../../command-board/components/add-to-board-dialog";
+
 import { EventBriefingCard } from "../../components/event-briefing-card";
 import type { PrepTaskSummaryClient } from "../prep-task-contract";
 import { buildCalendarUrl, formatEventFormat } from "./utils";
@@ -506,18 +506,7 @@ export function EventOverviewCard({
                   <LinkIcon className="mr-2 size-4" />
                   Share
                 </Button>
-                <AddToBoardDialog
-                  defaultBoardDescription={event.notes ?? undefined}
-                  defaultBoardName={`Event: ${event.title}`}
-                  entityId={event.id}
-                  entityType="event"
-                  trigger={
-                    <Button variant="outline">
-                      <KanbanIcon className="mr-2 size-4" />
-                      Add to Board
-                    </Button>
-                  }
-                />
+
                 <Button asChild variant="ghost">
                   <a
                     href={buildCalendarUrl(
@@ -561,6 +550,7 @@ export function EventOverviewCard({
                   className="object-cover"
                   fill
                   src={featuredMediaUrl}
+                  unoptimized
                 />
               ) : (
                 <div className="flex h-72 flex-col items-center justify-center gap-2 text-muted-foreground">

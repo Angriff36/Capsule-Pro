@@ -5,7 +5,7 @@ import {
   type ManifestPlanRecordPayload,
   planRecordPayloadSchema,
   type SuggestedManifestPlan,
-} from "../../(authenticated)/command-board/types/manifest-plan";
+} from "../../api/command-board/types/manifest-plan";
 
 const PLAN_AGGREGATE_TYPE = "command_board_plan";
 const PENDING_EVENT_TYPE = "command_board.plan.pending";

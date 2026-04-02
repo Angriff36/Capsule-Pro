@@ -11,8 +11,22 @@ const CRITICAL_DEPENDENCY_WARNING =
 const PACK_FILE_CACHE_WARNING =
   /Serializing big strings .* impacts deserialization performance/;
 
+/**
+ * Resolve the API base URL for rewrites.
+ *
+ * Priority:
+ * 1. NEXT_PUBLIC_API_URL — explicit env var (production .env or Vercel env setting)
+ * 2. VERCEL_API_URL — set in Vercel project settings to point to the API project's URL
+ *    (e.g., "capsule-pro-api-git-feat-xyz.vercel.app" for preview, "capsule-pro-api.vercel.app" for prod)
+ * 3. localhost fallback for local development
+ */
 const apiBaseUrl = (
-  process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:2223"
+  process.env.NEXT_PUBLIC_API_URL ||
+  process.env.VERCEL_API_URL ||
+  (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== "development"
+    ? `https://capsule-pro-api.vercel.app`
+    : null) ||
+  "http://127.0.0.1:2223"
 ).replace(/\/$/, "");
 const distDir = process.env.NEXT_DIST_DIR?.trim() || ".next";
 
@@ -156,8 +170,9 @@ let nextConfig: NextConfig = withToolbar(
         bodySizeLimit: "2mb",
       },
     },
-    // Optimize production builds
-    productionBrowserSourceMaps: false,
+    // Enable source maps for Sentry error tracking in production
+    // Source maps are deleted after upload to Sentry (configured in sentryConfig.sourcemaps.deleteSourcemapsAfterUpload)
+    productionBrowserSourceMaps: true,
     redirects: async () => [
       {
         // Root of the authenticated layout used to be a server component that
@@ -167,11 +182,41 @@ let nextConfig: NextConfig = withToolbar(
         // during "Collecting page data".  Moving the redirect here avoids
         // generating any page artifact at all.
         source: "/",
-        destination: "/command-board",
+        destination: "/calendar",
         permanent: false,
       },
     ],
     rewrites,
+    async headers() {
+      return [
+        {
+          source: "/(.*)",
+          headers: [
+            { key: "X-Frame-Options", value: "DENY" },
+            { key: "X-Content-Type-Options", value: "nosniff" },
+            { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+            { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+            { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+            {
+              key: "Content-Security-Policy",
+              value: [
+                "default-src 'self'",
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.clerk.com https://*.clerk.accounts.dev blob:",
+                "worker-src 'self' blob:",
+                "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+                "font-src 'self' https://fonts.gstatic.com",
+                "img-src 'self' data: blob: https://img.clerk.com",
+                "connect-src 'self' https://*.clerk.com https://*.clerk.accounts.dev https://clerk-telemetry.com https://*.sentry.io",
+                "frame-ancestors 'none'",
+                "frame-src 'self' https://*.clerk.accounts.dev",
+                "base-uri 'self'",
+                "form-action 'self'",
+              ].join("; "),
+            },
+          ],
+        },
+      ];
+    },
     // Externalize pdfjs-dist, ably, and pdfkit to avoid bundling issues
     // ably: Turbopack + Ably causes keyv dynamic require failures in SSR
     // pdfkit: Needs access to .afm font files from node_modules

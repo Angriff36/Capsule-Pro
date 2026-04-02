@@ -31,7 +31,7 @@ export async function GET(_request: Request, context: RouteContext) {
     const tenantId = await getTenantIdForOrg(orgId);
     const { id } = await context.params;
 
-    const budget = await database.eventBudget.findUnique({
+    const budget = await database.eventBudget.findFirst({
       where: {
         tenantId_id: {
           tenantId,

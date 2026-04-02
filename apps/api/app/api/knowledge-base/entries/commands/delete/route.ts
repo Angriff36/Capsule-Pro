@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     }
 
     await database.knowledgeBaseEntry.delete({
-      where: { id },
+      where: { tenantId_id: { tenantId, id } },
     });
 
     return manifestSuccessResponse({ success: true });

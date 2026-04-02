@@ -1,9 +1,10 @@
 /**
- * ESLint Configuration — Canonical Route Enforcement Only
+ * ESLint Configuration — Canonical Route & Import Enforcement
  *
  * This project uses Biome for general linting. This ESLint config exists
- * solely to enforce the "no hardcoded /api/ paths" rule via
- * `no-restricted-syntax`, which Biome does not support.
+ * for rules that Biome does not support:
+ * - no-restricted-syntax: Ban hardcoded /api/ paths
+ * - no-restrict-imports: Ban @repo/ui imports (use @repo/design-system)
  *
  * Install:  pnpm add -D eslint
  * Run:      pnpm eslint --no-eslintrc -c eslint.config.mjs "apps/app/**/*.{ts,tsx}"
@@ -14,6 +15,27 @@
 
 /** @type {import("eslint").Linter.Config[]} */
 export default [
+  // ---------------------------------------------------------------------------
+  // Rule: Ban @repo/ui imports (package doesn't exist, use @repo/design-system)
+  // ---------------------------------------------------------------------------
+  {
+    files: ["**/*.ts", "**/*.tsx"],
+    ignores: ["**/node_modules/**", "**/.next/**", "**/dist/**"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              group: ["@repo/ui", "@repo/ui/*"],
+              message:
+                "@repo/ui does not exist. Use @repo/design-system instead.",
+            },
+          ],
+        },
+      ],
+    },
+  },
   // ---------------------------------------------------------------------------
   // Rule: Ban hardcoded "/api/" string literals in client code
   // ---------------------------------------------------------------------------

@@ -5,7 +5,7 @@ import { captureException } from "@sentry/nextjs";
 // Use the shared helper: server-side → direct API URL; client-side → "" (rewrite proxy)
 import { getApiBaseUrl } from "@/app/lib/api";
 import { createPendingManifestPlan } from "@/app/lib/command-board/manifest-plans";
-import { suggestManifestPlanInputSchema } from "../../../(authenticated)/command-board/types/manifest-plan";
+import { suggestManifestPlanInputSchema } from "../types/manifest-plan";
 import {
   loadCommandCatalog,
   resolveCanonicalEntityCommandPair,
@@ -1323,6 +1323,126 @@ async function generatePrepListTool(
 }
 
 const BASE_TOOL_DEFINITIONS: ToolDefinition[] = [
+  // ── Query / Read Tools ────────────────────────────────────────────
+  {
+    type: "function",
+    name: "list_events",
+    description:
+      "List events for the tenant. Use this to answer questions about upcoming events, event schedules, or 'what events are scheduled'. Returns event details including title, date, status, guest count, and venue.",
+    parameters: {
+      type: "object",
+      properties: {
+        status: {
+          type: "string",
+          description:
+            "Filter by status: 'draft', 'confirmed', 'in-progress', 'completed', 'cancelled'. Omit for all.",
+        },
+        fromDate: {
+          type: "string",
+          description: "ISO date string. Only events on or after this date.",
+        },
+        toDate: {
+          type: "string",
+          description: "ISO date string. Only events on or before this date.",
+        },
+        limit: {
+          type: "number",
+          description: "Max number of events to return. Default 20.",
+        },
+      },
+      required: [],
+      additionalProperties: false,
+    },
+  },
+  {
+    type: "function",
+    name: "list_staff",
+    description:
+      "List staff members / employees for the tenant. Use this to answer questions about the team, who's available, or staffing details.",
+    parameters: {
+      type: "object",
+      properties: {
+        limit: {
+          type: "number",
+          description: "Max number of staff to return. Default 20.",
+        },
+      },
+      required: [],
+      additionalProperties: false,
+    },
+  },
+  {
+    type: "function",
+    name: "list_clients",
+    description:
+      "List CRM clients for the tenant. Use to answer questions about clients, customer base, or client details.",
+    parameters: {
+      type: "object",
+      properties: {
+        limit: {
+          type: "number",
+          description: "Max number of clients to return. Default 20.",
+        },
+      },
+      required: [],
+      additionalProperties: false,
+    },
+  },
+  {
+    type: "function",
+    name: "list_inventory",
+    description:
+      "List inventory items for the tenant. Use to answer questions about stock levels, what's running low, or inventory status.",
+    parameters: {
+      type: "object",
+      properties: {
+        lowStockOnly: {
+          type: "boolean",
+          description: "If true, only return items below their reorder point.",
+        },
+        limit: {
+          type: "number",
+          description: "Max number of items to return. Default 20.",
+        },
+      },
+      required: [],
+      additionalProperties: false,
+    },
+  },
+  {
+    type: "function",
+    name: "list_kitchen_tasks",
+    description:
+      "List kitchen/prep tasks for the tenant. Use to answer questions about prep status, kitchen workload, or what needs to be prepared.",
+    parameters: {
+      type: "object",
+      properties: {
+        status: {
+          type: "string",
+          description:
+            "Filter by status: 'pending', 'in-progress', 'completed'. Omit for all.",
+        },
+        limit: {
+          type: "number",
+          description: "Max number of tasks to return. Default 20.",
+        },
+      },
+      required: [],
+      additionalProperties: false,
+    },
+  },
+  {
+    type: "function",
+    name: "get_dashboard_summary",
+    description:
+      "Get a high-level summary of the tenant's current state: upcoming event count, active staff, pending tasks, low-stock items, etc. Use this for broad questions like 'what needs my attention' or 'give me an overview'.",
+    parameters: {
+      type: "object",
+      properties: {},
+      required: [],
+      additionalProperties: false,
+    },
+  },
   // ── Event Setup Tools ─────────────────────────────────────────────
   {
     type: "function",
@@ -2258,6 +2378,284 @@ async function parseNaturalLanguageEventTool(
   };
 }
 
+// ── Query Tool Handlers ─────────────────────────────────────────────
+
+async function listEventsTool(
+  args: Record<string, unknown>,
+  context: ManifestAgentContext
+): Promise<AgentToolResult> {
+  try {
+    const limit = typeof args.limit === "number" ? Math.min(args.limit, 50) : 20;
+    const where: Record<string, unknown> = { tenantId: context.tenantId };
+
+    if (typeof args.status === "string") {
+      where.status = args.status;
+    }
+
+    if (typeof args.fromDate === "string" || typeof args.toDate === "string") {
+      const dateFilter: Record<string, Date> = {};
+      if (typeof args.fromDate === "string") {
+        dateFilter.gte = new Date(args.fromDate);
+      }
+      if (typeof args.toDate === "string") {
+        dateFilter.lte = new Date(args.toDate);
+      }
+      where.eventDate = dateFilter;
+    }
+
+    const events = await database.event.findMany({
+      where,
+      orderBy: { eventDate: "asc" },
+      take: limit,
+      select: {
+        id: true,
+        title: true,
+        eventDate: true,
+        status: true,
+        guestCount: true,
+        venueName: true,
+        eventType: true,
+        notes: true,
+      },
+    });
+
+    return {
+      ok: true,
+      summary: `Found ${events.length} event(s).`,
+      data: events.map((e) => ({
+        id: e.id,
+        title: e.title,
+        eventDate: e.eventDate?.toISOString() ?? null,
+        status: e.status,
+        guestCount: e.guestCount,
+        venueName: e.venueName,
+        eventType: e.eventType,
+        notes: e.notes,
+      })),
+    };
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : "Unknown error";
+    return { ok: false, summary: `Failed to list events: ${sanitizeErrorMessage(msg, "QUERY_ERROR").message}`, error: msg };
+  }
+}
+
+async function listStaffTool(
+  args: Record<string, unknown>,
+  context: ManifestAgentContext
+): Promise<AgentToolResult> {
+  try {
+    const limit = typeof args.limit === "number" ? Math.min(args.limit, 50) : 20;
+    const users = await database.user.findMany({
+      where: { tenantId: context.tenantId },
+      take: limit,
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        role: true,
+        createdAt: true,
+      },
+    });
+
+    return {
+      ok: true,
+      summary: `Found ${users.length} staff member(s).`,
+      data: users.map((u) => ({
+        id: u.id,
+        name: `${u.firstName} ${u.lastName}`.trim(),
+        email: u.email,
+        role: u.role,
+        createdAt: u.createdAt?.toISOString() ?? null,
+      })),
+    };
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : "Unknown error";
+    return { ok: false, summary: `Failed to list staff: ${sanitizeErrorMessage(msg, "QUERY_ERROR").message}`, error: msg };
+  }
+}
+
+async function listClientsTool(
+  args: Record<string, unknown>,
+  context: ManifestAgentContext
+): Promise<AgentToolResult> {
+  try {
+    const limit = typeof args.limit === "number" ? Math.min(args.limit, 50) : 20;
+    const clients = await database.client.findMany({
+      where: { tenantId: context.tenantId },
+      take: limit,
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        company_name: true,
+        first_name: true,
+        last_name: true,
+        email: true,
+        phone: true,
+        clientType: true,
+        createdAt: true,
+      },
+    });
+
+    return {
+      ok: true,
+      summary: `Found ${clients.length} client(s).`,
+      data: clients.map((c) => ({
+        id: c.id,
+        name: [c.first_name, c.last_name].filter(Boolean).join(" ") || c.company_name || "Unnamed",
+        company: c.company_name,
+        email: c.email,
+        phone: c.phone,
+        type: c.clientType,
+        createdAt: c.createdAt?.toISOString() ?? null,
+      })),
+    };
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : "Unknown error";
+    return { ok: false, summary: `Failed to list clients: ${sanitizeErrorMessage(msg, "QUERY_ERROR").message}`, error: msg };
+  }
+}
+
+async function listInventoryTool(
+  args: Record<string, unknown>,
+  context: ManifestAgentContext
+): Promise<AgentToolResult> {
+  try {
+    const limit = typeof args.limit === "number" ? Math.min(args.limit, 50) : 20;
+    const where: Record<string, unknown> = { tenantId: context.tenantId };
+
+    const items = await database.inventoryItem.findMany({
+      where,
+      take: limit,
+      orderBy: { name: "asc" },
+      select: {
+        id: true,
+        name: true,
+        quantityOnHand: true,
+        unitOfMeasure: true,
+        reorder_level: true,
+        parLevel: true,
+        category: true,
+      },
+    });
+
+    let result = items;
+    if (args.lowStockOnly === true) {
+      result = items.filter(
+        (i) => Number(i.quantityOnHand) <= Number(i.reorder_level)
+      );
+    }
+
+    return {
+      ok: true,
+      summary: `Found ${result.length} inventory item(s)${args.lowStockOnly ? " (low stock)" : ""}.`,
+      data: result.map((i) => ({
+        id: i.id,
+        name: i.name,
+        quantityOnHand: Number(i.quantityOnHand),
+        unit: i.unitOfMeasure,
+        reorderLevel: Number(i.reorder_level),
+        parLevel: Number(i.parLevel),
+        category: i.category,
+      })),
+    };
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : "Unknown error";
+    return { ok: false, summary: `Failed to list inventory: ${sanitizeErrorMessage(msg, "QUERY_ERROR").message}`, error: msg };
+  }
+}
+
+async function listKitchenTasksTool(
+  args: Record<string, unknown>,
+  context: ManifestAgentContext
+): Promise<AgentToolResult> {
+  try {
+    const limit = typeof args.limit === "number" ? Math.min(args.limit, 50) : 20;
+    const where: Record<string, unknown> = { tenantId: context.tenantId };
+
+    if (typeof args.status === "string") {
+      where.status = args.status;
+    }
+
+    const tasks = await database.kitchenTask.findMany({
+      where,
+      take: limit,
+      orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        priority: true,
+        dueDate: true,
+        summary: true,
+      },
+    });
+
+    return {
+      ok: true,
+      summary: `Found ${tasks.length} kitchen task(s).`,
+      data: tasks.map((t) => ({
+        id: t.id,
+        title: t.title,
+        status: t.status,
+        priority: t.priority,
+        dueDate: t.dueDate?.toISOString() ?? null,
+        summary: t.summary,
+      })),
+    };
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : "Unknown error";
+    return { ok: false, summary: `Failed to list kitchen tasks: ${sanitizeErrorMessage(msg, "QUERY_ERROR").message}`, error: msg };
+  }
+}
+
+async function getDashboardSummaryTool(
+  _args: Record<string, unknown>,
+  context: ManifestAgentContext
+): Promise<AgentToolResult> {
+  try {
+    const now = new Date();
+    const weekFromNow = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+    const [upcomingEvents, totalClients, pendingTasks, inventoryItems] =
+      await Promise.all([
+        database.event.count({
+          where: {
+            tenantId: context.tenantId,
+            eventDate: { gte: now, lte: weekFromNow },
+            status: { notIn: ["cancelled", "completed"] },
+          },
+        }),
+        database.client.count({
+          where: { tenantId: context.tenantId },
+        }),
+        database.kitchenTask.count({
+          where: {
+            tenantId: context.tenantId,
+            status: { in: ["pending", "in-progress"] },
+          },
+        }),
+        database.inventoryItem.count({
+          where: { tenantId: context.tenantId },
+        }),
+      ]);
+
+    return {
+      ok: true,
+      summary: "Dashboard summary retrieved.",
+      data: {
+        upcomingEventsThisWeek: upcomingEvents,
+        totalClients,
+        pendingKitchenTasks: pendingTasks,
+        totalInventoryItems: inventoryItems,
+      },
+    };
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : "Unknown error";
+    return { ok: false, summary: `Failed to get summary: ${sanitizeErrorMessage(msg, "QUERY_ERROR").message}`, error: msg };
+  }
+}
+
 export function createManifestToolRegistry(context: ManifestAgentContext) {
   const commandCatalog = loadCommandCatalog();
   const commandToolDefinitions = commandCatalog.toolDefinitions.map(
@@ -2271,6 +2669,26 @@ export function createManifestToolRegistry(context: ManifestAgentContext) {
       const parsedArgs = safeJsonParse(call.argumentsJson);
 
       try {
+        // Query / Read Tools
+        if (call.name === "list_events") {
+          return await listEventsTool(parsedArgs, context);
+        }
+        if (call.name === "list_staff") {
+          return await listStaffTool(parsedArgs, context);
+        }
+        if (call.name === "list_clients") {
+          return await listClientsTool(parsedArgs, context);
+        }
+        if (call.name === "list_inventory") {
+          return await listInventoryTool(parsedArgs, context);
+        }
+        if (call.name === "list_kitchen_tasks") {
+          return await listKitchenTasksTool(parsedArgs, context);
+        }
+        if (call.name === "get_dashboard_summary") {
+          return await getDashboardSummaryTool(parsedArgs, context);
+        }
+
         // Event Setup Tools (Phase 1)
         if (call.name === "create_event_draft") {
           return await createEventDraftTool(parsedArgs, context, call.callId);

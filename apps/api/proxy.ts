@@ -1,5 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from "@repo/auth/server";
 import type { NextMiddleware } from "next/server";
+import { applyGlobalRateLimit, appendRateLimitHeaders } from "@/middleware/global-rate-limit";
 
 const isPublicRoute = createRouteMatcher([
   "/webhooks(.*)",
@@ -21,6 +22,20 @@ const middleware: NextMiddleware = clerkMiddleware(async (auth, req) => {
       headers: { "Content-Type": "application/json" },
     });
   }
+
+  // Global rate limiting — applied after authentication
+  // Uses Upstash Redis sliding window (100 req/min per tenant+endpoint)
+  // Per-route withRateLimit() still works for stricter limits on expensive ops
+  const rateLimitResponse = await applyGlobalRateLimit(req);
+  if (rateLimitResponse) {
+    return rateLimitResponse;
+  }
+
+  // Continue to the route handler.
+  // For non-middleware-wrapped routes, the edge runtime can't append
+  // rate limit headers to the upstream response, but the limit is still
+  // enforced. Wrapped routes (withRateLimit) add their own headers.
+  return;
 });
 
 export default middleware;

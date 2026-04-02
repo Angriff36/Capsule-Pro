@@ -34,6 +34,7 @@ export interface InventoryItem {
   item_number: string;
   name: string;
   category: string;
+  barcode: string | null;
   unit_cost: number;
   quantity_on_hand: number;
   reorder_level: number;
@@ -281,4 +282,100 @@ export function formatCurrency(amount: number): string {
 // Helper to format quantity
 export function formatQuantity(quantity: number): string {
   return quantity.toFixed(3);
+}
+
+// ---------------------------------------------------------------------------
+// Batch Operations
+// ---------------------------------------------------------------------------
+
+export interface BatchUpdateRequest {
+  category?: ItemCategory;
+  fsa_status?: FSAStatus;
+  tags?: string[];
+  unit_cost?: number;
+  reorder_level?: number;
+}
+
+export interface BatchUpdateResponse {
+  success: boolean;
+  action: "update";
+  updated: number;
+  updates: BatchUpdateRequest;
+}
+
+export interface BatchDeleteResponse {
+  success: boolean;
+  action: "delete";
+  deleted: number;
+}
+
+export type BatchResponse = BatchUpdateResponse | BatchDeleteResponse;
+
+/**
+ * Batch update inventory items (category, fsa_status, tags, unit_cost, reorder_level)
+ */
+export async function batchUpdateItems(
+  ids: string[],
+  updates: BatchUpdateRequest
+): Promise<BatchUpdateResponse> {
+  const response = await apiFetch("/api/inventory/batch", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "update", ids, updates }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to batch update inventory items");
+  }
+
+  return response.json();
+}
+
+/**
+ * Batch delete inventory items (soft delete)
+ */
+export async function batchDeleteItems(ids: string[]): Promise<BatchDeleteResponse> {
+  const response = await apiFetch("/api/inventory/batch", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "delete", ids }),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to batch delete inventory items");
+  }
+
+  return response.json();
+}
+
+export interface ImportError {
+  row: number;
+  message: string;
+}
+
+export interface ImportResponse {
+  success: number;
+  errors: ImportError[];
+}
+
+/**
+ * Import inventory items from a CSV File object
+ */
+export async function importInventoryItemsFromCSV(file: File): Promise<ImportResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await apiFetch("/api/inventory/import", {
+    method: "POST",
+    body: formData,
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.message || "Failed to import inventory items");
+  }
+
+  return response.json();
 }

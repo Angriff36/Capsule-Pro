@@ -84,6 +84,9 @@ export const PERMISSION_CATEGORIES = {
  * parsePermission("admin.ai_approve") -> { domain: "admin", action: "ai_approve", full: "admin.ai_approve" }
  */
 export function parsePermission(permission) {
+    if (!permission) {
+        return { domain: "", action: "", full: "" };
+    }
     const parts = permission.split(".");
     if (parts.length < 2) {
         return { domain: "", action: permission, full: permission };

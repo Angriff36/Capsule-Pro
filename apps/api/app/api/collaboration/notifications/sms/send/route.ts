@@ -82,9 +82,18 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("SMS send failed:", error);
-    const message = error instanceof Error ? error.message : "Unknown error";
+
+    // Sanitize known provider-not-configured errors before sending to client
+    const raw = error instanceof Error ? error.message : "Unknown error";
+    if (raw.includes("not configured")) {
+      return NextResponse.json(
+        { error: "SMS service is not configured. Please contact your administrator." },
+        { status: 503 }
+      );
+    }
+
     return NextResponse.json(
-      { error: `Failed to send SMS: ${message}` },
+      { error: "Failed to send SMS. Please try again later." },
       { status: 500 }
     );
   }

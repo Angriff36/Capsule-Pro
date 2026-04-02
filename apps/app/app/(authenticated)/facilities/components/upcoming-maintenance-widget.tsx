@@ -1,0 +1,210 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import { AlertTriangle, Calendar, ChevronRight, Loader2, Wrench } from "lucide-react";
+import Link from "next/link";
+import { format, isAfter, isBefore, addDays } from "date-fns";
+
+interface Schedule {
+  id: string;
+  schedule_number: string;
+  title: string;
+  frequency: string;
+  next_due_at: string;
+  equipment_id: string | null;
+  estimated_hours: number | null;
+}
+
+interface Asset {
+  id: string;
+  name: string;
+}
+
+interface UpcomingMaintenanceWidgetProps {
+  compact?: boolean;
+}
+
+export function UpcomingMaintenanceWidget({ compact = false }: UpcomingMaintenanceWidgetProps) {
+  const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [assets, setAssets] = useState<Asset[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setLoading(true);
+    try {
+      const [schedulesRes, assetsRes] = await Promise.all([
+        fetch('/api/facilities/schedules/list?status=active'),
+        fetch('/api/facilities/assets/list?status=active'),
+      ]);
+      const schedulesData = await schedulesRes.json();
+      const assetsData = await assetsRes.json();
+      if (schedulesData.success) setSchedules(schedulesData.data.schedules || []);
+      if (assetsData.success) setAssets(assetsData.data.assets || []);
+    } catch (error) {
+      console.error('Failed to load widget data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const now = new Date();
+  const sevenDaysFromNow = addDays(now, 7);
+
+  const overdueSchedules = schedules.filter(s => isBefore(new Date(s.next_due_at), now));
+  const upcomingSchedules = schedules
+    .filter(s => {
+      const dueDate = new Date(s.next_due_at);
+      return (isAfter(dueDate, now) || isSameDay(dueDate, now)) && isBefore(dueDate, sevenDaysFromNow);
+    })
+    .slice(0, compact ? 3 : 5);
+
+  const getAssetName = (equipmentId: string | null) => {
+    if (!equipmentId) return null;
+    const asset = assets.find(a => a.id === equipmentId);
+    return asset?.name || null;
+  };
+
+  const frequencyColors: Record<string, string> = {
+    daily: "bg-blue-100 text-blue-700",
+    weekly: "bg-cyan-100 text-cyan-700",
+    biweekly: "bg-teal-100 text-teal-700",
+    monthly: "bg-green-100 text-green-700",
+    quarterly: "bg-yellow-100 text-yellow-700",
+    semiannual: "bg-orange-100 text-orange-700",
+    annual: "bg-purple-100 text-purple-700",
+  };
+
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            Upcoming Maintenance
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="flex items-center justify-center py-4">
+          <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (schedules.length === 0) {
+    return (
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            Upcoming Maintenance
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">No maintenance schedules configured.</p>
+          <Button asChild size="sm" variant="outline" className="mt-2">
+            <Link href="/facilities/schedules">Create Schedule</Link>
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card>
+      <CardHeader className="pb-2">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-sm font-medium flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            Upcoming Maintenance
+          </CardTitle>
+          <Button asChild size="sm" variant="ghost" className="h-7 gap-1 text-xs">
+            <Link href="/facilities/schedules">
+              View all <ChevronRight className="h-3 w-3" />
+            </Link>
+          </Button>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {/* Overdue Alert */}
+        {overdueSchedules.length > 0 && (
+          <div className="flex items-center gap-2 p-2 bg-red-50 border border-red-200 rounded-lg">
+            <AlertTriangle className="h-4 w-4 text-red-500" />
+            <span className="text-sm font-medium text-red-700">
+              {overdueSchedules.length} overdue
+            </span>
+          </div>
+        )}
+
+        {/* Upcoming List */}
+        {upcomingSchedules.length === 0 && overdueSchedules.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No maintenance due in the next 7 days.</p>
+        ) : (
+          <div className="space-y-2">
+            {upcomingSchedules.map(schedule => {
+              const dueDate = new Date(schedule.next_due_at);
+              const assetName = getAssetName(schedule.equipment_id);
+              const isDueToday = isSameDay(dueDate, now);
+
+              return (
+                <div
+                  key={schedule.id}
+                  className="flex items-center justify-between p-2 rounded-lg border bg-gray-50/50"
+                >
+                  <div className="flex items-center gap-2 min-w-0">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600">
+                      <Wrench className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-medium text-sm truncate">{schedule.title}</div>
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span className={isDueToday ? "text-amber-600 font-medium" : ""}>
+                          {isDueToday ? "Today" : format(dueDate, "MMM d")}
+                        </span>
+                        {assetName && (
+                          <>
+                            <span>•</span>
+                            <span className="truncate">{assetName}</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <Badge className={frequencyColors[schedule.frequency] || "bg-gray-100 text-gray-700"}>
+                    {schedule.frequency}
+                  </Badge>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Summary */}
+        <div className="flex items-center gap-2 pt-2 border-t text-xs text-muted-foreground">
+          <span>{schedules.length} total schedules</span>
+          {overdueSchedules.length > 0 && (
+            <>
+              <span>•</span>
+              <span className="text-red-600">{overdueSchedules.length} overdue</span>
+            </>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// Helper function for same day comparison
+function isSameDay(date1: Date, date2: Date): boolean {
+  return (
+    date1.getFullYear() === date2.getFullYear() &&
+    date1.getMonth() === date2.getMonth() &&
+    date1.getDate() === date2.getDate()
+  );
+}

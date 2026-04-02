@@ -263,7 +263,8 @@ export function TaskCard({
       router.refresh();
     } catch (error) {
       captureException(error);
-      toast.error("Failed to claim task. Please try again.");
+      const message = error instanceof Error ? error.message : "Failed to claim task. Please try again.";
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -300,7 +301,8 @@ export function TaskCard({
       router.refresh();
     } catch (error) {
       captureException(error);
-      toast.error("Failed to release task. Please try again.");
+      const message = error instanceof Error ? error.message : "Failed to release task. Please try again.";
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }
@@ -329,7 +331,8 @@ export function TaskCard({
       router.refresh();
     } catch (error) {
       captureException(error);
-      toast.error("Failed to update task. Please try again.");
+      const message = error instanceof Error ? error.message : "Failed to update task. Please try again.";
+      toast.error(message);
     } finally {
       setIsLoading(false);
     }

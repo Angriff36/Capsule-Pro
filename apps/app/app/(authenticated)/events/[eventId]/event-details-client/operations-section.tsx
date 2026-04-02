@@ -21,8 +21,9 @@ import {
   CheckIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { PrepTasksSection } from "../event-details-sections";
+import { PrepTasksSection, PrepListsSection } from "../event-details-sections";
 import type { PrepTaskSummaryClient } from "../prep-task-contract";
+import type { PrepListSummary } from "../event-details-sections";
 
 interface TemplateStaffing {
   servers: number;
@@ -47,6 +48,7 @@ interface OperationsSectionProps {
   templateName?: string | null;
   templateStaffing?: TemplateStaffing | null;
   currentStaffCount?: number;
+  prepLists?: PrepListSummary[];
 }
 
 export function OperationsSection({
@@ -59,6 +61,7 @@ export function OperationsSection({
   templateName,
   templateStaffing,
   currentStaffCount = 0,
+  prepLists = [],
 }: OperationsSectionProps) {
   // Calculate total suggested staff
   const totalSuggestedStaff = templateStaffing
@@ -223,6 +226,8 @@ export function OperationsSection({
           </div>
         </CardContent>
       </Card>
+
+      <PrepListsSection prepLists={prepLists} />
 
       <PrepTasksSection
         onOpenGenerateModal={onOpenGenerateModal}

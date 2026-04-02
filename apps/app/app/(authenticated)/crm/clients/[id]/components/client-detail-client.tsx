@@ -25,7 +25,7 @@ import {
   ArrowLeftIcon,
   CalendarIcon,
   DollarSignIcon,
-  KanbanIcon,
+
   MailIcon,
   MessageSquareIcon,
   PhoneIcon,
@@ -37,7 +37,7 @@ import {
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
-import { AddToBoardDialog } from "../../../../command-board/components/add-to-board-dialog";
+
 import { deleteClient } from "../../actions";
 import { CommunicationsTab } from "./tabs/communications-tab";
 import { ContactInfoTab } from "./tabs/contact-info-tab";
@@ -214,18 +214,7 @@ export function ClientDetailClient({ client }: ClientDetailProps) {
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <AddToBoardDialog
-            defaultBoardDescription={`Client: ${getClientDisplayName()}`}
-            defaultBoardName={`Client: ${getClientDisplayName()}`}
-            entityId={clientId}
-            entityType="client"
-            trigger={
-              <Button variant="outline">
-                <KanbanIcon className="h-4 w-4 mr-2" />
-                Add to Board
-              </Button>
-            }
-          />
+
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button disabled={isDeleting} variant="outline">

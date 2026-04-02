@@ -49,7 +49,7 @@
   "private": true,
   "scripts": {
     "analyze": "cross-env ANALYZE=true npm run build",
-    "build": "basehub && next build",
+    "build": "export $(grep -v '^#' ../../.env.local | xargs) && basehub && next build",
     "clean": "git clean -xdf .cache .turbo dist node_modules",
     "dev": "concurrently \"basehub dev\" \"next dev -p 2222\"",
     "start": "next start",

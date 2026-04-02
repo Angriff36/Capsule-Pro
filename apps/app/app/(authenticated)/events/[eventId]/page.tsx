@@ -72,6 +72,7 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
     inventoryCoverage,
     hasContract,
     staffCount,
+    prepLists,
   } = data;
 
   // Normalize and validate prep tasks
@@ -106,6 +107,12 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
         pages={[{ label: "Events", href: "/events" }]}
       >
         <div className="flex items-center gap-2">
+          <a
+            className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md border border-input bg-background px-4 py-2 font-medium text-sm shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
+            href={`/events/${eventId}/waitlist`}
+          >
+            Waitlist
+          </a>
           <a
             className="inline-flex h-9 items-center justify-center whitespace-nowrap rounded-md border border-input bg-background px-4 py-2 font-medium text-sm shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50"
             href={`/events/${eventId}/battle-board`}
@@ -150,6 +157,7 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
         rsvpCount={rsvpCount}
         staffCount={staffCount}
         tenantId={tenantId}
+        prepLists={prepLists}
       />
     </>
   );

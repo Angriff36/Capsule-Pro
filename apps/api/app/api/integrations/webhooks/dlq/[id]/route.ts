@@ -31,7 +31,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     const { id } = await params;
 
-    const entry = await database.webhookDeadLetterQueue.findUnique({
+    const entry = await database.webhookDeadLetterQueue.findFirst({
       where: {
         tenantId_id: {
           tenantId,
