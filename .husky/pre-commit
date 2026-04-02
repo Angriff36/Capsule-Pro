@@ -79,6 +79,6 @@ if [ $ROUTE_GUARD_EXIT -ne 0 ]; then
 fi
 
 echo "Running typecheck before commit..."
-pnpm check
+NODE_OPTIONS="--max-old-space-size=4096" pnpm check
 
 exit 0

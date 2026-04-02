@@ -6,14 +6,10 @@
 
 "use client";
 
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  DataTable,
-  EmptyState,
-  StatusBadge,
-} from "@repo/design-system";
+import { Button } from "@repo/design-system/components/ui/button";
+import { ButtonGroup } from "@repo/design-system/components/ui/button-group";
+import { Card } from "@repo/design-system/components/ui/card";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { format } from "date-fns";
 import { Download, Filter, Plus, Search } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -164,17 +160,14 @@ export function PaymentListClient() {
       key: "status",
       label: "Status",
       render: (value: PaymentStatus) => (
-        <StatusBadge color={statusColors[value]} status={value} />
+        <Badge variant="outline">{value}</Badge>
       ),
     },
     {
       key: "fraudStatus",
       label: "Fraud Check",
       render: (value: FraudStatus) => (
-        <StatusBadge
-          color={fraudStatusColors[value]}
-          status={value.replace(/_/g, " ")}
-        />
+        <Badge variant="outline">{value.replace(/_/g, " ")}</Badge>
       ),
     },
     {
@@ -222,16 +215,16 @@ export function PaymentListClient() {
   if (payments.length === 0) {
     return (
       <Card className="p-8">
-        <EmptyState
-          action={{
-            label: "Create Payment",
-            href: "/accounting/payments/new",
-            icon: Plus,
-          }}
-          description="Get started by processing your first payment"
-          illustration="payment"
-          title="No payments found"
-        />
+        <div className="text-center py-8">
+          <p className="text-gray-500 mb-4">No payments found</p>
+          <p className="text-sm text-gray-400 mb-4">Get started by processing your first payment</p>
+          <Button asChild>
+            <a href="/accounting/payments/new">
+              <Plus className="w-4 h-4 mr-2" />
+              Create Payment
+            </a>
+          </Button>
+        </div>
       </Card>
     );
   }
@@ -295,15 +288,37 @@ export function PaymentListClient() {
 
       {/* Data Table */}
       <Card className="overflow-hidden">
-        <DataTable
-          columns={columns}
-          data={payments}
-          pagination={{
-            currentPage: page,
-            totalPages,
-            onPageChange: setPage,
-          }}
-        />
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="border-b bg-gray-50">
+              <tr>
+                {columns.map((col) => (
+                  <th className="px-4 py-3 text-left font-medium text-gray-600" key={col.key}>{col.label}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {payments.map((payment) => (
+                <tr className="border-b hover:bg-gray-50" key={payment.id}>
+                  {columns.map((col) => (
+                    <td className="px-4 py-3" key={col.key}>
+                      {col.render
+                        ? col.render(payment[col.key as keyof Payment] as never, payment)
+                        : String(payment[col.key as keyof Payment] ?? "")}
+                    </td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-4 py-3 border-t">
+              <Button disabled={page <= 1} onClick={() => setPage(page - 1)} size="sm" variant="outline">Previous</Button>
+              <span className="text-sm text-gray-500">Page {page} of {totalPages}</span>
+              <Button disabled={page >= totalPages} onClick={() => setPage(page + 1)} size="sm" variant="outline">Next</Button>
+            </div>
+          )}
+        </div>
       </Card>
     </div>
   );

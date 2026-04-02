@@ -27,7 +27,7 @@ interface SelectableListProps {
 export function SelectableList({ items, type, children }: SelectableListProps) {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [isPending, startTransition] = useTransition();
-  const selectMode = true;
+  const [selectMode, setSelectMode] = useState(true);
 
   const toggleItem = (id: string) => {
     setSelectedIds((prev) => {

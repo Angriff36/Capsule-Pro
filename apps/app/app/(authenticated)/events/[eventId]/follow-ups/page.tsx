@@ -45,7 +45,7 @@ const statusColors: Record<string, string> = {
 
 export default function EventFollowUpsPage() {
   const params = useParams();
-  const eventId = params.eventId as string;
+  const eventId = (params?.eventId ?? "") as string;
   
   const [followups, setFollowups] = useState<Followup[]>([]);
   const [loading, setLoading] = useState(true);

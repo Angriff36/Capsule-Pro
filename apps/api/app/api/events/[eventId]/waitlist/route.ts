@@ -12,13 +12,13 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ eventId: string }> }
 ) {
-  const session = await auth();
-  if (!session?.user?.id) {
+  const { userId, orgId } = await auth();
+  if (!userId) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   const { eventId } = await params;
-  const tenantId = await getTenantIdForOrg(session.user.orgId);
+  const tenantId = await getTenantIdForOrg(orgId ?? "");
   if (!tenantId) {
     return NextResponse.json({ error: "No tenant" }, { status: 403 });
   }

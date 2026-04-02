@@ -119,7 +119,7 @@ function formatCurrency(value: string | number | null): string {
   }).format(num);
 }
 
-const stageVariants: Record<string, "default" | "secondary" | "outline" | "destructive" | "success"> = {
+const stageVariants: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
   lead: "secondary",
   qualified: "secondary",
   proposal: "outline",

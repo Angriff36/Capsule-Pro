@@ -246,12 +246,14 @@ describe("SET4: Invalid input validation", () => {
     });
 
     it("defaults page to 1 when not provided", () => {
-      const page = Math.max(1, parseInt(undefined as any || "1", 10));
+      const rawPage: string | undefined = undefined;
+      const page = Math.max(1, parseInt(rawPage ?? "1", 10));
       expect(page).toBe(1);
     });
 
     it("defaults limit to 50 when not provided", () => {
-      const limit = Math.min(100, Math.max(1, parseInt(undefined as any || "50", 10)));
+      const rawLimit: string | undefined = undefined;
+      const limit = Math.min(100, Math.max(1, parseInt(rawLimit ?? "50", 10)));
       expect(limit).toBe(50);
     });
 

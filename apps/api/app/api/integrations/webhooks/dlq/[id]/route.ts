@@ -33,10 +33,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     const entry = await database.webhookDeadLetterQueue.findFirst({
       where: {
-        tenantId_id: {
-          tenantId,
-          id,
-        },
+        tenantId,
+        id,
       },
     });
 

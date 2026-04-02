@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
     if (sync.tokenExpiry && new Date(sync.tokenExpiry) < new Date()) {
       // Token expired - would need to refresh
       await database.providerSync.update({
-        where: { id: sync.id },
+        where: { tenantId_id: { tenantId, id: sync.id } },
         data: {
           status: "error",
           lastSyncError: "Token expired. Please reconnect.",
@@ -104,7 +104,7 @@ export async function POST(request: NextRequest) {
 
       // Update sync status
       await database.providerSync.update({
-        where: { id: sync.id },
+        where: { tenantId_id: { tenantId, id: sync.id } },
         data: {
           lastSyncAt: new Date(),
           lastSyncStatus: "success",
@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
       const errorMessage = syncError instanceof Error ? syncError.message : "Unknown error";
 
       await database.providerSync.update({
-        where: { id: sync.id },
+        where: { tenantId_id: { tenantId, id: sync.id } },
         data: {
           lastSyncAt: new Date(),
           lastSyncStatus: "error",

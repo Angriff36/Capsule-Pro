@@ -195,6 +195,7 @@ export async function getVendorRecipeCostBreakdown(
         recipe_version_id: string;
         total_cost: number;
         cost_per_yield: number;
+        portion_size: number | null;
       }[]
     >`
       SELECT
@@ -205,7 +206,8 @@ export async function getVendorRecipeCostBreakdown(
         u.code AS yield_unit,
         rv.id AS recipe_version_id,
         COALESCE(rv.total_cost, 0) AS total_cost,
-        COALESCE(rv.cost_per_yield, 0) AS cost_per_yield
+        COALESCE(rv.cost_per_yield, 0) AS cost_per_yield,
+        rv.portion_size
       FROM tenant_kitchen.recipes r
       LEFT JOIN LATERAL (
         SELECT rv.*

@@ -30,6 +30,11 @@ interface WebpackConfiguration {
     | RegExp
     | { module?: string | RegExp; message?: string | RegExp }
   >;
+  resolve?: {
+    extensionAlias?: Record<string, string[]>;
+    extensions?: string[];
+    [key: string]: unknown;
+  };
 }
 
 const OPENTELEMETRY_EXCLUDE = /@opentelemetry/;

@@ -1,30 +1,9 @@
-// Auto-generated Next.js API route for sampledata (detail)
-// Generated from Manifest IR - DO NOT EDIT
+// Auto-generated Next.js API route stub
+// Model not yet available in the database schema
 
 import type { NextRequest } from "next/server";
+import { manifestErrorResponse } from "@/lib/manifest-response";
 
-export async function GET(request: NextRequest) {
-  try {
-
-
-  const { searchParams } = new URL(request.url);
-  const id = searchParams.get("id");
-
-  if (!id) {
-    return manifestErrorResponse("ID is required", 400);
-  }
-
-  const sampledata = await database.sampledata.findUnique({
-    where: { id }
-  });
-
-  if (!sampledata) {
-    return manifestErrorResponse("sampledata not found", 404);
-  }
-
-    return manifestSuccessResponse({ sampledata });
-  } catch (error) {
-    console.error("Error fetching sampledata:", error);
-    return manifestErrorResponse("Internal server error", 500);
-  }
+export async function GET(_request: NextRequest) {
+  return manifestErrorResponse("Not implemented", 501);
 }

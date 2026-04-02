@@ -75,7 +75,7 @@ const STATUS_CONFIG: Record<string, { label: string; variant: "default" | "secon
 export default function WaitlistPage() {
   const params = useParams();
   const router = useRouter();
-  const eventId = params.eventId as string;
+  const eventId = (params?.eventId ?? "") as string;
 
   const [guests, setGuests] = useState<Guest[]>([]);
   const [summary, setSummary] = useState<Summary | null>(null);

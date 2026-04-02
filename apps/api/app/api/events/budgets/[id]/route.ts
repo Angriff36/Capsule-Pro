@@ -33,10 +33,8 @@ export async function GET(_request: Request, context: RouteContext) {
 
     const budget = await database.eventBudget.findFirst({
       where: {
-        tenantId_id: {
-          tenantId,
-          id,
-        },
+        tenantId,
+        id,
         deletedAt: null,
       },
       include: {

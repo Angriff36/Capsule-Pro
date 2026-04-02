@@ -3,504 +3,826 @@
   "rules": [
     {
       "prefix": "/api/webhooks/",
-      "methods": ["POST", "PUT", "PATCH", "DELETE"]
+      "methods": [
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE"
+      ]
     },
     {
       "prefix": "/api/integrations/webhooks/",
-      "methods": ["POST", "PUT", "PATCH", "DELETE"],
+      "methods": [
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE"
+      ],
       "comment": "Infrastructure: Webhook retry processing and DLQ management"
     },
     {
       "prefix": "/api/auth/",
-      "methods": ["POST", "PUT", "PATCH", "DELETE"]
+      "methods": [
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE"
+      ]
     },
     {
       "prefix": "/api/cron/",
-      "methods": ["POST", "PUT", "PATCH", "DELETE"]
+      "methods": [
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE"
+      ]
     },
     {
       "prefix": "/api/health",
-      "methods": ["POST", "PUT", "PATCH", "DELETE"]
+      "methods": [
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE"
+      ]
     },
     {
       "prefix": "/api/kitchen/recipes/composite/",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "comment": "Composite routes wrap multiple Manifest commands in atomic transactions"
     },
     {
       "pattern": "^/api/kitchen/recipes/[^/]+/composite/",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "comment": "Recipe-scoped composite routes (update-with-version, restore-version)"
     },
     {
       "pattern": "^/api/kitchen/recipes/[^/]+/cost$",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "comment": "Recipe cost calculation route using RecipeVersion.updateCosts command"
     },
     {
       "pattern": "^/api/kitchen/recipes/[^/]+/scale$",
-      "methods": ["POST", "PATCH"],
+      "methods": [
+        "POST",
+        "PATCH"
+      ],
       "comment": "Recipe scaling routes using RecipeIngredient.updateWasteFactor command"
     },
     {
       "prefix": "/api/kitchen/allergens/update-dish",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "comment": "Allergen update route using Dish.update command"
     },
     {
       "prefix": "/api/kitchen/allergens/detect-conflicts",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "comment": "Allergen conflict detection using AllergenWarning.create command"
     },
     {
       "prefix": "/api/kitchen/prep-lists/save-db",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "comment": "Prep list save route using PrepList/PrepListItem manifest commands"
     },
     {
       "prefix": "/api/kitchen/ai/bulk-generate/prep-tasks",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "comment": "AI-generated prep task bulk creation using PrepTask.create command"
     },
     {
       "prefix": "/api/kitchen/manifest/",
-      "methods": ["POST", "PUT", "PATCH", "DELETE"],
+      "methods": [
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE"
+      ],
       "comment": "Legacy infrastructure routes using Manifest runtime (to be migrated)"
     },
     {
       "prefix": "/api/conflicts/",
-      "methods": ["POST", "PUT", "PATCH", "DELETE"],
+      "methods": [
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE"
+      ],
       "comment": "Conflict detection infrastructure"
     },
     {
       "prefix": "/api/user-preferences",
-      "methods": ["POST"],
-      "comment": "User preferences — settings, not domain command (permanently exempted in audit registry)"
+      "methods": [
+        "POST"
+      ],
+      "comment": "User preferences \u2014 settings, not domain command (permanently exempted in audit registry)"
     },
     {
       "prefix": "/api/staff/shifts/commands/create-validated",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "comment": "Validated shift creation with overlap/overtime/certification checks using ScheduleShift.create command"
     },
     {
       "prefix": "/api/staff/shifts/commands/update-validated",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "comment": "Validated shift update with overlap/overtime/certification checks using ScheduleShift.update command"
     },
     {
       "prefix": "/api/events/allergens/warnings/acknowledge",
-      "methods": ["POST"],
-      "comment": "Uses executeManifestCommand — AllergenWarning.acknowledge"
+      "methods": [
+        "POST"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 AllergenWarning.acknowledge"
     },
     {
       "pattern": "^/api/events/contracts/[^/]+$",
-      "methods": ["PUT", "DELETE"],
-      "comment": "Uses executeManifestCommand — EventContract.update/softDelete"
+      "methods": [
+        "PUT",
+        "DELETE"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 EventContract.update/softDelete"
     },
     {
       "pattern": "^/api/events/contracts/[^/]+/signatures$",
-      "methods": ["POST"],
-      "comment": "Uses executeManifestCommand — ContractSignature.create"
+      "methods": [
+        "POST"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 ContractSignature.create"
     },
     {
       "pattern": "^/api/events/[^/]+/guests$",
-      "methods": ["POST"],
-      "comment": "Uses executeManifestCommand — EventGuest.create"
+      "methods": [
+        "POST"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 EventGuest.create"
     },
     {
       "pattern": "^/api/events/guests/[^/]+$",
-      "methods": ["PUT", "DELETE"],
-      "comment": "Uses executeManifestCommand — EventGuest.update/softDelete"
+      "methods": [
+        "PUT",
+        "DELETE"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 EventGuest.update/softDelete"
     },
     {
       "pattern": "^/api/kitchen/waste/entries/[^/]+$",
-      "methods": ["PUT", "DELETE"],
-      "comment": "Uses executeManifestCommand — WasteEntry.update/softDelete"
+      "methods": [
+        "PUT",
+        "DELETE"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 WasteEntry.update/softDelete"
     },
     {
       "pattern": "^/api/inventory/purchase-orders/[^/]+/items/[^/]+/quality$",
-      "methods": ["PUT"],
-      "comment": "Uses executeManifestCommand — PurchaseOrderItem.update"
+      "methods": [
+        "PUT"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 PurchaseOrderItem.update"
     },
     {
       "prefix": "/api/inventory/alerts/subscribe",
-      "methods": ["POST"],
-      "comment": "Uses executeManifestCommand — AlertsConfig.create"
+      "methods": [
+        "POST"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 AlertsConfig.create"
     },
     {
       "pattern": "^/api/shipments/[^/]+$",
-      "methods": ["PUT", "DELETE"],
-      "comment": "Uses executeManifestCommand — Shipment.update/cancel"
+      "methods": [
+        "PUT",
+        "DELETE"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 Shipment.update/cancel"
     },
     {
       "pattern": "^/api/staff/employees/[^/]+$",
-      "methods": ["PUT", "PATCH"],
-      "comment": "Uses executeManifestCommand — User.update"
+      "methods": [
+        "PUT",
+        "PATCH"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 User.update"
     },
     {
       "prefix": "/api/command-board",
-      "methods": ["POST", "PUT", "DELETE"],
-      "comment": "Uses executeManifestCommand — CommandBoard/CommandBoardLayout CRUD"
+      "methods": [
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 CommandBoard/CommandBoardLayout CRUD"
     },
     {
       "prefix": "/api/events/contracts",
-      "methods": ["POST"],
-      "comment": "Uses executeManifestCommand — EventContract.create"
+      "methods": [
+        "POST"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 EventContract.create"
     },
     {
       "pattern": "^/api/events/contracts/[^/]+/status$",
-      "methods": ["PATCH"],
-      "comment": "Uses createManifestRuntime — EventContract.send/sign/expire/cancel/markViewed"
+      "methods": [
+        "PATCH"
+      ],
+      "comment": "Uses createManifestRuntime \u2014 EventContract.send/sign/expire/cancel/markViewed"
     },
     {
       "pattern": "^/api/events/contracts/[^/]+/send$",
-      "methods": ["POST"],
-      "comment": "Uses createManifestRuntime — EventContract.send + email side-effect"
+      "methods": [
+        "POST"
+      ],
+      "comment": "Uses createManifestRuntime \u2014 EventContract.send + email side-effect"
     },
     {
       "pattern": "^/api/events/contracts/[^/]+/signature$",
-      "methods": ["POST"],
-      "comment": "Uses executeManifestCommand — ContractSignature.create"
+      "methods": [
+        "POST"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 ContractSignature.create"
     },
     {
       "prefix": "/api/training/modules",
-      "methods": ["POST"],
-      "comment": "Uses executeManifestCommand — TrainingModule.create"
+      "methods": [
+        "POST"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 TrainingModule.create"
     },
     {
       "pattern": "^/api/training/modules/[^/]+$",
-      "methods": ["PUT", "DELETE"],
-      "comment": "Uses executeManifestCommand — TrainingModule.update/softDelete"
+      "methods": [
+        "PUT",
+        "DELETE"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 TrainingModule.update/softDelete"
     },
     {
       "prefix": "/api/training/assignments",
-      "methods": ["POST"],
-      "comment": "Uses executeManifestCommand — TrainingAssignment.create"
+      "methods": [
+        "POST"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 TrainingAssignment.create"
     },
     {
       "prefix": "/api/staff/certifications",
-      "methods": ["POST"],
-      "comment": "Uses executeManifestCommand — EmployeeCertification.create"
+      "methods": [
+        "POST"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 EmployeeCertification.create"
     },
     {
       "pattern": "^/api/staff/certifications/[^/]+$",
-      "methods": ["PUT", "DELETE"],
-      "comment": "Uses executeManifestCommand — EmployeeCertification.update/softDelete"
+      "methods": [
+        "PUT",
+        "DELETE"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 EmployeeCertification.update/softDelete"
     },
     {
       "prefix": "/api/staff/availability",
-      "methods": ["POST"],
-      "comment": "Uses executeManifestCommand — EmployeeAvailability.create"
+      "methods": [
+        "POST"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 EmployeeAvailability.create"
     },
     {
       "pattern": "^/api/staff/availability/[^/]+$",
-      "methods": ["PATCH", "DELETE"],
-      "comment": "Uses executeManifestCommand — EmployeeAvailability.update/softDelete"
+      "methods": [
+        "PATCH",
+        "DELETE"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 EmployeeAvailability.update/softDelete"
     },
     {
       "prefix": "/api/staff/time-off/requests",
-      "methods": ["POST"],
-      "comment": "Uses executeManifestCommand — TimeOffRequest.create"
+      "methods": [
+        "POST"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 TimeOffRequest.create"
     },
     {
       "pattern": "^/api/staff/time-off/requests/[^/]+$",
-      "methods": ["PATCH", "DELETE"],
-      "comment": "Uses executeManifestCommand — TimeOffRequest commands/softDelete"
+      "methods": [
+        "PATCH",
+        "DELETE"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 TimeOffRequest commands/softDelete"
     },
     {
       "prefix": "/api/accounting/accounts",
-      "methods": ["POST"],
-      "comment": "Uses executeManifestCommand — ChartOfAccount.create"
+      "methods": [
+        "POST"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 ChartOfAccount.create"
     },
     {
       "prefix": "/api/accounting/payment-methods",
-      "methods": ["POST", "PUT", "DELETE"],
+      "methods": [
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
       "comment": "Legacy infrastructure: Direct DB access for payment methods (needs manifest migration)"
     },
     {
       "prefix": "/api/accounting/payments",
-      "methods": ["POST", "PUT"],
+      "methods": [
+        "POST",
+        "PUT"
+      ],
       "comment": "Legacy infrastructure: Direct DB access for payments (needs manifest migration)"
     },
     {
       "prefix": "/api/accounting/invoices",
-      "methods": ["POST", "PUT", "DELETE"],
+      "methods": [
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
       "comment": "Legacy infrastructure: Direct DB access for invoices (needs manifest migration)"
     },
     {
       "pattern": "^/api/accounting/accounts/[^/]+$",
-      "methods": ["PUT", "DELETE"],
-      "comment": "Uses executeManifestCommand — ChartOfAccount.update/deactivate"
+      "methods": [
+        "PUT",
+        "DELETE"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 ChartOfAccount.update/deactivate"
     },
     {
       "prefix": "/api/administrative/tasks",
-      "methods": ["POST"],
-      "comment": "Uses executeManifestCommand — AdminTask.create"
+      "methods": [
+        "POST"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 AdminTask.create"
     },
     {
       "pattern": "^/api/administrative/tasks/[^/]+$",
-      "methods": ["PATCH", "DELETE"],
-      "comment": "Uses executeManifestCommand — AdminTask commands/softDelete"
+      "methods": [
+        "PATCH",
+        "DELETE"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 AdminTask commands/softDelete"
     },
     {
       "prefix": "/api/collaboration/notifications/email/workflows",
-      "methods": ["POST"],
-      "comment": "Uses executeManifestCommand — EmailWorkflow.create"
+      "methods": [
+        "POST"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 EmailWorkflow.create"
     },
     {
       "pattern": "^/api/collaboration/notifications/email/workflows/[^/]+$",
-      "methods": ["PUT", "DELETE"],
-      "comment": "Uses executeManifestCommand — EmailWorkflow.update/softDelete"
+      "methods": [
+        "PUT",
+        "DELETE"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 EmailWorkflow.update/softDelete"
     },
     {
       "prefix": "/api/payroll/periods",
-      "methods": ["POST"],
-      "comment": "Uses executeManifestCommand — PayrollPeriod.create"
+      "methods": [
+        "POST"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 PayrollPeriod.create"
     },
     {
       "prefix": "/api/payroll/deductions",
-      "methods": ["POST"],
-      "comment": "Uses executeManifestCommand — EmployeeDeduction.create"
+      "methods": [
+        "POST"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 EmployeeDeduction.create"
     },
     {
       "prefix": "/api/payroll/approvals",
-      "methods": ["POST"],
-      "comment": "Uses executeManifestCommand — PayrollApprovalHistory.create"
+      "methods": [
+        "POST"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 PayrollApprovalHistory.create"
     },
     {
       "pattern": "^/api/payroll/runs/[^/]+$",
-      "methods": ["PUT"],
-      "comment": "Uses executeManifestCommand — PayrollRun.updateStatus"
+      "methods": [
+        "PUT"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 PayrollRun.updateStatus"
     },
     {
       "prefix": "/api/staff/budgets",
-      "methods": ["POST"],
-      "comment": "Uses executeManifestCommand — LaborBudget.create"
+      "methods": [
+        "POST"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 LaborBudget.create"
     },
     {
       "pattern": "^/api/staff/budgets/[^/]+$",
-      "methods": ["PUT", "DELETE"],
-      "comment": "Uses executeManifestCommand — LaborBudget.update/softDelete"
+      "methods": [
+        "PUT",
+        "DELETE"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 LaborBudget.update/softDelete"
     },
     {
       "prefix": "/api/staff/budgets/alerts",
-      "methods": ["POST"],
-      "comment": "Uses executeManifestCommand — BudgetAlert.acknowledge/resolve"
+      "methods": [
+        "POST"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 BudgetAlert.acknowledge/resolve"
     },
     {
       "prefix": "/api/sentry-fixer/process",
-      "methods": ["POST", "GET"],
+      "methods": [
+        "POST",
+        "GET"
+      ],
       "comment": "Infrastructure: Sentry issue job processor + health check (no domain writes)"
     },
     {
       "pattern": "^/api/kitchen/tasks/[^/]+$",
-      "methods": ["PATCH", "DELETE"],
-      "comment": "Uses executeManifestCommand — KitchenTask.start/complete/cancel/release/updatePriority/updateComplexity"
+      "methods": [
+        "PATCH",
+        "DELETE"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 KitchenTask.start/complete/cancel/release/updatePriority/updateComplexity"
     },
     {
       "pattern": "^/api/timecards/[^/]+$",
-      "methods": ["PUT", "DELETE"],
-      "comment": "Uses executeManifestCommand — TimeEntry.clockOut/softDelete"
+      "methods": [
+        "PUT",
+        "DELETE"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 TimeEntry.clockOut/softDelete"
     },
     {
       "pattern": "^/api/inventory/cycle-count/records/[^/]+$",
-      "methods": ["PUT", "DELETE"],
-      "comment": "Uses executeManifestCommand — CycleCountRecord.update/remove"
+      "methods": [
+        "PUT",
+        "DELETE"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 CycleCountRecord.update/remove"
     },
     {
       "prefix": "/api/collaboration/notifications/email/templates",
-      "methods": ["POST", "PUT", "DELETE"],
-      "comment": "Uses executeManifestCommand — EmailTemplate.create/update/softDelete"
+      "methods": [
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 EmailTemplate.create/update/softDelete"
     },
     {
       "prefix": "/api/settings/api-keys",
-      "methods": ["POST", "PUT", "DELETE"],
-      "comment": "Uses database directly with manifest pattern — ApiKey.create/update/revoke/softDelete"
+      "methods": [
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "comment": "Uses database directly with manifest pattern \u2014 ApiKey.create/update/revoke/softDelete"
     },
     {
       "pattern": "^/api/settings/api-keys/[^/]+/revoke$",
-      "methods": ["POST"],
-      "comment": "Uses database directly — ApiKey.revoke"
+      "methods": [
+        "POST"
+      ],
+      "comment": "Uses database directly \u2014 ApiKey.revoke"
     },
     {
       "pattern": "^/api/settings/api-keys/[^/]+/rotate$",
-      "methods": ["POST"],
-      "comment": "Uses database directly — ApiKey.rotate (regenerates key)"
+      "methods": [
+        "POST"
+      ],
+      "comment": "Uses database directly \u2014 ApiKey.rotate (regenerates key)"
     },
     {
       "prefix": "/api/inventory/bulk-order-rules",
-      "methods": ["POST", "PUT", "DELETE"],
-      "comment": "Uses database directly with manifest pattern — BulkOrderRule.create/update/softDelete"
+      "methods": [
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "comment": "Uses database directly with manifest pattern \u2014 BulkOrderRule.create/update/softDelete"
     },
     {
       "prefix": "/api/inventory/pricing-tiers",
-      "methods": ["POST", "PUT", "DELETE"],
-      "comment": "Uses database directly with manifest pattern — PricingTier.create/update/softDelete"
+      "methods": [
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "comment": "Uses database directly with manifest pattern \u2014 PricingTier.create/update/softDelete"
     },
     {
       "prefix": "/api/inventory/supplier-catalogs",
-      "methods": ["POST", "PUT", "DELETE"],
-      "comment": "Uses database directly with manifest pattern — VendorCatalog.create/update/softDelete"
+      "methods": [
+        "POST",
+        "PUT",
+        "DELETE"
+      ],
+      "comment": "Uses database directly with manifest pattern \u2014 VendorCatalog.create/update/softDelete"
     },
     {
       "prefix": "/api/settings/rate-limits",
-      "methods": ["POST", "PATCH", "DELETE"],
+      "methods": [
+        "POST",
+        "PATCH",
+        "DELETE"
+      ],
       "comment": "Infrastructure: Rate limit configuration CRUD for tenant-specific limits"
     },
     {
       "prefix": "/api/payroll/export",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "comment": "Infrastructure: Export routes for QuickBooks integration"
     },
     {
       "prefix": "/api/sales-reporting/generate",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "comment": "Infrastructure: Sales report generation"
     },
     {
       "prefix": "/api/staff/shifts/bulk-assignment",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "comment": "Infrastructure: Bulk shift assignment using ScheduleShift.create command"
     },
     {
       "prefix": "/api/staff/availability/batch",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "comment": "Infrastructure: Batch availability updates using EmployeeAvailability.update command"
     },
     {
       "prefix": "/api/timecards/bulk",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "comment": "Infrastructure: Bulk timecard operations using TimeEntry manifest commands"
     },
     {
       "prefix": "/api/collaboration/notifications/email/send",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "comment": "Infrastructure: Email sending endpoint with rate limiting"
     },
     {
       "prefix": "/api/collaboration/notifications/email/webhook",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "comment": "Infrastructure: Email webhook handler for delivery tracking"
     },
     {
       "prefix": "/api/collaboration/notifications/sms/send",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "comment": "Infrastructure: SMS sending endpoint with rate limiting"
     },
     {
       "prefix": "/api/collaboration/notifications/sms/webhook",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "comment": "Infrastructure: SMS webhook handler for delivery tracking"
     },
     {
       "prefix": "/api/collaboration/notifications/sms/preferences",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "comment": "Infrastructure: SMS preference management using database directly"
     },
     {
       "prefix": "/api/communications/sms/automation-rules",
-      "methods": ["POST", "PUT", "PATCH", "DELETE"],
-      "comment": "Uses executeManifestCommand — SmsAutomationRule.create/update/activate/deactivate/softDelete"
+      "methods": [
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 SmsAutomationRule.create/update/activate/deactivate/softDelete"
     },
     {
       "prefix": "/api/inventory/audit/schedule",
-      "methods": ["GET", "POST", "PATCH", "DELETE"],
+      "methods": [
+        "GET",
+        "POST",
+        "PATCH",
+        "DELETE"
+      ],
       "comment": "Infrastructure: Audit schedule management for automated inventory audits"
     },
     {
       "prefix": "/api/inventory/audit/discrepancies",
-      "methods": ["GET", "POST", "PATCH"],
+      "methods": [
+        "GET",
+        "POST",
+        "PATCH"
+      ],
       "comment": "Infrastructure: Discrepancy listing and resolution workflow for inventory audits"
     },
     {
       "prefix": "/api/inventory/audit/discrepancies/:id",
-      "methods": ["GET", "PATCH"],
+      "methods": [
+        "GET",
+        "PATCH"
+      ],
       "comment": "Infrastructure: Single discrepancy details and update"
     },
     {
       "prefix": "/api/inventory/audit/discrepancies/:id/resolve",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "comment": "Infrastructure: Mark discrepancy as resolved with root cause analysis"
     },
     {
       "prefix": "/api/inventory/audit/reports",
-      "methods": ["GET", "POST"],
+      "methods": [
+        "GET",
+        "POST"
+      ],
       "comment": "Infrastructure: Audit summary reports with variance analysis"
     },
     {
       "prefix": "/api/inventory/audit/reports/:id",
-      "methods": ["GET", "DELETE"],
+      "methods": [
+        "GET",
+        "DELETE"
+      ],
       "comment": "Infrastructure: Saved report retrieval and deletion"
     },
     {
       "prefix": "/api/events/export/quickbooks",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "comment": "Infrastructure: QuickBooks export with rate limiting"
     },
     {
       "prefix": "/api/inventory/purchase-orders/export/quickbooks",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "comment": "Infrastructure: Purchase order QuickBooks export with rate limiting"
     },
     {
       "pattern": "^/api/public/contracts/[^/]+/sign$",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "comment": "Infrastructure: Public contract signing with rate limiting"
     },
     {
       "pattern": "^/api/public/proposals/[^/]+/respond$",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "comment": "Infrastructure: Public proposal response with rate limiting"
     },
     {
       "prefix": "/api/ai-event-setup/",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "comment": "AI Event Setup: NL parsing and session management using manifest pattern"
     },
     {
       "prefix": "/api/accounting/collections/cases",
-      "methods": ["POST", "PATCH"],
+      "methods": [
+        "POST",
+        "PATCH"
+      ],
       "comment": "Infrastructure: Collection case management with direct DB access"
     },
     {
       "pattern": "^/api/accounting/collections/cases/[^/]+$",
-      "methods": ["PATCH"],
+      "methods": [
+        "PATCH"
+      ],
       "comment": "Infrastructure: Single collection case update"
     },
     {
       "prefix": "/api/accounting/revenue-recognition/schedules",
-      "methods": ["POST", "PATCH"],
+      "methods": [
+        "POST",
+        "PATCH"
+      ],
       "comment": "Infrastructure: Revenue recognition schedule management"
     },
     {
       "pattern": "^/api/accounting/revenue-recognition/schedules/[^/]+$",
-      "methods": ["PATCH"],
+      "methods": [
+        "PATCH"
+      ],
       "comment": "Infrastructure: Single revenue schedule update"
     },
     {
       "prefix": "/api/logistics/routes/commands/optimize",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "comment": "Infrastructure: Route optimization command using direct DB access"
     },
     {
       "prefix": "/api/kitchen/equipment/alerts",
-      "methods": ["POST", "PUT", "PATCH", "DELETE"],
+      "methods": [
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE"
+      ],
       "comment": "Infrastructure: Equipment alert management using direct DB access"
     },
     {
       "prefix": "/api/events/automated-followups/commands",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "comment": "Infrastructure: Automated follow-up commands (complete, create, generate, skip)"
     },
     {
       "prefix": "/api/logistics/routes/commands",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "comment": "Infrastructure: Logistics route commands (create, update-status)"
     },
     {
       "prefix": "/api/staffing/recommendations",
-      "methods": ["POST"],
+      "methods": [
+        "POST"
+      ],
       "comment": "Infrastructure: Staffing recommendations with direct DB access"
+    },
+    {
+      "prefix": "/api/knowledge-base/entries/commands/",
+      "methods": [
+        "POST"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 KnowledgeBaseEntry commands"
+    },
+    {
+      "prefix": "/api/payroll/bank-accounts/commands/",
+      "methods": [
+        "POST"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 PayrollBankAccount commands"
+    },
+    {
+      "prefix": "/api/facilities/",
+      "methods": [
+        "POST",
+        "PUT",
+        "PATCH",
+        "DELETE"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 Facilities commands (areas, assets, schedules, work-orders)"
+    },
+    {
+      "prefix": "/api/events/budgets/",
+      "methods": [
+        "PUT",
+        "DELETE"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 EventBudget.update/softDelete"
+    },
+    {
+      "prefix": "/api/calendar/sync/",
+      "methods": [
+        "POST"
+      ],
+      "comment": "Infrastructure: Calendar sync trigger"
+    },
+    {
+      "pattern": "^/api/events/[^/]+/waitlist/commands/",
+      "methods": [
+        "POST"
+      ],
+      "comment": "Uses executeManifestCommand \u2014 Waitlist commands (add-guest, promote, update-rsvp)"
     }
   ]
 }

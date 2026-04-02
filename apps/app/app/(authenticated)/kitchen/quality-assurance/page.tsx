@@ -1,4 +1,4 @@
-import { requireCurrentUser, getTenantId } from "@/lib/auth-utils";
+import { requireCurrentUser, getTenantId } from "@/app/lib/tenant";
 import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
@@ -205,7 +205,7 @@ function CorrectiveActionsTab() {
     <div className="space-y-4">
       <div className="flex gap-2">
         <Badge variant="destructive">1 Critical</Badge>
-        <Badge variant="warning">1 High</Badge>
+        <Badge variant="secondary">1 High</Badge>
         <Badge variant="secondary">1 Medium</Badge>
       </div>
 

@@ -2,6 +2,8 @@
 // Generated from Manifest IR - DO NOT EDIT
 
 import type { NextRequest } from "next/server";
+import { database } from "@/lib/database";
+import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,7 +16,7 @@ export async function GET(request: NextRequest) {
     return manifestErrorResponse("ID is required", 400);
   }
 
-  const commandboardconnection = await database.commandboardconnection.findUnique({
+  const commandboardconnection = await database.commandBoardConnection.findFirst({
     where: { id }
   });
 

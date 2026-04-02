@@ -6,14 +6,11 @@
 
 "use client";
 
-import {
-  AmountInput,
-  Button,
-  Card,
-  Input,
-  Label,
-  Textarea,
-} from "@repo/design-system";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Card } from "@repo/design-system/components/ui/card";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
+import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { Banknote, Building, CreditCard, Smartphone } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -163,12 +160,14 @@ export function PaymentFormClient({
         {/* Amount */}
         <div>
           <Label htmlFor="amount">Payment Amount</Label>
-          <AmountInput
-            currency="USD"
+          <Input
             id="amount"
             max={invoiceAmountDue}
-            onChange={setAmount}
+            min={0}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAmount(Number(e.target.value))}
             placeholder="0.00"
+            step={0.01}
+            type="number"
             value={amount}
           />
           <p className="text-sm text-gray-500 mt-1">
@@ -207,7 +206,7 @@ export function PaymentFormClient({
           <Label htmlFor="reference">Reference Number (Optional)</Label>
           <Input
             id="reference"
-            onChange={(e) => setReference(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setReference(e.target.value)}
             placeholder="Check number, transaction ID, etc."
             value={reference}
           />
@@ -218,7 +217,7 @@ export function PaymentFormClient({
           <Label htmlFor="notes">Notes (Optional)</Label>
           <Textarea
             id="notes"
-            onChange={(e) => setNotes(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNotes(e.target.value)}
             placeholder="Add any notes about this payment..."
             rows={3}
             value={notes}

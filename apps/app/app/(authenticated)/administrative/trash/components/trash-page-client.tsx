@@ -60,7 +60,7 @@ interface TrashListResponse {
   entityTypes: Array<{ value: string; label: string }>;
 }
 
-interface DependencyAnalysis {
+export interface DependencyAnalysis {
   entity: {
     id: string;
     type: string;

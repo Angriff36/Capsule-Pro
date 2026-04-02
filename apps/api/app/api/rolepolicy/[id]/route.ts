@@ -35,10 +35,8 @@ export async function GET(request: Request, context: RouteContext) {
 
     const policy = await database.rolePolicy.findFirst({
       where: {
-        tenantId_id: {
-          tenantId,
-          id,
-        },
+        tenantId,
+        id,
       },
     });
 

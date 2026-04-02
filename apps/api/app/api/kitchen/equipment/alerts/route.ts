@@ -12,6 +12,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { database } from "@/lib/database";
 
 export async function GET(request: NextRequest) {
   try {

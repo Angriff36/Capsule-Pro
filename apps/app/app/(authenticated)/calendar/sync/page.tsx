@@ -57,8 +57,8 @@ export default function CalendarSyncPage() {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
-  const connectedProvider = searchParams.get("connected");
-  const errorMessage = searchParams.get("error");
+  const connectedProvider = searchParams?.get("connected") ?? null;
+  const errorMessage = searchParams?.get("error") ?? null;
 
   const fetchSyncStatus = useCallback(async () => {
     try {

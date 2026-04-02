@@ -3,11 +3,11 @@ import { Prisma } from "@repo/database";
 import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { database } from "@/lib/database";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { database } from "@/lib/database";
 
 export async function GET(request: NextRequest) {
   try {

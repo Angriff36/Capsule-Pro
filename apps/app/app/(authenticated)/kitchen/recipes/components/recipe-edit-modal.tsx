@@ -334,7 +334,7 @@ function StepRow({
         <Button
           className="h-6 w-6"
           onClick={() => onMoveDown(index)}
-          size="button"
+          size="icon-sm"
           type="button"
           variant="ghost"
         >

@@ -203,6 +203,7 @@ type SafeErrorCode =
   | "COMMAND_FAILED"
   | "INVALID_REQUEST"
   | "PERMISSION_DENIED"
+  | "QUERY_ERROR"
   | "SERVICE_UNAVAILABLE"
   | "UNKNOWN_ERROR";
 
@@ -235,6 +236,7 @@ const SAFE_ERROR_MESSAGES: Record<SafeErrorCode, string> = {
   INVALID_REQUEST:
     "The request format was invalid. Please rephrase and try again.",
   PERMISSION_DENIED: "You do not have permission to perform this action.",
+  QUERY_ERROR: "The query could not be completed. Please try again.",
   SERVICE_UNAVAILABLE:
     "The service is temporarily unavailable. Please try again in a moment.",
   UNKNOWN_ERROR: "An unexpected error occurred. Please try again.",
@@ -1205,17 +1207,17 @@ async function generatePrepListTool(
   }
 
   // Fetch event dishes to generate prep list from
-  const eventDishes = await database.eventDish.findMany({
+  const eventDishes = await database.event_dishes.findMany({
     where: {
-      tenantId: context.tenantId,
-      eventId,
-      deletedAt: null,
+      tenant_id: context.tenantId,
+      event_id: eventId,
+      deleted_at: null,
     },
     select: {
       id: true,
-      dishName: true,
-      category: true,
-      dietary: true,
+      dish_id: true,
+      course: true,
+      quantity_servings: true,
     },
   });
 
@@ -1255,7 +1257,7 @@ async function generatePrepListTool(
   const categoryGroups: Record<string, typeof eventDishes> = {};
 
   for (const dish of eventDishes) {
-    const category = dish.category ?? "General";
+    const category = dish.course ?? "General";
     if (!categoryGroups[category]) {
       categoryGroups[category] = [];
     }
@@ -1281,11 +1283,11 @@ async function generatePrepListTool(
 
       prepListItems.push({
         category,
-        dishName: dish.dishName,
+        dishName: dish.dish_id,
         quantity,
         unit: "servings",
         prepNotes: `Prepare for ${guestCount} guests`,
-        dietary: dish.dietary ?? [],
+        dietary: [],
       });
     }
   }

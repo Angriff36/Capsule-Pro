@@ -1312,7 +1312,7 @@ export function RecipeDetailTabs({
         </div>
 
         {/* Tags Card */}
-        {recipe?.tags?.filter((t) => t.toLowerCase() !== "imported").length > 0 && (
+        {(recipe?.tags?.filter((t) => t.toLowerCase() !== "imported")?.length ?? 0) > 0 && (
           <Card className="border-l-4 border-l-[var(--brand-spiced-orange)]">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
@@ -1322,7 +1322,7 @@ export function RecipeDetailTabs({
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
-                {recipe.tags.filter((t) => t.toLowerCase() !== "imported").map((tag) => (
+                {(recipe.tags ?? []).filter((t) => t.toLowerCase() !== "imported").map((tag) => (
                   <Badge
                     className="bg-[var(--brand-avocado-mash)]/20 text-[var(--brand-leafy-green)] border-0"
                     key={tag}

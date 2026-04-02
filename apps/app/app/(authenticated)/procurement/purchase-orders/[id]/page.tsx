@@ -54,7 +54,7 @@ interface POOrder {
 export default function PODetailPage() {
   const params = useParams();
   const router = useRouter();
-  const id = params.id as string;
+  const id = (params?.id ?? "") as string;
 
   const [order, setOrder] = useState<POOrder | null>(null);
   const [items, setItems] = useState<POItem[]>([]);
