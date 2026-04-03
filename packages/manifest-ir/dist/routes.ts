@@ -887,6 +887,16 @@ export function workforceOptimizationDetailPath(id: string): string {
   return "/api/workforceoptimization/" + encodeURIComponent(id);
 }
 
+/** GET /api/workorder/list */
+export function workOrderListPath(): string {
+  return "/api/workorder/list";
+}
+
+/** GET /api/workorder/:id */
+export function workOrderDetailPath(id: string): string {
+  return "/api/workorder/" + encodeURIComponent(id);
+}
+
 // ============================================================================
 // Command Routes
 // ============================================================================
@@ -2781,6 +2791,36 @@ export function workforceOptimizationStartPath(): string {
   return "/api/workforceoptimization/start";
 }
 
+/** POST /api/workorder/cancel */
+export function workOrderCancelPath(): string {
+  return "/api/workorder/cancel";
+}
+
+/** POST /api/workorder/complete */
+export function workOrderCompletePath(): string {
+  return "/api/workorder/complete";
+}
+
+/** POST /api/workorder/create */
+export function workOrderCreatePath(): string {
+  return "/api/workorder/create";
+}
+
+/** POST /api/workorder/reschedule */
+export function workOrderReschedulePath(): string {
+  return "/api/workorder/reschedule";
+}
+
+/** POST /api/workorder/start */
+export function workOrderStartPath(): string {
+  return "/api/workorder/start";
+}
+
+/** POST /api/workorder/update-priority */
+export function workOrderUpdatePriorityPath(): string {
+  return "/api/workorder/update-priority";
+}
+
 // ============================================================================
 // Route Metadata (for tooling)
 // ============================================================================
@@ -2971,6 +3011,8 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "Workflow.get.detail", path: "/api/workflow/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "WorkforceOptimization.get.list", path: "/api/workforceoptimization/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "WorkforceOptimization.get.detail", path: "/api/workforceoptimization/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "WorkOrder.get.list", path: "/api/workorder/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "WorkOrder.get.detail", path: "/api/workorder/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "AdminChatParticipant.archive", path: "/api/adminchatparticipant/archive", method: "POST", source: "command", auth: true, tenant: true },
   { id: "AdminChatParticipant.clearHistory", path: "/api/adminchatparticipant/clear-history", method: "POST", source: "command", auth: true, tenant: true },
   { id: "AdminChatParticipant.unarchive", path: "/api/adminchatparticipant/unarchive", method: "POST", source: "command", auth: true, tenant: true },
@@ -3349,4 +3391,10 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "WorkforceOptimization.create", path: "/api/workforceoptimization/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "WorkforceOptimization.fail", path: "/api/workforceoptimization/fail", method: "POST", source: "command", auth: true, tenant: true },
   { id: "WorkforceOptimization.start", path: "/api/workforceoptimization/start", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "WorkOrder.cancel", path: "/api/workorder/cancel", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "WorkOrder.complete", path: "/api/workorder/complete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "WorkOrder.create", path: "/api/workorder/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "WorkOrder.reschedule", path: "/api/workorder/reschedule", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "WorkOrder.start", path: "/api/workorder/start", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "WorkOrder.updatePriority", path: "/api/workorder/update-priority", method: "POST", source: "command", auth: true, tenant: true },
 ] as const;

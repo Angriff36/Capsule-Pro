@@ -1,12 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { AlertTriangle, Calendar, ChevronRight, Loader2, Wrench } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import { addDays, format, isAfter, isBefore } from "date-fns";
+import {
+  AlertTriangle,
+  Calendar,
+  ChevronRight,
+  Loader2,
+  Wrench,
+} from "lucide-react";
 import Link from "next/link";
-import { format, isAfter, isBefore, addDays } from "date-fns";
+import { useCallback, useEffect, useState } from "react";
 
 interface Schedule {
   id: string;
@@ -27,47 +38,60 @@ interface UpcomingMaintenanceWidgetProps {
   compact?: boolean;
 }
 
-export function UpcomingMaintenanceWidget({ compact = false }: UpcomingMaintenanceWidgetProps) {
+export function UpcomingMaintenanceWidget({
+  compact = false,
+}: UpcomingMaintenanceWidgetProps) {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     setLoading(true);
     try {
       const [schedulesRes, assetsRes] = await Promise.all([
-        fetch('/api/facilities/schedules/list?status=active'),
-        fetch('/api/facilities/assets/list?status=active'),
+        fetch("/api/facilities/schedules/list?status=active"),
+        fetch("/api/facilities/assets/list?status=active"),
       ]);
       const schedulesData = await schedulesRes.json();
       const assetsData = await assetsRes.json();
-      if (schedulesData.success) setSchedules(schedulesData.data.schedules || []);
-      if (assetsData.success) setAssets(assetsData.data.assets || []);
+      if (schedulesData.success) {
+        setSchedules(schedulesData.schedules || []);
+      }
+      if (assetsData.success) {
+        setAssets(assetsData.assets || []);
+      }
     } catch (error) {
-      console.error('Failed to load widget data:', error);
+      console.error("Failed to load widget data:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const now = new Date();
   const sevenDaysFromNow = addDays(now, 7);
 
-  const overdueSchedules = schedules.filter(s => isBefore(new Date(s.next_due_at), now));
+  const overdueSchedules = schedules.filter((s) =>
+    isBefore(new Date(s.next_due_at), now)
+  );
   const upcomingSchedules = schedules
-    .filter(s => {
+    .filter((s) => {
       const dueDate = new Date(s.next_due_at);
-      return (isAfter(dueDate, now) || isSameDay(dueDate, now)) && isBefore(dueDate, sevenDaysFromNow);
+      return (
+        (isAfter(dueDate, now) || isSameDay(dueDate, now)) &&
+        isBefore(dueDate, sevenDaysFromNow)
+      );
     })
     .slice(0, compact ? 3 : 5);
 
   const getAssetName = (equipmentId: string | null) => {
-    if (!equipmentId) return null;
-    const asset = assets.find(a => a.id === equipmentId);
+    if (!equipmentId) {
+      return null;
+    }
+    const asset = assets.find((a) => a.id === equipmentId);
     return asset?.name || null;
   };
 
@@ -107,8 +131,10 @@ export function UpcomingMaintenanceWidget({ compact = false }: UpcomingMaintenan
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">No maintenance schedules configured.</p>
-          <Button asChild size="sm" variant="outline" className="mt-2">
+          <p className="text-sm text-muted-foreground">
+            No maintenance schedules configured.
+          </p>
+          <Button asChild className="mt-2" size="sm" variant="outline">
             <Link href="/facilities/schedules">Create Schedule</Link>
           </Button>
         </CardContent>
@@ -124,7 +150,12 @@ export function UpcomingMaintenanceWidget({ compact = false }: UpcomingMaintenan
             <Calendar className="h-4 w-4" />
             Upcoming Maintenance
           </CardTitle>
-          <Button asChild size="sm" variant="ghost" className="h-7 gap-1 text-xs">
+          <Button
+            asChild
+            className="h-7 gap-1 text-xs"
+            size="sm"
+            variant="ghost"
+          >
             <Link href="/facilities/schedules">
               View all <ChevronRight className="h-3 w-3" />
             </Link>
@@ -144,27 +175,35 @@ export function UpcomingMaintenanceWidget({ compact = false }: UpcomingMaintenan
 
         {/* Upcoming List */}
         {upcomingSchedules.length === 0 && overdueSchedules.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No maintenance due in the next 7 days.</p>
+          <p className="text-sm text-muted-foreground">
+            No maintenance due in the next 7 days.
+          </p>
         ) : (
           <div className="space-y-2">
-            {upcomingSchedules.map(schedule => {
+            {upcomingSchedules.map((schedule) => {
               const dueDate = new Date(schedule.next_due_at);
               const assetName = getAssetName(schedule.equipment_id);
               const isDueToday = isSameDay(dueDate, now);
 
               return (
                 <div
-                  key={schedule.id}
                   className="flex items-center justify-between p-2 rounded-lg border bg-gray-50/50"
+                  key={schedule.id}
                 >
                   <div className="flex items-center gap-2 min-w-0">
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-100 text-blue-600">
                       <Wrench className="h-4 w-4" />
                     </div>
                     <div className="min-w-0">
-                      <div className="font-medium text-sm truncate">{schedule.title}</div>
+                      <div className="font-medium text-sm truncate">
+                        {schedule.title}
+                      </div>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <span className={isDueToday ? "text-amber-600 font-medium" : ""}>
+                        <span
+                          className={
+                            isDueToday ? "text-amber-600 font-medium" : ""
+                          }
+                        >
                           {isDueToday ? "Today" : format(dueDate, "MMM d")}
                         </span>
                         {assetName && (
@@ -176,7 +215,12 @@ export function UpcomingMaintenanceWidget({ compact = false }: UpcomingMaintenan
                       </div>
                     </div>
                   </div>
-                  <Badge className={frequencyColors[schedule.frequency] || "bg-gray-100 text-gray-700"}>
+                  <Badge
+                    className={
+                      frequencyColors[schedule.frequency] ||
+                      "bg-gray-100 text-gray-700"
+                    }
+                  >
                     {schedule.frequency}
                   </Badge>
                 </div>
@@ -191,7 +235,9 @@ export function UpcomingMaintenanceWidget({ compact = false }: UpcomingMaintenan
           {overdueSchedules.length > 0 && (
             <>
               <span>•</span>
-              <span className="text-red-600">{overdueSchedules.length} overdue</span>
+              <span className="text-red-600">
+                {overdueSchedules.length} overdue
+              </span>
             </>
           )}
         </div>

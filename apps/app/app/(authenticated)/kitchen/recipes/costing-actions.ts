@@ -120,7 +120,7 @@ export async function getVendorRecipeCostSummary(): Promise<{
       ),
       dish_pricing AS (
         SELECT
-          dr.recipe_id,
+          dr.id AS recipe_id,
           AVG(d.price_per_person) AS avg_menu_price
         FROM tenant_kitchen.dishes d
         INNER JOIN tenant_kitchen.recipes dr
@@ -129,7 +129,7 @@ export async function getVendorRecipeCostSummary(): Promise<{
         WHERE d.tenant_id = ${tenantId}
           AND d.deleted_at IS NULL
           AND d.price_per_person IS NOT NULL
-        GROUP BY dr.recipe_id
+        GROUP BY dr.id
       )
       SELECT
         rc.recipe_id AS id,
@@ -457,7 +457,7 @@ export async function getCostingSummaryStats(): Promise<{
       ),
       dish_pricing AS (
         SELECT
-          dr.recipe_id,
+          dr.id AS recipe_id,
           AVG(d.price_per_person) AS avg_menu_price
         FROM tenant_kitchen.dishes d
         INNER JOIN tenant_kitchen.recipes dr
@@ -466,7 +466,7 @@ export async function getCostingSummaryStats(): Promise<{
         WHERE d.tenant_id = ${tenantId}
           AND d.deleted_at IS NULL
           AND d.price_per_person IS NOT NULL
-        GROUP BY dr.recipe_id
+        GROUP BY dr.id
       ),
       calculated_costs AS (
         SELECT

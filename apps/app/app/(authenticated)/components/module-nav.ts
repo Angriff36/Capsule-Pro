@@ -113,7 +113,10 @@ export const modules: ModuleDefinition[] = [
           { title: "IoT Monitoring", href: "/kitchen/iot" },
           { title: "Equipment", href: "/kitchen/equipment" },
           { title: "Nutrition Labels", href: "/kitchen/nutrition-labels" },
-          { title: "Allergen Warning Test", href: "/kitchen/allergen-warning-test" },
+          {
+            title: "Allergen Warning Test",
+            href: "/kitchen/allergen-warning-test",
+          },
         ],
       },
       {
@@ -182,11 +185,12 @@ export const modules: ModuleDefinition[] = [
   {
     key: "staffing",
     label: "Staffing",
-    href: "/staffing/recommendations",
+    href: "/staffing",
     sidebar: [
       {
         label: "Staffing",
         items: [
+          { title: "Overview", href: "/staffing" },
           { title: "AI Recommendations", href: "/staffing/recommendations" },
           { title: "Coverage", href: "/staffing/coverage" },
           { title: "Shifts", href: "/staffing/shifts" },
@@ -348,9 +352,7 @@ export const modules: ModuleDefinition[] = [
     sidebar: [
       {
         label: "Knowledge Base",
-        items: [
-          { title: "All Articles", href: "/knowledge-base" },
-        ],
+        items: [{ title: "All Articles", href: "/knowledge-base" }],
       },
     ],
   },
@@ -409,9 +411,7 @@ export const modules: ModuleDefinition[] = [
     sidebar: [
       {
         label: "Search",
-        items: [
-          { title: "Search", href: "/search" },
-        ],
+        items: [{ title: "Search", href: "/search" }],
       },
     ],
   },
@@ -424,7 +424,10 @@ export const getModuleKeyFromPathname = (pathname: string): ModuleKey => {
   if (pathname === "/search" || pathname.startsWith("/search/")) {
     return "search";
   }
-  if (pathname === "/cycle-counting" || pathname.startsWith("/cycle-counting/")) {
+  if (
+    pathname === "/cycle-counting" ||
+    pathname.startsWith("/cycle-counting/")
+  ) {
     return "warehouse";
   }
 

@@ -155,7 +155,8 @@ async function fetchKitchenHealthMetrics(
           AND generated_at >= $2
           AND deleted_at IS NULL
         `,
-        [tenantId, startDate]
+        tenantId,
+        startDate
       ),
 
       database.allergenWarning.count({
@@ -191,7 +192,8 @@ async function fetchKitchenHealthMetrics(
           AND pt.status = 'completed'
           AND pt.deleted_at IS NULL
         `,
-        [tenantId, startDate]
+        tenantId,
+        startDate
       ),
     ]);
 
@@ -220,7 +222,7 @@ async function fetchStationTrends(
     ORDER BY date DESC, station_name
     LIMIT 500
     `,
-    locationId ? [tenantId, startDate, locationId] : [tenantId, startDate]
+    ...(locationId ? [tenantId, startDate, locationId] : [tenantId, startDate])
   );
 }
 

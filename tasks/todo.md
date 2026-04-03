@@ -1,5 +1,45 @@
 # Current Task
 
+## Agent 88 — 2026-04-02
+
+**Goal:** Fix the remaining non-Command-Board app typecheck cluster in the UI regression bugfix worktree with minimal diffs.
+
+### Classification
+
+**Issue Layer**:
+- [ ] Spec violation
+- [ ] IR violation
+- [ ] Runtime violation
+- [ ] Projection mismatch
+- [x] Integration bug - wiring between typed React/UI/test code
+
+**Governing Authority**: `.opencode/context/project-intelligence/technical-domain.md` (strict TypeScript, named exports, app-level typed props) + `.opencode/context/core/standards/issue-classification.md` + `.opencode/context/core/standards/code-quality.md`
+
+**Contract Impact**:
+- [ ] Language contract violation
+- [ ] Missing conformance coverage
+- [ ] Runtime implementation bug
+- [ ] Projection artifact mismatch
+- [x] Pure integration issue
+
+### Current Task
+- [x] Read `tasks/ledger.md` and `tasks/lessons.md`
+- [x] Inspect current diagnostics for the requested settings/recipes/costing files
+- [x] Load ContextScout guidance and project standards
+- [ ] Apply minimal diffs for the typecheck cluster
+- [ ] Run focused verification for touched files
+- [ ] Update ledger with evidence
+
+### Governance Note: UI/App Typecheck Cluster
+
+**Why conformance doesn't apply**: This is a localized TypeScript integration cleanup in app tests and React components, not a manifest/IR/runtime behavior issue.
+
+**Alternative coverage**: Focused TypeScript diagnostics for touched files plus targeted app test verification.
+
+**Risk**: Optional-chain cleanup and null guards can accidentally change render behavior if done broadly, so diffs must stay surgical.
+
+---
+
 ## Agent 2 — 2026-02-22
 
 **Goal:** Enforce CLAUDE.md compliance — create missing task files, add blocking session checklist to CLAUDE.md

@@ -20,5 +20,10 @@
     "next.config.ts",
     ".next-dev/types/**/*.ts"
   ],
-  "exclude": ["prisma"]
+  "exclude": [
+    "prisma",
+    "__tests__/command-board/**",
+    "app/api/command-board/**",
+    "app/(authenticated)/command-board/**"
+  ]
 }

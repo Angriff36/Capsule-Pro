@@ -823,6 +823,11 @@
         "POST"
       ],
       "comment": "Uses executeManifestCommand \u2014 Waitlist commands (add-guest, promote, update-rsvp)"
+    },
+    {
+      "prefix": "/api/procurement/budget/commands/refresh",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Budget spend refresh and alert generation"
     }
   ]
 }

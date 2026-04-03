@@ -137,6 +137,7 @@ let nextConfig: NextConfig = withToolbar(
       "@repo/notifications",
       "@repo/collaboration",
       "@angriff36/manifest",
+      "@repo/manifest-adapters",
       "@repo/seo",
     ],
     // Allow cross-origin requests to the Next.js dev server from:

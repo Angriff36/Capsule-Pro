@@ -1888,5 +1888,35 @@
     "entity": "WorkforceOptimization",
     "command": "start",
     "commandId": "WorkforceOptimization.start"
+  },
+  {
+    "entity": "WorkOrder",
+    "command": "cancel",
+    "commandId": "WorkOrder.cancel"
+  },
+  {
+    "entity": "WorkOrder",
+    "command": "complete",
+    "commandId": "WorkOrder.complete"
+  },
+  {
+    "entity": "WorkOrder",
+    "command": "create",
+    "commandId": "WorkOrder.create"
+  },
+  {
+    "entity": "WorkOrder",
+    "command": "reschedule",
+    "commandId": "WorkOrder.reschedule"
+  },
+  {
+    "entity": "WorkOrder",
+    "command": "start",
+    "commandId": "WorkOrder.start"
+  },
+  {
+    "entity": "WorkOrder",
+    "command": "updatePriority",
+    "commandId": "WorkOrder.updatePriority"
   }
 ]

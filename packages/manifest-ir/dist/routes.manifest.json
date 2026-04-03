@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-03-24T10:21:26.677Z",
+  "generatedAt": "2026-03-26T05:51:56.394Z",
   "basePath": "/api",
   "routes": [
     {
@@ -2640,6 +2640,36 @@
       "source": {
         "kind": "entity-read",
         "entity": "WorkforceOptimization"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "WorkOrder.get.list",
+      "path": "/api/workorder/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "WorkOrder"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "WorkOrder.get.detail",
+      "path": "/api/workorder/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "WorkOrder"
       },
       "auth": true,
       "tenant": true
@@ -15663,6 +15693,174 @@
         "kind": "command",
         "entity": "WorkforceOptimization",
         "command": "start"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "WorkOrder.cancel",
+      "path": "/api/workorder/cancel",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "canceledBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "WorkOrder",
+        "command": "cancel"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "WorkOrder.complete",
+      "path": "/api/workorder/complete",
+      "method": "POST",
+      "params": [
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "WorkOrder",
+        "command": "complete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "WorkOrder.create",
+      "path": "/api/workorder/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "equipmentId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "equipmentName",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "type",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "priority",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "scheduledDate",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "WorkOrder",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "WorkOrder.reschedule",
+      "path": "/api/workorder/reschedule",
+      "method": "POST",
+      "params": [
+        {
+          "name": "scheduledDate",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "WorkOrder",
+        "command": "reschedule"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "WorkOrder.start",
+      "path": "/api/workorder/start",
+      "method": "POST",
+      "params": [
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "WorkOrder",
+        "command": "start"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "WorkOrder.updatePriority",
+      "path": "/api/workorder/update-priority",
+      "method": "POST",
+      "params": [
+        {
+          "name": "priority",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "WorkOrder",
+        "command": "updatePriority"
       },
       "auth": true,
       "tenant": true

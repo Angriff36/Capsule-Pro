@@ -69,7 +69,7 @@ const percentFormatter = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 1,
 });
 
-const formatDelta = (current: number, previous: number) => {
+export const formatDelta = (current: number, previous: number) => {
   if (previous === 0) {
     return current > 0 ? "+100%" : "0%";
   }

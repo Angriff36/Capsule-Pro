@@ -26,7 +26,7 @@ const payrollRuns = await database.payroll_runs.findMany({
         deleted_at: null
       },
     orderBy: {
-      run_date: "desc",
+      created_at: "desc",
     },
   });
 

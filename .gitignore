@@ -11,6 +11,7 @@
 # Agent session files (ledger, todo, lessons — local only)
 /tasks/
 session-ses_*.md
+.worktrees/
 
 # Storybook build artifacts
 **/storybook-static/

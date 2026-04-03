@@ -29,7 +29,7 @@
   --accent: var(--brand-spiced-orange);
   --accent-foreground: var(--brand-almost-white);
   --destructive: oklch(0.577 0.245 27.325);
-  --destructive-foreground: oklch(0.577 0.245 27.325);
+  --destructive-foreground: #f7f4ef;
   --success: #4b5a40;
   --success-foreground: #f7f4ef;
   --warning: #b4791b;
@@ -75,7 +75,7 @@
   --accent: var(--brand-spiced-orange);
   --accent-foreground: var(--brand-charcoal);
   --destructive: oklch(0.396 0.141 25.723);
-  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --destructive-foreground: #f7f4ef;
   --success: #6b7a4f;
   --success-foreground: #1e1c1a;
   --warning: #c98a1e;

@@ -8,6 +8,7 @@ import {
   readdirSync,
   readFileSync,
   rmSync,
+  writeFileSync,
 } from "node:fs";
 import { join, relative, resolve } from "node:path";
 
@@ -190,10 +191,11 @@ function remapToDomainPath(relativePath) {
   const routeFile = rest[rest.length - 1]; // "route.ts"
   const commandOrAction = rest.slice(0, -1).join("/"); // e.g. "create" or ":id"
 
-  // Command routes (non-list, non-:id) go under commands/
+  // Command routes (non-list, non-detail) go under commands/
   const isReadRoute =
     commandOrAction === "list" ||
     commandOrAction.startsWith(":") ||
+    commandOrAction.startsWith("[") ||
     commandOrAction === "";
 
   const domainPath = isReadRoute
@@ -430,14 +432,50 @@ mkdirSync(stagingDir, { recursive: true });
 // Use the installed @angriff36/manifest CLI (pnpm exec manifest generate)
 // The local vendored CLI at packages/manifest-runtime/packages/cli has a broken
 // NextJsProjection import due to ESM/CJS interop issues with the workspace package.
-const invocationArgs = [
+
+// Run 1: Generate list routes (nextjs.route surface)
+const routeArgs = [
   "exec",
   "manifest",
   "generate",
   ...setOutputDirInArgs(baseArgs, stagingDir),
 ];
 
-const result = spawnSync(pnpmBin, invocationArgs, {
+console.log("[manifest/generate] Generating list routes (nextjs.route surface)...");
+const routeResult = spawnSync(pnpmBin, routeArgs, {
+  stdio: "inherit",
+  shell: process.platform === "win32",
+  cwd: repoRoot,
+});
+
+// Run 2: Generate detail routes (nextjs.detail surface)
+// The installed CLI (0.3.37) supportss the surface through its projection class,
+// but the CLI's generate command doesn't support --surface detail yet.
+// We call the projection directly via an inline script, bypassing the CLI.
+const detailScript = `
+import { NextJsProjection } from "@angriff36/manifest/projections/nextjs";
+import { readFileSync } from "node:fs";
+import { mkdirSync } from "node:fs";
+import { resolve, from "node:path";
+
+import { dirname } from "node:path";
+    for (const artifact of result.artifacts) {
+      if (!artifact.pathHint) continue;
+      const outputPath = path.resolve(outputDir, artifact.pathHint);
+      fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+      fs.writeFileSync(outputPath, artifact.code, 'utf8');
+      count++;
+    }
+  }
+  console.log('[manifest/generate:detail] Generated ' + count + ' detail routes');
+}
+main().catch(e => { console.error(e); process.exit(1); });
+`;
+const detailScriptPath = join(stagingDir, '_detail-gen.mjs');
+writeFileSync(detailScriptPath, detailScript, 'utf8');
+
+console.log("[manifest/generate] Generating detail routes (nextjs.detail surface)...");
+const detailResult = spawnSync("node", [detailScriptPath], {
   stdio: "inherit",
   shell: process.platform === "win32",
   cwd: repoRoot,
@@ -447,7 +485,7 @@ let guardFailure = false;
 let copiedFiles = [];
 let skippedOverwriteCount = 0;
 
-if (result.status === 0) {
+if (routeResult.status === 0 && detailResult.status === 0) {
   try {
     const materializeResult = materializeRemappedOutput(stagingDir, outputDir);
     copiedFiles = materializeResult.copiedFiles;
@@ -479,9 +517,16 @@ if (skippedOverwriteCount > 0) {
   );
 }
 
-if (result.status !== 0) {
+if (routeResult.status !== 0) {
   console.error(
-    "[manifest/generate] Generation failed. Check @angriff36/manifest CLI output above."
+    "[manifest/generate] List route generation failed. Check @angriff36/manifest CLI output above."
+  );
+  process.exit(1);
+}
+
+if (detailResult.status !== 0) {
+  console.error(
+    "[manifest/generate] Detail route generation failed. Check @angriff36/manifest CLI output above."
   );
   process.exit(1);
 }

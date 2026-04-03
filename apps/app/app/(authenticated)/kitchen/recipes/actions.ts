@@ -946,3 +946,66 @@ export const updateDish = async (dishId: string, formData: FormData) => {
   revalidatePath("/kitchen/recipes");
   revalidatePath(`/kitchen/recipes/dishes/${dishId}`);
 };
+
+export const updateRecipeName = async (recipeId: string, name: string) => {
+  const tenantId = await requireTenantId();
+  invariant(name.trim().length > 0, "Name cannot be empty");
+  await database.$executeRaw`
+    UPDATE tenant_kitchen.recipes
+    SET name = ${name.trim()}, updated_at = NOW()
+    WHERE tenant_id = ${tenantId} AND id = ${recipeId}::uuid
+  `;
+  revalidatePath("/kitchen/recipes");
+};
+
+export const updateDishName = async (dishId: string, name: string) => {
+  const tenantId = await requireTenantId();
+  invariant(name.trim().length > 0, "Name cannot be empty");
+  await database.$executeRaw`
+    UPDATE tenant_kitchen.dishes
+    SET name = ${name.trim()}, updated_at = NOW()
+    WHERE tenant_id = ${tenantId} AND id = ${dishId}::uuid
+  `;
+  revalidatePath("/kitchen/recipes");
+};
+
+export const updateDishPrice = async (dishId: string, price: string) => {
+  const tenantId = await requireTenantId();
+  const num = Number.parseFloat(price);
+  invariant(!Number.isNaN(num) && num >= 0, "Invalid price");
+  await database.$executeRaw`
+    UPDATE tenant_kitchen.dishes
+    SET price_per_person = ${num}::decimal, updated_at = NOW()
+    WHERE tenant_id = ${tenantId} AND id = ${dishId}::uuid
+  `;
+  revalidatePath("/kitchen/recipes");
+};
+
+export const bulkUpdateDishPrice = async (dishIds: string[], price: string) => {
+  const tenantId = await requireTenantId();
+  const num = Number.parseFloat(price);
+  invariant(!Number.isNaN(num) && num >= 0, "Invalid price");
+  await database.$executeRaw`
+    UPDATE tenant_kitchen.dishes
+    SET price_per_person = ${num}::decimal, updated_at = NOW()
+    WHERE tenant_id = ${tenantId} AND id = ANY(${dishIds}::uuid[])
+  `;
+  revalidatePath("/kitchen/recipes");
+};
+
+export const bulkUpdateNames = async (
+  ids: string[],
+  type: "recipes" | "dishes",
+  name: string,
+) => {
+  const tenantId = await requireTenantId();
+  invariant(name.trim().length > 0, "Name cannot be empty");
+  const table =
+    type === "recipes" ? "tenant_kitchen.recipes" : "tenant_kitchen.dishes";
+  await database.$executeRaw`
+    UPDATE ${Prisma.raw(table)}
+    SET name = ${name.trim()}, updated_at = NOW()
+    WHERE tenant_id = ${tenantId} AND id = ANY(${ids}::uuid[])
+  `;
+  revalidatePath("/kitchen/recipes");
+};
