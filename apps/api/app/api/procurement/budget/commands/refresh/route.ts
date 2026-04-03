@@ -3,7 +3,10 @@ import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import {
+  manifestErrorResponse,
+  manifestSuccessResponse,
+} from "@/lib/manifest-response";
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,11 +19,14 @@ export async function POST(request: NextRequest) {
     const { budgetId } = await request.json();
 
     // Get budgets to refresh
-    const budgets = await database.$queryRawUnsafe(`
+    const budgets = await database.$queryRawUnsafe(
+      `
       SELECT * FROM tenant_inventory.procurement_budgets
       WHERE tenant_id = $1::uuid AND deleted_at IS NULL AND status = 'active'
         ${budgetId ? "AND id = $2::uuid" : ""}
-    `, budgetId ? [tenantId, budgetId] : [tenantId]);
+    `,
+      ...(budgetId ? [tenantId, budgetId] : [tenantId])
+    );
 
     let alertsGenerated = 0;
 
@@ -28,7 +34,8 @@ export async function POST(request: NextRequest) {
       if (!budget.category) continue;
 
       // Calculate actual spend
-      const spendResult = await database.$queryRawUnsafe(`
+      const spendResult = await database.$queryRawUnsafe(
+        `
         SELECT COALESCE(SUM(po.total), 0)::decimal(12,2) as total_spent
         FROM tenant_inventory.purchase_orders po
         JOIN tenant_inventory.purchase_order_items poi ON poi.purchase_order_id = po.id AND poi.tenant_id = po.tenant_id
@@ -38,16 +45,20 @@ export async function POST(request: NextRequest) {
           AND ii.category = $2
           ${budget.period_start ? "AND po.order_date >= $3" : ""}
           ${budget.period_end ? "AND po.order_date <= $4" : ""}
-      `, budget.period_start && budget.period_end
-        ? [tenantId, budget.category, budget.period_start, budget.period_end]
-        : budget.period_start
-          ? [tenantId, budget.category, budget.period_start]
-          : [tenantId, budget.category]
+      `,
+        ...(budget.period_start && budget.period_end
+          ? [tenantId, budget.category, budget.period_start, budget.period_end]
+          : budget.period_start
+            ? [tenantId, budget.category, budget.period_start]
+            : [tenantId, budget.category])
       );
 
       const totalSpent = Number((spendResult as any[])[0]?.total_spent || 0);
       const budgetAmount = Number(budget.budget_amount);
-      const utilizationPct = budgetAmount > 0 ? Math.round((totalSpent / budgetAmount) * 10000) / 100 : 0;
+      const utilizationPct =
+        budgetAmount > 0
+          ? Math.round((totalSpent / budgetAmount) * 10_000) / 100
+          : 0;
 
       // Update budget with current spend
       await database.$queryRaw`
@@ -101,7 +112,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return manifestSuccessResponse({ budgetsRefreshed: (budgets as any[]).length, alertsGenerated });
+    return manifestSuccessResponse({
+      budgetsRefreshed: (budgets as any[]).length,
+      alertsGenerated,
+    });
   } catch (error) {
     console.error("Error refreshing budgets:", error);
     return manifestErrorResponse("Internal server error", 500);

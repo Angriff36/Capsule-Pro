@@ -75,30 +75,34 @@ interface EventDishRow {
  * Counts assigned staff for the event.
  * @tier 1 (Independent)
  */
-export const getEventStaffCount = cache(async (tenantId: string, eventId: string) => {
-  return database.eventStaffAssignment.count({
-    where: {
-      tenantId,
-      eventId,
-      deletedAt: null,
-    },
-  });
-});
+export const getEventStaffCount = cache(
+  async (tenantId: string, eventId: string) => {
+    return database.eventStaffAssignment.count({
+      where: {
+        tenantId,
+        eventId,
+        deletedAt: null,
+      },
+    });
+  }
+);
 
 /**
  * Checks if event has any contracts (for setup checklist).
  * @tier 1 (Independent)
  */
-export const getEventHasContract = cache(async (tenantId: string, eventId: string) => {
-  const count = await database.eventContract.count({
-    where: {
-      tenantId,
-      eventId,
-      deletedAt: null,
-    },
-  });
-  return count > 0;
-});
+export const getEventHasContract = cache(
+  async (tenantId: string, eventId: string) => {
+    const count = await database.eventContract.count({
+      where: {
+        tenantId,
+        eventId,
+        deletedAt: null,
+      },
+    });
+    return count > 0;
+  }
+);
 
 /**
  * Fetches all dishes associated with the event.
@@ -195,7 +199,6 @@ interface PrepListRow {
   status: string;
   totalItems: number;
   batchMultiplier: number;
-  isActive: boolean;
   generatedAt: Date;
   finalizedAt: Date | null;
 }
@@ -205,15 +208,14 @@ interface PrepListRow {
  * @tier 1 (Independent)
  */
 export const getEventPrepLists = cache(
-  async (tenantId: string, eventId: string): Promise<PrepListRow[]> => {
-    return database.$queryRaw<PrepListRow[]>(
+  async (tenantId: string, eventId: string) => {
+    const prepLists = await database.$queryRaw<PrepListRow[]>(
       Prisma.sql`
         SELECT id,
                name,
                status,
                total_items AS "totalItems",
                batch_multiplier AS "batchMultiplier",
-               is_active AS "isActive",
                generated_at AS "generatedAt",
                finalized_at AS "finalizedAt"
         FROM tenant_kitchen.prep_lists
@@ -223,6 +225,11 @@ export const getEventPrepLists = cache(
         ORDER BY generated_at DESC
       `
     );
+
+    return prepLists.map((prepList) => ({
+      ...prepList,
+      isActive: true,
+    }));
   }
 );
 
@@ -510,17 +517,25 @@ export async function fetchAllEventDetailsData(
   // ==============================================================================
   // Tier 1: Execute all independent queries in parallel
   // ==============================================================================
-  const [event, rsvpCount, eventDishes, rawPrepTasks, relatedEvents, hasContract, staffCount, prepLists] =
-    await Promise.all([
-      getEvent(tenantId, eventId),
-      getRsvpCount(tenantId, eventId),
-      getEventDishes(tenantId, eventId),
-      getPrepTasksRaw(tenantId, eventId),
-      getRelatedEvents(tenantId, eventId),
-      getEventHasContract(tenantId, eventId),
-      getEventStaffCount(tenantId, eventId),
-      getEventPrepLists(tenantId, eventId),
-    ]);
+  const [
+    event,
+    rsvpCount,
+    eventDishes,
+    rawPrepTasks,
+    relatedEvents,
+    hasContract,
+    staffCount,
+    prepLists,
+  ] = await Promise.all([
+    getEvent(tenantId, eventId),
+    getRsvpCount(tenantId, eventId),
+    getEventDishes(tenantId, eventId),
+    getPrepTasksRaw(tenantId, eventId),
+    getRelatedEvents(tenantId, eventId),
+    getEventHasContract(tenantId, eventId),
+    getEventStaffCount(tenantId, eventId),
+    getEventPrepLists(tenantId, eventId),
+  ]);
 
   if (!event) {
     return { event: null };

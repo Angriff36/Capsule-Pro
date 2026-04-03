@@ -100,7 +100,8 @@ export async function getTimelineTasks(eventId: string) {
         AND t.event_id = $2
         AND t.deleted_at IS NULL
       ORDER BY t.start_time ASC`,
-    [tenantId, eventId]
+    tenantId,
+    eventId
   );
 
   return tasks.map((task) => ({
@@ -282,7 +283,7 @@ export async function updateTimelineTask(input: UpdateTimelineTaskInput) {
 
   const updateQuery = `UPDATE tenant_events.timeline_tasks SET ${updates.join(", ")} WHERE tenant_id = $${tenantParamIndex} AND id = $${idParamIndex} AND event_id = $${eventIdParamIndex}`;
 
-  await database.$executeRawUnsafe(updateQuery, values);
+  await database.$executeRawUnsafe(updateQuery, ...values);
 
   revalidatePath(`/events/${input.eventId}/battle-board`);
 
@@ -304,7 +305,9 @@ export async function deleteTimelineTask(taskId: string, eventId: string) {
      WHERE tenant_id = $1
        AND id = $2
        AND event_id = $3`,
-    [tenantId, taskId, eventId]
+    tenantId,
+    taskId,
+    eventId
   );
 
   revalidatePath(`/events/${eventId}/battle-board`);
@@ -343,7 +346,7 @@ export async function getEventStaff(eventId: string) {
         AND u.deleted_at IS NULL
         AND u.is_active = true
       ORDER BY u.first_name, u.last_name`,
-    [tenantId]
+    tenantId
   );
 
   const assignments = await database.$queryRawUnsafe<
@@ -361,7 +364,8 @@ export async function getEventStaff(eventId: string) {
         AND deleted_at IS NULL
         AND assignee_id IS NOT NULL
       GROUP BY assignee_id`,
-    [tenantId, eventId]
+    tenantId,
+    eventId
   );
 
   const assignmentMap = new Map(
@@ -431,7 +435,8 @@ export async function calculateCriticalPath(eventId: string) {
         AND event_id = $2
         AND deleted_at IS NULL
       ORDER BY start_time ASC`,
-    [tenantId, eventId]
+    tenantId,
+    eventId
   );
 
   if (tasks.length === 0) {
@@ -462,7 +467,11 @@ export async function calculateCriticalPath(eventId: string) {
        WHERE tenant_id = $3
          AND id = $4
          AND event_id = $5`,
-      [result.isOnCriticalPath, result.slackMinutes, tenantId, taskId, eventId]
+      result.isOnCriticalPath,
+      result.slackMinutes,
+      tenantId,
+      taskId,
+      eventId
     );
   }
 

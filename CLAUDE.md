@@ -149,6 +149,6 @@ Last: [first session]
 
 ## Last Session Bridge
 [Emergency bridge — running bridge was not updated]
-Files: apps/api/app/api/marketing/campaigns/route.ts (create), apps/api/app/api/marketing/campaigns/[campaignId]/route.ts (create)
+Files: apps/app/app/(authenticated)/knowledge-base/knowledge-base-client.tsx (edit)
 
 # === END COGNILAYER ===

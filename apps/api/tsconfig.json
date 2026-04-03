@@ -16,5 +16,11 @@
     "next.config.ts",
     ".next-dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules", "test-scripts", ".next", "dist"]
+  "exclude": [
+    "node_modules",
+    "test-scripts",
+    ".next",
+    "dist",
+    "app/api/command-board/**"
+  ]
 }

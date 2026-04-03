@@ -1,87 +1,137 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { type NextRequest, NextResponse } from "next/server";
 
-/**
- * POST /api/staffing/recommendations
- * Generate AI-powered staffing recommendations for an event
- */
+interface StaffingRecommendationRequest {
+  guestCount?: number;
+  eventType?: string;
+  serviceStyle?: string;
+  duration?: number;
+}
+
+interface StaffRole {
+  role: string;
+  count: number;
+  hourlyRate: number;
+  hoursNeeded: number;
+  notes: string;
+}
+
+const SERVICE_STYLE_MULTIPLIERS: Record<string, number> = {
+  plated: 1.2,
+  buffet: 1,
+  family_style: 1.1,
+  cocktail: 0.9,
+  food_truck: 0.75,
+};
+
+function buildRoles(
+  totalStaff: number,
+  duration: number,
+  serviceStyle: string
+): StaffRole[] {
+  let serviceNotes = "Balanced service coverage";
+  if (serviceStyle === "plated") {
+    serviceNotes = "Higher table service coverage recommended";
+  } else if (serviceStyle === "cocktail") {
+    serviceNotes = "Lean service team with stronger bar support";
+  }
+
+  return [
+    {
+      role: "captain",
+      count: Math.max(1, Math.ceil(totalStaff * 0.1)),
+      hourlyRate: 32,
+      hoursNeeded: duration,
+      notes: "Lead floor coordination",
+    },
+    {
+      role: "server",
+      count: Math.max(2, Math.ceil(totalStaff * 0.45)),
+      hourlyRate: 24,
+      hoursNeeded: duration,
+      notes: serviceNotes,
+    },
+    {
+      role: "bartender",
+      count: Math.max(1, Math.ceil(totalStaff * 0.15)),
+      hourlyRate: 26,
+      hoursNeeded: duration,
+      notes: "Adjust based on beverage package complexity",
+    },
+    {
+      role: "culinary_support",
+      count: Math.max(1, Math.ceil(totalStaff * 0.3)),
+      hourlyRate: 22,
+      hoursNeeded: duration,
+      notes: "Supports kitchen output and replenishment",
+    },
+  ];
+}
+
+function buildNotes(
+  guestCount: number,
+  eventType: string,
+  serviceStyle: string
+): string[] {
+  return [
+    `${eventType[0]?.toUpperCase() ?? "E"}${eventType.slice(1)} staffing model generated for ${guestCount} guests.`,
+    `${serviceStyle.replace(/_/g, " ")} service typically requires tighter pacing during peak service windows.`,
+    "Review setup and breakdown labor separately if venue access is limited.",
+  ];
+}
+
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const { eventId, eventSize, complexity, historicalData } = body;
+    const body = (await request.json()) as StaffingRecommendationRequest;
+    const guestCount = Number(body.guestCount ?? 0);
+    const eventType = body.eventType?.trim() || "corporate";
+    const serviceStyle = body.serviceStyle?.trim() || "plated";
+    const duration = Number(body.duration ?? 4);
 
-    if (!eventId) {
+    if (!Number.isFinite(guestCount) || guestCount <= 0) {
       return NextResponse.json(
-        { error: 'Event ID is required' },
+        { error: "Guest count is required" },
         { status: 400 }
       );
     }
 
-    // Calculate staffing needs based on event parameters
-    const baseStaffCount = Math.ceil(eventSize / 20); // 1 staff per 20 guests
-    const complexityMultiplier = complexity === 'high' ? 1.5 : complexity === 'low' ? 0.8 : 1.0;
-    const recommendedStaff = Math.ceil(baseStaffCount * complexityMultiplier);
+    if (!Number.isFinite(duration) || duration <= 0) {
+      return NextResponse.json(
+        { error: "Duration must be greater than 0" },
+        { status: 400 }
+      );
+    }
 
-    // Role distribution based on event type
-    const recommendations = {
-      eventId,
-      totalStaff: recommendedStaff,
-      roles: {
-        chefs: Math.ceil(recommendedStaff * 0.3),
-        servers: Math.ceil(recommendedStaff * 0.4),
-        bartenders: Math.ceil(recommendedStaff * 0.15),
-        support: Math.ceil(recommendedStaff * 0.15),
+    const serviceMultiplier = SERVICE_STYLE_MULTIPLIERS[serviceStyle] ?? 1;
+    const baseStaff = Math.max(3, Math.ceil(guestCount / 18));
+    const totalStaff = Math.ceil(baseStaff * serviceMultiplier);
+    const roles = buildRoles(totalStaff, duration, serviceStyle);
+    const totalLaborCost = roles.reduce(
+      (sum, role) => sum + role.count * role.hourlyRate * role.hoursNeeded,
+      0
+    );
+
+    return NextResponse.json({
+      recommendation: {
+        eventType,
+        guestCount,
+        totalStaff,
+        totalLaborCost,
+        roles,
+        notes: buildNotes(guestCount, eventType, serviceStyle),
       },
-      shifts: [
-        { name: 'Setup', hours: 4, staffCount: Math.ceil(recommendedStaff * 0.4) },
-        { name: 'Service', hours: 6, staffCount: recommendedStaff },
-        { name: 'Cleanup', hours: 3, staffCount: Math.ceil(recommendedStaff * 0.5) },
-      ],
-      estimatedCost: recommendedStaff * 25 * 8, // $25/hr avg, 8 hours avg
-      confidence: historicalData ? 'high' : 'medium',
-      factors: [
-        `Event size: ${eventSize} guests`,
-        `Complexity: ${complexity || 'standard'}`,
-        historicalData ? 'Based on historical data' : 'No historical data available',
-      ],
-    };
-
-    return NextResponse.json({ recommendations });
+    });
   } catch (error) {
-    console.error('Staffing recommendations error:', error);
+    console.error("Staffing recommendations error:", error);
     return NextResponse.json(
-      { error: 'Failed to generate staffing recommendations' },
+      { error: "Failed to generate staffing recommendations" },
       { status: 500 }
     );
   }
 }
 
-/**
- * GET /api/staffing/recommendations
- * List staffing recommendations for events
- */
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const eventId = searchParams.get('eventId');
-
-    if (!eventId) {
-      return NextResponse.json(
-        { error: 'Event ID is required' },
-        { status: 400 }
-      );
-    }
-
-    // Return cached recommendations or generate new ones
-    // For now, return a placeholder
-    return NextResponse.json({
-      recommendations: null,
-      message: 'Use POST to generate new recommendations',
-    });
-  } catch (error) {
-    console.error('Staffing recommendations fetch error:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch staffing recommendations' },
-      { status: 500 }
-    );
-  }
+export function GET() {
+  return NextResponse.json(
+    { error: "Use POST to generate staffing recommendations" },
+    { status: 405 }
+  );
 }

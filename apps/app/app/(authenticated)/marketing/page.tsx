@@ -3,6 +3,7 @@
 // TODO: Either implement marketing models or remove this feature
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -20,12 +21,19 @@ import {
   EmptyTitle,
 } from "@repo/design-system/components/ui/empty";
 import { Separator } from "@repo/design-system/components/ui/separator";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Megaphone, Plus, Mail, MessageSquare, Share2 } from "lucide-react";
+import { Mail, Megaphone, MessageSquare, Plus, Share2 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../lib/tenant";
 import { Header } from "../components/header";
+
+function hasMarketingModels() {
+  return Boolean(
+    database.campaign?.findMany &&
+      database.channel?.findMany &&
+      database.automationRule?.findMany
+  );
+}
 
 const MarketingPage = async () => {
   const { orgId } = await auth();
@@ -35,6 +43,39 @@ const MarketingPage = async () => {
   }
 
   const tenantId = await getTenantIdForOrg(orgId);
+
+  if (!hasMarketingModels()) {
+    return (
+      <>
+        <Header page="Marketing" pages={[]} />
+
+        <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+          <div className="space-y-0.5">
+            <h1 className="text-3xl font-bold tracking-tight">Marketing</h1>
+            <p className="text-muted-foreground">
+              Manage multi-channel campaigns, automation rules, and track
+              performance
+            </p>
+          </div>
+
+          <Separator />
+
+          <Empty>
+            <EmptyMedia>
+              <Megaphone className="h-16 w-16 text-muted-foreground/50" />
+            </EmptyMedia>
+            <EmptyHeader>
+              <EmptyTitle>Marketing is not configured yet</EmptyTitle>
+              <EmptyDescription>
+                This workspace does not have the marketing data models enabled,
+                so the dashboard cannot load campaign data yet.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        </div>
+      </>
+    );
+  }
 
   const campaigns = await database.campaign.findMany({
     where: {
@@ -123,7 +164,8 @@ const MarketingPage = async () => {
         <div className="space-y-0.5">
           <h1 className="text-3xl font-bold tracking-tight">Marketing</h1>
           <p className="text-muted-foreground">
-            Manage multi-channel campaigns, automation rules, and track performance
+            Manage multi-channel campaigns, automation rules, and track
+            performance
           </p>
         </div>
 
@@ -133,7 +175,9 @@ const MarketingPage = async () => {
         <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Campaigns</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Campaigns
+              </CardTitle>
               <Megaphone className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -146,11 +190,15 @@ const MarketingPage = async () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Channels</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Active Channels
+              </CardTitle>
               <Share2 className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{channels.filter((c) => c.isActive).length}</div>
+              <div className="text-2xl font-bold">
+                {channels.filter((c) => c.isActive).length}
+              </div>
               <p className="text-xs text-muted-foreground">
                 {channels.length} total
               </p>
@@ -159,18 +207,21 @@ const MarketingPage = async () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Automation Rules</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Automation Rules
+              </CardTitle>
               <svg
                 className="h-4 w-4 text-muted-foreground"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
               >
+                <title>Automation rules</title>
                 <path
+                  d="M13 10V3L4 14h7v7l9-11h-7z"
                   strokeLinecap="round"
                   strokeLinejoin="round"
                   strokeWidth={2}
-                  d="M13 10V3L4 14h7v7l9-11h-7z"
                 />
               </svg>
             </CardHeader>
@@ -186,14 +237,14 @@ const MarketingPage = async () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Draft Campaigns</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Draft Campaigns
+              </CardTitle>
               <Plus className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{draftCampaigns.length}</div>
-              <p className="text-xs text-muted-foreground">
-                Ready to launch
-              </p>
+              <p className="text-xs text-muted-foreground">Ready to launch</p>
             </CardContent>
           </Card>
         </section>
@@ -202,7 +253,7 @@ const MarketingPage = async () => {
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">Recent Campaigns</h2>
-            <Button asChild variant="ghost" size="sm">
+            <Button asChild size="sm" variant="ghost">
               <Link href="/marketing/campaigns">View all</Link>
             </Button>
           </div>
@@ -230,11 +281,16 @@ const MarketingPage = async () => {
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {campaigns.slice(0, 6).map((campaign) => (
-                <Card key={campaign.id} className="hover:shadow-md transition-shadow">
+                <Card
+                  className="hover:shadow-md transition-shadow"
+                  key={campaign.id}
+                >
                   <CardHeader>
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
-                        <CardTitle className="text-lg">{campaign.name}</CardTitle>
+                        <CardTitle className="text-lg">
+                          {campaign.name}
+                        </CardTitle>
                         <CardDescription className="line-clamp-2">
                           {campaign.description || "No description"}
                         </CardDescription>
@@ -251,8 +307,8 @@ const MarketingPage = async () => {
                           const Icon = getChannelIcon(cc.channel.channelType);
                           return (
                             <div
-                              key={cc.channelId}
                               className="flex items-center gap-1"
+                              key={cc.channelId}
                               title={cc.channel.name}
                             >
                               <Icon className="h-3 w-3" />
@@ -267,11 +323,18 @@ const MarketingPage = async () => {
                       </div>
                       {campaign.budget && campaign.budget > 0 && (
                         <div className="text-sm">
-                          <span className="font-medium">${campaign.budget.toString()}</span>{" "}
+                          <span className="font-medium">
+                            ${campaign.budget.toString()}
+                          </span>{" "}
                           budget
                         </div>
                       )}
-                      <Button asChild className="w-full" size="sm" variant="outline">
+                      <Button
+                        asChild
+                        className="w-full"
+                        size="sm"
+                        variant="outline"
+                      >
                         <Link href={`/marketing/campaigns/${campaign.id}`}>
                           View Campaign
                         </Link>
@@ -288,7 +351,7 @@ const MarketingPage = async () => {
         <section className="space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-semibold">Active Channels</h2>
-            <Button asChild variant="ghost" size="sm">
+            <Button asChild size="sm" variant="ghost">
               <Link href="/marketing/channels">Manage</Link>
             </Button>
           </div>
@@ -296,7 +359,9 @@ const MarketingPage = async () => {
           {channels.length === 0 ? (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-8">
-                <p className="text-muted-foreground">No channels configured yet</p>
+                <p className="text-muted-foreground">
+                  No channels configured yet
+                </p>
                 <Button asChild className="mt-4" variant="outline">
                   <Link href="/marketing/channels/new">
                     <Plus className="mr-2 h-4 w-4" />
@@ -314,12 +379,16 @@ const MarketingPage = async () => {
                     <CardHeader className="pb-3">
                       <div className="flex items-center gap-2">
                         <Icon className="h-5 w-5 text-muted-foreground" />
-                        <CardTitle className="text-base">{channel.name}</CardTitle>
+                        <CardTitle className="text-base">
+                          {channel.name}
+                        </CardTitle>
                       </div>
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-2">
-                        <Badge variant={channel.isActive ? "default" : "secondary"}>
+                        <Badge
+                          variant={channel.isActive ? "default" : "secondary"}
+                        >
                           {channel.isActive ? "Active" : "Inactive"}
                         </Badge>
                         <p className="text-sm text-muted-foreground capitalize">

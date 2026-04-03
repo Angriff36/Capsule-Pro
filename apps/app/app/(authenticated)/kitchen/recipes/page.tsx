@@ -47,6 +47,8 @@ import { RecipeEditButton } from "./recipe-edit-button";
 import { SingleDeleteButton } from "./components/bulk-actions-bar";
 import { SelectableList, ItemCheckbox } from "./components/selectable-list";
 import { RecipeFavoriteButton } from "./recipe-favorite-button";
+import { InlineRecipeName } from "./components/inline-recipe-fields";
+import { InlineDishName, InlineDishPrice } from "./components/inline-recipe-fields";
 import { RecipesPageClient } from "./recipes-page-client";
 import RecipesRealtime from "./recipes-realtime";
 import { RecipeQuickRename } from "./recipe-quick-rename";
@@ -546,12 +548,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
 
                       {/* Recipe name - primary info */}
                       <div className="flex-1 min-w-0">
-                        <div
-                          className="font-medium text-sm text-foreground truncate group-hover:text-[var(--brand-leafy-green)] transition-colors"
-                          title={recipe.name.length > 60 ? recipe.name : undefined}
-                        >
-                          {recipe.name.length > 60 ? `${recipe.name.slice(0, 60)}…` : recipe.name}
-                        </div>
+                        <InlineRecipeName recipeId={recipe.id} name={recipe.name} />
                         {recipe.description && (
                           <div className="text-xs text-muted-foreground truncate">
                             {recipe.description}
@@ -673,9 +670,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
 
                         {/* Dish name and recipe link */}
                         <div className="flex-1 min-w-0">
-                          <div className="font-medium text-sm text-foreground truncate group-hover:text-[var(--brand-leafy-green)] transition-colors">
-                            {dish.name}
-                          </div>
+                          <InlineDishName dishId={dish.id} name={dish.name} />
                           <div className="text-xs text-muted-foreground">
                             {dish.recipe_name ?? <span className="italic">Unlinked</span>}
                           </div>
@@ -705,11 +700,7 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                           </div>
                           <div className="text-center">
                             <div className="text-muted-foreground text-[10px] uppercase">Price</div>
-                            <div className="font-semibold text-[var(--brand-golden-zest)]">
-                              {dish.price_per_person
-                                ? currencyFormatter.format(dish.price_per_person)
-                                : "-"}
-                            </div>
+                            <InlineDishPrice dishId={dish.id} price={dish.price_per_person?.toString() ?? null} />
                           </div>
                           <div className="text-center min-w-[50px]">
                             <div className="text-muted-foreground text-[10px] uppercase">Margin</div>

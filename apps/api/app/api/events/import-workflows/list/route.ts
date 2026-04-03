@@ -1,4 +1,4 @@
-// Auto-generated Next.js API route for EventImport
+// Auto-generated Next.js API route for EventImportWorkflow
 // Generated from Manifest IR - DO NOT EDIT
 
 import type { NextRequest } from "next/server";
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     return manifestErrorResponse("Tenant not found", 400);
   }
 
-const eventImports = await database.eventImport.findMany({
+const eventImportWorkflows = await database.eventImportWorkflow.findMany({
     where: {
         tenantId,
         deletedAt: null
@@ -30,9 +30,9 @@ const eventImports = await database.eventImport.findMany({
     },
   });
 
-    return manifestSuccessResponse({ eventImports });
+    return manifestSuccessResponse({ eventImportWorkflows });
   } catch (error) {
-    console.error("Error fetching eventImports:", error);
+    console.error("Error fetching eventImportWorkflows:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

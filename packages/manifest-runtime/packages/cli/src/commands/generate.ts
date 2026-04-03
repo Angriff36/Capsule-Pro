@@ -107,6 +107,15 @@ async function generateFromIR(
         spinner,
         projectionOptions
       );
+    } else if (options.surface === "detail") {
+      // Generate GET detail routes for all entities
+      await generateDetailRoutes(
+        projection,
+        ir,
+        outputDir,
+        spinner,
+        projectionOptions
+      );
     } else if (options.surface === "command") {
       // Generate POST routes for all commands
       await generateCommands(
@@ -161,6 +170,9 @@ async function generateAllSurfaces(
   spinner.text = "Generating routes...";
   await generateRoutes(projection, ir, outputDir, spinner, projectionOptions);
 
+  spinner.text = "Generating detail routes...";
+  await generateDetailRoutes(projection, ir, outputDir, spinner, projectionOptions);
+
   spinner.text = "Generating commands...";
   await generateCommands(projection, ir, outputDir, spinner, projectionOptions);
 
@@ -188,6 +200,30 @@ async function generateRoutes(
 
     const result = projection.generate(ir, {
       surface: "nextjs.route",
+      entity: entity.name,
+      options: projectionOptions,
+    });
+    await writeProjectionResult(result, outputDir);
+  }
+}
+
+/**
+ * Generate GET detail routes for entities
+ */
+async function generateDetailRoutes(
+  projection: any,
+  ir: any,
+  outputDir: string,
+  spinner: Ora,
+  projectionOptions: any
+): Promise<void> {
+  const entities = ir.entities || [];
+
+  for (const entity of entities) {
+    spinner.text = `Generating detail route for ${entity.name}...`;
+
+    const result = projection.generate(ir, {
+      surface: "nextjs.detail",
       entity: entity.name,
       options: projectionOptions,
     });

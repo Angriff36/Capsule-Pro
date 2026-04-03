@@ -501,6 +501,11 @@
       "prefix": "/api/staffing/recommendations",
       "methods": ["POST"],
       "comment": "Infrastructure: Staffing recommendations with direct DB access"
+    },
+    {
+      "prefix": "/api/procurement/budget/commands/refresh",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Budget spend refresh and alert generation"
     }
   ]
 }

@@ -108,7 +108,7 @@ export function EquipmentPageClient() {
 
   async function fetchWorkOrders() {
     try {
-      const res = await fetch("/api/kitchen/work-orders/list");
+      const res = await fetch("/api/workorder/list");
       const data = await res.json();
       if (data.success) {
         setWorkOrders(data.workOrders || []);
