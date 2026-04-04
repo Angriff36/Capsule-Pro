@@ -7,7 +7,7 @@ import { database } from "@/lib/database";
 import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
 import { auth } from "@repo/auth/server";
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ recipeId: string }> }) {
   try {
     const { orgId, userId } = await auth();
     if (!(userId && orgId)) {
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return manifestErrorResponse("Tenant not found", 400);
     }
 
-    const { id } = await params;
+    const { recipeId: id } = await params;
 
     const recipes = await database.recipe.findFirst({
       where: {

@@ -1,86 +1,136 @@
 /**
- * GET /api/kitchen/recipes/[recipeId]/ingredients
- * Returns the ingredient list for a recipe's latest active version.
+ * @module RecipeIngredientsAPI
+ * @intent Fetch recipe ingredients for mobile viewer
+ * @responsibility Provide ingredients list for a recipe
+ * @domain Kitchen
+ * @tags recipes, ingredients, api, mobile
+ * @canonical true
  */
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { NextRequest, NextResponse } from "next/server";
+import { captureException } from "@sentry/nextjs";
+import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
+export interface RecipeIngredient {
+  id: string;
+  name: string;
+  quantity: number;
+  unitCode: string;
+  notes: string | null;
+  isOptional: boolean;
+  orderIndex: number;
+}
+
+/**
+ * GET /api/kitchen/recipes/[recipeId]/ingredients
+ * Fetch ingredients for the latest version of a recipe
+ */
 export async function GET(
-  _request: NextRequest,
+  _request: Request,
   { params }: { params: Promise<{ recipeId: string }> }
 ) {
   try {
+    const { recipeId } = await params;
     const { orgId } = await auth();
+
     if (!orgId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return NextResponse.json({ error: "Tenant not found" }, { status: 400 });
-    }
-
-    const { recipeId } = await params;
 
     // Verify recipe exists
     const recipe = await database.recipe.findFirst({
-      where: { id: recipeId, tenantId, deletedAt: null },
+      where: { tenantId, id: recipeId, deletedAt: null },
+      select: { id: true },
     });
 
     if (!recipe) {
       return NextResponse.json({ error: "Recipe not found" }, { status: 404 });
     }
 
-    // Get latest active version
-    const version = await database.recipeVersion.findFirst({
-      where: { recipeId, tenantId, deletedAt: null },
-      orderBy: { createdAt: "desc" },
+    // Fetch latest recipe version (replaces LATERAL JOIN)
+    const latestVersion = await database.recipeVersion.findFirst({
+      where: { tenantId, recipeId, deletedAt: null },
+      orderBy: { versionNumber: "desc" },
+      select: { id: true },
     });
 
-    if (!version) {
+    if (!latestVersion) {
       return NextResponse.json({ ingredients: [] });
     }
 
-    // Get recipe ingredients
+    // Fetch recipe ingredients for this version
     const recipeIngredients = await database.recipeIngredient.findMany({
-      where: { recipeVersionId: version.id, tenantId },
+      where: {
+        tenantId,
+        recipeVersionId: latestVersion.id,
+        deletedAt: null,
+      },
       orderBy: { sortOrder: "asc" },
+      select: {
+        ingredientId: true,
+        quantity: true,
+        unitId: true,
+        preparationNotes: true,
+        isOptional: true,
+        sortOrder: true,
+      },
     });
 
-    if (!recipeIngredients.length) {
+    if (recipeIngredients.length === 0) {
       return NextResponse.json({ ingredients: [] });
     }
 
-    // Resolve ingredient names
+    // Batch fetch ingredient names via Map lookup
     const ingredientIds = recipeIngredients.map((ri) => ri.ingredientId);
-    const ingredients = await database.ingredient.findMany({
-      where: { id: { in: ingredientIds } },
+    const ingredientRows = await database.ingredient.findMany({
+      where: {
+        tenantId,
+        id: { in: ingredientIds },
+        deletedAt: null,
+      },
+      select: { id: true, name: true },
     });
-    const ingredientMap = new Map(ingredients.map((i) => [i.id, i]));
+    const ingredientMap = new Map(ingredientRows.map((i) => [i.id, i.name]));
 
-    // Resolve unit codes
-    const unitIds = recipeIngredients.map((ri) => ri.unitId).filter(Boolean) as number[];
-    const units = unitIds.length
-      ? await database.units.findMany({ where: { id: { in: unitIds } } })
-      : [];
-    const unitMap = new Map(units.map((u) => [u.id, u]));
+    // Batch fetch unit codes via Map lookup
+    const unitIds = [
+      ...new Set(
+        recipeIngredients
+          .map((ri) => ri.unitId)
+          .filter((id): id is number => id !== null)
+      ),
+    ];
+    const unitRows =
+      unitIds.length > 0
+        ? await database.units.findMany({
+            where: { id: { in: unitIds } },
+            select: { id: true, code: true },
+          })
+        : [];
+    const unitMap = new Map(unitRows.map((u) => [u.id, u.code]));
 
-    const result = recipeIngredients.map((ri) => ({
-      id: ri.ingredientId,
-      name: ingredientMap.get(ri.ingredientId)?.name ?? "",
-      quantity: ri.quantity,
-      unitCode: ri.unitId != null ? (unitMap.get(ri.unitId)?.code ?? null) : null,
-      notes: ri.preparationNotes ?? null,
-      isOptional: ri.isOptional ?? false,
-      orderIndex: ri.sortOrder ?? 0,
-    }));
-
-    return NextResponse.json({ ingredients: result });
+    return NextResponse.json({
+      ingredients: recipeIngredients
+        .filter((ri) => ingredientMap.has(ri.ingredientId))
+        .map((ri) => ({
+          id: ri.ingredientId,
+          name: ingredientMap.get(ri.ingredientId) ?? "",
+          quantity: Number(ri.quantity),
+          unitCode: unitMap.get(ri.unitId) ?? "",
+          notes: ri.preparationNotes,
+          isOptional: ri.isOptional,
+          orderIndex: ri.sortOrder,
+        })),
+    });
   } catch (error) {
-    console.error("Error fetching recipe ingredients:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    captureException(error);
+    return NextResponse.json(
+      { error: "Failed to fetch recipe ingredients" },
+      { status: 500 }
+    );
   }
 }
