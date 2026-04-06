@@ -8,8 +8,20 @@ import { invariant } from "./invariant";
 const CONNECTION_ERROR_PATTERN =
   /connection terminated|connection refused|ECONNREFUSED|ENOTFOUND|connect/i;
 
+// In-memory cache to deduplicate tenant lookups within the same server process.
+// Prevents N+1 queries when many parallel API requests resolve the same org.
+const tenantCache = new Map<string, { id: string; expiresAt: number }>();
+const TENANT_CACHE_TTL_MS = 30_000; // 30 seconds
+
 export const getTenantIdForOrg = async (orgId: string): Promise<string> => {
   invariant(orgId, "orgId must exist to resolve tenant");
+
+  // Check cache first
+  const cached = tenantCache.get(orgId);
+  if (cached && cached.expiresAt > Date.now()) {
+    return cached.id;
+  }
+
   try {
     let account = await database.account.findFirst({
       where: { slug: orgId, deletedAt: null },
@@ -24,6 +36,9 @@ export const getTenantIdForOrg = async (orgId: string): Promise<string> => {
       });
     }
 
+    // Cache the result
+    tenantCache.set(orgId, { id: account.id, expiresAt: Date.now() + TENANT_CACHE_TTL_MS });
+
     return account.id;
   } catch (err) {
     // Log the real error in the terminal (next dev server) so we see what's actually failing
@@ -36,6 +51,15 @@ export const getTenantIdForOrg = async (orgId: string): Promise<string> => {
     if (err instanceof Error && errWithCode.code) {
       console.error("[getTenantIdForOrg] code:", errWithCode.code);
     }
+
+    // Always report DB errors to Sentry — these are infrastructure failures
+    captureException(
+      err instanceof Error ? err : new Error(String(err)),
+      {
+        tags: { source: "getTenantIdForOrg", type: "database" },
+        extra: { orgId, errorCode: errWithCode.code },
+      }
+    );
 
     const msg =
       err instanceof Error ? err.message : String(err ?? "Unknown error");

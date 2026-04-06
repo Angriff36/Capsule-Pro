@@ -211,6 +211,35 @@ async function sendSingleSms(
 }
 
 /**
+ * Batch-check opt-in status for all SMS recipients in a single query.
+ */
+async function batchCheckSmsOptInStatus(
+  database: PrismaClient,
+  tenantId: string,
+  recipients: SmsRecipient[],
+  notificationType: string
+): Promise<Set<string>> {
+  const employeeIds = recipients
+    .map((r) => r.employeeId)
+    .filter((id): id is string => !!id);
+
+  if (employeeIds.length === 0) return new Set();
+
+  const preferences = await database.notification_preferences.findMany({
+    where: {
+      tenant_id: tenantId,
+      employee_id: { in: employeeIds },
+      notification_type: notificationType,
+      channel: "sms",
+      is_enabled: false,
+    },
+    select: { employee_id: true },
+  });
+
+  return new Set(preferences.map((p) => p.employee_id));
+}
+
+/**
  * Main function to send SMS notifications
  */
 export async function sendSmsNotification(
@@ -237,27 +266,26 @@ export async function sendSmsNotification(
     );
   }
 
+  // Batch-fetch opt-out status for all recipients upfront (1 query instead of N)
+  const optedOutIds = await batchCheckSmsOptInStatus(
+    database,
+    tenantId,
+    recipients,
+    notificationType
+  );
+
   const results: SendSmsResult[] = [];
 
   for (const recipient of recipients) {
     try {
-      // Check opt-in status if employee ID is provided
-      if (recipient.employeeId) {
-        const optedIn = await checkOptInStatus(
-          database,
-          tenantId,
-          recipient.employeeId,
-          notificationType
-        );
-
-        if (!optedIn) {
-          results.push({
-            success: false,
-            error: "Recipient has opted out of SMS notifications",
-            status: "failed",
-          });
-          continue;
-        }
+      // Check opt-in status if employee ID is provided (from batch result)
+      if (recipient.employeeId && optedOutIds.has(recipient.employeeId)) {
+        results.push({
+          success: false,
+          error: "Recipient has opted out of SMS notifications",
+          status: "failed",
+        });
+        continue;
       }
 
       // Create pending log entry

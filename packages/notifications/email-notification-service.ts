@@ -214,6 +214,35 @@ async function sendSingleEmail(
 }
 
 /**
+ * Batch-check opt-in status for all employee recipients in a single query.
+ */
+async function batchCheckOptInStatus(
+  database: PrismaClient,
+  tenantId: string,
+  recipients: EmailRecipient[],
+  notificationType: string
+): Promise<Set<string>> {
+  const employeeIds = recipients
+    .map((r) => r.employeeId)
+    .filter((id): id is string => !!id);
+
+  if (employeeIds.length === 0) return new Set();
+
+  const preferences = await database.notification_preferences.findMany({
+    where: {
+      tenant_id: tenantId,
+      employee_id: { in: employeeIds },
+      notification_type: notificationType,
+      channel: "email",
+      is_enabled: false,
+    },
+    select: { employee_id: true },
+  });
+
+  return new Set(preferences.map((p) => p.employee_id));
+}
+
+/**
  * Main function to send email notifications
  */
 export async function sendEmailNotification(
@@ -238,6 +267,14 @@ export async function sendEmailNotification(
     ? renderEmailTemplate(subject, templateData)
     : subject;
 
+  // Batch-fetch opt-out status for all recipients upfront (1 query instead of N)
+  const optedOutIds = await batchCheckOptInStatus(
+    database,
+    tenantId,
+    recipients,
+    notificationType
+  );
+
   const results: SendEmailResult[] = [];
 
   for (const recipient of recipients) {
@@ -252,15 +289,8 @@ export async function sendEmailNotification(
         continue;
       }
 
-      // Check opt-in status for employees
-      const optedIn = await checkOptInStatus(
-        database,
-        tenantId,
-        recipient.employeeId,
-        notificationType
-      );
-
-      if (!optedIn) {
+      // Check opt-in status for employees (from batch result)
+      if (recipient.employeeId && optedOutIds.has(recipient.employeeId)) {
         results.push({
           success: false,
           error: "Recipient has opted out of email notifications",
