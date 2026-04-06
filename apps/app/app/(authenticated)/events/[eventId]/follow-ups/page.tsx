@@ -1,21 +1,26 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useParams } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { 
-  CheckCircle2, 
-  SkipForward, 
-  Calendar, 
-  Mail, 
-  FileText, 
-  DollarSign,
-  Sparkles,
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import {
+  Calendar,
+  CheckCircle2,
   Clock,
-  RefreshCw
-} from 'lucide-react';
+  DollarSign,
+  FileText,
+  Mail,
+  RefreshCw,
+  SkipForward,
+  Sparkles,
+} from "lucide-react";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 
 interface Followup {
   id: string;
@@ -37,16 +42,16 @@ const taskTypeIcons: Record<string, React.ReactNode> = {
 };
 
 const statusColors: Record<string, string> = {
-  pending: 'bg-yellow-500',
-  completed: 'bg-green-500',
-  skipped: 'bg-gray-500',
-  overdue: 'bg-red-500',
+  pending: "bg-yellow-500",
+  completed: "bg-green-500",
+  skipped: "bg-gray-500",
+  overdue: "bg-red-500",
 };
 
 export default function EventFollowUpsPage() {
   const params = useParams();
   const eventId = (params?.eventId ?? "") as string;
-  
+
   const [followups, setFollowups] = useState<Followup[]>([]);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
@@ -59,11 +64,13 @@ export default function EventFollowUpsPage() {
   const fetchFollowups = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/events/automated-followups/list?eventId=${eventId}`);
+      const res = await fetch(
+        `/api/events/automated-followups/list?eventId=${eventId}`
+      );
       const data = await res.json();
       setFollowups(data.followups || []);
     } catch (e) {
-      console.error('Failed to fetch followups:', e);
+      console.error("Failed to fetch followups:", e);
     } finally {
       setLoading(false);
     }
@@ -72,17 +79,20 @@ export default function EventFollowUpsPage() {
   const generateFollowups = async () => {
     setGenerating(true);
     try {
-      const res = await fetch('/api/events/automated-followups/commands/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ eventId }),
-      });
+      const res = await fetch(
+        "/api/events/automated-followups/commands/generate",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ eventId }),
+        }
+      );
       const data = await res.json();
       if (data.success) {
         fetchFollowups();
       }
     } catch (e) {
-      console.error('Failed to generate followups:', e);
+      console.error("Failed to generate followups:", e);
     } finally {
       setGenerating(false);
     }
@@ -91,16 +101,19 @@ export default function EventFollowUpsPage() {
   const completeFollowup = async (followupId: string) => {
     setActioning(followupId);
     try {
-      const res = await fetch('/api/events/automated-followups/commands/complete', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ followupId }),
-      });
+      const res = await fetch(
+        "/api/events/automated-followups/commands/complete",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ followupId }),
+        }
+      );
       if (res.ok) {
         fetchFollowups();
       }
     } catch (e) {
-      console.error('Failed to complete followup:', e);
+      console.error("Failed to complete followup:", e);
     } finally {
       setActioning(null);
     }
@@ -109,32 +122,32 @@ export default function EventFollowUpsPage() {
   const skipFollowup = async (followupId: string) => {
     setActioning(followupId);
     try {
-      const res = await fetch('/api/events/automated-followups/commands/skip', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ followupId, reason: 'Skipped by user' }),
+      const res = await fetch("/api/events/automated-followups/commands/skip", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ followupId, reason: "Skipped by user" }),
       });
       if (res.ok) {
         fetchFollowups();
       }
     } catch (e) {
-      console.error('Failed to skip followup:', e);
+      console.error("Failed to skip followup:", e);
     } finally {
       setActioning(null);
     }
   };
 
   const formatDate = (dateStr: string | null) => {
-    if (!dateStr) return 'No due date';
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
+    if (!dateStr) return "No due date";
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     });
   };
 
   const isOverdue = (dueDate: string | null, status: string) => {
-    if (!dueDate || status !== 'pending') return false;
+    if (!dueDate || status !== "pending") return false;
     return new Date(dueDate) < new Date();
   };
 
@@ -147,13 +160,13 @@ export default function EventFollowUpsPage() {
             Automated follow-up tasks for client management
           </p>
         </div>
-        <Button onClick={generateFollowups} disabled={generating}>
+        <Button disabled={generating} onClick={generateFollowups}>
           {generating ? (
             <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
           ) : (
             <Sparkles className="h-4 w-4 mr-2" />
           )}
-          {generating ? 'Generating...' : 'Generate Follow-Ups'}
+          {generating ? "Generating..." : "Generate Follow-Ups"}
         </Button>
       </div>
 
@@ -168,10 +181,10 @@ export default function EventFollowUpsPage() {
           <CardContent className="py-8 text-center">
             <Calendar className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
             <p className="text-muted-foreground mb-4">
-              No follow-up tasks yet. Click "Generate Follow-Ups" to create 
+              No follow-up tasks yet. Click "Generate Follow-Ups" to create
               automated post-event tasks.
             </p>
-            <Button onClick={generateFollowups} disabled={generating}>
+            <Button disabled={generating} onClick={generateFollowups}>
               <Sparkles className="h-4 w-4 mr-2" />
               Generate Follow-Ups
             </Button>
@@ -182,15 +195,26 @@ export default function EventFollowUpsPage() {
           {followups.map((followup) => {
             const overdue = isOverdue(followup.due_date, followup.status);
             return (
-              <Card key={followup.id} className={overdue ? 'border-red-500' : ''}>
+              <Card
+                className={overdue ? "border-red-500" : ""}
+                key={followup.id}
+              >
                 <CardHeader className="pb-2">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
-                      {taskTypeIcons[followup.task_type] || <FileText className="h-4 w-4" />}
-                      <CardTitle className="text-lg">{followup.description}</CardTitle>
+                      {taskTypeIcons[followup.task_type] || (
+                        <FileText className="h-4 w-4" />
+                      )}
+                      <CardTitle className="text-lg">
+                        {followup.description}
+                      </CardTitle>
                     </div>
-                    <Badge className={overdue ? 'bg-red-500' : statusColors[followup.status]}>
-                      {overdue ? 'overdue' : followup.status}
+                    <Badge
+                      className={
+                        overdue ? "bg-red-500" : statusColors[followup.status]
+                      }
+                    >
+                      {overdue ? "overdue" : followup.status}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -203,21 +227,21 @@ export default function EventFollowUpsPage() {
                       </div>
                       <div className="capitalize">{followup.task_type}</div>
                     </div>
-                    {followup.status === 'pending' && (
+                    {followup.status === "pending" && (
                       <div className="flex gap-2">
                         <Button
+                          disabled={actioning === followup.id}
+                          onClick={() => skipFollowup(followup.id)}
                           size="sm"
                           variant="outline"
-                          onClick={() => skipFollowup(followup.id)}
-                          disabled={actioning === followup.id}
                         >
                           <SkipForward className="h-4 w-4 mr-1" />
                           Skip
                         </Button>
                         <Button
-                          size="sm"
-                          onClick={() => completeFollowup(followup.id)}
                           disabled={actioning === followup.id}
+                          onClick={() => completeFollowup(followup.id)}
+                          size="sm"
                         >
                           <CheckCircle2 className="h-4 w-4 mr-1" />
                           Complete

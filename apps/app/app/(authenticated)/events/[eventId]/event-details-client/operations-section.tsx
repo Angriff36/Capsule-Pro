@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -8,22 +9,20 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Badge } from "@repo/design-system/components/ui/badge";
 import {
+  CheckIcon,
+  ChefHatIcon,
   ClipboardListIcon,
   ListChecksIcon,
+  PackageIcon,
   SwordsIcon,
   UsersIcon,
-  ChefHatIcon,
   WineIcon,
-  PackageIcon,
-  PlusIcon,
-  CheckIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { PrepTasksSection, PrepListsSection } from "../event-details-sections";
-import type { PrepTaskSummaryClient } from "../prep-task-contract";
 import type { PrepListSummary } from "../event-details-sections";
+import { PrepListsSection, PrepTasksSection } from "../event-details-sections";
+import type { PrepTaskSummaryClient } from "../prep-task-contract";
 
 interface TemplateStaffing {
   servers: number;
@@ -92,12 +91,18 @@ export function OperationsSection({
                 </CardDescription>
               </div>
               {staffingMatches ? (
-                <Badge variant="secondary" className="bg-green-100 text-green-800">
+                <Badge
+                  className="bg-green-100 text-green-800"
+                  variant="secondary"
+                >
                   <CheckIcon className="h-3 w-3 mr-1" />
                   Staffed
                 </Badge>
               ) : (
-                <Badge variant="secondary" className="bg-amber-100 text-amber-800">
+                <Badge
+                  className="bg-amber-100 text-amber-800"
+                  variant="secondary"
+                >
                   {currentStaffCount}/{totalSuggestedStaff} assigned
                 </Badge>
               )}
@@ -109,7 +114,9 @@ export function OperationsSection({
                 <CardContent className="pt-4 pb-3">
                   <div className="flex items-center gap-2 mb-1">
                     <UsersIcon className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Servers</span>
+                    <span className="text-sm text-muted-foreground">
+                      Servers
+                    </span>
                   </div>
                   <p className="text-2xl font-semibold">
                     {templateStaffing.servers}
@@ -120,7 +127,9 @@ export function OperationsSection({
                 <CardContent className="pt-4 pb-3">
                   <div className="flex items-center gap-2 mb-1">
                     <WineIcon className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Bartenders</span>
+                    <span className="text-sm text-muted-foreground">
+                      Bartenders
+                    </span>
                   </div>
                   <p className="text-2xl font-semibold">
                     {templateStaffing.bartenders}
@@ -142,7 +151,9 @@ export function OperationsSection({
                 <CardContent className="pt-4 pb-3">
                   <div className="flex items-center gap-2 mb-1">
                     <PackageIcon className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">Setup Crew</span>
+                    <span className="text-sm text-muted-foreground">
+                      Setup Crew
+                    </span>
                   </div>
                   <p className="text-2xl font-semibold">
                     {templateStaffing.setupCrew}
@@ -215,9 +226,9 @@ export function OperationsSection({
             </Button>
             {onGeneratePrepList && (
               <Button
-                variant="outline"
-                onClick={onGeneratePrepList}
                 disabled={isGeneratingPrepList}
+                onClick={onGeneratePrepList}
+                variant="outline"
               >
                 <ListChecksIcon className="mr-2 size-4" />
                 {isGeneratingPrepList ? "Generating..." : "Generate prep list"}

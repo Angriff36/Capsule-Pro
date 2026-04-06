@@ -50,7 +50,9 @@ test.describe("Events: Full Workflow", () => {
     const startFromScratchBtn = page.getByRole("button", {
       name: "Start from Scratch",
     });
-    if (await startFromScratchBtn.isVisible({ timeout: 2000 }).catch(() => false)) {
+    if (
+      await startFromScratchBtn.isVisible({ timeout: 2000 }).catch(() => false)
+    ) {
       await startFromScratchBtn.click();
       // Wait for dialog to close
       await page.waitForTimeout(500);

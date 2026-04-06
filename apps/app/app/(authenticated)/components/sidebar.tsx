@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { OrganizationSwitcher, UserButton } from "@repo/auth/client";
 import { ModeToggle } from "@repo/design-system/components/mode-toggle";
 import { Button } from "@repo/design-system/components/ui/button";
@@ -19,11 +18,18 @@ import {
   useSidebar,
 } from "@repo/design-system/components/ui/sidebar";
 import { cn } from "@repo/design-system/lib/utils";
-import { AnchorIcon, BellIcon, CogIcon, LifeBuoyIcon, SendIcon } from "lucide-react";
+import {
+  AnchorIcon,
+  BellIcon,
+  CogIcon,
+  LifeBuoyIcon,
+  SendIcon,
+} from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { useState } from "react";
 import { ModuleHeader } from "./module-header";
 import { getModuleKeyFromPathname, modules } from "./module-nav";
 import { Search } from "./search";
@@ -51,9 +57,7 @@ const NotificationsTrigger = dynamic(
  */
 const NotificationsProvider = dynamic(
   () =>
-    import("./notifications-provider").then(
-      (mod) => mod.NotificationsProvider
-    ),
+    import("./notifications-provider").then((mod) => mod.NotificationsProvider),
   {
     ssr: false,
     loading: () => null,
@@ -85,7 +89,10 @@ const data = {
   ],
 };
 
-export const GlobalSidebar = ({ children, userId }: GlobalSidebarProperties) => {
+export const GlobalSidebar = ({
+  children,
+  userId,
+}: GlobalSidebarProperties) => {
   const sidebar = useSidebar();
   const pathname = usePathname() ?? "";
   const [showNotifications, setShowNotifications] = useState(false);
@@ -95,12 +102,12 @@ export const GlobalSidebar = ({ children, userId }: GlobalSidebarProperties) => 
 
   /**
    * Handle notification bell click - ONLY load Knock SDK AFTER user interaction.
-   * 
+   *
    * Per Next.js lazy-loading guidance:
    * "Use dynamic imports for components that are not needed for the initial render.
    *  Lazy-loaded components are only loaded when they are rendered."
    * https://nextjs.org/docs/app/guides/lazy-loading
-   * 
+   *
    * This ensures @knocklabs/react is NOT requested on first page load.
    * The chunk is only requested when showNotifications becomes true.
    */
@@ -216,11 +223,11 @@ export const GlobalSidebar = ({ children, userId }: GlobalSidebarProperties) => 
                 {showNotifications ? (
                   /**
                    * After user click: render lazy-loaded provider + trigger.
-                   * 
+                   *
                    * Both are dynamically imported with ssr: false.
                    * The Knock SDK chunk is requested HERE, not on initial page load.
-                   * 
-                   * Per Next.js: "Components rendered inside the app are 
+                   *
+                   * Per Next.js: "Components rendered inside the app are
                    * client components and are only rendered on the client."
                    */
                   <NotificationsProvider userId={userId}>
@@ -230,16 +237,16 @@ export const GlobalSidebar = ({ children, userId }: GlobalSidebarProperties) => 
                   /**
                    * Initial render: lightweight bell icon only.
                    * NO @knocklabs/react loaded yet.
-                   * 
+                   *
                    * User must click to trigger the lazy load.
                    */
                   <Button
+                    aria-label="Open notifications"
                     asChild
                     className="shrink-0"
+                    onClick={handleNotificationClick}
                     size="icon"
                     variant="ghost"
-                    onClick={handleNotificationClick}
-                    aria-label="Open notifications"
                   >
                     <div className="h-4 w-4">
                       <BellIcon className="h-4 w-4" />

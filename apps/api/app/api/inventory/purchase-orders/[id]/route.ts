@@ -9,11 +9,17 @@ import { database } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type {
-  DiscrepancyType,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+DiscrepancyType,
   POStatus,
   PurchaseOrderWithDetails,
   QualityStatus,
-} from "../types";
+} from "../types"
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -148,6 +154,7 @@ export async function GET(_request: Request, context: RouteContext) {
 
     return NextResponse.json(orderWithDetails);
   } catch (error) {
+    captureException(error);
     console.error("Failed to get purchase order:", error);
     return NextResponse.json(
       { message: "Internal server error" },

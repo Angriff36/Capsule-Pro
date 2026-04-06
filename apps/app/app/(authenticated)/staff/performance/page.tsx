@@ -1,31 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  Star,
-  Calendar,
-  User,
-  TrendingUp,
-  Target,
-  CheckCircle2,
-  Clock,
-  AlertTriangle,
-  Plus,
-  Loader2,
-  MessageSquare,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@repo/design-system/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -36,7 +18,6 @@ import {
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
-import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -44,6 +25,27 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs";
+import { Textarea } from "@repo/design-system/components/ui/textarea";
+import {
+  AlertTriangle,
+  Calendar,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
+  Loader2,
+  Plus,
+  Star,
+  Target,
+  TrendingUp,
+  User,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
 // Types matching the PerformanceReview model
 interface Employee {
@@ -88,25 +90,50 @@ const REVIEW_TYPE_COLORS: Record<string, string> = {
   PROBATION: "bg-amber-100 text-amber-800",
 };
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
-  scheduled: { label: "Scheduled", color: "bg-blue-100 text-blue-700", icon: Calendar },
-  completed: { label: "Completed", color: "bg-green-100 text-green-700", icon: CheckCircle2 },
-  cancelled: { label: "Cancelled", color: "bg-gray-100 text-gray-700", icon: AlertTriangle },
+const STATUS_CONFIG: Record<
+  string,
+  {
+    label: string;
+    color: string;
+    icon: React.ComponentType<{ className?: string }>;
+  }
+> = {
+  scheduled: {
+    label: "Scheduled",
+    color: "bg-blue-100 text-blue-700",
+    icon: Calendar,
+  },
+  completed: {
+    label: "Completed",
+    color: "bg-green-100 text-green-700",
+    icon: CheckCircle2,
+  },
+  cancelled: {
+    label: "Cancelled",
+    color: "bg-gray-100 text-gray-700",
+    icon: AlertTriangle,
+  },
 };
 
-function RatingStars({ rating, onChange }: { rating: number; onChange?: (r: number) => void }) {
+function RatingStars({
+  rating,
+  onChange,
+}: {
+  rating: number;
+  onChange?: (r: number) => void;
+}) {
   const [hovered, setHovered] = useState(0);
   return (
     <div className="flex items-center gap-1">
       {[1, 2, 3, 4, 5].map((star) => (
         <button
+          className="focus:outline-none"
+          disabled={!onChange}
           key={star}
-          type="button"
           onClick={() => onChange?.(star)}
           onMouseEnter={() => setHovered(star)}
           onMouseLeave={() => setHovered(0)}
-          className="focus:outline-none"
-          disabled={!onChange}
+          type="button"
         >
           <Star
             className={`h-5 w-5 ${
@@ -137,7 +164,8 @@ export function PerformancePageClient() {
   const [activeTab, setActiveTab] = useState("all");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showCompleteDialog, setShowCompleteDialog] = useState(false);
-  const [selectedReview, setSelectedReview] = useState<PerformanceReview | null>(null);
+  const [selectedReview, setSelectedReview] =
+    useState<PerformanceReview | null>(null);
   const [expandedReview, setExpandedReview] = useState<string | null>(null);
   const [creating, setCreating] = useState(false);
   const [completing, setCompleting] = useState(false);
@@ -168,7 +196,8 @@ export function PerformancePageClient() {
       const reviewsData = await reviewsRes.json();
       const employeesData = await employeesRes.json();
       if (reviewsData.success) setReviews(reviewsData.data.reviews || []);
-      if (employeesData.success) setEmployees(employeesData.data.employees || []);
+      if (employeesData.success)
+        setEmployees(employeesData.data.employees || []);
     } catch (error) {
       console.error("Failed to load performance data:", error);
     } finally {
@@ -178,7 +207,7 @@ export function PerformancePageClient() {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!createForm.employeeId || !createForm.scheduledDate) return;
+    if (!(createForm.employeeId && createForm.scheduledDate)) return;
     setCreating(true);
     try {
       const res = await fetch("/api/staff/performance/commands/create", {
@@ -190,7 +219,11 @@ export function PerformancePageClient() {
       if (data.success) {
         await loadData();
         setShowCreateDialog(false);
-        setCreateForm({ employeeId: "", reviewType: "SIX_MONTH", scheduledDate: "" });
+        setCreateForm({
+          employeeId: "",
+          reviewType: "SIX_MONTH",
+          scheduledDate: "",
+        });
       }
     } catch (error) {
       console.error("Failed to create review:", error);
@@ -221,7 +254,13 @@ export function PerformancePageClient() {
         await loadData();
         setShowCompleteDialog(false);
         setSelectedReview(null);
-        setCompleteForm({ rating: 0, strengths: "", areasForImprovement: "", goalsNextPeriod: "", managerComments: "" });
+        setCompleteForm({
+          rating: 0,
+          strengths: "",
+          areasForImprovement: "",
+          goalsNextPeriod: "",
+          managerComments: "",
+        });
       }
     } catch (error) {
       console.error("Failed to complete review:", error);
@@ -234,15 +273,27 @@ export function PerformancePageClient() {
     total: reviews.length,
     scheduled: reviews.filter((r) => r.status === "scheduled").length,
     completed: reviews.filter((r) => r.status === "completed").length,
-    avgRating: reviews.filter((r) => r.rating).length > 0
-      ? (reviews.filter((r) => r.rating).reduce((sum, r) => sum + Number(r.rating), 0) / reviews.filter((r) => r.rating).length).toFixed(1)
-      : "—",
+    avgRating:
+      reviews.filter((r) => r.rating).length > 0
+        ? (
+            reviews
+              .filter((r) => r.rating)
+              .reduce((sum, r) => sum + Number(r.rating), 0) /
+            reviews.filter((r) => r.rating).length
+          ).toFixed(1)
+        : "—",
   };
 
   const filteredReviews = reviews.filter((r) => {
     if (activeTab === "all") return true;
-    if (activeTab === "upcoming") return r.status === "scheduled" && new Date(r.scheduledDate) <= new Date(Date.now() + 14 * 24 * 60 * 60 * 1000);
-    if (activeTab === "overdue") return r.status === "scheduled" && new Date(r.scheduledDate) < new Date();
+    if (activeTab === "upcoming")
+      return (
+        r.status === "scheduled" &&
+        new Date(r.scheduledDate) <=
+          new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
+      );
+    if (activeTab === "overdue")
+      return r.status === "scheduled" && new Date(r.scheduledDate) < new Date();
     return r.status === activeTab;
   });
 
@@ -313,12 +364,35 @@ export function PerformancePageClient() {
       </div>
 
       {/* Tabs & Reviews List */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs onValueChange={setActiveTab} value={activeTab}>
         <TabsList>
           <TabsTrigger value="all">All ({reviews.length})</TabsTrigger>
-          <TabsTrigger value="upcoming">Upcoming ({reviews.filter(r => r.status === "scheduled" && new Date(r.scheduledDate) <= new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)).length})</TabsTrigger>
-          <TabsTrigger value="overdue">Overdue ({reviews.filter(r => r.status === "scheduled" && new Date(r.scheduledDate) < new Date()).length})</TabsTrigger>
-          <TabsTrigger value="completed">Completed ({stats.completed})</TabsTrigger>
+          <TabsTrigger value="upcoming">
+            Upcoming (
+            {
+              reviews.filter(
+                (r) =>
+                  r.status === "scheduled" &&
+                  new Date(r.scheduledDate) <=
+                    new Date(Date.now() + 14 * 24 * 60 * 60 * 1000)
+              ).length
+            }
+            )
+          </TabsTrigger>
+          <TabsTrigger value="overdue">
+            Overdue (
+            {
+              reviews.filter(
+                (r) =>
+                  r.status === "scheduled" &&
+                  new Date(r.scheduledDate) < new Date()
+              ).length
+            }
+            )
+          </TabsTrigger>
+          <TabsTrigger value="completed">
+            Completed ({stats.completed})
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value={activeTab}>
@@ -327,32 +401,50 @@ export function PerformancePageClient() {
               <CardContent className="py-12 text-center text-muted-foreground">
                 <Target className="mx-auto h-12 w-12 mb-4 opacity-50" />
                 <p>No reviews found.</p>
-                <p className="text-sm mt-1">Schedule a performance review to get started.</p>
+                <p className="text-sm mt-1">
+                  Schedule a performance review to get started.
+                </p>
               </CardContent>
             </Card>
           ) : (
             <div className="space-y-3">
               {filteredReviews.map((review) => {
-                const statusConfig = STATUS_CONFIG[review.status] || STATUS_CONFIG.scheduled;
+                const statusConfig =
+                  STATUS_CONFIG[review.status] || STATUS_CONFIG.scheduled;
                 const StatusIcon = statusConfig.icon;
-                const isOverdue = review.status === "scheduled" && new Date(review.scheduledDate) < new Date();
+                const isOverdue =
+                  review.status === "scheduled" &&
+                  new Date(review.scheduledDate) < new Date();
                 const isExpanded = expandedReview === review.id;
 
                 return (
-                  <Card key={review.id} className={isOverdue ? "border-red-300" : ""}>
+                  <Card
+                    className={isOverdue ? "border-red-300" : ""}
+                    key={review.id}
+                  >
                     <CardContent className="p-4">
                       <div className="flex items-center gap-4">
                         {/* Status icon */}
-                        <div className={`flex h-10 w-10 items-center justify-center rounded-full ${statusConfig.color}`}>
+                        <div
+                          className={`flex h-10 w-10 items-center justify-center rounded-full ${statusConfig.color}`}
+                        >
                           <StatusIcon className="h-5 w-5" />
                         </div>
 
                         {/* Main info */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="font-semibold">{review.employeeName || review.employeeId}</span>
-                            <Badge className={REVIEW_TYPE_COLORS[review.reviewType] || "bg-gray-100"}>
-                              {REVIEW_TYPE_LABELS[review.reviewType] || review.reviewType}
+                            <span className="font-semibold">
+                              {review.employeeName || review.employeeId}
+                            </span>
+                            <Badge
+                              className={
+                                REVIEW_TYPE_COLORS[review.reviewType] ||
+                                "bg-gray-100"
+                              }
+                            >
+                              {REVIEW_TYPE_LABELS[review.reviewType] ||
+                                review.reviewType}
                             </Badge>
                             {isOverdue && (
                               <Badge variant="destructive">Overdue</Badge>
@@ -382,21 +474,27 @@ export function PerformancePageClient() {
                         <div className="flex items-center gap-2">
                           {review.status === "scheduled" && (
                             <Button
-                              size="sm"
                               onClick={() => {
                                 setSelectedReview(review);
                                 setShowCompleteDialog(true);
                               }}
+                              size="sm"
                             >
                               Complete Review
                             </Button>
                           )}
                           <Button
+                            onClick={() =>
+                              setExpandedReview(isExpanded ? null : review.id)
+                            }
                             size="sm"
                             variant="ghost"
-                            onClick={() => setExpandedReview(isExpanded ? null : review.id)}
                           >
-                            {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                            {isExpanded ? (
+                              <ChevronUp className="h-4 w-4" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4" />
+                            )}
                           </Button>
                         </div>
                       </div>
@@ -422,39 +520,61 @@ export function PerformancePageClient() {
                               {review.rating ? (
                                 <RatingStars rating={Number(review.rating)} />
                               ) : (
-                                <p className="text-muted-foreground">Not rated</p>
+                                <p className="text-muted-foreground">
+                                  Not rated
+                                </p>
                               )}
                             </div>
                           </div>
 
                           {review.strengths && (
                             <div>
-                              <p className="text-sm font-medium mb-1">Strengths</p>
-                              <p className="text-sm text-muted-foreground bg-green-50 dark:bg-green-950/30 rounded-md p-2">{review.strengths}</p>
+                              <p className="text-sm font-medium mb-1">
+                                Strengths
+                              </p>
+                              <p className="text-sm text-muted-foreground bg-green-50 dark:bg-green-950/30 rounded-md p-2">
+                                {review.strengths}
+                              </p>
                             </div>
                           )}
                           {review.areasForImprovement && (
                             <div>
-                              <p className="text-sm font-medium mb-1">Areas for Improvement</p>
-                              <p className="text-sm text-muted-foreground bg-amber-50 dark:bg-amber-950/30 rounded-md p-2">{review.areasForImprovement}</p>
+                              <p className="text-sm font-medium mb-1">
+                                Areas for Improvement
+                              </p>
+                              <p className="text-sm text-muted-foreground bg-amber-50 dark:bg-amber-950/30 rounded-md p-2">
+                                {review.areasForImprovement}
+                              </p>
                             </div>
                           )}
                           {review.goalsNextPeriod && (
                             <div>
-                              <p className="text-sm font-medium mb-1">Goals for Next Period</p>
-                              <p className="text-sm text-muted-foreground bg-blue-50 dark:bg-blue-950/30 rounded-md p-2">{review.goalsNextPeriod}</p>
+                              <p className="text-sm font-medium mb-1">
+                                Goals for Next Period
+                              </p>
+                              <p className="text-sm text-muted-foreground bg-blue-50 dark:bg-blue-950/30 rounded-md p-2">
+                                {review.goalsNextPeriod}
+                              </p>
                             </div>
                           )}
                           {review.managerComments && (
                             <div>
-                              <p className="text-sm font-medium mb-1">Manager Comments</p>
-                              <p className="text-sm text-muted-foreground bg-gray-50 dark:bg-gray-800/50 rounded-md p-2">{review.managerComments}</p>
+                              <p className="text-sm font-medium mb-1">
+                                Manager Comments
+                              </p>
+                              <p className="text-sm text-muted-foreground bg-gray-50 dark:bg-gray-800/50 rounded-md p-2">
+                                {review.managerComments}
+                              </p>
                             </div>
                           )}
                           {review.employeeComments && (
                             <div>
-                              <p className="text-sm font-medium mb-1">Employee Comments</p>
-                              <p className="text-sm text-muted-foreground bg-gray-50 dark:bg-gray-800/50 rounded-md p-2">{review.employeeComments}</p>
+                              <p className="text-sm font-medium mb-1">
+                                Employee Comments
+                              </p>
+                              <p className="text-sm text-muted-foreground bg-gray-50 dark:bg-gray-800/50 rounded-md p-2">
+                                {review.employeeComments}
+                              </p>
                             </div>
                           )}
                         </div>
@@ -469,7 +589,7 @@ export function PerformancePageClient() {
       </Tabs>
 
       {/* Create Review Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+      <Dialog onOpenChange={setShowCreateDialog} open={showCreateDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Schedule Performance Review</DialogTitle>
@@ -481,8 +601,10 @@ export function PerformancePageClient() {
             <div className="space-y-2">
               <Label>Employee *</Label>
               <Select
+                onValueChange={(v) =>
+                  setCreateForm((p) => ({ ...p, employeeId: v }))
+                }
                 value={createForm.employeeId}
-                onValueChange={(v) => setCreateForm((p) => ({ ...p, employeeId: v }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select employee..." />
@@ -500,8 +622,10 @@ export function PerformancePageClient() {
               <div className="space-y-2">
                 <Label>Review Type *</Label>
                 <Select
+                  onValueChange={(v) =>
+                    setCreateForm((p) => ({ ...p, reviewType: v }))
+                  }
                   value={createForm.reviewType}
-                  onValueChange={(v) => setCreateForm((p) => ({ ...p, reviewType: v }))}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -517,16 +641,33 @@ export function PerformancePageClient() {
               <div className="space-y-2">
                 <Label>Scheduled Date *</Label>
                 <Input
+                  onChange={(e) =>
+                    setCreateForm((p) => ({
+                      ...p,
+                      scheduledDate: e.target.value,
+                    }))
+                  }
+                  required
                   type="date"
                   value={createForm.scheduledDate}
-                  onChange={(e) => setCreateForm((p) => ({ ...p, scheduledDate: e.target.value }))}
-                  required
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setShowCreateDialog(false)}>Cancel</Button>
-              <Button type="submit" disabled={!createForm.employeeId || !createForm.scheduledDate || creating}>
+              <Button
+                onClick={() => setShowCreateDialog(false)}
+                type="button"
+                variant="outline"
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={
+                  !(createForm.employeeId && createForm.scheduledDate) ||
+                  creating
+                }
+                type="submit"
+              >
                 {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Schedule Review
               </Button>
@@ -536,60 +677,99 @@ export function PerformancePageClient() {
       </Dialog>
 
       {/* Complete Review Dialog */}
-      <Dialog open={showCompleteDialog} onOpenChange={setShowCompleteDialog}>
+      <Dialog onOpenChange={setShowCompleteDialog} open={showCompleteDialog}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Complete Performance Review</DialogTitle>
             <DialogDescription>
-              {selectedReview && `Review for ${selectedReview.employeeName || "employee"} (${REVIEW_TYPE_LABELS[selectedReview.reviewType] || selectedReview.reviewType})`}
+              {selectedReview &&
+                `Review for ${selectedReview.employeeName || "employee"} (${REVIEW_TYPE_LABELS[selectedReview.reviewType] || selectedReview.reviewType})`}
             </DialogDescription>
           </DialogHeader>
           <form className="space-y-4" onSubmit={handleComplete}>
             <div className="space-y-2">
               <Label>Rating *</Label>
-              <RatingStars rating={completeForm.rating} onChange={(r) => setCompleteForm((p) => ({ ...p, rating: r }))} />
-              {completeForm.rating === 0 && <p className="text-xs text-muted-foreground">Click a star to rate (1-5)</p>}
+              <RatingStars
+                onChange={(r) => setCompleteForm((p) => ({ ...p, rating: r }))}
+                rating={completeForm.rating}
+              />
+              {completeForm.rating === 0 && (
+                <p className="text-xs text-muted-foreground">
+                  Click a star to rate (1-5)
+                </p>
+              )}
             </div>
             <div className="space-y-2">
               <Label>Strengths</Label>
               <Textarea
+                onChange={(e) =>
+                  setCompleteForm((p) => ({ ...p, strengths: e.target.value }))
+                }
                 placeholder="What does this employee do well?"
-                value={completeForm.strengths}
-                onChange={(e) => setCompleteForm((p) => ({ ...p, strengths: e.target.value }))}
                 rows={3}
+                value={completeForm.strengths}
               />
             </div>
             <div className="space-y-2">
               <Label>Areas for Improvement</Label>
               <Textarea
+                onChange={(e) =>
+                  setCompleteForm((p) => ({
+                    ...p,
+                    areasForImprovement: e.target.value,
+                  }))
+                }
                 placeholder="Where could this employee grow?"
-                value={completeForm.areasForImprovement}
-                onChange={(e) => setCompleteForm((p) => ({ ...p, areasForImprovement: e.target.value }))}
                 rows={3}
+                value={completeForm.areasForImprovement}
               />
             </div>
             <div className="space-y-2">
               <Label>Goals for Next Period</Label>
               <Textarea
+                onChange={(e) =>
+                  setCompleteForm((p) => ({
+                    ...p,
+                    goalsNextPeriod: e.target.value,
+                  }))
+                }
                 placeholder="What should the employee focus on going forward?"
-                value={completeForm.goalsNextPeriod}
-                onChange={(e) => setCompleteForm((p) => ({ ...p, goalsNextPeriod: e.target.value }))}
                 rows={3}
+                value={completeForm.goalsNextPeriod}
               />
             </div>
             <div className="space-y-2">
               <Label>Manager Comments</Label>
               <Textarea
+                onChange={(e) =>
+                  setCompleteForm((p) => ({
+                    ...p,
+                    managerComments: e.target.value,
+                  }))
+                }
                 placeholder="Additional notes from the reviewer..."
-                value={completeForm.managerComments}
-                onChange={(e) => setCompleteForm((p) => ({ ...p, managerComments: e.target.value }))}
                 rows={2}
+                value={completeForm.managerComments}
               />
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => { setShowCompleteDialog(false); setSelectedReview(null); }}>Cancel</Button>
-              <Button type="submit" disabled={completeForm.rating === 0 || completing}>
-                {completing && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Button
+                onClick={() => {
+                  setShowCompleteDialog(false);
+                  setSelectedReview(null);
+                }}
+                type="button"
+                variant="outline"
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={completeForm.rating === 0 || completing}
+                type="submit"
+              >
+                {completing && (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                )}
                 Submit Review
               </Button>
             </DialogFooter>

@@ -950,7 +950,12 @@ export const saveAsTemplate = async (menuId: string): Promise<string> => {
 
   // Get the original menu
   const [originalMenu] = await database.$queryRaw<
-    { id: string; name: string; description: string | null; category: string | null }[]
+    {
+      id: string;
+      name: string;
+      description: string | null;
+      category: string | null;
+    }[]
   >(
     Prisma.sql`
       SELECT id, name, description, category
@@ -968,7 +973,12 @@ export const saveAsTemplate = async (menuId: string): Promise<string> => {
 
   // Get all menu dishes
   const menuDishes = await database.$queryRaw<
-    { dish_id: string; course: string | null; sort_order: number; is_optional: boolean }[]
+    {
+      dish_id: string;
+      course: string | null;
+      sort_order: number;
+      is_optional: boolean;
+    }[]
   >(
     Prisma.sql`
       SELECT dish_id, course, sort_order, is_optional
@@ -1059,7 +1069,12 @@ export const createFromTemplate = async (
 
   // Get the template
   const [template] = await database.$queryRaw<
-    { id: string; name: string; description: string | null; category: string | null }[]
+    {
+      id: string;
+      name: string;
+      description: string | null;
+      category: string | null;
+    }[]
   >(
     Prisma.sql`
       SELECT id, name, description, category
@@ -1078,7 +1093,12 @@ export const createFromTemplate = async (
 
   // Get template dishes
   const templateDishes = await database.$queryRaw<
-    { dish_id: string; course: string | null; sort_order: number; is_optional: boolean }[]
+    {
+      dish_id: string;
+      course: string | null;
+      sort_order: number;
+      is_optional: boolean;
+    }[]
   >(
     Prisma.sql`
       SELECT dish_id, course, sort_order, is_optional

@@ -1,17 +1,14 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { 
-  Plus, 
-  FileText, 
-  Search, 
-  Filter,
-  MoreHorizontal 
-} from 'lucide-react';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
+import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import { FileText, Plus } from "lucide-react";
+import { useState } from "react";
 
 export default function RequisitionsPage() {
   const [showNewForm, setShowNewForm] = useState(false);
@@ -21,7 +18,9 @@ export default function RequisitionsPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold">Purchase Requisitions</h1>
-          <p className="text-muted-foreground">Create and manage purchase requests</p>
+          <p className="text-muted-foreground">
+            Create and manage purchase requests
+          </p>
         </div>
         <Button onClick={() => setShowNewForm(!showNewForm)}>
           <Plus className="h-4 w-4 mr-2" />

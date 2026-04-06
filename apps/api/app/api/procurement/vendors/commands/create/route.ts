@@ -1,9 +1,13 @@
 // Create a new vendor/supplier
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import {
+  manifestErrorResponse,
+  manifestSuccessResponse,
+} from "@/lib/manifest-response";
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,9 +19,21 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     const {
-      name, contactPerson, email, phone, paymentTerms,
-      addressLine1, addressLine2, city, state, postalCode, country,
-      taxId, website, notes, tags,
+      name,
+      contactPerson,
+      email,
+      phone,
+      paymentTerms,
+      addressLine1,
+      addressLine2,
+      city,
+      state,
+      postalCode,
+      country,
+      taxId,
+      website,
+      notes,
+      tags,
     } = body;
 
     if (!name) return manifestErrorResponse("name is required", 400);
@@ -37,10 +53,10 @@ export async function POST(request: NextRequest) {
       ) VALUES (
         ${tenantId}::uuid, ${supplierNumber}, ${name},
         ${contactPerson || null}, ${email || null}, ${phone || null},
-        ${paymentTerms || 'NET_30'},
+        ${paymentTerms || "NET_30"},
         ${addressLine1 || null}, ${addressLine2 || null},
         ${city || null}, ${state || null}, ${postalCode || null},
-        ${country || 'US'},
+        ${country || "US"},
         ${taxId || null}, ${website || null}, ${notes || null},
         ${tags || null}::text[]
       )
@@ -64,6 +80,7 @@ export async function POST(request: NextRequest) {
 
     return manifestSuccessResponse({ vendor });
   } catch (error) {
+    captureException(error);
     console.error("Error creating vendor:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

@@ -1,22 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  User,
-  Plus,
-  Truck,
-  Phone,
-  Mail,
-  Loader2,
-  Pencil,
-  Trash2,
-  Shield,
-  Clock,
-  CheckCircle2,
-} from "lucide-react";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
 import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -27,7 +18,6 @@ import {
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
-import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -35,6 +25,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { Textarea } from "@repo/design-system/components/ui/textarea";
+import {
+  CheckCircle2,
+  Clock,
+  Loader2,
+  Pencil,
+  Phone,
+  Plus,
+  Shield,
+  Trash2,
+  Truck,
+  User,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface Driver {
   id: string;
@@ -56,11 +60,34 @@ interface Vehicle {
   plate_number: string | null;
 }
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
-  available: { label: "Available", color: "bg-green-100 text-green-700", icon: CheckCircle2 },
-  on_route: { label: "On Route", color: "bg-blue-100 text-blue-700", icon: Truck },
-  off_duty: { label: "Off Duty", color: "bg-gray-100 text-gray-700", icon: Clock },
-  inactive: { label: "Inactive", color: "bg-red-100 text-red-700", icon: Shield },
+const STATUS_CONFIG: Record<
+  string,
+  {
+    label: string;
+    color: string;
+    icon: React.ComponentType<{ className?: string }>;
+  }
+> = {
+  available: {
+    label: "Available",
+    color: "bg-green-100 text-green-700",
+    icon: CheckCircle2,
+  },
+  on_route: {
+    label: "On Route",
+    color: "bg-blue-100 text-blue-700",
+    icon: Truck,
+  },
+  off_duty: {
+    label: "Off Duty",
+    color: "bg-gray-100 text-gray-700",
+    icon: Clock,
+  },
+  inactive: {
+    label: "Inactive",
+    color: "bg-red-100 text-red-700",
+    icon: Shield,
+  },
 };
 
 export default function DriversPage() {
@@ -72,10 +99,19 @@ export default function DriversPage() {
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [form, setForm] = useState({
-    name: "", phone: "", email: "", licenseNumber: "", licenseExpiry: "", vehicleId: "", status: "available", notes: "",
+    name: "",
+    phone: "",
+    email: "",
+    licenseNumber: "",
+    licenseExpiry: "",
+    vehicleId: "",
+    status: "available",
+    notes: "",
   });
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => {
+    loadData();
+  }, []);
 
   const loadData = async () => {
     setLoading(true);
@@ -88,22 +124,39 @@ export default function DriversPage() {
       const vehiclesData = await vehiclesRes.json();
       if (driversData.success) setDrivers(driversData.data.drivers || []);
       if (vehiclesData.success) setVehicles(vehiclesData.data.vehicles || []);
-    } catch (e) { console.error("Failed to load:", e); }
-    finally { setLoading(false); }
+    } catch (e) {
+      console.error("Failed to load:", e);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const openCreate = () => {
     setEditing(null);
-    setForm({ name: "", phone: "", email: "", licenseNumber: "", licenseExpiry: "", vehicleId: "", status: "available", notes: "" });
+    setForm({
+      name: "",
+      phone: "",
+      email: "",
+      licenseNumber: "",
+      licenseExpiry: "",
+      vehicleId: "",
+      status: "available",
+      notes: "",
+    });
     setShowDialog(true);
   };
 
   const openEdit = (driver: Driver) => {
     setEditing(driver);
     setForm({
-      name: driver.name, phone: driver.phone || "", email: driver.email || "",
-      licenseNumber: driver.license_number || "", licenseExpiry: driver.license_expiry?.slice(0, 10) || "",
-      vehicleId: driver.vehicle_id || "", status: driver.status, notes: driver.notes || "",
+      name: driver.name,
+      phone: driver.phone || "",
+      email: driver.email || "",
+      licenseNumber: driver.license_number || "",
+      licenseExpiry: driver.license_expiry?.slice(0, 10) || "",
+      vehicleId: driver.vehicle_id || "",
+      status: driver.status,
+      notes: driver.notes || "",
     });
     setShowDialog(true);
   };
@@ -113,80 +166,159 @@ export default function DriversPage() {
     if (!form.name.trim()) return;
     setSaving(true);
     try {
-      const endpoint = editing ? "/api/logistics/drivers/commands/update" : "/api/logistics/drivers/commands/create";
+      const endpoint = editing
+        ? "/api/logistics/drivers/commands/update"
+        : "/api/logistics/drivers/commands/create";
       const body = editing
         ? { driverId: editing.id, ...form, vehicleId: form.vehicleId || null }
         : { ...form, vehicleId: form.vehicleId || null };
-      const res = await fetch(endpoint, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-      if (res.ok) { await loadData(); setShowDialog(false); }
-    } catch (e) { console.error("Failed to save:", e); }
-    finally { setSaving(false); }
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (res.ok) {
+        await loadData();
+        setShowDialog(false);
+      }
+    } catch (e) {
+      console.error("Failed to save:", e);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleDelete = async (driverId: string) => {
     setDeleting(driverId);
     try {
-      await fetch("/api/logistics/drivers/commands/delete", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ driverId }) });
-      setDrivers(prev => prev.filter(d => d.id !== driverId));
-    } catch (e) { console.error("Failed to delete:", e); }
-    finally { setDeleting(null); }
+      await fetch("/api/logistics/drivers/commands/delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ driverId }),
+      });
+      setDrivers((prev) => prev.filter((d) => d.id !== driverId));
+    } catch (e) {
+      console.error("Failed to delete:", e);
+    } finally {
+      setDeleting(null);
+    }
   };
 
-  if (loading) return <div className="flex items-center justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>;
+  if (loading)
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
           <h1 className="text-3xl font-bold tracking-tight">Drivers</h1>
-          <p className="text-muted-foreground">Manage delivery drivers and assignments.</p>
+          <p className="text-muted-foreground">
+            Manage delivery drivers and assignments.
+          </p>
         </div>
-        <Button onClick={openCreate}><Plus className="h-4 w-4 mr-2" />Add Driver</Button>
+        <Button onClick={openCreate}>
+          <Plus className="h-4 w-4 mr-2" />
+          Add Driver
+        </Button>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        {(["available", "on_route", "off_duty"] as const).map(status => {
+        {(["available", "on_route", "off_duty"] as const).map((status) => {
           const config = STATUS_CONFIG[status];
-          const count = drivers.filter(d => d.status === status).length;
+          const count = drivers.filter((d) => d.status === status).length;
           return (
             <Card key={status}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">{config.label}</CardTitle>
-                <config.icon className={`h-4 w-4 ${status === "available" ? "text-green-500" : status === "on_route" ? "text-blue-500" : "text-gray-500"}`} />
+                <CardTitle className="text-sm font-medium">
+                  {config.label}
+                </CardTitle>
+                <config.icon
+                  className={`h-4 w-4 ${status === "available" ? "text-green-500" : status === "on_route" ? "text-blue-500" : "text-gray-500"}`}
+                />
               </CardHeader>
-              <CardContent><div className="text-2xl font-bold">{count}</div></CardContent>
+              <CardContent>
+                <div className="text-2xl font-bold">{count}</div>
+              </CardContent>
             </Card>
           );
         })}
       </div>
 
       {drivers.length === 0 ? (
-        <Card><CardContent className="py-12 text-center text-muted-foreground"><User className="h-12 w-12 mx-auto mb-4 opacity-50" /><p>No drivers found. Add a driver to get started.</p></CardContent></Card>
+        <Card>
+          <CardContent className="py-12 text-center text-muted-foreground">
+            <User className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>No drivers found. Add a driver to get started.</p>
+          </CardContent>
+        </Card>
       ) : (
         <div className="space-y-3">
-          {drivers.map(driver => {
-            const config = STATUS_CONFIG[driver.status] || STATUS_CONFIG.available;
+          {drivers.map((driver) => {
+            const config =
+              STATUS_CONFIG[driver.status] || STATUS_CONFIG.available;
             const Icon = config.icon;
             return (
-              <Card key={driver.id} className="hover:shadow-sm transition-shadow">
+              <Card
+                className="hover:shadow-sm transition-shadow"
+                key={driver.id}
+              >
                 <CardContent className="p-4">
                   <div className="flex items-center gap-4">
-                    <div className={`flex h-10 w-10 items-center justify-center rounded-full ${config.color}`}><Icon className="h-5 w-5" /></div>
+                    <div
+                      className={`flex h-10 w-10 items-center justify-center rounded-full ${config.color}`}
+                    >
+                      <Icon className="h-5 w-5" />
+                    </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
                         <span className="font-semibold">{driver.name}</span>
                         <Badge className={config.color}>{config.label}</Badge>
                       </div>
                       <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        {driver.phone && <span className="flex items-center gap-1"><Phone className="h-3 w-3" />{driver.phone}</span>}
-                        {driver.vehicle_name && <span className="flex items-center gap-1"><Truck className="h-3 w-3" />{driver.vehicle_name}</span>}
-                        {driver.license_number && <span className="flex items-center gap-1"><Shield className="h-3 w-3" />{driver.license_number}</span>}
+                        {driver.phone && (
+                          <span className="flex items-center gap-1">
+                            <Phone className="h-3 w-3" />
+                            {driver.phone}
+                          </span>
+                        )}
+                        {driver.vehicle_name && (
+                          <span className="flex items-center gap-1">
+                            <Truck className="h-3 w-3" />
+                            {driver.vehicle_name}
+                          </span>
+                        )}
+                        {driver.license_number && (
+                          <span className="flex items-center gap-1">
+                            <Shield className="h-3 w-3" />
+                            {driver.license_number}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Button size="sm" variant="outline" onClick={() => openEdit(driver)}><Pencil className="h-4 w-4" /></Button>
-                      <Button size="sm" variant="outline" className="text-red-500 hover:text-red-700" onClick={() => handleDelete(driver.id)} disabled={deleting === driver.id}>
-                        {deleting === driver.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                      <Button
+                        onClick={() => openEdit(driver)}
+                        size="sm"
+                        variant="outline"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        className="text-red-500 hover:text-red-700"
+                        disabled={deleting === driver.id}
+                        onClick={() => handleDelete(driver.id)}
+                        size="sm"
+                        variant="outline"
+                      >
+                        {deleting === driver.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
                       </Button>
                     </div>
                   </div>
@@ -198,32 +330,59 @@ export default function DriversPage() {
       )}
 
       {/* Create/Edit Dialog */}
-      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+      <Dialog onOpenChange={setShowDialog} open={showDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>{editing ? "Edit Driver" : "Add Driver"}</DialogTitle>
-            <DialogDescription>{editing ? "Update driver information." : "Add a new delivery driver."}</DialogDescription>
+            <DialogDescription>
+              {editing
+                ? "Update driver information."
+                : "Add a new delivery driver."}
+            </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSave} className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSave}>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Name *</Label>
-                <Input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} required />
+                <Input
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, name: e.target.value }))
+                  }
+                  required
+                  value={form.name}
+                />
               </div>
               <div className="space-y-2">
                 <Label>Phone</Label>
-                <Input value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} placeholder="(555) 000-0000" />
+                <Input
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, phone: e.target.value }))
+                  }
+                  placeholder="(555) 000-0000"
+                  value={form.phone}
+                />
               </div>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Email</Label>
-                <Input type="email" value={form.email} onChange={e => setForm(p => ({ ...p, email: e.target.value }))} />
+                <Input
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, email: e.target.value }))
+                  }
+                  type="email"
+                  value={form.email}
+                />
               </div>
               <div className="space-y-2">
                 <Label>Status</Label>
-                <Select value={form.status} onValueChange={v => setForm(p => ({ ...p, status: v }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                <Select
+                  onValueChange={(v) => setForm((p) => ({ ...p, status: v }))}
+                  value={form.status}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="available">Available</SelectItem>
                     <SelectItem value="on_route">On Route</SelectItem>
@@ -236,32 +395,67 @@ export default function DriversPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>License Number</Label>
-                <Input value={form.licenseNumber} onChange={e => setForm(p => ({ ...p, licenseNumber: e.target.value }))} placeholder="CDL-123456" />
+                <Input
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, licenseNumber: e.target.value }))
+                  }
+                  placeholder="CDL-123456"
+                  value={form.licenseNumber}
+                />
               </div>
               <div className="space-y-2">
                 <Label>License Expiry</Label>
-                <Input type="date" value={form.licenseExpiry} onChange={e => setForm(p => ({ ...p, licenseExpiry: e.target.value }))} />
+                <Input
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, licenseExpiry: e.target.value }))
+                  }
+                  type="date"
+                  value={form.licenseExpiry}
+                />
               </div>
             </div>
             <div className="space-y-2">
               <Label>Assigned Vehicle</Label>
-              <Select value={form.vehicleId} onValueChange={v => setForm(p => ({ ...p, vehicleId: v }))}>
-                <SelectTrigger><SelectValue placeholder="No vehicle assigned" /></SelectTrigger>
+              <Select
+                onValueChange={(v) => setForm((p) => ({ ...p, vehicleId: v }))}
+                value={form.vehicleId}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="No vehicle assigned" />
+                </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">None</SelectItem>
-                  {vehicles.map(v => (
-                    <SelectItem key={v.id} value={v.id}>{v.make} {v.model} {v.plate_number ? `(${v.plate_number})` : ""}</SelectItem>
+                  {vehicles.map((v) => (
+                    <SelectItem key={v.id} value={v.id}>
+                      {v.make} {v.model}{" "}
+                      {v.plate_number ? `(${v.plate_number})` : ""}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
               <Label>Notes</Label>
-              <Textarea value={form.notes} onChange={e => setForm(p => ({ ...p, notes: e.target.value }))} rows={2} />
+              <Textarea
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, notes: e.target.value }))
+                }
+                rows={2}
+                value={form.notes}
+              />
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>
-              <Button type="submit" disabled={!form.name.trim() || saving}>{saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}{editing ? "Update" : "Add"} Driver</Button>
+              <Button
+                onClick={() => setShowDialog(false)}
+                type="button"
+                variant="outline"
+              >
+                Cancel
+              </Button>
+              <Button disabled={!form.name.trim() || saving} type="submit">
+                {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {editing ? "Update" : "Add"} Driver
+              </Button>
             </DialogFooter>
           </form>
         </DialogContent>

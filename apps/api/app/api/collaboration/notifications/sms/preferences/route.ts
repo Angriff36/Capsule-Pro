@@ -8,6 +8,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { getSmsPreferences, setSmsPreference } from "@repo/notifications";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -51,6 +52,7 @@ export async function GET(request: NextRequest) {
       preferences,
     });
   } catch (error) {
+    captureException(error);
     console.error("Failed to fetch SMS preferences:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
@@ -101,6 +103,7 @@ export async function POST(request: NextRequest) {
       message: `SMS preference ${isEnabled ? "enabled" : "disabled"} for ${notificationType}`,
     });
   } catch (error) {
+    captureException(error);
     console.error("Failed to set SMS preference:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(

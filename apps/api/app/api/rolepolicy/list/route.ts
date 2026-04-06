@@ -6,6 +6,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -24,12 +25,18 @@ export async function GET(request: Request) {
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 400 }
+      );
     }
 
     const { searchParams } = new URL(request.url);
     const page = Number.parseInt(searchParams.get("page") || "1", 10);
-    const limit = Math.min(Number.parseInt(searchParams.get("limit") || "50", 10), 100);
+    const limit = Math.min(
+      Number.parseInt(searchParams.get("limit") || "50", 10),
+      100
+    );
     const isActive = searchParams.get("isActive");
     const offset = (page - 1) * limit;
 
@@ -66,6 +73,7 @@ export async function GET(request: Request) {
       totalPages,
     });
   } catch (error) {
+    captureException(error);
     console.error("[RolePolicy/list] Error:", error);
     return NextResponse.json(
       { message: "Failed to fetch role policies" },

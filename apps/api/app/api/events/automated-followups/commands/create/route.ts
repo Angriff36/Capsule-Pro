@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@repo/auth/server';
-import { getTenantIdForOrg } from '@/app/lib/tenant';
-import { database } from '@repo/database';
+import { auth } from "@repo/auth/server";
+import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
+import { type NextRequest, NextResponse } from "next/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 /**
  * Generate a unique ID using crypto.randomUUID
@@ -18,20 +19,20 @@ export async function POST(request: NextRequest) {
   try {
     const { orgId, userId } = await auth();
     if (!(userId && orgId)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ error: 'Tenant not found' }, { status: 400 });
+      return NextResponse.json({ error: "Tenant not found" }, { status: 400 });
     }
 
     const body = await request.json();
     const { eventId, taskType, description, dueDate, assignedTo } = body;
 
-    if (!eventId || !taskType || !description) {
+    if (!(eventId && taskType && description)) {
       return NextResponse.json(
-        { error: 'eventId, taskType, and description are required' },
+        { error: "eventId, taskType, and description are required" },
         { status: 400 }
       );
     }
@@ -49,23 +50,24 @@ export async function POST(request: NextRequest) {
       )
     `;
 
-    return NextResponse.json({ 
-      success: true, 
-      followup: { 
-        id, 
-        tenantId, 
-        eventId, 
-        taskType, 
-        description, 
-        dueDate, 
-        status: 'pending',
-        assignedTo 
-      } 
+    return NextResponse.json({
+      success: true,
+      followup: {
+        id,
+        tenantId,
+        eventId,
+        taskType,
+        description,
+        dueDate,
+        status: "pending",
+        assignedTo,
+      },
     });
   } catch (error) {
-    console.error('Error creating automated followup:', error);
+    captureException(error);
+    console.error("Error creating automated followup:", error);
     return NextResponse.json(
-      { error: 'Failed to create followup' },
+      { error: "Failed to create followup" },
       { status: 500 }
     );
   }

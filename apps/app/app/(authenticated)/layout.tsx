@@ -4,12 +4,12 @@ import { showBetaFeature } from "@repo/feature-flags";
 import { secure } from "@repo/security";
 import type { ReactNode } from "react";
 import { env } from "@/env";
-import { GlobalSidebar } from "./components/sidebar";
 import {
-  AiAssistantProvider,
   AiAssistantButton,
   AiAssistantPanel,
+  AiAssistantProvider,
 } from "./components/ai-assistant";
+import { GlobalSidebar } from "./components/sidebar";
 
 interface AppLayoutProperties {
   readonly children: ReactNode;
@@ -17,10 +17,10 @@ interface AppLayoutProperties {
 
 /**
  * NotificationsProvider has been moved from this layout to inside GlobalSidebar.
- * 
+ *
  * Per Next.js guidance: "Render providers as deep as possible"
  * https://nextjs.org/docs/app/getting-started/server-and-client-components#rendering-providers-deep-in-the-tree
- * 
+ *
  * The Knock notification SDK (@knocklabs/react) is now only loaded when the user
  * actually clicks on the notifications bell icon, not on every page load.
  */

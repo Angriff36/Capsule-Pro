@@ -1,18 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import {
-  ArrowLeft,
-  Plus,
-  Loader2,
-  Search,
-  Package,
-} from "lucide-react";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@repo/design-system/components/ui/card";
-import { Input } from "@repo/design-system/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -20,11 +15,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
-import { POForm } from "../../components/po-form";
+import { Input } from "@repo/design-system/components/ui/input";
+import { ArrowLeft, Loader2, Package, Plus, Search } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import type { POFormData, Vendor } from "../../components/po-form";
+import { POForm } from "../../components/po-form";
 import {
-  POLineItemsEditable,
   type EditableLineItem,
+  POLineItemsEditable,
 } from "../../components/po-line-items";
 import { formatCurrency } from "../../components/po-shared";
 
@@ -79,7 +79,7 @@ export default function NewPOPage() {
   const filteredItems = inventoryItems.filter(
     (item) =>
       item.name.toLowerCase().includes(itemSearch.toLowerCase()) ||
-      item.item_number.toLowerCase().includes(itemSearch.toLowerCase()),
+      item.item_number.toLowerCase().includes(itemSearch.toLowerCase())
   );
 
   const addLineItem = (item: InventoryItem) => {
@@ -106,20 +106,20 @@ export default function NewPOPage() {
   const updateLineItem = (
     itemId: string,
     field: "quantityOrdered" | "unitCost",
-    value: string,
+    value: string
   ) => {
     setLineItems((prev) =>
       prev.map((li) =>
         li.itemId === itemId
-          ? { ...li, [field]: parseFloat(value) || 0 }
-          : li,
-      ),
+          ? { ...li, [field]: Number.parseFloat(value) || 0 }
+          : li
+      )
     );
   };
 
   const subtotal = lineItems.reduce(
     (sum, li) => sum + li.quantityOrdered * li.unitCost,
-    0,
+    0
   );
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -144,7 +144,7 @@ export default function NewPOPage() {
               unitId: 1,
             })),
           }),
-        },
+        }
       );
       const data = await res.json();
       if (data.success && data.data.order?.id) {
@@ -170,7 +170,7 @@ export default function NewPOPage() {
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link href="/procurement/purchase-orders">
-          <Button variant="ghost" size="icon">
+          <Button size="icon" variant="ghost">
             <ArrowLeft className="h-5 w-5" />
           </Button>
         </Link>
@@ -189,15 +189,25 @@ export default function NewPOPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Order Details</CardTitle>
-                <CardDescription>Vendor and delivery information.</CardDescription>
+                <CardDescription>
+                  Vendor and delivery information.
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <POForm
                   form={form}
-                  vendors={vendors}
-                  onChange={(update: Partial<import("../../components/po-form").POFormData>) =>
-                    setForm((prev: import("../../components/po-form").POFormData) => ({ ...prev, ...update }))
+                  onChange={(
+                    update: Partial<
+                      import("../../components/po-form").POFormData
+                    >
+                  ) =>
+                    setForm(
+                      (
+                        prev: import("../../components/po-form").POFormData
+                      ) => ({ ...prev, ...update })
+                    )
                   }
+                  vendors={vendors}
                 />
               </CardContent>
             </Card>
@@ -212,10 +222,10 @@ export default function NewPOPage() {
                   </CardDescription>
                 </div>
                 <Button
+                  onClick={() => setShowItemDialog(true)}
+                  size="sm"
                   type="button"
                   variant="outline"
-                  size="sm"
-                  onClick={() => setShowItemDialog(true)}
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Add Item
@@ -234,8 +244,8 @@ export default function NewPOPage() {
                 ) : (
                   <POLineItemsEditable
                     items={lineItems}
-                    onUpdate={updateLineItem}
                     onRemove={removeLineItem}
+                    onUpdate={updateLineItem}
                   />
                 )}
               </CardContent>
@@ -275,21 +285,17 @@ export default function NewPOPage() {
             </Card>
 
             <div className="flex gap-2">
-              <Link href="/procurement/purchase-orders" className="flex-1">
-                <Button variant="outline" className="w-full" type="button">
+              <Link className="flex-1" href="/procurement/purchase-orders">
+                <Button className="w-full" type="button" variant="outline">
                   Cancel
                 </Button>
               </Link>
               <Button
                 className="flex-1"
+                disabled={!form.vendorId || lineItems.length === 0 || creating}
                 type="submit"
-                disabled={
-                  !form.vendorId || lineItems.length === 0 || creating
-                }
               >
-                {creating && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
+                {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create PO
               </Button>
             </div>
@@ -298,7 +304,7 @@ export default function NewPOPage() {
       </form>
 
       {/* Add Item Dialog */}
-      <Dialog open={showItemDialog} onOpenChange={setShowItemDialog}>
+      <Dialog onOpenChange={setShowItemDialog} open={showItemDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Add Item</DialogTitle>
@@ -310,11 +316,11 @@ export default function NewPOPage() {
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
+                autoFocus
+                className="pl-10"
+                onChange={(e) => setItemSearch(e.target.value)}
                 placeholder="Search by name or item number..."
                 value={itemSearch}
-                onChange={(e) => setItemSearch(e.target.value)}
-                className="pl-10"
-                autoFocus
               />
             </div>
             <div className="max-h-[400px] overflow-auto space-y-1">
@@ -325,15 +331,15 @@ export default function NewPOPage() {
               ) : (
                 filteredItems.slice(0, 20).map((item) => {
                   const alreadyAdded = lineItems.some(
-                    (li) => li.itemId === item.id,
+                    (li) => li.itemId === item.id
                   );
                   return (
                     <button
-                      key={item.id}
-                      type="button"
-                      disabled={alreadyAdded}
-                      onClick={() => addLineItem(item)}
                       className="w-full flex items-center justify-between p-3 rounded-lg hover:bg-accent disabled:opacity-50 disabled:cursor-not-allowed text-left"
+                      disabled={alreadyAdded}
+                      key={item.id}
+                      onClick={() => addLineItem(item)}
+                      type="button"
                     >
                       <div>
                         <p className="font-medium text-sm">{item.name}</p>
@@ -347,9 +353,7 @@ export default function NewPOPage() {
                           {formatCurrency(Number(item.unit_cost))}
                         </p>
                         {alreadyAdded && (
-                          <p className="text-xs text-muted-foreground">
-                            Added
-                          </p>
+                          <p className="text-xs text-muted-foreground">Added</p>
                         )}
                       </div>
                     </button>

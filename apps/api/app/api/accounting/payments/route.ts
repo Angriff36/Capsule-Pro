@@ -14,13 +14,19 @@ import { database, type Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
 import {
-  generatePaymentNumber,
-  type PaymentListResponse,
-  type PaymentResponse,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+generatePaymentNumber, type;
+PaymentListResponse, type;
+PaymentResponse,
   parsePaginationParams,
   parsePaymentFilters,
   validateCreatePaymentRequest,
-} from "./validation";
+} from "./validation"
 
 /**
  * GET /api/accounting/payments
@@ -116,6 +122,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
+    captureException(error);
     console.error("Error listing payments:", error);
     return NextResponse.json(
       { error: "Failed to list payments" },
@@ -190,6 +197,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
+    captureException(error);
     console.error("Error creating payment:", error);
     return NextResponse.json(
       { error: "Failed to create payment" },

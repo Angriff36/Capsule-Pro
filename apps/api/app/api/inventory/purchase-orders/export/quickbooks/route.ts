@@ -12,11 +12,21 @@ import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import {
-  type BillLineItem,
-  type BillRecord,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+type BillLineItem
+,
+type BillRecord
+,
   exportBills,
-  type QBBillExportOptions,
-} from "@/app/lib/quickbooks-bill-export";
+type QBBillExportOptions
+,
+} from "@/app/lib/quickbooks-bill-export"
+
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 /**
@@ -360,6 +370,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
+    captureException(error);
     console.error("QuickBooks bill export error:", error);
 
     if (error instanceof Error && error.message.includes("not found")) {

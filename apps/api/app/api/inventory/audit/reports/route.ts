@@ -6,8 +6,9 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
 import type { Prisma } from "@repo/database";
+import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -332,6 +333,7 @@ export async function GET(request: Request) {
       data: report,
     });
   } catch (error) {
+    captureException(error);
     console.error("Failed to generate audit report:", error);
     return NextResponse.json(
       { message: "Internal server error" },
@@ -792,6 +794,7 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
+    captureException(error);
     console.error("Failed to generate custom audit report:", error);
     return NextResponse.json(
       { message: "Internal server error" },

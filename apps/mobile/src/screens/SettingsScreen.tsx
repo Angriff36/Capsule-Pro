@@ -1,3 +1,5 @@
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import * as Notifications from "expo-notifications";
 import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
@@ -9,16 +11,14 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import * as Notifications from "expo-notifications";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getAuthToken } from "../store/auth";
 import { apiClient } from "../api/client";
 import {
   configurePushNotifications,
   getNotificationPreferences,
-  updateNotificationPreferences,
   type NotificationPreferences,
+  updateNotificationPreferences,
 } from "../notifications/push-handlers";
+import { getAuthToken } from "../store/auth";
 
 interface AppSettings {
   hapticFeedback: boolean;
@@ -32,19 +32,27 @@ interface SettingsResponse {
 
 async function fetchAppSettings(): Promise<AppSettings> {
   const token = await getAuthToken();
-  const response = await apiClient<SettingsResponse>("/api/mobile/app-settings", {
-    token: token ?? undefined,
-  });
+  const response = await apiClient<SettingsResponse>(
+    "/api/mobile/app-settings",
+    {
+      token: token ?? undefined,
+    }
+  );
   return response.settings;
 }
 
-async function updateAppSettings(data: Partial<AppSettings>): Promise<AppSettings> {
+async function updateAppSettings(
+  data: Partial<AppSettings>
+): Promise<AppSettings> {
   const token = await getAuthToken();
-  const response = await apiClient<SettingsResponse>("/api/mobile/app-settings", {
-    method: "PATCH",
-    token: token ?? undefined,
-    body: data,
-  });
+  const response = await apiClient<SettingsResponse>(
+    "/api/mobile/app-settings",
+    {
+      method: "PATCH",
+      token: token ?? undefined,
+      body: data,
+    }
+  );
   return response.settings;
 }
 
@@ -122,15 +130,21 @@ export default function SettingsScreen() {
     }
   }, []);
 
-  const handleToggleHaptic = useCallback((value: boolean) => {
-    setHapticEnabled(value);
-    updateSettingsMutation.mutate({ hapticFeedback: value });
-  }, [updateSettingsMutation]);
+  const handleToggleHaptic = useCallback(
+    (value: boolean) => {
+      setHapticEnabled(value);
+      updateSettingsMutation.mutate({ hapticFeedback: value });
+    },
+    [updateSettingsMutation]
+  );
 
-  const handleToggleAutoRefresh = useCallback((value: boolean) => {
-    setAutoRefreshEnabled(value);
-    updateSettingsMutation.mutate({ autoRefresh: value });
-  }, [updateSettingsMutation]);
+  const handleToggleAutoRefresh = useCallback(
+    (value: boolean) => {
+      setAutoRefreshEnabled(value);
+      updateSettingsMutation.mutate({ autoRefresh: value });
+    },
+    [updateSettingsMutation]
+  );
 
   const handleToggleNotificationType = useCallback(
     (key: keyof NotificationPreferences, value: boolean) => {
@@ -183,8 +197,8 @@ export default function SettingsScreen() {
           </View>
           <Switch
             onValueChange={handleTogglePush}
-            trackColor={{ false: "#e2e8f0", true: "#bfdbfe" }}
             thumbColor={pushEnabled ? "#2563eb" : "#f4f3f4"}
+            trackColor={{ false: "#e2e8f0", true: "#bfdbfe" }}
             value={pushEnabled}
           />
         </View>
@@ -197,9 +211,13 @@ export default function SettingsScreen() {
             <View style={styles.settingRow}>
               <Text style={styles.settingLabel}>Task Assignments</Text>
               <Switch
-                onValueChange={(v) => handleToggleNotificationType("taskAssigned", v)}
+                onValueChange={(v) =>
+                  handleToggleNotificationType("taskAssigned", v)
+                }
+                thumbColor={
+                  notificationPrefs.taskAssigned ? "#2563eb" : "#f4f3f4"
+                }
                 trackColor={{ false: "#e2e8f0", true: "#bfdbfe" }}
-                thumbColor={notificationPrefs.taskAssigned ? "#2563eb" : "#f4f3f4"}
                 value={notificationPrefs.taskAssigned}
               />
             </View>
@@ -207,9 +225,13 @@ export default function SettingsScreen() {
             <View style={styles.settingRow}>
               <Text style={styles.settingLabel}>Task Completions</Text>
               <Switch
-                onValueChange={(v) => handleToggleNotificationType("taskCompleted", v)}
+                onValueChange={(v) =>
+                  handleToggleNotificationType("taskCompleted", v)
+                }
+                thumbColor={
+                  notificationPrefs.taskCompleted ? "#2563eb" : "#f4f3f4"
+                }
                 trackColor={{ false: "#e2e8f0", true: "#bfdbfe" }}
-                thumbColor={notificationPrefs.taskCompleted ? "#2563eb" : "#f4f3f4"}
                 value={notificationPrefs.taskCompleted}
               />
             </View>
@@ -217,9 +239,13 @@ export default function SettingsScreen() {
             <View style={styles.settingRow}>
               <Text style={styles.settingLabel}>Event Reminders</Text>
               <Switch
-                onValueChange={(v) => handleToggleNotificationType("eventReminder", v)}
+                onValueChange={(v) =>
+                  handleToggleNotificationType("eventReminder", v)
+                }
+                thumbColor={
+                  notificationPrefs.eventReminder ? "#2563eb" : "#f4f3f4"
+                }
                 trackColor={{ false: "#e2e8f0", true: "#bfdbfe" }}
-                thumbColor={notificationPrefs.eventReminder ? "#2563eb" : "#f4f3f4"}
                 value={notificationPrefs.eventReminder}
               />
             </View>
@@ -227,9 +253,13 @@ export default function SettingsScreen() {
             <View style={styles.settingRow}>
               <Text style={styles.settingLabel}>Schedule Changes</Text>
               <Switch
-                onValueChange={(v) => handleToggleNotificationType("scheduleChange", v)}
+                onValueChange={(v) =>
+                  handleToggleNotificationType("scheduleChange", v)
+                }
+                thumbColor={
+                  notificationPrefs.scheduleChange ? "#2563eb" : "#f4f3f4"
+                }
                 trackColor={{ false: "#e2e8f0", true: "#bfdbfe" }}
-                thumbColor={notificationPrefs.scheduleChange ? "#2563eb" : "#f4f3f4"}
                 value={notificationPrefs.scheduleChange}
               />
             </View>
@@ -237,9 +267,13 @@ export default function SettingsScreen() {
             <View style={styles.settingRow}>
               <Text style={styles.settingLabel}>Inventory Alerts</Text>
               <Switch
-                onValueChange={(v) => handleToggleNotificationType("inventoryAlert", v)}
+                onValueChange={(v) =>
+                  handleToggleNotificationType("inventoryAlert", v)
+                }
+                thumbColor={
+                  notificationPrefs.inventoryAlert ? "#2563eb" : "#f4f3f4"
+                }
                 trackColor={{ false: "#e2e8f0", true: "#bfdbfe" }}
-                thumbColor={notificationPrefs.inventoryAlert ? "#2563eb" : "#f4f3f4"}
                 value={notificationPrefs.inventoryAlert}
               />
             </View>
@@ -260,8 +294,8 @@ export default function SettingsScreen() {
           </View>
           <Switch
             onValueChange={handleToggleHaptic}
-            trackColor={{ false: "#e2e8f0", true: "#bfdbfe" }}
             thumbColor={hapticEnabled ? "#2563eb" : "#f4f3f4"}
+            trackColor={{ false: "#e2e8f0", true: "#bfdbfe" }}
             value={hapticEnabled}
           />
         </View>
@@ -275,8 +309,8 @@ export default function SettingsScreen() {
           </View>
           <Switch
             onValueChange={handleToggleAutoRefresh}
-            trackColor={{ false: "#e2e8f0", true: "#bfdbfe" }}
             thumbColor={autoRefreshEnabled ? "#2563eb" : "#f4f3f4"}
+            trackColor={{ false: "#e2e8f0", true: "#bfdbfe" }}
             value={autoRefreshEnabled}
           />
         </View>
@@ -289,9 +323,7 @@ export default function SettingsScreen() {
         <TouchableOpacity onPress={handleClearCache} style={styles.settingRow}>
           <View style={styles.settingInfo}>
             <Text style={styles.settingLabel}>Clear Cache</Text>
-            <Text style={styles.settingDescription}>
-              Free up storage space
-            </Text>
+            <Text style={styles.settingDescription}>Free up storage space</Text>
           </View>
           <Text style={styles.chevron}>›</Text>
         </TouchableOpacity>

@@ -24,7 +24,7 @@ const apiBaseUrl = (
   process.env.NEXT_PUBLIC_API_URL ||
   process.env.VERCEL_API_URL ||
   (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== "development"
-    ? `https://capsule-pro-api.vercel.app`
+    ? "https://capsule-pro-api.vercel.app"
     : null) ||
   "http://127.0.0.1:2223"
 ).replace(/\/$/, "");
@@ -195,9 +195,18 @@ let nextConfig: NextConfig = withToolbar(
           headers: [
             { key: "X-Frame-Options", value: "DENY" },
             { key: "X-Content-Type-Options", value: "nosniff" },
-            { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-            { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
-            { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+            {
+              key: "Referrer-Policy",
+              value: "strict-origin-when-cross-origin",
+            },
+            {
+              key: "Permissions-Policy",
+              value: "camera=(), microphone=(), geolocation=()",
+            },
+            {
+              key: "Strict-Transport-Security",
+              value: "max-age=63072000; includeSubDomains; preload",
+            },
             {
               key: "Content-Security-Policy",
               value: [

@@ -1,6 +1,6 @@
 /**
  * API endpoint for listing board templates
- * 
+ *
  * NOTE: CommandBoard model does not have shareId, isPublic fields.
  * This endpoint returns 501 Not Implemented until the model is updated.
  */
@@ -9,9 +9,15 @@ import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
-  manifestErrorResponse,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+manifestErrorResponse,
   manifestSuccessResponse,
-} from "@/lib/manifest-response";
+} from "@/lib/manifest-response"
 
 export async function GET(request: NextRequest) {
   try {
@@ -29,12 +35,14 @@ export async function GET(request: NextRequest) {
     // TODO: Implement when CommandBoard model has:
     // - shareId field
     // - isPublic field
-    
-    return manifestSuccessResponse({ 
+
+    return manifestSuccessResponse({
       templates: [],
-      message: "Template listing not yet implemented - CommandBoard model needs shareId and isPublic fields"
+      message:
+        "Template listing not yet implemented - CommandBoard model needs shareId and isPublic fields",
     });
   } catch (error) {
+    captureException(error);
     console.error("Error fetching board templates:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

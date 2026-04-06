@@ -4,19 +4,19 @@
  * Tests verify the core forecasting algorithms, reorder suggestions, help accuracy tracking functionality.
  */
 
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { database } from "@repo/database";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
+  batchCalculateForecasts,
   calculateDepletionForecast,
   generateReorderSuggestions,
-  batchCalculateForecasts,
+  getAccuracySummary,
+  getForecastAccuracyMetrics,
   saveForecastToDatabase,
   saveReorderSuggestionToDatabase,
   trackForecastAccuracy,
-  getForecastAccuracyMetrics,
   updateConfidenceCalculation,
-  getAccuracySummary,
 } from "@/app/lib/inventory-forecasting";
 
 const TEST_TENANT_ID = "00000000-0000-0000-000000000001";
@@ -108,10 +108,14 @@ describe("Inventory Forecasting Service", () => {
           createMockTransaction({
             quantity: 5,
             transactionType: "use",
-            transaction_date: new Date(today.getTime() - (i + 1) * 24 * 60 * 60 * 1000),
+            transaction_date: new Date(
+              today.getTime() - (i + 1) * 24 * 60 * 60 * 1000
+            ),
           })
         );
-        vi.mocked(database.inventoryTransaction.findMany).mockResolvedValue(transactions);
+        vi.mocked(database.inventoryTransaction.findMany).mockResolvedValue(
+          transactions
+        );
 
         vi.mocked(database.event.findMany).mockResolvedValue([]);
 
@@ -141,10 +145,14 @@ describe("Inventory Forecasting Service", () => {
           createMockTransaction({
             quantity: i % 2 === 0 ? 2 : 8,
             transactionType: "use",
-            transaction_date: new Date(today.getTime() - (i + 1) * 24 * 60 * 60 * 1000),
+            transaction_date: new Date(
+              today.getTime() - (i + 1) * 24 * 60 * 60 * 1000
+            ),
           })
         );
-        vi.mocked(database.inventoryTransaction.findMany).mockResolvedValue(transactions);
+        vi.mocked(database.inventoryTransaction.findMany).mockResolvedValue(
+          transactions
+        );
         vi.mocked(database.event.findMany).mockResolvedValue([]);
 
         const result = await calculateDepletionForecast({
@@ -165,13 +173,40 @@ describe("Inventory Forecasting Service", () => {
         // Low confidence requires: dataPoints < 10 AND cv >= 0.5
         const today = new Date();
         const transactions = [
-          createMockTransaction({ quantity: 50, transaction_date: new Date(today.getTime() - 1 * 24 * 60 * 60 * 1000) }),
-          createMockTransaction({ quantity: 1, transaction_date: new Date(today.getTime() - 2 * 24 * 60 * 60 * 1000) }),
-          createMockTransaction({ quantity: 100, transaction_date: new Date(today.getTime() - 3 * 24 * 60 * 60 * 1000) }),
-          createMockTransaction({ quantity: 2, transaction_date: new Date(today.getTime() - 4 * 24 * 60 * 60 * 1000) }),
-          createMockTransaction({ quantity: 75, transaction_date: new Date(today.getTime() - 5 * 24 * 60 * 60 * 1000) }),
+          createMockTransaction({
+            quantity: 50,
+            transaction_date: new Date(
+              today.getTime() - 1 * 24 * 60 * 60 * 1000
+            ),
+          }),
+          createMockTransaction({
+            quantity: 1,
+            transaction_date: new Date(
+              today.getTime() - 2 * 24 * 60 * 60 * 1000
+            ),
+          }),
+          createMockTransaction({
+            quantity: 100,
+            transaction_date: new Date(
+              today.getTime() - 3 * 24 * 60 * 60 * 1000
+            ),
+          }),
+          createMockTransaction({
+            quantity: 2,
+            transaction_date: new Date(
+              today.getTime() - 4 * 24 * 60 * 60 * 1000
+            ),
+          }),
+          createMockTransaction({
+            quantity: 75,
+            transaction_date: new Date(
+              today.getTime() - 5 * 24 * 60 * 60 * 1000
+            ),
+          }),
         ];
-        vi.mocked(database.inventoryTransaction.findMany).mockResolvedValue(transactions);
+        vi.mocked(database.inventoryTransaction.findMany).mockResolvedValue(
+          transactions
+        );
         vi.mocked(database.event.findMany).mockResolvedValue([]);
 
         const result = await calculateDepletionForecast({
@@ -193,10 +228,14 @@ describe("Inventory Forecasting Service", () => {
           createMockTransaction({
             quantity: 2,
             transactionType: "use",
-            transaction_date: new Date(today.getTime() - (i + 1) * 24 * 60 * 60 * 1000),
+            transaction_date: new Date(
+              today.getTime() - (i + 1) * 24 * 60 * 60 * 1000
+            ),
           })
         );
-        vi.mocked(database.inventoryTransaction.findMany).mockResolvedValue(transactions);
+        vi.mocked(database.inventoryTransaction.findMany).mockResolvedValue(
+          transactions
+        );
 
         // Upcoming event with 200 guests (0.1 units/guest = 20 units expected usage)
         vi.mocked(database.event.findMany).mockResolvedValue([
@@ -215,7 +254,10 @@ describe("Inventory Forecasting Service", () => {
         // The forecast should show higher usage on the event day
         const eventDayForecast = result.forecast.find((f) => {
           const eventDate = new Date(today.getTime() + 5 * 24 * 60 * 60 * 1000);
-          return Math.abs(f.date.getTime() - eventDate.getTime()) < 24 * 60 * 60 * 1000;
+          return (
+            Math.abs(f.date.getTime() - eventDate.getTime()) <
+            24 * 60 * 60 * 1000
+          );
         });
         expect(eventDayForecast?.usage).toBeGreaterThan(2);
       });
@@ -276,7 +318,7 @@ describe("Inventory Forecasting Service", () => {
 
       it("should handle depletion beyond horizon", async () => {
         vi.mocked(database.inventoryItem.findFirst).mockResolvedValue(
-          createMockInventoryItem({ quantityOnHand: 10000 })
+          createMockInventoryItem({ quantityOnHand: 10_000 })
         );
 
         const today = new Date();
@@ -284,10 +326,14 @@ describe("Inventory Forecasting Service", () => {
           createMockTransaction({
             quantity: 1,
             type: "use",
-            createdAt: new Date(today.getTime() - (i + 1) * 24 * 60 * 60 * 1000),
+            createdAt: new Date(
+              today.getTime() - (i + 1) * 24 * 60 * 60 * 1000
+            ),
           })
         );
-        vi.mocked(database.inventoryTransaction.findMany).mockResolvedValue(transactions);
+        vi.mocked(database.inventoryTransaction.findMany).mockResolvedValue(
+          transactions
+        );
         vi.mocked(database.event.findMany).mockResolvedValue([]);
 
         const result = await calculateDepletionForecast({
@@ -296,7 +342,9 @@ describe("Inventory Forecasting Service", () => {
           horizonDays: 30,
         });
 
-        expect(result.daysUntilDepletion === null || result.daysUntilDepletion! > 30).toBe(true);
+        expect(
+          result.daysUntilDepletion === null || result.daysUntilDepletion! > 30
+        ).toBe(true);
       });
 
       it("should include waste transactions in usage calculations", async () => {
@@ -310,18 +358,24 @@ describe("Inventory Forecasting Service", () => {
             createMockTransaction({
               quantity: 3,
               transactionType: "use",
-              transaction_date: new Date(today.getTime() - (i + 1) * 24 * 60 * 60 * 1000),
+              transaction_date: new Date(
+                today.getTime() - (i + 1) * 24 * 60 * 60 * 1000
+              ),
             })
           ),
           ...Array.from({ length: 5 }, (_, i) =>
             createMockTransaction({
               quantity: 2,
               transactionType: "waste",
-              transaction_date: new Date(today.getTime() - (i + 1) * 24 * 60 * 60 * 1000),
+              transaction_date: new Date(
+                today.getTime() - (i + 1) * 24 * 60 * 60 * 1000
+              ),
             })
           ),
         ];
-        vi.mocked(database.inventoryTransaction.findMany).mockResolvedValue(transactions);
+        vi.mocked(database.inventoryTransaction.findMany).mockResolvedValue(
+          transactions
+        );
         vi.mocked(database.event.findMany).mockResolvedValue([]);
 
         const result = await calculateDepletionForecast({
@@ -360,14 +414,20 @@ describe("Inventory Forecasting Service", () => {
           quantityOnHand: 3,
           reorder_level: 20,
         });
-        vi.mocked(database.inventoryItem.findMany).mockResolvedValue([criticalItem]);
+        vi.mocked(database.inventoryItem.findMany).mockResolvedValue([
+          criticalItem,
+        ]);
         // Also mock findFirst for calculateReorderSuggestion
-        vi.mocked(database.inventoryItem.findFirst).mockResolvedValue(criticalItem);
+        vi.mocked(database.inventoryItem.findFirst).mockResolvedValue(
+          criticalItem
+        );
         vi.mocked(database.inventoryTransaction.findMany).mockResolvedValue(
           Array.from({ length: 15 }, (_, i) =>
             createMockTransaction({
               quantity: 1,
-              transaction_date: new Date(Date.now() - (i + 1) * 24 * 60 * 60 * 1000),
+              transaction_date: new Date(
+                Date.now() - (i + 1) * 24 * 60 * 60 * 1000
+              ),
             })
           )
         );
@@ -395,15 +455,21 @@ describe("Inventory Forecasting Service", () => {
           quantityOnHand: 9, // Will deplete in ~9 days (within safety window)
           reorder_level: 20,
         });
-        vi.mocked(database.inventoryItem.findMany).mockResolvedValue([warningItem]);
+        vi.mocked(database.inventoryItem.findMany).mockResolvedValue([
+          warningItem,
+        ]);
         // Also mock findFirst for calculateReorderSuggestion
-        vi.mocked(database.inventoryItem.findFirst).mockResolvedValue(warningItem);
+        vi.mocked(database.inventoryItem.findFirst).mockResolvedValue(
+          warningItem
+        );
         // Use 2 units per transaction to get daily avg of 1 (30 total / 30 days)
         vi.mocked(database.inventoryTransaction.findMany).mockResolvedValue(
           Array.from({ length: 15 }, (_, i) =>
             createMockTransaction({
               quantity: 2,
-              transaction_date: new Date(Date.now() - (i + 1) * 24 * 60 * 60 * 1000),
+              transaction_date: new Date(
+                Date.now() - (i + 1) * 24 * 60 * 60 * 1000
+              ),
             })
           )
         );
@@ -536,10 +602,16 @@ describe("Inventory Forecasting Service", () => {
         (async (args: { where?: { item_number?: string } }) => {
           const itemNumber = args?.where?.item_number;
           if (itemNumber === "SKU-001") {
-            return createMockInventoryItem({ item_number: "SKU-001", quantityOnHand: 100 });
+            return createMockInventoryItem({
+              item_number: "SKU-001",
+              quantityOnHand: 100,
+            });
           }
           if (itemNumber === "SKU-002") {
-            return createMockInventoryItem({ item_number: "SKU-002", quantityOnHand: 50 });
+            return createMockInventoryItem({
+              item_number: "SKU-002",
+              quantityOnHand: 50,
+            });
           }
           return null;
         }) as unknown as typeof database.inventoryItem.findFirst
@@ -686,7 +758,11 @@ describe("Inventory Forecasting Service", () => {
         ...createMockForecast(),
         id: forecastId,
       } as any);
-      await trackForecastAccuracy(TEST_TENANT_ID, forecastId, actualDepletionDate);
+      await trackForecastAccuracy(
+        TEST_TENANT_ID,
+        forecastId,
+        actualDepletionDate
+      );
       expect(database.inventoryForecast.update).toHaveBeenCalled();
     });
 
@@ -714,7 +790,10 @@ describe("Inventory Forecasting Service", () => {
         } as any,
       ]);
       vi.mocked(database.inventoryForecast.count).mockResolvedValue(2);
-      const metrics = await getForecastAccuracyMetrics(TEST_TENANT_ID, TEST_SKU);
+      const metrics = await getForecastAccuracyMetrics(
+        TEST_TENANT_ID,
+        TEST_SKU
+      );
       expect(metrics).toBeDefined();
     });
   });
@@ -727,7 +806,11 @@ describe("Inventory Forecasting Service", () => {
         createMockForecast({ confidence: "medium" }),
       ]);
       vi.mocked(database.inventoryForecast.count).mockResolvedValue(3);
-      const result = await updateConfidenceCalculation(TEST_TENANT_ID, TEST_SKU, "high");
+      const result = await updateConfidenceCalculation(
+        TEST_TENANT_ID,
+        TEST_SKU,
+        "high"
+      );
       expect(["high", "medium", "low"]).toContain(result);
     });
   });

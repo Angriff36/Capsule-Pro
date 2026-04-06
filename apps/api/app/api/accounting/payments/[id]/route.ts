@@ -15,11 +15,18 @@ import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
 import {
-  type PaymentResponse,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+type PaymentResponse
+,
   validatePaymentAccess,
   validatePaymentBusinessRules,
   validateRefundRequest,
-} from "../validation";
+} from "../validation"
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -51,6 +58,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       amount: payment.amount.toString(),
     });
   } catch (error) {
+    captureException(error);
     console.error("Error fetching payment:", error);
     return NextResponse.json(
       { error: "Failed to fetch payment" },
@@ -153,6 +161,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       amount: updatedPayment.amount.toString(),
     });
   } catch (error) {
+    captureException(error);
     console.error("Error processing payment:", error);
     return NextResponse.json(
       { error: "Failed to process payment" },
@@ -239,6 +248,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       amount: updatedPayment.amount.toString(),
     });
   } catch (error) {
+    captureException(error);
     console.error("Error refunding payment:", error);
     return NextResponse.json(
       { error: "Failed to refund payment" },

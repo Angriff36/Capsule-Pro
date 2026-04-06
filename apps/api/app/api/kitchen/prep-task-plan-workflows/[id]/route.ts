@@ -5,11 +5,14 @@
 // does not exist in the current Prisma schema. Enable this route
 // after adding the model to the schema and running prisma generate.
 
+import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import { manifestErrorResponse } from "@/lib/manifest-response";
-import { auth } from "@repo/auth/server";
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const { orgId, userId } = await auth();
     if (!(userId && orgId)) {

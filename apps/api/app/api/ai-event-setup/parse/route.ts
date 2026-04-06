@@ -6,7 +6,10 @@ import { auth } from "@repo/auth/server";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import {
+  manifestErrorResponse,
+  manifestSuccessResponse,
+} from "@/lib/manifest-response";
 
 export const runtime = "nodejs";
 
@@ -31,24 +34,51 @@ const EVENT_TYPE_PATTERNS: Array<{
   eventType: string;
 }> = [
   { pattern: /\b(wedding|marriage|bride|groom)\b/i, eventType: "wedding" },
-  { pattern: /\b(corporate|business|company|conference|meeting)\b/i, eventType: "corporate" },
+  {
+    pattern: /\b(corporate|business|company|conference|meeting)\b/i,
+    eventType: "corporate",
+  },
   { pattern: /\b(birthday|b-day|bday)\b/i, eventType: "birthday" },
   { pattern: /\b(anniversary)\b/i, eventType: "anniversary" },
   { pattern: /\b(graduation|graduate)\b/i, eventType: "graduation" },
-  { pattern: /\b(holiday|christmas|thanksgiving|easter|hanukkah)\b/i, eventType: "holiday" },
+  {
+    pattern: /\b(holiday|christmas|thanksgiving|easter|hanukkah)\b/i,
+    eventType: "holiday",
+  },
   { pattern: /\b(gala|fundraiser|charity)\b/i, eventType: "gala" },
   { pattern: /\b(catering|catered)\b/i, eventType: "catering" },
   { pattern: /\b(party|celebration|celebrate)\b/i, eventType: "party" },
 ];
 
 const MONTH_NAMES = [
-  "january", "february", "march", "april", "may", "june",
-  "july", "august", "september", "october", "november", "december",
+  "january",
+  "february",
+  "march",
+  "april",
+  "may",
+  "june",
+  "july",
+  "august",
+  "september",
+  "october",
+  "november",
+  "december",
 ];
 
 const MONTH_ABBREVIATIONS = [
-  "jan", "feb", "mar", "apr", "may", "jun",
-  "jul", "aug", "sep", "sept", "oct", "nov", "dec",
+  "jan",
+  "feb",
+  "mar",
+  "apr",
+  "may",
+  "jun",
+  "jul",
+  "aug",
+  "sep",
+  "sept",
+  "oct",
+  "nov",
+  "dec",
 ];
 
 function parseMonth(text: string): number | null {
@@ -64,24 +94,25 @@ function parseMonth(text: string): number | null {
 }
 
 function parseDayOfMonth(text: string): number | null {
-  const monthDayPattern = /\b(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{1,2})(?:st|nd|rd|th)?\b/i;
+  const monthDayPattern =
+    /\b(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{1,2})(?:st|nd|rd|th)?\b/i;
   const monthDayMatch = text.match(monthDayPattern);
   if (monthDayMatch) {
-    const day = parseInt(monthDayMatch[1], 10);
+    const day = Number.parseInt(monthDayMatch[1], 10);
     if (day >= 1 && day <= 31) return day;
   }
 
   const onDayPattern = /\bon\s+(?:the\s+)?(\d{1,2})(?:st|nd|rd|th)?\b/i;
   const onDayMatch = text.match(onDayPattern);
   if (onDayMatch) {
-    const day = parseInt(onDayMatch[1], 10);
+    const day = Number.parseInt(onDayMatch[1], 10);
     if (day >= 1 && day <= 31) return day;
   }
 
   const standalonePattern = /(?<!\bfor\s+)(\d{1,2})(?:st|nd|rd|th)\b/i;
   const standaloneMatch = text.match(standalonePattern);
   if (standaloneMatch) {
-    const day = parseInt(standaloneMatch[1], 10);
+    const day = Number.parseInt(standaloneMatch[1], 10);
     if (day >= 1 && day <= 31) return day;
   }
 
@@ -90,10 +121,13 @@ function parseDayOfMonth(text: string): number | null {
 
 function parseYear(text: string): number | null {
   const yearMatch = text.match(/\b(20\d{2})\b/);
-  return yearMatch ? parseInt(yearMatch[1], 10) : null;
+  return yearMatch ? Number.parseInt(yearMatch[1], 10) : null;
 }
 
-function parseRelativeDate(text: string, referenceDate: Date): { date: Date; confidence: number } | null {
+function parseRelativeDate(
+  text: string,
+  referenceDate: Date
+): { date: Date; confidence: number } | null {
   const lower = text.toLowerCase();
 
   if (/\btomorrow\b/.test(lower)) {
@@ -110,14 +144,24 @@ function parseRelativeDate(text: string, referenceDate: Date): { date: Date; con
 
   const inWeeksMatch = lower.match(/\bin\s+(\d+)\s+weeks?\b/);
   if (inWeeksMatch) {
-    const weeks = parseInt(inWeeksMatch[1], 10);
+    const weeks = Number.parseInt(inWeeksMatch[1], 10);
     const result = new Date(referenceDate);
     result.setDate(result.getDate() + weeks * 7);
     return { date: result, confidence: 0.95 };
   }
 
-  const dayNames = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
-  const nextDayMatch = lower.match(/\bnext\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/i);
+  const dayNames = [
+    "sunday",
+    "monday",
+    "tuesday",
+    "wednesday",
+    "thursday",
+    "friday",
+    "saturday",
+  ];
+  const nextDayMatch = lower.match(
+    /\bnext\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/i
+  );
   if (nextDayMatch) {
     const targetDay = dayNames.indexOf(nextDayMatch[1].toLowerCase());
     const result = new Date(referenceDate);
@@ -129,7 +173,9 @@ function parseRelativeDate(text: string, referenceDate: Date): { date: Date; con
     return { date: result, confidence: 0.9 };
   }
 
-  const thisDayMatch = lower.match(/\bthis\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/i);
+  const thisDayMatch = lower.match(
+    /\bthis\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/i
+  );
   if (thisDayMatch) {
     const targetDay = dayNames.indexOf(thisDayMatch[1].toLowerCase());
     const result = new Date(referenceDate);
@@ -142,7 +188,7 @@ function parseRelativeDate(text: string, referenceDate: Date): { date: Date; con
 
   const inDaysMatch = lower.match(/\bin\s+(\d+)\s+days?\b/);
   if (inDaysMatch) {
-    const days = parseInt(inDaysMatch[1], 10);
+    const days = Number.parseInt(inDaysMatch[1], 10);
     const result = new Date(referenceDate);
     result.setDate(result.getDate() + days);
     return { date: result, confidence: 0.95 };
@@ -151,7 +197,10 @@ function parseRelativeDate(text: string, referenceDate: Date): { date: Date; con
   return null;
 }
 
-function parseAbsoluteDate(text: string, referenceDate: Date): { date: Date; confidence: number } | null {
+function parseAbsoluteDate(
+  text: string,
+  referenceDate: Date
+): { date: Date; confidence: number } | null {
   const month = parseMonth(text);
   if (month === null) return null;
 
@@ -171,15 +220,24 @@ function parseAbsoluteDate(text: string, referenceDate: Date): { date: Date; con
   return { date, confidence: 0.95 };
 }
 
-function parseEventDate(text: string, referenceDate: Date): { timestamp: number; confidence: number } | null {
+function parseEventDate(
+  text: string,
+  referenceDate: Date
+): { timestamp: number; confidence: number } | null {
   const relative = parseRelativeDate(text, referenceDate);
   if (relative) {
-    return { timestamp: Math.floor(relative.date.getTime() / 1000), confidence: relative.confidence };
+    return {
+      timestamp: Math.floor(relative.date.getTime() / 1000),
+      confidence: relative.confidence,
+    };
   }
 
   const absolute = parseAbsoluteDate(text, referenceDate);
   if (absolute) {
-    return { timestamp: Math.floor(absolute.date.getTime() / 1000), confidence: absolute.confidence };
+    return {
+      timestamp: Math.floor(absolute.date.getTime() / 1000),
+      confidence: absolute.confidence,
+    };
   }
 
   return null;
@@ -195,8 +253,8 @@ function parseGuestCount(text: string): number | null {
   for (const pattern of patterns) {
     const match = text.match(pattern);
     if (match) {
-      const count = parseInt(match[1], 10);
-      if (count > 0 && count <= 100000) return count;
+      const count = Number.parseInt(match[1], 10);
+      if (count > 0 && count <= 100_000) return count;
     }
   }
 
@@ -205,12 +263,34 @@ function parseGuestCount(text: string): number | null {
 
 function parseVenue(text: string): { name: string; address: string } {
   const stopWords = [
-    "on", "in", "for", "with", "by", "from", "to", "next", "this",
-    "tomorrow", "today", "january", "february", "march", "april", "may",
-    "june", "july", "august", "september", "october", "november", "december"
+    "on",
+    "in",
+    "for",
+    "with",
+    "by",
+    "from",
+    "to",
+    "next",
+    "this",
+    "tomorrow",
+    "today",
+    "january",
+    "february",
+    "march",
+    "april",
+    "may",
+    "june",
+    "july",
+    "august",
+    "september",
+    "october",
+    "november",
+    "december",
   ];
 
-  const atMatch = text.match(/\b(?:at|@)\s+(?:the\s+)?([A-Z][A-Za-z]+(?:\s+[A-Za-z]+)*)/i);
+  const atMatch = text.match(
+    /\b(?:at|@)\s+(?:the\s+)?([A-Z][A-Za-z]+(?:\s+[A-Za-z]+)*)/i
+  );
   if (atMatch) {
     let venueName = atMatch[1].trim();
     const words = venueName.split(/\s+/);
@@ -226,14 +306,31 @@ function parseVenue(text: string): { name: string; address: string } {
     }
   }
 
-  const venueColonMatch = text.match(/\bvenue[:\s]+["']?([A-Za-z\s]+?)["']?(?:\s|$)/i);
+  const venueColonMatch = text.match(
+    /\bvenue[:\s]+["']?([A-Za-z\s]+?)["']?(?:\s|$)/i
+  );
   if (venueColonMatch) {
     const venueName = venueColonMatch[1].trim();
     if (venueName.length > 2) return { name: venueName, address: "" };
   }
 
-  const venueTypes = ["ballroom", "hall", "hotel", "center", "centre", "house", "home", "restaurant", "venue", "garden", "park"];
-  const venueTypeRegex = new RegExp(`\\b(?:at|@)\\s+(?:the\\s+)?([A-Za-z]+\\s+(?:${venueTypes.join("|")}))`, "i");
+  const venueTypes = [
+    "ballroom",
+    "hall",
+    "hotel",
+    "center",
+    "centre",
+    "house",
+    "home",
+    "restaurant",
+    "venue",
+    "garden",
+    "park",
+  ];
+  const venueTypeRegex = new RegExp(
+    `\\b(?:at|@)\\s+(?:the\\s+)?([A-Za-z]+\\s+(?:${venueTypes.join("|")}))`,
+    "i"
+  );
   const venueTypeMatch = text.match(venueTypeRegex);
   if (venueTypeMatch) {
     return { name: venueTypeMatch[1].trim(), address: "" };
@@ -242,12 +339,17 @@ function parseVenue(text: string): { name: string; address: string } {
   return { name: "", address: "" };
 }
 
-function inferEventType(text: string): { eventType: string; confidence: number } {
+function inferEventType(text: string): {
+  eventType: string;
+  confidence: number;
+} {
   for (const { pattern, eventType } of EVENT_TYPE_PATTERNS) {
     if (pattern.test(text)) return { eventType, confidence: 0.9 };
   }
 
-  if (/\b(food|menu|catering|dinner|lunch|breakfast|meal|buffet)\b/i.test(text)) {
+  if (
+    /\b(food|menu|catering|dinner|lunch|breakfast|meal|buffet)\b/i.test(text)
+  ) {
     return { eventType: "catering", confidence: 0.7 };
   }
 
@@ -261,7 +363,10 @@ function generateTitle(
   venueName: string
 ): string {
   let cleaned = text
-    .replace(/^(create|plan|schedule|set up|organize|need|want)\s+(an?\s+)?/i, "")
+    .replace(
+      /^(create|plan|schedule|set up|organize|need|want)\s+(an?\s+)?/i,
+      ""
+    )
     .replace(/\bfor\s+\d+\s*(people|guests?|pax)?\b/gi, "")
     .replace(/\bon\s+\w+\s+\d{1,2}(?:st|nd|rd|th)?/gi, "")
     .replace(/\bat\s+\d+\s*(pm|am)?/gi, "")
@@ -282,7 +387,10 @@ function generateTitle(
   return generatedTitle || cleaned || "New Event";
 }
 
-function parseNaturalLanguageEvent(text: string, referenceDate: Date = new Date()): ParsedEventData {
+function parseNaturalLanguageEvent(
+  text: string,
+  referenceDate: Date = new Date()
+): ParsedEventData {
   const missingFields: string[] = [];
   const suggestions: string[] = [];
 
@@ -306,7 +414,12 @@ function parseNaturalLanguageEvent(text: string, referenceDate: Date = new Date(
   }
 
   const typeResult = inferEventType(text);
-  const title = generateTitle(text, typeResult.eventType, guestCount, venue.name);
+  const title = generateTitle(
+    text,
+    typeResult.eventType,
+    guestCount,
+    venue.name
+  );
 
   let confidence = 0.5;
   if (guestCount > 0) confidence += 0.15;
@@ -345,7 +458,8 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const originalInput = typeof body.originalInput === "string" ? body.originalInput : "";
+    const originalInput =
+      typeof body.originalInput === "string" ? body.originalInput : "";
 
     if (!originalInput.trim()) {
       return manifestErrorResponse("originalInput is required", 400);
@@ -399,14 +513,16 @@ export async function POST(request: NextRequest) {
         suggestions: parsed.suggestions,
         readyToCreate: parsed.missingFields.length === 0,
       },
-      events: [{
-        type: "ai-event-setup.session.parsed",
-        payload: {
-          sessionId,
-          originalInput,
-          parsedAt: Math.floor(Date.now() / 1000),
+      events: [
+        {
+          type: "ai-event-setup.session.parsed",
+          payload: {
+            sessionId,
+            originalInput,
+            parsedAt: Math.floor(Date.now() / 1000),
+          },
         },
-      }],
+      ],
     });
   } catch (error) {
     console.error("[ai-event-setup/parse] Error:", error);

@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { database } from '@repo/database';
-import { requireTenantId } from '@/app/lib/tenant';
+import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
+import { type NextRequest, NextResponse } from "next/server";
+import { requireTenantId } from "@/app/lib/tenant";
 
 export async function POST(request: NextRequest) {
   try {
@@ -10,30 +11,27 @@ export async function POST(request: NextRequest) {
     const { routeId, status, stopId, stopStatus } = body;
 
     if (!routeId) {
-      return NextResponse.json({ error: 'Route ID required' }, { status: 400 });
+      return NextResponse.json({ error: "Route ID required" }, { status: 400 });
     }
 
     // Update route status
     if (status) {
       const validStatuses = [
-        'draft',
-        'optimized',
-        'in_progress',
-        'completed',
-        'cancelled',
+        "draft",
+        "optimized",
+        "in_progress",
+        "completed",
+        "cancelled",
       ];
       if (!validStatuses.includes(status)) {
-        return NextResponse.json(
-          { error: 'Invalid status' },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: "Invalid status" }, { status: 400 });
       }
 
       const updateData: any = { status };
 
-      if (status === 'in_progress') {
+      if (status === "in_progress") {
         updateData.actualStartTime = new Date();
-      } else if (status === 'completed') {
+      } else if (status === "completed") {
         updateData.actualEndTime = new Date();
       }
 
@@ -48,24 +46,24 @@ export async function POST(request: NextRequest) {
     // Update stop status
     if (stopId && stopStatus) {
       const validStopStatuses = [
-        'pending',
-        'in_transit',
-        'arrived',
-        'completed',
-        'skipped',
+        "pending",
+        "in_transit",
+        "arrived",
+        "completed",
+        "skipped",
       ];
       if (!validStopStatuses.includes(stopStatus)) {
         return NextResponse.json(
-          { error: 'Invalid stop status' },
+          { error: "Invalid stop status" },
           { status: 400 }
         );
       }
 
       const updateData: any = { status: stopStatus };
 
-      if (stopStatus === 'arrived') {
+      if (stopStatus === "arrived") {
         updateData.actualArrival = new Date();
-      } else if (stopStatus === 'completed' || stopStatus === 'skipped') {
+      } else if (stopStatus === "completed" || stopStatus === "skipped") {
         updateData.actualDeparture = new Date();
       }
 
@@ -77,14 +75,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ stop });
     }
 
-    return NextResponse.json(
-      { error: 'No update specified' },
-      { status: 400 }
-    );
+    return NextResponse.json({ error: "No update specified" }, { status: 400 });
   } catch (error) {
-    console.error('Error updating status:', error);
+    captureException(error);
+    console.error("Error updating status:", error);
     return NextResponse.json(
-      { error: 'Failed to update status' },
+      { error: "Failed to update status" },
       { status: 500 }
     );
   }

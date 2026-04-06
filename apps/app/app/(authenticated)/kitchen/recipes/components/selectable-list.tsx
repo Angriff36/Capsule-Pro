@@ -1,9 +1,5 @@
 "use client";
 
-import { createContext, useContext, useState, useTransition } from "react";
-import { Checkbox } from "@repo/design-system/components/ui/checkbox";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Input } from "@repo/design-system/components/ui/input";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,11 +11,15 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@repo/design-system/components/ui/alert-dialog";
-import { Trash2, DollarSign, Tag, Check } from "lucide-react";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Checkbox } from "@repo/design-system/components/ui/checkbox";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Check, DollarSign, Tag, Trash2 } from "lucide-react";
+import { createContext, useContext, useState, useTransition } from "react";
 import { toast } from "sonner";
 import {
-  bulkDeleteRecipes,
   bulkDeleteDishes,
+  bulkDeleteRecipes,
   bulkUpdateDishPrice,
   bulkUpdateNames,
 } from "../actions";
@@ -137,8 +137,8 @@ export function SelectableList({ items, type, children }: SelectableListProps) {
           <div className="flex items-center gap-2">
             <Checkbox
               checked={selectedIds.size === items.length}
-              onCheckedChange={selectAll}
               className="h-4 w-4"
+              onCheckedChange={selectAll}
             />
             <span className="text-xs font-medium">
               {selectedIds.size} of {items.length} selected
@@ -147,10 +147,10 @@ export function SelectableList({ items, type, children }: SelectableListProps) {
 
             {type === "dishes" && (
               <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowBatchEdit((v) => !v)}
                 className="text-xs h-7 gap-1.5"
+                onClick={() => setShowBatchEdit((v) => !v)}
+                size="sm"
+                variant="ghost"
               >
                 <DollarSign className="h-3.5 w-3.5" />
                 Batch Edit
@@ -158,10 +158,10 @@ export function SelectableList({ items, type, children }: SelectableListProps) {
             )}
 
             <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowBatchEdit((v) => !v)}
               className="text-xs h-7 gap-1.5"
+              onClick={() => setShowBatchEdit((v) => !v)}
+              size="sm"
+              variant="ghost"
             >
               <Tag className="h-3.5 w-3.5" />
               Rename
@@ -170,10 +170,10 @@ export function SelectableList({ items, type, children }: SelectableListProps) {
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
-                  variant="destructive"
-                  size="sm"
                   className="gap-1.5 text-xs h-7"
                   disabled={isPending}
+                  size="sm"
+                  variant="destructive"
                 >
                   <Trash2 className="h-3.5 w-3.5" />
                   Delete {selectedIds.size}
@@ -192,8 +192,8 @@ export function SelectableList({ items, type, children }: SelectableListProps) {
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
                   <AlertDialogAction
-                    onClick={handleBulkDelete}
                     className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                    onClick={handleBulkDelete}
                   >
                     Delete {selectedIds.size}
                   </AlertDialogAction>
@@ -202,10 +202,10 @@ export function SelectableList({ items, type, children }: SelectableListProps) {
             </AlertDialog>
 
             <Button
-              variant="ghost"
-              size="sm"
-              onClick={clearSelection}
               className="text-xs h-7"
+              onClick={clearSelection}
+              size="sm"
+              variant="ghost"
             >
               Clear
             </Button>
@@ -217,23 +217,23 @@ export function SelectableList({ items, type, children }: SelectableListProps) {
                 <div className="flex items-center gap-1.5">
                   <DollarSign className="h-3.5 w-3.5 text-muted-foreground" />
                   <Input
-                    type="number"
-                    step="0.01"
+                    className="h-7 w-28 text-xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
                     min="0"
-                    placeholder="Set price..."
-                    value={batchPrice}
                     onChange={(e) => setBatchPrice(e.target.value)}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") handleBulkPrice();
                     }}
-                    className="h-7 w-28 text-xs [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    placeholder="Set price..."
+                    step="0.01"
+                    type="number"
+                    value={batchPrice}
                   />
                   <Button
+                    className="h-7 text-xs gap-1"
+                    disabled={isPending || !batchPrice}
+                    onClick={handleBulkPrice}
                     size="sm"
                     variant="secondary"
-                    onClick={handleBulkPrice}
-                    disabled={isPending || !batchPrice}
-                    className="h-7 text-xs gap-1"
                   >
                     <Check className="h-3 w-3" />
                     Apply
@@ -244,20 +244,20 @@ export function SelectableList({ items, type, children }: SelectableListProps) {
               <div className="flex items-center gap-1.5">
                 <Tag className="h-3.5 w-3.5 text-muted-foreground" />
                 <Input
-                  placeholder="Set name for all..."
-                  value={batchName}
+                  className="h-7 w-44 text-xs"
                   onChange={(e) => setBatchName(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") handleBulkName();
                   }}
-                  className="h-7 w-44 text-xs"
+                  placeholder="Set name for all..."
+                  value={batchName}
                 />
                 <Button
+                  className="h-7 text-xs gap-1"
+                  disabled={isPending || !batchName.trim()}
+                  onClick={handleBulkName}
                   size="sm"
                   variant="secondary"
-                  onClick={handleBulkName}
-                  disabled={isPending || !batchName.trim()}
-                  className="h-7 text-xs gap-1"
                 >
                   <Check className="h-3 w-3" />
                   Apply
@@ -268,7 +268,9 @@ export function SelectableList({ items, type, children }: SelectableListProps) {
         </div>
       )}
 
-      <SelectionContext.Provider value={{ selectMode, selectedIds, toggleItem, editMode: true }}>
+      <SelectionContext.Provider
+        value={{ selectMode, selectedIds, toggleItem, editMode: true }}
+      >
         {children}
       </SelectionContext.Provider>
     </div>
@@ -281,6 +283,7 @@ export function ItemCheckbox({ id }: { id: string }) {
 
   return (
     <div
+      aria-checked={selectedIds.has(id)}
       className="shrink-0"
       onClick={(e) => {
         e.preventDefault();
@@ -294,7 +297,6 @@ export function ItemCheckbox({ id }: { id: string }) {
         }
       }}
       role="checkbox"
-      aria-checked={selectedIds.has(id)}
       tabIndex={0}
     >
       <Checkbox

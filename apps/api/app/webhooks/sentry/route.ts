@@ -1,6 +1,10 @@
 import { database } from "@repo/database";
 import { log } from "@repo/observability/log";
 import type { SentryIssueAlertPayload } from "@repo/sentry-integration";
+import {
+  buildPipelineCorrelationId,
+  pipelineLogFields,
+} from "@repo/sentry-integration/pipeline-correlation";
 import { createPrismaJobStore } from "@repo/sentry-integration/prisma-store";
 import type { JobQueueConfig } from "@repo/sentry-integration/queue";
 import { SentryJobQueue } from "@repo/sentry-integration/queue";
@@ -120,12 +124,19 @@ export const POST = async (request: Request): Promise<Response> => {
 
   // Parse issue details
   const issue = parseSentryIssue(payload);
-
-  log.info("[SentryWebhook] Processing issue alert", {
-    issueId: issue.issueId,
-    title: issue.title,
-    environment: issue.environment,
+  const pipelineCorrelationId = buildPipelineCorrelationId({
+    sentryIssueId: issue.issueId,
+    sentryEventId: issue.eventId,
   });
+
+  log.info(
+    "[SentryWebhook] Processing issue alert",
+    pipelineLogFields("sentry_webhook_received", pipelineCorrelationId, {
+      issueId: issue.issueId,
+      title: issue.title,
+      environment: issue.environment,
+    })
+  );
 
   // Check if fixer is enabled
   const config = getConfig();
@@ -165,10 +176,13 @@ export const POST = async (request: Request): Promise<Response> => {
       payloadSnapshot: payload,
     });
 
-    log.info("[SentryWebhook] Job enqueued", {
-      jobId: job.id,
-      issueId: issue.issueId,
-    });
+    log.info(
+      "[SentryWebhook] Job enqueued",
+      pipelineLogFields("sentry_job_enqueued", pipelineCorrelationId, {
+        jobId: job.id,
+        issueId: issue.issueId,
+      })
+    );
 
     return NextResponse.json(
       {

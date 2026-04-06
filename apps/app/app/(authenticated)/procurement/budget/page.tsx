@@ -1,24 +1,13 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import {
-  Plus,
-  Search,
-  DollarSign,
-  AlertTriangle,
-  TrendingUp,
-  RefreshCw,
-  Loader2,
-  Trash2,
-  PieChart,
-  FileText,
-} from "lucide-react";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
 import { Badge } from "@repo/design-system/components/ui/badge";
-import { Input } from "@repo/design-system/components/ui/input";
-import { Label } from "@repo/design-system/components/ui/label";
-import { Textarea } from "@repo/design-system/components/ui/textarea";
+import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -26,6 +15,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@repo/design-system/components/ui/dialog";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -33,22 +24,43 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { Textarea } from "@repo/design-system/components/ui/textarea";
+import {
+  AlertTriangle,
+  DollarSign,
+  Loader2,
+  PieChart,
+  Plus,
+  RefreshCw,
+  Search,
+  Trash2,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 import {
   type Budget,
-  type BudgetSpend,
-  type MonthlyBreakdown,
   type BudgetAlert,
-  UtilizationBar,
+  type BudgetSpend,
   getStatusColor,
+  type MonthlyBreakdown,
   PERIOD_TYPE_OPTIONS,
+  UtilizationBar,
 } from "../components/budget-shared";
 
 // Re-export for this page's use
 function formatCurrency(n: number) {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Number(n));
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(Number(n));
 }
 function poFormatDate(d: string | null) {
-  return d ? new Date(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "—";
+  return d
+    ? new Date(d).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "—";
 }
 
 export default function BudgetPage() {
@@ -120,7 +132,7 @@ export default function BudgetPage() {
   };
 
   const handleCreate = async () => {
-    if (!form.name.trim() || !form.budgetAmount) return;
+    if (!(form.name.trim() && form.budgetAmount)) return;
     setSaving(true);
     try {
       const res = await fetch("/api/procurement/budget/commands/create", {
@@ -128,19 +140,27 @@ export default function BudgetPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...form,
-          fiscalYear: parseInt(form.fiscalYear),
-          budgetAmount: parseFloat(form.budgetAmount),
-          thresholdWarningPct: parseInt(form.thresholdWarningPct),
-          thresholdCriticalPct: parseInt(form.thresholdCriticalPct),
+          fiscalYear: Number.parseInt(form.fiscalYear),
+          budgetAmount: Number.parseFloat(form.budgetAmount),
+          thresholdWarningPct: Number.parseInt(form.thresholdWarningPct),
+          thresholdCriticalPct: Number.parseInt(form.thresholdCriticalPct),
         }),
       });
       const data = await res.json();
       if (data.success) {
         setDialogOpen(false);
         setForm({
-          name: "", description: "", category: "", fiscalYear: String(currentYear),
-          periodType: "annual", periodStart: `${currentYear}-01-01`, periodEnd: `${currentYear}-12-31`,
-          budgetAmount: "", thresholdWarningPct: "80", thresholdCriticalPct: "100", notes: "",
+          name: "",
+          description: "",
+          category: "",
+          fiscalYear: String(currentYear),
+          periodType: "annual",
+          periodStart: `${currentYear}-01-01`,
+          periodEnd: `${currentYear}-12-31`,
+          budgetAmount: "",
+          thresholdWarningPct: "80",
+          thresholdCriticalPct: "100",
+          notes: "",
         });
         loadBudgets();
       } else {
@@ -155,7 +175,8 @@ export default function BudgetPage() {
 
   const handleDelete = async (budget: Budget, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm(`Delete budget "${budget.name}"? This cannot be undone.`)) return;
+    if (!confirm(`Delete budget "${budget.name}"? This cannot be undone.`))
+      return;
     try {
       const res = await fetch("/api/procurement/budget/commands/delete", {
         method: "POST",
@@ -208,11 +229,23 @@ export default function BudgetPage() {
     );
   }, [budgets, searchQuery]);
 
-  const totalBudget = budgets.reduce((sum, b) => sum + Number(b.budget_amount), 0);
-  const totalSpent = budgets.reduce((sum, b) => sum + Number(b.spent_amount), 0);
-  const totalAlerts = budgets.reduce((sum, b) => sum + (b.unacknowledged_alert_count || 0), 0);
+  const totalBudget = budgets.reduce(
+    (sum, b) => sum + Number(b.budget_amount),
+    0
+  );
+  const totalSpent = budgets.reduce(
+    (sum, b) => sum + Number(b.spent_amount),
+    0
+  );
+  const totalAlerts = budgets.reduce(
+    (sum, b) => sum + (b.unacknowledged_alert_count || 0),
+    0
+  );
   const overBudgetCount = budgets.filter(
-    (b) => Number(b.budget_amount) > 0 && (Number(b.spent_amount) / Number(b.budget_amount)) >= Number(b.threshold_critical_pct) / 100
+    (b) =>
+      Number(b.budget_amount) > 0 &&
+      Number(b.spent_amount) / Number(b.budget_amount) >=
+        Number(b.threshold_critical_pct) / 100
   ).length;
 
   if (loading) {
@@ -236,11 +269,17 @@ export default function BudgetPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={handleRefresh} disabled={refreshing}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
+          <Button
+            disabled={refreshing}
+            onClick={handleRefresh}
+            variant="outline"
+          >
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`}
+            />
             Refresh Spend
           </Button>
-          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+          <Dialog onOpenChange={setDialogOpen} open={dialogOpen}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
@@ -256,17 +295,21 @@ export default function BudgetPage() {
                   <div className="space-y-2">
                     <Label>Budget Name *</Label>
                     <Input
-                      value={form.name}
-                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                      onChange={(e) =>
+                        setForm({ ...form, name: e.target.value })
+                      }
                       placeholder="e.g., Produce FY2026"
+                      value={form.name}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>Category</Label>
                     <Input
-                      value={form.category}
-                      onChange={(e) => setForm({ ...form, category: e.target.value })}
+                      onChange={(e) =>
+                        setForm({ ...form, category: e.target.value })
+                      }
                       placeholder="e.g., Produce, Dairy, Dry Goods"
+                      value={form.category}
                     />
                   </div>
                 </div>
@@ -274,19 +317,23 @@ export default function BudgetPage() {
                   <div className="space-y-2">
                     <Label>Fiscal Year *</Label>
                     <Input
+                      onChange={(e) =>
+                        setForm({ ...form, fiscalYear: e.target.value })
+                      }
                       type="number"
                       value={form.fiscalYear}
-                      onChange={(e) => setForm({ ...form, fiscalYear: e.target.value })}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>Budget Amount *</Label>
                     <Input
-                      type="number"
-                      step="0.01"
-                      value={form.budgetAmount}
-                      onChange={(e) => setForm({ ...form, budgetAmount: e.target.value })}
+                      onChange={(e) =>
+                        setForm({ ...form, budgetAmount: e.target.value })
+                      }
                       placeholder="50000.00"
+                      step="0.01"
+                      type="number"
+                      value={form.budgetAmount}
                     />
                   </div>
                 </div>
@@ -294,13 +341,17 @@ export default function BudgetPage() {
                   <div className="space-y-2">
                     <Label>Period Type</Label>
                     <Select
-                      value={form.periodType}
                       onValueChange={(v) => setForm({ ...form, periodType: v })}
+                      value={form.periodType}
                     >
-                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
                       <SelectContent>
                         {PERIOD_TYPE_OPTIONS.map((o) => (
-                          <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                          <SelectItem key={o.value} value={o.value}>
+                            {o.label}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -308,9 +359,11 @@ export default function BudgetPage() {
                   <div className="space-y-2">
                     <Label>Description</Label>
                     <Input
-                      value={form.description}
-                      onChange={(e) => setForm({ ...form, description: e.target.value })}
+                      onChange={(e) =>
+                        setForm({ ...form, description: e.target.value })
+                      }
                       placeholder="Optional description"
+                      value={form.description}
                     />
                   </div>
                 </div>
@@ -318,17 +371,21 @@ export default function BudgetPage() {
                   <div className="space-y-2">
                     <Label>Period Start</Label>
                     <Input
+                      onChange={(e) =>
+                        setForm({ ...form, periodStart: e.target.value })
+                      }
                       type="date"
                       value={form.periodStart}
-                      onChange={(e) => setForm({ ...form, periodStart: e.target.value })}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>Period End</Label>
                     <Input
+                      onChange={(e) =>
+                        setForm({ ...form, periodEnd: e.target.value })
+                      }
                       type="date"
                       value={form.periodEnd}
-                      onChange={(e) => setForm({ ...form, periodEnd: e.target.value })}
                     />
                   </div>
                 </div>
@@ -336,33 +393,57 @@ export default function BudgetPage() {
                   <div className="space-y-2">
                     <Label>Warning Threshold (%)</Label>
                     <Input
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          thresholdWarningPct: e.target.value,
+                        })
+                      }
                       type="number"
                       value={form.thresholdWarningPct}
-                      onChange={(e) => setForm({ ...form, thresholdWarningPct: e.target.value })}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label>Critical Threshold (%)</Label>
                     <Input
+                      onChange={(e) =>
+                        setForm({
+                          ...form,
+                          thresholdCriticalPct: e.target.value,
+                        })
+                      }
                       type="number"
                       value={form.thresholdCriticalPct}
-                      onChange={(e) => setForm({ ...form, thresholdCriticalPct: e.target.value })}
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <Label>Notes</Label>
                   <Textarea
-                    value={form.notes}
-                    onChange={(e) => setForm({ ...form, notes: e.target.value })}
-                    rows={2}
+                    onChange={(e) =>
+                      setForm({ ...form, notes: e.target.value })
+                    }
                     placeholder="Internal notes..."
+                    rows={2}
+                    value={form.notes}
                   />
                 </div>
                 <div className="flex justify-end gap-3 pt-2">
-                  <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-                  <Button onClick={handleCreate} disabled={!form.name.trim() || !form.budgetAmount || saving}>
-                    {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+                  <Button
+                    onClick={() => setDialogOpen(false)}
+                    variant="outline"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    disabled={
+                      !(form.name.trim() && form.budgetAmount) || saving
+                    }
+                    onClick={handleCreate}
+                  >
+                    {saving && (
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    )}
                     Create Budget
                   </Button>
                 </div>
@@ -380,8 +461,12 @@ export default function BudgetPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalBudget)}</div>
-            <p className="text-xs text-muted-foreground">{budgets.length} active budget{budgets.length !== 1 ? "s" : ""}</p>
+            <div className="text-2xl font-bold">
+              {formatCurrency(totalBudget)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              {budgets.length} active budget{budgets.length !== 1 ? "s" : ""}
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -390,9 +475,13 @@ export default function BudgetPage() {
             <PieChart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(totalSpent)}</div>
+            <div className="text-2xl font-bold">
+              {formatCurrency(totalSpent)}
+            </div>
             <p className="text-xs text-muted-foreground">
-              {totalBudget > 0 ? `${Math.round((totalSpent / totalBudget) * 100)}% of total budget` : "—"}
+              {totalBudget > 0
+                ? `${Math.round((totalSpent / totalBudget) * 100)}% of total budget`
+                : "—"}
             </p>
           </CardContent>
         </Card>
@@ -402,7 +491,9 @@ export default function BudgetPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${totalBudget - totalSpent < 0 ? "text-red-600" : ""}`}>
+            <div
+              className={`text-2xl font-bold ${totalBudget - totalSpent < 0 ? "text-red-600" : ""}`}
+            >
               {formatCurrency(totalBudget - totalSpent)}
             </div>
           </CardContent>
@@ -421,7 +512,9 @@ export default function BudgetPage() {
               )}
             </div>
             <p className="text-xs text-muted-foreground">
-              {overBudgetCount > 0 ? `${overBudgetCount} over budget` : "All within limits"}
+              {overBudgetCount > 0
+                ? `${overBudgetCount} over budget`
+                : "All within limits"}
             </p>
           </CardContent>
         </Card>
@@ -431,17 +524,19 @@ export default function BudgetPage() {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
+          className="pl-10"
+          onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search by name, category, or year..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10"
         />
       </div>
 
       {/* Budget List & Detail */}
       <div className="grid gap-6 md:grid-cols-3">
         {/* Budget List */}
-        <div className={`space-y-3 ${selectedBudget ? "md:col-span-1" : "md:col-span-3"}`}>
+        <div
+          className={`space-y-3 ${selectedBudget ? "md:col-span-1" : "md:col-span-3"}`}
+        >
           {filtered.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
@@ -457,13 +552,14 @@ export default function BudgetPage() {
             filtered.map((budget) => {
               const spent = Number(budget.spent_amount);
               const total = Number(budget.budget_amount);
-              const pct = total > 0 ? Math.round((spent / total) * 10000) / 100 : 0;
+              const pct =
+                total > 0 ? Math.round((spent / total) * 10_000) / 100 : 0;
               const isSelected = selectedBudget === budget.id;
 
               return (
                 <Card
-                  key={budget.id}
                   className={`cursor-pointer transition-all ${isSelected ? "ring-2 ring-blue-500 shadow-md" : "hover:shadow-sm"}`}
+                  key={budget.id}
                   onClick={() => loadDetail(budget.id)}
                 >
                   <CardContent className="p-4">
@@ -471,10 +567,16 @@ export default function BudgetPage() {
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="font-semibold">{budget.name}</span>
-                          <Badge className={getStatusColor(budget.status)}>{budget.status}</Badge>
+                          <Badge className={getStatusColor(budget.status)}>
+                            {budget.status}
+                          </Badge>
                         </div>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-                          {budget.category && <Badge variant="outline" className="text-xs">{budget.category}</Badge>}
+                          {budget.category && (
+                            <Badge className="text-xs" variant="outline">
+                              {budget.category}
+                            </Badge>
+                          )}
                           <span>FY{budget.fiscal_year}</span>
                         </div>
                       </div>
@@ -485,10 +587,10 @@ export default function BudgetPage() {
                           </span>
                         )}
                         <Button
-                          size="sm"
-                          variant="ghost"
                           className="text-red-600 hover:text-red-700 hover:bg-red-50 h-7 w-7 p-0"
                           onClick={(e) => handleDelete(budget, e)}
+                          size="sm"
+                          variant="ghost"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
@@ -497,10 +599,10 @@ export default function BudgetPage() {
 
                     <div className="mt-3">
                       <UtilizationBar
+                        compact
+                        criticalPct={Number(budget.threshold_critical_pct)}
                         pct={pct}
                         warningPct={Number(budget.threshold_warning_pct)}
-                        criticalPct={Number(budget.threshold_critical_pct)}
-                        compact
                       />
                       <div className="flex justify-between text-xs text-muted-foreground mt-1">
                         <span>{formatCurrency(spent)} spent</span>
@@ -532,47 +634,80 @@ export default function BudgetPage() {
                       <div>
                         <CardTitle>{selectedBudgetObj.name}</CardTitle>
                         <p className="text-sm text-muted-foreground">
-                          {selectedBudgetObj.category ? `${selectedBudgetObj.category} · ` : ""}
-                          FY{selectedBudgetObj.fiscal_year} · {formatCurrency(Number(selectedBudgetObj.budget_amount))}
+                          {selectedBudgetObj.category
+                            ? `${selectedBudgetObj.category} · `
+                            : ""}
+                          FY{selectedBudgetObj.fiscal_year} ·{" "}
+                          {formatCurrency(
+                            Number(selectedBudgetObj.budget_amount)
+                          )}
                         </p>
                       </div>
-                      <Button variant="ghost" size="sm" onClick={() => { setSelectedBudget(null); setDetailData(null); }}>
+                      <Button
+                        onClick={() => {
+                          setSelectedBudget(null);
+                          setDetailData(null);
+                        }}
+                        size="sm"
+                        variant="ghost"
+                      >
                         Close
                       </Button>
                     </div>
                   </CardHeader>
                   <CardContent>
                     <UtilizationBar
-                      pct={detailData.spend.utilizationPct}
-                      warningPct={Number(selectedBudgetObj.threshold_warning_pct)}
-                      criticalPct={Number(selectedBudgetObj.threshold_critical_pct)}
+                      criticalPct={Number(
+                        selectedBudgetObj.threshold_critical_pct
+                      )}
                       label="Utilization"
+                      pct={detailData.spend.utilizationPct}
+                      warningPct={Number(
+                        selectedBudgetObj.threshold_warning_pct
+                      )}
                     />
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                       <div>
                         <p className="text-xs text-muted-foreground">Budget</p>
-                        <p className="text-lg font-semibold">{formatCurrency(Number(selectedBudgetObj.budget_amount))}</p>
+                        <p className="text-lg font-semibold">
+                          {formatCurrency(
+                            Number(selectedBudgetObj.budget_amount)
+                          )}
+                        </p>
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Spent</p>
-                        <p className={`text-lg font-semibold ${detailData.spend.utilizationPct >= 100 ? "text-red-600" : ""}`}>
+                        <p
+                          className={`text-lg font-semibold ${detailData.spend.utilizationPct >= 100 ? "text-red-600" : ""}`}
+                        >
                           {formatCurrency(detailData.spend.totalSpent)}
                         </p>
                       </div>
                       <div>
-                        <p className="text-xs text-muted-foreground">Committed</p>
-                        <p className="text-lg font-semibold">{formatCurrency(detailData.spend.committed)}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Committed
+                        </p>
+                        <p className="text-lg font-semibold">
+                          {formatCurrency(detailData.spend.committed)}
+                        </p>
                       </div>
                       <div>
-                        <p className="text-xs text-muted-foreground">Remaining</p>
-                        <p className={`text-lg font-semibold ${detailData.spend.remaining < 0 ? "text-red-600" : ""}`}>
+                        <p className="text-xs text-muted-foreground">
+                          Remaining
+                        </p>
+                        <p
+                          className={`text-lg font-semibold ${detailData.spend.remaining < 0 ? "text-red-600" : ""}`}
+                        >
                           {formatCurrency(detailData.spend.remaining)}
                         </p>
                       </div>
                     </div>
                     <p className="text-xs text-muted-foreground mt-2">
-                      Based on {detailData.spend.poCount} purchase order{detailData.spend.poCount !== 1 ? "s" : ""}
-                      {selectedBudgetObj.category ? ` in "${selectedBudgetObj.category}" category` : ""}
+                      Based on {detailData.spend.poCount} purchase order
+                      {detailData.spend.poCount !== 1 ? "s" : ""}
+                      {selectedBudgetObj.category
+                        ? ` in "${selectedBudgetObj.category}" category`
+                        : ""}
                     </p>
                   </CardContent>
                 </Card>
@@ -580,23 +715,42 @@ export default function BudgetPage() {
                 {/* Visual Budget vs Actual */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-base">Budget vs Actual</CardTitle>
+                    <CardTitle className="text-base">
+                      Budget vs Actual
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
                     {detailData.monthlyBreakdown.length > 0 ? (
                       <div className="space-y-2">
                         {detailData.monthlyBreakdown.map((m) => {
-                          const monthPct = Number(selectedBudgetObj.budget_amount) > 0
-                            ? Math.round((Number(m.amount) / Number(selectedBudgetObj.budget_amount)) * 10000) / 100
-                            : 0;
-                          const monthLabel = new Date(m.month + "-01").toLocaleDateString("en-US", { month: "short", year: "numeric" });
+                          const monthPct =
+                            Number(selectedBudgetObj.budget_amount) > 0
+                              ? Math.round(
+                                  (Number(m.amount) /
+                                    Number(selectedBudgetObj.budget_amount)) *
+                                    10_000
+                                ) / 100
+                              : 0;
+                          const monthLabel = new Date(
+                            m.month + "-01"
+                          ).toLocaleDateString("en-US", {
+                            month: "short",
+                            year: "numeric",
+                          });
                           return (
-                            <div key={m.month} className="flex items-center gap-3">
-                              <span className="text-sm text-muted-foreground w-24 shrink-0">{monthLabel}</span>
+                            <div
+                              className="flex items-center gap-3"
+                              key={m.month}
+                            >
+                              <span className="text-sm text-muted-foreground w-24 shrink-0">
+                                {monthLabel}
+                              </span>
                               <div className="flex-1 h-6 bg-gray-100 rounded relative overflow-hidden">
                                 <div
                                   className={`h-full rounded ${monthPct >= 15 ? "bg-blue-500" : "bg-blue-400"}`}
-                                  style={{ width: `${Math.min(monthPct * 5, 100)}%` }}
+                                  style={{
+                                    width: `${Math.min(monthPct * 5, 100)}%`,
+                                  }}
                                 />
                                 <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-medium">
                                   {formatCurrency(Number(m.amount))}
@@ -609,14 +763,21 @@ export default function BudgetPage() {
                           );
                         })}
                         <div className="flex items-center gap-3 pt-2 border-t">
-                          <span className="text-sm font-medium w-24 shrink-0">Total</span>
+                          <span className="text-sm font-medium w-24 shrink-0">
+                            Total
+                          </span>
                           <div className="flex-1 h-6 bg-gray-100 rounded relative overflow-hidden">
                             <div
                               className={`h-full rounded ${
-                                detailData.spend.utilizationPct >= 100 ? "bg-red-500" :
-                                detailData.spend.utilizationPct >= 80 ? "bg-amber-500" : "bg-blue-500"
+                                detailData.spend.utilizationPct >= 100
+                                  ? "bg-red-500"
+                                  : detailData.spend.utilizationPct >= 80
+                                    ? "bg-amber-500"
+                                    : "bg-blue-500"
                               }`}
-                              style={{ width: `${Math.min(detailData.spend.utilizationPct, 100)}%` }}
+                              style={{
+                                width: `${Math.min(detailData.spend.utilizationPct, 100)}%`,
+                              }}
                             />
                             <span className="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-medium">
                               {formatCurrency(detailData.spend.totalSpent)}
@@ -647,22 +808,26 @@ export default function BudgetPage() {
                     <CardContent className="space-y-2">
                       {detailData.alerts.map((alert) => (
                         <div
-                          key={alert.id}
                           className={`flex items-start gap-3 p-3 rounded-lg ${
                             alert.alert_type === "critical"
                               ? "bg-red-50 border border-red-200"
                               : "bg-amber-50 border border-amber-200"
                           }`}
+                          key={alert.id}
                         >
                           <AlertTriangle
                             className={`h-4 w-4 mt-0.5 shrink-0 ${
-                              alert.alert_type === "critical" ? "text-red-500" : "text-amber-500"
+                              alert.alert_type === "critical"
+                                ? "text-red-500"
+                                : "text-amber-500"
                             }`}
                           />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm">{alert.message}</p>
                             <p className="text-xs text-muted-foreground mt-1">
-                              {poFormatDate(alert.created_at)} · {Number(alert.utilization_pct).toFixed(1)}% utilized
+                              {poFormatDate(alert.created_at)} ·{" "}
+                              {Number(alert.utilization_pct).toFixed(1)}%
+                              utilized
                             </p>
                           </div>
                         </div>
@@ -677,8 +842,12 @@ export default function BudgetPage() {
                     <CardContent className="p-4 space-y-2">
                       {selectedBudgetObj.description && (
                         <div>
-                          <p className="text-xs text-muted-foreground">Description</p>
-                          <p className="text-sm">{selectedBudgetObj.description}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Description
+                          </p>
+                          <p className="text-sm">
+                            {selectedBudgetObj.description}
+                          </p>
                         </div>
                       )}
                       {selectedBudgetObj.notes && (

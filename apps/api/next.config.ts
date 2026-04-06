@@ -26,9 +26,7 @@ interface WebpackConfiguration {
         callback: (err?: Error | null, result?: string | boolean) => void
       ) => void);
   ignoreWarnings?: Array<
-    | string
-    | RegExp
-    | { module?: string | RegExp; message?: string | RegExp }
+    string | RegExp | { module?: string | RegExp; message?: string | RegExp }
   >;
   resolve?: {
     extensionAlias?: Record<string, string[]>;
@@ -47,16 +45,29 @@ let nextConfig: NextConfig = withLogging({
   ...config,
   distDir,
   async headers() {
-    const corsHeaders = process.env.NODE_ENV !== "production"
-      ? [
-          { key: "Access-Control-Allow-Origin", value: "http://127.0.0.1:2221" },
-          { key: "Access-Control-Allow-Methods", value: "GET,POST,PUT,PATCH,DELETE,OPTIONS" },
-          { key: "Access-Control-Allow-Headers", value: "Content-Type,Authorization,X-Requested-With" },
-          { key: "Access-Control-Allow-Credentials", value: "true" },
-        ]
-      : [];
+    const corsHeaders =
+      process.env.NODE_ENV !== "production"
+        ? [
+            {
+              key: "Access-Control-Allow-Origin",
+              value: "http://127.0.0.1:2221",
+            },
+            {
+              key: "Access-Control-Allow-Methods",
+              value: "GET,POST,PUT,PATCH,DELETE,OPTIONS",
+            },
+            {
+              key: "Access-Control-Allow-Headers",
+              value: "Content-Type,Authorization,X-Requested-With",
+            },
+            { key: "Access-Control-Allow-Credentials", value: "true" },
+          ]
+        : [];
 
-    const routes: Array<{ source: string; headers: Array<{ key: string; value: string }> }> = [];
+    const routes: Array<{
+      source: string;
+      headers: Array<{ key: string; value: string }>;
+    }> = [];
 
     // API CORS (dev only) — skip in production to avoid empty headers error
     if (corsHeaders.length > 0) {
@@ -73,8 +84,14 @@ let nextConfig: NextConfig = withLogging({
         { key: "X-Frame-Options", value: "DENY" },
         { key: "X-Content-Type-Options", value: "nosniff" },
         { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
-        { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
-        { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+        {
+          key: "Permissions-Policy",
+          value: "camera=(), microphone=(), geolocation=()",
+        },
+        {
+          key: "Strict-Transport-Security",
+          value: "max-age=63072000; includeSubDomains; preload",
+        },
       ],
     });
 

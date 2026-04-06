@@ -7,12 +7,19 @@
 import { auth } from "@repo/auth/server";
 import { database, type Prisma } from "@repo/database";
 import {
-  buildWebhookPayload,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+buildWebhookPayload,
   determineNextStatus,
   sendWebhook,
   shouldAutoDisable,
   shouldTriggerWebhook,
-} from "@repo/notifications";
+} from "@repo/notifications"
+
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -209,6 +216,7 @@ export async function POST(request: NextRequest) {
       results,
     });
   } catch (error) {
+    captureException(error);
     console.error("Error triggering webhooks:", error);
     return NextResponse.json(
       { error: "Failed to trigger webhooks" },

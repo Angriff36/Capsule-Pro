@@ -1,6 +1,14 @@
 "use client";
 
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -9,22 +17,14 @@ import {
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@repo/design-system/components/ui/card";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import {
-  CakeIcon,
+  BriefcaseIcon,
   Building2Icon,
+  CakeIcon,
+  GraduationCapIcon,
   HeartIcon,
   PartyPopperIcon,
-  UsersIcon,
-  BriefcaseIcon,
-  GraduationCapIcon,
   StarIcon,
+  UsersIcon,
 } from "lucide-react";
 
 export interface EventTemplate {
@@ -52,7 +52,8 @@ export const EVENT_TEMPLATES: EventTemplate[] = [
   {
     id: "wedding-reception",
     name: "Wedding Reception",
-    description: "Full-service wedding catering with cocktail hour, dinner service, and late-night snacks",
+    description:
+      "Full-service wedding catering with cocktail hour, dinner service, and late-night snacks",
     icon: <HeartIcon className="h-6 w-6" />,
     eventType: "wedding",
     defaultGuestCount: 150,
@@ -78,7 +79,8 @@ export const EVENT_TEMPLATES: EventTemplate[] = [
   {
     id: "corporate-lunch",
     name: "Corporate Lunch",
-    description: "Business lunch with professional presentation and efficient service",
+    description:
+      "Business lunch with professional presentation and efficient service",
     icon: <Building2Icon className="h-6 w-6" />,
     eventType: "corporate",
     defaultGuestCount: 50,
@@ -156,7 +158,8 @@ export const EVENT_TEMPLATES: EventTemplate[] = [
   {
     id: "conference-catering",
     name: "Conference Catering",
-    description: "Multi-day conference with breakfast, lunch, and break services",
+    description:
+      "Multi-day conference with breakfast, lunch, and break services",
     icon: <UsersIcon className="h-6 w-6" />,
     eventType: "conference",
     defaultGuestCount: 200,
@@ -182,7 +185,8 @@ export const EVENT_TEMPLATES: EventTemplate[] = [
   {
     id: "business-dinner",
     name: "Business Dinner",
-    description: "Executive dining experience with refined service and presentation",
+    description:
+      "Executive dining experience with refined service and presentation",
     icon: <BriefcaseIcon className="h-6 w-6" />,
     eventType: "corporate",
     defaultGuestCount: 25,
@@ -234,7 +238,8 @@ export const EVENT_TEMPLATES: EventTemplate[] = [
   {
     id: "vip-event",
     name: "VIP/Exclusive Event",
-    description: "High-end experience with white-glove service and premium offerings",
+    description:
+      "High-end experience with white-glove service and premium offerings",
     icon: <StarIcon className="h-6 w-6" />,
     eventType: "vip",
     defaultGuestCount: 30,
@@ -268,7 +273,8 @@ interface EventTemplateSelectorProps {
 const categoryColors = {
   social: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200",
   corporate: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
-  specialty: "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+  specialty:
+    "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
 };
 
 export function EventTemplateSelector({
@@ -293,8 +299,9 @@ export function EventTemplateSelector({
         <DialogHeader>
           <DialogTitle>Choose an Event Template</DialogTitle>
           <DialogDescription>
-            Select a template to pre-populate your event with recommended settings,
-            menu suggestions, and staffing levels. You can customize everything after.
+            Select a template to pre-populate your event with recommended
+            settings, menu suggestions, and staffing levels. You can customize
+            everything after.
           </DialogDescription>
         </DialogHeader>
 
@@ -303,7 +310,9 @@ export function EventTemplateSelector({
             <div key={category}>
               <h3 className="mb-3 flex items-center gap-2 font-semibold text-lg capitalize">
                 {category === "social" && <HeartIcon className="h-5 w-5" />}
-                {category === "corporate" && <Building2Icon className="h-5 w-5" />}
+                {category === "corporate" && (
+                  <Building2Icon className="h-5 w-5" />
+                )}
                 {category === "specialty" && <StarIcon className="h-5 w-5" />}
                 {category} Events
               </h3>
@@ -390,7 +399,9 @@ export function getTemplateDefaults(template: EventTemplate) {
  * Get menu suggestions for a given template ID.
  * Returns null if template ID is not found.
  */
-export function getTemplateMenuSuggestions(templateId: string | null): string[] | null {
+export function getTemplateMenuSuggestions(
+  templateId: string | null
+): string[] | null {
   if (!templateId) {
     return null;
   }
@@ -405,7 +416,9 @@ export function getTemplateMenuSuggestions(templateId: string | null): string[] 
  * Get full template by ID.
  * Returns null if template ID is not found.
  */
-export function getTemplateById(templateId: string | null): EventTemplate | null {
+export function getTemplateById(
+  templateId: string | null
+): EventTemplate | null {
   if (!templateId) {
     return null;
   }

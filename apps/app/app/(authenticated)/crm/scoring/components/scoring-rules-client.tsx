@@ -43,7 +43,15 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import { Flame, PlusIcon, RefreshCw, Snowflake, Sun, Thermometer, Trash2 } from "lucide-react";
+import {
+  Flame,
+  PlusIcon,
+  RefreshCw,
+  Snowflake,
+  Sun,
+  Thermometer,
+  Trash2,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -173,7 +181,9 @@ export function ScoringRulesClient({
       loadData();
     } catch (error) {
       console.error("Failed to create rule:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to create rule");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to create rule"
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -205,11 +215,13 @@ export function ScoringRulesClient({
         )
       );
 
-      toast.success(`Rule ${!rule.is_active ? "activated" : "deactivated"}`);
+      toast.success(`Rule ${rule.is_active ? "deactivated" : "activated"}`);
       loadData(); // Reload to get fresh data
     } catch (error) {
       console.error("Failed to toggle rule:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to update rule");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to update rule"
+      );
     }
   };
 
@@ -231,7 +243,9 @@ export function ScoringRulesClient({
       loadData(); // Reload distribution
     } catch (error) {
       console.error("Failed to calculate scores:", error);
-      toast.error(error instanceof Error ? error.message : "Failed to calculate scores");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to calculate scores"
+      );
     } finally {
       setIsCalculating(false);
     }
@@ -310,13 +324,14 @@ export function ScoringRulesClient({
             <div className="flex items-center gap-2">
               <Sun className="size-5 text-muted-foreground" />
               <span className="text-sm text-muted-foreground">
-                Scoring rules automatically evaluate leads and assign points based on field values.
+                Scoring rules automatically evaluate leads and assign points
+                based on field values.
               </span>
             </div>
             <div className="flex gap-2">
               <Button
-                onClick={handleCalculateScores}
                 disabled={isCalculating || activeRules === 0}
+                onClick={handleCalculateScores}
                 variant="outline"
               >
                 {isCalculating ? (
@@ -351,9 +366,12 @@ export function ScoringRulesClient({
               <div className="mb-4 rounded-full bg-muted p-4">
                 <Thermometer className="size-8 text-muted-foreground" />
               </div>
-              <h3 className="mb-2 text-lg font-semibold">No scoring rules yet</h3>
+              <h3 className="mb-2 text-lg font-semibold">
+                No scoring rules yet
+              </h3>
               <p className="mb-4 text-muted-foreground text-sm">
-                Create your first rule to start prioritizing leads automatically.
+                Create your first rule to start prioritizing leads
+                automatically.
               </p>
               <Button onClick={() => setIsDialogOpen(true)}>
                 <PlusIcon className="mr-2 size-4" />
@@ -385,11 +403,14 @@ export function ScoringRulesClient({
                       </TableCell>
                       <TableCell>
                         <Badge variant="outline">
-                          {FIELD_OPTIONS.find((f) => f.value === rule.field)?.label ?? rule.field}
+                          {FIELD_OPTIONS.find((f) => f.value === rule.field)
+                            ?.label ?? rule.field}
                         </Badge>
                       </TableCell>
                       <TableCell>
-                        {CONDITION_OPTIONS.find((c) => c.value === rule.condition)?.label ?? rule.condition}
+                        {CONDITION_OPTIONS.find(
+                          (c) => c.value === rule.condition
+                        )?.label ?? rule.condition}
                       </TableCell>
                       <TableCell className="max-w-[200px] truncate">
                         {rule.condition === "exists" ? "—" : rule.value}
@@ -400,8 +421,8 @@ export function ScoringRulesClient({
                             rule.points > 0
                               ? "text-green-600"
                               : rule.points < 0
-                              ? "text-red-600"
-                              : "text-gray-600"
+                                ? "text-red-600"
+                                : "text-gray-600"
                           }`}
                         >
                           {rule.points > 0 ? "+" : ""}
@@ -419,11 +440,11 @@ export function ScoringRulesClient({
                       </TableCell>
                       <TableCell className="text-right">
                         <Button
-                          size="sm"
-                          variant="ghost"
                           className="text-muted-foreground"
                           disabled
+                          size="sm"
                           title="Delete not implemented yet"
+                          variant="ghost"
                         >
                           <Trash2 className="size-4" />
                         </Button>
@@ -439,10 +460,10 @@ export function ScoringRulesClient({
         {/* Help Text */}
         <section className="text-sm text-muted-foreground">
           <p>
-            <strong>How scoring works:</strong> Each lead is evaluated against all active rules.
-            Points are added when conditions match. Leads with scores ≥80 are "Hot", ≥50 are "Warm",
-            and below 50 are "Cold". Click "Calculate Scores" to re-evaluate all leads after
-            changing rules.
+            <strong>How scoring works:</strong> Each lead is evaluated against
+            all active rules. Points are added when conditions match. Leads with
+            scores ≥80 are "Hot", ≥50 are "Warm", and below 50 are "Cold". Click
+            "Calculate Scores" to re-evaluate all leads after changing rules.
           </p>
         </section>
       </div>
@@ -460,29 +481,29 @@ export function ScoringRulesClient({
           <div className="grid gap-4 py-4">
             {/* Rule Name */}
             <div className="grid gap-2">
-              <label htmlFor="rule_name" className="text-sm font-medium">
+              <label className="text-sm font-medium" htmlFor="rule_name">
                 Rule Name
               </label>
               <Input
                 id="rule_name"
-                placeholder="e.g., High-value company"
-                value={form.rule_name}
                 onChange={(e) =>
                   setForm((prev) => ({ ...prev, rule_name: e.target.value }))
                 }
+                placeholder="e.g., High-value company"
+                value={form.rule_name}
               />
             </div>
 
             {/* Field Selection */}
             <div className="grid gap-2">
-              <label htmlFor="field" className="text-sm font-medium">
+              <label className="text-sm font-medium" htmlFor="field">
                 Field
               </label>
               <Select
-                value={form.field}
                 onValueChange={(value) =>
                   setForm((prev) => ({ ...prev, field: value }))
                 }
+                value={form.field}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select field" />
@@ -499,14 +520,14 @@ export function ScoringRulesClient({
 
             {/* Condition Selection */}
             <div className="grid gap-2">
-              <label htmlFor="condition" className="text-sm font-medium">
+              <label className="text-sm font-medium" htmlFor="condition">
                 Condition
               </label>
               <Select
-                value={form.condition}
                 onValueChange={(value) =>
                   setForm((prev) => ({ ...prev, condition: value }))
                 }
+                value={form.condition}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select condition" />
@@ -524,67 +545,67 @@ export function ScoringRulesClient({
             {/* Value Input */}
             {form.condition !== "exists" && (
               <div className="grid gap-2">
-                <label htmlFor="value" className="text-sm font-medium">
+                <label className="text-sm font-medium" htmlFor="value">
                   Value
                 </label>
                 <Input
                   id="value"
-                  placeholder="e.g., referral, 10000, 2024-06-15"
-                  value={form.value}
                   onChange={(e) =>
                     setForm((prev) => ({ ...prev, value: e.target.value }))
                   }
+                  placeholder="e.g., referral, 10000, 2024-06-15"
+                  value={form.value}
                 />
               </div>
             )}
 
             {/* Points Input */}
             <div className="grid gap-2">
-              <label htmlFor="points" className="text-sm font-medium">
+              <label className="text-sm font-medium" htmlFor="points">
                 Points (-100 to 100)
               </label>
               <Input
                 id="points"
-                type="number"
-                min={-100}
                 max={100}
-                value={form.points}
+                min={-100}
                 onChange={(e) =>
                   setForm((prev) => ({
                     ...prev,
-                    points: parseInt(e.target.value) || 0,
+                    points: Number.parseInt(e.target.value) || 0,
                   }))
                 }
+                type="number"
+                value={form.points}
               />
             </div>
 
             {/* Priority Input */}
             <div className="grid gap-2">
-              <label htmlFor="priority" className="text-sm font-medium">
+              <label className="text-sm font-medium" htmlFor="priority">
                 Priority (lower = evaluated first)
               </label>
               <Input
                 id="priority"
-                type="number"
                 min={0}
-                value={form.priority}
                 onChange={(e) =>
                   setForm((prev) => ({
                     ...prev,
-                    priority: parseInt(e.target.value) || 0,
+                    priority: Number.parseInt(e.target.value) || 0,
                   }))
                 }
+                type="number"
+                value={form.priority}
               />
             </div>
 
             {/* Active Toggle */}
             <div className="flex items-center justify-between">
-              <label htmlFor="is_active" className="text-sm font-medium">
+              <label className="text-sm font-medium" htmlFor="is_active">
                 Active
               </label>
               <Switch
-                id="is_active"
                 checked={form.is_active}
+                id="is_active"
                 onCheckedChange={(checked) =>
                   setForm((prev) => ({ ...prev, is_active: checked }))
                 }
@@ -594,17 +615,17 @@ export function ScoringRulesClient({
 
           <DialogFooter>
             <Button
-              variant="outline"
               onClick={() => {
                 setIsDialogOpen(false);
                 setForm(DEFAULT_FORM);
               }}
+              variant="outline"
             >
               Cancel
             </Button>
             <Button
-              onClick={handleCreateRule}
               disabled={isSubmitting || !form.rule_name.trim()}
+              onClick={handleCreateRule}
             >
               {isSubmitting ? "Creating..." : "Create Rule"}
             </Button>

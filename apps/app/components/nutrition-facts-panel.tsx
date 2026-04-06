@@ -72,7 +72,10 @@ const DAILY_VALUES = {
   addedSugar: 50,
 } as const;
 
-function calculatePercentDV(value: number | undefined, dailyValue: number): number | undefined {
+function calculatePercentDV(
+  value: number | undefined,
+  dailyValue: number
+): number | undefined {
   if (value === undefined || value === 0) return undefined;
   return Math.round((value / dailyValue) * 100);
 }
@@ -118,7 +121,9 @@ export function NutritionFactsPanel({
     isIndented = false,
     isBold = false
   ) => {
-    const percentDV = dvKey ? calculatePercentDV(value, DAILY_VALUES[dvKey]) : undefined;
+    const percentDV = dvKey
+      ? calculatePercentDV(value, DAILY_VALUES[dvKey])
+      : undefined;
 
     return (
       <div
@@ -146,16 +151,16 @@ export function NutritionFactsPanel({
       className={`bg-white ${borderWidth} border-black p-3 font-mono ${textSize} ${className}`}
     >
       {/* Header */}
-      <div className={`${headerSize} font-black border-b-4 border-black pb-0.5`}>
+      <div
+        className={`${headerSize} font-black border-b-4 border-black pb-0.5`}
+      >
         Nutrition Facts
       </div>
 
       {/* Serving Info */}
       <div className="py-2">
         {name && <div className="text-base font-bold mb-1">{name}</div>}
-        <div className="font-medium">
-          {servingSize}
-        </div>
+        <div className="font-medium">{servingSize}</div>
         <div className={`${textSize}`}>
           Servings Per Container: {servingsPerContainer}
         </div>
@@ -183,30 +188,64 @@ export function NutritionFactsPanel({
 
       {/* Fat Section */}
       {renderNutrientRow("Total Fat", fat, "g", "totalFat", false, true)}
-      {renderNutrientRow("Saturated Fat", saturatedFat, "g", "saturatedFat", true)}
-      {transFat !== undefined && renderNutrientRow("Trans Fat", transFat, "g", undefined, true)}
+      {renderNutrientRow(
+        "Saturated Fat",
+        saturatedFat,
+        "g",
+        "saturatedFat",
+        true
+      )}
+      {transFat !== undefined &&
+        renderNutrientRow("Trans Fat", transFat, "g", undefined, true)}
 
       {/* Cholesterol & Sodium */}
-      {cholesterol !== undefined && renderNutrientRow("Cholesterol", cholesterol, "mg", "cholesterol", false, true)}
+      {cholesterol !== undefined &&
+        renderNutrientRow(
+          "Cholesterol",
+          cholesterol,
+          "mg",
+          "cholesterol",
+          false,
+          true
+        )}
       {renderNutrientRow("Sodium", sodium, "mg", "sodium", false, true)}
 
       {/* Carbohydrate Section */}
-      {renderNutrientRow("Total Carbohydrate", carbs, "g", "totalCarbs", false, true)}
+      {renderNutrientRow(
+        "Total Carbohydrate",
+        carbs,
+        "g",
+        "totalCarbs",
+        false,
+        true
+      )}
       {renderNutrientRow("Dietary Fiber", fiber, "g", "dietaryFiber", true)}
       {renderNutrientRow("Total Sugars", sugar, "g", undefined, true)}
-      {addedSugar !== undefined && renderNutrientRow("Includes Added Sugars", addedSugar, "g", "addedSugar", true)}
+      {addedSugar !== undefined &&
+        renderNutrientRow(
+          "Includes Added Sugars",
+          addedSugar,
+          "g",
+          "addedSugar",
+          true
+        )}
 
       {/* Protein */}
       {renderNutrientRow("Protein", protein, "g", "protein", false, true)}
 
       {/* Vitamins & Minerals */}
       <div className="border-t-4 border-black mt-1 pt-1">
-        {vitaminD !== undefined && renderNutrientRow("Vitamin D", vitaminD, "mcg", "vitaminD")}
-        {calcium !== undefined && renderNutrientRow("Calcium", calcium, "mg", "calcium")}
+        {vitaminD !== undefined &&
+          renderNutrientRow("Vitamin D", vitaminD, "mcg", "vitaminD")}
+        {calcium !== undefined &&
+          renderNutrientRow("Calcium", calcium, "mg", "calcium")}
         {iron !== undefined && renderNutrientRow("Iron", iron, "mg", "iron")}
-        {potassium !== undefined && renderNutrientRow("Potassium", potassium, "mg", "potassium")}
-        {vitaminA !== undefined && renderNutrientRow("Vitamin A", vitaminA, "mcg", "vitaminA")}
-        {vitaminC !== undefined && renderNutrientRow("Vitamin C", vitaminC, "mg", "vitaminC")}
+        {potassium !== undefined &&
+          renderNutrientRow("Potassium", potassium, "mg", "potassium")}
+        {vitaminA !== undefined &&
+          renderNutrientRow("Vitamin A", vitaminA, "mcg", "vitaminA")}
+        {vitaminC !== undefined &&
+          renderNutrientRow("Vitamin C", vitaminC, "mg", "vitaminC")}
       </div>
 
       {/* Footer */}

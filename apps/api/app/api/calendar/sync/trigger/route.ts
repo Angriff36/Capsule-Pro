@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 const SUPPORTED_PROVIDERS = ["google", "outlook"] as const;
@@ -30,9 +31,11 @@ export async function POST(request: NextRequest) {
       endDate?: string;
     };
 
-    if (!provider || !SUPPORTED_PROVIDERS.includes(provider as any)) {
+    if (!(provider && SUPPORTED_PROVIDERS.includes(provider as any))) {
       return NextResponse.json(
-        { error: `Unsupported provider. Must be one of: ${SUPPORTED_PROVIDERS.join(", ")}` },
+        {
+          error: `Unsupported provider. Must be one of: ${SUPPORTED_PROVIDERS.join(", ")}`,
+        },
         { status: 400 }
       );
     }
@@ -49,7 +52,7 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    if (!sync || !sync.accessToken) {
+    if (!(sync && sync.accessToken)) {
       return NextResponse.json(
         { error: `${provider} is not connected. Please connect first.` },
         { status: 400 }
@@ -74,7 +77,9 @@ export async function POST(request: NextRequest) {
 
     // Default date range: next 30 days
     const start = startDate ? new Date(startDate) : new Date();
-    const end = endDate ? new Date(endDate) : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+    const end = endDate
+      ? new Date(endDate)
+      : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
 
     let importedCount = 0;
     let errorCount = 0;
@@ -120,7 +125,9 @@ export async function POST(request: NextRequest) {
         dateRange: { start: start.toISOString(), end: end.toISOString() },
       });
     } catch (syncError) {
-      const errorMessage = syncError instanceof Error ? syncError.message : "Unknown error";
+      captureException(syncError);
+      const errorMessage =
+        syncError instanceof Error ? syncError.message : "Unknown error";
 
       await database.providerSync.update({
         where: { tenantId_id: { tenantId, id: sync.id } },
@@ -137,6 +144,7 @@ export async function POST(request: NextRequest) {
       );
     }
   } catch (error) {
+    captureException(error);
     console.error("[calendar/sync/trigger] Error:", error);
     return NextResponse.json(
       { error: "Failed to trigger sync" },
@@ -174,7 +182,9 @@ async function syncGoogleCalendar(
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Google Calendar API error: ${response.status} - ${errorText}`);
+    throw new Error(
+      `Google Calendar API error: ${response.status} - ${errorText}`
+    );
   }
 
   const data = await response.json();
@@ -191,7 +201,9 @@ async function syncGoogleCalendar(
         data: {
           tenantId: _tenantId,
           title: event.summary || "Untitled Event",
-          eventDate: new Date(event.start?.dateTime || event.start?.date || new Date()),
+          eventDate: new Date(
+            event.start?.dateTime || event.start?.date || new Date()
+          ),
           eventType: "external_google",
           status: "confirmed",
           venueName: event.location || null,
@@ -234,7 +246,9 @@ async function syncOutlookCalendar(
 
   if (!response.ok) {
     const errorText = await response.text();
-    throw new Error(`Microsoft Graph API error: ${response.status} - ${errorText}`);
+    throw new Error(
+      `Microsoft Graph API error: ${response.status} - ${errorText}`
+    );
   }
 
   const data = await response.json();

@@ -9,9 +9,15 @@ import { database } from "@repo/database";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
-  manifestErrorResponse,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+manifestErrorResponse,
   manifestSuccessResponse,
-} from "@/lib/manifest-response";
+} from "@/lib/manifest-response"
 
 /**
  * GET /api/settings/rate-limits/events
@@ -38,7 +44,10 @@ export async function GET(request: NextRequest) {
     }
 
     const { searchParams } = new URL(request.url);
-    const page = Math.max(1, Number.parseInt(searchParams.get("page") || "1", 10));
+    const page = Math.max(
+      1,
+      Number.parseInt(searchParams.get("page") || "1", 10)
+    );
     const limit = Math.min(
       200,
       Math.max(1, Number.parseInt(searchParams.get("limit") || "50", 10))
@@ -64,10 +73,14 @@ export async function GET(request: NextRequest) {
     if (startDateParam || endDateParam) {
       where.timestamp = {};
       if (startDateParam) {
-        (where.timestamp as Record<string, unknown>).gte = new Date(startDateParam);
+        (where.timestamp as Record<string, unknown>).gte = new Date(
+          startDateParam
+        );
       }
       if (endDateParam) {
-        (where.timestamp as Record<string, unknown>).lte = new Date(endDateParam);
+        (where.timestamp as Record<string, unknown>).lte = new Date(
+          endDateParam
+        );
       }
     }
 
@@ -109,6 +122,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
+    captureException(error);
     console.error("[rate-limits/events] Error:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

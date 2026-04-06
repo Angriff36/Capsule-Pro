@@ -188,7 +188,9 @@ function mapReportToDiscrepancy(
     updatedAt: report.updatedAt.toISOString(),
   };
 }
-function parseQueryParams(searchParams: URLSearchParams): DiscrepanciesQueryParams {
+function parseQueryParams(
+  searchParams: URLSearchParams
+): DiscrepanciesQueryParams {
   return {
     status: searchParams.get("status") as DiscrepancyStatus | undefined,
     severity: searchParams.get("severity") as DiscrepancySeverity | undefined,
@@ -280,7 +282,10 @@ export async function GET(request: NextRequest) {
     const total = await database.varianceReport.count({ where });
     const totalPages = Math.ceil(total / (params.limit ?? 50));
     const discrepancies = await fetchDiscrepancies(where, params);
-    const filteredDiscrepancies = filterBySeverity(discrepancies, params.severity);
+    const filteredDiscrepancies = filterBySeverity(
+      discrepancies,
+      params.severity
+    );
     const summary = await calculateSummary(discrepancies, where);
     return manifestSuccessResponse({
       discrepancies: filteredDiscrepancies,

@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
 
@@ -18,7 +19,7 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { documentType, documentId, content, changeSummary } = body;
 
-    if (!documentType || !documentId || !content) {
+    if (!(documentType && documentId && content)) {
       return NextResponse.json(
         { error: "documentType, documentId, and content are required" },
         { status: 400 }
@@ -57,6 +58,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ version });
   } catch (error) {
+    captureException(error);
     console.error("Error creating document version:", error);
     return NextResponse.json(
       { error: "Failed to create document version" },

@@ -56,6 +56,8 @@ import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import { formatCurrency } from "@/app/lib/format";
+import type { StorageLocation } from "@/app/lib/use-stock-levels";
+import { listLocations } from "@/app/lib/use-stock-levels";
 
 type CycleCountSessionType =
   | "ad_hoc"
@@ -142,6 +144,11 @@ export const CycleCountClient = () => {
   const [newSessionNotes, setNewSessionNotes] = useState("");
   const [isCreating, setIsCreating] = useState(false);
 
+  // Locations state
+  const [locations, setLocations] = useState<StorageLocation[]>([]);
+  const [selectedLocationId, setSelectedLocationId] = useState<string>("");
+  const [isLoadingLocations, setIsLoadingLocations] = useState(false);
+
   const loadSessions = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -184,9 +191,35 @@ export const CycleCountClient = () => {
     loadSessions();
   }, [loadSessions]);
 
+  useEffect(() => {
+    const loadLocationsData = async () => {
+      setIsLoadingLocations(true);
+      try {
+        const response = await listLocations();
+        setLocations(response.data);
+        // Set first active location as default
+        const firstActiveLocation = response.data.find((loc) => loc.isActive);
+        if (firstActiveLocation) {
+          setSelectedLocationId(firstActiveLocation.id);
+        }
+      } catch (error) {
+        console.error("Failed to load locations:", error);
+        toast.error("Failed to load storage locations");
+      } finally {
+        setIsLoadingLocations(false);
+      }
+    };
+    loadLocationsData();
+  }, []);
+
   const handleCreateSession = async () => {
     if (!newSessionName.trim()) {
       toast.error("Session name is required");
+      return;
+    }
+
+    if (!selectedLocationId) {
+      toast.error("Please select a storage location");
       return;
     }
 
@@ -199,7 +232,7 @@ export const CycleCountClient = () => {
         },
         body: JSON.stringify({
           session_name: newSessionName,
-          location_id: "default", // TODO: Get from location selector
+          location_id: selectedLocationId,
           count_type: newSessionType,
           notes: newSessionNotes || undefined,
         }),
@@ -215,6 +248,11 @@ export const CycleCountClient = () => {
       setNewSessionName("");
       setNewSessionType("ad_hoc");
       setNewSessionNotes("");
+      // Reset to first active location
+      const firstActiveLocation = locations.find((loc) => loc.isActive);
+      if (firstActiveLocation) {
+        setSelectedLocationId(firstActiveLocation.id);
+      }
       loadSessions();
     } catch (error) {
       console.error("Failed to create session:", error);
@@ -710,6 +748,35 @@ export const CycleCountClient = () => {
               />
             </div>
             <div className="space-y-2">
+              <Label htmlFor="location">Storage Location *</Label>
+              <Select
+                disabled={isLoadingLocations || locations.length === 0}
+                onValueChange={setSelectedLocationId}
+                value={selectedLocationId}
+              >
+                <SelectTrigger id="location">
+                  <SelectValue
+                    placeholder={
+                      isLoadingLocations
+                        ? "Loading locations..."
+                        : locations.length === 0
+                          ? "No locations available"
+                          : "Select a location"
+                    }
+                  />
+                </SelectTrigger>
+                <SelectContent>
+                  {locations
+                    .filter((loc) => loc.isActive)
+                    .map((location) => (
+                      <SelectItem key={location.id} value={location.id}>
+                        {location.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="session-type">Count Type</Label>
               <Select
                 onValueChange={(value) =>
@@ -741,7 +808,9 @@ export const CycleCountClient = () => {
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              disabled={isCreating || !newSessionName.trim()}
+              disabled={
+                isCreating || !newSessionName.trim() || !selectedLocationId
+              }
               onClick={(e) => {
                 e.preventDefault();
                 handleCreateSession();

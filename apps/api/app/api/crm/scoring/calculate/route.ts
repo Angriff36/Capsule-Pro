@@ -6,6 +6,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -27,7 +28,11 @@ const FIELD_COLUMN_MAP: Record<string, string> = {
 };
 
 // Build SQL condition expression for a single rule
-function buildRuleCondition(field: string, condition: string, value: string): string {
+function buildRuleCondition(
+  field: string,
+  condition: string,
+  value: string
+): string {
   const column = FIELD_COLUMN_MAP[field] ?? field;
   const colRef = `"${column}"`;
 
@@ -65,7 +70,10 @@ export async function POST(_request: NextRequest) {
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 400 }
+      );
     }
 
     // Fetch all active rules ordered by priority
@@ -116,10 +124,16 @@ export async function POST(_request: NextRequest) {
       UPDATE tenant_crm.leads
       SET
         score = CASE
-          ${rules.map((rule) => {
-            const cond = buildRuleCondition(rule.field, rule.condition, rule.value);
-            return `WHEN ${cond} THEN score + ${rule.points}`;
-          }).join("\n          ")}
+          ${rules
+            .map((rule) => {
+              const cond = buildRuleCondition(
+                rule.field,
+                rule.condition,
+                rule.value
+              );
+              return `WHEN ${cond} THEN score + ${rule.points}`;
+            })
+            .join("\n          ")}
           ELSE score
         END,
         updated_at = NOW()
@@ -134,7 +148,7 @@ export async function POST(_request: NextRequest) {
         UPDATE tenant_crm.leads
         SET
           score = score + ${rule.points},
-          score_breakdown = score_breakdown || '{"${rule.id}": "${rule.points}", "rule_name_${rule.id}": "${rule.rule_name.replace(/"/g, "\\\"")}"}'::jsonb,
+          score_breakdown = score_breakdown || '{"${rule.id}": "${rule.points}", "rule_name_${rule.id}": "${rule.rule_name.replace(/"/g, '\\"')}"}'::jsonb,
           updated_at = NOW()
         WHERE tenant_id = '${tenantId}'::uuid
           AND deleted_at IS NULL
@@ -181,7 +195,11 @@ export async function POST(_request: NextRequest) {
       },
     });
   } catch (error) {
+    captureException(error);
     console.error("Error calculating scores:", error);
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

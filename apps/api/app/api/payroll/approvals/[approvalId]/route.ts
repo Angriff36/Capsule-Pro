@@ -6,6 +6,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { InvariantError, invariant } from "@/app/lib/invariant";
@@ -204,6 +205,7 @@ export async function PUT(request: Request, context: RouteContext) {
 
     return NextResponse.json(response);
   } catch (error) {
+    captureException(error);
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }

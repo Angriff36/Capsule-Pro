@@ -1,8 +1,7 @@
 "use client";
 
-import { Label } from "@repo/design-system/components/ui/label";
-import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -10,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { Textarea } from "@repo/design-system/components/ui/textarea";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -46,8 +46,8 @@ export function POForm({ form, vendors, onChange, children }: POFormProps) {
         <div className="space-y-2">
           <Label>Vendor *</Label>
           <Select
-            value={form.vendorId}
             onValueChange={(v) => onChange({ vendorId: v })}
+            value={form.vendorId}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select vendor..." />
@@ -64,20 +64,18 @@ export function POForm({ form, vendors, onChange, children }: POFormProps) {
         <div className="space-y-2">
           <Label>Expected Delivery Date</Label>
           <Input
+            onChange={(e) => onChange({ expectedDeliveryDate: e.target.value })}
             type="date"
             value={form.expectedDeliveryDate}
-            onChange={(e) =>
-              onChange({ expectedDeliveryDate: e.target.value })
-            }
           />
         </div>
         <div className="space-y-2">
           <Label>Notes</Label>
           <Textarea
-            placeholder="Internal notes about this order..."
-            value={form.notes}
             onChange={(e) => onChange({ notes: e.target.value })}
+            placeholder="Internal notes about this order..."
             rows={3}
+            value={form.notes}
           />
         </div>
       </div>

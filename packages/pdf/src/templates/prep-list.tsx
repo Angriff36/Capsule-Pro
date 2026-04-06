@@ -259,12 +259,19 @@ export const PrepListPDF: React.FC<PrepListPDFProps> = ({ data }) => {
   };
 
   const renderIngredient = (ingredient: PrepListIngredient, index: number) => (
-    <View key={`${ingredient.ingredientId}-${index}`} style={styles.ingredientRow}>
+    <View
+      key={`${ingredient.ingredientId}-${index}`}
+      style={styles.ingredientRow}
+    >
       <View style={styles.colCheckbox}>
         <View style={styles.checkbox} />
       </View>
       <View style={styles.colQuantity}>
-        <Text>{ingredient.scaledQuantity.toFixed(ingredient.scaledQuantity % 1 === 0 ? 0 : 2)}</Text>
+        <Text>
+          {ingredient.scaledQuantity.toFixed(
+            ingredient.scaledQuantity % 1 === 0 ? 0 : 2
+          )}
+        </Text>
       </View>
       <View style={styles.colUnit}>
         <Text>{ingredient.scaledUnit}</Text>
@@ -288,7 +295,7 @@ export const PrepListPDF: React.FC<PrepListPDFProps> = ({ data }) => {
 
   const renderTasks = (tasks: PrepListTask[]) => {
     if (tasks.length === 0) return null;
-    
+
     return (
       <View style={styles.taskSection}>
         <Text style={styles.taskTitle}>Production Tasks</Text>
@@ -298,7 +305,9 @@ export const PrepListPDF: React.FC<PrepListPDFProps> = ({ data }) => {
             <Text
               style={[
                 styles.taskPriority,
-                task.priority === 1 ? styles.priorityHigh : styles.priorityNormal,
+                task.priority === 1
+                  ? styles.priorityHigh
+                  : styles.priorityNormal,
               ]}
             >
               {task.priority === 1 ? "HIGH" : "NORM"}
@@ -328,11 +337,11 @@ export const PrepListPDF: React.FC<PrepListPDFProps> = ({ data }) => {
           {station.totalIngredients} items | {station.estimatedTime}h est.
         </Text>
       </View>
-      
+
       <View style={styles.ingredientsList}>
         {station.ingredients.map((ing, idx) => renderIngredient(ing, idx))}
       </View>
-      
+
       {renderTasks(station.tasks)}
     </View>
   );
@@ -357,16 +366,15 @@ export const PrepListPDF: React.FC<PrepListPDFProps> = ({ data }) => {
             <View style={styles.header}>
               <View style={styles.headerRow}>
                 <Text style={styles.title}>Prep List</Text>
-                <Text style={styles.subtitle}>
-                  {prepList.eventTitle}
-                </Text>
+                <Text style={styles.subtitle}>{prepList.eventTitle}</Text>
               </View>
               <View style={styles.headerRow}>
                 <Text style={styles.headerInfo}>
                   Event Date: {formatDate(prepList.eventDate)}
                 </Text>
                 <Text style={styles.headerInfo}>
-                  {prepList.guestCount} guests | {prepList.batchMultiplier}x batch
+                  {prepList.guestCount} guests | {prepList.batchMultiplier}x
+                  batch
                 </Text>
               </View>
             </View>

@@ -13,8 +13,8 @@
  * - Delete simulation
  */
 
-import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock the database before importing
 vi.mock("@repo/database", () => ({
@@ -39,24 +39,26 @@ vi.mock("@repo/database", () => ({
       createMany: vi.fn(),
       updateMany: vi.fn(),
     },
-    $transaction: vi.fn((fn: Function) => fn({
-      commandBoard: {
-        update: vi.fn(),
-      },
-      boardProjection: {
-        update: vi.fn(),
-        createMany: vi.fn(),
-        updateMany: vi.fn(),
-      },
-      commandBoardGroup: {
-        createMany: vi.fn(),
-        updateMany: vi.fn(),
-      },
-      boardAnnotation: {
-        createMany: vi.fn(),
-        updateMany: vi.fn(),
-      },
-    })),
+    $transaction: vi.fn((fn: Function) =>
+      fn({
+        commandBoard: {
+          update: vi.fn(),
+        },
+        boardProjection: {
+          update: vi.fn(),
+          createMany: vi.fn(),
+          updateMany: vi.fn(),
+        },
+        commandBoardGroup: {
+          createMany: vi.fn(),
+          updateMany: vi.fn(),
+        },
+        boardAnnotation: {
+          createMany: vi.fn(),
+          updateMany: vi.fn(),
+        },
+      })
+    ),
   },
   EntityType: {
     EVENT: "EVENT",
@@ -78,12 +80,15 @@ vi.mock("@/app/lib/tenant", () => ({
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { GET, POST } from "@/app/api/command-board/simulations/route";
-import { GET as GetSimulation, DELETE as DeleteSimulation } from "@/app/api/command-board/simulations/[id]/route";
 import { POST as ApplySimulation } from "@/app/api/command-board/simulations/[id]/apply/route";
-import { POST as DiscardSimulation } from "@/app/api/command-board/simulations/[id]/discard/route";
 import { GET as GetDelta } from "@/app/api/command-board/simulations/[id]/delta/route";
+import { POST as DiscardSimulation } from "@/app/api/command-board/simulations/[id]/discard/route";
+import {
+  DELETE as DeleteSimulation,
+  GET as GetSimulation,
+} from "@/app/api/command-board/simulations/[id]/route";
+import { GET, POST } from "@/app/api/command-board/simulations/route";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 const mockAuth = vi.mocked(auth);
 const mockGetTenantIdForOrg = vi.mocked(getTenantIdForOrg);
@@ -110,13 +115,17 @@ describe("Command Board Simulations API", () => {
   describe("GET /api/command-board/simulations", () => {
     it("should return 401 if not authenticated", async () => {
       mockAuth.mockResolvedValueOnce({ orgId: null } as any);
-      const response = await GET(createRequest("http://localhost/api/command-board/simulations"));
+      const response = await GET(
+        createRequest("http://localhost/api/command-board/simulations")
+      );
       expect(response.status).toBe(401);
     });
 
     it("should return 404 if tenant not found", async () => {
       mockGetTenantIdForOrg.mockResolvedValueOnce(null as any);
-      const response = await GET(createRequest("http://localhost/api/command-board/simulations"));
+      const response = await GET(
+        createRequest("http://localhost/api/command-board/simulations")
+      );
       expect(response.status).toBe(404);
     });
 
@@ -142,7 +151,9 @@ describe("Command Board Simulations API", () => {
         } as any,
       ]);
 
-      const response = await GET(createRequest("http://localhost/api/command-board/simulations"));
+      const response = await GET(
+        createRequest("http://localhost/api/command-board/simulations")
+      );
       expect(response.status).toBe(200);
 
       const data = await response.json();
@@ -157,7 +168,11 @@ describe("Command Board Simulations API", () => {
       mockCommandBoard.count.mockResolvedValueOnce(0);
       mockCommandBoard.findMany.mockResolvedValueOnce([]);
 
-      await GET(createRequest(`http://localhost/api/command-board/simulations?source_board_id=${TEST_BOARD_ID}`));
+      await GET(
+        createRequest(
+          `http://localhost/api/command-board/simulations?source_board_id=${TEST_BOARD_ID}`
+        )
+      );
 
       expect(mockCommandBoard.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -186,7 +201,10 @@ describe("Command Board Simulations API", () => {
       const response = await POST(
         createRequest("http://localhost/api/command-board/simulations", {
           method: "POST",
-          body: JSON.stringify({ source_board_id: TEST_BOARD_ID, simulation_name: "Test" }),
+          body: JSON.stringify({
+            source_board_id: TEST_BOARD_ID,
+            simulation_name: "Test",
+          }),
         })
       );
       expect(response.status).toBe(404);
@@ -216,7 +234,10 @@ describe("Command Board Simulations API", () => {
       const response = await POST(
         createRequest("http://localhost/api/command-board/simulations", {
           method: "POST",
-          body: JSON.stringify({ source_board_id: TEST_BOARD_ID, simulation_name: "Test Sim" }),
+          body: JSON.stringify({
+            source_board_id: TEST_BOARD_ID,
+            simulation_name: "Test Sim",
+          }),
         })
       );
 
@@ -265,7 +286,9 @@ describe("Command Board Simulations API", () => {
       } as any);
 
       const response = await GetSimulation(
-        createRequest(`http://localhost/api/command-board/simulations/${TEST_SIMULATION_ID}`),
+        createRequest(
+          `http://localhost/api/command-board/simulations/${TEST_SIMULATION_ID}`
+        ),
         { params: Promise.resolve({ id: TEST_SIMULATION_ID }) }
       );
 
@@ -285,9 +308,12 @@ describe("Command Board Simulations API", () => {
       } as any);
 
       const response = await DiscardSimulation(
-        createRequest(`http://localhost/api/command-board/simulations/${TEST_SIMULATION_ID}/discard`, {
-          method: "POST",
-        }),
+        createRequest(
+          `http://localhost/api/command-board/simulations/${TEST_SIMULATION_ID}/discard`,
+          {
+            method: "POST",
+          }
+        ),
         { params: Promise.resolve({ id: TEST_SIMULATION_ID }) }
       );
 
@@ -305,9 +331,12 @@ describe("Command Board Simulations API", () => {
       mockCommandBoard.update.mockResolvedValueOnce({} as any);
 
       const response = await DiscardSimulation(
-        createRequest(`http://localhost/api/command-board/simulations/${TEST_SIMULATION_ID}/discard`, {
-          method: "POST",
-        }),
+        createRequest(
+          `http://localhost/api/command-board/simulations/${TEST_SIMULATION_ID}/discard`,
+          {
+            method: "POST",
+          }
+        ),
         { params: Promise.resolve({ id: TEST_SIMULATION_ID }) }
       );
 
@@ -328,9 +357,12 @@ describe("Command Board Simulations API", () => {
       mockCommandBoard.update.mockResolvedValueOnce({} as any);
 
       const response = await DeleteSimulation(
-        createRequest(`http://localhost/api/command-board/simulations/${TEST_SIMULATION_ID}`, {
-          method: "DELETE",
-        }),
+        createRequest(
+          `http://localhost/api/command-board/simulations/${TEST_SIMULATION_ID}`,
+          {
+            method: "DELETE",
+          }
+        ),
         { params: Promise.resolve({ id: TEST_SIMULATION_ID }) }
       );
 
@@ -347,7 +379,13 @@ describe("Command Board Simulations API", () => {
         tenantId: TEST_TENANT_ID,
         tags: ["simulation", `source:${TEST_BOARD_ID}`],
         projections: [
-          { id: "p1", entityId: "e1", entityType: "EVENT", positionX: 100, positionY: 200 } as any,
+          {
+            id: "p1",
+            entityId: "e1",
+            entityType: "EVENT",
+            positionX: 100,
+            positionY: 200,
+          } as any,
         ],
         groups: [],
         annotations: [],
@@ -357,14 +395,22 @@ describe("Command Board Simulations API", () => {
         id: TEST_BOARD_ID,
         tenantId: TEST_TENANT_ID,
         projections: [
-          { id: "p0", entityId: "e1", entityType: "EVENT", positionX: 50, positionY: 100 } as any,
+          {
+            id: "p0",
+            entityId: "e1",
+            entityType: "EVENT",
+            positionX: 50,
+            positionY: 100,
+          } as any,
         ],
         groups: [],
         annotations: [],
       } as any);
 
       const response = await GetDelta(
-        createRequest(`http://localhost/api/command-board/simulations/${TEST_SIMULATION_ID}/delta`),
+        createRequest(
+          `http://localhost/api/command-board/simulations/${TEST_SIMULATION_ID}/delta`
+        ),
         { params: Promise.resolve({ id: TEST_SIMULATION_ID }) }
       );
 
@@ -386,10 +432,13 @@ describe("Command Board Simulations API", () => {
       } as any);
 
       const response = await ApplySimulation(
-        createRequest(`http://localhost/api/command-board/simulations/${TEST_SIMULATION_ID}/apply`, {
-          method: "POST",
-          body: JSON.stringify({}),
-        }),
+        createRequest(
+          `http://localhost/api/command-board/simulations/${TEST_SIMULATION_ID}/apply`,
+          {
+            method: "POST",
+            body: JSON.stringify({}),
+          }
+        ),
         { params: Promise.resolve({ id: TEST_SIMULATION_ID }) }
       );
 
@@ -404,10 +453,13 @@ describe("Command Board Simulations API", () => {
       } as any);
 
       const response = await ApplySimulation(
-        createRequest(`http://localhost/api/command-board/simulations/${TEST_SIMULATION_ID}/apply`, {
-          method: "POST",
-          body: JSON.stringify({}),
-        }),
+        createRequest(
+          `http://localhost/api/command-board/simulations/${TEST_SIMULATION_ID}/apply`,
+          {
+            method: "POST",
+            body: JSON.stringify({}),
+          }
+        ),
         { params: Promise.resolve({ id: TEST_SIMULATION_ID }) }
       );
 
@@ -433,10 +485,13 @@ describe("Command Board Simulations API", () => {
       } as any);
 
       const response = await ApplySimulation(
-        createRequest(`http://localhost/api/command-board/simulations/${TEST_SIMULATION_ID}/apply`, {
-          method: "POST",
-          body: JSON.stringify({}),
-        }),
+        createRequest(
+          `http://localhost/api/command-board/simulations/${TEST_SIMULATION_ID}/apply`,
+          {
+            method: "POST",
+            body: JSON.stringify({}),
+          }
+        ),
         { params: Promise.resolve({ id: TEST_SIMULATION_ID }) }
       );
 

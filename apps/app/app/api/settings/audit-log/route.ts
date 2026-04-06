@@ -1,6 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 export const runtime = "nodejs";
@@ -25,8 +25,8 @@ interface CountRow {
 
 export async function GET(request: NextRequest): Promise<Response> {
   const { orgId, userId } = await auth();
-  
-  if (!orgId || !userId) {
+
+  if (!(orgId && userId)) {
     return new Response("Unauthorized", { status: 401 });
   }
 
@@ -34,8 +34,13 @@ export async function GET(request: NextRequest): Promise<Response> {
 
   // Parse query parameters
   const searchParams = request.nextUrl.searchParams;
-  const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10)) || 1;
-  const limit = Math.min(100, Math.max(1, parseInt(searchParams.get("limit") || "50", 10))) || 1;
+  const page =
+    Math.max(1, Number.parseInt(searchParams.get("page") || "1", 10)) || 1;
+  const limit =
+    Math.min(
+      100,
+      Math.max(1, Number.parseInt(searchParams.get("limit") || "50", 10))
+    ) || 1;
   const offset = (page - 1) * limit;
 
   const filterUserId = searchParams.get("userId");
@@ -87,13 +92,13 @@ export async function GET(request: NextRequest): Promise<Response> {
     FROM "tenant_admin"."audit_log"
     WHERE ${whereClause}
   `;
-  
+
   const countResult = await database.$queryRawUnsafe<CountRow[]>(
     countQuery,
     ...params
   );
-  
-  const total = parseInt(countResult[0]?.count || "0", 10);
+
+  const total = Number.parseInt(countResult[0]?.count || "0", 10);
 
   // Execute data query
   const dataQuery = `
@@ -114,9 +119,9 @@ export async function GET(request: NextRequest): Promise<Response> {
     ORDER BY created_at DESC
     LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
   `;
-  
+
   params.push(limit, offset);
-  
+
   const rows = await database.$queryRawUnsafe<AuditLogRow[]>(
     dataQuery,
     ...params

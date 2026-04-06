@@ -7,9 +7,9 @@
  * @vitest-environment node
  */
 
-import { beforeEach, afterEach, describe, expect, it, vi } from "vitest";
-import { NextRequest } from "next/server";
 import { database } from "@repo/database";
+import { NextRequest } from "next/server";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock modules
 vi.mock("@repo/database", () => ({
@@ -45,7 +45,9 @@ const TEST_ORG_ID = "org-123";
 const TEST_TEMPLATE_ID = "template-001";
 
 // Helper to create mock email template
-function createMockTemplate(overrides: Record<string, unknown> = {}): Record<string, unknown> {
+function createMockTemplate(
+  overrides: Record<string, unknown> = {}
+): Record<string, unknown> {
   return {
     id: TEST_TEMPLATE_ID,
     tenant_id: TEST_TENANT_ID,
@@ -64,7 +66,10 @@ function createMockTemplate(overrides: Record<string, unknown> = {}): Record<str
 }
 
 // Helper to create mock NextRequest
-function createMockRequest(url: string, options: { method?: string; body?: unknown } = {}): NextRequest {
+function createMockRequest(
+  url: string,
+  options: { method?: string; body?: unknown } = {}
+): NextRequest {
   const { method = "GET", body } = options;
   const fullUrl = url.startsWith("http") ? url : `http://localhost${url}`;
   return new NextRequest(fullUrl, {
@@ -92,8 +97,12 @@ describe("Email Templates API", () => {
     vi.clearAllMocks();
 
     // Dynamic import routes after mocks are set up
-    const listRoute = await import("@/app/api/collaboration/notifications/email/templates/route");
-    const detailRoute = await import("@/app/api/collaboration/notifications/email/templates/[id]/route");
+    const listRoute = await import(
+      "@/app/api/collaboration/notifications/email/templates/route"
+    );
+    const detailRoute = await import(
+      "@/app/api/collaboration/notifications/email/templates/[id]/route"
+    );
 
     listGET = listRoute.GET;
     listPOST = listRoute.POST;
@@ -117,7 +126,9 @@ describe("Email Templates API", () => {
           createMockTemplate({ id: "template-002", name: "Template B" }),
         ];
 
-        vi.mocked(database.email_templates.findMany).mockResolvedValue(mockTemplates as never);
+        vi.mocked(database.email_templates.findMany).mockResolvedValue(
+          mockTemplates as never
+        );
         vi.mocked(database.email_templates.count).mockResolvedValue(2);
 
         const request = createMockRequest(
@@ -151,7 +162,9 @@ describe("Email Templates API", () => {
       it("should handle page offset calculation correctly", async () => {
         vi.mocked(auth).mockResolvedValue({ orgId: TEST_ORG_ID } as never);
         vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-        vi.mocked(database.email_templates.findMany).mockResolvedValue([] as never);
+        vi.mocked(database.email_templates.findMany).mockResolvedValue(
+          [] as never
+        );
         vi.mocked(database.email_templates.count).mockResolvedValue(100);
 
         const request = createMockRequest(
@@ -170,7 +183,9 @@ describe("Email Templates API", () => {
       it("should cap limit at 100", async () => {
         vi.mocked(auth).mockResolvedValue({ orgId: TEST_ORG_ID } as never);
         vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-        vi.mocked(database.email_templates.findMany).mockResolvedValue([] as never);
+        vi.mocked(database.email_templates.findMany).mockResolvedValue(
+          [] as never
+        );
         vi.mocked(database.email_templates.count).mockResolvedValue(0);
 
         const request = createMockRequest(
@@ -190,7 +205,9 @@ describe("Email Templates API", () => {
       it("should filter templates by templateType", async () => {
         vi.mocked(auth).mockResolvedValue({ orgId: TEST_ORG_ID } as never);
         vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-        vi.mocked(database.email_templates.findMany).mockResolvedValue([] as never);
+        vi.mocked(database.email_templates.findMany).mockResolvedValue(
+          [] as never
+        );
         vi.mocked(database.email_templates.count).mockResolvedValue(0);
 
         const request = createMockRequest(
@@ -212,7 +229,9 @@ describe("Email Templates API", () => {
       it("should filter templates by isActive=true", async () => {
         vi.mocked(auth).mockResolvedValue({ orgId: TEST_ORG_ID } as never);
         vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-        vi.mocked(database.email_templates.findMany).mockResolvedValue([] as never);
+        vi.mocked(database.email_templates.findMany).mockResolvedValue(
+          [] as never
+        );
         vi.mocked(database.email_templates.count).mockResolvedValue(0);
 
         const request = createMockRequest(
@@ -232,7 +251,9 @@ describe("Email Templates API", () => {
       it("should filter templates by isActive=false", async () => {
         vi.mocked(auth).mockResolvedValue({ orgId: TEST_ORG_ID } as never);
         vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-        vi.mocked(database.email_templates.findMany).mockResolvedValue([] as never);
+        vi.mocked(database.email_templates.findMany).mockResolvedValue(
+          [] as never
+        );
         vi.mocked(database.email_templates.count).mockResolvedValue(0);
 
         const request = createMockRequest(
@@ -254,7 +275,9 @@ describe("Email Templates API", () => {
       it("should filter templates by isDefault=true", async () => {
         vi.mocked(auth).mockResolvedValue({ orgId: TEST_ORG_ID } as never);
         vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-        vi.mocked(database.email_templates.findMany).mockResolvedValue([] as never);
+        vi.mocked(database.email_templates.findMany).mockResolvedValue(
+          [] as never
+        );
         vi.mocked(database.email_templates.count).mockResolvedValue(0);
 
         const request = createMockRequest(
@@ -274,7 +297,9 @@ describe("Email Templates API", () => {
       it("should filter templates by isDefault=false", async () => {
         vi.mocked(auth).mockResolvedValue({ orgId: TEST_ORG_ID } as never);
         vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-        vi.mocked(database.email_templates.findMany).mockResolvedValue([] as never);
+        vi.mocked(database.email_templates.findMany).mockResolvedValue(
+          [] as never
+        );
         vi.mocked(database.email_templates.count).mockResolvedValue(0);
 
         const request = createMockRequest(
@@ -325,7 +350,9 @@ describe("Email Templates API", () => {
       it("should return 500 on database error", async () => {
         vi.mocked(auth).mockResolvedValue({ orgId: TEST_ORG_ID } as never);
         vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-        vi.mocked(database.email_templates.findMany).mockRejectedValue(new Error("DB error"));
+        vi.mocked(database.email_templates.findMany).mockRejectedValue(
+          new Error("DB error")
+        );
 
         const request = createMockRequest(
           "/api/collaboration/notifications/email/templates"
@@ -349,7 +376,9 @@ describe("Email Templates API", () => {
         });
 
         vi.mocked(executeManifestCommand).mockResolvedValue(
-          new Response(JSON.stringify({ data: mockCreatedTemplate }), { status: 201 })
+          new Response(JSON.stringify({ data: mockCreatedTemplate }), {
+            status: 201,
+          })
         );
 
         const request = createMockRequest(
@@ -382,15 +411,18 @@ describe("Email Templates API", () => {
         // Verify the transformBody function produces correct output
         const callArgs = vi.mocked(executeManifestCommand).mock.calls[0][1];
         if (callArgs.transformBody) {
-          const transformed = callArgs.transformBody({
-            name: "Test",
-            templateType: "custom",
-            subject: "Test Subject",
-            body: "Body",
-            mergeFields: ["field1"],
-            isActive: true,
-            isDefault: false,
-          }, { userId: "test-user", tenantId: TEST_TENANT_ID, role: "admin" });
+          const transformed = callArgs.transformBody(
+            {
+              name: "Test",
+              templateType: "custom",
+              subject: "Test Subject",
+              body: "Body",
+              mergeFields: ["field1"],
+              isActive: true,
+              isDefault: false,
+            },
+            { userId: "test-user", tenantId: TEST_TENANT_ID, role: "admin" }
+          );
 
           expect(transformed).toEqual({
             name: "Test",
@@ -424,7 +456,10 @@ describe("Email Templates API", () => {
 
         const callArgs = vi.mocked(executeManifestCommand).mock.calls[0][1];
         if (callArgs.transformBody) {
-          const transformed = callArgs.transformBody({}, { userId: "test-user", tenantId: TEST_TENANT_ID, role: "admin" });
+          const transformed = callArgs.transformBody(
+            {},
+            { userId: "test-user", tenantId: TEST_TENANT_ID, role: "admin" }
+          );
 
           expect(transformed).toEqual({
             name: "",
@@ -442,10 +477,9 @@ describe("Email Templates API", () => {
     describe("validation errors", () => {
       it("should return 400 when name is missing", async () => {
         vi.mocked(executeManifestCommand).mockResolvedValue(
-          new Response(
-            JSON.stringify({ error: "Template name is required" }),
-            { status: 400 }
-          )
+          new Response(JSON.stringify({ error: "Template name is required" }), {
+            status: 400,
+          })
         );
 
         const request = createMockRequest(
@@ -498,7 +532,9 @@ describe("Email Templates API", () => {
     describe("authentication", () => {
       it("should return 401 when unauthorized", async () => {
         vi.mocked(executeManifestCommand).mockResolvedValue(
-          new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401 })
+          new Response(JSON.stringify({ error: "Unauthorized" }), {
+            status: 401,
+          })
         );
 
         const request = createMockRequest(
@@ -525,7 +561,9 @@ describe("Email Templates API", () => {
         vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
 
         const mockTemplate = createMockTemplate();
-        vi.mocked(database.email_templates.findFirst).mockResolvedValue(mockTemplate as never);
+        vi.mocked(database.email_templates.findFirst).mockResolvedValue(
+          mockTemplate as never
+        );
 
         const request = createMockRequest(
           `/api/collaboration/notifications/email/templates/${TEST_TEMPLATE_ID}`
@@ -613,7 +651,9 @@ describe("Email Templates API", () => {
       it("should return 500 on database error", async () => {
         vi.mocked(auth).mockResolvedValue({ orgId: TEST_ORG_ID } as never);
         vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-        vi.mocked(database.email_templates.findFirst).mockRejectedValue(new Error("DB error"));
+        vi.mocked(database.email_templates.findFirst).mockRejectedValue(
+          new Error("DB error")
+        );
 
         const request = createMockRequest(
           `/api/collaboration/notifications/email/templates/${TEST_TEMPLATE_ID}`
@@ -638,7 +678,9 @@ describe("Email Templates API", () => {
         });
 
         vi.mocked(executeManifestCommand).mockResolvedValue(
-          new Response(JSON.stringify({ data: updatedTemplate }), { status: 200 })
+          new Response(JSON.stringify({ data: updatedTemplate }), {
+            status: 200,
+          })
         );
 
         const request = createMockRequest(
@@ -673,10 +715,18 @@ describe("Email Templates API", () => {
         // Verify the transformBody function includes the id
         const callArgs = vi.mocked(executeManifestCommand).mock.calls[0][1];
         if (callArgs.transformBody) {
-          const transformed = callArgs.transformBody({
-            name: "Test",
-            subject: "Test Subject",
-          }, { userId: "test-user", tenantId: TEST_TENANT_ID, role: "admin", params: { id: TEST_TEMPLATE_ID } });
+          const transformed = callArgs.transformBody(
+            {
+              name: "Test",
+              subject: "Test Subject",
+            },
+            {
+              userId: "test-user",
+              tenantId: TEST_TENANT_ID,
+              role: "admin",
+              params: { id: TEST_TEMPLATE_ID },
+            }
+          );
 
           expect(transformed.id).toBe(TEST_TEMPLATE_ID);
           expect(transformed.name).toBe("Test");
@@ -715,10 +765,9 @@ describe("Email Templates API", () => {
 
       it("should return 400 when name is missing on update", async () => {
         vi.mocked(executeManifestCommand).mockResolvedValue(
-          new Response(
-            JSON.stringify({ error: "Template name is required" }),
-            { status: 400 }
-          )
+          new Response(JSON.stringify({ error: "Template name is required" }), {
+            status: 400,
+          })
         );
 
         const request = createMockRequest(
@@ -795,7 +844,15 @@ describe("Email Templates API", () => {
         // Verify transformBody passes the id
         const callArgs = vi.mocked(executeManifestCommand).mock.calls[0][1];
         if (callArgs.transformBody) {
-          const transformed = callArgs.transformBody({}, { userId: "test-user", tenantId: TEST_TENANT_ID, role: "admin", params: { id: TEST_TEMPLATE_ID } });
+          const transformed = callArgs.transformBody(
+            {},
+            {
+              userId: "test-user",
+              tenantId: TEST_TENANT_ID,
+              role: "admin",
+              params: { id: TEST_TEMPLATE_ID },
+            }
+          );
           expect(transformed.id).toBe(TEST_TEMPLATE_ID);
         }
       });
@@ -834,8 +891,12 @@ describe("Email Templates Manifest Guards", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
 
-    const listRoute = await import("@/app/api/collaboration/notifications/email/templates/route");
-    const detailRoute = await import("@/app/api/collaboration/notifications/email/templates/[id]/route");
+    const listRoute = await import(
+      "@/app/api/collaboration/notifications/email/templates/route"
+    );
+    const detailRoute = await import(
+      "@/app/api/collaboration/notifications/email/templates/[id]/route"
+    );
 
     listPOST = listRoute.POST;
     detailPUT = detailRoute.PUT;
@@ -844,10 +905,9 @@ describe("Email Templates Manifest Guards", () => {
 
   it("should enforce name guard on create", async () => {
     vi.mocked(executeManifestCommand).mockResolvedValue(
-      new Response(
-        JSON.stringify({ error: "Template name is required" }),
-        { status: 400 }
-      )
+      new Response(JSON.stringify({ error: "Template name is required" }), {
+        status: 400,
+      })
     );
 
     const request = createMockRequest(
@@ -867,10 +927,9 @@ describe("Email Templates Manifest Guards", () => {
 
   it("should enforce subject guard on create", async () => {
     vi.mocked(executeManifestCommand).mockResolvedValue(
-      new Response(
-        JSON.stringify({ error: "Template subject is required" }),
-        { status: 400 }
-      )
+      new Response(JSON.stringify({ error: "Template subject is required" }), {
+        status: 400,
+      })
     );
 
     const request = createMockRequest(
@@ -914,10 +973,9 @@ describe("Email Templates Manifest Guards", () => {
 
   it("should enforce deletedAt guard on softDelete", async () => {
     vi.mocked(executeManifestCommand).mockResolvedValue(
-      new Response(
-        JSON.stringify({ error: "Template is already deleted" }),
-        { status: 400 }
-      )
+      new Response(JSON.stringify({ error: "Template is already deleted" }), {
+        status: 400,
+      })
     );
 
     const request = createMockRequest(
@@ -942,8 +1000,12 @@ describe("Email Templates Policy Tests", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
 
-    const listRoute = await import("@/app/api/collaboration/notifications/email/templates/route");
-    const detailRoute = await import("@/app/api/collaboration/notifications/email/templates/[id]/route");
+    const listRoute = await import(
+      "@/app/api/collaboration/notifications/email/templates/route"
+    );
+    const detailRoute = await import(
+      "@/app/api/collaboration/notifications/email/templates/[id]/route"
+    );
 
     listGET = listRoute.GET;
     listPOST = listRoute.POST;

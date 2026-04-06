@@ -1,7 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
-import { NextRequest, NextResponse } from "next/server";
 
 // Types matching the frontend's SearchResult interface
 interface SearchGroup {
@@ -40,10 +40,19 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const rawQ = searchParams.get("q") ?? "";
     const q = rawQ.trim();
-    const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1);
+    const page = Math.max(
+      1,
+      Number.parseInt(searchParams.get("page") ?? "1", 10) || 1
+    );
     const limit = Math.min(
       MAX_LIMIT,
-      Math.max(1, parseInt(searchParams.get("limit") ?? String(DEFAULT_LIMIT), 10) || DEFAULT_LIMIT)
+      Math.max(
+        1,
+        Number.parseInt(
+          searchParams.get("limit") ?? String(DEFAULT_LIMIT),
+          10
+        ) || DEFAULT_LIMIT
+      )
     );
     const typeFilter = searchParams.get("type") ?? "all";
 
@@ -62,15 +71,27 @@ export async function GET(request: NextRequest) {
     const term = `%${q}%`;
 
     // Determine which entity types to search
-    const allTypes = ["events", "clients", "contacts", "venues", "inventory", "knowledge"] as const;
+    const allTypes = [
+      "events",
+      "clients",
+      "contacts",
+      "venues",
+      "inventory",
+      "knowledge",
+    ] as const;
     type SearchType = (typeof allTypes)[number];
     const typesToSearch: readonly SearchType[] =
-      typeFilter === "all" ? allTypes : typeFilter.split(",").filter((t): t is SearchType => allTypes.includes(t as SearchType));
+      typeFilter === "all"
+        ? allTypes
+        : typeFilter
+            .split(",")
+            .filter((t): t is SearchType => allTypes.includes(t as SearchType));
 
     // Run all searches in parallel
-    const [events, clients, contacts, venues, inventory, knowledge] = await Promise.all([
-      typesToSearch.includes("events")
-        ? database.$queryRaw<Record<string, unknown>[]>(Prisma.sql`
+    const [events, clients, contacts, venues, inventory, knowledge] =
+      await Promise.all([
+        typesToSearch.includes("events")
+          ? database.$queryRaw<Record<string, unknown>[]>(Prisma.sql`
             SELECT id, title, "event_number" AS "eventNumber", "event_date" AS "eventDate", "venue_name" AS "venueName"
             FROM tenant_events.events
             WHERE tenant_id = ${tenantId}
@@ -83,10 +104,10 @@ export async function GET(request: NextRequest) {
             ORDER BY "event_date" DESC
             LIMIT ${ITEMS_PER_GROUP}
           `)
-        : Promise.resolve([]),
+          : Promise.resolve([]),
 
-      typesToSearch.includes("clients")
-        ? database.$queryRaw<Record<string, unknown>[]>(Prisma.sql`
+        typesToSearch.includes("clients")
+          ? database.$queryRaw<Record<string, unknown>[]>(Prisma.sql`
             SELECT id, company_name, first_name, last_name, email
             FROM tenant_crm.clients
             WHERE tenant_id = ${tenantId}
@@ -100,10 +121,10 @@ export async function GET(request: NextRequest) {
             ORDER BY updated_at DESC
             LIMIT ${ITEMS_PER_GROUP}
           `)
-        : Promise.resolve([]),
+          : Promise.resolve([]),
 
-      typesToSearch.includes("contacts")
-        ? database.$queryRaw<Record<string, unknown>[]>(Prisma.sql`
+        typesToSearch.includes("contacts")
+          ? database.$queryRaw<Record<string, unknown>[]>(Prisma.sql`
             SELECT cc.id, cc.client_id AS "clientId", cc.first_name, cc.last_name, cc.title, cc.email, cc.phone
             FROM tenant_crm.client_contacts cc
             JOIN tenant_crm.clients c ON c.tenant_id = cc.tenant_id AND c.id = cc.client_id
@@ -119,10 +140,10 @@ export async function GET(request: NextRequest) {
             ORDER BY cc.updated_at DESC
             LIMIT ${ITEMS_PER_GROUP}
           `)
-        : Promise.resolve([]),
+          : Promise.resolve([]),
 
-      typesToSearch.includes("venues")
-        ? database.$queryRaw<Record<string, unknown>[]>(Prisma.sql`
+        typesToSearch.includes("venues")
+          ? database.$queryRaw<Record<string, unknown>[]>(Prisma.sql`
             SELECT id, name, city, "state_province" AS "stateProvince", venue_type AS "venueType"
             FROM tenant.venues
             WHERE tenant_id = ${tenantId}
@@ -137,10 +158,10 @@ export async function GET(request: NextRequest) {
             ORDER BY name ASC
             LIMIT ${ITEMS_PER_GROUP}
           `)
-        : Promise.resolve([]),
+          : Promise.resolve([]),
 
-      typesToSearch.includes("inventory")
-        ? database.$queryRaw<Record<string, unknown>[]>(Prisma.sql`
+        typesToSearch.includes("inventory")
+          ? database.$queryRaw<Record<string, unknown>[]>(Prisma.sql`
             SELECT id, item_number AS "item_number", name, category, "unit_of_measure" AS "unitOfMeasure"
             FROM tenant_inventory.inventory_items
             WHERE tenant_id = ${tenantId}
@@ -153,10 +174,10 @@ export async function GET(request: NextRequest) {
             ORDER BY name ASC
             LIMIT ${ITEMS_PER_GROUP}
           `)
-        : Promise.resolve([]),
+          : Promise.resolve([]),
 
-      typesToSearch.includes("knowledge")
-        ? database.$queryRaw<Record<string, unknown>[]>(Prisma.sql`
+        typesToSearch.includes("knowledge")
+          ? database.$queryRaw<Record<string, unknown>[]>(Prisma.sql`
             SELECT id, slug, title, category, status
             FROM tenant.knowledge_base_entries
             WHERE tenant_id = ${tenantId}
@@ -169,8 +190,8 @@ export async function GET(request: NextRequest) {
             ORDER BY updated_at DESC
             LIMIT ${ITEMS_PER_GROUP}
           `)
-        : Promise.resolve([]),
-    ]);
+          : Promise.resolve([]),
+      ]);
 
     // Attach tenantId to each item for the frontend's key prop
     const tag = (items: Record<string, unknown>[]) =>

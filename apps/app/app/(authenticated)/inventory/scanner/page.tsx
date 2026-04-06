@@ -1,8 +1,5 @@
 "use client";
 
-import { useCallback, useState } from "react";
-import { toast } from "sonner";
-import { BarcodeScanner } from "../components/barcode-scanner";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -21,10 +18,24 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@repo/design-system/components/ui/tabs";
-import { PlusIcon, TrashIcon, SearchIcon, PackageIcon, ScanIcon } from "lucide-react";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs";
+import {
+  PackageIcon,
+  PlusIcon,
+  ScanIcon,
+  SearchIcon,
+  TrashIcon,
+} from "lucide-react";
+import { useCallback, useState } from "react";
+import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import type { InventoryItemWithStatus } from "@/app/lib/use-inventory";
+import { BarcodeScanner } from "../components/barcode-scanner";
 
 type ScanMode = "lookup" | "stock_count";
 
@@ -44,58 +55,76 @@ interface ScanHistoryEntry {
 
 export default function ScannerPage() {
   const [mode, setMode] = useState<ScanMode>("lookup");
-  const [lookupResult, setLookupResult] = useState<InventoryItemWithStatus | null>(null);
+  const [lookupResult, setLookupResult] =
+    useState<InventoryItemWithStatus | null>(null);
   const [lookupLoading, setLookupLoading] = useState(false);
   const [stockCountItems, setStockCountItems] = useState<StockCountItem[]>([]);
   const [scanHistory, setScanHistory] = useState<ScanHistoryEntry[]>([]);
   const [cameraError, setCameraError] = useState<string | null>(null);
 
-  const addToHistory = useCallback((barcode: string, found: boolean) => {
-    setScanHistory((prev) => [
-      { barcode, timestamp: new Date(), mode, found },
-      ...prev.slice(0, 9),
-    ]);
-  }, [mode]);
+  const addToHistory = useCallback(
+    (barcode: string, found: boolean) => {
+      setScanHistory((prev) => [
+        { barcode, timestamp: new Date(), mode, found },
+        ...prev.slice(0, 9),
+      ]);
+    },
+    [mode]
+  );
 
-  const handleLookupScan = useCallback(async (barcode: string) => {
-    setLookupLoading(true);
-    setLookupResult(null);
-    try {
-      const response = await apiFetch(`/api/inventory/items?barcode=${encodeURIComponent(barcode)}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch item");
-      }
-      const data = await response.json();
-      const items: InventoryItemWithStatus[] = data.data ?? [];
-      const found = items.find((item: InventoryItemWithStatus) => item.barcode === barcode);
-      setLookupResult(found ?? null);
-      addToHistory(barcode, !!found);
-      if (!found) {
-        toast.warning("No item found for this barcode");
-      }
-    } catch {
+  const handleLookupScan = useCallback(
+    async (barcode: string) => {
+      setLookupLoading(true);
       setLookupResult(null);
-      addToHistory(barcode, false);
-      toast.error("Failed to look up barcode");
-    } finally {
-      setLookupLoading(false);
-    }
-  }, [addToHistory]);
-
-  const handleStockCountScan = useCallback((barcode: string) => {
-    setStockCountItems((prev) => {
-      const existing = prev.find((item) => item.barcode === barcode);
-      if (existing) {
-        toast.info(`"${existing.item?.name ?? barcode}" already in count — quantity increased`);
-        return prev.map((item) =>
-          item.barcode === barcode ? { ...item, quantity: item.quantity + 1 } : item
+      try {
+        const response = await apiFetch(
+          `/api/inventory/items?barcode=${encodeURIComponent(barcode)}`
         );
+        if (!response.ok) {
+          throw new Error("Failed to fetch item");
+        }
+        const data = await response.json();
+        const items: InventoryItemWithStatus[] = data.data ?? [];
+        const found = items.find(
+          (item: InventoryItemWithStatus) => item.barcode === barcode
+        );
+        setLookupResult(found ?? null);
+        addToHistory(barcode, !!found);
+        if (!found) {
+          toast.warning("No item found for this barcode");
+        }
+      } catch {
+        setLookupResult(null);
+        addToHistory(barcode, false);
+        toast.error("Failed to look up barcode");
+      } finally {
+        setLookupLoading(false);
       }
-      return [{ barcode, quantity: 1, timestamp: new Date() }, ...prev];
-    });
-    addToHistory(barcode, true);
-    toast.success(`Added ${barcode} to stock count`);
-  }, [addToHistory]);
+    },
+    [addToHistory]
+  );
+
+  const handleStockCountScan = useCallback(
+    (barcode: string) => {
+      setStockCountItems((prev) => {
+        const existing = prev.find((item) => item.barcode === barcode);
+        if (existing) {
+          toast.info(
+            `"${existing.item?.name ?? barcode}" already in count — quantity increased`
+          );
+          return prev.map((item) =>
+            item.barcode === barcode
+              ? { ...item, quantity: item.quantity + 1 }
+              : item
+          );
+        }
+        return [{ barcode, quantity: 1, timestamp: new Date() }, ...prev];
+      });
+      addToHistory(barcode, true);
+      toast.success(`Added ${barcode} to stock count`);
+    },
+    [addToHistory]
+  );
 
   const handleScan = useCallback(
     (barcode: string) => {
@@ -112,14 +141,23 @@ export default function ScannerPage() {
     setCameraError(error);
   }, []);
 
-  const handleQuantityChange = useCallback((barcode: string, quantity: number) => {
-    setStockCountItems((prev) =>
-      prev.map((item) => (item.barcode === barcode ? { ...item, quantity: Math.max(1, quantity) } : item))
-    );
-  }, []);
+  const handleQuantityChange = useCallback(
+    (barcode: string, quantity: number) => {
+      setStockCountItems((prev) =>
+        prev.map((item) =>
+          item.barcode === barcode
+            ? { ...item, quantity: Math.max(1, quantity) }
+            : item
+        )
+      );
+    },
+    []
+  );
 
   const handleRemoveItem = useCallback((barcode: string) => {
-    setStockCountItems((prev) => prev.filter((item) => item.barcode !== barcode));
+    setStockCountItems((prev) =>
+      prev.filter((item) => item.barcode !== barcode)
+    );
   }, []);
 
   const handleSubmitStockCount = useCallback(async () => {
@@ -127,13 +165,111 @@ export default function ScannerPage() {
       toast.error("No items to submit");
       return;
     }
-    toast.info(`Submitting ${stockCountItems.length} items for stock count...`);
-    // TODO: wire up to actual API endpoint when available
-    toast.success("Stock count submitted (API not yet wired)");
-    setStockCountItems([]);
+
+    const toastId = toast.loading(
+      `Submitting ${stockCountItems.length} items for stock count...`
+    );
+
+    try {
+      let successCount = 0;
+      let failCount = 0;
+      const errors: string[] = [];
+
+      // Process each scanned item
+      for (const scannedItem of stockCountItems) {
+        try {
+          // First, look up the item if we don't have the details
+          let itemId = scannedItem.item?.id;
+
+          if (!itemId) {
+            const lookupResponse = await apiFetch(
+              `/api/inventory/items?barcode=${encodeURIComponent(scannedItem.barcode)}`
+            );
+            if (!lookupResponse.ok) {
+              throw new Error("Item lookup failed");
+            }
+            const lookupData = await lookupResponse.json();
+            const items: InventoryItemWithStatus[] = lookupData.data ?? [];
+            const foundItem = items.find(
+              (item: InventoryItemWithStatus) =>
+                item.barcode === scannedItem.barcode
+            );
+
+            if (!foundItem) {
+              errors.push(`${scannedItem.barcode}: Item not found`);
+              failCount++;
+              continue;
+            }
+            itemId = foundItem.id;
+          }
+
+          // Submit the stock adjustment
+          const adjustmentResponse = await apiFetch(
+            "/api/inventory/stock-levels/adjust",
+            {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                inventoryItemId: itemId,
+                quantity: scannedItem.quantity,
+                adjustmentType: "increase",
+                reason: "physical_count",
+                notes: `Stock count scan at ${scannedItem.timestamp.toISOString()}`,
+              }),
+            }
+          );
+
+          if (!adjustmentResponse.ok) {
+            const errorData = await adjustmentResponse.json();
+            throw new Error(errorData.message || "Adjustment failed");
+          }
+
+          successCount++;
+        } catch (error) {
+          const itemName = scannedItem.item?.name || scannedItem.barcode;
+          const errorMsg =
+            error instanceof Error ? error.message : "Unknown error";
+          errors.push(`${itemName}: ${errorMsg}`);
+          failCount++;
+        }
+      }
+
+      // Show results
+      toast.dismiss(toastId);
+
+      if (successCount > 0 && failCount === 0) {
+        toast.success(
+          `Stock count submitted successfully (${successCount} items)`
+        );
+        setStockCountItems([]);
+      } else if (successCount > 0 && failCount > 0) {
+        toast.warning(
+          `Partially submitted: ${successCount} succeeded, ${failCount} failed`,
+          { description: errors.slice(0, 3).join("; ") }
+        );
+        // Remove successful items
+        setStockCountItems((prev) =>
+          prev.filter((item) => {
+            const itemName = item.item?.name || item.barcode;
+            return errors.some((err) => err.startsWith(itemName));
+          })
+        );
+      } else {
+        toast.error(`Stock count submission failed (${failCount} items)`, {
+          description: errors.slice(0, 3).join("; "),
+        });
+      }
+    } catch (error) {
+      toast.dismiss(toastId);
+      toast.error("Failed to submit stock count");
+      console.error("Stock count submission error:", error);
+    }
   }, [stockCountItems]);
 
-  const totalCountedItems = stockCountItems.reduce((sum, item) => sum + item.quantity, 0);
+  const totalCountedItems = stockCountItems.reduce(
+    (sum, item) => sum + item.quantity,
+    0
+  );
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
@@ -146,7 +282,7 @@ export default function ScannerPage() {
       </div>
 
       {/* Mode Tabs */}
-      <Tabs value={mode} onValueChange={(v) => setMode(v as ScanMode)}>
+      <Tabs onValueChange={(v) => setMode(v as ScanMode)} value={mode}>
         <TabsList>
           <TabsTrigger value="lookup">
             <SearchIcon className="mr-2 h-4 w-4" />
@@ -159,18 +295,25 @@ export default function ScannerPage() {
         </TabsList>
 
         {/* Lookup Mode */}
-        <TabsContent value="lookup" className="mt-4 space-y-4">
+        <TabsContent className="mt-4 space-y-4" value="lookup">
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Scanner */}
             <Card>
               <CardHeader>
                 <CardTitle>Scan Barcode</CardTitle>
-                <CardDescription>Point your camera at a barcode to look it up</CardDescription>
+                <CardDescription>
+                  Point your camera at a barcode to look it up
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <BarcodeScanner onScan={handleScan} onError={handleScannerError} />
+                <BarcodeScanner
+                  onError={handleScannerError}
+                  onScan={handleScan}
+                />
                 {cameraError && (
-                  <p className="mt-2 text-sm text-destructive text-center">{cameraError}</p>
+                  <p className="mt-2 text-sm text-destructive text-center">
+                    {cameraError}
+                  </p>
                 )}
               </CardContent>
             </Card>
@@ -180,7 +323,11 @@ export default function ScannerPage() {
               <CardHeader>
                 <CardTitle>Item Result</CardTitle>
                 <CardDescription>
-                  {lookupLoading ? "Searching..." : lookupResult ? "Item found" : "Scan a barcode to see results"}
+                  {lookupLoading
+                    ? "Searching..."
+                    : lookupResult
+                      ? "Item found"
+                      : "Scan a barcode to see results"}
                 </CardDescription>
               </CardHeader>
               <CardContent>
@@ -193,39 +340,57 @@ export default function ScannerPage() {
                   <div className="space-y-3">
                     <div className="flex items-start justify-between">
                       <div>
-                        <p className="font-semibold text-lg">{lookupResult.name}</p>
-                        <p className="text-sm text-muted-foreground font-mono">{lookupResult.item_number}</p>
+                        <p className="font-semibold text-lg">
+                          {lookupResult.name}
+                        </p>
+                        <p className="text-sm text-muted-foreground font-mono">
+                          {lookupResult.item_number}
+                        </p>
                       </div>
                       <Badge variant="outline">{lookupResult.category}</Badge>
                     </div>
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div>
                         <p className="text-muted-foreground">Quantity</p>
-                        <p className="font-medium">{lookupResult.quantity_on_hand.toFixed(3)}</p>
+                        <p className="font-medium">
+                          {lookupResult.quantity_on_hand.toFixed(3)}
+                        </p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">Unit Cost</p>
-                        <p className="font-medium">${lookupResult.unit_cost.toFixed(2)}</p>
+                        <p className="font-medium">
+                          ${lookupResult.unit_cost.toFixed(2)}
+                        </p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">Reorder Level</p>
-                        <p className="font-medium">{lookupResult.reorder_level.toFixed(3)}</p>
+                        <p className="font-medium">
+                          {lookupResult.reorder_level.toFixed(3)}
+                        </p>
                       </div>
                       <div>
                         <p className="text-muted-foreground">Total Value</p>
-                        <p className="font-medium">${lookupResult.total_value.toFixed(2)}</p>
+                        <p className="font-medium">
+                          ${lookupResult.total_value.toFixed(2)}
+                        </p>
                       </div>
                     </div>
                     {lookupResult.tags.length > 0 && (
                       <div className="flex flex-wrap gap-1">
                         {lookupResult.tags.map((tag) => (
-                          <Badge key={tag} variant="secondary" className="text-xs">{tag}</Badge>
+                          <Badge
+                            className="text-xs"
+                            key={tag}
+                            variant="secondary"
+                          >
+                            {tag}
+                          </Badge>
                         ))}
                       </div>
                     )}
                   </div>
                 )}
-                {!lookupLoading && !lookupResult && (
+                {!(lookupLoading || lookupResult) && (
                   <div className="flex flex-col items-center justify-center py-12 text-center">
                     <ScanIcon className="mb-3 h-10 w-10 text-muted-foreground" />
                     <p className="text-sm text-muted-foreground">
@@ -239,18 +404,25 @@ export default function ScannerPage() {
         </TabsContent>
 
         {/* Stock Count Mode */}
-        <TabsContent value="stock_count" className="mt-4 space-y-4">
+        <TabsContent className="mt-4 space-y-4" value="stock_count">
           <div className="grid gap-6 lg:grid-cols-2">
             {/* Scanner */}
             <Card>
               <CardHeader>
                 <CardTitle>Scan Items</CardTitle>
-                <CardDescription>Scan items to add them to your stock count</CardDescription>
+                <CardDescription>
+                  Scan items to add them to your stock count
+                </CardDescription>
               </CardHeader>
               <CardContent>
-                <BarcodeScanner onScan={handleScan} onError={handleScannerError} />
+                <BarcodeScanner
+                  onError={handleScannerError}
+                  onScan={handleScan}
+                />
                 {cameraError && (
-                  <p className="mt-2 text-sm text-destructive text-center">{cameraError}</p>
+                  <p className="mt-2 text-sm text-destructive text-center">
+                    {cameraError}
+                  </p>
                 )}
               </CardContent>
             </Card>
@@ -287,27 +459,34 @@ export default function ScannerPage() {
                         {stockCountItems.map((item) => (
                           <TableRow key={item.barcode}>
                             <TableCell>
-                              <div className="font-medium font-mono text-sm">{item.barcode}</div>
+                              <div className="font-medium font-mono text-sm">
+                                {item.barcode}
+                              </div>
                               {item.item && (
-                                <div className="text-xs text-muted-foreground">{item.item.name}</div>
+                                <div className="text-xs text-muted-foreground">
+                                  {item.item.name}
+                                </div>
                               )}
                             </TableCell>
                             <TableCell>
                               <Input
                                 className="w-[80px] text-center"
                                 min={1}
+                                onChange={(e) =>
+                                  handleQuantityChange(
+                                    item.barcode,
+                                    Number.parseInt(e.target.value, 10) || 1
+                                  )
+                                }
                                 type="number"
                                 value={item.quantity}
-                                onChange={(e) =>
-                                  handleQuantityChange(item.barcode, parseInt(e.target.value, 10) || 1)
-                                }
                               />
                             </TableCell>
                             <TableCell>
                               <Button
+                                onClick={() => handleRemoveItem(item.barcode)}
                                 size="sm"
                                 variant="ghost"
-                                onClick={() => handleRemoveItem(item.barcode)}
                               >
                                 <TrashIcon className="h-4 w-4 text-destructive" />
                               </Button>
@@ -346,13 +525,17 @@ export default function ScannerPage() {
               </TableHeader>
               <TableBody>
                 {scanHistory.map((entry, i) => (
-                  <TableRow key={`${entry.barcode}-${entry.timestamp.getTime()}`}>
-                    <TableCell className="font-mono text-sm">{entry.barcode}</TableCell>
+                  <TableRow
+                    key={`${entry.barcode}-${entry.timestamp.getTime()}`}
+                  >
+                    <TableCell className="font-mono text-sm">
+                      {entry.barcode}
+                    </TableCell>
                     <TableCell className="text-sm text-muted-foreground">
                       {entry.timestamp.toLocaleTimeString()}
                     </TableCell>
                     <TableCell>
-                      <Badge variant="outline" className="text-xs">
+                      <Badge className="text-xs" variant="outline">
                         {entry.mode === "lookup" ? "Lookup" : "Stock Count"}
                       </Badge>
                     </TableCell>

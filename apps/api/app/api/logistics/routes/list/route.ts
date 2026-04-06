@@ -1,15 +1,16 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { database } from '@repo/database';
-import { requireTenantId } from '@/app/lib/tenant';
+import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
+import { type NextRequest, NextResponse } from "next/server";
+import { requireTenantId } from "@/app/lib/tenant";
 
 export async function GET(request: NextRequest) {
   try {
     const tenantId = await requireTenantId();
 
     const searchParams = request.nextUrl.searchParams;
-    const status = searchParams.get('status');
-    const date = searchParams.get('date');
-    const limit = parseInt(searchParams.get('limit') || '50');
+    const status = searchParams.get("status");
+    const date = searchParams.get("date");
+    const limit = Number.parseInt(searchParams.get("limit") || "50");
 
     const where: any = { tenantId, deletedAt: null };
     if (status) where.status = status;
@@ -22,18 +23,19 @@ export async function GET(request: NextRequest) {
       where,
       include: {
         stops: {
-          orderBy: { stopNumber: 'asc' },
+          orderBy: { stopNumber: "asc" },
         },
       },
-      orderBy: { scheduledDate: 'desc' },
+      orderBy: { scheduledDate: "desc" },
       take: limit,
     });
 
     return NextResponse.json({ routes });
   } catch (error) {
-    console.error('Error listing routes:', error);
+    captureException(error);
+    console.error("Error listing routes:", error);
     return NextResponse.json(
-      { error: 'Failed to list routes' },
+      { error: "Failed to list routes" },
       { status: 500 }
     );
   }

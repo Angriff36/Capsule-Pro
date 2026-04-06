@@ -5,9 +5,16 @@ import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
-  manifestErrorResponse,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+manifestErrorResponse,
   manifestSuccessResponse,
-} from "@/lib/manifest-response";
+} from "@/lib/manifest-response"
+
 import { database } from "@/lib/database";
 
 // POST /api/knowledge-base/entries/commands/publish
@@ -24,9 +31,9 @@ export async function POST(request: NextRequest) {
       return manifestErrorResponse("Tenant not found", 400);
     }
 
-    const body = (await request.json()) as { 
-      id: string; 
-      status?: "draft" | "published" | "archived" 
+    const body = (await request.json()) as {
+      id: string;
+      status?: "draft" | "published" | "archived";
     };
     const { id, status = "published" } = body;
 
@@ -57,6 +64,7 @@ export async function POST(request: NextRequest) {
 
     return manifestSuccessResponse({ entry });
   } catch (error) {
+    captureException(error);
     console.error("Error publishing knowledge base entry:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

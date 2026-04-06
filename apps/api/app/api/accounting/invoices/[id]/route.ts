@@ -8,11 +8,17 @@ import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
 import {
-  calculateInvoiceTotals,
-  type InvoiceResponse,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+calculateInvoiceTotals, type;
+InvoiceResponse,
   validateInvoiceAccess,
   validateInvoiceBusinessRules,
-} from "../validation";
+} from "../validation"
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -73,6 +79,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
       metadata: invoice.metadata as Record<string, unknown>,
     });
   } catch (error) {
+    captureException(error);
     console.error("Error fetching invoice:", error);
     return NextResponse.json(
       { error: "Failed to fetch invoice" },
@@ -170,6 +177,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       metadata: updatedInvoice.metadata as Record<string, unknown>,
     });
   } catch (error) {
+    captureException(error);
     console.error("Error updating invoice:", error);
     return NextResponse.json(
       { error: "Failed to update invoice" },
@@ -245,6 +253,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       metadata: updatedInvoice.metadata as Record<string, unknown>,
     });
   } catch (error) {
+    captureException(error);
     console.error("Error sending invoice:", error);
     return NextResponse.json(
       { error: "Failed to send invoice" },
@@ -312,6 +321,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       metadata: updatedInvoice.metadata as Record<string, unknown>,
     });
   } catch (error) {
+    captureException(error);
     console.error("Error voiding invoice:", error);
     return NextResponse.json(
       { error: "Failed to void invoice" },

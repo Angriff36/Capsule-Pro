@@ -1,3 +1,4 @@
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 
 interface StaffingRecommendationRequest {
@@ -121,6 +122,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
+    captureException(error);
     console.error("Staffing recommendations error:", error);
     return NextResponse.json(
       { error: "Failed to generate staffing recommendations" },

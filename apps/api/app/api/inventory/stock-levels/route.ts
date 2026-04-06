@@ -9,10 +9,16 @@ import { database, type Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type {
-  StockLevelFilters,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+StockLevelFilters,
   StockLevelWithStatus,
   StockReorderStatus,
-} from "./types";
+} from "./types"
 
 interface PaginationParams {
   page: number;
@@ -621,6 +627,7 @@ export async function GET(request: Request) {
       outOfStockCount
     );
   } catch (error) {
+    captureException(error);
     console.error("Failed to list stock levels:", error);
     return NextResponse.json(
       { message: "Internal server error" },

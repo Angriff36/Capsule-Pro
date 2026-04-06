@@ -3,9 +3,16 @@ import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
-  manifestErrorResponse,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+manifestErrorResponse,
   manifestSuccessResponse,
-} from "@/lib/manifest-response";
+} from "@/lib/manifest-response"
+
 import { database } from "@/lib/database";
 
 export async function POST(request: NextRequest) {
@@ -21,22 +28,26 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const {
-      workOrderId,
-      status,
-      laborHours,
-      partsCost,
-      laborCost,
-      notes,
-    } = body;
+    const { workOrderId, status, laborHours, partsCost, laborCost, notes } =
+      body;
 
     if (!workOrderId) {
       return manifestErrorResponse("workOrderId is required", 400);
     }
 
-    const validStatuses = ["open", "assigned", "in_progress", "parts_ordered", "completed", "cancelled"];
+    const validStatuses = [
+      "open",
+      "assigned",
+      "in_progress",
+      "parts_ordered",
+      "completed",
+      "cancelled",
+    ];
     if (!validStatuses.includes(status)) {
-      return manifestErrorResponse(`Invalid status. Must be one of: ${validStatuses.join(", ")}`, 400);
+      return manifestErrorResponse(
+        `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
+        400
+      );
     }
 
     // Verify work order exists and belongs to tenant
@@ -72,6 +83,7 @@ export async function POST(request: NextRequest) {
 
     return manifestSuccessResponse({ workOrder: (result as any[])[0] });
   } catch (error) {
+    captureException(error);
     console.error("Error updating work order:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

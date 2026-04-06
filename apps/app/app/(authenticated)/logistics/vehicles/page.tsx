@@ -1,19 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  Truck,
-  Plus,
-  Loader2,
-  Pencil,
-  Trash2,
-  Fuel,
-  Weight,
-  Gauge,
-  CheckCircle2,
-  AlertTriangle,
-  Wrench,
-} from "lucide-react";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -21,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -32,7 +18,6 @@ import {
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
-import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -40,6 +25,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { Textarea } from "@repo/design-system/components/ui/textarea";
+import {
+  AlertTriangle,
+  CheckCircle2,
+  Fuel,
+  Gauge,
+  Loader2,
+  Pencil,
+  Plus,
+  Trash2,
+  Truck,
+  Weight,
+  Wrench,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface Vehicle {
   id: string;
@@ -163,7 +163,7 @@ export default function VehiclesPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.make.trim() || !form.model.trim()) return;
+    if (!(form.make.trim() && form.model.trim())) return;
     setSaving(true);
     try {
       const endpoint = editing
@@ -174,31 +174,31 @@ export default function VehiclesPage() {
             vehicleId: editing.id,
             make: form.make,
             model: form.model,
-            year: form.year ? parseInt(form.year) : null,
+            year: form.year ? Number.parseInt(form.year) : null,
             plateNumber: form.plateNumber || null,
             vin: form.vin || null,
             capacityWeight: form.capacityWeight
-              ? parseFloat(form.capacityWeight)
+              ? Number.parseFloat(form.capacityWeight)
               : null,
             capacityVolume: form.capacityVolume
-              ? parseFloat(form.capacityVolume)
+              ? Number.parseFloat(form.capacityVolume)
               : null,
             fuelType: form.fuelType || null,
-            mileage: form.mileage ? parseFloat(form.mileage) : null,
+            mileage: form.mileage ? Number.parseFloat(form.mileage) : null,
             status: form.status,
             notes: form.notes || null,
           }
         : {
             make: form.make,
             model: form.model,
-            year: form.year ? parseInt(form.year) : null,
+            year: form.year ? Number.parseInt(form.year) : null,
             plateNumber: form.plateNumber || null,
             vin: form.vin || null,
             capacityWeight: form.capacityWeight
-              ? parseFloat(form.capacityWeight)
+              ? Number.parseFloat(form.capacityWeight)
               : null,
             capacityVolume: form.capacityVolume
-              ? parseFloat(form.capacityVolume)
+              ? Number.parseFloat(form.capacityVolume)
               : null,
             fuelType: form.fuelType || null,
             notes: form.notes || null,
@@ -260,35 +260,35 @@ export default function VehiclesPage() {
 
       {/* Status Summary Cards */}
       <div className="grid gap-4 md:grid-cols-4">
-        {(["available", "in_use", "maintenance", "out_of_service"] as const).map(
-          (status) => {
-            const config = STATUS_CONFIG[status];
-            const count = vehicles.filter((v) => v.status === status).length;
-            return (
-              <Card key={status}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">
-                    {config.label}
-                  </CardTitle>
-                  <config.icon
-                    className={`h-4 w-4 ${
-                      status === "available"
-                        ? "text-green-500"
-                        : status === "in_use"
-                          ? "text-blue-500"
-                          : status === "maintenance"
-                            ? "text-amber-500"
-                            : "text-red-500"
-                    }`}
-                  />
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{count}</div>
-                </CardContent>
-              </Card>
-            );
-          },
-        )}
+        {(
+          ["available", "in_use", "maintenance", "out_of_service"] as const
+        ).map((status) => {
+          const config = STATUS_CONFIG[status];
+          const count = vehicles.filter((v) => v.status === status).length;
+          return (
+            <Card key={status}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  {config.label}
+                </CardTitle>
+                <config.icon
+                  className={`h-4 w-4 ${
+                    status === "available"
+                      ? "text-green-500"
+                      : status === "in_use"
+                        ? "text-blue-500"
+                        : status === "maintenance"
+                          ? "text-amber-500"
+                          : "text-red-500"
+                  }`}
+                />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{count}</div>
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       {/* Vehicle List */}
@@ -307,8 +307,8 @@ export default function VehiclesPage() {
             const Icon = config.icon;
             return (
               <Card
-                key={vehicle.id}
                 className="hover:shadow-sm transition-shadow"
+                key={vehicle.id}
               >
                 <CardContent className="p-4">
                   <div className="flex items-center gap-4">
@@ -357,18 +357,18 @@ export default function VehiclesPage() {
                     </div>
                     <div className="flex items-center gap-2">
                       <Button
+                        onClick={() => openEdit(vehicle)}
                         size="sm"
                         variant="outline"
-                        onClick={() => openEdit(vehicle)}
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
                       <Button
+                        className="text-red-500 hover:text-red-700"
+                        disabled={deleting === vehicle.id}
+                        onClick={() => handleDelete(vehicle.id)}
                         size="sm"
                         variant="outline"
-                        className="text-red-500 hover:text-red-700"
-                        onClick={() => handleDelete(vehicle.id)}
-                        disabled={deleting === vehicle.id}
                       >
                         {deleting === vehicle.id ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
@@ -386,7 +386,7 @@ export default function VehiclesPage() {
       )}
 
       {/* Create/Edit Dialog */}
-      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+      <Dialog onOpenChange={setShowDialog} open={showDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>
@@ -398,41 +398,41 @@ export default function VehiclesPage() {
                 : "Add a new vehicle to the fleet."}
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSave} className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSave}>
             <div className="grid grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label>Make *</Label>
                 <Input
-                  value={form.make}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, make: e.target.value }))
                   }
                   placeholder="Ford"
                   required
+                  value={form.make}
                 />
               </div>
               <div className="space-y-2">
                 <Label>Model *</Label>
                 <Input
-                  value={form.model}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, model: e.target.value }))
                   }
                   placeholder="Transit"
                   required
+                  value={form.model}
                 />
               </div>
               <div className="space-y-2">
                 <Label>Year</Label>
                 <Input
-                  type="number"
-                  min="1900"
                   max="2030"
-                  value={form.year}
+                  min="1900"
                   onChange={(e) =>
                     setForm((p) => ({ ...p, year: e.target.value }))
                   }
                   placeholder="2024"
+                  type="number"
+                  value={form.year}
                 />
               </div>
             </div>
@@ -441,21 +441,21 @@ export default function VehiclesPage() {
               <div className="space-y-2">
                 <Label>Plate Number</Label>
                 <Input
-                  value={form.plateNumber}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, plateNumber: e.target.value }))
                   }
                   placeholder="ABC-1234"
+                  value={form.plateNumber}
                 />
               </div>
               <div className="space-y-2">
                 <Label>VIN</Label>
                 <Input
-                  value={form.vin}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, vin: e.target.value }))
                   }
                   placeholder="1HGBH41JXMN109186"
+                  value={form.vin}
                 />
               </div>
             </div>
@@ -464,10 +464,8 @@ export default function VehiclesPage() {
               <div className="space-y-2">
                 <Label>Status</Label>
                 <Select
+                  onValueChange={(v) => setForm((p) => ({ ...p, status: v }))}
                   value={form.status}
-                  onValueChange={(v) =>
-                    setForm((p) => ({ ...p, status: v }))
-                  }
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -485,10 +483,8 @@ export default function VehiclesPage() {
               <div className="space-y-2">
                 <Label>Fuel Type</Label>
                 <Select
+                  onValueChange={(v) => setForm((p) => ({ ...p, fuelType: v }))}
                   value={form.fuelType}
-                  onValueChange={(v) =>
-                    setForm((p) => ({ ...p, fuelType: v }))
-                  }
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Select..." />
@@ -508,34 +504,34 @@ export default function VehiclesPage() {
               <div className="space-y-2">
                 <Label>Capacity (lbs)</Label>
                 <Input
-                  type="number"
-                  value={form.capacityWeight}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, capacityWeight: e.target.value }))
                   }
                   placeholder="10000"
+                  type="number"
+                  value={form.capacityWeight}
                 />
               </div>
               <div className="space-y-2">
                 <Label>Capacity (cu ft)</Label>
                 <Input
-                  type="number"
-                  value={form.capacityVolume}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, capacityVolume: e.target.value }))
                   }
                   placeholder="500"
+                  type="number"
+                  value={form.capacityVolume}
                 />
               </div>
               <div className="space-y-2">
                 <Label>Mileage</Label>
                 <Input
-                  type="number"
-                  value={form.mileage}
                   onChange={(e) =>
                     setForm((p) => ({ ...p, mileage: e.target.value }))
                   }
                   placeholder="45000"
+                  type="number"
+                  value={form.mileage}
                 />
               </div>
             </div>
@@ -543,26 +539,26 @@ export default function VehiclesPage() {
             <div className="space-y-2">
               <Label>Notes</Label>
               <Textarea
-                value={form.notes}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, notes: e.target.value }))
                 }
-                rows={2}
                 placeholder="Vehicle notes..."
+                rows={2}
+                value={form.notes}
               />
             </div>
 
             <DialogFooter>
               <Button
+                onClick={() => setShowDialog(false)}
                 type="button"
                 variant="outline"
-                onClick={() => setShowDialog(false)}
               >
                 Cancel
               </Button>
               <Button
+                disabled={!(form.make.trim() && form.model.trim()) || saving}
                 type="submit"
-                disabled={!form.make.trim() || !form.model.trim() || saving}
               >
                 {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {editing ? "Update" : "Add"} Vehicle

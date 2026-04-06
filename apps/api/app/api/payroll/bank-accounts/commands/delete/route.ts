@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -22,7 +23,10 @@ export async function POST(request: NextRequest) {
     const { id } = body;
 
     if (!id) {
-      return NextResponse.json({ error: "Account ID required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Account ID required" },
+        { status: 400 }
+      );
     }
 
     const [deleted] = await database.$queryRaw<
@@ -37,14 +41,15 @@ export async function POST(request: NextRequest) {
     );
 
     if (!deleted) {
-      return NextResponse.json({ error: "Bank account not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Bank account not found" },
+        { status: 404 }
+      );
     }
 
     // If deleted account was default, set the most recent remaining account as default
     if (deleted.is_default) {
-      const [newDefault] = await database.$queryRaw<
-        Array<{ id: string }>
-      >(
+      const [newDefault] = await database.$queryRaw<Array<{ id: string }>>(
         Prisma.sql`
           UPDATE tenant_staff.employee_bank_accounts
           SET is_default = true, updated_at = NOW()
@@ -74,7 +79,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, id: deleted.id });
   } catch (error) {
+    captureException(error);
     console.error("Failed to delete bank account:", error);
-    return NextResponse.json({ error: "Failed to delete bank account" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to delete bank account" },
+      { status: 500 }
+    );
   }
 }

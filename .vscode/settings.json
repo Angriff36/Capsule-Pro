@@ -1,9 +1,0 @@
-{
-  "editor.defaultFormatter": "biomejs.biome",
-  "[jsonc]": {
-    "editor.defaultFormatter": "vscode.json-language-features"
-  },
-  "[markdown]": {
-    "editor.defaultFormatter": "vscode.markdown-language-features"
-  }
-}

@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { corsHeaders } from "@/app/lib/cors";
 import { InvariantError, invariant } from "@/app/lib/invariant";
@@ -272,6 +273,7 @@ export async function GET(request: Request) {
       }
     );
   } catch (error) {
+    captureException(error);
     console.error("Failed to load admin chat threads:", error);
     return NextResponse.json(
       { message: "Internal server error" },
@@ -455,6 +457,7 @@ export async function POST(request: Request) {
       headers: corsHeaders(request, "GET, POST, OPTIONS"),
     });
   } catch (error) {
+    captureException(error);
     if (error instanceof InvariantError) {
       return NextResponse.json(
         { message: error.message },

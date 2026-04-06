@@ -7,6 +7,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { createOutboxEvent } from "@repo/realtime";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -258,6 +259,7 @@ export async function PUT(request: Request, context: RouteContext) {
       }),
     });
   } catch (error) {
+    captureException(error);
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }

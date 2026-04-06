@@ -31,8 +31,8 @@ import { AlertTriangle, CheckCircle2, Loader2, SearchIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
-import { AllergenManagementModal } from "./allergen-management-modal";
 import { AllergenMatrix } from "@/components/allergen-matrix";
+import { AllergenManagementModal } from "./allergen-management-modal";
 
 const { logger, captureException } = Sentry;
 

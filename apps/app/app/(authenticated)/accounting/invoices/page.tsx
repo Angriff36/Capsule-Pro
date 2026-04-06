@@ -6,9 +6,9 @@
  */
 
 import { auth } from "@repo/auth/server";
+import { database } from "@repo/database";
 import { redirect } from "next/navigation";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { database } from "@repo/database";
 import { InvoicesClient } from "./invoices-client";
 
 export default async function InvoicesPage() {

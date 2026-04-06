@@ -73,6 +73,50 @@ describe("Webhook Parsing", () => {
 
     expect(() => parseSentryWebhookPayload(invalidPayload)).toThrow();
   });
+
+  it("should parse official doc sample shapes (tags as pairs, settings as rows)", () => {
+    const payload = {
+      action: "triggered" as const,
+      actor: {
+        id: "sentry",
+        name: "Sentry",
+        type: "application",
+      },
+      data: {
+        event: {
+          culprit: "?(<anonymous>)",
+          datetime: "2019-08-19T21:06:17.677000Z",
+          event_id: "e4874d664c3540c1a32eab185f12c5ab",
+          issue_url: "https://sentry.io/api/0/issues/1117540176/",
+          issue_id: "1117540176",
+          level: "error",
+          message: "",
+          timestamp: 1_566_248_777.677,
+          title: "ReferenceError: heck is not defined",
+          url: "https://sentry.io/api/0/projects/test-org/front-end/events/e4874d664c3540c1a32eab185f12c5ab/",
+          web_url:
+            "https://sentry.io/organizations/test-org/issues/1117540176/events/e4874d664c3540c1a32eab185f12c5ab/",
+          tags: [
+            ["browser", "Chrome 75.0.3770"],
+            ["browser.name", "Chrome"],
+            ["level", "error"],
+          ],
+        },
+        triggered_rule: "Very Important Alert Rule!",
+        issue_alert: {
+          title: "Very Important Alert Rule!",
+          settings: [{ name: "channel", value: "#general" }],
+        },
+      },
+      installation: {
+        uuid: "a8e5d37a-696c-4c54-adb5-b3f28d64c7de",
+      },
+    };
+
+    const parsed = parseSentryWebhookPayload(payload);
+    expect(parsed.data.event.tags?.browser).toBe("Chrome 75.0.3770");
+    expect(parsed.data.issue_alert?.settings?.channel).toBe("#general");
+  });
 });
 
 describe("Issue Parsing", () => {

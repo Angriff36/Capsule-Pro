@@ -1,9 +1,13 @@
 // Create driver
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import {
+  manifestErrorResponse,
+  manifestSuccessResponse,
+} from "@/lib/manifest-response";
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,7 +18,15 @@ export async function POST(request: NextRequest) {
     if (!tenantId) return manifestErrorResponse("Tenant not found", 400);
 
     const body = await request.json();
-    const { name, phone, email, licenseNumber, licenseExpiry, vehicleId, notes } = body;
+    const {
+      name,
+      phone,
+      email,
+      licenseNumber,
+      licenseExpiry,
+      vehicleId,
+      notes,
+    } = body;
 
     if (!name) return manifestErrorResponse("name is required", 400);
 
@@ -32,6 +44,7 @@ export async function POST(request: NextRequest) {
 
     return manifestSuccessResponse({ driver: (result as any[])[0] });
   } catch (error) {
+    captureException(error);
     console.error("Error creating driver:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

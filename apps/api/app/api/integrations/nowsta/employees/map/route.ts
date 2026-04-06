@@ -6,6 +6,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -136,6 +137,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
+    captureException(error);
     console.error("Failed to map employee:", error);
     return NextResponse.json(
       { error: "Failed to create mapping" },
@@ -181,6 +183,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    captureException(error);
     console.error("Failed to delete employee mapping:", error);
     return NextResponse.json(
       { error: "Failed to delete mapping" },

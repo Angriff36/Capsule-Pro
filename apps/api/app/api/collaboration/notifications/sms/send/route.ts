@@ -7,10 +7,19 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import {
-  type SendSmsOptions,
-  type SmsRecipient,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+type SendSmsOptions
+,
+type SmsRecipient
+,
   sendSmsNotification,
-} from "@repo/notifications";
+} from "@repo/notifications"
+
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -81,13 +90,17 @@ export async function POST(request: NextRequest) {
       results,
     });
   } catch (error) {
+    captureException(error);
     console.error("SMS send failed:", error);
 
     // Sanitize known provider-not-configured errors before sending to client
     const raw = error instanceof Error ? error.message : "Unknown error";
     if (raw.includes("not configured")) {
       return NextResponse.json(
-        { error: "SMS service is not configured. Please contact your administrator." },
+        {
+          error:
+            "SMS service is not configured. Please contact your administrator.",
+        },
         { status: 503 }
       );
     }

@@ -94,12 +94,30 @@
           "name": "create",
           "parameters": [
             { "name": "name", "type": { "name": "string", "nullable": false } },
-            { "name": "description", "type": { "name": "string", "nullable": true } },
-            { "name": "campaignType", "type": { "name": "string", "nullable": false } },
-            { "name": "startDate", "type": { "name": "number", "nullable": true } },
-            { "name": "endDate", "type": { "name": "number", "nullable": true } },
-            { "name": "budget", "type": { "name": "number", "nullable": false } },
-            { "name": "targetAudience", "type": { "name": "json", "nullable": true } },
+            {
+              "name": "description",
+              "type": { "name": "string", "nullable": true }
+            },
+            {
+              "name": "campaignType",
+              "type": { "name": "string", "nullable": false }
+            },
+            {
+              "name": "startDate",
+              "type": { "name": "number", "nullable": true }
+            },
+            {
+              "name": "endDate",
+              "type": { "name": "number", "nullable": true }
+            },
+            {
+              "name": "budget",
+              "type": { "name": "number", "nullable": false }
+            },
+            {
+              "name": "targetAudience",
+              "type": { "name": "json", "nullable": true }
+            },
             { "name": "tags", "type": { "name": "array", "nullable": false } }
           ],
           "type": "mutation",
@@ -109,12 +127,30 @@
           "name": "update",
           "parameters": [
             { "name": "name", "type": { "name": "string", "nullable": true } },
-            { "name": "description", "type": { "name": "string", "nullable": true } },
-            { "name": "campaignType", "type": { "name": "string", "nullable": true } },
-            { "name": "startDate", "type": { "name": "number", "nullable": true } },
-            { "name": "endDate", "type": { "name": "number", "nullable": true } },
-            { "name": "budget", "type": { "name": "number", "nullable": true } },
-            { "name": "targetAudience", "type": { "name": "json", "nullable": true } },
+            {
+              "name": "description",
+              "type": { "name": "string", "nullable": true }
+            },
+            {
+              "name": "campaignType",
+              "type": { "name": "string", "nullable": true }
+            },
+            {
+              "name": "startDate",
+              "type": { "name": "number", "nullable": true }
+            },
+            {
+              "name": "endDate",
+              "type": { "name": "number", "nullable": true }
+            },
+            {
+              "name": "budget",
+              "type": { "name": "number", "nullable": true }
+            },
+            {
+              "name": "targetAudience",
+              "type": { "name": "json", "nullable": true }
+            },
             { "name": "tags", "type": { "name": "array", "nullable": true } }
           ],
           "type": "mutation",
@@ -208,9 +244,18 @@
           "name": "create",
           "parameters": [
             { "name": "name", "type": { "name": "string", "nullable": false } },
-            { "name": "channelType", "type": { "name": "string", "nullable": false } },
-            { "name": "provider", "type": { "name": "string", "nullable": true } },
-            { "name": "configuration", "type": { "name": "json", "nullable": true } }
+            {
+              "name": "channelType",
+              "type": { "name": "string", "nullable": false }
+            },
+            {
+              "name": "provider",
+              "type": { "name": "string", "nullable": true }
+            },
+            {
+              "name": "configuration",
+              "type": { "name": "json", "nullable": true }
+            }
           ],
           "type": "mutation",
           "emittedEvents": ["Channel.created"]
@@ -219,9 +264,18 @@
           "name": "update",
           "parameters": [
             { "name": "name", "type": { "name": "string", "nullable": true } },
-            { "name": "channelType", "type": { "name": "string", "nullable": true } },
-            { "name": "provider", "type": { "name": "string", "nullable": true } },
-            { "name": "configuration", "type": { "name": "json", "nullable": true } }
+            {
+              "name": "channelType",
+              "type": { "name": "string", "nullable": true }
+            },
+            {
+              "name": "provider",
+              "type": { "name": "string", "nullable": true }
+            },
+            {
+              "name": "configuration",
+              "type": { "name": "json", "nullable": true }
+            }
           ],
           "type": "mutation",
           "emittedEvents": ["Channel.updated"]
@@ -318,11 +372,26 @@
           "name": "create",
           "parameters": [
             { "name": "name", "type": { "name": "string", "nullable": false } },
-            { "name": "description", "type": { "name": "string", "nullable": true } },
-            { "name": "triggerType", "type": { "name": "string", "nullable": false } },
-            { "name": "triggerConfig", "type": { "name": "json", "nullable": true } },
-            { "name": "actions", "type": { "name": "json", "nullable": false } },
-            { "name": "conditions", "type": { "name": "json", "nullable": true } }
+            {
+              "name": "description",
+              "type": { "name": "string", "nullable": true }
+            },
+            {
+              "name": "triggerType",
+              "type": { "name": "string", "nullable": false }
+            },
+            {
+              "name": "triggerConfig",
+              "type": { "name": "json", "nullable": true }
+            },
+            {
+              "name": "actions",
+              "type": { "name": "json", "nullable": false }
+            },
+            {
+              "name": "conditions",
+              "type": { "name": "json", "nullable": true }
+            }
           ],
           "type": "mutation",
           "emittedEvents": ["AutomationRule.created"]
@@ -331,11 +400,23 @@
           "name": "update",
           "parameters": [
             { "name": "name", "type": { "name": "string", "nullable": true } },
-            { "name": "description", "type": { "name": "string", "nullable": true } },
-            { "name": "triggerType", "type": { "name": "string", "nullable": true } },
-            { "name": "triggerConfig", "type": { "name": "json", "nullable": true } },
+            {
+              "name": "description",
+              "type": { "name": "string", "nullable": true }
+            },
+            {
+              "name": "triggerType",
+              "type": { "name": "string", "nullable": true }
+            },
+            {
+              "name": "triggerConfig",
+              "type": { "name": "json", "nullable": true }
+            },
             { "name": "actions", "type": { "name": "json", "nullable": true } },
-            { "name": "conditions", "type": { "name": "json", "nullable": true } }
+            {
+              "name": "conditions",
+              "type": { "name": "json", "nullable": true }
+            }
           ],
           "type": "mutation",
           "emittedEvents": ["AutomationRule.updated"]
@@ -417,7 +498,10 @@
           "name": "create",
           "parameters": [
             { "name": "name", "type": { "name": "string", "nullable": false } },
-            { "name": "description", "type": { "name": "string", "nullable": true } },
+            {
+              "name": "description",
+              "type": { "name": "string", "nullable": true }
+            },
             { "name": "filters", "type": { "name": "json", "nullable": true } }
           ],
           "type": "mutation",
@@ -427,7 +511,10 @@
           "name": "update",
           "parameters": [
             { "name": "name", "type": { "name": "string", "nullable": true } },
-            { "name": "description", "type": { "name": "string", "nullable": true } },
+            {
+              "name": "description",
+              "type": { "name": "string", "nullable": true }
+            },
             { "name": "filters", "type": { "name": "json", "nullable": true } }
           ],
           "type": "mutation",

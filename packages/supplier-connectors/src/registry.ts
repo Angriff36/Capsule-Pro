@@ -16,9 +16,9 @@
  * ```
  */
 
-import type { SupplierConnector } from "./types.js";
-import { usFoodsConnector } from "./connectors/us-foods.js";
 import { charliesProduceConnector } from "./connectors/charlies-produce.js";
+import { usFoodsConnector } from "./connectors/us-foods.js";
+import type { SupplierConnector } from "./types.js";
 
 /**
  * Registry for supplier connectors.
@@ -36,10 +36,14 @@ export class ConnectorRegistry {
    */
   register(connector: SupplierConnector): void {
     if (this.connectors.has(connector.id)) {
-      throw new Error(`Connector with ID "${connector.id}" is already registered`);
+      throw new Error(
+        `Connector with ID "${connector.id}" is already registered`
+      );
     }
     this.connectors.set(connector.id, connector);
-    console.log(`[connector-registry] Registered connector: ${connector.id} (${connector.name})`);
+    console.log(
+      `[connector-registry] Registered connector: ${connector.id} (${connector.name})`
+    );
   }
 
   /**

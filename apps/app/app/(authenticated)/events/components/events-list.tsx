@@ -1,7 +1,7 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { Input } from "@repo/design-system/components/ui/input";
+import { useMemo, useState } from "react";
 import { EventCard } from "./event-card";
 
 type EventListItem = {
@@ -53,15 +53,15 @@ export function EventsList({ events }: { events: EventListItem[] }) {
     <section className="space-y-4">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <Input
-          value={search}
+          className="sm:max-w-sm"
           onChange={(event) => setSearch(event.target.value)}
           placeholder="Search events, venue, type, tags..."
-          className="sm:max-w-sm"
+          value={search}
         />
         <select
-          value={status}
-          onChange={(event) => setStatus(event.target.value)}
           className="h-10 rounded-md border border-input bg-background px-3 text-sm"
+          onChange={(event) => setStatus(event.target.value)}
+          value={status}
         >
           {statuses.map((value) => (
             <option key={value} value={value}>
@@ -76,7 +76,7 @@ export function EventsList({ events }: { events: EventListItem[] }) {
       </h2>
       <div className="grid gap-6 lg:grid-cols-2 2xl:grid-cols-3">
         {filtered.map((event) => (
-          <EventCard key={event.id} event={event} />
+          <EventCard event={event} key={event.id} />
         ))}
       </div>
     </section>

@@ -1,22 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
-  MapPin,
-  Navigation,
-  Truck,
-  Clock,
-  Route,
-  Plus,
-  Play,
-  CheckCircle2,
-  AlertCircle,
-  Loader2,
-} from 'lucide-react';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
-import { Badge } from '@repo/design-system/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@repo/design-system/components/ui/tabs';
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -24,10 +15,28 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@repo/design-system/components/ui/dialog';
-import { Input } from '@repo/design-system/components/ui/input';
-import { Label } from '@repo/design-system/components/ui/label';
-import { Textarea } from '@repo/design-system/components/ui/textarea';
+} from "@repo/design-system/components/ui/dialog";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs";
+import { Textarea } from "@repo/design-system/components/ui/textarea";
+import {
+  CheckCircle2,
+  Clock,
+  Loader2,
+  MapPin,
+  Navigation,
+  Play,
+  Plus,
+  Route,
+  Truck,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface RouteStop {
   id: string;
@@ -56,28 +65,32 @@ interface DeliveryRoute {
 }
 
 const statusColors: Record<string, string> = {
-  draft: 'bg-gray-100 text-gray-700',
-  optimized: 'bg-blue-100 text-blue-700',
-  in_progress: 'bg-yellow-100 text-yellow-700',
-  completed: 'bg-green-100 text-green-700',
-  cancelled: 'bg-red-100 text-red-700',
+  draft: "bg-gray-100 text-gray-700",
+  optimized: "bg-blue-100 text-blue-700",
+  in_progress: "bg-yellow-100 text-yellow-700",
+  completed: "bg-green-100 text-green-700",
+  cancelled: "bg-red-100 text-red-700",
 };
 
 const stopStatusColors: Record<string, string> = {
-  pending: 'bg-gray-100 text-gray-600',
-  in_transit: 'bg-blue-100 text-blue-600',
-  arrived: 'bg-yellow-100 text-yellow-600',
-  completed: 'bg-green-100 text-green-600',
-  skipped: 'bg-red-100 text-red-600',
+  pending: "bg-gray-100 text-gray-600",
+  in_transit: "bg-blue-100 text-blue-600",
+  arrived: "bg-yellow-100 text-yellow-600",
+  completed: "bg-green-100 text-green-600",
+  skipped: "bg-red-100 text-red-600",
 };
 
 export function RoutesView() {
   const [routes, setRoutes] = useState<DeliveryRoute[]>([]);
   const [loading, setLoading] = useState(true);
   const [optimizing, setOptimizing] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState('all');
+  const [activeTab, setActiveTab] = useState("all");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [createForm, setCreateForm] = useState({ name: '', scheduledDate: '', description: '' });
+  const [createForm, setCreateForm] = useState({
+    name: "",
+    scheduledDate: "",
+    description: "",
+  });
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
@@ -86,11 +99,11 @@ export function RoutesView() {
 
   const loadRoutes = async () => {
     try {
-      const res = await fetch('/api/logistics/routes/list');
+      const res = await fetch("/api/logistics/routes/list");
       const data = await res.json();
       setRoutes(data.routes || []);
     } catch (error) {
-      console.error('Failed to load routes:', error);
+      console.error("Failed to load routes:", error);
     } finally {
       setLoading(false);
     }
@@ -102,9 +115,9 @@ export function RoutesView() {
 
     setCreating(true);
     try {
-      const res = await fetch('/api/logistics/routes/commands/create', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/logistics/routes/commands/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: createForm.name,
           description: createForm.description || null,
@@ -115,10 +128,10 @@ export function RoutesView() {
       if (data.route) {
         setRoutes((prev) => [data.route, ...prev]);
         setShowCreateDialog(false);
-        setCreateForm({ name: '', scheduledDate: '', description: '' });
+        setCreateForm({ name: "", scheduledDate: "", description: "" });
       }
     } catch (error) {
-      console.error('Failed to create route:', error);
+      console.error("Failed to create route:", error);
     } finally {
       setCreating(false);
     }
@@ -127,9 +140,9 @@ export function RoutesView() {
   const handleOptimize = async (routeId: string) => {
     setOptimizing(routeId);
     try {
-      const res = await fetch('/api/logistics/routes/commands/optimize', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const res = await fetch("/api/logistics/routes/commands/optimize", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ routeId }),
       });
       const data = await res.json();
@@ -139,7 +152,7 @@ export function RoutesView() {
         );
       }
     } catch (error) {
-      console.error('Failed to optimize route:', error);
+      console.error("Failed to optimize route:", error);
     } finally {
       setOptimizing(null);
     }
@@ -147,47 +160,51 @@ export function RoutesView() {
 
   const handleStartRoute = async (routeId: string) => {
     try {
-      const res = await fetch('/api/logistics/routes/commands/update-status', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ routeId, status: 'in_progress' }),
+      const res = await fetch("/api/logistics/routes/commands/update-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ routeId, status: "in_progress" }),
       });
       const data = await res.json();
       if (data.route) {
         setRoutes((prev) =>
-          prev.map((r) => (r.id === routeId ? { ...r, status: data.route.status } : r))
+          prev.map((r) =>
+            r.id === routeId ? { ...r, status: data.route.status } : r
+          )
         );
       }
     } catch (error) {
-      console.error('Failed to start route:', error);
+      console.error("Failed to start route:", error);
     }
   };
 
   const handleCompleteRoute = async (routeId: string) => {
     try {
-      const res = await fetch('/api/logistics/routes/commands/update-status', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ routeId, status: 'completed' }),
+      const res = await fetch("/api/logistics/routes/commands/update-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ routeId, status: "completed" }),
       });
       const data = await res.json();
       if (data.route) {
         setRoutes((prev) =>
-          prev.map((r) => (r.id === routeId ? { ...r, status: data.route.status } : r))
+          prev.map((r) =>
+            r.id === routeId ? { ...r, status: data.route.status } : r
+          )
         );
       }
     } catch (error) {
-      console.error('Failed to complete route:', error);
+      console.error("Failed to complete route:", error);
     }
   };
 
   const filteredRoutes = routes.filter((route) => {
-    if (activeTab === 'all') return true;
+    if (activeTab === "all") return true;
     return route.status === activeTab;
   });
 
   const formatDuration = (minutes: number | null) => {
-    if (!minutes) return '--';
+    if (!minutes) return "--";
     const hours = Math.floor(minutes / 60);
     const mins = minutes % 60;
     return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
@@ -216,7 +233,7 @@ export function RoutesView() {
         </Button>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs onValueChange={setActiveTab} value={activeTab}>
         <TabsList>
           <TabsTrigger value="all">All Routes</TabsTrigger>
           <TabsTrigger value="draft">Draft</TabsTrigger>
@@ -225,7 +242,7 @@ export function RoutesView() {
           <TabsTrigger value="completed">Completed</TabsTrigger>
         </TabsList>
 
-        <TabsContent value={activeTab} className="space-y-4">
+        <TabsContent className="space-y-4" value={activeTab}>
           {filteredRoutes.length === 0 ? (
             <Card>
               <CardContent className="py-8 text-center text-muted-foreground">
@@ -242,7 +259,7 @@ export function RoutesView() {
                       {route.routeNumber} - {route.name}
                     </CardTitle>
                     <Badge className={statusColors[route.status]}>
-                      {route.status.replace('_', ' ')}
+                      {route.status.replace("_", " ")}
                     </Badge>
                   </div>
                 </CardHeader>
@@ -259,12 +276,12 @@ export function RoutesView() {
                       <span>
                         {route.scheduledDate
                           ? new Date(route.scheduledDate).toLocaleDateString()
-                          : 'Not scheduled'}
+                          : "Not scheduled"}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Navigation className="h-4 w-4 text-muted-foreground" />
-                      <span>{route.totalDistance || '--'} km</span>
+                      <span>{route.totalDistance || "--"} km</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Route className="h-4 w-4 text-muted-foreground" />
@@ -276,8 +293,8 @@ export function RoutesView() {
                     <div className="space-y-2 mb-4">
                       {route.stops.map((stop) => (
                         <div
-                          key={stop.id}
                           className="flex items-center gap-3 p-2 rounded-lg bg-muted/50"
+                          key={stop.id}
                         >
                           <div className="flex items-center justify-center w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-medium">
                             {stop.stopNumber}
@@ -305,12 +322,12 @@ export function RoutesView() {
                   )}
 
                   <div className="flex gap-2">
-                    {route.status === 'draft' && (
+                    {route.status === "draft" && (
                       <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleOptimize(route.id)}
                         disabled={optimizing === route.id}
+                        onClick={() => handleOptimize(route.id)}
+                        size="sm"
+                        variant="outline"
                       >
                         {optimizing === route.id ? (
                           <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -320,21 +337,21 @@ export function RoutesView() {
                         Optimize
                       </Button>
                     )}
-                    {route.status === 'optimized' && (
+                    {route.status === "optimized" && (
                       <Button
-                        variant="default"
-                        size="sm"
                         onClick={() => handleStartRoute(route.id)}
+                        size="sm"
+                        variant="default"
                       >
                         <Play className="mr-2 h-4 w-4" />
                         Start Route
                       </Button>
                     )}
-                    {route.status === 'in_progress' && (
+                    {route.status === "in_progress" && (
                       <Button
-                        variant="default"
-                        size="sm"
                         onClick={() => handleCompleteRoute(route.id)}
+                        size="sm"
+                        variant="default"
                       >
                         <CheckCircle2 className="mr-2 h-4 w-4" />
                         Complete
@@ -349,7 +366,7 @@ export function RoutesView() {
       </Tabs>
 
       {/* Create Route Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+      <Dialog onOpenChange={setShowCreateDialog} open={showCreateDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Create New Route</DialogTitle>
@@ -362,33 +379,54 @@ export function RoutesView() {
               <Label htmlFor="routeName">Route Name</Label>
               <Input
                 id="routeName"
+                onChange={(e) =>
+                  setCreateForm((prev) => ({ ...prev, name: e.target.value }))
+                }
                 placeholder="e.g., Downtown Lunch Route"
-                value={createForm.name}
-                onChange={(e) => setCreateForm((prev) => ({ ...prev, name: e.target.value }))}
                 required
+                value={createForm.name}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="scheduledDate">Scheduled Date</Label>
               <Input
                 id="scheduledDate"
+                onChange={(e) =>
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    scheduledDate: e.target.value,
+                  }))
+                }
                 type="date"
                 value={createForm.scheduledDate}
-                onChange={(e) => setCreateForm((prev) => ({ ...prev, scheduledDate: e.target.value }))}
               />
             </div>
             <div className="space-y-2">
               <Label htmlFor="description">Description</Label>
               <Textarea
                 id="description"
+                onChange={(e) =>
+                  setCreateForm((prev) => ({
+                    ...prev,
+                    description: e.target.value,
+                  }))
+                }
                 placeholder="Route details..."
                 value={createForm.description}
-                onChange={(e) => setCreateForm((prev) => ({ ...prev, description: e.target.value }))}
               />
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setShowCreateDialog(false)}>Cancel</Button>
-              <Button type="submit" disabled={!createForm.name.trim() || creating}>
+              <Button
+                onClick={() => setShowCreateDialog(false)}
+                type="button"
+                variant="outline"
+              >
+                Cancel
+              </Button>
+              <Button
+                disabled={!createForm.name.trim() || creating}
+                type="submit"
+              >
                 {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create Route
               </Button>

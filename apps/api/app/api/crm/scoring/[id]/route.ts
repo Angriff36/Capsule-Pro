@@ -7,6 +7,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -26,12 +27,16 @@ export async function PUT(
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 400 }
+      );
     }
 
     const { id } = await params;
     const body = await request.json();
-    const { rule_name, field, condition, value, points, is_active, priority } = body;
+    const { rule_name, field, condition, value, points, is_active, priority } =
+      body;
 
     // Verify rule exists and belongs to tenant
     const existing = await database.$queryRaw<Array<{ id: string }>>(
@@ -79,10 +84,13 @@ export async function PUT(
     }
 
     if (updates.length === 0) {
-      return NextResponse.json({ message: "No fields to update" }, { status: 400 });
+      return NextResponse.json(
+        { message: "No fields to update" },
+        { status: 400 }
+      );
     }
 
-    updates.push(`updated_at = NOW()`);
+    updates.push("updated_at = NOW()");
     updateValues.push(id, tenantId);
 
     const updated = await database.$queryRaw<
@@ -102,14 +110,18 @@ export async function PUT(
     >(
       Prisma.sql`
         UPDATE tenant_crm.crm_scoring_rules
-        SET ${Prisma.join(updates.map((u, i) => {
-          // The $ numbering is tricky with Prisma.sql template tag
-          // Use a simpler approach
-          return Prisma.sql`${Prisma.raw(u)}`;
-        }).reduce((acc: unknown[], u, i) => {
-          // Manually build the SQL
-          return acc;
-        }, []))}
+        SET ${Prisma.join(
+          updates
+            .map((u, i) => {
+              // The $ numbering is tricky with Prisma.sql template tag
+              // Use a simpler approach
+              return Prisma.sql`${Prisma.raw(u)}`;
+            })
+            .reduce((acc: unknown[], u, i) => {
+              // Manually build the SQL
+              return acc;
+            }, [])
+        )}
         WHERE id = $${updateValues.length - 1}::uuid AND tenant_id = $${updateValues.length}::uuid
         RETURNING id, tenant_id, rule_name, field, condition, value, points, is_active, priority, created_at, updated_at
       `
@@ -158,8 +170,12 @@ export async function PUT(
 
     return NextResponse.json({ data: refreshed[0] });
   } catch (error) {
+    captureException(error);
     console.error("Error updating scoring rule:", error);
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -176,7 +192,10 @@ export async function DELETE(
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 400 }
+      );
     }
 
     const { id } = await params;
@@ -192,7 +211,11 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    captureException(error);
     console.error("Error deleting scoring rule:", error);
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

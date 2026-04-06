@@ -77,7 +77,8 @@ export const config: NextConfig = {
       },
       {
         // Cache static assets aggressively
-        source: "/(.*)\\.(ico|png|jpg|jpeg|gif|svg|webp|avif|woff|woff2|ttf|eot)",
+        source:
+          "/(.*)\\.(ico|png|jpg|jpeg|gif|svg|webp|avif|woff|woff2|ttf|eot)",
         headers: [
           {
             key: "Cache-Control",

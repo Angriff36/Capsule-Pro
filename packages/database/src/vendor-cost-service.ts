@@ -131,16 +131,10 @@ export async function findCatalogEntryForItem(
       // Check if within effective date range - combine conditions with AND
       AND: [
         {
-          OR: [
-            { effectiveFrom: null },
-            { effectiveFrom: { lte: new Date() } },
-          ],
+          OR: [{ effectiveFrom: null }, { effectiveFrom: { lte: new Date() } }],
         },
         {
-          OR: [
-            { effectiveTo: null },
-            { effectiveTo: { gte: new Date() } },
-          ],
+          OR: [{ effectiveTo: null }, { effectiveTo: { gte: new Date() } }],
         },
       ],
     },
@@ -227,14 +221,17 @@ export function calculateEffectivePrice(
   // Check pricing tiers - find the highest tier where quantity >= minQuantity
   for (const tier of catalogEntry.pricingTiers) {
     const minQty = Number(tier.minQuantity);
-    const maxQty = tier.maxQuantity !== null ? Number(tier.maxQuantity) : Infinity;
+    const maxQty =
+      tier.maxQuantity !== null
+        ? Number(tier.maxQuantity)
+        : Number.POSITIVE_INFINITY;
 
     if (quantity >= minQty && quantity <= maxQty) {
       unitCost = Number(tier.unitCost);
       appliedTier = {
         tierName: tier.tierName,
         minQuantity: minQty,
-        unitCost: unitCost,
+        unitCost,
       };
     }
   }

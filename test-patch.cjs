@@ -1,11 +1,15 @@
-const fs = require('fs');
+"use strict";
+const fs = require("fs");
 
 // Read the compiled JS file
-let content = fs.readFileSync('packages/manifest-runtime/packages/cli/dist/commands/audit-routes.js', 'utf-8');
+let content = fs.readFileSync(
+  "packages/manifest-runtime/packages/cli/dist/commands/audit-routes.js",
+  "utf-8"
+);
 
 // Find the auditRouteFileContent function and add a console.log at the beginning
 content = content.replace(
-  'export function auditRouteFileContent(content, file, options, ownershipContext)',
+  "export function auditRouteFileContent(content, file, options, ownershipContext)",
   'export function auditRouteFileContent(content, file, options, ownershipContext) {\n    console.error("DEBUG auditRouteFileContent called for:", file);'
 );
 
@@ -16,5 +20,8 @@ content = content.replace(
 );
 
 // Write back
-fs.writeFileSync('packages/manifest-runtime/packages/cli/dist/commands/audit-routes.js', content);
-console.log('Added debug at function start');
+fs.writeFileSync(
+  "packages/manifest-runtime/packages/cli/dist/commands/audit-routes.js",
+  content
+);
+console.log("Added debug at function start");

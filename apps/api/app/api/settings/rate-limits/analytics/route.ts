@@ -9,9 +9,15 @@ import { database } from "@repo/database";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
-  manifestErrorResponse,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+manifestErrorResponse,
   manifestSuccessResponse,
-} from "@/lib/manifest-response";
+} from "@/lib/manifest-response"
 
 /**
  * GET /api/settings/rate-limits/analytics
@@ -138,10 +144,8 @@ export async function GET(request: NextRequest) {
         maxResponseTime: item._max.maxResponseTime,
       })),
       events: {
-        allowed:
-          eventCounts.find((e) => e.allowed === true)?._count || 0,
-        blocked:
-          eventCounts.find((e) => e.allowed === false)?._count || 0,
+        allowed: eventCounts.find((e) => e.allowed === true)?._count || 0,
+        blocked: eventCounts.find((e) => e.allowed === false)?._count || 0,
       },
       topBlockedEndpoints: topBlocked.map((item) => ({
         endpoint: item.endpoint,
@@ -151,6 +155,7 @@ export async function GET(request: NextRequest) {
 
     return manifestSuccessResponse({ analytics });
   } catch (error) {
+    captureException(error);
     console.error("[rate-limits/analytics] Error:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

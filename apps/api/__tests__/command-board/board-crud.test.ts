@@ -63,10 +63,13 @@ vi.mock("@sentry/nextjs", () => ({
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
-import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
+import {
+  DELETE,
+  GET as GET_BOARD,
+} from "@/app/api/command-board/[boardId]/route";
 import { GET, POST } from "@/app/api/command-board/route";
-import { DELETE, GET as GET_BOARD } from "@/app/api/command-board/[boardId]/route";
+import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 const mockAuth = vi.mocked(auth) as any;
 const mockGetTenantIdForOrg = vi.mocked(getTenantIdForOrg);
@@ -129,7 +132,10 @@ describe("Command Board CRUD Tests", () => {
               id: TEST_BOARD_ID,
               name: "New Board from Template",
               status: "active",
-              scope: { eventId: "event_123", dateRange: { start: "2024-01-01", end: "2024-01-31" } },
+              scope: {
+                eventId: "event_123",
+                dateRange: { start: "2024-01-01", end: "2024-01-31" },
+              },
             },
             emittedEvents: [],
           }),
@@ -137,11 +143,16 @@ describe("Command Board CRUD Tests", () => {
         mockCreateManifestRuntime.mockResolvedValue(mockRuntime as any);
 
         // Mock template lookup
-        mockCommandBoard.findFirst.mockResolvedValue(createMockBoard({
-          id: TEMPLATE_BOARD_ID,
-          isTemplate: true,
-          scope: { eventId: "event_123", dateRange: { start: "2024-01-01", end: "2024-01-31" } },
-        }));
+        mockCommandBoard.findFirst.mockResolvedValue(
+          createMockBoard({
+            id: TEMPLATE_BOARD_ID,
+            isTemplate: true,
+            scope: {
+              eventId: "event_123",
+              dateRange: { start: "2024-01-01", end: "2024-01-31" },
+            },
+          })
+        );
 
         const request = new Request("http://localhost/api/command-board", {
           method: "POST",
@@ -348,7 +359,9 @@ describe("Command Board CRUD Tests", () => {
       mockCommandBoard.findMany.mockResolvedValue(mockBoards as any);
       mockCommandBoard.count.mockResolvedValue(2);
 
-      const request = new Request("http://localhost/api/command-board?page=1&limit=10");
+      const request = new Request(
+        "http://localhost/api/command-board?page=1&limit=10"
+      );
       const response = await GET(request);
       const body = await response.json();
 
@@ -374,7 +387,9 @@ describe("Command Board CRUD Tests", () => {
       mockCommandBoard.findMany.mockResolvedValue(activeBoards as any);
       mockCommandBoard.count.mockResolvedValue(2);
 
-      const request = new Request("http://localhost/api/command-board?status=active");
+      const request = new Request(
+        "http://localhost/api/command-board?status=active"
+      );
       const response = await GET(request);
 
       expect(response.status).toBe(200);
@@ -391,12 +406,16 @@ describe("Command Board CRUD Tests", () => {
       mockAuth.mockResolvedValue({ orgId: TEST_ORG_ID, userId: TEST_USER_ID });
       mockGetTenantIdForOrg.mockResolvedValue(TEST_TENANT_ID);
 
-      const draftBoards = withCardsCount([createMockBoard({ id: "board_1", status: "draft" })]);
+      const draftBoards = withCardsCount([
+        createMockBoard({ id: "board_1", status: "draft" }),
+      ]);
 
       mockCommandBoard.findMany.mockResolvedValue(draftBoards as any);
       mockCommandBoard.count.mockResolvedValue(1);
 
-      const request = new Request("http://localhost/api/command-board?status=draft");
+      const request = new Request(
+        "http://localhost/api/command-board?status=draft"
+      );
       const response = await GET(request);
 
       expect(response.status).toBe(200);
@@ -413,12 +432,16 @@ describe("Command Board CRUD Tests", () => {
       mockAuth.mockResolvedValue({ orgId: TEST_ORG_ID, userId: TEST_USER_ID });
       mockGetTenantIdForOrg.mockResolvedValue(TEST_TENANT_ID);
 
-      const archivedBoards = withCardsCount([createMockBoard({ id: "board_1", status: "archived" })]);
+      const archivedBoards = withCardsCount([
+        createMockBoard({ id: "board_1", status: "archived" }),
+      ]);
 
       mockCommandBoard.findMany.mockResolvedValue(archivedBoards as any);
       mockCommandBoard.count.mockResolvedValue(1);
 
-      const request = new Request("http://localhost/api/command-board?status=archived");
+      const request = new Request(
+        "http://localhost/api/command-board?status=archived"
+      );
       const response = await GET(request);
 
       expect(response.status).toBe(200);
@@ -435,12 +458,16 @@ describe("Command Board CRUD Tests", () => {
       mockAuth.mockResolvedValue({ orgId: TEST_ORG_ID, userId: TEST_USER_ID });
       mockGetTenantIdForOrg.mockResolvedValue(TEST_TENANT_ID);
 
-      const templates = withCardsCount([createMockBoard({ id: "tmpl_1", isTemplate: true })]);
+      const templates = withCardsCount([
+        createMockBoard({ id: "tmpl_1", isTemplate: true }),
+      ]);
 
       mockCommandBoard.findMany.mockResolvedValue(templates as any);
       mockCommandBoard.count.mockResolvedValue(1);
 
-      const request = new Request("http://localhost/api/command-board?is_template=true");
+      const request = new Request(
+        "http://localhost/api/command-board?is_template=true"
+      );
       const response = await GET(request);
 
       expect(response.status).toBe(200);
@@ -457,12 +484,16 @@ describe("Command Board CRUD Tests", () => {
       mockAuth.mockResolvedValue({ orgId: TEST_ORG_ID, userId: TEST_USER_ID });
       mockGetTenantIdForOrg.mockResolvedValue(TEST_TENANT_ID);
 
-      const eventBoards = withCardsCount([createMockBoard({ id: "board_1", eventId: "event_123" })]);
+      const eventBoards = withCardsCount([
+        createMockBoard({ id: "board_1", eventId: "event_123" }),
+      ]);
 
       mockCommandBoard.findMany.mockResolvedValue(eventBoards as any);
       mockCommandBoard.count.mockResolvedValue(1);
 
-      const request = new Request("http://localhost/api/command-board?event_id=event_123");
+      const request = new Request(
+        "http://localhost/api/command-board?event_id=event_123"
+      );
       const response = await GET(request);
 
       expect(response.status).toBe(200);
@@ -502,7 +533,9 @@ describe("Command Board CRUD Tests", () => {
       mockCommandBoard.findMany.mockResolvedValue([] as any);
       mockCommandBoard.count.mockResolvedValue(0);
 
-      const request = new Request("http://localhost/api/command-board?search=Catering");
+      const request = new Request(
+        "http://localhost/api/command-board?search=Catering"
+      );
       const response = await GET(request);
 
       expect(response.status).toBe(200);
@@ -553,8 +586,12 @@ describe("Command Board CRUD Tests", () => {
 
       mockCommandBoard.findFirst.mockResolvedValue(mockBoard as any);
 
-      const request = new Request(`http://localhost/api/command-board/${TEST_BOARD_ID}`);
-      const response = await GET_BOARD(request, { params: Promise.resolve({ boardId: TEST_BOARD_ID }) });
+      const request = new Request(
+        `http://localhost/api/command-board/${TEST_BOARD_ID}`
+      );
+      const response = await GET_BOARD(request, {
+        params: Promise.resolve({ boardId: TEST_BOARD_ID }),
+      });
       const body = await response.json();
 
       expect(response.status).toBe(200);
@@ -567,8 +604,12 @@ describe("Command Board CRUD Tests", () => {
       mockGetTenantIdForOrg.mockResolvedValue(TEST_TENANT_ID);
       mockCommandBoard.findFirst.mockResolvedValue(null);
 
-      const request = new Request(`http://localhost/api/command-board/${TEST_BOARD_ID}`);
-      const response = await GET_BOARD(request, { params: Promise.resolve({ boardId: TEST_BOARD_ID }) });
+      const request = new Request(
+        `http://localhost/api/command-board/${TEST_BOARD_ID}`
+      );
+      const response = await GET_BOARD(request, {
+        params: Promise.resolve({ boardId: TEST_BOARD_ID }),
+      });
 
       expect(response.status).toBe(404);
     });
@@ -578,8 +619,12 @@ describe("Command Board CRUD Tests", () => {
       mockGetTenantIdForOrg.mockResolvedValue(TEST_TENANT_ID);
       mockCommandBoard.findFirst.mockResolvedValue(null);
 
-      const request = new Request(`http://localhost/api/command-board/${TEST_BOARD_ID}`);
-      const response = await GET_BOARD(request, { params: Promise.resolve({ boardId: TEST_BOARD_ID }) });
+      const request = new Request(
+        `http://localhost/api/command-board/${TEST_BOARD_ID}`
+      );
+      const response = await GET_BOARD(request, {
+        params: Promise.resolve({ boardId: TEST_BOARD_ID }),
+      });
 
       expect(mockCommandBoard.findFirst).toHaveBeenCalledWith(
         expect.objectContaining({
@@ -599,7 +644,7 @@ describe("Command Board CRUD Tests", () => {
         role: "admin",
         email: "test@example.com",
         firstName: "Test",
-        lastName: "User"
+        lastName: "User",
       });
 
       const mockRuntime = {
@@ -611,11 +656,16 @@ describe("Command Board CRUD Tests", () => {
       };
       mockCreateManifestRuntime.mockResolvedValue(mockRuntime as any);
 
-      const request = new Request(`http://localhost/api/command-board/${TEST_BOARD_ID}`, {
-        method: "DELETE",
-      });
+      const request = new Request(
+        `http://localhost/api/command-board/${TEST_BOARD_ID}`,
+        {
+          method: "DELETE",
+        }
+      );
 
-      const response = await DELETE(request as any, { params: Promise.resolve({ boardId: TEST_BOARD_ID }) });
+      const response = await DELETE(request as any, {
+        params: Promise.resolve({ boardId: TEST_BOARD_ID }),
+      });
       const body = await response.json();
 
       expect(response.status).toBe(200);
@@ -647,11 +697,16 @@ describe("Command Board CRUD Tests", () => {
       };
       mockCreateManifestRuntime.mockResolvedValue(mockRuntime as any);
 
-      const request = new Request(`http://localhost/api/command-board/${TEST_BOARD_ID}`, {
-        method: "DELETE",
-      });
+      const request = new Request(
+        `http://localhost/api/command-board/${TEST_BOARD_ID}`,
+        {
+          method: "DELETE",
+        }
+      );
 
-      const response = await DELETE(request as any, { params: Promise.resolve({ boardId: TEST_BOARD_ID }) });
+      const response = await DELETE(request as any, {
+        params: Promise.resolve({ boardId: TEST_BOARD_ID }),
+      });
 
       expect(response.status).toBe(403);
     });
@@ -663,7 +718,7 @@ describe("Command Board CRUD Tests", () => {
         role: "admin",
         email: "test@example.com",
         firstName: "Test",
-        lastName: "User"
+        lastName: "User",
       });
 
       const mockRuntime = {
@@ -674,11 +729,16 @@ describe("Command Board CRUD Tests", () => {
       };
       mockCreateManifestRuntime.mockResolvedValue(mockRuntime as any);
 
-      const request = new Request(`http://localhost/api/command-board/${TEST_BOARD_ID}`, {
-        method: "DELETE",
-      });
+      const request = new Request(
+        `http://localhost/api/command-board/${TEST_BOARD_ID}`,
+        {
+          method: "DELETE",
+        }
+      );
 
-      const response = await DELETE(request as any, { params: Promise.resolve({ boardId: TEST_BOARD_ID }) });
+      const response = await DELETE(request as any, {
+        params: Promise.resolve({ boardId: TEST_BOARD_ID }),
+      });
 
       expect(response.status).toBe(400);
     });

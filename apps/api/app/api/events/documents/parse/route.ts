@@ -10,11 +10,18 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import type {
-  MenuItem,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+MenuItem,
   ParsedEvent,
   ProcessedDocument,
   StaffShift,
-} from "@repo/event-parser";
+} from "@repo/event-parser"
+
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -1227,6 +1234,7 @@ export async function POST(request: Request) {
     console.log("[POST] Response generated successfully");
     return NextResponse.json({ data: response });
   } catch (error) {
+    captureException(error);
     console.error("[POST] Error parsing documents:", error);
 
     const errorMessage =
@@ -1297,6 +1305,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
+    captureException(error);
     console.error("Error listing imports:", error);
     return NextResponse.json(
       { message: "Internal server error" },

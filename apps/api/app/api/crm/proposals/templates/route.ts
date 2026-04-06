@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -32,6 +33,7 @@ export async function GET() {
 
     return NextResponse.json(templates);
   } catch (error) {
+    captureException(error);
     console.error("Error fetching proposal templates:", error);
     return NextResponse.json(
       { error: "Failed to fetch templates" },

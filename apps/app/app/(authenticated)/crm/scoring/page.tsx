@@ -1,6 +1,9 @@
 "use client";
 
-import { ScoringRulesClient, type ScoringDistribution } from "./components/scoring-rules-client";
+import {
+  type ScoringDistribution,
+  ScoringRulesClient,
+} from "./components/scoring-rules-client";
 
 async function fetchRules() {
   const res = await fetch("/api/crm/scoring");
@@ -19,8 +22,8 @@ async function fetchDistribution(): Promise<ScoringDistribution> {
 export default function ScoringPage() {
   return (
     <ScoringRulesClient
-      fetchRules={fetchRules}
       fetchDistribution={fetchDistribution}
+      fetchRules={fetchRules}
     />
   );
 }

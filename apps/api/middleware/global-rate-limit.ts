@@ -29,10 +29,10 @@ const DEFAULT_WINDOW = "1 m" as const;
 
 /** Routes exempt from rate limiting */
 const EXEMPT_PATTERNS = [
-  /^\/webhooks\//,        // External webhook receivers (Stripe, Clerk, etc.)
-  /^\/api\/health/,       // Health checks
-  /^\/outbox\//,          // Internal outbox
-  /^\/api\/public\//,     // Public-facing endpoints
+  /^\/webhooks\//, // External webhook receivers (Stripe, Clerk, etc.)
+  /^\/api\/health/, // Health checks
+  /^\/outbox\//, // Internal outbox
+  /^\/api\/public\//, // Public-facing endpoints
 ];
 
 // ============================================================================
@@ -91,7 +91,11 @@ function extractTenantKey(request: Request): string | null {
 /**
  * Creates rate limit response headers.
  */
-function createRateLimitHeaders(limit: number, remaining: number, reset: Date): Headers {
+function createRateLimitHeaders(
+  limit: number,
+  remaining: number,
+  reset: Date
+): Headers {
   const headers = new Headers();
   headers.set("x-ratelimit-limit", String(limit));
   headers.set("x-ratelimit-remaining", String(Math.max(0, remaining)));
@@ -147,9 +151,7 @@ export async function applyGlobalRateLimit(
 
     if (!success) {
       // Rate limit exceeded
-      const retryAfter = Math.ceil(
-        (resetDate.getTime() - Date.now()) / 1000
-      );
+      const retryAfter = Math.ceil((resetDate.getTime() - Date.now()) / 1000);
       const headers = new Headers();
       headers.set("x-ratelimit-limit", String(DEFAULT_LIMIT));
       headers.set("x-ratelimit-remaining", "0");
@@ -189,7 +191,10 @@ export async function applyGlobalRateLimit(
  * Appends rate limit headers to a response (if rate limiting was applied).
  * Call this on the response before returning from middleware.
  */
-export function appendRateLimitHeaders(response: Response, request: Request): Response {
+export function appendRateLimitHeaders(
+  response: Response,
+  request: Request
+): Response {
   const applied = request.headers.get("x-ratelimit-applied");
   if (applied !== "true") return response;
 

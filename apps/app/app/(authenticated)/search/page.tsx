@@ -1,7 +1,6 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
-import { useEffect, useState, useCallback, Suspense } from "react";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
@@ -16,20 +15,21 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Button } from "@repo/design-system/components/ui/button";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 import {
-  CalendarDays,
-  Users,
-  User,
-  MapPin,
-  Package,
   BookOpen,
+  CalendarDays,
   ChevronLeft,
   ChevronRight,
+  MapPin,
+  Package,
+  User,
+  Users,
 } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useState } from "react";
 import { Header } from "../components/header";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
@@ -37,10 +37,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
 });
 
 interface SearchResult {
-  groups: Record<
-    string,
-    { items: Record<string, unknown>[]; total: number }
-  >;
+  groups: Record<string, { items: Record<string, unknown>[]; total: number }>;
   total: number;
   page: number;
   limit: number;
@@ -133,7 +130,9 @@ const GROUP_CONFIG: Record<
     href: (item) => `/knowledge/${item.slug}`,
     title: (item) => (item.title as string) || "Untitled",
     description: (item) => (
-      <CardDescription>{(item.category as string) || "General"}</CardDescription>
+      <CardDescription>
+        {(item.category as string) || "General"}
+      </CardDescription>
     ),
   },
 };
@@ -154,7 +153,11 @@ function SearchResults() {
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams({ q, page: String(page), limit: String(limit) });
+      const params = new URLSearchParams({
+        q,
+        page: String(page),
+        limit: String(limit),
+      });
       if (typeFilter !== "all") params.set("type", typeFilter);
       const res = await fetch(`/api/search?${params}`);
       const json = await res.json();
@@ -186,13 +189,16 @@ function SearchResults() {
       <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
         <div className="flex items-center justify-between">
           <div className="space-y-0.5">
-            <h1 className="text-3xl font-bold tracking-tight">Search Results</h1>
+            <h1 className="text-3xl font-bold tracking-tight">
+              Search Results
+            </h1>
             <p className="text-muted-foreground">
               {loading ? (
                 "Searching..."
               ) : data ? (
                 <>
-                  {data.total} result{data.total !== 1 ? "s" : ""} for &quot;{q}&quot;
+                  {data.total} result{data.total !== 1 ? "s" : ""} for &quot;{q}
+                  &quot;
                 </>
               ) : (
                 <>Showing results for &quot;{q}&quot;</>
@@ -200,7 +206,7 @@ function SearchResults() {
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <Select value={typeFilter} onValueChange={setTypeFilter}>
+            <Select onValueChange={setTypeFilter} value={typeFilter}>
               <SelectTrigger className="w-[160px]">
                 <SelectValue placeholder="Filter by type" />
               </SelectTrigger>
@@ -229,11 +235,11 @@ function SearchResults() {
         {loading && (
           <div className="space-y-6">
             {Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="space-y-2">
+              <div className="space-y-2" key={i}>
                 <Skeleton className="h-5 w-24" />
                 <div className="grid gap-4 md:grid-cols-3">
                   {Array.from({ length: 3 }).map((_, j) => (
-                    <Skeleton key={j} className="h-28" />
+                    <Skeleton className="h-28" key={j} />
                   ))}
                 </div>
               </div>
@@ -257,7 +263,7 @@ function SearchResults() {
               const config = GROUP_CONFIG[groupKey];
               if (!config) return null;
               return (
-                <section key={groupKey} className="space-y-4">
+                <section className="space-y-4" key={groupKey}>
                   <h2 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
                     {config.icon}
                     {config.label} ({group.total})
@@ -287,10 +293,10 @@ function SearchResults() {
         {!loading && data && data.total > data.limit && (
           <div className="flex items-center justify-center gap-4">
             <Button
-              variant="outline"
-              size="sm"
               disabled={page <= 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
+              size="sm"
+              variant="outline"
             >
               <ChevronLeft className="size-4 mr-1" />
               Previous
@@ -299,10 +305,10 @@ function SearchResults() {
               Page {data.page}
             </span>
             <Button
-              variant="outline"
-              size="sm"
               disabled={page * data.limit >= data.total}
               onClick={() => setPage((p) => p + 1)}
+              size="sm"
+              variant="outline"
             >
               Next
               <ChevronRight className="size-4 ml-1" />

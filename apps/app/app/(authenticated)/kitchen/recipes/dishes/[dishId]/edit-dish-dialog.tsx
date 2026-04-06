@@ -131,7 +131,9 @@ export function EditDishDialog({ dish }: EditDishDialogProps) {
         setOpen(false);
         router.refresh();
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Failed to update dish.");
+        toast.error(
+          error instanceof Error ? error.message : "Failed to update dish."
+        );
       }
     });
   };
@@ -367,7 +369,9 @@ export function EditDishDialog({ dish }: EditDishDialogProps) {
                     size="sm"
                     type="button"
                     variant={
-                      formData.allergens.includes(allergen) ? "default" : "outline"
+                      formData.allergens.includes(allergen)
+                        ? "default"
+                        : "outline"
                     }
                   >
                     {allergen}

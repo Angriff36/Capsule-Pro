@@ -5,7 +5,12 @@
  * Supports full catalog sync and incremental updates.
  */
 
-import type { SupplierConnector, SupplierConnectorConfig, SupplierProduct, SupplierSyncResult } from "./types.js";
+import type {
+  SupplierConnector,
+  SupplierConnectorConfig,
+  SupplierProduct,
+  SupplierSyncResult,
+} from "./types.js";
 
 /**
  * Minimal interface for database operations needed by the sync service.
@@ -85,7 +90,11 @@ export class SupplierSyncService {
 
       for (const product of products) {
         try {
-          const data = this.mapToVendorCatalog(product, config.supplierId, config.tenantId);
+          const data = this.mapToVendorCatalog(
+            product,
+            config.supplierId,
+            config.tenantId
+          );
           const existingId = existingBySku.get(product.sku);
 
           if (existingId) {
@@ -110,7 +119,8 @@ export class SupplierSyncService {
             productsCreated++;
           }
         } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : String(error);
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
           errors.push({ sku: product.sku, error: errorMessage });
         }
       }
@@ -145,7 +155,8 @@ export class SupplierSyncService {
         durationMs: Date.now() - startTime,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       return {
         connectorId: connector.id,
         productsSynced: 0,
@@ -186,7 +197,11 @@ export class SupplierSyncService {
 
       for (const product of changedProducts) {
         try {
-          const data = this.mapToVendorCatalog(product, config.supplierId, config.tenantId);
+          const data = this.mapToVendorCatalog(
+            product,
+            config.supplierId,
+            config.tenantId
+          );
           const existing = await this.prisma.vendorCatalog.findFirst({
             where: {
               tenantId: config.tenantId,
@@ -203,12 +218,17 @@ export class SupplierSyncService {
             productsUpdated++;
           } else {
             await this.prisma.vendorCatalog.create({
-              data: { ...data, tenantId: config.tenantId, supplierId: config.supplierId },
+              data: {
+                ...data,
+                tenantId: config.tenantId,
+                supplierId: config.supplierId,
+              },
             });
             productsCreated++;
           }
         } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : String(error);
+          const errorMessage =
+            error instanceof Error ? error.message : String(error);
           errors.push({ sku: product.sku, error: errorMessage });
         }
       }
@@ -224,7 +244,8 @@ export class SupplierSyncService {
         durationMs: Date.now() - startTime,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       return {
         connectorId: connector.id,
         productsSynced: 0,

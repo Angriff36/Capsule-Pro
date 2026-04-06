@@ -1,4 +1,4 @@
-import { Star, Building2, MapPin, Mail, Phone, Globe } from "lucide-react";
+import { Star } from "lucide-react";
 
 export interface Vendor {
   id: string;
@@ -68,24 +68,45 @@ export const formatPaymentTerms = (terms: string) => {
   return option?.label || terms;
 };
 
-export const RatingStars = ({ rating, size = "sm" }: { rating: number | null; size?: "sm" | "md" }) => {
+export const RatingStars = ({
+  rating,
+  size = "sm",
+}: {
+  rating: number | null;
+  size?: "sm" | "md";
+}) => {
   const sizeClass = size === "sm" ? "h-3 w-3" : "h-4 w-4";
-  if (!rating) return <span className="text-muted-foreground text-xs">Not rated</span>;
+  if (!rating)
+    return <span className="text-muted-foreground text-xs">Not rated</span>;
 
   return (
     <div className="flex items-center gap-0.5">
       {[1, 2, 3, 4, 5].map((i) => (
         <Star
-          key={i}
           className={`${sizeClass} ${i <= Math.round(rating) ? "text-amber-400 fill-amber-400" : "text-gray-300"}`}
+          key={i}
         />
       ))}
-      <span className="text-xs text-muted-foreground ml-1">{Number(rating).toFixed(1)}</span>
+      <span className="text-xs text-muted-foreground ml-1">
+        {Number(rating).toFixed(1)}
+      </span>
     </div>
   );
 };
 
-export const VendorAddress = ({ vendor }: { vendor: Pick<Vendor, "address_line1" | "address_line2" | "city" | "state" | "postal_code" | "country"> }) => {
+export const VendorAddress = ({
+  vendor,
+}: {
+  vendor: Pick<
+    Vendor,
+    | "address_line1"
+    | "address_line2"
+    | "city"
+    | "state"
+    | "postal_code"
+    | "country"
+  >;
+}) => {
   const parts = [
     vendor.address_line1,
     vendor.address_line2,
@@ -94,6 +115,7 @@ export const VendorAddress = ({ vendor }: { vendor: Pick<Vendor, "address_line1"
     vendor.country,
   ].filter(Boolean);
 
-  if (!parts.length) return <span className="text-muted-foreground text-sm">No address</span>;
+  if (!parts.length)
+    return <span className="text-muted-foreground text-sm">No address</span>;
   return <span className="text-sm">{parts.join(", ")}</span>;
 };

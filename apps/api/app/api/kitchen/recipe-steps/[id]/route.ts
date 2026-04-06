@@ -1,13 +1,19 @@
 // Auto-generated Next.js API route for RecipeStep
 // Generated from Manifest IR - DO NOT EDIT
 
+import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
-import { auth } from "@repo/auth/server";
+import {
+  manifestErrorResponse,
+  manifestSuccessResponse,
+} from "@/lib/manifest-response";
 
-export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const { orgId, userId } = await auth();
     if (!(userId && orgId)) {

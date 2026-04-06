@@ -1,10 +1,14 @@
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
 import { Skeleton } from "@repo/design-system/components/ui/skeleton";
-import { FileText, Scale, Sparkles, AlertTriangle, CheckCircle2 } from "lucide-react";
+import { AlertTriangle, FileText, Scale, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -46,7 +50,9 @@ interface NutritionLabel {
 export default function NutritionLabelsPage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
-  const [nutritionLabel, setNutritionLabel] = useState<NutritionLabel | null>(null);
+  const [nutritionLabel, setNutritionLabel] = useState<NutritionLabel | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);
 
@@ -74,7 +80,7 @@ export default function NutritionLabelsPage() {
     setSelectedRecipe(recipe);
     setGenerating(true);
     setNutritionLabel(null);
-    
+
     try {
       const res = await fetch("/api/kitchen/nutrition-labels/generate", {
         method: "POST",
@@ -82,11 +88,13 @@ export default function NutritionLabelsPage() {
         body: JSON.stringify({ recipeId: recipe.id }),
       });
       const data = await res.json();
-      
+
       if (data.success) {
         setNutritionLabel(data.nutritionLabel);
         if (data.nutritionLabel.unknownIngredients.length > 0) {
-          toast.warning(`${data.nutritionLabel.unknownIngredients.length} ingredients had unknown nutrition data`);
+          toast.warning(
+            `${data.nutritionLabel.unknownIngredients.length} ingredients had unknown nutrition data`
+          );
         }
       } else {
         toast.error(data.error || "Failed to generate nutrition label");
@@ -106,12 +114,18 @@ export default function NutritionLabelsPage() {
     percentDV?: number,
     isIndented = false
   ) => (
-    <div className={`flex justify-between py-1 ${isIndented ? "pl-4" : "border-t border-gray-200"}`}>
+    <div
+      className={`flex justify-between py-1 ${isIndented ? "pl-4" : "border-t border-gray-200"}`}
+    >
       <span className={`${isIndented ? "text-sm" : "font-medium"}`}>
-        {isIndented ? "  " : ""}{label}
+        {isIndented ? "  " : ""}
+        {label}
       </span>
       <span className="flex gap-4">
-        <span className="text-right w-20">{value}{unit}</span>
+        <span className="text-right w-20">
+          {value}
+          {unit}
+        </span>
         {percentDV !== undefined && (
           <span className="text-right w-12 font-medium">{percentDV}%</span>
         )}
@@ -150,28 +164,38 @@ export default function NutritionLabelsPage() {
             ) : recipes.length === 0 ? (
               <div className="text-center py-8 text-muted-foreground">
                 <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No recipes found. Create recipes first to generate nutrition labels.</p>
+                <p>
+                  No recipes found. Create recipes first to generate nutrition
+                  labels.
+                </p>
               </div>
             ) : (
               <div className="space-y-2 max-h-[600px] overflow-y-auto">
                 {recipes.map((recipe) => (
                   <div
-                    key={recipe.id}
                     className={`p-3 rounded-lg border cursor-pointer transition-colors ${
                       selectedRecipe?.id === recipe.id
                         ? "border-primary bg-primary/5"
                         : "hover:bg-muted/50"
                     }`}
+                    key={recipe.id}
                     onClick={() => generateLabel(recipe)}
                   >
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="font-medium">{recipe.name}</p>
                         <p className="text-sm text-muted-foreground">
-                          {recipe.ingredientCount} ingredients • Serves {recipe.yield || 1}
+                          {recipe.ingredientCount} ingredients • Serves{" "}
+                          {recipe.yield || 1}
                         </p>
                       </div>
-                      <Button size="sm" variant="ghost" disabled={generating && selectedRecipe?.id === recipe.id}>
+                      <Button
+                        disabled={
+                          generating && selectedRecipe?.id === recipe.id
+                        }
+                        size="sm"
+                        variant="ghost"
+                      >
                         {generating && selectedRecipe?.id === recipe.id ? (
                           <Sparkles className="h-4 w-4 animate-pulse" />
                         ) : (
@@ -203,15 +227,21 @@ export default function NutritionLabelsPage() {
                 <div className="text-4xl font-black border-b-4 border-black pb-1">
                   Nutrition Facts
                 </div>
-                
+
                 <div className="py-2">
-                  <div className="text-lg font-bold">{nutritionLabel.recipeName}</div>
+                  <div className="text-lg font-bold">
+                    {nutritionLabel.recipeName}
+                  </div>
                   <div className="text-sm">{nutritionLabel.servingSize}</div>
-                  <div className="text-sm">Servings Per Recipe: {nutritionLabel.servingsPerRecipe}</div>
+                  <div className="text-sm">
+                    Servings Per Recipe: {nutritionLabel.servingsPerRecipe}
+                  </div>
                 </div>
 
                 <div className="border-t-8 border-black">
-                  <div className="text-right text-xs pb-1">Amount Per Serving</div>
+                  <div className="text-right text-xs pb-1">
+                    Amount Per Serving
+                  </div>
                 </div>
 
                 {/* Calories */}
@@ -228,19 +258,88 @@ export default function NutritionLabelsPage() {
                 </div>
 
                 {/* Nutrients */}
-                {renderNutritionRow("Total Fat", nutritionLabel.nutrition.totalFat, "g", nutritionLabel.percentDailyValue.totalFat)}
-                {renderNutritionRow("Saturated Fat", nutritionLabel.nutrition.saturatedFat, "g", nutritionLabel.percentDailyValue.saturatedFat, true)}
-                {renderNutritionRow("Trans Fat", nutritionLabel.nutrition.transFat, "g", undefined, true)}
-                {renderNutritionRow("Cholesterol", nutritionLabel.nutrition.cholesterol, "mg", nutritionLabel.percentDailyValue.cholesterol)}
-                {renderNutritionRow("Sodium", nutritionLabel.nutrition.sodium, "mg", nutritionLabel.percentDailyValue.sodium)}
-                {renderNutritionRow("Total Carbohydrate", nutritionLabel.nutrition.totalCarbs, "g", nutritionLabel.percentDailyValue.totalCarbs)}
-                {renderNutritionRow("Dietary Fiber", nutritionLabel.nutrition.dietaryFiber, "g", nutritionLabel.percentDailyValue.dietaryFiber, true)}
-                {renderNutritionRow("Total Sugars", nutritionLabel.nutrition.sugars, "g", undefined, true)}
-                {renderNutritionRow("Protein", nutritionLabel.nutrition.protein, "g", nutritionLabel.percentDailyValue.protein)}
-                {renderNutritionRow("Vitamin A", nutritionLabel.nutrition.vitaminA, "mcg", nutritionLabel.percentDailyValue.vitaminA)}
-                {renderNutritionRow("Vitamin C", nutritionLabel.nutrition.vitaminC, "mg", nutritionLabel.percentDailyValue.vitaminC)}
-                {renderNutritionRow("Calcium", nutritionLabel.nutrition.calcium, "mg", nutritionLabel.percentDailyValue.calcium)}
-                {renderNutritionRow("Iron", nutritionLabel.nutrition.iron, "mg", nutritionLabel.percentDailyValue.iron)}
+                {renderNutritionRow(
+                  "Total Fat",
+                  nutritionLabel.nutrition.totalFat,
+                  "g",
+                  nutritionLabel.percentDailyValue.totalFat
+                )}
+                {renderNutritionRow(
+                  "Saturated Fat",
+                  nutritionLabel.nutrition.saturatedFat,
+                  "g",
+                  nutritionLabel.percentDailyValue.saturatedFat,
+                  true
+                )}
+                {renderNutritionRow(
+                  "Trans Fat",
+                  nutritionLabel.nutrition.transFat,
+                  "g",
+                  undefined,
+                  true
+                )}
+                {renderNutritionRow(
+                  "Cholesterol",
+                  nutritionLabel.nutrition.cholesterol,
+                  "mg",
+                  nutritionLabel.percentDailyValue.cholesterol
+                )}
+                {renderNutritionRow(
+                  "Sodium",
+                  nutritionLabel.nutrition.sodium,
+                  "mg",
+                  nutritionLabel.percentDailyValue.sodium
+                )}
+                {renderNutritionRow(
+                  "Total Carbohydrate",
+                  nutritionLabel.nutrition.totalCarbs,
+                  "g",
+                  nutritionLabel.percentDailyValue.totalCarbs
+                )}
+                {renderNutritionRow(
+                  "Dietary Fiber",
+                  nutritionLabel.nutrition.dietaryFiber,
+                  "g",
+                  nutritionLabel.percentDailyValue.dietaryFiber,
+                  true
+                )}
+                {renderNutritionRow(
+                  "Total Sugars",
+                  nutritionLabel.nutrition.sugars,
+                  "g",
+                  undefined,
+                  true
+                )}
+                {renderNutritionRow(
+                  "Protein",
+                  nutritionLabel.nutrition.protein,
+                  "g",
+                  nutritionLabel.percentDailyValue.protein
+                )}
+                {renderNutritionRow(
+                  "Vitamin A",
+                  nutritionLabel.nutrition.vitaminA,
+                  "mcg",
+                  nutritionLabel.percentDailyValue.vitaminA
+                )}
+                {renderNutritionRow(
+                  "Vitamin C",
+                  nutritionLabel.nutrition.vitaminC,
+                  "mg",
+                  nutritionLabel.percentDailyValue.vitaminC
+                )}
+                {renderNutritionRow(
+                  "Calcium",
+                  nutritionLabel.nutrition.calcium,
+                  "mg",
+                  nutritionLabel.percentDailyValue.calcium
+                )}
+                {renderNutritionRow(
+                  "Iron",
+                  nutritionLabel.nutrition.iron,
+                  "mg",
+                  nutritionLabel.percentDailyValue.iron
+                )}
 
                 {/* Footer */}
                 <div className="border-t-4 border-black mt-2 pt-2 text-xs">
@@ -255,7 +354,8 @@ export default function NutritionLabelsPage() {
                       Missing nutrition data
                     </div>
                     <p className="text-yellow-700">
-                      Could not calculate nutrition for: {nutritionLabel.unknownIngredients.join(", ")}
+                      Could not calculate nutrition for:{" "}
+                      {nutritionLabel.unknownIngredients.join(", ")}
                     </p>
                   </div>
                 )}

@@ -10,12 +10,18 @@ import { database } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type {
-  SimulationContext,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+SimulationContext,
   SimulationStatus,
   BoardProjection,
   BoardGroup,
   BoardAnnotation,
-} from "../../types";
+} from "../../types"
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -59,7 +65,7 @@ export async function GET(_request: Request, context: RouteContext) {
       },
     });
 
-    if (!board || !board.tags.includes("simulation")) {
+    if (!(board && board.tags.includes("simulation"))) {
       return NextResponse.json(
         { message: "Simulation not found" },
         { status: 404 }
@@ -137,6 +143,7 @@ export async function GET(_request: Request, context: RouteContext) {
 
     return NextResponse.json(simulationContext);
   } catch (error) {
+    captureException(error);
     console.error(
       "Failed to get simulation:",
       error instanceof Error ? error : new Error(String(error))
@@ -182,7 +189,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
       },
     });
 
-    if (!board || !board.tags.includes("simulation")) {
+    if (!(board && board.tags.includes("simulation"))) {
       return NextResponse.json(
         { message: "Simulation not found" },
         { status: 404 }
@@ -202,6 +209,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    captureException(error);
     console.error("Failed to delete simulation:", error);
     return NextResponse.json(
       { message: "Internal server error" },

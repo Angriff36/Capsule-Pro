@@ -96,9 +96,9 @@ export const keys = () => {
       NEXT_PUBLIC_API_URL:
         process.env.NEXT_PUBLIC_API_URL ??
         (isPreview
-          ? (process.env.VERCEL_API_URL
-              ? `https://${process.env.VERCEL_API_URL.replace(/^https?:\/\//, "")}`
-              : getPreviewUrl("capsule-pro-api"))
+          ? process.env.VERCEL_API_URL
+            ? `https://${process.env.VERCEL_API_URL.replace(/^https?:\/\//, "")}`
+            : getPreviewUrl("capsule-pro-api")
           : undefined),
       NEXT_PUBLIC_DOCS_URL: process.env.NEXT_PUBLIC_DOCS_URL,
     },

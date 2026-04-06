@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma, type PrismaClient } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { withRateLimit } from "@/middleware/rate-limiter";
@@ -207,7 +208,11 @@ export const POST = withRateLimit(
         }
 
         if (body.editRequests && body.editRequests.length > 0) {
-          await processEditRequests(tx as TxClient, tenantId, body.editRequests);
+          await processEditRequests(
+            tx as TxClient,
+            tenantId,
+            body.editRequests
+          );
           editRequestCount = body.editRequests.length;
         }
 
@@ -235,6 +240,7 @@ export const POST = withRateLimit(
         results,
       });
     } catch (error) {
+      captureException(error);
       console.error("Error in bulk timecard operation:", error);
       const errorMessage =
         error instanceof Error ? error.message : "Failed to process timecards";

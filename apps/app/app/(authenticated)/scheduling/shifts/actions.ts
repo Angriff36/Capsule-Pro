@@ -609,3 +609,37 @@ export async function getSchedules() {
 
   return { schedules };
 }
+
+/**
+ * Get upcoming events for dropdown
+ */
+export async function getEvents() {
+  const { orgId } = await auth();
+  if (!orgId) {
+    throw new Error("Not authenticated");
+  }
+  const tenantId = await getTenantIdForOrg(orgId);
+  if (!tenantId) {
+    throw new Error("No tenant found");
+  }
+
+  const events = await database.event.findMany({
+    where: {
+      tenantId,
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+      title: true,
+      eventDate: true,
+      eventType: true,
+      status: true,
+    },
+    orderBy: {
+      eventDate: "desc",
+    },
+    take: 100,
+  });
+
+  return { events };
+}

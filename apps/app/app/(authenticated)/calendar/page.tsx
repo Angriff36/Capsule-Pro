@@ -1,15 +1,24 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { notFound } from "next/navigation";
-import Link from "next/link";
-import { startOfMonth, endOfMonth, addMonths, subMonths } from "date-fns";
-import { RefreshCw } from "lucide-react";
-import { Header } from "../components/header";
-import { UnifiedCalendar, UnifiedCalendarSkeleton } from "./components/unified-calendar";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@repo/design-system/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
 import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs";
+import { addMonths, endOfMonth, startOfMonth, subMonths } from "date-fns";
+import { RefreshCw } from "lucide-react";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../lib/tenant";
+import { Header } from "../components/header";
+import { UnifiedCalendar } from "./components/unified-calendar";
 
 interface CalendarEvent {
   id: string;
@@ -27,7 +36,7 @@ interface CalendarEvent {
 
 async function getCalendarData(tenantId: string, start: Date, end: Date) {
   const events: CalendarEvent[] = [];
-  
+
   // Fetch events
   const dbEvents = await database.event.findMany({
     where: {
@@ -50,16 +59,18 @@ async function getCalendarData(tenantId: string, start: Date, end: Date) {
     orderBy: { eventDate: "asc" },
   });
 
-  events.push(...dbEvents.map(e => ({
-    id: e.id,
-    title: e.title || `${e.eventType} Event`,
-    start: e.eventDate,
-    type: "event" as const,
-    status: e.status,
-    location: e.venueName || undefined,
-    guestCount: e.guestCount || undefined,
-    details: `Type: ${e.eventType}`,
-  })));
+  events.push(
+    ...dbEvents.map((e) => ({
+      id: e.id,
+      title: e.title || `${e.eventType} Event`,
+      start: e.eventDate,
+      type: "event" as const,
+      status: e.status,
+      location: e.venueName || undefined,
+      guestCount: e.guestCount || undefined,
+      details: `Type: ${e.eventType}`,
+    }))
+  );
 
   // Fetch shifts from tenant_staff.schedule_shifts
   try {
@@ -84,14 +95,18 @@ async function getCalendarData(tenantId: string, start: Date, end: Date) {
     });
 
     if (shifts && shifts.length > 0) {
-      events.push(...shifts.map(s => ({
-        id: s.id,
-        title: `Shift: ${s.role_during_shift || "Staff"}`,
-        start: s.shift_start,
-        end: s.shift_end ?? undefined,
-        type: "shift" as const,
-        details: s.role_during_shift ? `Role: ${s.role_during_shift}` : undefined,
-      })));
+      events.push(
+        ...shifts.map((s) => ({
+          id: s.id,
+          title: `Shift: ${s.role_during_shift || "Staff"}`,
+          start: s.shift_start,
+          end: s.shift_end ?? undefined,
+          type: "shift" as const,
+          details: s.role_during_shift
+            ? `Role: ${s.role_during_shift}`
+            : undefined,
+        }))
+      );
     }
   } catch (error) {
     // Shifts query failed
@@ -122,15 +137,17 @@ async function getCalendarData(tenantId: string, start: Date, end: Date) {
     });
 
     if (timeOff && timeOff.length > 0) {
-      events.push(...timeOff.map(t => ({
-        id: t.id,
-        title: `${t.request_type?.replace(/_/g, " ") || "Time Off"}`,
-        start: new Date(t.start_date),
-        end: t.end_date ? new Date(t.end_date) : undefined,
-        type: "timeoff" as const,
-        status: t.status,
-        details: t.reason || undefined,
-      })));
+      events.push(
+        ...timeOff.map((t) => ({
+          id: t.id,
+          title: `${t.request_type?.replace(/_/g, " ") || "Time Off"}`,
+          start: new Date(t.start_date),
+          end: t.end_date ? new Date(t.end_date) : undefined,
+          type: "timeoff" as const,
+          status: t.status,
+          details: t.reason || undefined,
+        }))
+      );
     }
   } catch (error) {
     console.log("No time off found:", error);
@@ -157,18 +174,18 @@ const CalendarPage = async () => {
   const events = await getCalendarData(tenantId, start, end);
 
   // Calculate summary stats
-  const eventCount = events.filter(e => e.type === "event").length;
-  const shiftCount = events.filter(e => e.type === "shift").length;
-  const timeOffCount = events.filter(e => e.type === "timeoff").length;
-  const upcomingEvents = events.filter(e => 
-    e.type === "event" && e.start >= today
+  const eventCount = events.filter((e) => e.type === "event").length;
+  const shiftCount = events.filter((e) => e.type === "shift").length;
+  const timeOffCount = events.filter((e) => e.type === "timeoff").length;
+  const upcomingEvents = events.filter(
+    (e) => e.type === "event" && e.start >= today
   ).length;
 
   return (
     <>
       <Header page="Calendar" pages={[]}>
         <div className="flex items-center gap-2">
-          <Tabs defaultValue="calendar" className="mr-4">
+          <Tabs className="mr-4" defaultValue="calendar">
             <TabsList>
               <TabsTrigger value="calendar">Calendar</TabsTrigger>
               <TabsTrigger value="list">List View</TabsTrigger>
@@ -176,7 +193,7 @@ const CalendarPage = async () => {
             </TabsList>
           </Tabs>
           <Link href="/calendar/sync">
-            <Button variant="outline" size="sm">
+            <Button size="sm" variant="outline">
               <RefreshCw className="mr-2 h-4 w-4" />
               Sync
             </Button>
@@ -189,7 +206,9 @@ const CalendarPage = async () => {
         <div className="grid gap-4 md:grid-cols-4">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Events</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Total Events
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{eventCount}</div>
@@ -200,13 +219,13 @@ const CalendarPage = async () => {
           </Card>
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Scheduled Shifts</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Scheduled Shifts
+              </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{shiftCount}</div>
-              <p className="text-xs text-muted-foreground">
-                This period
-              </p>
+              <p className="text-xs text-muted-foreground">This period</p>
             </CardContent>
           </Card>
           <Card>
@@ -215,9 +234,7 @@ const CalendarPage = async () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{timeOffCount}</div>
-              <p className="text-xs text-muted-foreground">
-                Approved requests
-              </p>
+              <p className="text-xs text-muted-foreground">Approved requests</p>
             </CardContent>
           </Card>
           <Card>
@@ -226,18 +243,13 @@ const CalendarPage = async () => {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{events.length}</div>
-              <p className="text-xs text-muted-foreground">
-                On calendar
-              </p>
+              <p className="text-xs text-muted-foreground">On calendar</p>
             </CardContent>
           </Card>
         </div>
 
         {/* Unified Calendar */}
-        <UnifiedCalendar 
-          tenantId={tenantId} 
-          initialEvents={events}
-        />
+        <UnifiedCalendar initialEvents={events} tenantId={tenantId} />
       </div>
     </>
   );

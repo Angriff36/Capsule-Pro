@@ -16,7 +16,6 @@ import {
   ActivityIcon,
   CalendarDaysIcon,
   CalendarPlusIcon,
-
   Link as LinkIcon,
   MapPinIcon,
   PartyPopperIcon,

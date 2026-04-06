@@ -6,6 +6,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createGoodshuffleClient } from "@/app/lib/goodshuffle-client";
@@ -53,6 +54,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
+    captureException(error);
     console.error("Failed to test Goodshuffle connection:", error);
     return NextResponse.json(
       { error: "Failed to test connection" },
@@ -97,6 +99,7 @@ export async function GET() {
 
     return NextResponse.json(result);
   } catch (error) {
+    captureException(error);
     console.error("Failed to test Goodshuffle connection:", error);
     return NextResponse.json(
       { error: "Failed to test connection" },

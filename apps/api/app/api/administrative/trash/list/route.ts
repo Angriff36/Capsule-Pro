@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -820,6 +821,7 @@ export async function GET(request: NextRequest) {
       })),
     });
   } catch (error) {
+    captureException(error);
     console.error("Error fetching trash items:", error);
     return NextResponse.json(
       { message: "Internal server error" },

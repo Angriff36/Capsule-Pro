@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
 
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest) {
     const documentType = searchParams.get("documentType");
     const documentId = searchParams.get("documentId");
 
-    if (!documentType || !documentId) {
+    if (!(documentType && documentId)) {
       return NextResponse.json(
         { error: "documentType and documentId are required" },
         { status: 400 }
@@ -42,6 +43,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ versions });
   } catch (error) {
+    captureException(error);
     console.error("Error listing document versions:", error);
     return NextResponse.json(
       { error: "Failed to list document versions" },

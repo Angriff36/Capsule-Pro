@@ -1,24 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { toast } from "sonner";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@repo/design-system/components/ui/table";
 import {
   Dialog,
   DialogContent,
@@ -37,8 +26,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@repo/design-system/components/ui/table";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { Package, ArrowRight, Plus, Check, X, Truck, RotateCcw } from "lucide-react";
+import { Check, Package, Plus, Truck, X } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface TransferItem {
   id: string;
@@ -75,15 +74,17 @@ export function InventoryTransfersClient() {
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [selectedTransfer, setSelectedTransfer] = useState<Transfer | null>(null);
+  const [selectedTransfer, setSelectedTransfer] = useState<Transfer | null>(
+    null
+  );
 
   // Form state for new transfer
   const [fromLocation, setFromLocation] = useState("");
   const [toLocation, setToLocation] = useState("");
   const [notes, setNotes] = useState("");
-  const [transferItems, setTransferItems] = useState<{ itemId: string; quantity: string }[]>([
-    { itemId: "", quantity: "" },
-  ]);
+  const [transferItems, setTransferItems] = useState<
+    { itemId: string; quantity: string }[]
+  >([{ itemId: "", quantity: "" }]);
 
   useEffect(() => {
     fetchTransfers();
@@ -136,11 +137,14 @@ export function InventoryTransfersClient() {
 
   const handleAction = async (action: string, transferId: string) => {
     try {
-      const response = await fetch(`/api/inventory/transfers/commands/${action}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ transferId }),
-      });
+      const response = await fetch(
+        `/api/inventory/transfers/commands/${action}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ transferId }),
+        }
+      );
 
       if (response.ok) {
         toast.success(`Transfer ${action}d successfully`);
@@ -187,7 +191,7 @@ export function InventoryTransfersClient() {
             Track stock movements between storage locations
           </p>
         </div>
-        <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
+        <Dialog onOpenChange={setIsCreateOpen} open={isCreateOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="mr-2 h-4 w-4" />
@@ -207,47 +211,51 @@ export function InventoryTransfersClient() {
                   <Label htmlFor="from">From Location</Label>
                   <Input
                     id="from"
-                    value={fromLocation}
                     onChange={(e) => setFromLocation(e.target.value)}
                     placeholder="Source location ID"
+                    value={fromLocation}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="to">To Location</Label>
                   <Input
                     id="to"
-                    value={toLocation}
                     onChange={(e) => setToLocation(e.target.value)}
                     placeholder="Destination location ID"
+                    value={toLocation}
                   />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label>Items</Label>
                 {transferItems.map((item, index) => (
-                  <div key={index} className="flex gap-2">
+                  <div className="flex gap-2" key={index}>
                     <Input
+                      className="flex-1"
+                      onChange={(e) =>
+                        updateItemRow(index, "itemId", e.target.value)
+                      }
                       placeholder="Item ID"
                       value={item.itemId}
-                      onChange={(e) => updateItemRow(index, "itemId", e.target.value)}
-                      className="flex-1"
                     />
                     <Input
+                      className="w-32"
+                      onChange={(e) =>
+                        updateItemRow(index, "quantity", e.target.value)
+                      }
                       placeholder="Quantity"
                       value={item.quantity}
-                      onChange={(e) => updateItemRow(index, "quantity", e.target.value)}
-                      className="w-32"
                     />
                     <Button
-                      variant="outline"
-                      size="icon"
                       onClick={() => removeItemRow(index)}
+                      size="icon"
+                      variant="outline"
                     >
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
                 ))}
-                <Button variant="outline" onClick={addItemRow}>
+                <Button onClick={addItemRow} variant="outline">
                   <Plus className="mr-2 h-4 w-4" /> Add Item
                 </Button>
               </div>
@@ -255,14 +263,14 @@ export function InventoryTransfersClient() {
                 <Label htmlFor="notes">Notes</Label>
                 <Textarea
                   id="notes"
-                  value={notes}
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Optional notes..."
+                  value={notes}
                 />
               </div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setIsCreateOpen(false)}>
+              <Button onClick={() => setIsCreateOpen(false)} variant="outline">
                 Cancel
               </Button>
               <Button onClick={handleCreateTransfer}>Create Transfer</Button>
@@ -275,7 +283,7 @@ export function InventoryTransfersClient() {
         <CardHeader>
           <div className="flex justify-between items-center">
             <CardTitle>All Transfers</CardTitle>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <Select onValueChange={setStatusFilter} value={statusFilter}>
               <SelectTrigger className="w-40">
                 <SelectValue placeholder="Filter by status" />
               </SelectTrigger>
@@ -292,7 +300,9 @@ export function InventoryTransfersClient() {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading...</div>
+            <div className="text-center py-8 text-muted-foreground">
+              Loading...
+            </div>
           ) : transfers.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
               No transfers found
@@ -336,18 +346,22 @@ export function InventoryTransfersClient() {
                         {transfer.status === "pending" && (
                           <>
                             <Button
+                              onClick={() =>
+                                handleAction("approve", transfer.id)
+                              }
                               size="sm"
-                              variant="outline"
-                              onClick={() => handleAction("approve", transfer.id)}
                               title="Approve"
+                              variant="outline"
                             >
                               <Check className="h-4 w-4" />
                             </Button>
                             <Button
+                              onClick={() =>
+                                handleAction("cancel", transfer.id)
+                              }
                               size="sm"
-                              variant="outline"
-                              onClick={() => handleAction("cancel", transfer.id)}
                               title="Cancel"
+                              variant="outline"
                             >
                               <X className="h-4 w-4" />
                             </Button>
@@ -355,20 +369,20 @@ export function InventoryTransfersClient() {
                         )}
                         {transfer.status === "approved" && (
                           <Button
-                            size="sm"
-                            variant="outline"
                             onClick={() => handleAction("ship", transfer.id)}
+                            size="sm"
                             title="Ship"
+                            variant="outline"
                           >
                             <Truck className="h-4 w-4" />
                           </Button>
                         )}
                         {transfer.status === "in_transit" && (
                           <Button
-                            size="sm"
-                            variant="outline"
                             onClick={() => handleAction("receive", transfer.id)}
+                            size="sm"
                             title="Receive"
+                            variant="outline"
                           >
                             <Package className="h-4 w-4" />
                           </Button>

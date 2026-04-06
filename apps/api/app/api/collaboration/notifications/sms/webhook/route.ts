@@ -6,6 +6,7 @@
 
 import { database } from "@repo/database";
 import { updateDeliveryStatus } from "@repo/notifications";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 
 /**
@@ -82,6 +83,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ received: true });
   } catch (error) {
+    captureException(error);
     console.error("Failed to process SMS webhook:", error);
     // Return 200 to prevent Twilio from retrying on server errors
     return NextResponse.json({ received: true, error: "Processing failed" });

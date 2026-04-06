@@ -9,12 +9,19 @@ import { database, type Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type {
-  DiscrepancyType,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+DiscrepancyType,
   POStatus,
   PurchaseOrderListFilters,
   PurchaseOrderWithDetails,
   QualityStatus,
-} from "./types";
+} from "./types"
+
 import { PO_STATUSES } from "./types";
 
 interface PaginationParams {
@@ -251,6 +258,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
+    captureException(error);
     console.error("Failed to list purchase orders:", error);
     return NextResponse.json(
       { message: "Internal server error" },

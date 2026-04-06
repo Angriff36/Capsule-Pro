@@ -5,6 +5,7 @@
  */
 
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { runNowstaSync } from "@/app/lib/nowsta-sync-service";
@@ -82,6 +83,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
+    captureException(error);
     console.error("Nowsta sync failed:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(

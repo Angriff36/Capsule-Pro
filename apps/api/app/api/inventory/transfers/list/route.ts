@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
+import { type NextRequest, NextResponse } from "next/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,8 +20,8 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status");
     const fromLocationId = searchParams.get("fromLocationId");
     const toLocationId = searchParams.get("toLocationId");
-    const limit = parseInt(searchParams.get("limit") || "50");
-    const offset = parseInt(searchParams.get("offset") || "0");
+    const limit = Number.parseInt(searchParams.get("limit") || "50");
+    const offset = Number.parseInt(searchParams.get("offset") || "0");
 
     const where: Record<string, unknown> = {
       tenantId,
@@ -57,6 +58,7 @@ export async function GET(request: NextRequest) {
       offset,
     });
   } catch (error) {
+    captureException(error);
     console.error("Error listing inventory transfers:", error);
     return NextResponse.json(
       { error: "Failed to list inventory transfers" },

@@ -1,10 +1,11 @@
 // Equipment routes are disabled - Equipment model does not exist in schema
 // This route needs schema migration to add Equipment model
 
-import type { NextRequest } from "next/server";
-import { manifestErrorResponse } from "@/lib/manifest-response";
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
+import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { manifestErrorResponse } from "@/lib/manifest-response";
 
 export async function POST(request: NextRequest) {
   try {
@@ -19,8 +20,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Equipment model does not exist in schema
-    return manifestErrorResponse("Equipment feature not implemented - missing model", 501);
+    return manifestErrorResponse(
+      "Equipment feature not implemented - missing model",
+      501
+    );
   } catch (error) {
+    captureException(error);
     console.error("Error scheduling maintenance:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

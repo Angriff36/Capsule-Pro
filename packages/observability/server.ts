@@ -62,6 +62,14 @@ export const initializeSentry = (): ReturnType<typeof init> =>
         return null;
       }
 
+      // Filter out Next.js HTTP error fallback for 404s — not real errors
+      const excType = event.exception?.values?.[0]?.type ?? "";
+      if (
+        excType.startsWith("NEXT_HTTP_ERROR_FALLBACK;")
+      ) {
+        return null;
+      }
+
       return event;
     },
   });

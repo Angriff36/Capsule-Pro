@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type { CompleteTrainingInput, StartTrainingInput } from "../types";
@@ -254,6 +255,7 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   } catch (error) {
+    captureException(error);
     console.error("Error processing training completion:", error);
     return NextResponse.json(
       { message: "Failed to process training completion" },

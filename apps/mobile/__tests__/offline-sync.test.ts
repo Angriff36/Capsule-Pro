@@ -3,7 +3,7 @@
  * Covers the mobile-offline-mode feature
  */
 
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock React Native dependencies
 vi.mock("@react-native-async-storage/async-storage", () => ({
@@ -46,10 +46,10 @@ vi.mock("../src/store/auth", () => ({
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
-  getOfflineQueue,
   addToOfflineQueue,
-  removeFromOfflineQueue,
   clearOfflineQueue,
+  getOfflineQueue,
+  removeFromOfflineQueue,
 } from "../src/store/offline-queue";
 import type { OfflineQueueItem } from "../src/types";
 
@@ -273,7 +273,7 @@ describe("Retry Configuration", () => {
 
   it("should have SYNC_INTERVAL_MS = 30000", () => {
     const SYNC_INTERVAL_MS = 30_000;
-    expect(SYNC_INTERVAL_MS).toBe(30000);
+    expect(SYNC_INTERVAL_MS).toBe(30_000);
   });
 
   it("should have RETRY_DELAY_MS = 1000", () => {

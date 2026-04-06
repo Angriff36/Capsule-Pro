@@ -42,12 +42,14 @@ import {
   FileJsonIcon,
   FileTextIcon,
   FileTextIcon as FileTextIconLucide,
+  PlusIcon,
   SearchIcon,
   UserIcon,
   XIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { CreateContractModal } from "./create-contract-modal";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
   dateStyle: "medium",
@@ -108,8 +110,21 @@ interface Contract {
   } | null;
 }
 
+interface EventOption {
+  id: string;
+  title: string;
+  eventDate: string;
+}
+
+interface ClientOption {
+  id: string;
+  name: string;
+}
+
 interface ContractsPageClientProps {
   contracts: Contract[];
+  events: EventOption[];
+  clientsForCreate: ClientOption[];
   uniqueStatuses: string[];
   uniqueClients: string[];
   uniqueDocumentTypes: string[];
@@ -120,6 +135,8 @@ const ITEMS_PER_PAGE = 12;
 
 export const ContractsPageClient = ({
   contracts,
+  events,
+  clientsForCreate,
   uniqueStatuses,
   uniqueClients,
   uniqueDocumentTypes,
@@ -130,6 +147,7 @@ export const ContractsPageClient = ({
   const [clientFilter, setClientFilter] = useState<string>("all");
   const [documentTypeFilter, setDocumentTypeFilter] = useState<string>("all");
   const [currentPage, setCurrentPage] = useState(1);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Filter and search contracts
   const filteredContracts = useMemo(() => {
@@ -209,6 +227,14 @@ export const ContractsPageClient = ({
 
   return (
     <div className="flex flex-1 flex-col gap-8">
+      {/* New Contract Button */}
+      <div className="flex items-center justify-end">
+        <Button onClick={() => setShowCreateModal(true)} size="sm">
+          <PlusIcon className="mr-2 size-4" />
+          New Contract
+        </Button>
+      </div>
+
       {/* Filters Section */}
       <section>
         <h2 className="text-sm font-medium text-muted-foreground">Filters</h2>
@@ -350,7 +376,14 @@ export const ContractsPageClient = ({
                   Clear filters
                 </Button>
               </EmptyContent>
-            ) : null}
+            ) : (
+              <EmptyContent>
+                <Button onClick={() => setShowCreateModal(true)}>
+                  <PlusIcon className="mr-2 size-4" />
+                  Create Contract
+                </Button>
+              </EmptyContent>
+            )}
           </Empty>
         ) : (
           <div className="grid gap-4 lg:grid-cols-2 2xl:grid-cols-3">
@@ -459,6 +492,14 @@ export const ContractsPageClient = ({
           </>
         )}
       </section>
+
+      {/* Create Contract Modal */}
+      <CreateContractModal
+        clients={clientsForCreate}
+        events={events}
+        onOpenChange={setShowCreateModal}
+        open={showCreateModal}
+      />
     </div>
   );
 };

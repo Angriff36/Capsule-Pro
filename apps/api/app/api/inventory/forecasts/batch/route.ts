@@ -1,4 +1,5 @@
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 
 // GET /api/inventory/forecasts/batch?skuList=sku1,sku2&from=&to=
@@ -44,6 +45,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(grouped);
   } catch (_error) {
+    captureException(_error);
     return NextResponse.json(
       { error: "Failed to fetch batch forecasts" },
       { status: 500 }

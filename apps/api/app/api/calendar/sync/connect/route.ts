@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 const SUPPORTED_PROVIDERS = ["google", "outlook"] as const;
@@ -52,23 +53,31 @@ export async function POST(request: NextRequest) {
       action: "initiate" | "store_tokens";
     };
 
-    if (!provider || !SUPPORTED_PROVIDERS.includes(provider)) {
+    if (!(provider && SUPPORTED_PROVIDERS.includes(provider))) {
       return NextResponse.json(
-        { error: `Unsupported provider. Must be one of: ${SUPPORTED_PROVIDERS.join(", ")}` },
+        {
+          error: `Unsupported provider. Must be one of: ${SUPPORTED_PROVIDERS.join(", ")}`,
+        },
         { status: 400 }
       );
     }
 
     if (action === "store_tokens") {
-      const { accessToken, refreshToken, tokenExpiry, providerUserId, calendarId, calendarName } =
-        body as {
-          accessToken?: string;
-          refreshToken?: string;
-          tokenExpiry?: string;
-          providerUserId?: string;
-          calendarId?: string;
-          calendarName?: string;
-        };
+      const {
+        accessToken,
+        refreshToken,
+        tokenExpiry,
+        providerUserId,
+        calendarId,
+        calendarName,
+      } = body as {
+        accessToken?: string;
+        refreshToken?: string;
+        tokenExpiry?: string;
+        providerUserId?: string;
+        calendarId?: string;
+        calendarName?: string;
+      };
 
       if (!accessToken) {
         return NextResponse.json(
@@ -109,7 +118,10 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      return NextResponse.json({ success: true, message: `${provider} connected successfully` });
+      return NextResponse.json({
+        success: true,
+        message: `${provider} connected successfully`,
+      });
     }
 
     if (action === "initiate") {
@@ -120,7 +132,9 @@ export async function POST(request: NextRequest) {
 
       if (!clientId) {
         return NextResponse.json(
-          { error: `${provider} OAuth is not configured. Set ${provider.toUpperCase()}_CLIENT_ID in environment variables.` },
+          {
+            error: `${provider} OAuth is not configured. Set ${provider.toUpperCase()}_CLIENT_ID in environment variables.`,
+          },
           { status: 503 }
         );
       }
@@ -149,6 +163,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   } catch (error) {
+    captureException(error);
     console.error("[calendar/sync/connect] Error:", error);
     return NextResponse.json(
       { error: "Failed to initiate connection" },

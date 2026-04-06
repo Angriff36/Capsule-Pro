@@ -4,7 +4,7 @@ import KnowledgeBaseClient from "./knowledge-base-client";
 
 export default async function KnowledgeBasePage() {
   const { orgId } = await auth();
-  
+
   if (!orgId) {
     redirect("/sign-in");
   }

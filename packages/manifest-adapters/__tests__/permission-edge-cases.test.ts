@@ -2,25 +2,25 @@
  * @vitest-environment node
  */
 
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it } from "vitest";
 import {
-  hasPermission,
-  hasAnyPermission,
-  hasAllPermissions,
   getPermissionsForRole,
-  parsePermission,
-  permissionCache,
+  hasAllPermissions,
+  hasAnyPermission,
+  hasPermission,
   matchWildcard,
   type Permission,
+  parsePermission,
+  permissionCache,
   type RolePolicyData,
 } from "../dist/permission-checker.js";
 import {
+  AIApprovalRequiredError,
+  COMMAND_PERMISSION_MAP,
   canExecuteCommand,
   filterAuthorizedCommands,
   getUserPermissions,
   PermissionDeniedError,
-  AIApprovalRequiredError,
-  COMMAND_PERMISSION_MAP,
 } from "../dist/permission-guard.js";
 
 // =============================================================================
@@ -409,7 +409,12 @@ describe("Error types", () => {
   });
 
   it("errors are instanceof Error", () => {
-    const permError = new PermissionDeniedError("x", "y", "z", "a" as Permission);
+    const permError = new PermissionDeniedError(
+      "x",
+      "y",
+      "z",
+      "a" as Permission
+    );
     const aiError = new AIApprovalRequiredError("x", "y");
 
     expect(permError).toBeInstanceOf(Error);
@@ -419,7 +424,12 @@ describe("Error types", () => {
   it("errors are catchable with try/catch", () => {
     let caught = false;
     try {
-      throw new PermissionDeniedError("delete", "Event", "staff", "events.delete" as Permission);
+      throw new PermissionDeniedError(
+        "delete",
+        "Event",
+        "staff",
+        "events.delete" as Permission
+      );
     } catch (e) {
       caught = true;
       expect(e).toBeInstanceOf(PermissionDeniedError);
@@ -463,10 +473,7 @@ describe("Multi-permission checks", () => {
     expect(
       hasAllPermissions({
         userRole: "staff",
-        permissions: [
-          "events.read" as Permission,
-          "tasks.read" as Permission,
-        ],
+        permissions: ["events.read" as Permission, "tasks.read" as Permission],
       })
     ).toBe(true);
   });
@@ -550,7 +557,16 @@ describe("Permission parsing edge cases", () => {
 
 describe("Command permission map coverage", () => {
   it("all standard entity commands have permission mappings", () => {
-    const entities = ["Event", "Client", "User", "InventoryItem", "Dish", "Recipe", "PrepTask", "RolePolicy"];
+    const entities = [
+      "Event",
+      "Client",
+      "User",
+      "InventoryItem",
+      "Dish",
+      "Recipe",
+      "PrepTask",
+      "RolePolicy",
+    ];
     const actions = ["create", "update", "delete"];
 
     for (const entity of entities) {
@@ -565,7 +581,9 @@ describe("Command permission map coverage", () => {
   });
 
   it("User.updateRole requires users.manage_roles (highest privilege)", () => {
-    expect(COMMAND_PERMISSION_MAP["User.updateRole"]).toBe("users.manage_roles");
+    expect(COMMAND_PERMISSION_MAP["User.updateRole"]).toBe(
+      "users.manage_roles"
+    );
   });
 
   it("User.deactivate and User.terminate require users.delete", () => {
@@ -617,7 +635,15 @@ describe("No unhandled promise rejections", () => {
   });
 
   it("parsePermission does not throw on any input", () => {
-    const inputs = ["", ".", "...", "a.b.c.d", "x", null as any, undefined as any];
+    const inputs = [
+      "",
+      ".",
+      "...",
+      "a.b.c.d",
+      "x",
+      null as any,
+      undefined as any,
+    ];
     for (const input of inputs) {
       expect(() => parsePermission(input as Permission)).not.toThrow();
     }

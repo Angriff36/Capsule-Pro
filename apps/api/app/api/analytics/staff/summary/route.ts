@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -417,6 +418,7 @@ export async function GET(_request: Request) {
 
     return NextResponse.json(summary);
   } catch (error) {
+    captureException(error);
     console.error("Error fetching employee performance summary:", error);
     return NextResponse.json(
       { message: "Failed to fetch employee performance summary" },

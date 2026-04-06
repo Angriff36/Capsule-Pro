@@ -19,7 +19,7 @@ export const keys = () => {
   if (
     process.env.NODE_ENV === "production" &&
     !process.env.SKIP_ENV_VALIDATION &&
-    (!env.NEXT_PUBLIC_POSTHOG_KEY || !env.NEXT_PUBLIC_POSTHOG_HOST)
+    !(env.NEXT_PUBLIC_POSTHOG_KEY && env.NEXT_PUBLIC_POSTHOG_HOST)
   ) {
     throw new Error(
       "Missing PostHog configuration (NEXT_PUBLIC_POSTHOG_KEY, NEXT_PUBLIC_POSTHOG_HOST) in production."

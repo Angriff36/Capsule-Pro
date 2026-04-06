@@ -20,11 +20,9 @@ test.describe("Client Communication Preferences", () => {
     await page.waitForLoadState("networkidle");
 
     // Look for any client link to click on
-    const clientLink = page
-      .locator("a[href^='/crm/clients/']")
-      .first();
+    const clientLink = page.locator("a[href^='/crm/clients/']").first();
 
-    const clientExists = await clientLink.count() > 0;
+    const clientExists = (await clientLink.count()) > 0;
 
     if (!clientExists) {
       test.skip(true, "No clients found to test communication preferences");
@@ -46,22 +44,34 @@ test.describe("Client Communication Preferences", () => {
     await page.waitForTimeout(500); // Wait for tab content to load
 
     // Verify the communication preferences section is visible
-    const commPreferences = page.locator('h2:has-text("Communication Preferences")');
+    const commPreferences = page.locator(
+      'h2:has-text("Communication Preferences")'
+    );
     await expect(commPreferences).toBeVisible();
 
     // Verify global settings section exists
-    const globalSettings = page.locator('h3:has-text("Global Communication Settings")');
+    const globalSettings = page.locator(
+      'h3:has-text("Global Communication Settings")'
+    );
     await expect(globalSettings).toBeVisible();
 
     // Verify opt-out switch exists
-    const optOutSwitch = page.locator('input[type="checkbox"][id="global-optout"]');
+    const optOutSwitch = page.locator(
+      'input[type="checkbox"][id="global-optout"]'
+    );
     await expect(optOutSwitch).toBeVisible();
 
     // Verify channel cards exist (Email, SMS, Phone, Mail)
-    const emailCard = page.locator('h3:has-text("Email"), h2:has-text("Email")');
+    const emailCard = page.locator(
+      'h3:has-text("Email"), h2:has-text("Email")'
+    );
     const smsCard = page.locator('h3:has-text("SMS"), h2:has-text("SMS")');
-    const phoneCard = page.locator('h3:has-text("Phone"), h2:has-text("Phone")');
-    const mailCard = page.locator('h3:has-text("Direct Mail"), h2:has-text("Direct Mail")');
+    const phoneCard = page.locator(
+      'h3:has-text("Phone"), h2:has-text("Phone")'
+    );
+    const mailCard = page.locator(
+      'h3:has-text("Direct Mail"), h2:has-text("Direct Mail")'
+    );
 
     // At least some channel cards should be visible
     const hasChannelCards =
@@ -84,11 +94,9 @@ test.describe("Client Communication Preferences", () => {
     await page.goto("/crm/clients");
     await page.waitForLoadState("networkidle");
 
-    const clientLink = page
-      .locator("a[href^='/crm/clients/']")
-      .first();
+    const clientLink = page.locator("a[href^='/crm/clients/']").first();
 
-    const clientExists = await clientLink.count() > 0;
+    const clientExists = (await clientLink.count()) > 0;
 
     if (!clientExists) {
       test.skip(true, "No clients found to test type imports");
@@ -102,7 +110,7 @@ test.describe("Client Communication Preferences", () => {
 
     // Check for no console errors related to type imports
     const clientDetailVisible = await page
-      .locator('h1, h2, h3')
+      .locator("h1, h2, h3")
       .filter({ hasText: /Client|Contact|Event/ })
       .first()
       .isVisible();

@@ -7,6 +7,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -19,14 +20,18 @@ interface DateRangeFilter {
   lte?: Date;
 }
 
-function toNumber(value: { toNumber: () => number } | null | undefined): number | null {
+function toNumber(
+  value: { toNumber: () => number } | null | undefined
+): number | null {
   if (!value) {
     return null;
   }
   return value.toNumber();
 }
 
-function getSeverity(variancePct: number): "low" | "medium" | "high" | "critical" {
+function getSeverity(
+  variancePct: number
+): "low" | "medium" | "high" | "critical" {
   const absPct = Math.abs(variancePct);
   if (absPct < 5) {
     return "low";
@@ -100,7 +105,8 @@ function calculateDiscrepancyBreakdown(
     } else {
       varianceType = "accurate";
     }
-    breakdown.by_type[varianceType] = (breakdown.by_type[varianceType] || 0) + 1;
+    breakdown.by_type[varianceType] =
+      (breakdown.by_type[varianceType] || 0) + 1;
 
     const variancePct = toNumber(report.variancePct) || 0;
     const severity = getSeverity(variancePct);
@@ -129,13 +135,16 @@ function buildTrendData(
   total_variances: number;
   items_counted: number;
 }> {
-  const trendMap = new Map<string, {
-    date: string;
-    audits_completed: number;
-    avg_accuracy: number;
-    total_variances: number;
-    items_counted: number;
-  }>();
+  const trendMap = new Map<
+    string,
+    {
+      date: string;
+      audits_completed: number;
+      avg_accuracy: number;
+      total_variances: number;
+      items_counted: number;
+    }
+  >();
 
   for (const session of sessions) {
     if (!session.finalizedAt) {
@@ -171,7 +180,9 @@ function buildTrendData(
       continue;
     }
 
-    const sessionReports = varianceReports.filter((r) => r.sessionId === session.id);
+    const sessionReports = varianceReports.filter(
+      (r) => r.sessionId === session.id
+    );
     const scores = sessionReports
       .map((r) => toNumber(r.accuracyScore))
       .filter((s): s is number => s !== null);
@@ -182,7 +193,9 @@ function buildTrendData(
       if (currentCount === 0) {
         trendPoint.avg_accuracy = newAvg;
       } else {
-        trendPoint.avg_accuracy = (trendPoint.avg_accuracy * currentCount + newAvg) / trendPoint.audits_completed;
+        trendPoint.avg_accuracy =
+          (trendPoint.avg_accuracy * currentCount + newAvg) /
+          trendPoint.audits_completed;
       }
     }
   }
@@ -252,7 +265,7 @@ export async function GET(request: Request, context: RouteContext) {
     // Re-generate the report data based on saved configuration
     const filters = queryConfig.filters || {};
     const groupBy = queryConfig.group_by || "day";
-    const includeItems = queryConfig.include_items || false;
+    const includeItems = queryConfig.include_items;
 
     // Build date filter
     const dateFilter: DateRangeFilter = {};
@@ -263,7 +276,11 @@ export async function GET(request: Request, context: RouteContext) {
       dateFilter.lte = new Date(filters.endDate);
     }
 
-    const sessionWhere = buildSessionWhereClause(tenantId, dateFilter, filters.locationId);
+    const sessionWhere = buildSessionWhereClause(
+      tenantId,
+      dateFilter,
+      filters.locationId
+    );
 
     // Get sessions
     const sessions = await database.cycleCountSession.findMany({
@@ -309,7 +326,10 @@ export async function GET(request: Request, context: RouteContext) {
 
     // Calculate summary statistics
     const totalAuditsCompleted = sessions.length;
-    const totalItemsCounted = sessions.reduce((sum, s) => sum + s.countedItems, 0);
+    const totalItemsCounted = sessions.reduce(
+      (sum, s) => sum + s.countedItems,
+      0
+    );
 
     const accuracyScores = varianceReports
       .map((r) => toNumber(r.accuracyScore))
@@ -372,6 +392,7 @@ export async function GET(request: Request, context: RouteContext) {
       data: reportData,
     });
   } catch (error) {
+    captureException(error);
     console.error("Failed to get saved report:", error);
     return NextResponse.json(
       { message: "Internal server error" },
@@ -445,6 +466,7 @@ export async function DELETE(request: Request, context: RouteContext) {
       },
     });
   } catch (error) {
+    captureException(error);
     console.error("Failed to delete saved report:", error);
     return NextResponse.json(
       { message: "Internal server error" },

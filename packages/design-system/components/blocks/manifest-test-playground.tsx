@@ -401,9 +401,7 @@ export function ManifestTestPlayground({
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle>Example Input</CardTitle>
-                  <CardDescription>
-                    JSON input for the action
-                  </CardDescription>
+                  <CardDescription>JSON input for the action</CardDescription>
                 </div>
                 <div className="flex gap-2">
                   <Button
@@ -446,9 +444,9 @@ export function ManifestTestPlayground({
                     <div className="flex flex-wrap gap-2">
                       {selectedCommandDetail.parameters.map(
                         (param: { name: string; type: string }) => (
-                        <Badge key={param.name} variant="outline">
-                          {param.name}: {param.type}
-                        </Badge>
+                          <Badge key={param.name} variant="outline">
+                            {param.name}: {param.type}
+                          </Badge>
                         )
                       )}
                     </div>
@@ -479,8 +477,7 @@ export function ManifestTestPlayground({
               <Button
                 className="w-full"
                 disabled={
-                  !executionEnabled ||
-                  !(selectedEntity && selectedCommand) ||
+                  !(executionEnabled && selectedEntity && selectedCommand) ||
                   isExecuting ||
                   !!testDataError
                 }
@@ -531,34 +528,34 @@ export function ManifestTestPlayground({
                 <Tabs defaultValue="output">
                   <TabsList className="grid w-full grid-cols-4">
                     <TabsTrigger value="output">Output</TabsTrigger>
-                      <TabsTrigger value="guards">
-                        Checks
-                        {executionResult.guards.filter(
-                          (g: { passed: boolean }) => !g.passed
-                        ).length > 0 && (
-                          <Badge className="ml-1 h-5 px-1" variant="destructive">
-                            {
-                              executionResult.guards.filter(
-                                (g: { passed: boolean }) => !g.passed
-                              ).length
-                            }
-                          </Badge>
-                        )}
-                      </TabsTrigger>
-                      <TabsTrigger value="constraints">
-                        Rules
-                        {executionResult.constraints.filter(
-                          (c: { passed: boolean }) => !c.passed
-                        ).length > 0 && (
-                          <Badge className="ml-1 h-5 px-1" variant="destructive">
-                            {
-                              executionResult.constraints.filter(
-                                (c: { passed: boolean }) => !c.passed
-                              ).length
-                            }
-                          </Badge>
-                        )}
-                      </TabsTrigger>
+                    <TabsTrigger value="guards">
+                      Checks
+                      {executionResult.guards.filter(
+                        (g: { passed: boolean }) => !g.passed
+                      ).length > 0 && (
+                        <Badge className="ml-1 h-5 px-1" variant="destructive">
+                          {
+                            executionResult.guards.filter(
+                              (g: { passed: boolean }) => !g.passed
+                            ).length
+                          }
+                        </Badge>
+                      )}
+                    </TabsTrigger>
+                    <TabsTrigger value="constraints">
+                      Rules
+                      {executionResult.constraints.filter(
+                        (c: { passed: boolean }) => !c.passed
+                      ).length > 0 && (
+                        <Badge className="ml-1 h-5 px-1" variant="destructive">
+                          {
+                            executionResult.constraints.filter(
+                              (c: { passed: boolean }) => !c.passed
+                            ).length
+                          }
+                        </Badge>
+                      )}
+                    </TabsTrigger>
                     <TabsTrigger value="policy">Permissions</TabsTrigger>
                   </TabsList>
 
@@ -632,39 +629,42 @@ export function ManifestTestPlayground({
                           },
                           i: number
                         ) => (
-                        <Card
-                          className={`p-3 ${guard.passed ? "border-green-500" : "border-destructive"}`}
-                          key={i}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              {guard.passed ? (
-                                <CheckCircle2 className="h-4 w-4 text-green-500" />
-                              ) : (
-                                <X className="h-4 w-4 text-destructive" />
-                              )}
-                              <span className="text-sm font-medium">
-                                Guard #{guard.index + 1}
-                              </span>
+                          <Card
+                            className={`p-3 ${guard.passed ? "border-green-500" : "border-destructive"}`}
+                            key={i}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                {guard.passed ? (
+                                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                ) : (
+                                  <X className="h-4 w-4 text-destructive" />
+                                )}
+                                <span className="text-sm font-medium">
+                                  Guard #{guard.index + 1}
+                                </span>
+                              </div>
+                              <Badge
+                                variant={
+                                  guard.passed ? "default" : "destructive"
+                                }
+                              >
+                                {guard.passed ? "Pass" : "Fail"}
+                              </Badge>
                             </div>
-                            <Badge
-                              variant={guard.passed ? "default" : "destructive"}
-                            >
-                              {guard.passed ? "Pass" : "Fail"}
-                            </Badge>
-                          </div>
-                          {guard.expression && (
-                            <pre className="bg-muted p-2 rounded text-xs mt-2 overflow-x-auto">
-                              {guard.expression}
-                            </pre>
-                          )}
-                          {guard.message && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {guard.message}
-                            </p>
-                          )}
-                        </Card>
-                      ))
+                            {guard.expression && (
+                              <pre className="bg-muted p-2 rounded text-xs mt-2 overflow-x-auto">
+                                {guard.expression}
+                              </pre>
+                            )}
+                            {guard.message && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {guard.message}
+                              </p>
+                            )}
+                          </Card>
+                        )
+                      )
                     )}
                   </TabsContent>
 
@@ -684,55 +684,58 @@ export function ManifestTestPlayground({
                           },
                           i: number
                         ) => (
-                        <Card
-                          className={`p-3 ${
-                            constraint.passed
-                              ? ""
-                              : constraint.severity === "block"
-                                ? "border-destructive"
-                                : "border-yellow-500"
-                          }`}
-                          key={i}
-                        >
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
-                              {constraint.passed ? (
-                                <CheckCircle2 className="h-4 w-4 text-green-500" />
-                              ) : (
-                                <AlertCircle className="h-4 w-4" />
-                              )}
-                              <span className="text-sm font-medium">
-                                {constraint.name}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Badge
-                                variant={
-                                  constraint.severity === "block"
-                                    ? "destructive"
-                                    : constraint.severity === "warn"
+                          <Card
+                            className={`p-3 ${
+                              constraint.passed
+                                ? ""
+                                : constraint.severity === "block"
+                                  ? "border-destructive"
+                                  : "border-yellow-500"
+                            }`}
+                            key={i}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                {constraint.passed ? (
+                                  <CheckCircle2 className="h-4 w-4 text-green-500" />
+                                ) : (
+                                  <AlertCircle className="h-4 w-4" />
+                                )}
+                                <span className="text-sm font-medium">
+                                  {constraint.name}
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge
+                                  variant={
+                                    constraint.severity === "block"
+                                      ? "destructive"
+                                      : constraint.severity === "warn"
+                                        ? "default"
+                                        : "secondary"
+                                  }
+                                >
+                                  {constraint.severity}
+                                </Badge>
+                                <Badge
+                                  variant={
+                                    constraint.passed
                                       ? "default"
-                                      : "secondary"
-                                }
-                              >
-                                {constraint.severity}
-                              </Badge>
-                              <Badge
-                                variant={
-                                  constraint.passed ? "default" : "destructive"
-                                }
-                              >
-                                {constraint.passed ? "Pass" : "Fail"}
-                              </Badge>
+                                      : "destructive"
+                                  }
+                                >
+                                  {constraint.passed ? "Pass" : "Fail"}
+                                </Badge>
+                              </div>
                             </div>
-                          </div>
-                          {constraint.message && (
-                            <p className="text-xs text-muted-foreground mt-1">
-                              {constraint.message}
-                            </p>
-                          )}
-                        </Card>
-                      ))
+                            {constraint.message && (
+                              <p className="text-xs text-muted-foreground mt-1">
+                                {constraint.message}
+                              </p>
+                            )}
+                          </Card>
+                        )
+                      )
                     )}
                   </TabsContent>
 
@@ -816,8 +819,7 @@ export function ManifestTestPlayground({
               <CardHeader>
                 <CardTitle>Recent Runs</CardTitle>
                 <CardDescription>
-                  Action run history for{" "}
-                  {selectedEntity || "all entities"}
+                  Action run history for {selectedEntity || "all entities"}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-2 max-h-96 overflow-y-auto">

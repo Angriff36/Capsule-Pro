@@ -164,7 +164,9 @@ export function PaymentFormClient({
             id="amount"
             max={invoiceAmountDue}
             min={0}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setAmount(Number(e.target.value))}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setAmount(Number(e.target.value))
+            }
             placeholder="0.00"
             step={0.01}
             type="number"
@@ -206,7 +208,9 @@ export function PaymentFormClient({
           <Label htmlFor="reference">Reference Number (Optional)</Label>
           <Input
             id="reference"
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setReference(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+              setReference(e.target.value)
+            }
             placeholder="Check number, transaction ID, etc."
             value={reference}
           />
@@ -217,7 +221,9 @@ export function PaymentFormClient({
           <Label htmlFor="notes">Notes (Optional)</Label>
           <Textarea
             id="notes"
-            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setNotes(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) =>
+              setNotes(e.target.value)
+            }
             placeholder="Add any notes about this payment..."
             rows={3}
             value={notes}

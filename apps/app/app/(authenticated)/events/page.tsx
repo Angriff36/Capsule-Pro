@@ -187,9 +187,9 @@ const EventsPage = async () => {
               venueName: event.venueName,
               tags: event.tags ?? [],
               hasClient: !!event.clientId,
-              hasMenu: false,  // Would need separate query
-              hasPrepList: false,  // Would need separate query
-              hasContract: false,  // Would need separate query,
+              hasMenu: false, // Would need separate query
+              hasPrepList: false, // Would need separate query
+              hasContract: false, // Would need separate query,
             }))}
           />
         )}

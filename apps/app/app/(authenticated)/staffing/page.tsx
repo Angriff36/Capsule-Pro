@@ -1,19 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import {
-  Users,
-  CalendarDays,
-  Clock,
-  AlertTriangle,
-  CheckCircle2,
-  TrendingUp,
-  ArrowRight,
-  Loader2,
-  MapPin,
-  BarChart3,
-} from "lucide-react";
-import Link from "next/link";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -22,7 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Select,
   SelectContent,
@@ -30,7 +16,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Separator } from "@repo/design-system/components/ui/separator";
+import {
+  AlertTriangle,
+  ArrowRight,
+  BarChart3,
+  CalendarDays,
+  CheckCircle2,
+  Clock,
+  Loader2,
+  MapPin,
+  TrendingUp,
+  Users,
+} from "lucide-react";
+import Link from "next/link";
+import { useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 
 interface LocationCoverage {
@@ -87,7 +86,8 @@ export default function StaffingOverviewPage() {
     try {
       const params = new URLSearchParams();
       params.set("period", "today");
-      if (locationId && locationId !== "all") params.set("locationId", locationId);
+      if (locationId && locationId !== "all")
+        params.set("locationId", locationId);
 
       const res = await apiFetch(`/api/staffing/coverage?${params.toString()}`);
       if (res.ok) {
@@ -108,9 +108,7 @@ export default function StaffingOverviewPage() {
 
   const coveragePct = todayStats
     ? todayStats.total_shifts > 0
-      ? Math.round(
-          (todayStats.filled_shifts / todayStats.total_shifts) * 100
-        )
+      ? Math.round((todayStats.filled_shifts / todayStats.total_shifts) * 100)
       : 100
     : 0;
 
@@ -124,10 +122,7 @@ export default function StaffingOverviewPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Select
-            value={locationId}
-            onValueChange={setLocationId}
-          >
+          <Select onValueChange={setLocationId} value={locationId}>
             <SelectTrigger className="w-48">
               <SelectValue placeholder="All locations" />
             </SelectTrigger>
@@ -147,20 +142,7 @@ export default function StaffingOverviewPage() {
         <Card className="p-8 text-center">
           <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
         </Card>
-      ) : !todayStats ? (
-        <Card className="p-8 text-center">
-          <Users className="mx-auto h-10 w-10 text-muted-foreground/50 mb-3" />
-          <p className="text-muted-foreground font-medium">No staffing data</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            Create shifts in the Scheduling module to see coverage here
-          </p>
-          <Button className="mt-4" size="sm" asChild>
-            <Link href="/scheduling/shifts">
-              Go to Shifts <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
-        </Card>
-      ) : (
+      ) : todayStats ? (
         <>
           {/* Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -191,7 +173,9 @@ export default function StaffingOverviewPage() {
                     <p className="text-2xl font-bold">
                       {todayStats.filled_shifts}
                     </p>
-                    <p className="text-xs text-muted-foreground">Filled Shifts</p>
+                    <p className="text-xs text-muted-foreground">
+                      Filled Shifts
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -199,8 +183,12 @@ export default function StaffingOverviewPage() {
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className={`p-2 rounded-lg ${todayStats.unfilled_shifts > 0 ? "bg-red-100" : "bg-gray-100"}`}>
-                    <AlertTriangle className={`h-4 w-4 ${todayStats.unfilled_shifts > 0 ? "text-red-700" : "text-gray-500"}`} />
+                  <div
+                    className={`p-2 rounded-lg ${todayStats.unfilled_shifts > 0 ? "bg-red-100" : "bg-gray-100"}`}
+                  >
+                    <AlertTriangle
+                      className={`h-4 w-4 ${todayStats.unfilled_shifts > 0 ? "text-red-700" : "text-gray-500"}`}
+                    />
                   </div>
                   <div>
                     <p className="text-2xl font-bold">
@@ -237,7 +225,8 @@ export default function StaffingOverviewPage() {
             <CardHeader className="pb-2">
               <CardTitle className="text-base">Today&apos;s Coverage</CardTitle>
               <CardDescription>
-                {coveragePct}% of shifts filled — {todayStats.active_employees} active employees
+                {coveragePct}% of shifts filled — {todayStats.active_employees}{" "}
+                active employees
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -247,8 +236,8 @@ export default function StaffingOverviewPage() {
                     coveragePct >= 90
                       ? "bg-green-500"
                       : coveragePct >= 70
-                      ? "bg-amber-500"
-                      : "bg-red-500"
+                        ? "bg-amber-500"
+                        : "bg-red-500"
                   }`}
                   style={{ width: `${coveragePct}%` }}
                 />
@@ -265,7 +254,7 @@ export default function StaffingOverviewPage() {
                     <MapPin className="h-4 w-4" />
                     Location Coverage
                   </CardTitle>
-                  <Button size="sm" variant="outline" asChild>
+                  <Button asChild size="sm" variant="outline">
                     <Link href="/staffing/coverage">
                       View All <ArrowRight className="ml-1 h-3 w-3" />
                     </Link>
@@ -275,7 +264,7 @@ export default function StaffingOverviewPage() {
               <CardContent>
                 <div className="space-y-3">
                   {todayStats.locations.map((loc) => (
-                    <div key={loc.location_id} className="space-y-1">
+                    <div className="space-y-1" key={loc.location_id}>
                       <div className="flex items-center justify-between text-sm">
                         <span className="font-medium">{loc.location_name}</span>
                         <span className={getCoverageColor(loc.coverage_pct)}>
@@ -288,8 +277,8 @@ export default function StaffingOverviewPage() {
                             loc.coverage_pct >= 90
                               ? "bg-green-500"
                               : loc.coverage_pct >= 70
-                              ? "bg-amber-500"
-                              : "bg-red-500"
+                                ? "bg-amber-500"
+                                : "bg-red-500"
                           }`}
                           style={{ width: `${loc.coverage_pct}%` }}
                         />
@@ -336,8 +325,8 @@ export default function StaffingOverviewPage() {
                         : 100;
                     return (
                       <div
-                        key={week.week_start}
                         className="flex items-center gap-3"
+                        key={week.week_start}
                       >
                         <div className="w-24 text-xs text-muted-foreground shrink-0">
                           {new Date(week.week_start).toLocaleDateString(
@@ -356,19 +345,21 @@ export default function StaffingOverviewPage() {
                               pct >= 90
                                 ? "bg-green-500"
                                 : pct >= 70
-                                ? "bg-amber-500"
-                                : "bg-red-500"
+                                  ? "bg-amber-500"
+                                  : "bg-red-500"
                             }`}
                             style={{ width: `${pct}%` }}
                           />
                         </div>
                         <div className="text-xs text-right w-20 shrink-0">
-                          <span className="font-medium">{week.total_shifts}</span>
+                          <span className="font-medium">
+                            {week.total_shifts}
+                          </span>
                           <span className="text-muted-foreground"> shifts</span>
                           {week.unfilled > 0 && (
                             <Badge
-                              variant="secondary"
                               className="ml-1 text-[10px] bg-red-50 text-red-700"
+                              variant="secondary"
                             >
                               -{week.unfilled}
                             </Badge>
@@ -394,7 +385,11 @@ export default function StaffingOverviewPage() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                <Button variant="outline" className="justify-start h-auto py-3" asChild>
+                <Button
+                  asChild
+                  className="justify-start h-auto py-3"
+                  variant="outline"
+                >
                   <Link href="/staffing/shifts">
                     <CalendarDays className="mr-3 h-5 w-5 text-blue-600" />
                     <div className="text-left">
@@ -405,7 +400,11 @@ export default function StaffingOverviewPage() {
                     </div>
                   </Link>
                 </Button>
-                <Button variant="outline" className="justify-start h-auto py-3" asChild>
+                <Button
+                  asChild
+                  className="justify-start h-auto py-3"
+                  variant="outline"
+                >
                   <Link href="/staffing/availability">
                     <Clock className="mr-3 h-5 w-5 text-green-600" />
                     <div className="text-left">
@@ -416,7 +415,11 @@ export default function StaffingOverviewPage() {
                     </div>
                   </Link>
                 </Button>
-                <Button variant="outline" className="justify-start h-auto py-3" asChild>
+                <Button
+                  asChild
+                  className="justify-start h-auto py-3"
+                  variant="outline"
+                >
                   <Link href="/staffing/coverage">
                     <TrendingUp className="mr-3 h-5 w-5 text-purple-600" />
                     <div className="text-left">
@@ -427,7 +430,11 @@ export default function StaffingOverviewPage() {
                     </div>
                   </Link>
                 </Button>
-                <Button variant="outline" className="justify-start h-auto py-3" asChild>
+                <Button
+                  asChild
+                  className="justify-start h-auto py-3"
+                  variant="outline"
+                >
                   <Link href="/staffing/recommendations">
                     <Users className="mr-3 h-5 w-5 text-amber-600" />
                     <div className="text-left">
@@ -442,6 +449,19 @@ export default function StaffingOverviewPage() {
             </CardContent>
           </Card>
         </>
+      ) : (
+        <Card className="p-8 text-center">
+          <Users className="mx-auto h-10 w-10 text-muted-foreground/50 mb-3" />
+          <p className="text-muted-foreground font-medium">No staffing data</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Create shifts in the Scheduling module to see coverage here
+          </p>
+          <Button asChild className="mt-4" size="sm">
+            <Link href="/scheduling/shifts">
+              Go to Shifts <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
+          </Button>
+        </Card>
       )}
     </div>
   );

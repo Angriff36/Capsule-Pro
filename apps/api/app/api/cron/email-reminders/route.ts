@@ -11,6 +11,7 @@
 
 import { database } from "@repo/database";
 import { triggerEmailWorkflows } from "@repo/notifications";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 
 // Force dynamic rendering — reads Authorization headers and queries DB at runtime
@@ -57,6 +58,9 @@ export async function POST(request: NextRequest) {
     const message = error instanceof Error ? error.message : "Unknown error";
     results.taskReminders.errors.push(message);
     console.error("Failed to process task reminders:", error);
+    captureException(error, {
+      tags: { route: "cron/email-reminders", errorType: "task_reminders" },
+    });
   }
 
   try {
@@ -67,6 +71,9 @@ export async function POST(request: NextRequest) {
     const message = error instanceof Error ? error.message : "Unknown error";
     results.shiftReminders.errors.push(message);
     console.error("Failed to process shift reminders:", error);
+    captureException(error, {
+      tags: { route: "cron/email-reminders", errorType: "shift_reminders" },
+    });
   }
 
   return NextResponse.json({

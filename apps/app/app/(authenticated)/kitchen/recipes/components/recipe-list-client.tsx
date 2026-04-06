@@ -1,7 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { BulkActionsBar, SelectableCheckbox, SingleDeleteButton } from "./bulk-actions-bar";
+import {
+  BulkActionsBar,
+  SelectableCheckbox,
+  SingleDeleteButton,
+} from "./bulk-actions-bar";
 
 interface RecipeListClientProps {
   children: (props: {
@@ -31,7 +35,9 @@ export function RecipeListClient({ children, type }: RecipeListClientProps) {
   const selectAll = (ids: string[]) => {
     setSelectedIds((prev) => {
       const allSelected = ids.every((id) => prev.includes(id));
-      return allSelected ? prev.filter((id) => !ids.includes(id)) : [...new Set([...prev, ...ids])];
+      return allSelected
+        ? prev.filter((id) => !ids.includes(id))
+        : [...new Set([...prev, ...ids])];
     });
   };
 
@@ -39,8 +45,8 @@ export function RecipeListClient({ children, type }: RecipeListClientProps) {
 
   const bulkBar = (
     <BulkActionsBar
-      selectedIds={selectedIds}
       onClearSelection={clearSelection}
+      selectedIds={selectedIds}
       type={type}
     />
   );

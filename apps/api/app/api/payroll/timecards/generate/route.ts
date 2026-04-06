@@ -1,6 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { NextRequest, NextResponse } from "next/server";
+import { captureException } from "@sentry/nextjs";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 /**
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
 
     const { periodStart, periodEnd, locationId, dryRun = false } = body;
 
-    if (!periodStart || !periodEnd) {
+    if (!(periodStart && periodEnd)) {
       return NextResponse.json(
         { error: "periodStart and periodEnd are required" },
         { status: 400 }
@@ -198,7 +199,7 @@ export async function POST(request: NextRequest) {
     const needsEntry = shifts.filter((s) => !s.has_time_entry);
     const alreadyExists = shifts.filter((s) => s.has_time_entry);
 
-    let createdEntries: Array<{
+    const createdEntries: Array<{
       id: string;
       shift_id: string;
       employee_id: string;
@@ -210,7 +211,12 @@ export async function POST(request: NextRequest) {
       for (const shift of needsEntry) {
         try {
           const result = await database.$queryRaw<
-            Array<{ id: string; shift_id: string; employee_id: string; clock_in: Date }>
+            Array<{
+              id: string;
+              shift_id: string;
+              employee_id: string;
+              clock_in: Date;
+            }>
           >(
             Prisma.sql`
               INSERT INTO tenant_staff.time_entries (tenant_id, employee_id, location_id, shift_id, clock_in, clock_out, break_minutes, notes)
@@ -222,7 +228,7 @@ export async function POST(request: NextRequest) {
                 ${shift.shift_start},
                 ${shift.shift_end},
                 0,
-                ${`Auto-generated from schedule`}
+                ${"Auto-generated from schedule"}
               )
               RETURNING id, shift_id, employee_id, clock_in
             `
@@ -259,9 +265,7 @@ export async function POST(request: NextRequest) {
         scheduledHours: Number(s.scheduled_hours),
         weeklyHours: Math.round(Number(s.weekly_hours) * 100) / 100,
         overtimeType:
-          s.weekly_hours > OVERTIME_WEEKLY_THRESHOLD
-            ? "weekly"
-            : "daily",
+          s.weekly_hours > OVERTIME_WEEKLY_THRESHOLD ? "weekly" : "daily",
       })),
       entries: createdEntries,
       preview: dryRun
@@ -278,6 +282,7 @@ export async function POST(request: NextRequest) {
         : undefined,
     });
   } catch (error) {
+    captureException(error);
     console.error("Schedule-to-payroll generation error:", error);
     return NextResponse.json(
       { error: "Failed to generate timecards from schedules" },

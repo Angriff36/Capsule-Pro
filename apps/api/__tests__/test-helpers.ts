@@ -1,8 +1,9 @@
 /**
  * Test helpers for API route tests
  */
-import type { CurrentUser } from "@/app/lib/tenant";
+
 import { NextRequest } from "next/server";
+import type { CurrentUser } from "@/app/lib/tenant";
 
 /**
  * Default test user with all required CurrentUser properties

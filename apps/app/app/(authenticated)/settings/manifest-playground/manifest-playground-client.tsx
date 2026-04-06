@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { ManifestTestPlayground } from "@repo/design-system/components/blocks/manifest-test-playground";
 import type {
   EntityDetail,
   EntityListItem,
   ExecutionResult,
 } from "@repo/types/manifest-editor";
+import { useEffect, useState } from "react";
 
 async function fetchEntities(): Promise<EntityListItem[]> {
   const res = await fetch("/api/settings/manifest-editor/entities/list");
@@ -44,9 +44,14 @@ export function ManifestPlaygroundClient() {
     <div className="space-y-3">
       {error ? <p className="text-sm text-destructive">{error}</p> : null}
       <ManifestTestPlayground
-        executionEnabled={false}
         entities={entities}
-        onExecuteCommand={async (entityName, commandName, testData, options) => {
+        executionEnabled={false}
+        onExecuteCommand={async (
+          entityName,
+          commandName,
+          testData,
+          options
+        ) => {
           const result: ExecutionResult = {
             success: false,
             commandName,

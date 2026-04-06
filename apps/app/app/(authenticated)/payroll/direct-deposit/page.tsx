@@ -1,31 +1,16 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import {
-  Landmark,
-  Plus,
-  Pencil,
-  Trash2,
-  Star,
-  CheckCircle2,
-  Clock,
-  X,
-  Shield,
-  AlertTriangle,
-  Loader2,
-  CreditCard,
-  Users,
-  ArrowLeftRight,
-} from "lucide-react";
-import { Button } from "@repo/design-system/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@repo/design-system/components/ui/card";
 import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import { Card, CardContent } from "@repo/design-system/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
@@ -35,15 +20,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-} from "@repo/design-system/components/ui/dialog";
 import { Separator } from "@repo/design-system/components/ui/separator";
+import {
+  AlertTriangle,
+  ArrowLeftRight,
+  CheckCircle2,
+  Clock,
+  CreditCard,
+  Landmark,
+  Loader2,
+  Pencil,
+  Plus,
+  Shield,
+  Star,
+  Trash2,
+  Users,
+} from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 
@@ -98,7 +91,9 @@ export default function DirectDepositPage() {
 
   // Modal state
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingAccount, setEditingAccount] = useState<BankAccount | null>(null);
+  const [editingAccount, setEditingAccount] = useState<BankAccount | null>(
+    null
+  );
   const [verifyModalOpen, setVerifyModalOpen] = useState(false);
   const [verifyTarget, setVerifyTarget] = useState<BankAccount | null>(null);
   const [verifyMethod, setVerifyMethod] = useState("micro_deposit");
@@ -117,7 +112,9 @@ export default function DirectDepositPage() {
       const params = new URLSearchParams();
       if (selectedEmployeeId) params.set("employeeId", selectedEmployeeId);
 
-      const res = await apiFetch(`/api/payroll/bank-accounts?${params.toString()}`);
+      const res = await apiFetch(
+        `/api/payroll/bank-accounts?${params.toString()}`
+      );
       if (!res.ok) throw new Error("Failed to fetch bank accounts");
       const data = await res.json();
       setAccounts(data.accounts || []);
@@ -180,11 +177,14 @@ export default function DirectDepositPage() {
 
       if (editingAccount) {
         body.id = editingAccount.id;
-        const res = await apiFetch("/api/payroll/bank-accounts/commands/update", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        });
+        const res = await apiFetch(
+          "/api/payroll/bank-accounts/commands/update",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          }
+        );
         if (!res.ok) {
           const err = await res.json();
           throw new Error(err.error || "Failed to update");
@@ -198,11 +198,14 @@ export default function DirectDepositPage() {
           setActionLoading(null);
           return;
         }
-        const res = await apiFetch("/api/payroll/bank-accounts/commands/create", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        });
+        const res = await apiFetch(
+          "/api/payroll/bank-accounts/commands/create",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+          }
+        );
         if (!res.ok) {
           const err = await res.json();
           throw new Error(err.error || "Failed to create");
@@ -242,11 +245,14 @@ export default function DirectDepositPage() {
   async function handleSetDefault(accountId: string) {
     setActionLoading(accountId);
     try {
-      const res = await apiFetch("/api/payroll/bank-accounts/commands/set-default", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: accountId }),
-      });
+      const res = await apiFetch(
+        "/api/payroll/bank-accounts/commands/set-default",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: accountId }),
+        }
+      );
       if (!res.ok) throw new Error("Failed to set default");
       toast.success("Default account updated");
       fetchData();
@@ -283,7 +289,9 @@ export default function DirectDepositPage() {
 
   // Summary stats
   const totalAccounts = accounts.length;
-  const verifiedAccounts = accounts.filter((a) => a.status === "verified").length;
+  const verifiedAccounts = accounts.filter(
+    (a) => a.status === "verified"
+  ).length;
   const pendingAccounts = accounts.filter((a) => a.status === "pending").length;
   const directDepositEmployees = employees.filter(
     (e) => e.payout_method === "direct_deposit"
@@ -345,7 +353,9 @@ export default function DirectDepositPage() {
               </div>
               <div>
                 <p className="text-2xl font-bold">{pendingAccounts}</p>
-                <p className="text-xs text-muted-foreground">Pending Verification</p>
+                <p className="text-xs text-muted-foreground">
+                  Pending Verification
+                </p>
               </div>
             </div>
           </CardContent>
@@ -376,7 +386,9 @@ export default function DirectDepositPage() {
                 Filter by Employee
               </Label>
               <Select
-                onValueChange={(val) => setSelectedEmployeeId(val === "all" ? "" : val)}
+                onValueChange={(val) =>
+                  setSelectedEmployeeId(val === "all" ? "" : val)
+                }
                 value={selectedEmployeeId || "all"}
               >
                 <SelectTrigger>
@@ -393,7 +405,7 @@ export default function DirectDepositPage() {
               </Select>
             </div>
             <div className="flex items-center gap-2 pt-5">
-              <Badge variant="secondary" className="text-xs">
+              <Badge className="text-xs" variant="secondary">
                 <CreditCard className="mr-1 h-3 w-3" />
                 {accounts.length} account{accounts.length !== 1 ? "s" : ""}
               </Badge>
@@ -410,7 +422,9 @@ export default function DirectDepositPage() {
       ) : displayAccounts.length === 0 ? (
         <Card className="p-8 text-center">
           <Landmark className="mx-auto h-10 w-10 text-muted-foreground/50 mb-3" />
-          <p className="text-muted-foreground font-medium">No bank accounts found</p>
+          <p className="text-muted-foreground font-medium">
+            No bank accounts found
+          </p>
           <p className="text-xs text-muted-foreground mt-1">
             {selectedEmployeeId
               ? "Add a bank account for this employee to get started"
@@ -450,23 +464,23 @@ export default function DirectDepositPage() {
                           </p>
                           {account.is_default && (
                             <Badge
-                              variant="secondary"
                               className="text-[10px] gap-1"
+                              variant="secondary"
                             >
                               <Star className="h-2.5 w-2.5" />
                               Default
                             </Badge>
                           )}
                           <Badge
-                            variant={
-                              account.status === "verified"
-                                ? "secondary"
-                                : "outline"
-                            }
                             className={
                               account.status === "verified"
                                 ? "bg-green-50 text-green-700"
                                 : "bg-amber-50 text-amber-700"
+                            }
+                            variant={
+                              account.status === "verified"
+                                ? "secondary"
+                                : "outline"
                             }
                           >
                             {account.status === "verified" ? (
@@ -493,7 +507,10 @@ export default function DirectDepositPage() {
                           <p className="text-xs text-muted-foreground mt-2">
                             Employee: {getEmployeeName(employee)}{" "}
                             <span className="ml-2">
-                              <Badge variant="outline" className="text-[10px] gap-1">
+                              <Badge
+                                className="text-[10px] gap-1"
+                                variant="outline"
+                              >
                                 <ArrowLeftRight className="h-2.5 w-2.5" />
                                 {employee.payout_method}
                               </Badge>
@@ -519,15 +536,15 @@ export default function DirectDepositPage() {
                     <div className="flex items-center gap-1 shrink-0 ml-4">
                       {account.status !== "verified" && (
                         <Button
-                          size="icon"
-                          variant="ghost"
                           className="h-8 w-8 text-green-600 hover:text-green-700"
+                          disabled={actionLoading === account.id}
                           onClick={() => {
                             setVerifyTarget(account);
                             setVerifyModalOpen(true);
                           }}
-                          disabled={actionLoading === account.id}
+                          size="icon"
                           title="Verify account"
+                          variant="ghost"
                         >
                           {actionLoading === account.id ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -538,33 +555,33 @@ export default function DirectDepositPage() {
                       )}
                       {!account.is_default && (
                         <Button
-                          size="icon"
-                          variant="ghost"
                           className="h-8 w-8 text-amber-600 hover:text-amber-700"
-                          onClick={() => handleSetDefault(account.id)}
                           disabled={actionLoading === account.id}
+                          onClick={() => handleSetDefault(account.id)}
+                          size="icon"
                           title="Set as default"
+                          variant="ghost"
                         >
                           <Star className="h-4 w-4" />
                         </Button>
                       )}
                       <Button
-                        size="icon"
-                        variant="ghost"
                         className="h-8 w-8"
-                        onClick={() => openEditModal(account)}
                         disabled={actionLoading === account.id}
+                        onClick={() => openEditModal(account)}
+                        size="icon"
                         title="Edit"
+                        variant="ghost"
                       >
                         <Pencil className="h-4 w-4" />
                       </Button>
                       <Button
-                        size="icon"
-                        variant="ghost"
                         className="h-8 w-8 text-red-600 hover:text-red-700"
-                        onClick={() => handleDelete(account.id)}
                         disabled={actionLoading === account.id}
+                        onClick={() => handleDelete(account.id)}
+                        size="icon"
                         title="Delete"
+                        variant="ghost"
                       >
                         <Trash2 className="h-4 w-4" />
                       </Button>
@@ -578,7 +595,7 @@ export default function DirectDepositPage() {
       )}
 
       {/* Add/Edit Modal */}
-      <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+      <Dialog onOpenChange={setModalOpen} open={modalOpen}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>
@@ -592,11 +609,12 @@ export default function DirectDepositPage() {
           </DialogHeader>
 
           <div className="space-y-4 py-2">
-            {!editingAccount && !selectedEmployeeId && (
+            {!(editingAccount || selectedEmployeeId) && (
               <div className="rounded-lg border border-amber-200 bg-amber-50 p-3">
                 <div className="flex items-center gap-2 text-amber-800 text-sm">
                   <AlertTriangle className="h-4 w-4" />
-                  Select an employee from the filter above before adding an account.
+                  Select an employee from the filter above before adding an
+                  account.
                 </div>
               </div>
             )}
@@ -604,17 +622,17 @@ export default function DirectDepositPage() {
             <div>
               <Label>Bank Name</Label>
               <Input
+                onChange={(e) => setFormBankName(e.target.value)}
                 placeholder="e.g. Chase, Bank of America"
                 value={formBankName}
-                onChange={(e) => setFormBankName(e.target.value)}
               />
             </div>
 
             <div>
               <Label>Account Type</Label>
               <Select
-                value={formAccountType}
                 onValueChange={setFormAccountType}
+                value={formAccountType}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -629,13 +647,15 @@ export default function DirectDepositPage() {
             <div>
               <Label>Routing Number</Label>
               <Input
-                placeholder="9-digit routing number"
-                value={formRoutingNumber}
-                onChange={(e) =>
-                  setFormRoutingNumber(e.target.value.replace(/\D/g, "").slice(0, 9))
-                }
                 className="font-mono"
                 maxLength={9}
+                onChange={(e) =>
+                  setFormRoutingNumber(
+                    e.target.value.replace(/\D/g, "").slice(0, 9)
+                  )
+                }
+                placeholder="9-digit routing number"
+                value={formRoutingNumber}
               />
             </div>
 
@@ -644,41 +664,44 @@ export default function DirectDepositPage() {
                 Account Number
                 {editingAccount && (
                   <span className="text-muted-foreground font-normal ml-2">
-                    (leave blank to keep current: •••• {editingAccount.account_number_last4})
+                    (leave blank to keep current: ••••{" "}
+                    {editingAccount.account_number_last4})
                   </span>
                 )}
               </Label>
               <Input
-                placeholder="4-17 digit account number"
-                value={formAccountNumber}
-                onChange={(e) =>
-                  setFormAccountNumber(e.target.value.replace(/\D/g, "").slice(0, 17))
-                }
                 className="font-mono"
-                type="password"
                 maxLength={17}
+                onChange={(e) =>
+                  setFormAccountNumber(
+                    e.target.value.replace(/\D/g, "").slice(0, 17)
+                  )
+                }
+                placeholder="4-17 digit account number"
+                type="password"
+                value={formAccountNumber}
               />
             </div>
 
             <div>
               <Label>Account Holder Name</Label>
               <Input
+                onChange={(e) => setFormAccountHolderName(e.target.value)}
                 placeholder="Name on the account"
                 value={formAccountHolderName}
-                onChange={(e) => setFormAccountHolderName(e.target.value)}
               />
             </div>
 
             {!editingAccount && (
               <div className="flex items-center gap-2">
                 <input
-                  type="checkbox"
-                  id="isDefault"
                   checked={formIsDefault}
-                  onChange={(e) => setFormIsDefault(e.target.checked)}
                   className="rounded border-gray-300"
+                  id="isDefault"
+                  onChange={(e) => setFormIsDefault(e.target.checked)}
+                  type="checkbox"
                 />
-                <Label htmlFor="isDefault" className="text-sm">
+                <Label className="text-sm" htmlFor="isDefault">
                   Set as default deposit account
                 </Label>
               </div>
@@ -686,18 +709,18 @@ export default function DirectDepositPage() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setModalOpen(false)}>
+            <Button onClick={() => setModalOpen(false)} variant="outline">
               Cancel
             </Button>
             <Button
-              onClick={handleSave}
               disabled={
                 actionLoading === "save" ||
                 !formBankName ||
                 !formRoutingNumber ||
                 !formAccountHolderName ||
-                (!editingAccount && !formAccountNumber)
+                !(editingAccount || formAccountNumber)
               }
+              onClick={handleSave}
             >
               {actionLoading === "save" ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -709,20 +732,20 @@ export default function DirectDepositPage() {
       </Dialog>
 
       {/* Verify Modal */}
-      <Dialog open={verifyModalOpen} onOpenChange={setVerifyModalOpen}>
+      <Dialog onOpenChange={setVerifyModalOpen} open={verifyModalOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle>Verify Bank Account</DialogTitle>
             <DialogDescription>
-              Confirm verification for •••• {verifyTarget?.account_number_last4} at{" "}
-              {verifyTarget?.bank_name}
+              Confirm verification for •••• {verifyTarget?.account_number_last4}{" "}
+              at {verifyTarget?.bank_name}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
             <div>
               <Label>Verification Method</Label>
-              <Select value={verifyMethod} onValueChange={setVerifyMethod}>
+              <Select onValueChange={setVerifyMethod} value={verifyMethod}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -730,7 +753,9 @@ export default function DirectDepositPage() {
                   <SelectItem value="micro_deposit">
                     Micro-deposits (2 small deposits)
                   </SelectItem>
-                  <SelectItem value="plaid">Plaid (instant verification)</SelectItem>
+                  <SelectItem value="plaid">
+                    Plaid (instant verification)
+                  </SelectItem>
                   <SelectItem value="manual">Manual verification</SelectItem>
                 </SelectContent>
               </Select>
@@ -745,16 +770,13 @@ export default function DirectDepositPage() {
           </div>
 
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setVerifyModalOpen(false)}
-            >
+            <Button onClick={() => setVerifyModalOpen(false)} variant="outline">
               Cancel
             </Button>
             <Button
-              onClick={handleVerify}
-              disabled={actionLoading === "verify"}
               className="bg-green-600 hover:bg-green-700"
+              disabled={actionLoading === "verify"}
+              onClick={handleVerify}
             >
               {actionLoading === "verify" ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

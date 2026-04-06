@@ -6,6 +6,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -28,7 +29,10 @@ export async function GET(request: Request, context: RouteContext) {
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 400 }
+      );
     }
 
     const { id } = await context.params;
@@ -41,15 +45,22 @@ export async function GET(request: Request, context: RouteContext) {
     });
 
     if (!policy) {
-      return NextResponse.json({ message: "Role policy not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Role policy not found" },
+        { status: 404 }
+      );
     }
 
     if (policy.deletedAt) {
-      return NextResponse.json({ message: "Role policy not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Role policy not found" },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json(policy);
   } catch (error) {
+    captureException(error);
     console.error("[RolePolicy/detail] Error:", error);
     return NextResponse.json(
       { message: "Failed to fetch role policy" },

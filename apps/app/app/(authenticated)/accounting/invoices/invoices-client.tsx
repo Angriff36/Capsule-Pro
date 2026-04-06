@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
@@ -8,7 +9,6 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import { FileText, Plus } from "lucide-react";
-import { Button } from "@repo/design-system/components/ui/button";
 
 interface Invoice {
   id: string;
@@ -52,9 +52,7 @@ export function InvoicesClient({ invoices }: { invoices: Invoice[] }) {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Invoices</h1>
-          <p className="text-muted-foreground">
-            Manage and track all invoices
-          </p>
+          <p className="text-muted-foreground">Manage and track all invoices</p>
         </div>
         <Button>
           <Plus className="mr-2 h-4 w-4" />
@@ -81,8 +79,8 @@ export function InvoicesClient({ invoices }: { invoices: Invoice[] }) {
             <div className="space-y-3">
               {invoices.map((inv) => (
                 <div
-                  key={inv.id}
                   className="flex items-center justify-between border-b pb-3 last:border-0 last:pb-0"
+                  key={inv.id}
                 >
                   <div className="flex items-center gap-3">
                     <FileText className="h-5 w-5 text-muted-foreground" />

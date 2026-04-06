@@ -1,5 +1,6 @@
 "use client";
 
+import { captureException } from "@sentry/nextjs";
 import { useEffect } from "react";
 
 interface LocaleErrorProps {
@@ -13,13 +14,18 @@ interface LocaleErrorProps {
  */
 export default function LocaleError({ error, reset }: LocaleErrorProps) {
   useEffect(() => {
-    // Log locale-related errors for debugging
     console.error("[Locale Error]", {
       message: error.message,
       name: error.name,
       digest: error.digest,
     });
-  }, [error]);
+    captureException(error, {
+      tags: {
+        route: "locale",
+        errorType: isLocaleError ? "locale" : "runtime",
+      },
+    });
+  }, [error, isLocaleError]);
 
   // Check if this is a locale-related RangeError
   const isLocaleError =
@@ -39,6 +45,7 @@ export default function LocaleError({ error, reset }: LocaleErrorProps) {
             : "An unexpected error occurred. Please try again."}
         </p>
         <button
+          className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 py-2 font-medium text-sm text-primary-foreground ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
           onClick={() => {
             if (isLocaleError) {
               window.location.href = "/en";
@@ -46,7 +53,6 @@ export default function LocaleError({ error, reset }: LocaleErrorProps) {
               reset();
             }
           }}
-          className="inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 py-2 font-medium text-sm text-primary-foreground ring-offset-background transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
         >
           {isLocaleError ? "Go to Home" : "Try Again"}
         </button>

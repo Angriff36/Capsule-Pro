@@ -20,7 +20,13 @@ import {
   SheetTitle,
 } from "@repo/design-system/components/ui/sheet";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
-import { Clock, Thermometer, Wrench, Lightbulb, AlertTriangle } from "lucide-react";
+import {
+  AlertTriangle,
+  Clock,
+  Lightbulb,
+  Thermometer,
+  Wrench,
+} from "lucide-react";
 import { useState } from "react";
 
 interface Ingredient {
@@ -294,7 +300,11 @@ function StepRow({
 }: {
   step: Step;
   index: number;
-  onUpdate: (index: number, field: keyof Step, value: string | number | boolean | null) => void;
+  onUpdate: (
+    index: number,
+    field: keyof Step,
+    value: string | number | boolean | null
+  ) => void;
   onRemove: (index: number) => void;
   onMoveUp: (index: number) => void;
   onMoveDown: (index: number) => void;
@@ -306,7 +316,8 @@ function StepRow({
   setShowTips: (show: boolean) => void;
 }) {
   // Determine if this step is a CCP based on temperature
-  const isCCP = step.temperature_value !== null &&
+  const isCCP =
+    step.temperature_value !== null &&
     step.temperature_value !== undefined &&
     step.temperature_value >= CCP_TEMP_THRESHOLDS.min;
 
@@ -345,9 +356,7 @@ function StepRow({
       <div className="flex-1 space-y-4">
         {/* Step header with number and CCP indicator */}
         <div className="flex items-center gap-2">
-          <Label className="text-sm font-medium">
-            Step {index + 1}
-          </Label>
+          <Label className="text-sm font-medium">Step {index + 1}</Label>
           {isCCP && (
             <Badge className="gap-1 bg-amber-500" variant="default">
               <AlertTriangle className="h-3 w-3" />
@@ -375,7 +384,13 @@ function StepRow({
             </Label>
             <Input
               min="0"
-              onChange={(e) => onUpdate(index, "duration_minutes", e.target.value ? Number(e.target.value) : null)}
+              onChange={(e) =>
+                onUpdate(
+                  index,
+                  "duration_minutes",
+                  e.target.value ? Number(e.target.value) : null
+                )
+              }
               placeholder="e.g., 15"
               type="number"
               value={step.duration_minutes ?? ""}
@@ -392,13 +407,21 @@ function StepRow({
               <Input
                 className="flex-1"
                 min="0"
-                onChange={(e) => onUpdate(index, "temperature_value", e.target.value ? Number(e.target.value) : null)}
+                onChange={(e) =>
+                  onUpdate(
+                    index,
+                    "temperature_value",
+                    e.target.value ? Number(e.target.value) : null
+                  )
+                }
                 placeholder="e.g., 350"
                 type="number"
                 value={step.temperature_value ?? ""}
               />
               <Select
-                onValueChange={(value) => onUpdate(index, "temperature_unit", value)}
+                onValueChange={(value) =>
+                  onUpdate(index, "temperature_unit", value)
+                }
                 value={step.temperature_unit ?? "F"}
               >
                 <SelectTrigger className="w-20">
@@ -506,14 +529,15 @@ function StepRow({
         </div>
 
         {/* CCP checkbox for temperature verification */}
-        {step.temperature_value !== null && step.temperature_value !== undefined && (
-          <div className="flex items-center gap-2 p-2 bg-amber-50 dark:bg-amber-950/20 rounded-md border border-amber-200 dark:border-amber-800">
-            <AlertTriangle className="h-4 w-4 text-amber-600" />
-            <span className="text-sm text-amber-700 dark:text-amber-400">
-              Critical Control Point: Temperature verification required
-            </span>
-          </div>
-        )}
+        {step.temperature_value !== null &&
+          step.temperature_value !== undefined && (
+            <div className="flex items-center gap-2 p-2 bg-amber-50 dark:bg-amber-950/20 rounded-md border border-amber-200 dark:border-amber-800">
+              <AlertTriangle className="h-4 w-4 text-amber-600" />
+              <span className="text-sm text-amber-700 dark:text-amber-400">
+                Critical Control Point: Temperature verification required
+              </span>
+            </div>
+          )}
 
         {/* Remove step button */}
         <Button
@@ -571,9 +595,13 @@ export const RecipeEditModal = ({
     recipe?.ingredients ?? []
   );
   const [steps, setSteps] = useState<Step[]>(
-    recipe?.steps?.map((s, idx) => initializeStep({ ...s, step_number: idx + 1 })) ?? []
+    recipe?.steps?.map((s, idx) =>
+      initializeStep({ ...s, step_number: idx + 1 })
+    ) ?? []
   );
-  const [equipmentInputs, setEquipmentInputs] = useState<Record<number, string>>({});
+  const [equipmentInputs, setEquipmentInputs] = useState<
+    Record<number, string>
+  >({});
   const [showTipsMap, setShowTipsMap] = useState<Record<number, boolean>>({});
 
   const handleAddTag = () => {
@@ -620,24 +648,30 @@ export const RecipeEditModal = ({
     setIngredients(updated);
   };
   const handleAddStep = () => {
-    setSteps([...steps, {
-      instruction: "",
-      step_number: steps.length + 1,
-      duration_minutes: null,
-      temperature_value: null,
-      temperature_unit: "F",
-      equipment_needed: [],
-      tips: null,
-      video_url: null,
-      image_url: null,
-      is_ccp: false,
-    }]);
+    setSteps([
+      ...steps,
+      {
+        instruction: "",
+        step_number: steps.length + 1,
+        duration_minutes: null,
+        temperature_value: null,
+        temperature_unit: "F",
+        equipment_needed: [],
+        tips: null,
+        video_url: null,
+        image_url: null,
+        is_ccp: false,
+      },
+    ]);
   };
 
   const handleRemoveStep = (index: number) => {
     const newSteps = steps.filter((_, i) => i !== index);
     // Update step numbers
-    const updated = newSteps.map((step, idx) => ({ ...step, step_number: idx + 1 }));
+    const updated = newSteps.map((step, idx) => ({
+      ...step,
+      step_number: idx + 1,
+    }));
     setSteps(updated);
     // Clean up equipment inputs and tips state
     const newEquipmentInputs = { ...equipmentInputs };
@@ -868,7 +902,10 @@ export const RecipeEditModal = ({
                     onRemoveEquipment={handleRemoveEquipment}
                     onUpdate={handleUpdateStep}
                     setEquipmentInput={(value) =>
-                      setEquipmentInputs((prev) => ({ ...prev, [index]: value }))
+                      setEquipmentInputs((prev) => ({
+                        ...prev,
+                        [index]: value,
+                      }))
                     }
                     setShowTips={(show) =>
                       setShowTipsMap((prev) => ({ ...prev, [index]: show }))

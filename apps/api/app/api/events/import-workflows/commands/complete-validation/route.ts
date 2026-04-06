@@ -7,7 +7,10 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import {
+  manifestErrorResponse,
+  manifestSuccessResponse,
+} from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 export const runtime = "nodejs";
@@ -37,13 +40,16 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
 
-    console.log("[event-import-workflow/completeValidation] Executing command:", {
-      entityName: "EventImportWorkflow",
-      command: "completeValidation",
-      userId: currentUser.id,
-      userRole: currentUser.role,
-      tenantId,
-    });
+    console.log(
+      "[event-import-workflow/completeValidation] Executing command:",
+      {
+        entityName: "EventImportWorkflow",
+        command: "completeValidation",
+        userId: currentUser.id,
+        userRole: currentUser.role,
+        tenantId,
+      }
+    );
 
     const runtime = await createManifestRuntime({
       user: { id: currentUser.id, tenantId, role: currentUser.role },
@@ -55,12 +61,15 @@ export async function POST(request: NextRequest) {
     });
 
     if (!result.success) {
-      console.error("[event-import-workflow/completeValidation] Command failed:", {
-        policyDenial: result.policyDenial,
-        guardFailure: result.guardFailure,
-        error: result.error,
-        userRole: currentUser.role,
-      });
+      console.error(
+        "[event-import-workflow/completeValidation] Command failed:",
+        {
+          policyDenial: result.policyDenial,
+          guardFailure: result.guardFailure,
+          error: result.error,
+          userRole: currentUser.role,
+        }
+      );
 
       if (result.policyDenial) {
         return manifestErrorResponse(

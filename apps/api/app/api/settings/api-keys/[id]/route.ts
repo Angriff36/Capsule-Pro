@@ -7,6 +7,7 @@
  */
 
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import { withRateLimit } from "@/middleware/rate-limiter";
@@ -59,6 +60,7 @@ export const GET = withRateLimit(
 
       return NextResponse.json(apiKey);
     } catch (error) {
+      captureException(error);
       console.error("[ApiKeys/detail] Error:", error);
       return NextResponse.json(
         { message: "Failed to fetch API key" },
@@ -189,6 +191,7 @@ export const PUT = withRateLimit(
 
       return NextResponse.json(updated);
     } catch (error) {
+      captureException(error);
       console.error("[ApiKeys/update] Error:", error);
       return NextResponse.json(
         { message: "Failed to update API key" },
@@ -252,6 +255,7 @@ export const DELETE = withRateLimit(
 
       return NextResponse.json({ success: true });
     } catch (error) {
+      captureException(error);
       console.error("[ApiKeys/delete] Error:", error);
       return NextResponse.json(
         { message: "Failed to delete API key" },

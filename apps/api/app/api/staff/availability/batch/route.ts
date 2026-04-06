@@ -5,11 +5,17 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { withRateLimit } from "@/middleware/rate-limiter";
 import type { CreateBatchAvailabilityInput } from "../types";
 import {
-  checkOverlappingAvailability,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+checkOverlappingAvailability,
   validateBatchAvailabilityInput,
   validateEffectiveDates,
   verifyEmployee,
-} from "../validation";
+} from "../validation"
 
 /**
  * POST /api/staff/availability/batch
@@ -183,6 +189,7 @@ export const POST = withRateLimit(
         { status: 201 }
       );
     } catch (error) {
+      captureException(error);
       console.error("Error creating batch availability:", error);
       return NextResponse.json(
         { message: "Failed to create availability records" },

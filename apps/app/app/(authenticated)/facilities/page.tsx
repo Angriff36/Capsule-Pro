@@ -1,8 +1,7 @@
 "use client";
 
+import { Calendar, MapPin, Package, Wrench } from "lucide-react";
 import Link from "next/link";
-import { Wrench, Calendar, MapPin, Package } from "lucide-react";
-import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import { UpcomingMaintenanceWidget } from "./components/upcoming-maintenance-widget";
 
 export default function FacilitiesPage() {

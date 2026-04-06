@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
 /**
  * Event Profitability Analysis Verification Test
@@ -22,7 +22,7 @@ test.describe("Event Profitability Analysis", () => {
     // This would normally be done via seed data or test setup
     const eventProfitabilityInput = {
       eventId: "test-event-profitability-001",
-      budgetedRevenue: 10000,
+      budgetedRevenue: 10_000,
       budgetedFoodCost: 3500, // 35%
       budgetedLaborCost: 2500, // 25%
       budgetedOverhead: 1000, // 10%

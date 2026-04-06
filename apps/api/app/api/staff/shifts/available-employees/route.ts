@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -126,6 +127,7 @@ export async function GET(request: Request) {
       })),
     });
   } catch (error) {
+    captureException(error);
     console.error("Error fetching available employees:", error);
     return NextResponse.json(
       { message: "Failed to fetch available employees" },

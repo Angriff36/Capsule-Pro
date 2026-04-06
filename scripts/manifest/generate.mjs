@@ -441,7 +441,9 @@ const routeArgs = [
   ...setOutputDirInArgs(baseArgs, stagingDir),
 ];
 
-console.log("[manifest/generate] Generating list routes (nextjs.route surface)...");
+console.log(
+  "[manifest/generate] Generating list routes (nextjs.route surface)..."
+);
 const routeResult = spawnSync(pnpmBin, routeArgs, {
   stdio: "inherit",
   shell: process.platform === "win32",
@@ -452,18 +454,32 @@ const routeResult = spawnSync(pnpmBin, routeArgs, {
 // The installed CLI (0.3.37) supportss the surface through its projection class,
 // but the CLI's generate command doesn't support --surface detail yet.
 // We call the projection directly via an inline script, bypassing the CLI.
+const detailOutputDir = join(stagingDir, "apps/api/app/api");
 const detailScript = `
 import { NextJsProjection } from "@angriff36/manifest/projections/nextjs";
-import { readFileSync } from "node:fs";
-import { mkdirSync } from "node:fs";
-import { resolve, from "node:path";
+import { readFileSync, mkdirSync, writeFileSync } from "node:fs";
+import { resolve, dirname } from "node:path";
 
-import { dirname } from "node:path";
+async function main() {
+  const irPath = resolve(${JSON.stringify(defaultIr)});
+  const outputBase = resolve(${JSON.stringify(detailOutputDir)});
+  const ir = JSON.parse(readFileSync(irPath, "utf8"));
+  const projection = new NextJsProjection();
+
+  let count = 0;
+  for (const entity of ir.entities) {
+    const result = projection.generate(ir, {
+      surface: "nextjs.detail",
+      entity: entity.name,
+    });
     for (const artifact of result.artifacts) {
       if (!artifact.pathHint) continue;
-      const outputPath = path.resolve(outputDir, artifact.pathHint);
-      fs.mkdirSync(path.dirname(outputPath), { recursive: true });
-      fs.writeFileSync(outputPath, artifact.code, 'utf8');
+      // pathHint includes "apps/api/app/api/<entity>/[id]/route.ts"
+      // Strip the "apps/api/app/api/" prefix to get just "<entity>/[id]/route.ts"
+      const hintRelative = artifact.pathHint.replace(/^apps\\/api\\/app\\/api\\//, "");
+      const outputPath = resolve(outputBase, hintRelative);
+      mkdirSync(dirname(outputPath), { recursive: true });
+      writeFileSync(outputPath, artifact.code, "utf8");
       count++;
     }
   }
@@ -471,10 +487,12 @@ import { dirname } from "node:path";
 }
 main().catch(e => { console.error(e); process.exit(1); });
 `;
-const detailScriptPath = join(stagingDir, '_detail-gen.mjs');
-writeFileSync(detailScriptPath, detailScript, 'utf8');
+const detailScriptPath = join(stagingDir, "_detail-gen.mjs");
+writeFileSync(detailScriptPath, detailScript, "utf8");
 
-console.log("[manifest/generate] Generating detail routes (nextjs.detail surface)...");
+console.log(
+  "[manifest/generate] Generating detail routes (nextjs.detail surface)..."
+);
 const detailResult = spawnSync("node", [detailScriptPath], {
   stdio: "inherit",
   shell: process.platform === "win32",

@@ -62,9 +62,15 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
+import {
+  createProposal,
+  deleteProposal as deleteProposalAction,
+  getProposalById as getProposalByIdAction,
+  getProposals as getProposalsAction,
+  sendProposal as sendProposalAction,
+} from "../actions";
 
 interface Proposal {
   id: string;
@@ -98,11 +104,6 @@ interface PaginationData {
   limit: number;
   total: number;
   totalPages: number;
-}
-
-interface ProposalsResponse {
-  data: Proposal[];
-  pagination: PaginationData;
 }
 
 const statusVariants: Record<
@@ -181,39 +182,22 @@ export function ProposalsClient({
   const [isDeleting, setIsDeleting] = useState(false);
   const [isSending, setIsSending] = useState(false);
 
-  const fetchProposals = async () => {
+  const fetchProposals = useCallback(async () => {
     setIsLoading(true);
     try {
-      const params = new URLSearchParams();
-      params.set("page", String(searchParams.get("page") || initialPage));
-      if (searchParams.get("search")) {
-        params.set("search", searchParams.get("search")!);
-      }
-      if (searchParams.get("status")) {
-        params.set("status", searchParams.get("status")!);
-      }
-      if (searchParams.get("clientId")) {
-        params.set("clientId", searchParams.get("clientId")!);
-      }
-
-      const response = await apiFetch(
-        `/api/crm/proposals?${params.toString()}`
+      const currentPage = Number(searchParams.get("page") || initialPage);
+      const data = await getProposalsAction(
+        {
+          search: searchParams.get("search") || undefined,
+          status: searchParams.get("status") || undefined,
+          clientId: searchParams.get("clientId") || undefined,
+        },
+        currentPage,
+        50
       );
-      if (!response.ok) {
-        throw new Error("Failed to fetch proposals");
-      }
-
-      const data: ProposalsResponse = await response.json();
-      setProposals(data.data);
+      setProposals(data.data as unknown as Proposal[]);
       setPagination(data.pagination);
     } catch (error) {
-      // Ignore abort errors (navigation away from page cancels in-flight fetches)
-      if (
-        error instanceof Error &&
-        (error.name === "AbortError" || error.message === "Failed to fetch")
-      ) {
-        return;
-      }
       console.error("Error fetching proposals:", error);
       toast.error("Failed to load proposals", {
         description: error instanceof Error ? error.message : "Unknown error",
@@ -221,13 +205,11 @@ export function ProposalsClient({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [searchParams, initialPage]);
 
-  // Fetch proposals
+  // Fetch proposals on mount and when searchParams change
   useEffect(() => {
-    const controller = new AbortController();
     fetchProposals();
-    return () => controller.abort();
   }, [fetchProposals]);
 
   const updateFilters = () => {
@@ -284,16 +266,7 @@ export function ProposalsClient({
 
     setIsDeleting(true);
     try {
-      const response = await apiFetch(
-        `/api/crm/proposals/${proposalToDelete.id}`,
-        {
-          method: "DELETE",
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to delete proposal");
-      }
+      await deleteProposalAction(proposalToDelete.id);
 
       toast.success("Proposal deleted successfully");
 
@@ -313,18 +286,16 @@ export function ProposalsClient({
   const handleSendProposal = async (proposal: Proposal) => {
     setIsSending(true);
     try {
-      const response = await apiFetch(
-        `/api/crm/proposals/${proposal.id}/send`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({}),
-        }
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to send proposal");
+      // Need a recipient email — prompt the user via a simple prompt
+      const recipientEmail = prompt("Enter recipient email address:");
+      if (!recipientEmail?.trim()) {
+        setIsSending(false);
+        return;
       }
+
+      await sendProposalAction(proposal.id, {
+        recipientEmail: recipientEmail.trim(),
+      });
 
       toast.success("Proposal sent successfully");
 
@@ -342,31 +313,36 @@ export function ProposalsClient({
   const handleDuplicateProposal = async (proposal: Proposal) => {
     try {
       // Fetch full proposal with line items
-      const response = await apiFetch(`/api/crm/proposals/${proposal.id}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch proposal");
-      }
-
-      const fullProposal = await response.json();
+      const fullProposal = await getProposalByIdAction(proposal.id);
 
       // Create duplicate
-      const createResponse = await apiFetch("/api/crm/proposals", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...fullProposal.data,
-          title: `${fullProposal.data.title} (Copy)`,
-          status: "draft",
-          sentAt: null,
-          viewedAt: null,
-          acceptedAt: null,
-          rejectedAt: null,
-        }),
+      await createProposal({
+        title: `${fullProposal.title} (Copy)`,
+        clientId: fullProposal.clientId,
+        leadId: fullProposal.leadId,
+        eventId: fullProposal.eventId,
+        eventDate: fullProposal.eventDate
+          ? fullProposal.eventDate.toISOString().split("T")[0]
+          : null,
+        eventType: fullProposal.eventType,
+        guestCount: fullProposal.guestCount,
+        venueName: fullProposal.venueName,
+        venueAddress: fullProposal.venueAddress,
+        taxRate: fullProposal.taxRate ? Number(fullProposal.taxRate) : null,
+        discountAmount: fullProposal.discountAmount
+          ? Number(fullProposal.discountAmount)
+          : null,
+        status: "draft",
+        notes: fullProposal.notes,
+        termsAndConditions: fullProposal.termsAndConditions,
+        lineItems: fullProposal.lineItems.map((item) => ({
+          itemType: item.itemType,
+          description: item.description,
+          quantity: Number(item.quantity),
+          unitPrice: Number(item.unitPrice),
+          notes: item.notes,
+        })),
       });
-
-      if (!createResponse.ok) {
-        throw new Error("Failed to duplicate proposal");
-      }
 
       toast.success("Proposal duplicated successfully");
 

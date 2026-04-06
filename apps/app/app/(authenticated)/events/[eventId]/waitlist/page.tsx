@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Input } from "@repo/design-system/components/ui/input";
-import { Label } from "@repo/design-system/components/ui/label";
 import { Badge } from "@repo/design-system/components/ui/badge";
-import { Switch } from "@repo/design-system/components/ui/switch";
+import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -15,6 +15,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@repo/design-system/components/ui/dialog";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -22,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { Switch } from "@repo/design-system/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -30,17 +33,19 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import { toast } from "sonner";
 import {
-  Users,
-  UserCheck,
+  ArrowLeft,
+  ArrowRightToLine,
   Clock,
   ListOrdered,
-  ArrowRightToLine,
-  Plus,
   Loader2,
-  ArrowLeft,
+  Plus,
+  UserCheck,
+  Users,
 } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface Guest {
   id: string;
@@ -64,12 +69,39 @@ interface Summary {
   spotsRemaining: number | null;
 }
 
-const STATUS_CONFIG: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline"; color: string }> = {
-  confirmed: { label: "Confirmed", variant: "default", color: "bg-green-100 text-green-800" },
-  pending: { label: "Pending", variant: "secondary", color: "bg-yellow-100 text-yellow-800" },
-  declined: { label: "Declined", variant: "destructive", color: "bg-red-100 text-red-800" },
-  waitlisted: { label: "Waitlisted", variant: "outline", color: "bg-blue-100 text-blue-800" },
-  tentative: { label: "Tentative", variant: "outline", color: "bg-orange-100 text-orange-800" },
+const STATUS_CONFIG: Record<
+  string,
+  {
+    label: string;
+    variant: "default" | "secondary" | "destructive" | "outline";
+    color: string;
+  }
+> = {
+  confirmed: {
+    label: "Confirmed",
+    variant: "default",
+    color: "bg-green-100 text-green-800",
+  },
+  pending: {
+    label: "Pending",
+    variant: "secondary",
+    color: "bg-yellow-100 text-yellow-800",
+  },
+  declined: {
+    label: "Declined",
+    variant: "destructive",
+    color: "bg-red-100 text-red-800",
+  },
+  waitlisted: {
+    label: "Waitlisted",
+    variant: "outline",
+    color: "bg-blue-100 text-blue-800",
+  },
+  tentative: {
+    label: "Tentative",
+    variant: "outline",
+    color: "bg-orange-100 text-orange-800",
+  },
 };
 
 export default function WaitlistPage() {
@@ -118,29 +150,43 @@ export default function WaitlistPage() {
     }
     setAdding(true);
     try {
-      const res = await fetch(`/api/events/${eventId}/waitlist/commands/add-guest`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          guestName: form.guestName.trim(),
-          guestEmail: form.guestEmail.trim() || null,
-          guestPhone: form.guestPhone.trim() || null,
-          dietaryRestrictions: form.dietaryRestrictions.trim() ? form.dietaryRestrictions.split(",").map((s) => s.trim()) : [],
-          specialMealRequired: form.specialMealRequired,
-          specialMealNotes: form.specialMealNotes.trim() || null,
-        }),
-      });
+      const res = await fetch(
+        `/api/events/${eventId}/waitlist/commands/add-guest`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            guestName: form.guestName.trim(),
+            guestEmail: form.guestEmail.trim() || null,
+            guestPhone: form.guestPhone.trim() || null,
+            dietaryRestrictions: form.dietaryRestrictions.trim()
+              ? form.dietaryRestrictions.split(",").map((s) => s.trim())
+              : [],
+            specialMealRequired: form.specialMealRequired,
+            specialMealNotes: form.specialMealNotes.trim() || null,
+          }),
+        }
+      );
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to add guest");
 
       const guest = json.data;
       if (guest.rsvp_status === "waitlisted") {
-        toast.info(`${guest.guest_name} added to waitlist (position #${guest.waitlist_position})`);
+        toast.info(
+          `${guest.guest_name} added to waitlist (position #${guest.waitlist_position})`
+        );
       } else {
         toast.success(`${guest.guest_name} added as confirmed`);
       }
 
-      setForm({ guestName: "", guestEmail: "", guestPhone: "", dietaryRestrictions: "", specialMealRequired: false, specialMealNotes: "" });
+      setForm({
+        guestName: "",
+        guestEmail: "",
+        guestPhone: "",
+        dietaryRestrictions: "",
+        specialMealRequired: false,
+        specialMealNotes: "",
+      });
       setAddOpen(false);
       fetchGuests();
     } catch (err) {
@@ -153,16 +199,21 @@ export default function WaitlistPage() {
   const handleUpdateRSVP = async (guestId: string, status: string) => {
     setUpdating(guestId);
     try {
-      const res = await fetch(`/api/events/${eventId}/waitlist/commands/update-rsvp`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ guestId, status }),
-      });
+      const res = await fetch(
+        `/api/events/${eventId}/waitlist/commands/update-rsvp`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ guestId, status }),
+        }
+      );
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to update RSVP");
 
       if (json.autoPromoted) {
-        toast.success(`Auto-promoted ${json.autoPromoted.guest_name} from waitlist!`);
+        toast.success(
+          `Auto-promoted ${json.autoPromoted.guest_name} from waitlist!`
+        );
       }
       fetchGuests();
     } catch (err) {
@@ -175,11 +226,14 @@ export default function WaitlistPage() {
   const handlePromote = async (guestId: string, guestName: string) => {
     setUpdating(guestId);
     try {
-      const res = await fetch(`/api/events/${eventId}/waitlist/commands/promote`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ guestId }),
-      });
+      const res = await fetch(
+        `/api/events/${eventId}/waitlist/commands/promote`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ guestId }),
+        }
+      );
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || "Failed to promote");
 
@@ -192,7 +246,10 @@ export default function WaitlistPage() {
     }
   };
 
-  const capacityPct = summary && summary.capacity ? Math.min(100, (summary.confirmed / summary.capacity) * 100) : 0;
+  const capacityPct =
+    summary && summary.capacity
+      ? Math.min(100, (summary.confirmed / summary.capacity) * 100)
+      : 0;
 
   if (loading) {
     return (
@@ -205,12 +262,14 @@ export default function WaitlistPage() {
   return (
     <div className="space-y-6 p-6">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="sm" onClick={() => router.back()}>
+        <Button onClick={() => router.back()} size="sm" variant="ghost">
           <ArrowLeft className="h-4 w-4 mr-1" /> Back
         </Button>
         <div>
           <h1 className="text-2xl font-bold">Guest Waitlist & RSVP</h1>
-          <p className="text-sm text-muted-foreground">Manage guest RSVPs and waitlist for this event</p>
+          <p className="text-sm text-muted-foreground">
+            Manage guest RSVPs and waitlist for this event
+          </p>
         </div>
       </div>
 
@@ -222,7 +281,9 @@ export default function WaitlistPage() {
               <CardContent className="pt-6">
                 <div className="flex items-center gap-2">
                   <Users className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Total Guests</span>
+                  <span className="text-sm text-muted-foreground">
+                    Total Guests
+                  </span>
                 </div>
                 <p className="text-2xl font-bold mt-1">{summary.total}</p>
               </CardContent>
@@ -231,9 +292,13 @@ export default function WaitlistPage() {
               <CardContent className="pt-6">
                 <div className="flex items-center gap-2">
                   <UserCheck className="h-4 w-4 text-green-600" />
-                  <span className="text-sm text-muted-foreground">Confirmed</span>
+                  <span className="text-sm text-muted-foreground">
+                    Confirmed
+                  </span>
                 </div>
-                <p className="text-2xl font-bold mt-1 text-green-600">{summary.confirmed}</p>
+                <p className="text-2xl font-bold mt-1 text-green-600">
+                  {summary.confirmed}
+                </p>
               </CardContent>
             </Card>
             <Card>
@@ -242,26 +307,36 @@ export default function WaitlistPage() {
                   <Clock className="h-4 w-4 text-yellow-600" />
                   <span className="text-sm text-muted-foreground">Pending</span>
                 </div>
-                <p className="text-2xl font-bold mt-1 text-yellow-600">{summary.pending}</p>
+                <p className="text-2xl font-bold mt-1 text-yellow-600">
+                  {summary.pending}
+                </p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-center gap-2">
                   <ListOrdered className="h-4 w-4 text-blue-600" />
-                  <span className="text-sm text-muted-foreground">Waitlisted</span>
+                  <span className="text-sm text-muted-foreground">
+                    Waitlisted
+                  </span>
                 </div>
-                <p className="text-2xl font-bold mt-1 text-blue-600">{summary.waitlisted}</p>
+                <p className="text-2xl font-bold mt-1 text-blue-600">
+                  {summary.waitlisted}
+                </p>
               </CardContent>
             </Card>
             <Card>
               <CardContent className="pt-6">
                 <div className="flex items-center gap-2">
                   <ArrowRightToLine className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Spots Left</span>
+                  <span className="text-sm text-muted-foreground">
+                    Spots Left
+                  </span>
                 </div>
                 <p className="text-2xl font-bold mt-1">
-                  {summary.capacity !== null ? summary.spotsRemaining : "Unlimited"}
+                  {summary.capacity !== null
+                    ? summary.spotsRemaining
+                    : "Unlimited"}
                 </p>
               </CardContent>
             </Card>
@@ -273,7 +348,9 @@ export default function WaitlistPage() {
               <CardContent className="pt-6">
                 <div className="flex justify-between text-sm mb-2">
                   <span className="text-muted-foreground">Capacity</span>
-                  <span className="font-medium">{summary.confirmed} / {summary.capacity}</span>
+                  <span className="font-medium">
+                    {summary.confirmed} / {summary.capacity}
+                  </span>
                 </div>
                 <div className="w-full h-3 bg-muted rounded-full overflow-hidden">
                   <div
@@ -291,7 +368,7 @@ export default function WaitlistPage() {
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Guests</CardTitle>
-          <Dialog open={addOpen} onOpenChange={setAddOpen}>
+          <Dialog onOpenChange={setAddOpen} open={addOpen}>
             <DialogTrigger asChild>
               <Button size="sm">
                 <Plus className="h-4 w-4 mr-1" /> Add Guest
@@ -306,43 +383,55 @@ export default function WaitlistPage() {
                   <Label htmlFor="guestName">Name *</Label>
                   <Input
                     id="guestName"
-                    value={form.guestName}
-                    onChange={(e) => setForm({ ...form, guestName: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, guestName: e.target.value })
+                    }
                     placeholder="Guest name"
+                    value={form.guestName}
                   />
                 </div>
                 <div>
                   <Label htmlFor="guestEmail">Email</Label>
                   <Input
                     id="guestEmail"
+                    onChange={(e) =>
+                      setForm({ ...form, guestEmail: e.target.value })
+                    }
+                    placeholder="email@example.com"
                     type="email"
                     value={form.guestEmail}
-                    onChange={(e) => setForm({ ...form, guestEmail: e.target.value })}
-                    placeholder="email@example.com"
                   />
                 </div>
                 <div>
                   <Label htmlFor="guestPhone">Phone</Label>
                   <Input
                     id="guestPhone"
-                    value={form.guestPhone}
-                    onChange={(e) => setForm({ ...form, guestPhone: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, guestPhone: e.target.value })
+                    }
                     placeholder="(555) 123-4567"
+                    value={form.guestPhone}
                   />
                 </div>
                 <div>
-                  <Label htmlFor="dietaryRestrictions">Dietary Restrictions</Label>
+                  <Label htmlFor="dietaryRestrictions">
+                    Dietary Restrictions
+                  </Label>
                   <Input
                     id="dietaryRestrictions"
-                    value={form.dietaryRestrictions}
-                    onChange={(e) => setForm({ ...form, dietaryRestrictions: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, dietaryRestrictions: e.target.value })
+                    }
                     placeholder="Vegetarian, Gluten-free (comma separated)"
+                    value={form.dietaryRestrictions}
                   />
                 </div>
                 <div className="flex items-center gap-3">
                   <Switch
                     checked={form.specialMealRequired}
-                    onCheckedChange={(checked) => setForm({ ...form, specialMealRequired: checked })}
+                    onCheckedChange={(checked) =>
+                      setForm({ ...form, specialMealRequired: checked })
+                    }
                   />
                   <Label>Special Meal Required</Label>
                 </div>
@@ -351,16 +440,22 @@ export default function WaitlistPage() {
                     <Label htmlFor="specialMealNotes">Special Meal Notes</Label>
                     <Input
                       id="specialMealNotes"
-                      value={form.specialMealNotes}
-                      onChange={(e) => setForm({ ...form, specialMealNotes: e.target.value })}
+                      onChange={(e) =>
+                        setForm({ ...form, specialMealNotes: e.target.value })
+                      }
                       placeholder="Describe special meal needs"
+                      value={form.specialMealNotes}
                     />
                   </div>
                 )}
                 <div className="flex justify-end gap-2 pt-2">
-                  <Button variant="outline" onClick={() => setAddOpen(false)}>Cancel</Button>
-                  <Button onClick={handleAddGuest} disabled={adding}>
-                    {adding && <Loader2 className="h-4 w-4 mr-1 animate-spin" />}
+                  <Button onClick={() => setAddOpen(false)} variant="outline">
+                    Cancel
+                  </Button>
+                  <Button disabled={adding} onClick={handleAddGuest}>
+                    {adding && (
+                      <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                    )}
                     Add Guest
                   </Button>
                 </div>
@@ -369,11 +464,7 @@ export default function WaitlistPage() {
           </Dialog>
         </CardHeader>
         <CardContent>
-          {!guests.length ? (
-            <p className="text-sm text-muted-foreground text-center py-8">
-              No guests yet. Add the first guest to get started.
-            </p>
-          ) : (
+          {guests.length ? (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -387,29 +478,42 @@ export default function WaitlistPage() {
               </TableHeader>
               <TableBody>
                 {guests.map((guest) => {
-                  const cfg = STATUS_CONFIG[guest.rsvp_status] || STATUS_CONFIG.pending;
+                  const cfg =
+                    STATUS_CONFIG[guest.rsvp_status] || STATUS_CONFIG.pending;
                   return (
                     <TableRow key={guest.id}>
-                      <TableCell className="font-medium">{guest.guest_name}</TableCell>
-                      <TableCell className="text-muted-foreground">{guest.guest_email || "—"}</TableCell>
+                      <TableCell className="font-medium">
+                        {guest.guest_name}
+                      </TableCell>
+                      <TableCell className="text-muted-foreground">
+                        {guest.guest_email || "—"}
+                      </TableCell>
                       <TableCell>
                         {updating === guest.id ? (
                           <Loader2 className="h-4 w-4 animate-spin" />
                         ) : (
                           <Select
+                            onValueChange={(val) =>
+                              handleUpdateRSVP(guest.id, val)
+                            }
                             value={guest.rsvp_status}
-                            onValueChange={(val) => handleUpdateRSVP(guest.id, val)}
                           >
                             <SelectTrigger className={`w-32 h-8 ${cfg.color}`}>
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="confirmed">Confirmed</SelectItem>
+                              <SelectItem value="confirmed">
+                                Confirmed
+                              </SelectItem>
                               <SelectItem value="pending">Pending</SelectItem>
-                              <SelectItem value="tentative">Tentative</SelectItem>
+                              <SelectItem value="tentative">
+                                Tentative
+                              </SelectItem>
                               <SelectItem value="declined">Declined</SelectItem>
                               {guest.rsvp_status === "waitlisted" && (
-                                <SelectItem value="waitlisted">Waitlisted</SelectItem>
+                                <SelectItem value="waitlisted">
+                                  Waitlisted
+                                </SelectItem>
                               )}
                             </SelectContent>
                           </Select>
@@ -417,7 +521,7 @@ export default function WaitlistPage() {
                       </TableCell>
                       <TableCell className="text-center">
                         {guest.waitlist_position !== null ? (
-                          <Badge variant="outline" className="text-blue-600">
+                          <Badge className="text-blue-600" variant="outline">
                             #{guest.waitlist_position}
                           </Badge>
                         ) : (
@@ -430,10 +534,12 @@ export default function WaitlistPage() {
                       <TableCell className="text-right">
                         {guest.rsvp_status === "waitlisted" && (
                           <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handlePromote(guest.id, guest.guest_name)}
                             disabled={updating === guest.id}
+                            onClick={() =>
+                              handlePromote(guest.id, guest.guest_name)
+                            }
+                            size="sm"
+                            variant="outline"
                           >
                             {updating === guest.id ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
@@ -448,6 +554,10 @@ export default function WaitlistPage() {
                 })}
               </TableBody>
             </Table>
+          ) : (
+            <p className="text-sm text-muted-foreground text-center py-8">
+              No guests yet. Add the first guest to get started.
+            </p>
           )}
         </CardContent>
       </Card>

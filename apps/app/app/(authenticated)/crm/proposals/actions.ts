@@ -150,6 +150,24 @@ export async function getProposals(
     orderBy: [{ createdAt: "desc" }],
     take: limit,
     skip: offset,
+    include: {
+      client: {
+        select: {
+          id: true,
+          company_name: true,
+          first_name: true,
+          last_name: true,
+        },
+      },
+      lead: {
+        select: {
+          id: true,
+          company_name: true,
+          first_name: true,
+          last_name: true,
+        },
+      },
+    },
   });
 
   const totalCount = await database.proposal.count({
@@ -684,4 +702,31 @@ export async function getProposalStats() {
     accepted: acceptedCount,
     rejected: rejectedCount,
   };
+}
+
+/**
+ * Get events for dropdown selection (used in proposal forms)
+ */
+export async function getEventsForDropdown() {
+  const { orgId } = await auth();
+  invariant(orgId, "Unauthorized");
+
+  const tenantId = await getTenantId();
+
+  const events = await database.event.findMany({
+    where: {
+      AND: [{ tenantId }, { deletedAt: null }],
+    },
+    select: {
+      id: true,
+      title: true,
+      eventDate: true,
+      eventType: true,
+      status: true,
+    },
+    orderBy: [{ eventDate: "desc" }],
+    take: 100,
+  });
+
+  return events;
 }

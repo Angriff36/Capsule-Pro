@@ -6,6 +6,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createNowstaClient } from "@/app/lib/nowsta-client";
@@ -82,6 +83,7 @@ export async function POST(request: NextRequest) {
       message: result.message,
     });
   } catch (error) {
+    captureException(error);
     console.error("Nowsta connection test failed:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
@@ -133,6 +135,7 @@ export async function GET() {
       configured: true,
     });
   } catch (error) {
+    captureException(error);
     console.error("Nowsta connection test failed:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(

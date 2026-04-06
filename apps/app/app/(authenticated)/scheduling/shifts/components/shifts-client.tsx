@@ -124,7 +124,7 @@ export function ShiftsClient() {
     } finally {
       setLoading(false);
     }
-  }, [filters, pagination.page, pagination]);
+  }, [filters, pagination.page, pagination.limit]);
 
   // Fetch filter options
   const fetchFilterOptions = useCallback(async () => {

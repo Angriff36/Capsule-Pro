@@ -5,9 +5,16 @@ import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
-  manifestErrorResponse,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+manifestErrorResponse,
   manifestSuccessResponse,
-} from "@/lib/manifest-response";
+} from "@/lib/manifest-response"
+
 import { database } from "@/lib/database";
 
 interface CreateEntryRequest {
@@ -36,7 +43,7 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as CreateEntryRequest;
     const { slug, title, content, category, tags, status = "draft" } = body;
 
-    if (!slug || !title) {
+    if (!(slug && title)) {
       return manifestErrorResponse("Slug and title are required", 400);
     }
 
@@ -49,10 +56,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (existing) {
-      return manifestErrorResponse(
-        "Entry with this slug already exists",
-        409
-      );
+      return manifestErrorResponse("Entry with this slug already exists", 409);
     }
 
     const entry = await database.knowledgeBaseEntry.create({
@@ -71,6 +75,7 @@ export async function POST(request: NextRequest) {
 
     return manifestSuccessResponse({ entry }, 201);
   } catch (error) {
+    captureException(error);
     console.error("Error creating knowledge base entry:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

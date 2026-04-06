@@ -67,7 +67,10 @@ const dateFormatter = new Intl.DateTimeFormat("en-US", {
   minute: "2-digit",
 });
 
-const actionColors: Record<string, "default" | "secondary" | "destructive" | "outline"> = {
+const actionColors: Record<
+  string,
+  "default" | "secondary" | "destructive" | "outline"
+> = {
   CREATE: "default",
   UPDATE: "secondary",
   DELETE: "destructive",
@@ -109,7 +112,11 @@ const JsonPreview = ({ label, data }: { label: string; data: unknown }) => {
 const AuditLogPage = async ({
   searchParams,
 }: {
-  searchParams: Promise<{ userId?: string; action?: string; entityType?: string }>;
+  searchParams: Promise<{
+    userId?: string;
+    action?: string;
+    entityType?: string;
+  }>;
 }) => {
   const { orgId } = await auth();
 
@@ -181,7 +188,9 @@ const AuditLogPage = async ({
   );
 
   // Get unique entity types for filter
-  const entityTypes = [...new Set(auditLogs.map((log) => log.entity_type))].sort();
+  const entityTypes = [
+    ...new Set(auditLogs.map((log) => log.entity_type)),
+  ].sort();
 
   return (
     <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
@@ -199,7 +208,7 @@ const AuditLogPage = async ({
         <div className="space-y-1">
           <label className="text-sm font-medium">User</label>
           <form method="GET">
-            <Select name="userId" defaultValue={params.userId || ""}>
+            <Select defaultValue={params.userId || ""} name="userId">
               <SelectTrigger className="w-48">
                 <SelectValue placeholder="All users" />
               </SelectTrigger>
@@ -219,7 +228,7 @@ const AuditLogPage = async ({
 
         <div className="space-y-1">
           <label className="text-sm font-medium">Action</label>
-          <Select name="action" defaultValue={params.action || ""}>
+          <Select defaultValue={params.action || ""} name="action">
             <SelectTrigger className="w-36">
               <SelectValue placeholder="All actions" />
             </SelectTrigger>
@@ -235,7 +244,7 @@ const AuditLogPage = async ({
         {entityTypes.length > 0 && (
           <div className="space-y-1">
             <label className="text-sm font-medium">Entity Type</label>
-            <Select name="entityType" defaultValue={params.entityType || ""}>
+            <Select defaultValue={params.entityType || ""} name="entityType">
               <SelectTrigger className="w-44">
                 <SelectValue placeholder="All types" />
               </SelectTrigger>
@@ -282,9 +291,7 @@ const AuditLogPage = async ({
                     <TableCell className="text-sm">
                       {dateFormatter.format(new Date(log.created_at))}
                     </TableCell>
-                    <TableCell>
-                      {log.user_email || "System"}
-                    </TableCell>
+                    <TableCell>{log.user_email || "System"}</TableCell>
                     <TableCell>
                       <Badge variant={actionColors[log.action] || "outline"}>
                         {formatAction(log.action)}
@@ -305,7 +312,7 @@ const AuditLogPage = async ({
                     <TableCell>
                       <Dialog>
                         <DialogTrigger asChild>
-                          <Button variant="ghost" size="sm">
+                          <Button size="sm" variant="ghost">
                             <EyeIcon className="h-4 w-4 mr-1" />
                             View
                           </Button>
@@ -327,18 +334,26 @@ const AuditLogPage = async ({
                                   {log.user_email || "System"}
                                 </div>
                                 <div>
-                                  <span className="font-medium">Timestamp:</span>{" "}
-                                  {dateFormatter.format(new Date(log.created_at))}
+                                  <span className="font-medium">
+                                    Timestamp:
+                                  </span>{" "}
+                                  {dateFormatter.format(
+                                    new Date(log.created_at)
+                                  )}
                                 </div>
                                 {log.ip_address && (
                                   <div>
-                                    <span className="font-medium">IP Address:</span>{" "}
+                                    <span className="font-medium">
+                                      IP Address:
+                                    </span>{" "}
                                     {log.ip_address}
                                   </div>
                                 )}
                                 {log.entity_id && (
                                   <div>
-                                    <span className="font-medium">Entity ID:</span>{" "}
+                                    <span className="font-medium">
+                                      Entity ID:
+                                    </span>{" "}
                                     <code className="text-xs bg-muted px-1 rounded">
                                       {log.entity_id}
                                     </code>
@@ -346,8 +361,14 @@ const AuditLogPage = async ({
                                 )}
                               </div>
                               <Separator />
-                              <JsonPreview label="Before" data={log.before_value} />
-                              <JsonPreview label="After" data={log.after_value} />
+                              <JsonPreview
+                                data={log.before_value}
+                                label="Before"
+                              />
+                              <JsonPreview
+                                data={log.after_value}
+                                label="After"
+                              />
                             </div>
                           </ScrollArea>
                         </DialogContent>

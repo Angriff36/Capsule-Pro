@@ -8,6 +8,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -52,7 +53,7 @@ export async function POST(_request: NextRequest, context: RouteContext) {
       },
     });
 
-    if (!board || !board.tags.includes("simulation")) {
+    if (!(board && board.tags.includes("simulation"))) {
       return NextResponse.json(
         { message: "Simulation not found" },
         { status: 404 }
@@ -91,6 +92,7 @@ export async function POST(_request: NextRequest, context: RouteContext) {
       message: "Simulation discarded successfully",
     });
   } catch (error) {
+    captureException(error);
     console.error("Failed to discard simulation:", error);
     return NextResponse.json(
       { message: "Internal server error" },

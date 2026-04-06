@@ -7,6 +7,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -21,7 +22,11 @@ export interface MergeOptions {
 
 /** Conflict detected during merge check */
 export interface MergeConflict {
-  type: "projection_modified" | "projection_removed" | "group_modified" | "annotation_conflict";
+  type:
+    | "projection_modified"
+    | "projection_removed"
+    | "group_modified"
+    | "annotation_conflict";
   entityId: string;
   message: string;
   details?: Record<string, unknown>;
@@ -72,7 +77,7 @@ async function detectMergeConflicts(
     },
   });
 
-  if (!simulationBoard || !simulationBoard.tags.includes("simulation")) {
+  if (!(simulationBoard && simulationBoard.tags.includes("simulation"))) {
     return {
       hasConflicts: true,
       conflicts: [
@@ -199,7 +204,7 @@ async function mergeSimulationToSource(
       },
     });
 
-    if (!simulationBoard || !simulationBoard.tags.includes("simulation")) {
+    if (!(simulationBoard && simulationBoard.tags.includes("simulation"))) {
       return { success: false, error: "Simulation not found" };
     }
 
@@ -211,7 +216,10 @@ async function mergeSimulationToSource(
     // Extract source board ID
     const sourceTag = simulationBoard.tags.find((t) => t.startsWith("source:"));
     if (!sourceTag) {
-      return { success: false, error: "Invalid simulation: no source board reference" };
+      return {
+        success: false,
+        error: "Invalid simulation: no source board reference",
+      };
     }
     const sourceBoardId = sourceTag.replace("source:", "");
 
@@ -235,8 +243,12 @@ async function mergeSimulationToSource(
     }
 
     // Build maps for comparison
-    const sourceProjMap = new Map(sourceBoard.projections.map((p) => [p.entityId, p]));
-    const simProjMap = new Map(simulationBoard.projections.map((p) => [p.entityId, p]));
+    const sourceProjMap = new Map(
+      sourceBoard.projections.map((p) => [p.entityId, p])
+    );
+    const simProjMap = new Map(
+      simulationBoard.projections.map((p) => [p.entityId, p])
+    );
     const sourceGroupMap = new Map(sourceBoard.groups.map((g) => [g.id, g]));
     const simGroupMap = new Map(simulationBoard.groups.map((g) => [g.id, g]));
 
@@ -304,7 +316,7 @@ async function mergeSimulationToSource(
             "groupId",
             "pinned",
           ] as const;
-          
+
           let hasChanges = false;
           for (const field of fieldsToCheck) {
             if (sourceProj[field] !== simProj[field]) {
@@ -312,7 +324,7 @@ async function mergeSimulationToSource(
               break;
             }
           }
-          
+
           if (hasChanges) {
             await tx.boardProjection.update({
               where: { tenantId_id: { tenantId, id: sourceProj.id } },
@@ -369,8 +381,12 @@ async function mergeSimulationToSource(
       }
 
       // 6. Handle annotations
-      const sourceAnnMap = new Map(sourceBoard.annotations.map((a) => [a.id, a]));
-      const simAnnMap = new Map(simulationBoard.annotations.map((a) => [a.id, a]));
+      const sourceAnnMap = new Map(
+        sourceBoard.annotations.map((a) => [a.id, a])
+      );
+      const simAnnMap = new Map(
+        simulationBoard.annotations.map((a) => [a.id, a])
+      );
 
       // Add new annotations
       for (const simAnn of simulationBoard.annotations) {
@@ -414,7 +430,10 @@ async function mergeSimulationToSource(
           },
         },
         data: {
-          tags: [...simulationBoard.tags.filter((t) => t !== "applied"), "applied"],
+          tags: [
+            ...simulationBoard.tags.filter((t) => t !== "applied"),
+            "applied",
+          ],
           status: "archived",
         },
       });
@@ -446,7 +465,8 @@ async function mergeSimulationToSource(
   } catch (error) {
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to merge simulation",
+      error:
+        error instanceof Error ? error.message : "Failed to merge simulation",
     };
   }
 }
@@ -497,7 +517,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Perform the merge
-    const result = await mergeSimulationToSource(simulationId, tenantId, options);
+    const result = await mergeSimulationToSource(
+      simulationId,
+      tenantId,
+      options
+    );
 
     if (result.success) {
       return NextResponse.json({
@@ -514,6 +538,7 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     );
   } catch (error) {
+    captureException(error);
     console.error(
       "Failed to merge simulation:",
       error instanceof Error ? error : new Error(String(error))
@@ -561,6 +586,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
+    captureException(error);
     console.error(
       "Failed to check merge conflicts:",
       error instanceof Error ? error : new Error(String(error))

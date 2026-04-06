@@ -9,6 +9,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database, type Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -185,6 +186,7 @@ export async function GET(request: Request, context: RouteContext) {
       },
     });
   } catch (error: unknown) {
+    captureException(error);
     if (error instanceof InvariantError) {
       const message = (error as InvariantError).message;
       return NextResponse.json({ message }, { status: 400 });

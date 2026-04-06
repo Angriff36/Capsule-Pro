@@ -343,9 +343,9 @@ async function getAllRecipeIngredients(
   >(
     Prisma.sql`
       SELECT 
-        d.id AS dishId,
-        d.name AS dishName,
-        ri.recipeVersionId,
+        d.id AS "dishId",
+        d.name AS "dishName",
+        ri.recipe_version_id AS "recipeVersionId",
         ri.ingredient_id,
         i.name AS ingredient_name,
         ri.quantity,
@@ -356,7 +356,7 @@ async function getAllRecipeIngredients(
         i.allergens
       FROM unnest(${recipeVersionIds}::uuid[]) AS rv_id
       JOIN tenant_kitchen.recipe_ingredients ri 
-        ON ri.recipeVersionId = rv_id 
+        ON ri.recipe_version_id = rv_id 
         AND ri.deleted_at IS NULL
       JOIN tenant_kitchen.ingredients i 
         ON i.tenant_id = ri.tenant_id 

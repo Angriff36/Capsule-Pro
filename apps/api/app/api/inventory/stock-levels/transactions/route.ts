@@ -9,11 +9,18 @@ import { database, type Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type {
-  AdjustmentReason,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+AdjustmentReason,
   TransactionFilters,
   TransactionListResponse,
   TransactionType,
-} from "../types";
+} from "../types"
+
 import { TRANSACTION_TYPES } from "../types";
 
 interface PaginationParams {
@@ -267,6 +274,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(response);
   } catch (error) {
+    captureException(error);
     console.error("Failed to list transactions:", error);
     return NextResponse.json(
       { message: "Internal server error" },

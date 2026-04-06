@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 
 async function getTenantIdForOrg(orgId: string): Promise<string> {
@@ -123,6 +124,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(data);
   } catch (error) {
+    captureException(error);
     console.error("Error fetching profitability data:", error);
     return NextResponse.json(
       { error: "Failed to fetch profitability data" },

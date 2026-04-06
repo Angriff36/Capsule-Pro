@@ -166,7 +166,14 @@ export function getKitchenIr(): RawKitchenIr {
   }
 
   const repoRoot = findRepoRoot(process.cwd());
-  const path = join(repoRoot, "packages", "manifest-ir", "ir", "kitchen", "kitchen.ir.json");
+  const path = join(
+    repoRoot,
+    "packages",
+    "manifest-ir",
+    "ir",
+    "kitchen",
+    "kitchen.ir.json"
+  );
   const raw = readFileSync(path, "utf8");
   cachedKitchenIr = JSON.parse(raw) as RawKitchenIr;
   return cachedKitchenIr;
@@ -191,14 +198,18 @@ export function listKitchenEntities(): EntityListItem[] {
           entity.commands ??
           getCommandsForEntity(entity.name, ir.commands).map((c) => c.name),
         constraints: (entity.constraints ?? []).map((c) => c.name),
-        policies: getPoliciesForEntity(entity.name, ir.policies).map((p) => p.name),
+        policies: getPoliciesForEntity(entity.name, ir.policies).map(
+          (p) => p.name
+        ),
         properties,
       };
     })
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
-export function getKitchenEntityDetail(entityName: string): EntityDetail | null {
+export function getKitchenEntityDetail(
+  entityName: string
+): EntityDetail | null {
   const ir = getKitchenIr();
   const entity = ir.entities.find((e) => e.name === entityName);
   if (!entity) {

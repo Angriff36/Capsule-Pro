@@ -8,6 +8,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database, type Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -86,6 +87,7 @@ export async function GET(
 
     return NextResponse.json({ webhook: sanitizedWebhook });
   } catch (error) {
+    captureException(error);
     console.error("Error fetching webhook:", error);
     return NextResponse.json(
       { error: "Failed to fetch webhook" },
@@ -230,6 +232,7 @@ export async function PUT(
 
     return NextResponse.json({ webhook: sanitizedWebhook });
   } catch (error) {
+    captureException(error);
     console.error("Error updating webhook:", error);
     return NextResponse.json(
       { error: "Failed to update webhook" },
@@ -283,6 +286,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    captureException(error);
     console.error("Error deleting webhook:", error);
     return NextResponse.json(
       { error: "Failed to delete webhook" },

@@ -1,6 +1,5 @@
 "use client";
 
-import { Button } from "@repo/design-system/components/ui/button";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -12,15 +11,16 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@repo/design-system/components/ui/alert-dialog";
+import { Button } from "@repo/design-system/components/ui/button";
 import { Checkbox } from "@repo/design-system/components/ui/checkbox";
 import { Trash2, X } from "lucide-react";
 import { useTransition } from "react";
 import { toast } from "sonner";
 import {
-  bulkDeleteRecipes,
   bulkDeleteDishes,
-  deleteRecipe,
+  bulkDeleteRecipes,
   deleteDish,
+  deleteRecipe,
 } from "../actions";
 
 interface BulkActionsBarProps {
@@ -64,10 +64,10 @@ export function BulkActionsBar({
       <AlertDialog>
         <AlertDialogTrigger asChild>
           <Button
-            variant="destructive"
-            size="sm"
             className="gap-1.5"
             disabled={isPending}
+            size="sm"
+            variant="destructive"
           >
             <Trash2 className="h-3.5 w-3.5" />
             Delete {count}
@@ -75,7 +75,9 @@ export function BulkActionsBar({
         </AlertDialogTrigger>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete {count} {type}?</AlertDialogTitle>
+            <AlertDialogTitle>
+              Delete {count} {type}?
+            </AlertDialogTitle>
             <AlertDialogDescription>
               This will soft-delete the selected {type}. They can be recovered
               from the cleanup page.
@@ -84,8 +86,8 @@ export function BulkActionsBar({
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={handleBulkDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={handleBulkDelete}
             >
               Delete {count} {type}
             </AlertDialogAction>
@@ -93,10 +95,10 @@ export function BulkActionsBar({
         </AlertDialogContent>
       </AlertDialog>
       <Button
-        variant="ghost"
-        size="sm"
-        onClick={onClearSelection}
         className="gap-1"
+        onClick={onClearSelection}
+        size="sm"
+        variant="ghost"
       >
         <X className="h-3.5 w-3.5" />
         Clear
@@ -119,8 +121,8 @@ export function SelectableCheckbox({
   return (
     <Checkbox
       checked={selected}
-      onCheckedChange={() => onToggle(id)}
       className="h-4 w-4 shrink-0"
+      onCheckedChange={() => onToggle(id)}
       onClick={(e) => e.stopPropagation()}
     />
   );
@@ -132,7 +134,11 @@ interface SingleDeleteButtonProps {
   type: "recipe" | "dish";
 }
 
-export function SingleDeleteButton({ id, name, type }: SingleDeleteButtonProps) {
+export function SingleDeleteButton({
+  id,
+  name,
+  type,
+}: SingleDeleteButtonProps) {
   const [isPending, startTransition] = useTransition();
 
   const handleDelete = () => {
@@ -154,11 +160,11 @@ export function SingleDeleteButton({ id, name, type }: SingleDeleteButtonProps) 
     <AlertDialog>
       <AlertDialogTrigger asChild>
         <Button
-          variant="ghost"
-          size="icon"
           className="h-7 w-7 text-muted-foreground hover:text-destructive"
           disabled={isPending}
           onClick={(e) => e.preventDefault()}
+          size="icon"
+          variant="ghost"
         >
           <Trash2 className="h-3.5 w-3.5" />
         </Button>
@@ -167,14 +173,15 @@ export function SingleDeleteButton({ id, name, type }: SingleDeleteButtonProps) 
         <AlertDialogHeader>
           <AlertDialogTitle>Delete "{name}"?</AlertDialogTitle>
           <AlertDialogDescription>
-            This will soft-delete the {type}. It can be recovered from the cleanup page.
+            This will soft-delete the {type}. It can be recovered from the
+            cleanup page.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction
-            onClick={handleDelete}
             className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            onClick={handleDelete}
           >
             Delete
           </AlertDialogAction>

@@ -3,9 +3,16 @@ import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
-  manifestErrorResponse,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+manifestErrorResponse,
   manifestSuccessResponse,
-} from "@/lib/manifest-response";
+} from "@/lib/manifest-response"
+
 import { database } from "@/lib/database";
 
 export async function POST(request: NextRequest) {
@@ -38,9 +45,20 @@ export async function POST(request: NextRequest) {
       return manifestErrorResponse("title is required", 400);
     }
 
-    const validFrequencies = ["daily", "weekly", "biweekly", "monthly", "quarterly", "semiannual", "annual"];
+    const validFrequencies = [
+      "daily",
+      "weekly",
+      "biweekly",
+      "monthly",
+      "quarterly",
+      "semiannual",
+      "annual",
+    ];
     if (!validFrequencies.includes(frequency)) {
-      return manifestErrorResponse(`Invalid frequency. Must be one of: ${validFrequencies.join(", ")}`, 400);
+      return manifestErrorResponse(
+        `Invalid frequency. Must be one of: ${validFrequencies.join(", ")}`,
+        400
+      );
     }
 
     // Map frequency to interval days if not provided
@@ -63,7 +81,9 @@ export async function POST(request: NextRequest) {
     const count = (countResult as any[])[0]?.count || 0;
     const scheduleNumber = `PM-${new Date().getFullYear()}-${String(count + 1).padStart(4, "0")}`;
 
-    const nextDue = nextDueDate ? new Date(nextDueDate) : new Date(Date.now() + days * 24 * 60 * 60 * 1000);
+    const nextDue = nextDueDate
+      ? new Date(nextDueDate)
+      : new Date(Date.now() + days * 24 * 60 * 60 * 1000);
 
     const result = await database.$queryRaw`
       INSERT INTO tenant_facilities.preventive_maintenance_schedules (
@@ -88,6 +108,7 @@ export async function POST(request: NextRequest) {
 
     return manifestSuccessResponse({ schedule: (result as any[])[0] });
   } catch (error) {
+    captureException(error);
     console.error("Error creating preventive maintenance schedule:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

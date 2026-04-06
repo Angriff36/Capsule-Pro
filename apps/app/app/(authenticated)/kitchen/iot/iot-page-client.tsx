@@ -202,7 +202,11 @@ export function IoTPageClient() {
 
       {/* Status Summary */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <Card className={criticalAlerts.length > 0 ? "border-red-500 bg-red-50" : ""}>
+        <Card
+          className={
+            criticalAlerts.length > 0 ? "border-red-500 bg-red-50" : ""
+          }
+        >
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
               <AlertTriangle className="h-4 w-4" />
@@ -284,7 +288,7 @@ export function IoTPageClient() {
               </Badge>
             )}
           </TabsTrigger>
-          <TabsTrigger value="readings" disabled={!selectedProbe}>
+          <TabsTrigger disabled={!selectedProbe} value="readings">
             <Radio className="mr-2 h-4 w-4" />
             Readings
           </TabsTrigger>
@@ -319,7 +323,9 @@ export function IoTPageClient() {
                     return (
                       <div
                         className={`flex items-center justify-between p-4 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer ${
-                          selectedProbe === probe.id ? "ring-2 ring-primary" : ""
+                          selectedProbe === probe.id
+                            ? "ring-2 ring-primary"
+                            : ""
                         }`}
                         key={probe.id}
                         onClick={() => handleProbeClick(probe.id)}
@@ -397,7 +403,8 @@ export function IoTPageClient() {
                                       : ""
                                   }
                                 >
-                                  Calibration: {formatDate(probe.nextCalibration)}
+                                  Calibration:{" "}
+                                  {formatDate(probe.nextCalibration)}
                                 </span>
                               </div>
                             )}

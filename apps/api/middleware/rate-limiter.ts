@@ -91,7 +91,9 @@ const WINDOW_UNITS: Record<string, string> = {
  * Duration type from @upstash/ratelimit
  * Format: "${number} ${unit}" or "${number}${unit}"
  */
-type Duration = `${number} ${"s" | "m" | "h" | "d"}` | `${number}${"s" | "m" | "h" | "d"}`;
+type Duration =
+  | `${number} ${"s" | "m" | "h" | "d"}`
+  | `${number}${"s" | "m" | "h" | "d"}`;
 
 /**
  * Converts milliseconds to Duration string format for Upstash.
@@ -100,14 +102,14 @@ type Duration = `${number} ${"s" | "m" | "h" | "d"}` | `${number}${"s" | "m" | "
  */
 function msToDuration(windowMs: number): Duration {
   // Find the largest unit that divides evenly
-  if (windowMs % 86400000 === 0) {
-    return `${windowMs / 86400000} d`;
+  if (windowMs % 86_400_000 === 0) {
+    return `${windowMs / 86_400_000} d`;
   }
-  if (windowMs % 3600000 === 0) {
-    return `${windowMs / 3600000} h`;
+  if (windowMs % 3_600_000 === 0) {
+    return `${windowMs / 3_600_000} h`;
   }
-  if (windowMs % 60000 === 0) {
-    return `${windowMs / 60000} m`;
+  if (windowMs % 60_000 === 0) {
+    return `${windowMs / 60_000} m`;
   }
   return `${windowMs / 1000} s`;
 }
@@ -122,7 +124,9 @@ function msToDuration(windowMs: number): Duration {
 function parseWindow(window: string): number {
   const match = window.match(/^(\d+)([smhd])$/);
   if (!match) {
-    throw new Error(`Invalid window format: ${window}. Use format like "1m", "1h", "1d"`);
+    throw new Error(
+      `Invalid window format: ${window}. Use format like "1m", "1h", "1d"`
+    );
   }
   const [, value, unit] = match;
   const parser = WINDOW_PARSERS[unit];
@@ -181,7 +185,9 @@ function createRateLimitedResponse(
     "x-ratelimit-limit": String(limit),
     "x-ratelimit-remaining": String(remaining),
     "x-ratelimit-reset": reset.toISOString(),
-    "retry-after": String(retryAfter ?? Math.ceil((reset.getTime() - Date.now()) / 1000)),
+    "retry-after": String(
+      retryAfter ?? Math.ceil((reset.getTime() - Date.now()) / 1000)
+    ),
   });
 
   return NextResponse.json(
@@ -280,7 +286,11 @@ function logRateLimitEvent(
 
   // Hash IP for privacy
   const ipHash = ip
-    ? require("crypto").createHash("sha256").update(ip).digest("hex").slice(0, 32)
+    ? require("crypto")
+        .createHash("sha256")
+        .update(ip)
+        .digest("hex")
+        .slice(0, 32)
     : null;
 
   database.rateLimitEvent
@@ -330,7 +340,9 @@ export async function checkRateLimit(
       success: true,
       limit: options.limit ?? DEFAULT_LIMIT,
       remaining: options.limit ?? DEFAULT_LIMIT,
-      reset: new Date(Date.now() + parseWindow(options.window ?? DEFAULT_WINDOW)),
+      reset: new Date(
+        Date.now() + parseWindow(options.window ?? DEFAULT_WINDOW)
+      ),
     };
   }
 
@@ -443,7 +455,10 @@ export function withRateLimit<TParams = Record<string, string | string[]>>(
     context: RateLimitContext & { params?: Promise<TParams> }
   ) => Promise<Response>,
   options?: RateLimitOptions
-): (request: Request, context?: { params?: Promise<TParams> }) => Promise<Response> {
+): (
+  request: Request,
+  context?: { params?: Promise<TParams> }
+) => Promise<Response> {
   return async (
     request: Request,
     context?: { params?: Promise<TParams> }
@@ -457,7 +472,9 @@ export function withRateLimit<TParams = Record<string, string | string[]>>(
         rateLimit: {
           limit: options?.limit ?? DEFAULT_LIMIT,
           remaining: options?.limit ?? DEFAULT_LIMIT,
-          reset: new Date(Date.now() + parseWindow(options?.window ?? DEFAULT_WINDOW)),
+          reset: new Date(
+            Date.now() + parseWindow(options?.window ?? DEFAULT_WINDOW)
+          ),
         },
         params: context?.params,
       } as RateLimitContext & { params?: Promise<TParams> });
@@ -479,7 +496,12 @@ export function withRateLimit<TParams = Record<string, string | string[]>>(
     } as RateLimitContext & { params?: Promise<TParams> });
 
     // Add rate limit headers to response
-    return addRateLimitHeaders(response, result.limit, result.remaining, result.reset);
+    return addRateLimitHeaders(
+      response,
+      result.limit,
+      result.remaining,
+      result.reset
+    );
   };
 }
 
@@ -506,7 +528,9 @@ export function withRateLimit<TParams = Record<string, string | string[]>>(
  *   { limit: 100, window: "1m" }
  * );
  */
-export function withApiKeyAuthAndRateLimit<TParams = Record<string, string | string[]>>(
+export function withApiKeyAuthAndRateLimit<
+  TParams = Record<string, string | string[]>,
+>(
   handler: (
     request: Request,
     context: RateLimitContext & { params?: TParams; apiKey?: unknown }
@@ -539,7 +563,9 @@ export function withApiKeyAuthAndRateLimit<TParams = Record<string, string | str
           rateLimit: {
             limit: options?.limit ?? DEFAULT_LIMIT,
             remaining: options?.limit ?? DEFAULT_LIMIT,
-            reset: new Date(Date.now() + parseWindow(options?.window ?? DEFAULT_WINDOW)),
+            reset: new Date(
+              Date.now() + parseWindow(options?.window ?? DEFAULT_WINDOW)
+            ),
           },
           params: context?.params,
         } as RateLimitContext & { params?: TParams });
@@ -564,6 +590,11 @@ export function withApiKeyAuthAndRateLimit<TParams = Record<string, string | str
       params: context?.params,
     } as RateLimitContext & { params?: TParams });
 
-    return addRateLimitHeaders(response, result.limit, result.remaining, result.reset);
+    return addRateLimitHeaders(
+      response,
+      result.limit,
+      result.remaining,
+      result.reset
+    );
   };
 }

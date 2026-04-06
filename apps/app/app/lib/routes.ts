@@ -74,7 +74,9 @@ export const kitchenRecipeCompositeRestore = (recipeId: string): string =>
 
 /** GET /api/kitchen/recipes?search=... */
 export const kitchenRecipesSearch = (query?: string): string =>
-  query ? `/api/kitchen/recipes?search=${encodeURIComponent(query)}` : "/api/kitchen/recipes";
+  query
+    ? `/api/kitchen/recipes?search=${encodeURIComponent(query)}`
+    : "/api/kitchen/recipes";
 
 /** GET /api/kitchen/recipes/list */
 export const kitchenRecipesList = (): string => "/api/kitchen/recipes/list";

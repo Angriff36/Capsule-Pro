@@ -920,8 +920,10 @@ export const updateDish = async (dishId: string, formData: FormData) => {
   const costPerPerson = parseNumber(formData.get("costPerPerson"));
   const minLead = parseNumber(formData.get("minPrepLeadDays"));
   const maxLead = parseNumber(formData.get("maxPrepLeadDays"));
-  const portionSize = String(formData.get("portionSizeDescription") || "").trim() || null;
-  const serviceStyle = String(formData.get("serviceStyle") || "").trim() || null;
+  const portionSize =
+    String(formData.get("portionSizeDescription") || "").trim() || null;
+  const serviceStyle =
+    String(formData.get("serviceStyle") || "").trim() || null;
   const isActive = formData.get("isActive") === "true";
 
   await database.$executeRaw`
@@ -996,7 +998,7 @@ export const bulkUpdateDishPrice = async (dishIds: string[], price: string) => {
 export const bulkUpdateNames = async (
   ids: string[],
   type: "recipes" | "dishes",
-  name: string,
+  name: string
 ) => {
   const tenantId = await requireTenantId();
   invariant(name.trim().length > 0, "Name cannot be empty");

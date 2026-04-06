@@ -5,12 +5,12 @@
  * including edge cases for invalid windows, missing tenant IDs, and Redis errors.
  */
 
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { NextResponse } from "next/server";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  addRateLimitHeaders,
   checkRateLimit,
   withRateLimit,
-  addRateLimitHeaders,
 } from "@/middleware/rate-limiter";
 
 // Mock the database module
@@ -67,7 +67,7 @@ describe("Rate Limiting Middleware", () => {
     mockRateLimiter.limit.mockResolvedValue({
       success: true,
       remaining: 99,
-      reset: Date.now() + 60000,
+      reset: Date.now() + 60_000,
     });
 
     // Default mock for database config lookup - no custom config
@@ -92,7 +92,7 @@ describe("Rate Limiting Middleware", () => {
         mockRateLimiter.limit.mockResolvedValue({
           success: true,
           remaining: 99,
-          reset: Date.now() + 60000,
+          reset: Date.now() + 60_000,
         });
 
         const result = await checkRateLimit(request, TEST_TENANT_ID);
@@ -111,7 +111,7 @@ describe("Rate Limiting Middleware", () => {
         mockRateLimiter.limit.mockResolvedValue({
           success: true,
           remaining: 49,
-          reset: Date.now() + 60000,
+          reset: Date.now() + 60_000,
         });
 
         const result = await checkRateLimit(request, TEST_TENANT_ID, {
@@ -128,7 +128,7 @@ describe("Rate Limiting Middleware", () => {
           headers: { "x-tenant-id": TEST_TENANT_ID },
         });
 
-        const resetTime = Date.now() + 30000;
+        const resetTime = Date.now() + 30_000;
         mockRateLimiter.limit.mockResolvedValue({
           success: true,
           remaining: 95,
@@ -150,7 +150,7 @@ describe("Rate Limiting Middleware", () => {
         mockRateLimiter.limit.mockResolvedValue({
           success: false,
           remaining: 0,
-          reset: Date.now() + 30000,
+          reset: Date.now() + 30_000,
         });
 
         const result = await checkRateLimit(request, TEST_TENANT_ID);
@@ -166,7 +166,7 @@ describe("Rate Limiting Middleware", () => {
           headers: { "x-tenant-id": TEST_TENANT_ID },
         });
 
-        const resetTime = Date.now() + 45000;
+        const resetTime = Date.now() + 45_000;
         mockRateLimiter.limit.mockResolvedValue({
           success: false,
           remaining: 0,
@@ -187,7 +187,7 @@ describe("Rate Limiting Middleware", () => {
           headers: { "x-tenant-id": TEST_TENANT_ID },
         });
 
-        const resetTime = Date.now() + 45000;
+        const resetTime = Date.now() + 45_000;
         mockRateLimiter.limit.mockResolvedValue({
           success: false,
           remaining: 0,
@@ -227,7 +227,7 @@ describe("Rate Limiting Middleware", () => {
         mockRateLimiter.limit.mockResolvedValue({
           success: true,
           remaining: 42,
-          reset: Date.now() + 60000,
+          reset: Date.now() + 60_000,
         });
 
         const result = await checkRateLimit(request, TEST_TENANT_ID);
@@ -240,7 +240,7 @@ describe("Rate Limiting Middleware", () => {
           headers: { "x-tenant-id": TEST_TENANT_ID },
         });
 
-        const resetTime = Date.now() + 120000;
+        const resetTime = Date.now() + 120_000;
         mockRateLimiter.limit.mockResolvedValue({
           success: true,
           remaining: 80,
@@ -249,7 +249,9 @@ describe("Rate Limiting Middleware", () => {
 
         const result = await checkRateLimit(request, TEST_TENANT_ID);
 
-        expect(result.reset.toISOString()).toBe(new Date(resetTime).toISOString());
+        expect(result.reset.toISOString()).toBe(
+          new Date(resetTime).toISOString()
+        );
       });
     });
 
@@ -290,7 +292,9 @@ describe("Rate Limiting Middleware", () => {
           headers: { "x-tenant-id": TEST_TENANT_ID },
         });
 
-        mockRateLimiter.limit.mockRejectedValue(new Error("Redis connection failed"));
+        mockRateLimiter.limit.mockRejectedValue(
+          new Error("Redis connection failed")
+        );
 
         const result = await checkRateLimit(request, TEST_TENANT_ID);
 
@@ -299,7 +303,9 @@ describe("Rate Limiting Middleware", () => {
       });
 
       it("should log error to console on Redis failure", async () => {
-        const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+        const consoleSpy = vi
+          .spyOn(console, "error")
+          .mockImplementation(() => {});
         const request = createMockRequest({
           headers: { "x-tenant-id": TEST_TENANT_ID },
         });
@@ -508,10 +514,12 @@ describe("Rate Limiting Middleware", () => {
       it("should pass rate limit context to handler", async () => {
         let capturedContext: any = null;
 
-        const mockHandler = vi.fn().mockImplementation(async (_req, context) => {
-          capturedContext = context;
-          return NextResponse.json({ data: "success" });
-        });
+        const mockHandler = vi
+          .fn()
+          .mockImplementation(async (_req, context) => {
+            capturedContext = context;
+            return NextResponse.json({ data: "success" });
+          });
 
         const wrappedHandler = withRateLimit(mockHandler, {
           limit: 50,
@@ -539,7 +547,7 @@ describe("Rate Limiting Middleware", () => {
         mockRateLimiter.limit.mockResolvedValue({
           success: false,
           remaining: 0,
-          reset: Date.now() + 30000,
+          reset: Date.now() + 30_000,
         });
 
         const wrappedHandler = withRateLimit(mockHandler, {
@@ -565,7 +573,7 @@ describe("Rate Limiting Middleware", () => {
         mockRateLimiter.limit.mockResolvedValue({
           success: false,
           remaining: 0,
-          reset: Date.now() + 45000,
+          reset: Date.now() + 45_000,
         });
 
         const wrappedHandler = withRateLimit(mockHandler);
@@ -601,10 +609,12 @@ describe("Rate Limiting Middleware", () => {
       it("should still provide rate limit context when no tenant ID", async () => {
         let capturedContext: any = null;
 
-        const mockHandler = vi.fn().mockImplementation(async (_req, context) => {
-          capturedContext = context;
-          return NextResponse.json({ data: "success" });
-        });
+        const mockHandler = vi
+          .fn()
+          .mockImplementation(async (_req, context) => {
+            capturedContext = context;
+            return NextResponse.json({ data: "success" });
+          });
 
         const wrappedHandler = withRateLimit(mockHandler, {
           limit: 200,
@@ -623,10 +633,12 @@ describe("Rate Limiting Middleware", () => {
       it("should pass params through to handler", async () => {
         let capturedParams: any = null;
 
-        const mockHandler = vi.fn().mockImplementation(async (_req, context) => {
-          capturedParams = context?.params;
-          return NextResponse.json({ data: "success" });
-        });
+        const mockHandler = vi
+          .fn()
+          .mockImplementation(async (_req, context) => {
+            capturedParams = context?.params;
+            return NextResponse.json({ data: "success" });
+          });
 
         const wrappedHandler = withRateLimit(mockHandler);
 
@@ -655,7 +667,12 @@ describe("Rate Limiting Middleware", () => {
 
       const resetDate = new Date("2026-01-15T12:05:00Z");
 
-      const response = addRateLimitHeaders(originalResponse, 100, 95, resetDate);
+      const response = addRateLimitHeaders(
+        originalResponse,
+        100,
+        95,
+        resetDate
+      );
 
       expect(response.headers.get("x-ratelimit-limit")).toBe("100");
       expect(response.headers.get("x-ratelimit-remaining")).toBe("95");
@@ -682,14 +699,22 @@ describe("Rate Limiting Middleware", () => {
     });
 
     it("should preserve response status", () => {
-      const originalResponse = new Response(JSON.stringify({ error: "not found" }), {
-        status: 404,
-        statusText: "Not Found",
-      });
+      const originalResponse = new Response(
+        JSON.stringify({ error: "not found" }),
+        {
+          status: 404,
+          statusText: "Not Found",
+        }
+      );
 
       const resetDate = new Date();
 
-      const response = addRateLimitHeaders(originalResponse, 100, 90, resetDate);
+      const response = addRateLimitHeaders(
+        originalResponse,
+        100,
+        90,
+        resetDate
+      );
 
       expect(response.status).toBe(404);
       expect(response.statusText).toBe("Not Found");
@@ -701,7 +726,12 @@ describe("Rate Limiting Middleware", () => {
       const resetDate = new Date();
 
       // Pass negative remaining to test clamping
-      const response = addRateLimitHeaders(originalResponse, 100, -5, resetDate);
+      const response = addRateLimitHeaders(
+        originalResponse,
+        100,
+        -5,
+        resetDate
+      );
 
       expect(response.headers.get("x-ratelimit-remaining")).toBe("0");
     });
@@ -730,7 +760,7 @@ describe("Rate Limiting Middleware", () => {
 
         await expect(
           checkRateLimit(request, TEST_TENANT_ID, { window: "invalid" })
-        ).rejects.toThrow('Invalid window format: invalid');
+        ).rejects.toThrow("Invalid window format: invalid");
       });
 
       it("should throw error for window without number", async () => {
@@ -740,7 +770,7 @@ describe("Rate Limiting Middleware", () => {
 
         await expect(
           checkRateLimit(request, TEST_TENANT_ID, { window: "m" })
-        ).rejects.toThrow('Invalid window format: m');
+        ).rejects.toThrow("Invalid window format: m");
       });
 
       it("should throw error for window with invalid unit", async () => {
@@ -750,7 +780,7 @@ describe("Rate Limiting Middleware", () => {
 
         await expect(
           checkRateLimit(request, TEST_TENANT_ID, { window: "5x" })
-        ).rejects.toThrow('Invalid window format: 5x');
+        ).rejects.toThrow("Invalid window format: 5x");
       });
 
       it("should accept valid window formats", async () => {
@@ -858,7 +888,7 @@ describe("Rate Limiting Middleware", () => {
         mockRateLimiter.limit.mockResolvedValue({
           success: true,
           remaining: 90,
-          reset: Date.now() + 60000,
+          reset: Date.now() + 60_000,
         });
 
         const results = await Promise.all(

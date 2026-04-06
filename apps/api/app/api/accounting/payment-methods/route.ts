@@ -12,13 +12,19 @@ import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
 import {
-  getDisplayInfo,
-  type PaymentMethodListResponse,
-  type PaymentMethodResponse,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+getDisplayInfo, type;
+PaymentMethodListResponse, type;
+PaymentMethodResponse,
   parsePaginationParams,
   parsePaymentMethodFilters,
   validateCreatePaymentMethodRequest,
-} from "./validation";
+} from "./validation"
 
 /**
  * GET /api/accounting/payment-methods
@@ -82,6 +88,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
+    captureException(error);
     console.error("Error listing payment methods:", error);
     return NextResponse.json(
       { error: "Failed to list payment methods" },
@@ -136,7 +143,7 @@ export async function POST(request: NextRequest) {
         type: body.type,
         cardLastFour: body.cardLastFour || null,
         cardNetwork: body.cardNetwork || null,
-        isDefault: body.isDefault || false,
+        isDefault: body.isDefault,
       },
     });
 
@@ -147,6 +154,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json<PaymentMethodResponse>(response, { status: 201 });
   } catch (error) {
+    captureException(error);
     console.error("Error creating payment method:", error);
     return NextResponse.json(
       { error: "Failed to create payment method" },

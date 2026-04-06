@@ -2,11 +2,10 @@
 
 import { auth } from "@repo/auth/server";
 import { captureException } from "@sentry/nextjs";
-import { redirect } from "next/navigation";
 import {
   generatePrepList as kitchenGeneratePrepList,
-  savePrepListToDatabase,
   type PrepListGenerationResult,
+  savePrepListToDatabase,
 } from "../../kitchen/prep-lists/actions";
 
 export interface GenerateEventPrepListInput {
@@ -33,7 +32,7 @@ export async function generateEventPrepList(
   try {
     const { orgId, userId } = await auth();
 
-    if (!orgId || !userId) {
+    if (!(orgId && userId)) {
       return { success: false, error: "Unauthorized" };
     }
 
@@ -67,7 +66,8 @@ export async function generateEventPrepList(
     captureException(error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to generate prep list",
+      error:
+        error instanceof Error ? error.message : "Failed to generate prep list",
     };
   }
 }

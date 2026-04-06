@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
 
@@ -62,7 +63,9 @@ export async function GET(request: NextRequest) {
         return {
           id: recipe.id,
           name: recipe.name,
-          yield: latestVersion?.yieldQuantity ? Number(latestVersion.yieldQuantity) : null,
+          yield: latestVersion?.yieldQuantity
+            ? Number(latestVersion.yieldQuantity)
+            : null,
           ingredientCount,
           hasNutritionData: true, // Will be calculated on demand
           createdAt: recipe.createdAt,
@@ -75,6 +78,7 @@ export async function GET(request: NextRequest) {
       recipes: recipesWithStats,
     });
   } catch (error) {
+    captureException(error);
     console.error("Error listing nutrition labels:", error);
     return NextResponse.json(
       { error: "Failed to list nutrition labels" },

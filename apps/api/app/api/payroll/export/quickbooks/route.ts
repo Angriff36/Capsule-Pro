@@ -1,6 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { PayrollService, PrismaPayrollDataSource } from "@repo/payroll-engine";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -92,6 +93,7 @@ export const POST = withRateLimit<Record<string, string | string[]>>(
         filename: `payroll-${periodId}.${fileExtension}`,
       });
     } catch (error) {
+      captureException(error);
       console.error("QuickBooks export error:", error);
 
       if (error instanceof Error && error.message.includes("not found")) {

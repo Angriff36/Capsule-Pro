@@ -1,9 +1,13 @@
 // List purchase orders needing approval with approval history
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import {
+  manifestErrorResponse,
+  manifestSuccessResponse,
+} from "@/lib/manifest-response";
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,7 +24,7 @@ export async function GET(request: NextRequest) {
     // "pending" maps to "submitted" status
     let statusFilter = "";
     const params: any[] = [tenantId];
-    
+
     if (status && status !== "all") {
       if (status === "pending") {
         statusFilter = "AND po.status = $2";
@@ -31,7 +35,8 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    const orders = await database.$queryRawUnsafe(`
+    const orders = await database.$queryRawUnsafe(
+      `
       SELECT
         po.id, po.po_number, po.vendor_id, po.status,
         po.total, po.submitted_by, po.submitted_at, po.created_at,
@@ -67,10 +72,13 @@ export async function GET(request: NextRequest) {
         CASE WHEN po.status = 'submitted' THEN 0 ELSE 1 END,
         po.submitted_at DESC NULLS LAST,
         po.created_at DESC
-    `, ...params);
+    `,
+      ...params
+    );
 
     return manifestSuccessResponse({ orders });
   } catch (error) {
+    captureException(error);
     console.error("Error listing approval orders:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

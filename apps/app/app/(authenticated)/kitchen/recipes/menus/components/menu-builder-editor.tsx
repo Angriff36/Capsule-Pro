@@ -21,27 +21,41 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import {
-  ChevronDown,
-  GripVertical,
-  Plus,
-  Search,
-  Trash2,
-  X,
-} from "lucide-react";
-import React, { useCallback, useMemo, useState } from "react";
+import { ChevronDown, GripVertical, Plus, Search, X } from "lucide-react";
+import type React from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { DishWithCost } from "../actions";
 
 // Course configuration
 export const COURSES = [
-  { id: "appetizer", label: "Appetizer", color: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200" },
-  { id: "main", label: "Main Course", color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200" },
-  { id: "dessert", label: "Dessert", color: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200" },
-  { id: "beverage", label: "Beverage", color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200" },
-  { id: "side", label: "Side", color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200" },
+  {
+    id: "appetizer",
+    label: "Appetizer",
+    color: "bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200",
+  },
+  {
+    id: "main",
+    label: "Main Course",
+    color: "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200",
+  },
+  {
+    id: "dessert",
+    label: "Dessert",
+    color: "bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200",
+  },
+  {
+    id: "beverage",
+    label: "Beverage",
+    color: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+  },
+  {
+    id: "side",
+    label: "Side",
+    color: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200",
+  },
 ] as const;
 
-export type CourseId = typeof COURSES[number]["id"];
+export type CourseId = (typeof COURSES)[number]["id"];
 
 export interface MenuDishEntry {
   id: string; // Unique ID for drag-and-drop
@@ -63,7 +77,8 @@ interface MenuBuilderEditorProps {
 }
 
 // Generate unique ID for drag-and-drop
-const generateId = () => `md-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+const generateId = () =>
+  `md-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
 
 // Format currency
 const formatCurrency = (value: number | null) => {
@@ -73,7 +88,7 @@ const formatCurrency = (value: number | null) => {
 
 // Calculate margin percentage
 const calculateMargin = (price: number | null, cost: number | null) => {
-  if (!price || !cost || price === 0) return null;
+  if (!(price && cost) || price === 0) return null;
   return ((price - cost) / price) * 100;
 };
 
@@ -200,20 +215,20 @@ export function MenuBuilderEditor({
   );
 
   // Drag handlers for HTML5 Drag API
-  const handleDragStart = useCallback(
-    (e: React.DragEvent, entryId: string) => {
-      setDraggedItem(entryId);
-      e.dataTransfer.effectAllowed = "move";
-      e.dataTransfer.setData("text/plain", entryId);
+  const handleDragStart = useCallback((e: React.DragEvent, entryId: string) => {
+    setDraggedItem(entryId);
+    e.dataTransfer.effectAllowed = "move";
+    e.dataTransfer.setData("text/plain", entryId);
+  }, []);
+
+  const handleDragOver = useCallback(
+    (e: React.DragEvent, courseId: CourseId) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "move";
+      setDragOverCourse(courseId);
     },
     []
   );
-
-  const handleDragOver = useCallback((e: React.DragEvent, courseId: CourseId) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "move";
-    setDragOverCourse(courseId);
-  }, []);
 
   const handleDragLeave = useCallback(() => {
     setDragOverCourse(null);
@@ -427,7 +442,8 @@ export function MenuBuilderEditor({
                                     Cost: {formatCurrency(entry.costPerPerson)}
                                   </div>
                                   <div className="font-medium">
-                                    Price: {formatCurrency(entry.pricePerPerson)}
+                                    Price:{" "}
+                                    {formatCurrency(entry.pricePerPerson)}
                                   </div>
                                   {margin !== null && (
                                     <div
@@ -466,7 +482,9 @@ export function MenuBuilderEditor({
                                   className="h-8 w-8"
                                   onClick={() => toggleOptional(entry.id)}
                                   size="icon"
-                                  variant={entry.isOptional ? "default" : "outline"}
+                                  variant={
+                                    entry.isOptional ? "default" : "outline"
+                                  }
                                 >
                                   <span className="text-xs">Opt</span>
                                 </Button>

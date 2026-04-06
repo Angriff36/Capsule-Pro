@@ -6,6 +6,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { createNowstaClient } from "@/app/lib/nowsta-client";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -135,6 +136,7 @@ export async function GET(_request: NextRequest) {
       })),
     });
   } catch (error) {
+    captureException(error);
     console.error("Failed to get Nowsta employees:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(

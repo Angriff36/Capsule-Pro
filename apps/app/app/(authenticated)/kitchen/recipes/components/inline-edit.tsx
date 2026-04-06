@@ -1,8 +1,8 @@
 "use client";
 
-import { useRef, useState, useTransition } from "react";
-import { Check, Pencil, X } from "lucide-react";
 import { cn } from "@repo/design-system/lib/utils";
+import { Check, Pencil, X } from "lucide-react";
+import { useRef, useState, useTransition } from "react";
 
 interface InlineTextInputProps {
   value: string;
@@ -50,17 +50,17 @@ export function InlineTextInput({
   if (!editing) {
     return (
       <button
-        type="button"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          startEdit();
-        }}
         className={cn(
           "group/edit inline-flex items-center gap-1 rounded-md border border-transparent px-1.5 py-0.5 -ml-1.5 text-left cursor-pointer outline-none transition-all",
           "hover:border-border hover:bg-muted/60 focus-visible:ring-1 focus-visible:ring-ring",
           className
         )}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          startEdit();
+        }}
+        type="button"
       >
         <span className="truncate">{value}</span>
         <Pencil className="h-3 w-3 text-muted-foreground opacity-0 group-hover/edit:opacity-100 transition-opacity shrink-0" />
@@ -78,37 +78,37 @@ export function InlineTextInput({
       onKeyDown={(e) => e.stopPropagation()}
     >
       <input
-        ref={inputRef}
-        value={draft}
+        autoFocus
+        className="h-6 px-0.5 text-sm bg-transparent outline-none w-full min-w-[100px]"
+        disabled={isPending}
+        onBlur={save}
         onChange={(e) => setDraft(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === "Enter") save();
           if (e.key === "Escape") cancel();
         }}
-        onBlur={save}
-        disabled={isPending}
-        className="h-6 px-0.5 text-sm bg-transparent outline-none w-full min-w-[100px]"
-        autoFocus
+        ref={inputRef}
+        value={draft}
       />
       <button
-        type="button"
+        className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-[var(--brand-leafy-green)] hover:bg-muted disabled:opacity-30 transition-colors"
+        disabled={isPending || !draft.trim() || draft === value}
         onClick={(e) => {
           e.stopPropagation();
           save();
         }}
-        disabled={isPending || !draft.trim() || draft === value}
-        className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-[var(--brand-leafy-green)] hover:bg-muted disabled:opacity-30 transition-colors"
+        type="button"
       >
         <Check className="h-3.5 w-3.5" />
       </button>
       <button
-        type="button"
+        className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-destructive hover:bg-muted disabled:opacity-30 transition-colors"
+        disabled={isPending}
         onClick={(e) => {
           e.stopPropagation();
           cancel();
         }}
-        disabled={isPending}
-        className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-destructive hover:bg-muted disabled:opacity-30 transition-colors"
+        type="button"
       >
         <X className="h-3.5 w-3.5" />
       </button>
@@ -170,17 +170,17 @@ export function InlinePriceInput({
   if (!editing) {
     return (
       <button
-        type="button"
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          startEdit();
-        }}
         className={cn(
           "group/edit inline-flex items-center gap-1 rounded-md border border-transparent px-1.5 py-0.5 -ml-1.5 text-left cursor-pointer outline-none transition-all",
           "hover:border-border hover:bg-muted/60 focus-visible:ring-1 focus-visible:ring-ring",
           className
         )}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          startEdit();
+        }}
+        type="button"
       >
         <span>{displayValue}</span>
         <Pencil className="h-3 w-3 text-muted-foreground opacity-0 group-hover/edit:opacity-100 transition-opacity shrink-0" />
@@ -199,40 +199,40 @@ export function InlinePriceInput({
     >
       <span className="text-muted-foreground text-xs">$</span>
       <input
-        ref={inputRef}
-        type="number"
-        step="0.01"
+        autoFocus
+        className="h-6 w-20 px-0.5 text-sm bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        disabled={isPending}
         min="0"
-        value={draft}
+        onBlur={save}
         onChange={(e) => setDraft(e.target.value)}
         onKeyDown={(e) => {
           if (e.key === "Enter") save();
           if (e.key === "Escape") cancel();
         }}
-        onBlur={save}
-        disabled={isPending}
-        className="h-6 w-20 px-0.5 text-sm bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-        autoFocus
+        ref={inputRef}
+        step="0.01"
+        type="number"
+        value={draft}
       />
       <button
-        type="button"
+        className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-[var(--brand-leafy-green)] hover:bg-muted disabled:opacity-30 transition-colors"
+        disabled={isPending}
         onClick={(e) => {
           e.stopPropagation();
           save();
         }}
-        disabled={isPending}
-        className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-[var(--brand-leafy-green)] hover:bg-muted disabled:opacity-30 transition-colors"
+        type="button"
       >
         <Check className="h-3.5 w-3.5" />
       </button>
       <button
-        type="button"
+        className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-destructive hover:bg-muted disabled:opacity-30 transition-colors"
+        disabled={isPending}
         onClick={(e) => {
           e.stopPropagation();
           cancel();
         }}
-        disabled={isPending}
-        className="shrink-0 rounded p-0.5 text-muted-foreground hover:text-destructive hover:bg-muted disabled:opacity-30 transition-colors"
+        type="button"
       >
         <X className="h-3.5 w-3.5" />
       </button>

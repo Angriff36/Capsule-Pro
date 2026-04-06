@@ -1,9 +1,13 @@
 // Get single vendor with contacts and latest ratings
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import {
+  manifestErrorResponse,
+  manifestSuccessResponse,
+} from "@/lib/manifest-response";
 
 export async function GET(
   request: NextRequest,
@@ -18,33 +22,50 @@ export async function GET(
 
     const { id } = await params;
 
-    const vendors = await database.$queryRawUnsafe(`
+    const vendors = await database.$queryRawUnsafe(
+      `
       SELECT * FROM tenant_inventory.inventory_suppliers
       WHERE tenant_id = $1::uuid AND id = $2::uuid AND deleted_at IS NULL
-    `, tenantId, id);
+    `,
+      tenantId,
+      id
+    );
 
-    if (!(vendors as any[]).length) return manifestErrorResponse("Vendor not found", 404);
+    if (!(vendors as any[]).length)
+      return manifestErrorResponse("Vendor not found", 404);
     const vendor = (vendors as any[])[0];
 
-    const contacts = await database.$queryRawUnsafe(`
+    const contacts = await database.$queryRawUnsafe(
+      `
       SELECT * FROM tenant_inventory.vendor_contacts
       WHERE tenant_id = $1::uuid AND supplier_id = $2::uuid AND deleted_at IS NULL
       ORDER BY is_primary DESC, contact_name
-    `, tenantId, id);
+    `,
+      tenantId,
+      id
+    );
 
-    const ratings = await database.$queryRawUnsafe(`
+    const ratings = await database.$queryRawUnsafe(
+      `
       SELECT r.*, a.name as rated_by_name
       FROM tenant_inventory.vendor_ratings r
       LEFT JOIN platform.accounts a ON a.id = r.rated_by
       WHERE r.tenant_id = $1::uuid AND r.supplier_id = $2::uuid AND r.deleted_at IS NULL
       ORDER BY r.created_at DESC
       LIMIT 20
-    `, tenantId, id);
+    `,
+      tenantId,
+      id
+    );
 
-    const catalogCount = await database.$queryRawUnsafe(`
+    const catalogCount = await database.$queryRawUnsafe(
+      `
       SELECT COUNT(*)::int as count FROM tenant_inventory.vendor_catalogs
       WHERE tenant_id = $1::uuid AND supplier_id = $2::uuid AND deleted_at IS NULL AND is_active = true
-    `, tenantId, id);
+    `,
+      tenantId,
+      id
+    );
 
     return manifestSuccessResponse({
       vendor,
@@ -53,6 +74,7 @@ export async function GET(
       catalogItemCount: (catalogCount as any[])[0]?.count || 0,
     });
   } catch (error) {
+    captureException(error);
     console.error("Error fetching vendor:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

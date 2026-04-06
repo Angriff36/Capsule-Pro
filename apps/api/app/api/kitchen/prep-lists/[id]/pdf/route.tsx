@@ -1,8 +1,8 @@
 import { auth } from "@repo/auth/server";
-import { database } from "@/lib/database";
 import { PrepListPDF, type PrepListPDFData } from "@repo/pdf";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { database } from "@/lib/database";
 
 export const runtime = "nodejs";
 
@@ -78,7 +78,13 @@ async function fetchUser(tenantId: string, userId: string) {
     },
   });
 
-  return user || { firstName: "Unknown", lastName: "User", email: "unknown@example.com" };
+  return (
+    user || {
+      firstName: "Unknown",
+      lastName: "User",
+      email: "unknown@example.com",
+    }
+  );
 }
 
 function convertToBase64(uint8Array: Uint8Array): string {
@@ -175,20 +181,24 @@ const STATION_MAP: Record<string, string[]> = {
 
 function determineStation(ingredientName: string, category?: string): string {
   const searchStr = `${ingredientName} ${category || ""}`.toLowerCase();
-  
+
   for (const [station, keywords] of Object.entries(STATION_MAP)) {
     if (keywords.some((kw) => searchStr.includes(kw))) {
       return station;
     }
   }
-  
+
   return "prep-station";
 }
 
 async function preparePdfData(
   eventId: string,
   tenantId: string,
-  user: { firstName: string | null; lastName: string | null; email: string | null }
+  user: {
+    firstName: string | null;
+    lastName: string | null;
+    email: string | null;
+  }
 ): Promise<{ pdfData: PrepListPDFData; eventTitle: string; eventDate: Date }> {
   // Fetch event
   const event = await database.event.findFirst({
@@ -205,31 +215,34 @@ async function preparePdfData(
   });
 
   // Build station lists from event dishes
-  const stationMap = new Map<string, {
-    stationId: string;
-    stationName: string;
-    totalIngredients: number;
-    estimatedTime: number;
-    color: string;
-    ingredients: Array<{
-      ingredientId: string;
-      ingredientName: string;
-      scaledQuantity: number;
-      scaledUnit: string;
-      category?: string;
-      isOptional: boolean;
-      preparationNotes?: string;
-      allergens: string[];
-      dietarySubstitutions: string[];
-    }>;
-    tasks: Array<{
-      id: string;
-      name: string;
-      dueDate: Date;
-      status: string;
-      priority: number;
-    }>;
-  }>();
+  const stationMap = new Map<
+    string,
+    {
+      stationId: string;
+      stationName: string;
+      totalIngredients: number;
+      estimatedTime: number;
+      color: string;
+      ingredients: Array<{
+        ingredientId: string;
+        ingredientName: string;
+        scaledQuantity: number;
+        scaledUnit: string;
+        category?: string;
+        isOptional: boolean;
+        preparationNotes?: string;
+        allergens: string[];
+        dietarySubstitutions: string[];
+      }>;
+      tasks: Array<{
+        id: string;
+        name: string;
+        dueDate: Date;
+        status: string;
+        priority: number;
+      }>;
+    }
+  >();
 
   const stationNames: Record<string, string> = {
     "hot-line": "Hot Line",
@@ -270,11 +283,13 @@ async function preparePdfData(
     });
 
     // Fetch ingredient details
-    const ingredientIds = [...new Set(recipeIngredients.map(ri => ri.ingredientId))];
+    const ingredientIds = [
+      ...new Set(recipeIngredients.map((ri) => ri.ingredientId)),
+    ];
     const ingredientDetails = await database.ingredient.findMany({
       where: { id: { in: ingredientIds }, tenantId },
     });
-    const ingredientMap = new Map(ingredientDetails.map(i => [i.id, i]));
+    const ingredientMap = new Map(ingredientDetails.map((i) => [i.id, i]));
 
     for (const ing of recipeIngredients) {
       const ingredient = ingredientMap.get(ing.ingredientId);
@@ -321,8 +336,14 @@ async function preparePdfData(
     estimatedTime: Math.ceil(station.totalIngredients * 0.15), // ~9 min per ingredient
   }));
 
-  const totalIngredients = stationLists.reduce((sum, s) => sum + s.totalIngredients, 0);
-  const totalEstimatedTime = stationLists.reduce((sum, s) => sum + s.estimatedTime, 0);
+  const totalIngredients = stationLists.reduce(
+    (sum, s) => sum + s.totalIngredients,
+    0
+  );
+  const totalEstimatedTime = stationLists.reduce(
+    (sum, s) => sum + s.estimatedTime,
+    0
+  );
 
   const pdfData: PrepListPDFData = {
     event: {
@@ -385,18 +406,28 @@ export async function GET(
     let eventDate: Date;
 
     if (result.type === "saved") {
-      const prepared = await preparePdfData(result.data.eventId, authContext.tenantId, user);
+      const prepared = await preparePdfData(
+        result.data.eventId,
+        authContext.tenantId,
+        user
+      );
       pdfData = prepared.pdfData;
       eventTitle = prepared.eventTitle;
       eventDate = prepared.eventDate;
     } else {
-      const prepared = await preparePdfData(result.data.id, authContext.tenantId, user);
+      const prepared = await preparePdfData(
+        result.data.id,
+        authContext.tenantId,
+        user
+      );
       pdfData = prepared.pdfData;
       eventTitle = prepared.eventTitle;
       eventDate = prepared.eventDate;
     }
 
-    const pdfComponent = PrepListPDF({ data: pdfData }) as React.ReactElement<Record<string, unknown>>;
+    const pdfComponent = PrepListPDF({ data: pdfData }) as React.ReactElement<
+      Record<string, unknown>
+    >;
 
     const url = new URL(request.url);
     const shouldDownload = url.searchParams.get("download") === "true";

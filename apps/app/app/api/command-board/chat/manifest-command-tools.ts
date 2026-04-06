@@ -136,7 +136,7 @@ function listCandidateWorkspaceRoots(): string[] {
   // In ESM, use import.meta.url; in CJS, use __dirname
   let fileDir: string | undefined;
   try {
-    fileDir = __dirname; // available in CJS (Next.js API routes compile to CJS)
+    fileDir = import.meta.dirname; // available in CJS (Next.js API routes compile to CJS)
   } catch {
     // ESM - would need import.meta.url, but skip for now
   }
@@ -174,7 +174,7 @@ function listCandidateWorkspaceRoots(): string[] {
 
 function resolveManifestPath(): string {
   const candidateRoots = listCandidateWorkspaceRoots();
-  
+
   // First, try to find repo root via pnpm-workspace.yaml
   for (const root of candidateRoots) {
     if (existsSync(join(root, "pnpm-workspace.yaml"))) {
@@ -184,15 +184,19 @@ function resolveManifestPath(): string {
       }
     }
   }
-  
+
   // Fallback: Try to find manifest directly from common Vercel/project paths
   // This handles Vercel deployments where pnpm-workspace.yaml might not be present
   const directPaths = [
     resolve(process.cwd(), ROUTE_SURFACE_MANIFEST_RELATIVE_PATH),
-    resolve(__dirname || ".", "..".repeat(7), ROUTE_SURFACE_MANIFEST_RELATIVE_PATH),
+    resolve(
+      import.meta.dirname || ".",
+      "..".repeat(7),
+      ROUTE_SURFACE_MANIFEST_RELATIVE_PATH
+    ),
     "/var/task/apps/app/" + ROUTE_SURFACE_MANIFEST_RELATIVE_PATH,
   ];
-  
+
   for (const manifestPath of directPaths) {
     if (existsSync(manifestPath)) {
       return manifestPath;
@@ -200,14 +204,22 @@ function resolveManifestPath(): string {
   }
 
   // Last resort: try cwd with any relative path
-  const lastResortPath = resolve(process.cwd(), "..", "..", "..", "..", ROUTE_SURFACE_MANIFEST_RELATIVE_PATH);
+  const lastResortPath = resolve(
+    process.cwd(),
+    "..",
+    "..",
+    "..",
+    "..",
+    ROUTE_SURFACE_MANIFEST_RELATIVE_PATH
+  );
   if (existsSync(lastResortPath)) {
     return lastResortPath;
   }
 
   throw new Error(
     "[manifest-command-tools] Could not locate manifest file. " +
-    "Checked paths: " + [...directPaths, lastResortPath].join(", ")
+      "Checked paths: " +
+      [...directPaths, lastResortPath].join(", ")
   );
 }
 

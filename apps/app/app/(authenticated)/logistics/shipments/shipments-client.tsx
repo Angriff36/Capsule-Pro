@@ -1,23 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import {
-  Package,
-  Search,
-  Filter,
-  Plus,
-  Truck,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  XCircle,
-  ArrowUpDown,
-  ExternalLink,
-  Loader2,
-  Calendar,
-  DollarSign,
-  MapPin,
-} from "lucide-react";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -25,9 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@repo/design-system/components/ui/tabs";
-import { Input } from "@repo/design-system/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -36,8 +16,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
+import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
-import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -45,6 +25,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs";
+import { Textarea } from "@repo/design-system/components/ui/textarea";
+import {
+  AlertCircle,
+  Calendar,
+  CheckCircle2,
+  Clock,
+  DollarSign,
+  Loader2,
+  MapPin,
+  Package,
+  Plus,
+  Search,
+  Truck,
+  XCircle,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
 
 // Types matching the API
 interface Shipment {
@@ -67,17 +69,56 @@ interface Shipment {
   createdAt: string;
 }
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
+const STATUS_CONFIG: Record<
+  string,
+  {
+    label: string;
+    color: string;
+    icon: React.ComponentType<{ className?: string }>;
+  }
+> = {
   draft: { label: "Draft", color: "bg-gray-100 text-gray-700", icon: Package },
-  scheduled: { label: "Scheduled", color: "bg-blue-100 text-blue-700", icon: Calendar },
-  preparing: { label: "Preparing", color: "bg-amber-100 text-amber-700", icon: Clock },
-  in_transit: { label: "In Transit", color: "bg-purple-100 text-purple-700", icon: Truck },
-  delivered: { label: "Delivered", color: "bg-green-100 text-green-700", icon: CheckCircle2 },
-  returned: { label: "Returned", color: "bg-orange-100 text-orange-700", icon: AlertCircle },
-  cancelled: { label: "Cancelled", color: "bg-red-100 text-red-700", icon: XCircle },
+  scheduled: {
+    label: "Scheduled",
+    color: "bg-blue-100 text-blue-700",
+    icon: Calendar,
+  },
+  preparing: {
+    label: "Preparing",
+    color: "bg-amber-100 text-amber-700",
+    icon: Clock,
+  },
+  in_transit: {
+    label: "In Transit",
+    color: "bg-purple-100 text-purple-700",
+    icon: Truck,
+  },
+  delivered: {
+    label: "Delivered",
+    color: "bg-green-100 text-green-700",
+    icon: CheckCircle2,
+  },
+  returned: {
+    label: "Returned",
+    color: "bg-orange-100 text-orange-700",
+    icon: AlertCircle,
+  },
+  cancelled: {
+    label: "Cancelled",
+    color: "bg-red-100 text-red-700",
+    icon: XCircle,
+  },
 };
 
-const STATUS_ORDER = ["draft", "scheduled", "preparing", "in_transit", "delivered", "returned", "cancelled"];
+const STATUS_ORDER = [
+  "draft",
+  "scheduled",
+  "preparing",
+  "in_transit",
+  "delivered",
+  "returned",
+  "cancelled",
+];
 
 export function ShipmentsClient() {
   const [shipments, setShipments] = useState<Shipment[]>([]);
@@ -85,7 +126,9 @@ export function ShipmentsClient() {
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(null);
+  const [selectedShipment, setSelectedShipment] = useState<Shipment | null>(
+    null
+  );
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [creating, setCreating] = useState(false);
   const [createForm, setCreateForm] = useState({
@@ -128,7 +171,9 @@ export function ShipmentsClient() {
           shippingMethod: createForm.shippingMethod || undefined,
           scheduledDate: createForm.scheduledDate || undefined,
           estimatedDeliveryDate: createForm.estimatedDeliveryDate || undefined,
-          shippingCost: createForm.shippingCost ? parseFloat(createForm.shippingCost) : undefined,
+          shippingCost: createForm.shippingCost
+            ? Number.parseFloat(createForm.shippingCost)
+            : undefined,
           notes: createForm.notes || undefined,
         }),
       });
@@ -174,7 +219,9 @@ export function ShipmentsClient() {
       const data = await res.json();
       if (data.shipment) {
         setShipments((prev) =>
-          prev.map((s) => (s.id === shipmentId ? { ...s, status: data.shipment.status } : s))
+          prev.map((s) =>
+            s.id === shipmentId ? { ...s, status: data.shipment.status } : s
+          )
         );
       }
     } catch (error) {
@@ -197,9 +244,14 @@ export function ShipmentsClient() {
   const stats = useMemo(() => {
     return {
       total: shipments.length,
-      active: shipments.filter((s) => ["scheduled", "preparing", "in_transit"].includes(s.status)).length,
+      active: shipments.filter((s) =>
+        ["scheduled", "preparing", "in_transit"].includes(s.status)
+      ).length,
       delivered: shipments.filter((s) => s.status === "delivered").length,
-      totalValue: shipments.reduce((sum, s) => sum + (Number(s.totalValue) || 0), 0),
+      totalValue: shipments.reduce(
+        (sum, s) => sum + (Number(s.totalValue) || 0),
+        0
+      ),
     };
   }, [shipments]);
 
@@ -220,7 +272,10 @@ export function ShipmentsClient() {
 
   const formatCurrency = (amount: number | null) => {
     if (!amount) return "—";
-    return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(Number(amount));
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+    }).format(Number(amount));
   };
 
   if (loading) {
@@ -251,7 +306,9 @@ export function ShipmentsClient() {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Shipments</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Shipments
+            </CardTitle>
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -283,7 +340,9 @@ export function ShipmentsClient() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{formatCurrency(stats.totalValue)}</div>
+            <div className="text-2xl font-bold">
+              {formatCurrency(stats.totalValue)}
+            </div>
           </CardContent>
         </Card>
       </div>
@@ -293,16 +352,16 @@ export function ShipmentsClient() {
         <div className="flex-1 relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
+            className="pl-10"
+            onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by shipment #, carrier, or tracking..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
           />
         </div>
       </div>
 
       {/* Tabs & Table */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs onValueChange={setActiveTab} value={activeTab}>
         <TabsList>
           <TabsTrigger value="all">All ({shipments.length})</TabsTrigger>
           {STATUS_ORDER.slice(0, 5).map((status) => {
@@ -323,22 +382,30 @@ export function ShipmentsClient() {
               <CardContent className="py-12 text-center text-muted-foreground">
                 <Package className="mx-auto h-12 w-12 mb-4 opacity-50" />
                 <p>No shipments found.</p>
-                {searchQuery && <p className="text-sm mt-1">Try adjusting your search.</p>}
+                {searchQuery && (
+                  <p className="text-sm mt-1">Try adjusting your search.</p>
+                )}
               </CardContent>
             </Card>
           ) : (
             <div className="space-y-3">
               {filteredShipments.map((shipment) => {
-                const statusConfig = STATUS_CONFIG[shipment.status] || STATUS_CONFIG.draft;
+                const statusConfig =
+                  STATUS_CONFIG[shipment.status] || STATUS_CONFIG.draft;
                 const StatusIcon = statusConfig.icon;
                 const nextStatus = getNextStatus(shipment.status);
 
                 return (
-                  <Card key={shipment.id} className="hover:shadow-sm transition-shadow">
+                  <Card
+                    className="hover:shadow-sm transition-shadow"
+                    key={shipment.id}
+                  >
                     <CardContent className="p-4">
                       <div className="flex items-center gap-4">
                         {/* Status indicator */}
-                        <div className={`flex h-10 w-10 items-center justify-center rounded-full ${statusConfig.color}`}>
+                        <div
+                          className={`flex h-10 w-10 items-center justify-center rounded-full ${statusConfig.color}`}
+                        >
                           <StatusIcon className="h-5 w-5" />
                         </div>
 
@@ -346,8 +413,11 @@ export function ShipmentsClient() {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <button
-                              onClick={() => { setSelectedShipment(shipment); setShowDetailDialog(true); }}
                               className="font-semibold hover:underline text-left"
+                              onClick={() => {
+                                setSelectedShipment(shipment);
+                                setShowDetailDialog(true);
+                              }}
                             >
                               {shipment.shipmentNumber}
                             </button>
@@ -387,7 +457,9 @@ export function ShipmentsClient() {
                             </span>
                           )}
                           {shipment.estimatedDeliveryDate && (
-                            <span>ETA: {formatDate(shipment.estimatedDeliveryDate)}</span>
+                            <span>
+                              ETA: {formatDate(shipment.estimatedDeliveryDate)}
+                            </span>
                           )}
                         </div>
 
@@ -395,9 +467,11 @@ export function ShipmentsClient() {
                         <div className="flex items-center gap-2">
                           {nextStatus && (
                             <Button
+                              onClick={() =>
+                                handleStatusUpdate(shipment.id, nextStatus)
+                              }
                               size="sm"
                               variant="outline"
-                              onClick={() => handleStatusUpdate(shipment.id, nextStatus)}
                             >
                               {nextStatus === "scheduled" && "Schedule"}
                               {nextStatus === "preparing" && "Start Preparing"}
@@ -407,9 +481,11 @@ export function ShipmentsClient() {
                           )}
                           {shipment.status === "draft" && (
                             <Button
+                              onClick={() =>
+                                handleStatusUpdate(shipment.id, "cancelled")
+                              }
                               size="sm"
                               variant="destructive"
-                              onClick={() => handleStatusUpdate(shipment.id, "cancelled")}
                             >
                               Cancel
                             </Button>
@@ -426,7 +502,7 @@ export function ShipmentsClient() {
       </Tabs>
 
       {/* Create Shipment Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+      <Dialog onOpenChange={setShowCreateDialog} open={showCreateDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Create New Shipment</DialogTitle>
@@ -440,18 +516,25 @@ export function ShipmentsClient() {
                 <Label htmlFor="trackingNumber">Tracking Number</Label>
                 <Input
                   id="trackingNumber"
+                  onChange={(e) =>
+                    setCreateForm((p) => ({
+                      ...p,
+                      trackingNumber: e.target.value,
+                    }))
+                  }
                   placeholder="Optional"
                   value={createForm.trackingNumber}
-                  onChange={(e) => setCreateForm((p) => ({ ...p, trackingNumber: e.target.value }))}
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="carrier">Carrier</Label>
                 <Input
                   id="carrier"
+                  onChange={(e) =>
+                    setCreateForm((p) => ({ ...p, carrier: e.target.value }))
+                  }
                   placeholder="e.g., FedEx, UPS"
                   value={createForm.carrier}
-                  onChange={(e) => setCreateForm((p) => ({ ...p, carrier: e.target.value }))}
                 />
               </div>
             </div>
@@ -459,8 +542,10 @@ export function ShipmentsClient() {
               <div className="space-y-2">
                 <Label htmlFor="shippingMethod">Shipping Method</Label>
                 <Select
+                  onValueChange={(v) =>
+                    setCreateForm((p) => ({ ...p, shippingMethod: v }))
+                  }
                   value={createForm.shippingMethod}
-                  onValueChange={(v) => setCreateForm((p) => ({ ...p, shippingMethod: v }))}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -470,7 +555,9 @@ export function ShipmentsClient() {
                     <SelectItem value="express">Express</SelectItem>
                     <SelectItem value="overnight">Overnight</SelectItem>
                     <SelectItem value="freight">Freight</SelectItem>
-                    <SelectItem value="will_call">Will Call / Pickup</SelectItem>
+                    <SelectItem value="will_call">
+                      Will Call / Pickup
+                    </SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -478,11 +565,16 @@ export function ShipmentsClient() {
                 <Label htmlFor="shippingCost">Shipping Cost</Label>
                 <Input
                   id="shippingCost"
-                  type="number"
-                  step="0.01"
+                  onChange={(e) =>
+                    setCreateForm((p) => ({
+                      ...p,
+                      shippingCost: e.target.value,
+                    }))
+                  }
                   placeholder="0.00"
+                  step="0.01"
+                  type="number"
                   value={createForm.shippingCost}
-                  onChange={(e) => setCreateForm((p) => ({ ...p, shippingCost: e.target.value }))}
                 />
               </div>
             </div>
@@ -491,18 +583,28 @@ export function ShipmentsClient() {
                 <Label htmlFor="scheduledDate">Scheduled Date</Label>
                 <Input
                   id="scheduledDate"
+                  onChange={(e) =>
+                    setCreateForm((p) => ({
+                      ...p,
+                      scheduledDate: e.target.value,
+                    }))
+                  }
                   type="date"
                   value={createForm.scheduledDate}
-                  onChange={(e) => setCreateForm((p) => ({ ...p, scheduledDate: e.target.value }))}
                 />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="estimatedDeliveryDate">Est. Delivery</Label>
                 <Input
                   id="estimatedDeliveryDate"
+                  onChange={(e) =>
+                    setCreateForm((p) => ({
+                      ...p,
+                      estimatedDeliveryDate: e.target.value,
+                    }))
+                  }
                   type="date"
                   value={createForm.estimatedDeliveryDate}
-                  onChange={(e) => setCreateForm((p) => ({ ...p, estimatedDeliveryDate: e.target.value }))}
                 />
               </div>
             </div>
@@ -510,17 +612,23 @@ export function ShipmentsClient() {
               <Label htmlFor="notes">Notes</Label>
               <Textarea
                 id="notes"
+                onChange={(e) =>
+                  setCreateForm((p) => ({ ...p, notes: e.target.value }))
+                }
                 placeholder="Internal notes about this shipment..."
-                value={createForm.notes}
-                onChange={(e) => setCreateForm((p) => ({ ...p, notes: e.target.value }))}
                 rows={3}
+                value={createForm.notes}
               />
             </div>
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setShowCreateDialog(false)}>
+              <Button
+                onClick={() => setShowCreateDialog(false)}
+                type="button"
+                variant="outline"
+              >
                 Cancel
               </Button>
-              <Button type="submit" disabled={creating}>
+              <Button disabled={creating} type="submit">
                 {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create Shipment
               </Button>
@@ -530,13 +638,15 @@ export function ShipmentsClient() {
       </Dialog>
 
       {/* Shipment Detail Dialog */}
-      <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>
+      <Dialog onOpenChange={setShowDetailDialog} open={showDetailDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               {selectedShipment?.shipmentNumber}
               {selectedShipment && (
-                <Badge className={STATUS_CONFIG[selectedShipment.status]?.color}>
+                <Badge
+                  className={STATUS_CONFIG[selectedShipment.status]?.color}
+                >
                   {STATUS_CONFIG[selectedShipment.status]?.label}
                 </Badge>
               )}
@@ -548,15 +658,21 @@ export function ShipmentsClient() {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <p className="text-muted-foreground">Carrier</p>
-                  <p className="font-medium">{selectedShipment.carrier || "—"}</p>
+                  <p className="font-medium">
+                    {selectedShipment.carrier || "—"}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Method</p>
-                  <p className="font-medium capitalize">{selectedShipment.shippingMethod || "—"}</p>
+                  <p className="font-medium capitalize">
+                    {selectedShipment.shippingMethod || "—"}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Tracking #</p>
-                  <p className="font-medium">{selectedShipment.trackingNumber || "—"}</p>
+                  <p className="font-medium">
+                    {selectedShipment.trackingNumber || "—"}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Total Items</p>
@@ -564,33 +680,47 @@ export function ShipmentsClient() {
                 </div>
                 <div>
                   <p className="text-muted-foreground">Shipping Cost</p>
-                  <p className="font-medium">{formatCurrency(selectedShipment.shippingCost)}</p>
+                  <p className="font-medium">
+                    {formatCurrency(selectedShipment.shippingCost)}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Total Value</p>
-                  <p className="font-medium">{formatCurrency(selectedShipment.totalValue)}</p>
+                  <p className="font-medium">
+                    {formatCurrency(selectedShipment.totalValue)}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Scheduled</p>
-                  <p className="font-medium">{formatDate(selectedShipment.scheduledDate)}</p>
+                  <p className="font-medium">
+                    {formatDate(selectedShipment.scheduledDate)}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Est. Delivery</p>
-                  <p className="font-medium">{formatDate(selectedShipment.estimatedDeliveryDate)}</p>
+                  <p className="font-medium">
+                    {formatDate(selectedShipment.estimatedDeliveryDate)}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Shipped</p>
-                  <p className="font-medium">{formatDate(selectedShipment.shippedDate)}</p>
+                  <p className="font-medium">
+                    {formatDate(selectedShipment.shippedDate)}
+                  </p>
                 </div>
                 <div>
                   <p className="text-muted-foreground">Delivered</p>
-                  <p className="font-medium">{formatDate(selectedShipment.actualDeliveryDate)}</p>
+                  <p className="font-medium">
+                    {formatDate(selectedShipment.actualDeliveryDate)}
+                  </p>
                 </div>
               </div>
               {selectedShipment.notes && (
                 <div>
                   <p className="text-sm text-muted-foreground mb-1">Notes</p>
-                  <p className="text-sm bg-muted rounded-md p-3">{selectedShipment.notes}</p>
+                  <p className="text-sm bg-muted rounded-md p-3">
+                    {selectedShipment.notes}
+                  </p>
                 </div>
               )}
             </div>

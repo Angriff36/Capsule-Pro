@@ -24,6 +24,7 @@ Run these after implementing to get immediate feedback:
 
 ## Operational Notes
 
+- **GitHub Packages (`@angriff36`):** local dev — run once: `pnpm config set //npm.pkg.github.com/:_authToken <PAT> --location=user` (PAT with `read:packages`; same value as CI secret `PKG_AUTH_TOKEN`). Then use normal `pnpm install`. CI/Vercel inject auth via `scripts/ensure-github-packages-npmrc.sh`.
 - IR is authority — filesystem is not source of truth for routes
 - `@angriff36/manifest` must be consumed as the published package version (currently pinned), not `workspace:*` in `apps/*` or `packages/*`
 - All mutations compile to Manifest domain commands

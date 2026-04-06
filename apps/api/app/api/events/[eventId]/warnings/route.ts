@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -66,6 +67,7 @@ export async function GET(
 
     return NextResponse.json(warnings);
   } catch (error) {
+    captureException(error);
     if (error instanceof InvariantError) {
       return NextResponse.json({ error: error.message }, { status: 400 });
     }

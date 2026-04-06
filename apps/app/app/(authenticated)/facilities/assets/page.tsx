@@ -1,18 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  Package,
-  Plus,
-  Loader2,
-  Pencil,
-  Trash2,
-  Search,
-  Wrench,
-  Archive,
-  AlertTriangle,
-  CheckCircle2,
-} from "lucide-react";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -20,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Badge } from "@repo/design-system/components/ui/badge";
 import {
   Dialog,
   DialogContent,
@@ -31,7 +18,6 @@ import {
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
-import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -39,6 +25,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { Textarea } from "@repo/design-system/components/ui/textarea";
+import {
+  AlertTriangle,
+  Archive,
+  CheckCircle2,
+  Loader2,
+  Package,
+  Pencil,
+  Plus,
+  Search,
+  Trash2,
+  Wrench,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import { FacilitiesNavigation } from "../components/facilities-navigation";
 
 interface Asset {
@@ -66,12 +66,32 @@ interface Area {
 
 const STATUS_CONFIG: Record<
   string,
-  { label: string; color: string; icon: React.ComponentType<{ className?: string }> }
+  {
+    label: string;
+    color: string;
+    icon: React.ComponentType<{ className?: string }>;
+  }
 > = {
-  active: { label: "Active", color: "bg-green-100 text-green-700", icon: CheckCircle2 },
-  maintenance: { label: "Maintenance", color: "bg-amber-100 text-amber-700", icon: Wrench },
-  retired: { label: "Retired", color: "bg-gray-100 text-gray-700", icon: Archive },
-  disposed: { label: "Disposed", color: "bg-red-100 text-red-700", icon: AlertTriangle },
+  active: {
+    label: "Active",
+    color: "bg-green-100 text-green-700",
+    icon: CheckCircle2,
+  },
+  maintenance: {
+    label: "Maintenance",
+    color: "bg-amber-100 text-amber-700",
+    icon: Wrench,
+  },
+  retired: {
+    label: "Retired",
+    color: "bg-gray-100 text-gray-700",
+    icon: Archive,
+  },
+  disposed: {
+    label: "Disposed",
+    color: "bg-red-100 text-red-700",
+    icon: AlertTriangle,
+  },
 };
 
 const ASSET_TYPE_LABELS: Record<string, string> = {
@@ -90,7 +110,12 @@ const ASSET_TYPE_LABELS: Record<string, string> = {
 };
 
 const formatCurrency = (n: number | null) =>
-  n ? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n) : "—";
+  n
+    ? new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
+      }).format(n)
+    : "—";
 
 export default function AssetsPage() {
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -148,9 +173,17 @@ export default function AssetsPage() {
   const openCreate = () => {
     setEditing(null);
     setForm({
-      name: "", assetType: "other", serialNumber: "", manufacturer: "",
-      model: "", purchaseDate: "", purchaseCost: "", warrantyExpiry: "",
-      areaId: "", status: "active", notes: "",
+      name: "",
+      assetType: "other",
+      serialNumber: "",
+      manufacturer: "",
+      model: "",
+      purchaseDate: "",
+      purchaseCost: "",
+      warrantyExpiry: "",
+      areaId: "",
+      status: "active",
+      notes: "",
     });
     setShowDialog(true);
   };
@@ -190,7 +223,9 @@ export default function AssetsPage() {
             manufacturer: form.manufacturer || null,
             model: form.model || null,
             purchaseDate: form.purchaseDate || null,
-            purchaseCost: form.purchaseCost ? parseFloat(form.purchaseCost) : null,
+            purchaseCost: form.purchaseCost
+              ? Number.parseFloat(form.purchaseCost)
+              : null,
             warrantyExpiry: form.warrantyExpiry || null,
             status: form.status,
             areaId: form.areaId || null,
@@ -203,7 +238,9 @@ export default function AssetsPage() {
             manufacturer: form.manufacturer || null,
             model: form.model || null,
             purchaseDate: form.purchaseDate || null,
-            purchaseCost: form.purchaseCost ? parseFloat(form.purchaseCost) : null,
+            purchaseCost: form.purchaseCost
+              ? Number.parseFloat(form.purchaseCost)
+              : null,
             warrantyExpiry: form.warrantyExpiry || null,
             areaId: form.areaId || null,
             notes: form.notes || null,
@@ -248,7 +285,7 @@ export default function AssetsPage() {
     (a) =>
       a.warranty_expiry &&
       a.status === "active" &&
-      new Date(a.warranty_expiry) < new Date(Date.now() + 90 * 86400000)
+      new Date(a.warranty_expiry) < new Date(Date.now() + 90 * 86_400_000)
   ).length;
 
   if (loading) {
@@ -280,7 +317,9 @@ export default function AssetsPage() {
         {/* Summary */}
         <div className="flex gap-2 flex-wrap">
           <Badge variant="secondary">{assets.length} Assets</Badge>
-          <Badge variant="outline">Active value: {formatCurrency(totalValue)}</Badge>
+          <Badge variant="outline">
+            Active value: {formatCurrency(totalValue)}
+          </Badge>
           {warrantyExpiring > 0 && (
             <Badge variant="destructive">
               {warrantyExpiring} warranty expiring soon
@@ -292,10 +331,10 @@ export default function AssetsPage() {
         <div className="relative max-w-sm">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
+            className="pl-10"
+            onChange={(e) => setSearch(e.target.value)}
             placeholder="Search assets..."
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="pl-10"
           />
         </div>
 
@@ -310,7 +349,9 @@ export default function AssetsPage() {
                   <CardTitle className="text-sm font-medium">
                     {config.label}
                   </CardTitle>
-                  <config.icon className={`h-4 w-4 ${status === "active" ? "text-green-500" : status === "maintenance" ? "text-amber-500" : "text-gray-500"}`} />
+                  <config.icon
+                    className={`h-4 w-4 ${status === "active" ? "text-green-500" : status === "maintenance" ? "text-amber-500" : "text-gray-500"}`}
+                  />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{count}</div>
@@ -325,51 +366,80 @@ export default function AssetsPage() {
           <Card>
             <CardContent className="py-12 text-center text-muted-foreground">
               <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p>{search ? "No assets match your search." : "No assets found. Add an asset to get started."}</p>
+              <p>
+                {search
+                  ? "No assets match your search."
+                  : "No assets found. Add an asset to get started."}
+              </p>
             </CardContent>
           </Card>
         ) : (
           <div className="space-y-3">
             {filteredAssets.map((asset) => {
-              const config = STATUS_CONFIG[asset.status] || STATUS_CONFIG.active;
+              const config =
+                STATUS_CONFIG[asset.status] || STATUS_CONFIG.active;
               const Icon = config.icon;
               const isWarrantyExpiring =
                 asset.warranty_expiry &&
                 asset.status === "active" &&
-                new Date(asset.warranty_expiry) < new Date(Date.now() + 90 * 86400000);
+                new Date(asset.warranty_expiry) <
+                  new Date(Date.now() + 90 * 86_400_000);
               return (
-                <Card key={asset.id} className="hover:shadow-sm transition-shadow">
+                <Card
+                  className="hover:shadow-sm transition-shadow"
+                  key={asset.id}
+                >
                   <CardContent className="p-4">
                     <div className="flex items-center gap-4">
-                      <div className={`flex h-10 w-10 items-center justify-center rounded-full ${config.color}`}>
+                      <div
+                        className={`flex h-10 w-10 items-center justify-center rounded-full ${config.color}`}
+                      >
                         <Icon className="h-5 w-5" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <span className="font-semibold">{asset.name}</span>
                           <Badge className={config.color}>{config.label}</Badge>
-                          <Badge variant="outline">{ASSET_TYPE_LABELS[asset.asset_type] || asset.asset_type}</Badge>
+                          <Badge variant="outline">
+                            {ASSET_TYPE_LABELS[asset.asset_type] ||
+                              asset.asset_type}
+                          </Badge>
                           {isWarrantyExpiring && (
-                            <Badge variant="destructive">Warranty expiring</Badge>
+                            <Badge variant="destructive">
+                              Warranty expiring
+                            </Badge>
                           )}
                         </div>
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                          {asset.serial_number && <span>SN: {asset.serial_number}</span>}
-                          {asset.manufacturer && <span>{asset.manufacturer}{asset.model ? ` ${asset.model}` : ""}</span>}
+                          {asset.serial_number && (
+                            <span>SN: {asset.serial_number}</span>
+                          )}
+                          {asset.manufacturer && (
+                            <span>
+                              {asset.manufacturer}
+                              {asset.model ? ` ${asset.model}` : ""}
+                            </span>
+                          )}
                           {asset.area_name && <span>📍 {asset.area_name}</span>}
-                          {asset.purchase_cost != null && <span>{formatCurrency(asset.purchase_cost)}</span>}
+                          {asset.purchase_cost != null && (
+                            <span>{formatCurrency(asset.purchase_cost)}</span>
+                          )}
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button size="sm" variant="outline" onClick={() => openEdit(asset)}>
+                        <Button
+                          onClick={() => openEdit(asset)}
+                          size="sm"
+                          variant="outline"
+                        >
                           <Pencil className="h-4 w-4" />
                         </Button>
                         <Button
+                          className="text-red-500 hover:text-red-700"
+                          disabled={deleting === asset.id}
+                          onClick={() => handleDelete(asset.id)}
                           size="sm"
                           variant="outline"
-                          className="text-red-500 hover:text-red-700"
-                          onClick={() => handleDelete(asset.id)}
-                          disabled={deleting === asset.id}
                         >
                           {deleting === asset.id ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
@@ -388,27 +458,44 @@ export default function AssetsPage() {
       </div>
 
       {/* Create/Edit Dialog */}
-      <Dialog open={showDialog} onOpenChange={setShowDialog}>
+      <Dialog onOpenChange={setShowDialog} open={showDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>{editing ? "Edit Asset" : "Add Asset"}</DialogTitle>
             <DialogDescription>
-              {editing ? "Update asset information." : "Register a new asset or piece of equipment."}
+              {editing
+                ? "Update asset information."
+                : "Register a new asset or piece of equipment."}
             </DialogDescription>
           </DialogHeader>
-          <form onSubmit={handleSave} className="space-y-4">
+          <form className="space-y-4" onSubmit={handleSave}>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Name *</Label>
-                <Input value={form.name} onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))} required />
+                <Input
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, name: e.target.value }))
+                  }
+                  required
+                  value={form.name}
+                />
               </div>
               <div className="space-y-2">
                 <Label>Asset Type</Label>
-                <Select value={form.assetType} onValueChange={(v) => setForm((p) => ({ ...p, assetType: v }))}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
+                <Select
+                  onValueChange={(v) =>
+                    setForm((p) => ({ ...p, assetType: v }))
+                  }
+                  value={form.assetType}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
                   <SelectContent>
                     {Object.entries(ASSET_TYPE_LABELS).map(([value, label]) => (
-                      <SelectItem key={value} value={value}>{label}</SelectItem>
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -418,24 +505,47 @@ export default function AssetsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Manufacturer</Label>
-                <Input value={form.manufacturer} onChange={(e) => setForm((p) => ({ ...p, manufacturer: e.target.value }))} placeholder="Vulcan" />
+                <Input
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, manufacturer: e.target.value }))
+                  }
+                  placeholder="Vulcan"
+                  value={form.manufacturer}
+                />
               </div>
               <div className="space-y-2">
                 <Label>Model</Label>
-                <Input value={form.model} onChange={(e) => setForm((p) => ({ ...p, model: e.target.value }))} placeholder="VSH96E" />
+                <Input
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, model: e.target.value }))
+                  }
+                  placeholder="VSH96E"
+                  value={form.model}
+                />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Serial Number</Label>
-                <Input value={form.serialNumber} onChange={(e) => setForm((p) => ({ ...p, serialNumber: e.target.value }))} placeholder="SN-12345" />
+                <Input
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, serialNumber: e.target.value }))
+                  }
+                  placeholder="SN-12345"
+                  value={form.serialNumber}
+                />
               </div>
               {editing && (
                 <div className="space-y-2">
                   <Label>Status</Label>
-                  <Select value={form.status} onValueChange={(v) => setForm((p) => ({ ...p, status: v }))}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <Select
+                    onValueChange={(v) => setForm((p) => ({ ...p, status: v }))}
+                    value={form.status}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="active">Active</SelectItem>
                       <SelectItem value="maintenance">Maintenance</SelectItem>
@@ -450,28 +560,54 @@ export default function AssetsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Purchase Date</Label>
-                <Input type="date" value={form.purchaseDate} onChange={(e) => setForm((p) => ({ ...p, purchaseDate: e.target.value }))} />
+                <Input
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, purchaseDate: e.target.value }))
+                  }
+                  type="date"
+                  value={form.purchaseDate}
+                />
               </div>
               <div className="space-y-2">
                 <Label>Purchase Cost</Label>
-                <Input type="number" step="0.01" value={form.purchaseCost} onChange={(e) => setForm((p) => ({ ...p, purchaseCost: e.target.value }))} placeholder="5000.00" />
+                <Input
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, purchaseCost: e.target.value }))
+                  }
+                  placeholder="5000.00"
+                  step="0.01"
+                  type="number"
+                  value={form.purchaseCost}
+                />
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Warranty Expiry</Label>
-                <Input type="date" value={form.warrantyExpiry} onChange={(e) => setForm((p) => ({ ...p, warrantyExpiry: e.target.value }))} />
+                <Input
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, warrantyExpiry: e.target.value }))
+                  }
+                  type="date"
+                  value={form.warrantyExpiry}
+                />
               </div>
               <div className="space-y-2">
                 <Label>Facility Area</Label>
-                <Select value={form.areaId} onValueChange={(v) => setForm((p) => ({ ...p, areaId: v }))}>
-                  <SelectTrigger><SelectValue placeholder="No area assigned" /></SelectTrigger>
+                <Select
+                  onValueChange={(v) => setForm((p) => ({ ...p, areaId: v }))}
+                  value={form.areaId}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="No area assigned" />
+                  </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">None</SelectItem>
                     {areas.map((area) => (
                       <SelectItem key={area.id} value={area.id}>
-                        {area.name}{area.code ? ` (${area.code})` : ""}
+                        {area.name}
+                        {area.code ? ` (${area.code})` : ""}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -481,12 +617,25 @@ export default function AssetsPage() {
 
             <div className="space-y-2">
               <Label>Notes</Label>
-              <Textarea value={form.notes} onChange={(e) => setForm((p) => ({ ...p, notes: e.target.value }))} rows={2} placeholder="Additional notes..." />
+              <Textarea
+                onChange={(e) =>
+                  setForm((p) => ({ ...p, notes: e.target.value }))
+                }
+                placeholder="Additional notes..."
+                rows={2}
+                value={form.notes}
+              />
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setShowDialog(false)}>Cancel</Button>
-              <Button type="submit" disabled={!form.name.trim() || saving}>
+              <Button
+                onClick={() => setShowDialog(false)}
+                type="button"
+                variant="outline"
+              >
+                Cancel
+              </Button>
+              <Button disabled={!form.name.trim() || saving} type="submit">
                 {saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 {editing ? "Update" : "Add"} Asset
               </Button>

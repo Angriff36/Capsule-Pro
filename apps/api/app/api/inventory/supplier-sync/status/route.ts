@@ -9,6 +9,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -57,7 +58,10 @@ export async function GET(request: NextRequest) {
     });
 
     if (!supplier) {
-      return NextResponse.json({ error: "Supplier not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Supplier not found" },
+        { status: 404 }
+      );
     }
 
     // Get sync history from VendorCatalog
@@ -102,6 +106,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
+    captureException(error);
     console.error("[supplier-sync-status] Error fetching status:", error);
     return NextResponse.json(
       { error: "Internal server error" },

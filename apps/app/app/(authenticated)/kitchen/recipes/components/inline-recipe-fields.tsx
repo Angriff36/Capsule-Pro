@@ -1,7 +1,7 @@
 "use client";
 
-import { updateRecipeName, updateDishName, updateDishPrice } from "../actions";
-import { InlineTextInput, InlinePriceInput } from "./inline-edit";
+import { updateDishName, updateDishPrice, updateRecipeName } from "../actions";
+import { InlinePriceInput, InlineTextInput } from "./inline-edit";
 
 export function InlineRecipeName({
   recipeId,
@@ -12,9 +12,9 @@ export function InlineRecipeName({
 }) {
   return (
     <InlineTextInput
-      value={name}
-      onSave={(v) => updateRecipeName(recipeId, v)}
       className="font-medium text-sm text-foreground truncate group-hover:text-[var(--brand-leafy-green)] transition-colors"
+      onSave={(v) => updateRecipeName(recipeId, v)}
+      value={name}
     />
   );
 }
@@ -28,9 +28,9 @@ export function InlineDishName({
 }) {
   return (
     <InlineTextInput
-      value={name}
-      onSave={(v) => updateDishName(dishId, v)}
       className="font-medium text-sm text-foreground truncate group-hover:text-[var(--brand-leafy-green)] transition-colors"
+      onSave={(v) => updateDishName(dishId, v)}
+      value={name}
     />
   );
 }
@@ -44,9 +44,9 @@ export function InlineDishPrice({
 }) {
   return (
     <InlinePriceInput
-      value={price}
-      onSave={(v) => updateDishPrice(dishId, v)}
       className="font-semibold text-[var(--brand-golden-zest)]"
+      onSave={(v) => updateDishPrice(dishId, v)}
+      value={price}
     />
   );
 }

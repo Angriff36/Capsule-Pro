@@ -12,11 +12,18 @@ import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import {
-  exportInvoices,
-  type InvoiceLineItem,
-  type InvoiceRecord,
-  type QBInvoiceExportOptions,
-} from "@/app/lib/quickbooks-invoice-export";
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+exportInvoices, type;
+InvoiceLineItem, type;
+InvoiceRecord, type;
+QBInvoiceExportOptions,
+} from "@/app/lib/quickbooks-invoice-export"
+
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 /**
@@ -362,6 +369,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
+    captureException(error);
     console.error("QuickBooks invoice export error:", error);
 
     if (error instanceof Error && error.message.includes("not found")) {

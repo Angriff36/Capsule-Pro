@@ -35,11 +35,15 @@
     "./fixer": {
       "types": "./src/fixer.ts",
       "import": "./dist/fixer.js"
+    },
+    "./pipeline-correlation": {
+      "types": "./src/pipeline-correlation.ts",
+      "import": "./dist/pipeline-correlation.js"
     }
   },
   "scripts": {
-    "build": "tsup src/index.ts src/keys.ts src/webhook.ts src/queue.ts src/runner.ts src/slack.ts src/prisma-store.ts src/fixer.ts --format esm --dts",
-    "dev": "tsup src/index.ts src/keys.ts src/webhook.ts src/queue.ts src/runner.ts src/slack.ts src/prisma-store.ts src/fixer.ts --format esm --dts --watch",
+    "build": "tsup src/index.ts src/keys.ts src/webhook.ts src/queue.ts src/runner.ts src/slack.ts src/prisma-store.ts src/fixer.ts src/pipeline-correlation.ts --format esm --dts",
+    "dev": "tsup src/index.ts src/keys.ts src/webhook.ts src/queue.ts src/runner.ts src/slack.ts src/prisma-store.ts src/fixer.ts src/pipeline-correlation.ts --format esm --dts --watch",
     "lint": "eslint src/",
     "typecheck": "tsc --noEmit"
   },

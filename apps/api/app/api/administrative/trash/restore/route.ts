@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -302,6 +303,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
+    captureException(error);
     console.error("Error restoring entities:", error);
     return NextResponse.json(
       { message: "Internal server error" },
@@ -446,6 +448,7 @@ export async function DELETE(request: NextRequest) {
       message: "Entity permanently deleted",
     });
   } catch (error) {
+    captureException(error);
     console.error("Error permanently deleting entity:", error);
     return NextResponse.json(
       { message: "Internal server error" },

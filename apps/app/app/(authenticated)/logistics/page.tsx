@@ -1,5 +1,13 @@
+import {
+  Car,
+  LayoutGrid,
+  MapPin,
+  Package,
+  Route,
+  Truck,
+  User,
+} from "lucide-react";
 import Link from "next/link";
-import { Truck, Package, Route, MapPin, User, Car, LayoutGrid } from "lucide-react";
 
 const LogisticsPage = () => (
   <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
@@ -7,7 +15,8 @@ const LogisticsPage = () => (
     <div className="space-y-0.5">
       <h1 className="text-3xl font-bold tracking-tight">Logistics</h1>
       <p className="text-muted-foreground">
-        Manage deliveries, shipments, routes, drivers, and vehicles for catering operations.
+        Manage deliveries, shipments, routes, drivers, and vehicles for catering
+        operations.
       </p>
     </div>
 

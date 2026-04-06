@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
 
@@ -34,10 +35,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (!version) {
-      return NextResponse.json(
-        { error: "Version not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Version not found" }, { status: 404 });
     }
 
     // Create a new version with the old content (effectively restoring)
@@ -72,6 +70,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ version: restoredVersion });
   } catch (error) {
+    captureException(error);
     console.error("Error restoring document version:", error);
     return NextResponse.json(
       { error: "Failed to restore document version" },

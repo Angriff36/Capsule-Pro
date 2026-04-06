@@ -2,16 +2,19 @@
  * QA Test: Create Event (cp-031) + Board Concurrency (cp-048)
  * Uses Clerk Backend API sign-in token + email_code via testing token interceptor.
  */
-import { chromium } from "@playwright/test";
-import { clerkSetup } from "@clerk/testing/playwright";
+
 import { createClerkClient } from "@clerk/backend";
+import { clerkSetup } from "@clerk/testing/playwright";
+import { chromium } from "@playwright/test";
 import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const BASE = "https://capsule-pro-app.vercel.app";
 
-const clerkB = createClerkClient({ secretKey: "sk_test_8hldxeqOyMCZV62r6ves3vMapWwko8Qfl1qa2FOGHr" });
+const clerkB = createClerkClient({
+  secretKey: "sk_test_8hldxeqOyMCZV62r6ves3vMapWwko8Qfl1qa2FOGHr",
+});
 
 // ─── Auth helper ────────────────────────────────────────────────────────────────
 async function createContext() {
@@ -22,32 +25,45 @@ async function createContext() {
   const page = await context.newPage();
 
   const fapi = "assured-ray-89.clerk.accounts.dev";
-  await context.route(`https://${fapi}/v1/*`, async route => {
+  await context.route(`https://${fapi}/v1/*`, async (route) => {
     const url = new URL(route.request().url());
-    url.searchParams.set("__clerk_testing_token", process.env.CLERK_TESTING_TOKEN || "");
+    url.searchParams.set(
+      "__clerk_testing_token",
+      process.env.CLERK_TESTING_TOKEN || ""
+    );
     try {
       const resp = await route.fetch({ url: url.toString() });
-      let json = await resp.json();
-      if (json?.response?.captcha_bypass === false) json.response.captcha_bypass = true;
-      if (json?.client?.captcha_bypass === false) json.client.captcha_bypass = true;
+      const json = await resp.json();
+      if (json?.response?.captcha_bypass === false)
+        json.response.captcha_bypass = true;
+      if (json?.client?.captcha_bypass === false)
+        json.client.captcha_bypass = true;
       await route.fulfill({ response: resp, json });
     } catch {
       await route.continue();
     }
   });
 
-  await page.goto(`${BASE}/sign-in`, { waitUntil: "domcontentloaded", timeout: 20000 });
+  await page.goto(`${BASE}/sign-in`, {
+    waitUntil: "domcontentloaded",
+    timeout: 20_000,
+  });
   await page.waitForTimeout(4000);
 
   const result = await page.evaluate(async () => {
-    const c = (window).Clerk;
+    const c = window.Clerk;
     const si = c.client.signIn;
     const email = "jane+clerk_test@example.com";
     const code = "424242";
     const s1 = await si.create({ identifier: email });
-    const emailCodeFactor = s1.supportedFirstFactors?.find(f => f.strategy === "email_code");
+    const emailCodeFactor = s1.supportedFirstFactors?.find(
+      (f) => f.strategy === "email_code"
+    );
     if (!emailCodeFactor) return { error: "no email_code factor" };
-    await si.prepareFirstFactor({ strategy: "email_code", emailAddressId: emailCodeFactor.emailAddressId });
+    await si.prepareFirstFactor({
+      strategy: "email_code",
+      emailAddressId: emailCodeFactor.emailAddressId,
+    });
     const s2 = await si.attemptFirstFactor({ strategy: "email_code", code });
     if (s2.status === "complete" && s2.createdSessionId) {
       await c.setActive({ sessionId: s2.createdSessionId });
@@ -56,7 +72,8 @@ async function createContext() {
     return { status: s2.status };
   });
 
-  if (!result?.success) throw new Error(`Auth failed: ${JSON.stringify(result)}`);
+  if (!result?.success)
+    throw new Error(`Auth failed: ${JSON.stringify(result)}`);
   return { browser, context, page };
 }
 
@@ -73,7 +90,10 @@ async function testCreateEvent(ctx) {
   try {
     console.log("🔐 Auth: ✓");
     console.log("📅 Going to /events...");
-    await page.goto(`${BASE}/events`, { waitUntil: "domcontentloaded", timeout: 20000 });
+    await page.goto(`${BASE}/events`, {
+      waitUntil: "domcontentloaded",
+      timeout: 20_000,
+    });
     await page.waitForTimeout(2000);
     console.log(`   URL: ${page.url()}`);
 
@@ -82,7 +102,10 @@ async function testCreateEvent(ctx) {
     if (await fab.isVisible({ timeout: 3000 }).catch(() => false)) {
       await fab.click();
     } else {
-      await page.goto(`${BASE}/events/new`, { waitUntil: "domcontentloaded", timeout: 15000 });
+      await page.goto(`${BASE}/events/new`, {
+        waitUntil: "domcontentloaded",
+        timeout: 15_000,
+      });
     }
     await page.waitForTimeout(2000);
 
@@ -96,7 +119,8 @@ async function testCreateEvent(ctx) {
     ]) {
       const el = page.locator(sel).first();
       if (await el.isVisible({ timeout: 2000 }).catch(() => false)) {
-        await el.fill(val); filled++;
+        await el.fill(val);
+        filled++;
       }
     }
     console.log(`   Filled ${filled}/4 fields`);
@@ -113,13 +137,19 @@ async function testCreateEvent(ctx) {
     console.log(`   URL: ${finalUrl}, ID: ${eventId}`);
 
     // Verify in search
-    await page.goto(`${BASE}/search?q=${encodeURIComponent(EVENT_TITLE)}`, { waitUntil: "domcontentloaded", timeout: 15000 });
+    await page.goto(`${BASE}/search?q=${encodeURIComponent(EVENT_TITLE)}`, {
+      waitUntil: "domcontentloaded",
+      timeout: 15_000,
+    });
     await page.waitForTimeout(2000);
     const inSearch = (await page.content()).includes(EVENT_TITLE);
     console.log(`   Search: ${inSearch ? "✓ FOUND" : "✗ NOT FOUND"}`);
 
     // Verify in list
-    await page.goto(`${BASE}/events`, { waitUntil: "domcontentloaded", timeout: 15000 });
+    await page.goto(`${BASE}/events`, {
+      waitUntil: "domcontentloaded",
+      timeout: 15_000,
+    });
     await page.waitForTimeout(2000);
     const inList = (await page.content()).includes(EVENT_TITLE);
     console.log(`   List:   ${inList ? "✓ FOUND" : "✗ NOT FOUND"}`);
@@ -129,12 +159,13 @@ async function testCreateEvent(ctx) {
     console.log("=".repeat(60));
     console.log(`   Title:    ${EVENT_TITLE}`);
     console.log(`   ID:       ${eventId ?? "N/A"}`);
-    console.log(`   Endpoint: POST /api/event/create`);
-    console.log(`   Payload:  { title, eventDate, guestCount, venueName, eventType }`);
+    console.log("   Endpoint: POST /api/event/create");
+    console.log(
+      "   Payload:  { title, eventDate, guestCount, venueName, eventType }"
+    );
     console.log(`   List:     ${inList ? "✓ PASS" : "✗ FAIL"}`);
     console.log(`   Search:   ${inSearch ? "✓ PASS" : "✗ FAIL"}`);
     console.log("=".repeat(60));
-
   } finally {
     await browser.close();
   }
@@ -155,21 +186,33 @@ async function testBoardConcurrency() {
   try {
     console.log("🔐 Auth A+B: ✓");
     console.log(`\n📋 Opening board in both sessions: ${BOARD_URL}`);
-    await pageA.goto(BOARD_URL, { waitUntil: "domcontentloaded", timeout: 20000 });
+    await pageA.goto(BOARD_URL, {
+      waitUntil: "domcontentloaded",
+      timeout: 20_000,
+    });
     await pageA.waitForTimeout(3000);
     console.log(`   A URL: ${pageA.url()}`);
 
-    await pageB.goto(BOARD_URL, { waitUntil: "domcontentloaded", timeout: 20000 });
+    await pageB.goto(BOARD_URL, {
+      waitUntil: "domcontentloaded",
+      timeout: 20_000,
+    });
     await pageB.waitForTimeout(3000);
     console.log(`   B URL: ${pageB.url()}`);
 
-    const cardsA0 = await pageA.locator('[data-testid*="card"], [class*="card"]').count();
-    const cardsB0 = await pageB.locator('[data-testid*="card"], [class*="card"]').count();
+    const cardsA0 = await pageA
+      .locator('[data-testid*="card"], [class*="card"]')
+      .count();
+    const cardsB0 = await pageB
+      .locator('[data-testid*="card"], [class*="card"]')
+      .count();
     console.log(`   Initial cards — A: ${cardsA0}, B: ${cardsB0}`);
 
     console.log("\n➕ Adding card in session A...");
     let added = false;
-    const addBtnA = pageA.locator('button[aria-label*="add"], button:has-text("add")').first();
+    const addBtnA = pageA
+      .locator('button[aria-label*="add"], button:has-text("add")')
+      .first();
     if (await addBtnA.isVisible({ timeout: 3000 }).catch(() => false)) {
       await addBtnA.click();
       added = true;
@@ -177,7 +220,9 @@ async function testBoardConcurrency() {
       await pageA.waitForTimeout(1500);
     }
     if (!added) {
-      const boardArea = pageA.locator('[class*="board"], [class*="canvas"]').first();
+      const boardArea = pageA
+        .locator('[class*="board"], [class*="canvas"]')
+        .first();
       if (await boardArea.isVisible({ timeout: 2000 }).catch(() => false)) {
         await boardArea.click({ position: { x: 200, y: 200 } });
         added = true;
@@ -185,12 +230,16 @@ async function testBoardConcurrency() {
       }
     }
 
-    const cardsAAfter = await pageA.locator('[data-testid*="card"], [class*="card"]').count();
+    const cardsAAfter = await pageA
+      .locator('[data-testid*="card"], [class*="card"]')
+      .count();
     console.log(`  Cards A after: ${cardsAAfter}`);
 
     console.log("\n⏳ Waiting 4s for B to receive update...");
     await pageA.waitForTimeout(4000);
-    const cardsBAfter = await pageB.locator('[data-testid*="card"], [class*="card"]').count();
+    const cardsBAfter = await pageB
+      .locator('[data-testid*="card"], [class*="card"]')
+      .count();
     console.log(`  Cards B after wait: ${cardsBAfter}`);
 
     const realtimeSync = cardsBAfter > cardsB0 || cardsBAfter === cardsAAfter;
@@ -199,24 +248,31 @@ async function testBoardConcurrency() {
     let refreshSync = false;
     if (!realtimeSync && cardsAAfter > cardsB0) {
       console.log("\n🔄 Refreshing session B...");
-      await pageB.reload({ waitUntil: "domcontentloaded", timeout: 15000 });
+      await pageB.reload({ waitUntil: "domcontentloaded", timeout: 15_000 });
       await pageB.waitForTimeout(2000);
-      const cardsBRefresh = await pageB.locator('[data-testid*="card"], [class*="card"]').count();
+      const cardsBRefresh = await pageB
+        .locator('[data-testid*="card"], [class*="card"]')
+        .count();
       refreshSync = cardsBRefresh >= cardsAAfter;
       console.log(`  Cards B after refresh: ${cardsBRefresh}`);
-      console.log(`  Consistent after refresh: ${refreshSync ? "✓ YES" : "✗ NO"}`);
+      console.log(
+        `  Consistent after refresh: ${refreshSync ? "✓ YES" : "✗ NO"}`
+      );
     }
 
     console.log(`\n${"=".repeat(60)}`);
     console.log("📊 cp-048 — Board Concurrency — RESULT");
     console.log("=".repeat(60));
     console.log(`   Board:     ${BOARD_URL}`);
-    console.log(`   Session A: ${cardsA0} → ${cardsAAfter} (${added ? "added" : "no btn"})`);
+    console.log(
+      `   Session A: ${cardsA0} → ${cardsAAfter} (${added ? "added" : "no btn"})`
+    );
     console.log(`   Session B: ${cardsB0} → ${cardsBAfter} (before refresh)`);
     console.log(`   Realtime:  ${realtimeSync ? "✓ PASS" : "⚠ NOT REALTIME"}`);
-    console.log(`   Refresh:   ${refreshSync || realtimeSync ? "✓ PASS" : "⚠ CHECK DATA"}`);
+    console.log(
+      `   Refresh:   ${refreshSync || realtimeSync ? "✓ PASS" : "⚠ CHECK DATA"}`
+    );
     console.log("=".repeat(60));
-
   } finally {
     await browser.close();
   }
@@ -238,4 +294,7 @@ async function main() {
   await testBoardConcurrency();
 }
 
-main().catch(e => { console.error("❌ Error:", e.message); process.exit(1); });
+main().catch((e) => {
+  console.error("❌ Error:", e.message);
+  process.exit(1);
+});

@@ -7,6 +7,7 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { type EmailStatus, getEmailLogs } from "@repo/notifications";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -55,6 +56,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
+    captureException(error);
     console.error("Failed to fetch email history:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(

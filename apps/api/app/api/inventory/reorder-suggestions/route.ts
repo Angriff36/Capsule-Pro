@@ -1,9 +1,16 @@
 import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import {
-  generateReorderSuggestions,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+generateReorderSuggestions,
   saveReorderSuggestionToDatabase,
-} from "@/app/lib/inventory-forecasting";
+} from "@/app/lib/inventory-forecasting"
+
 import { requireTenantId } from "@/app/lib/tenant";
 
 // GET /api/inventory/reorder-suggestions?sku={sku}&leadTimeDays={7}&safetyStockDays={3}
@@ -60,6 +67,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(suggestions);
   } catch (error) {
+    captureException(error);
     console.error("Failed to fetch reorder suggestions:", error);
     return NextResponse.json(
       {
@@ -100,6 +108,7 @@ export async function POST(request: NextRequest) {
       suggestions,
     });
   } catch (error) {
+    captureException(error);
     console.error("Failed to process reorder suggestions:", error);
     return NextResponse.json(
       {

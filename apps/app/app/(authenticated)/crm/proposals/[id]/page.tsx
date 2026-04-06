@@ -31,16 +31,15 @@ import {
   FileText,
   Mail,
   MapPin,
-  Send,
   User,
   Users,
 } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { apiUrl } from "@/app/lib/api";
 import { getProposalById } from "../actions";
 import { ProposalExportButton } from "../components/proposal-export-button";
+import { SendProposalButton } from "../components/send-proposal-button";
 
 interface ProposalPageProps {
   params: Promise<{ id: string }>;
@@ -222,15 +221,11 @@ export default async function ProposalDetailPage({
         </div>
         <div className="flex items-center gap-2">
           {proposal.status === "draft" && (
-            <form
-              action={apiUrl(`/api/crm/proposals/${proposal.id}/send`)}
-              method="POST"
-            >
-              <Button type="submit">
-                <Send className="mr-2 h-4 w-4" />
-                Send Proposal
-              </Button>
-            </form>
+            <SendProposalButton
+              clientEmail={getClientEmail()}
+              clientName={getClientName()}
+              proposalId={proposal.id}
+            />
           )}
           <Button asChild variant="outline">
             <Link href={`/crm/proposals/${proposal.id}/edit`}>

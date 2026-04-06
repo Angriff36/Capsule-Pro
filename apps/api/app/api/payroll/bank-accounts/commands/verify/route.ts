@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -25,13 +26,19 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { id, method, notes } = body;
 
-    if (!id || !method) {
-      return NextResponse.json({ error: "Account ID and verification method required" }, { status: 400 });
+    if (!(id && method)) {
+      return NextResponse.json(
+        { error: "Account ID and verification method required" },
+        { status: 400 }
+      );
     }
 
     const validMethods = ["micro_deposit", "plaid", "manual"];
     if (!validMethods.includes(method)) {
-      return NextResponse.json({ error: `Invalid method. Must be one of: ${validMethods.join(", ")}` }, { status: 400 });
+      return NextResponse.json(
+        { error: `Invalid method. Must be one of: ${validMethods.join(", ")}` },
+        { status: 400 }
+      );
     }
 
     const [verified] = await database.$queryRaw<
@@ -46,7 +53,10 @@ export async function POST(request: NextRequest) {
     );
 
     if (!verified) {
-      return NextResponse.json({ error: "Bank account not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Bank account not found" },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json({
@@ -56,7 +66,11 @@ export async function POST(request: NextRequest) {
       method,
     });
   } catch (error) {
+    captureException(error);
     console.error("Failed to verify bank account:", error);
-    return NextResponse.json({ error: "Failed to verify bank account" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to verify bank account" },
+      { status: 500 }
+    );
   }
 }

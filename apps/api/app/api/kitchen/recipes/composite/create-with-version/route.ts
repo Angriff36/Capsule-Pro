@@ -406,8 +406,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if this is a transaction aborted error
-    if (error instanceof Error && error.message.includes("current transaction is aborted")) {
-      log.error("[composite/create-with-version] Transaction aborted - original error lost");
+    if (
+      error instanceof Error &&
+      error.message.includes("current transaction is aborted")
+    ) {
+      log.error(
+        "[composite/create-with-version] Transaction aborted - original error lost"
+      );
     }
 
     console.error("[composite/create-with-version] Error:", error);

@@ -1,26 +1,34 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@repo/auth/server';
-import { getTenantIdForOrg } from '@/app/lib/tenant';
-import { database } from '@/lib/database';
+import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
+import { type NextRequest, NextResponse } from "next/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { database } from "@/lib/database";
 
 export async function POST(request: NextRequest) {
   try {
     const { orgId, userId } = await auth();
     if (!(userId && orgId)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ error: 'Tenant not found' }, { status: 400 });
+      return NextResponse.json({ error: "Tenant not found" }, { status: 400 });
     }
 
     const body = await request.json();
-    const { checkId, status, completedBy, notes, itemResults, correctiveActionsNeeded } = body;
+    const {
+      checkId,
+      status,
+      completedBy,
+      notes,
+      itemResults,
+      correctiveActionsNeeded,
+    } = body;
 
-    if (!checkId || !status) {
+    if (!(checkId && status)) {
       return NextResponse.json(
-        { error: 'Check ID and status are required' },
+        { error: "Check ID and status are required" },
         { status: 400 }
       );
     }
@@ -57,15 +65,16 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       check,
-      correctiveActionsNeeded: correctiveActionsNeeded || false,
+      correctiveActionsNeeded,
     });
   } catch (error) {
-    console.error('Error completing quality check:', error);
+    captureException(error);
+    console.error("Error completing quality check:", error);
     return NextResponse.json(
-      { error: 'Failed to complete quality check' },
+      { error: "Failed to complete quality check" },
       { status: 500 }
     );
   }

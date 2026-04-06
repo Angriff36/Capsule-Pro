@@ -4,10 +4,18 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { withRateLimit } from "@/middleware/rate-limiter";
 import {
-  type AutoAssignmentResult,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+type AutoAssignmentResult
+,
   getAssignmentSuggestionsForMultipleShifts,
-  type ShiftRequirement,
-} from "@/lib/staff/auto-assignment";
+type ShiftRequirement
+,
+} from "@/lib/staff/auto-assignment"
 
 /**
  * POST /api/staff/shifts/bulk-assignment-suggestions
@@ -121,6 +129,7 @@ export const POST = withRateLimit(
         },
       });
     } catch (error) {
+      captureException(error);
       console.error("Error getting bulk assignment suggestions:", error);
       return NextResponse.json(
         { message: "Failed to get bulk assignment suggestions" },
@@ -233,6 +242,7 @@ export const GET = withRateLimit(
         },
       });
     } catch (error) {
+      captureException(error);
       console.error("Error getting open shifts suggestions:", error);
       return NextResponse.json(
         { message: "Failed to get open shifts suggestions" },

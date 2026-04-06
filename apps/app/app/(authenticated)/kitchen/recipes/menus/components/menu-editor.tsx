@@ -348,7 +348,9 @@ function DishesSelector({
       setShowCreateDialog(false);
     } catch (err) {
       captureException(err);
-      setCreateError(err instanceof Error ? err.message : "Failed to create dish");
+      setCreateError(
+        err instanceof Error ? err.message : "Failed to create dish"
+      );
     } finally {
       setIsCreating(false);
     }
@@ -364,10 +366,10 @@ function DishesSelector({
     <div className="space-y-4">
       <div className="flex gap-2">
         <Input
+          className="flex-1"
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search dishes..."
           value={searchQuery}
-          className="flex-1"
         />
         <Dialog onOpenChange={setShowCreateDialog} open={showCreateDialog}>
           <DialogTrigger asChild>
@@ -380,7 +382,8 @@ function DishesSelector({
             <DialogHeader>
               <DialogTitle>Create New Dish</DialogTitle>
               <DialogDescription>
-                Create a dish from an existing recipe. Dishes are what you add to menus.
+                Create a dish from an existing recipe. Dishes are what you add
+                to menus.
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
@@ -450,7 +453,9 @@ function DishesSelector({
                 Cancel
               </Button>
               <Button
-                disabled={isCreating || !newDishName.trim() || !selectedRecipeId}
+                disabled={
+                  isCreating || !newDishName.trim() || !selectedRecipeId
+                }
                 onClick={handleCreateDish}
               >
                 {isCreating ? "Creating..." : "Create Dish"}

@@ -153,5 +153,7 @@ export interface SupplierConnector {
   fetchPricing(
     config: SupplierConnectorConfig,
     skus: string[]
-  ): Promise<Record<string, { unitCost: number; currency: string; effectiveFrom?: Date }>>;
+  ): Promise<
+    Record<string, { unitCost: number; currency: string; effectiveFrom?: Date }>
+  >;
 }

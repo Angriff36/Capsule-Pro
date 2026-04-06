@@ -192,8 +192,8 @@ function hasAllergenMatch(
   const normalizedTarget = targetAllergens.map(normalizeAllergen);
 
   return normalizedIngredient.some((allergen) =>
-    normalizedTarget.some((target) =>
-      allergen.includes(target) || target.includes(allergen)
+    normalizedTarget.some(
+      (target) => allergen.includes(target) || target.includes(allergen)
     )
   );
 }
@@ -221,7 +221,9 @@ function matchesCategory(
 /**
  * Check if a single ingredient contains dairy
  */
-export function ingredientContainsDairy(ingredient: IngredientWithAllergens): boolean {
+export function ingredientContainsDairy(
+  ingredient: IngredientWithAllergens
+): boolean {
   return (
     hasAllergenMatch(ingredient.allergens, DAIRY_ALLERGENS) ||
     matchesCategory(ingredient.name, ingredient.category, DAIRY_ALLERGENS)
@@ -231,7 +233,9 @@ export function ingredientContainsDairy(ingredient: IngredientWithAllergens): bo
 /**
  * Check if a single ingredient contains eggs
  */
-export function ingredientContainsEggs(ingredient: IngredientWithAllergens): boolean {
+export function ingredientContainsEggs(
+  ingredient: IngredientWithAllergens
+): boolean {
   return (
     hasAllergenMatch(ingredient.allergens, EGG_ALLERGENS) ||
     matchesCategory(ingredient.name, ingredient.category, EGG_ALLERGENS)
@@ -241,7 +245,9 @@ export function ingredientContainsEggs(ingredient: IngredientWithAllergens): boo
 /**
  * Check if a single ingredient contains gluten
  */
-export function ingredientContainsGluten(ingredient: IngredientWithAllergens): boolean {
+export function ingredientContainsGluten(
+  ingredient: IngredientWithAllergens
+): boolean {
   // First check if it's explicitly gluten-free
   const allergenLower = ingredient.allergens.map((a) => a.toLowerCase());
   if (allergenLower.includes("gluten-free") || allergenLower.includes("gf")) {
@@ -249,7 +255,9 @@ export function ingredientContainsGluten(ingredient: IngredientWithAllergens): b
   }
 
   // Check if it's a known gluten-free grain
-  if (matchesCategory(ingredient.name, ingredient.category, GLUTEN_FREE_GRAINS)) {
+  if (
+    matchesCategory(ingredient.name, ingredient.category, GLUTEN_FREE_GRAINS)
+  ) {
     return false;
   }
 
@@ -269,9 +277,15 @@ export function ingredientIsMeat(ingredient: IngredientWithAllergens): boolean {
 /**
  * Check if a single ingredient is seafood
  */
-export function ingredientIsSeafood(ingredient: IngredientWithAllergens): boolean {
+export function ingredientIsSeafood(
+  ingredient: IngredientWithAllergens
+): boolean {
   return (
-    hasAllergenMatch(ingredient.allergens, ["fish", "shellfish", "crustacean"]) ||
+    hasAllergenMatch(ingredient.allergens, [
+      "fish",
+      "shellfish",
+      "crustacean",
+    ]) ||
     matchesCategory(ingredient.name, ingredient.category, SEAFOOD_CATEGORIES)
   );
 }
@@ -279,13 +293,19 @@ export function ingredientIsSeafood(ingredient: IngredientWithAllergens): boolea
 /**
  * Check if a single ingredient is animal-derived (non-vegan)
  */
-export function ingredientIsAnimalDerived(ingredient: IngredientWithAllergens): boolean {
+export function ingredientIsAnimalDerived(
+  ingredient: IngredientWithAllergens
+): boolean {
   return (
     ingredientContainsDairy(ingredient) ||
     ingredientContainsEggs(ingredient) ||
     ingredientIsMeat(ingredient) ||
     ingredientIsSeafood(ingredient) ||
-    matchesCategory(ingredient.name, ingredient.category, ANIMAL_DERIVED_CATEGORIES)
+    matchesCategory(
+      ingredient.name,
+      ingredient.category,
+      ANIMAL_DERIVED_CATEGORIES
+    )
   );
 }
 
@@ -306,7 +326,7 @@ export function calculateDietaryProperties(
   const isVegan = !containsAnimalDerived;
 
   // Vegetarian = no meat or seafood, but eggs/dairy allowed
-  const isVegetarian = !containsMeat && !containsSeafood;
+  const isVegetarian = !(containsMeat || containsSeafood);
 
   // Gluten-free = no gluten-containing ingredients
   const isGlutenFree = !containsGluten;

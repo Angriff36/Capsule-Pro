@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { requireTenantId } from '@/app/lib/tenant';
-import { database, Prisma } from '@repo/database';
+import { database, Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
+import { type NextRequest, NextResponse } from "next/server";
+import { requireTenantId } from "@/app/lib/tenant";
 
 /**
  * GET /api/events/automated-followups/list
@@ -11,10 +12,10 @@ export async function GET(request: NextRequest) {
     const tenantId = await requireTenantId();
 
     const { searchParams } = new URL(request.url);
-    const eventId = searchParams.get('eventId');
-    const status = searchParams.get('status');
-    const limit = parseInt(searchParams.get('limit') || '50');
-    const offset = parseInt(searchParams.get('offset') || '0');
+    const eventId = searchParams.get("eventId");
+    const status = searchParams.get("status");
+    const limit = Number.parseInt(searchParams.get("limit") || "50");
+    const offset = Number.parseInt(searchParams.get("offset") || "0");
 
     const where: Record<string, unknown> = { tenantId };
     if (eventId) where.eventId = eventId;
@@ -45,9 +46,10 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ followups });
   } catch (error) {
-    console.error('Error listing automated followups:', error);
+    captureException(error);
+    console.error("Error listing automated followups:", error);
     return NextResponse.json(
-      { error: 'Failed to list followups' },
+      { error: "Failed to list followups" },
       { status: 500 }
     );
   }

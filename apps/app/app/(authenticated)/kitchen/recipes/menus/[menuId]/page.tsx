@@ -287,7 +287,7 @@ export default async function MenuDetailPage({
               </Card>
             ))}
 
-            {menu.dishes.length === 0 &&(
+            {menu.dishes.length === 0 && (
               <Card>
                 <CardContent className="py-12 text-center">
                   <p className="text-muted-foreground">

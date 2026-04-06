@@ -7,6 +7,7 @@
  */
 
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 
 type Params = Promise<{ token: string }>;
@@ -228,6 +229,7 @@ export async function GET(_request: Request, { params }: { params: Params }) {
       organization: tenant?.name || "Unknown Organization",
     });
   } catch (error) {
+    captureException(error);
     console.error("Error fetching public proposal:", error);
     return NextResponse.json(
       { message: "Internal server error" },

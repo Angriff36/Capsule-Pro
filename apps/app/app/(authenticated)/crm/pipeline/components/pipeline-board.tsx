@@ -1,7 +1,6 @@
 "use client";
 
 import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
@@ -9,11 +8,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { apiFetch } from "@/app/lib/api";
 import { format } from "date-fns";
-import { DollarSign, GripVertical, Calendar, Users } from "lucide-react";
+import { Calendar, DollarSign, GripVertical, Users } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -101,7 +100,10 @@ const STAGES: StageColumn[] = [
 function getClientName(deal: Deal): string {
   if (deal.client?.companyName) return deal.client.companyName;
   if (deal.client) {
-    return [deal.client.firstName, deal.client.lastName].filter(Boolean).join(" ") || "No name";
+    return (
+      [deal.client.firstName, deal.client.lastName].filter(Boolean).join(" ") ||
+      "No name"
+    );
   }
   if (deal.lead?.companyName) return deal.lead.companyName;
   if (deal.lead?.contactName) return deal.lead.contactName;
@@ -110,7 +112,7 @@ function getClientName(deal: Deal): string {
 
 function formatCurrency(value: string | number | null): string {
   if (value === null || value === undefined) return "—";
-  const num = typeof value === "string" ? parseFloat(value) : value;
+  const num = typeof value === "string" ? Number.parseFloat(value) : value;
   if (isNaN(num)) return "—";
   return new Intl.NumberFormat("en-US", {
     style: "currency",
@@ -119,7 +121,10 @@ function formatCurrency(value: string | number | null): string {
   }).format(num);
 }
 
-const stageVariants: Record<string, "default" | "secondary" | "outline" | "destructive"> = {
+const stageVariants: Record<
+  string,
+  "default" | "secondary" | "outline" | "destructive"
+> = {
   lead: "secondary",
   qualified: "secondary",
   proposal: "outline",
@@ -141,13 +146,15 @@ function DealCard({
 }) {
   return (
     <div
+      className="group cursor-grab rounded-md border border-border/60 bg-card p-3 shadow-sm transition-colors hover:border-border active:cursor-grabbing"
       draggable
       onDragStart={(e) => onDragStart(e, deal)}
-      className="group cursor-grab rounded-md border border-border/60 bg-card p-3 shadow-sm transition-colors hover:border-border active:cursor-grabbing"
     >
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-semibold leading-tight">{deal.title}</p>
+          <p className="truncate text-sm font-semibold leading-tight">
+            {deal.title}
+          </p>
           <p className="mt-0.5 truncate text-xs text-muted-foreground">
             {getClientName(deal)}
           </p>
@@ -181,8 +188,8 @@ function DealCard({
           {deal.proposalNumber}
         </span>
         <Badge
-          variant={stageVariants[deal.stage] ?? "secondary"}
           className="text-[10px] px-1.5 py-0"
+          variant={stageVariants[deal.stage] ?? "secondary"}
         >
           {deal.stage}
         </Badge>
@@ -302,10 +309,16 @@ export function PipelineBoard({ initialDeals }: PipelineBoardProps) {
     return acc;
   }, {});
 
-  const totalsByStage = STAGES.reduce<Record<string, { count: number; value: number }>>((acc, stage) => {
+  const totalsByStage = STAGES.reduce<
+    Record<string, { count: number; value: number }>
+  >((acc, stage) => {
     const stageDeals = dealsByStage[stage.id] ?? [];
     const value = stageDeals.reduce(
-      (sum, d) => sum + (typeof d.total === "string" ? parseFloat(d.total) || 0 : d.total ?? 0),
+      (sum, d) =>
+        sum +
+        (typeof d.total === "string"
+          ? Number.parseFloat(d.total) || 0
+          : (d.total ?? 0)),
       0
     );
     acc[stage.id] = { count: stageDeals.length, value };
@@ -336,24 +349,27 @@ export function PipelineBoard({ initialDeals }: PipelineBoardProps) {
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
         {STAGES.map((stage) => {
           const stageDeals = dealsByStage[stage.id] ?? [];
-          const { count, value } = totalsByStage[stage.id] ?? { count: 0, value: 0 };
+          const { count, value } = totalsByStage[stage.id] ?? {
+            count: 0,
+            value: 0,
+          };
           const isDragOver = dragOverStage === stage.id;
 
           return (
             <Card
-              key={stage.id}
               className={`flex h-full flex-col transition-colors ${
                 isDragOver ? "ring-2 ring-primary" : ""
               }`}
-              onDragOver={(e) => handleDragOver(e, stage.id)}
+              key={stage.id}
               onDragLeave={handleDragLeave}
+              onDragOver={(e) => handleDragOver(e, stage.id)}
               onDrop={(e) => handleDrop(e, stage.id)}
             >
               {/* Column header */}
               <CardHeader className={`rounded-t-lg ${stage.color} pb-3`}>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base">{stage.title}</CardTitle>
-                  <Badge variant="secondary" className="text-xs">
+                  <Badge className="text-xs" variant="secondary">
                     {count}
                   </Badge>
                 </div>
@@ -378,8 +394,8 @@ export function PipelineBoard({ initialDeals }: PipelineBoardProps) {
                 ) : (
                   stageDeals.map((deal) => (
                     <DealCard
-                      key={deal.id}
                       deal={deal}
+                      key={deal.id}
                       onDragStart={handleDragStart}
                     />
                   ))
@@ -392,10 +408,10 @@ export function PipelineBoard({ initialDeals }: PipelineBoardProps) {
 
       {/* Hidden drag end handler on the board */}
       <div
+        aria-hidden
         className="fixed inset-0 z-0"
         onDragEnd={handleDragEnd}
         style={{ display: "none" }}
-        aria-hidden
       />
     </div>
   );

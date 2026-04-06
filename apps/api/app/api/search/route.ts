@@ -1,10 +1,17 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@/lib/database";
 import {
-  manifestErrorResponse,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+manifestErrorResponse,
   manifestSuccessResponse,
-} from "@/lib/manifest-response";
-import { NextRequest } from "next/server";
+} from "@/lib/manifest-response"
+
+import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 export async function GET(request: NextRequest) {
@@ -23,8 +30,11 @@ export async function GET(request: NextRequest) {
     }
 
     const type = url.get("type")?.trim();
-    const page = Math.max(1, parseInt(url.get("page") ?? "1", 10));
-    const limit = Math.min(50, Math.max(1, parseInt(url.get("limit") ?? "10", 10)));
+    const page = Math.max(1, Number.parseInt(url.get("page") ?? "1", 10));
+    const limit = Math.min(
+      50,
+      Math.max(1, Number.parseInt(url.get("limit") ?? "10", 10))
+    );
     const skip = (page - 1) * limit;
 
     const baseFilter = (fields: string[]) => ({
@@ -66,7 +76,13 @@ export async function GET(request: NextRequest) {
     if (shouldSearch("clients")) {
       const [items, total] = await Promise.all([
         database.client.findMany({
-          where: baseFilter(["company_name", "first_name", "last_name", "email", "phone"]),
+          where: baseFilter([
+            "company_name",
+            "first_name",
+            "last_name",
+            "email",
+            "phone",
+          ]),
           orderBy: { createdAt: "desc" },
           take: limit,
           skip,
@@ -81,7 +97,13 @@ export async function GET(request: NextRequest) {
           },
         }),
         database.client.count({
-          where: baseFilter(["company_name", "first_name", "last_name", "email", "phone"]),
+          where: baseFilter([
+            "company_name",
+            "first_name",
+            "last_name",
+            "email",
+            "phone",
+          ]),
         }),
       ]);
       groups.clients = { items, total };
@@ -90,7 +112,13 @@ export async function GET(request: NextRequest) {
     if (shouldSearch("contacts")) {
       const [items, total] = await Promise.all([
         database.clientContact.findMany({
-          where: baseFilter(["first_name", "last_name", "email", "phone", "phoneMobile"]),
+          where: baseFilter([
+            "first_name",
+            "last_name",
+            "email",
+            "phone",
+            "phoneMobile",
+          ]),
           orderBy: { createdAt: "desc" },
           take: limit,
           skip,
@@ -106,7 +134,13 @@ export async function GET(request: NextRequest) {
           },
         }),
         database.clientContact.count({
-          where: baseFilter(["first_name", "last_name", "email", "phone", "phoneMobile"]),
+          where: baseFilter([
+            "first_name",
+            "last_name",
+            "email",
+            "phone",
+            "phoneMobile",
+          ]),
         }),
       ]);
       groups.contacts = { items, total };
@@ -115,7 +149,10 @@ export async function GET(request: NextRequest) {
     if (shouldSearch("venues")) {
       const [items, total] = await Promise.all([
         database.venue.findMany({
-          where: { ...baseFilter(["name", "city", "contactName", "contactEmail"]), isActive: true },
+          where: {
+            ...baseFilter(["name", "city", "contactName", "contactEmail"]),
+            isActive: true,
+          },
           orderBy: { createdAt: "desc" },
           take: limit,
           skip,
@@ -130,7 +167,10 @@ export async function GET(request: NextRequest) {
           },
         }),
         database.venue.count({
-          where: { ...baseFilter(["name", "city", "contactName", "contactEmail"]), isActive: true },
+          where: {
+            ...baseFilter(["name", "city", "contactName", "contactEmail"]),
+            isActive: true,
+          },
         }),
       ]);
       groups.venues = { items, total };
@@ -163,7 +203,10 @@ export async function GET(request: NextRequest) {
     if (shouldSearch("knowledge")) {
       const [items, total] = await Promise.all([
         database.knowledgeBaseEntry.findMany({
-          where: { ...baseFilter(["title", "content", "category"]), status: "published" },
+          where: {
+            ...baseFilter(["title", "content", "category"]),
+            status: "published",
+          },
           orderBy: { publishedAt: "desc" },
           take: limit,
           skip,
@@ -177,7 +220,10 @@ export async function GET(request: NextRequest) {
           },
         }),
         database.knowledgeBaseEntry.count({
-          where: { ...baseFilter(["title", "content", "category"]), status: "published" },
+          where: {
+            ...baseFilter(["title", "content", "category"]),
+            status: "published",
+          },
         }),
       ]);
       groups.knowledge = { items, total };
@@ -187,6 +233,7 @@ export async function GET(request: NextRequest) {
 
     return manifestSuccessResponse({ groups, total, page, limit });
   } catch (error) {
+    captureException(error);
     console.error("Search error:", error);
     return manifestErrorResponse("Search failed", 500);
   }

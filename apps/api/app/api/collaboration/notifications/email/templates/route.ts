@@ -32,7 +32,10 @@ export async function GET(request: NextRequest) {
     const isActive = searchParams.get("isActive");
     const isDefault = searchParams.get("isDefault");
     const page = Number.parseInt(searchParams.get("page") || "1", 10);
-    const limit = Math.min(Number.parseInt(searchParams.get("limit") || "50", 10), 100);
+    const limit = Math.min(
+      Number.parseInt(searchParams.get("limit") || "50", 10),
+      100
+    );
     const offset = (page - 1) * limit;
 
     const whereClause: Record<string, unknown> = {

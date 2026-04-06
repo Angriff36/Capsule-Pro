@@ -5,6 +5,7 @@
  */
 
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { generateApiKey } from "@/app/lib/api-key-service";
 import { requireCurrentUser } from "@/app/lib/tenant";
@@ -98,6 +99,7 @@ export const POST = withRateLimit(
         plainKey, // Only returned on rotation
       });
     } catch (error) {
+      captureException(error);
       console.error("[ApiKeys/rotate] Error:", error);
       return NextResponse.json(
         { message: "Failed to rotate API key" },

@@ -81,10 +81,7 @@ function getInitials(firstName: string | null, lastName: string | null) {
 }
 
 /** Extract tax amount from deductions or taxesWithheld */
-function getTaxAmount(
-  item: PayrollLineItem,
-  taxType: string,
-): number {
+function getTaxAmount(item: PayrollLineItem, taxType: string): number {
   // Check taxesWithheld first (explicit tax field)
   if (item.taxesWithheld?.[taxType] !== undefined) {
     return item.taxesWithheld[taxType];
@@ -101,13 +98,18 @@ function getTotalTaxes(item: PayrollLineItem): number {
   // Try to extract tax-related deductions
   const taxKeys = ["federal", "state", "social_security", "medicare", "FICA"];
   return Object.entries(item.deductions || {})
-    .filter(([k]) => taxKeys.some((t) => k.toLowerCase().includes(t.toLowerCase())))
+    .filter(([k]) =>
+      taxKeys.some((t) => k.toLowerCase().includes(t.toLowerCase()))
+    )
     .reduce((s, [, v]) => s + v, 0);
 }
 
 /** Get non-tax deductions */
 function getNonTaxDeductions(item: PayrollLineItem): number {
-  const totalDeductions = Object.values(item.deductions || {}).reduce((s, v) => s + v, 0);
+  const totalDeductions = Object.values(item.deductions || {}).reduce(
+    (s, v) => s + v,
+    0
+  );
   const taxes = getTotalTaxes(item);
   return Math.max(0, totalDeductions - taxes);
 }
@@ -304,7 +306,7 @@ export default function PayrollLineItemsTable({
                       <TableCell className="text-right text-muted-foreground">
                         {formatCurrency(
                           getTaxAmount(item, "social_security") +
-                            getTaxAmount(item, "medicare"),
+                            getTaxAmount(item, "medicare")
                         )}
                       </TableCell>
                       <TableCell className="text-right text-muted-foreground">
@@ -342,9 +344,7 @@ export default function PayrollLineItemsTable({
                   </span>
                 </div>
                 <div>
-                  <span className="text-muted-foreground">
-                    Total Taxes:
-                  </span>{" "}
+                  <span className="text-muted-foreground">Total Taxes:</span>{" "}
                   <span className="font-medium text-red-600">
                     {formatCurrency(
                       filteredItems.reduce(
@@ -361,8 +361,7 @@ export default function PayrollLineItemsTable({
                   <span className="font-medium">
                     {formatCurrency(
                       filteredItems.reduce(
-                        (sum, item) =>
-                          sum + getNonTaxDeductions(item),
+                        (sum, item) => sum + getNonTaxDeductions(item),
                         0
                       )
                     )}

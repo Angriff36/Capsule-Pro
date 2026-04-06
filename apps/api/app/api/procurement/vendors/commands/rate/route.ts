@@ -1,11 +1,21 @@
 // Add a performance rating for a vendor
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import {
+  manifestErrorResponse,
+  manifestSuccessResponse,
+} from "@/lib/manifest-response";
 
-const VALID_CATEGORIES = ["overall", "quality", "delivery", "value", "communication"];
+const VALID_CATEGORIES = [
+  "overall",
+  "quality",
+  "delivery",
+  "value",
+  "communication",
+];
 
 export async function POST(request: NextRequest) {
   try {
@@ -18,17 +28,22 @@ export async function POST(request: NextRequest) {
     const { vendorId, category, rating, comment } = await request.json();
 
     if (!vendorId) return manifestErrorResponse("vendorId is required", 400);
-    if (!category || !VALID_CATEGORIES.includes(category)) {
-      return manifestErrorResponse(`Invalid category. Must be one of: ${VALID_CATEGORIES.join(", ")}`, 400);
+    if (!(category && VALID_CATEGORIES.includes(category))) {
+      return manifestErrorResponse(
+        `Invalid category. Must be one of: ${VALID_CATEGORIES.join(", ")}`,
+        400
+      );
     }
-    if (!rating || rating < 1 || rating > 5) return manifestErrorResponse("rating must be 1-5", 400);
+    if (!rating || rating < 1 || rating > 5)
+      return manifestErrorResponse("rating must be 1-5", 400);
 
     // Verify vendor exists
     const existing = await database.$queryRaw`
       SELECT id FROM tenant_inventory.inventory_suppliers
       WHERE tenant_id = ${tenantId}::uuid AND id = ${vendorId}::uuid AND deleted_at IS NULL
     `;
-    if (!(existing as any[]).length) return manifestErrorResponse("Vendor not found", 404);
+    if (!(existing as any[]).length)
+      return manifestErrorResponse("Vendor not found", 404);
 
     // Insert rating
     const result = await database.$queryRaw`
@@ -44,11 +59,15 @@ export async function POST(request: NextRequest) {
     const vendorRating = (result as any[])[0];
 
     // Update aggregate performance_rating on the vendor (average of all "overall" ratings)
-    const avgResult = await database.$queryRawUnsafe(`
+    const avgResult = await database.$queryRawUnsafe(
+      `
       SELECT ROUND(AVG(rating)::decimal, 1) as avg_rating
       FROM tenant_inventory.vendor_ratings
       WHERE tenant_id = $1::uuid AND supplier_id = $2::uuid AND deleted_at IS NULL AND category = 'overall'
-    `, tenantId, vendorId);
+    `,
+      tenantId,
+      vendorId
+    );
 
     const avgRating = (avgResult as any[])[0]?.avg_rating;
     if (avgRating !== null) {
@@ -61,6 +80,7 @@ export async function POST(request: NextRequest) {
 
     return manifestSuccessResponse({ rating: vendorRating });
   } catch (error) {
+    captureException(error);
     console.error("Error adding vendor rating:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

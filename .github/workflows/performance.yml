@@ -34,7 +34,7 @@ jobs:
         uses: pnpm/action-setup@v4
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
         env:
           NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
 
@@ -91,7 +91,7 @@ jobs:
         uses: pnpm/action-setup@v4
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
         env:
           NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
 

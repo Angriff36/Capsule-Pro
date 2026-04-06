@@ -17,13 +17,20 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 import {
-  type ApiSuccessResponse,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+type ApiSuccessResponse
+,
   createErrorResponse,
   createManifestRuntime,
   createOutboxEvent,
   loadTaskIntoManifest,
   mapManifestStatusToPrisma,
-} from "../shared-task-helpers";
+} from "../shared-task-helpers"
 
 export const runtime = "nodejs";
 
@@ -267,6 +274,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(successResponse, { status: 201 });
   } catch (error) {
+    captureException(error);
     // Transaction failed - all changes rolled back
     const errorMessage =
       error instanceof Error ? error.message : "Unknown error";

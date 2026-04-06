@@ -7,6 +7,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -96,6 +97,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ webhooks: sanitizedWebhooks });
   } catch (error) {
+    captureException(error);
     console.error("Error fetching webhooks:", error);
     return NextResponse.json(
       { error: "Failed to fetch webhooks" },
@@ -197,6 +199,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ webhook: sanitizedWebhook }, { status: 201 });
   } catch (error) {
+    captureException(error);
     console.error("Error creating webhook:", error);
     return NextResponse.json(
       { error: "Failed to create webhook" },

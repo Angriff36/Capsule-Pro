@@ -8,6 +8,7 @@
  */
 
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireCurrentUser, requireTenantId } from "@/app/lib/tenant";
 
@@ -41,8 +42,7 @@ interface DeleteScheduleBody {
 
 function isValidFrequency(value: unknown): value is Frequency {
   return (
-    typeof value === "string" &&
-    VALID_FREQUENCIES.includes(value as Frequency)
+    typeof value === "string" && VALID_FREQUENCIES.includes(value as Frequency)
   );
 }
 
@@ -95,6 +95,7 @@ export async function GET() {
 
     return NextResponse.json({ data: mappedSchedules });
   } catch (error) {
+    captureException(error);
     console.error("Failed to get audit schedules:", error);
     return NextResponse.json(
       { message: "Internal server error" },
@@ -123,7 +124,9 @@ export async function POST(request: NextRequest) {
 
     if (!isValidFrequency(body.frequency)) {
       return NextResponse.json(
-        { message: `frequency must be one of: ${VALID_FREQUENCIES.join(", ")}` },
+        {
+          message: `frequency must be one of: ${VALID_FREQUENCIES.join(", ")}`,
+        },
         { status: 400 }
       );
     }
@@ -198,6 +201,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
+    captureException(error);
     console.error("Failed to create audit schedule:", error);
     return NextResponse.json(
       { message: "Internal server error" },
@@ -254,7 +258,9 @@ export async function PATCH(request: NextRequest) {
     if (body.frequency !== undefined) {
       if (!isValidFrequency(body.frequency)) {
         return NextResponse.json(
-          { message: `frequency must be one of: ${VALID_FREQUENCIES.join(", ")}` },
+          {
+            message: `frequency must be one of: ${VALID_FREQUENCIES.join(", ")}`,
+          },
           { status: 400 }
         );
       }
@@ -327,6 +333,7 @@ export async function PATCH(request: NextRequest) {
       },
     });
   } catch (error) {
+    captureException(error);
     console.error("Failed to update audit schedule:", error);
     return NextResponse.json(
       { message: "Internal server error" },
@@ -382,6 +389,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    captureException(error);
     console.error("Failed to delete audit schedule:", error);
     return NextResponse.json(
       { message: "Internal server error" },

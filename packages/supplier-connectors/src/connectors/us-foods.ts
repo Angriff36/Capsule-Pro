@@ -26,7 +26,11 @@
  * - apiSecret: AS2 authentication credentials or FTP password
  */
 
-import type { SupplierConnector, SupplierConnectorConfig, SupplierProduct } from "../types.js";
+import type {
+  SupplierConnector,
+  SupplierConnectorConfig,
+  SupplierProduct,
+} from "../types.js";
 
 /**
  * US Foods connector implementation.
@@ -51,15 +55,19 @@ export class UsFoodsConnector implements SupplierConnector {
     const { apiBaseUrl, apiKey, apiSecret } = config.credentials;
 
     // Validate required credentials are present
-    if (!apiBaseUrl || !apiKey || !apiSecret) {
-      console.warn("[us-foods] Missing required credentials: apiBaseUrl, apiKey, apiSecret");
+    if (!(apiBaseUrl && apiKey && apiSecret)) {
+      console.warn(
+        "[us-foods] Missing required credentials: apiBaseUrl, apiKey, apiSecret"
+      );
       return false;
     }
 
     // TODO: Implement actual connection test
     // For AS2: Send test message and await MDN response
     // For FTP: Connect and verify directory access
-    console.log("[us-foods] Connection test not implemented - EDI infrastructure required");
+    console.log(
+      "[us-foods] Connection test not implemented - EDI infrastructure required"
+    );
     return false;
   }
 
@@ -76,12 +84,16 @@ export class UsFoodsConnector implements SupplierConnector {
    * - Scheduled (e.g., nightly file delivery)
    * - Triggered by catalog changes
    */
-  async fetchCatalog(config: SupplierConnectorConfig): Promise<SupplierProduct[]> {
+  async fetchCatalog(
+    config: SupplierConnectorConfig
+  ): Promise<SupplierProduct[]> {
     // TODO: Implement catalog fetch via EDI 832
     // 1. Connect to EDI endpoint
     // 2. Request or retrieve 832 catalog document
     // 3. Parse using parseEdi832Catalog()
-    console.log("[us-foods] Catalog fetch not implemented - EDI infrastructure required");
+    console.log(
+      "[us-foods] Catalog fetch not implemented - EDI infrastructure required"
+    );
     return [];
   }
 
@@ -97,10 +109,13 @@ export class UsFoodsConnector implements SupplierConnector {
     skus: string[]
   ): Promise<Record<string, { available: boolean; quantity?: number }>> {
     // TODO: Implement availability check via EDI 846
-    console.log("[us-foods] Availability check not implemented - EDI infrastructure required");
+    console.log(
+      "[us-foods] Availability check not implemented - EDI infrastructure required"
+    );
 
     // Return unavailable for all SKUs as stub
-    const result: Record<string, { available: boolean; quantity?: number }> = {};
+    const result: Record<string, { available: boolean; quantity?: number }> =
+      {};
     for (const sku of skus) {
       result[sku] = { available: false, quantity: 0 };
     }
@@ -117,9 +132,13 @@ export class UsFoodsConnector implements SupplierConnector {
   async fetchPricing(
     config: SupplierConnectorConfig,
     skus: string[]
-  ): Promise<Record<string, { unitCost: number; currency: string; effectiveFrom?: Date }>> {
+  ): Promise<
+    Record<string, { unitCost: number; currency: string; effectiveFrom?: Date }>
+  > {
     // TODO: Implement pricing fetch via EDI 832
-    console.log("[us-foods] Pricing fetch not implemented - EDI infrastructure required");
+    console.log(
+      "[us-foods] Pricing fetch not implemented - EDI infrastructure required"
+    );
 
     // Return empty object as stub
     return {};

@@ -6,7 +6,10 @@ async function main() {
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage();
 
-  await page.goto(`${BASE}/sign-in`, { waitUntil: "domcontentloaded", timeout: 20000 });
+  await page.goto(`${BASE}/sign-in`, {
+    waitUntil: "domcontentloaded",
+    timeout: 20_000,
+  });
   await page.waitForTimeout(3000);
 
   // List all buttons
@@ -18,7 +21,9 @@ async function main() {
       const vis = await btn.isVisible();
       const hidden = await btn.getAttribute("aria-hidden");
       const disabled = await btn.getAttribute("disabled");
-      console.log(`  [vis=${vis} hidden=${hidden} dis=${disabled}]: "${txt?.trim().substring(0, 60)}"`);
+      console.log(
+        `  [vis=${vis} hidden=${hidden} dis=${disabled}]: "${txt?.trim().substring(0, 60)}"`
+      );
     } catch {}
   }
 
@@ -32,7 +37,9 @@ async function main() {
       const id = await inp.getAttribute("id");
       const vis = await inp.isVisible();
       const placeholder = await inp.getAttribute("placeholder");
-      console.log(`  [name="${name}" type="${type}" id="${id}" vis=${vis}] placeholder="${placeholder}"`);
+      console.log(
+        `  [name="${name}" type="${type}" id="${id}" vis=${vis}] placeholder="${placeholder}"`
+      );
     } catch {}
   }
 
@@ -48,4 +55,7 @@ async function main() {
   await browser.close();
 }
 
-main().catch(e => { console.error(e.message); process.exit(1); });
+main().catch((e) => {
+  console.error(e.message);
+  process.exit(1);
+});

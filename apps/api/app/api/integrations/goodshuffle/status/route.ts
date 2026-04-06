@@ -5,6 +5,7 @@
  */
 
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getGoodshuffleSyncStatus } from "@/app/lib/goodshuffle-event-sync-service";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -29,6 +30,7 @@ export async function GET() {
 
     return NextResponse.json(status);
   } catch (error) {
+    captureException(error);
     console.error("Failed to get Goodshuffle sync status:", error);
     return NextResponse.json(
       { error: "Failed to get sync status" },

@@ -1,9 +1,13 @@
 // List performance reviews
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import {
+  manifestErrorResponse,
+  manifestSuccessResponse,
+} from "@/lib/manifest-response";
 
 export async function GET(request: NextRequest) {
   try {
@@ -33,7 +37,8 @@ export async function GET(request: NextRequest) {
       paramIndex++;
     }
 
-    const reviews = await database.$queryRawUnsafe(`
+    const reviews = await database.$queryRawUnsafe(
+      `
       SELECT
         pr.id, pr.employee_id, pr.reviewer_id, pr.review_type,
         pr.scheduled_date, pr.completed_date, pr.status,
@@ -47,10 +52,13 @@ export async function GET(request: NextRequest) {
       LEFT JOIN accounts.users r ON r.id = pr.reviewer_id
       ${whereClause}
       ORDER BY pr.scheduled_date DESC
-    `, ...params);
+    `,
+      ...params
+    );
 
     return manifestSuccessResponse({ reviews });
   } catch (error) {
+    captureException(error);
     console.error("Error listing performance reviews:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

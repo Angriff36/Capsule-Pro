@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getTenantIdForOrg } from '@/app/lib/tenant';
-import { database } from '@/lib/database';
-import { auth } from '@repo/auth/server';
+import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
+import { type NextRequest, NextResponse } from "next/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { database } from "@/lib/database";
 
 /**
  * GET /api/kitchen/iot/alerts
@@ -11,17 +12,17 @@ export async function GET(request: NextRequest) {
   try {
     const { orgId, userId } = await auth();
     if (!(userId && orgId)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ error: 'Tenant not found' }, { status: 400 });
+      return NextResponse.json({ error: "Tenant not found" }, { status: 400 });
     }
 
     const { searchParams } = new URL(request.url);
-    const probeId = searchParams.get('probeId');
-    const status = searchParams.get('status') || 'active';
+    const probeId = searchParams.get("probeId");
+    const status = searchParams.get("status") || "active";
 
     const where: Record<string, unknown> = { tenantId, status };
     if (probeId) {
@@ -33,14 +34,15 @@ export async function GET(request: NextRequest) {
       include: {
         probe: true,
       },
-      orderBy: { triggeredAt: 'desc' },
+      orderBy: { triggeredAt: "desc" },
     });
 
     return NextResponse.json({ alerts });
   } catch (error) {
-    console.error('List IoT alerts error:', error);
+    captureException(error);
+    console.error("List IoT alerts error:", error);
     return NextResponse.json(
-      { error: 'Failed to list alerts' },
+      { error: "Failed to list alerts" },
       { status: 500 }
     );
   }
@@ -54,27 +56,27 @@ export async function POST(request: NextRequest) {
   try {
     const { orgId, userId } = await auth();
     if (!(userId && orgId)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ error: 'Tenant not found' }, { status: 400 });
+      return NextResponse.json({ error: "Tenant not found" }, { status: 400 });
     }
 
     const body = await request.json();
     const { probeId, alertType, severity, message, temperature } = body;
 
-    if (!probeId || !alertType || !message) {
+    if (!(probeId && alertType && message)) {
       return NextResponse.json(
-        { error: 'Probe ID, alert type, and message are required' },
+        { error: "Probe ID, alert type, and message are required" },
         { status: 400 }
       );
     }
 
     // Generate alert number
     const alertCount = await database.ioTAlert.count({ where: { tenantId } });
-    const alertNumber = `ALT-${String(alertCount + 1).padStart(6, '0')}`;
+    const alertNumber = `ALT-${String(alertCount + 1).padStart(6, "0")}`;
 
     const alert = await database.ioTAlert.create({
       data: {
@@ -82,11 +84,11 @@ export async function POST(request: NextRequest) {
         alertNumber,
         probeId,
         alertType,
-        severity: severity || 'warning',
+        severity: severity || "warning",
         title: alertType,
         message,
         temperature,
-        status: 'active',
+        status: "active",
         triggeredAt: new Date(),
       },
     });
@@ -95,9 +97,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ alert });
   } catch (error) {
-    console.error('Create IoT alert error:', error);
+    captureException(error);
+    console.error("Create IoT alert error:", error);
     return NextResponse.json(
-      { error: 'Failed to create alert' },
+      { error: "Failed to create alert" },
       { status: 500 }
     );
   }

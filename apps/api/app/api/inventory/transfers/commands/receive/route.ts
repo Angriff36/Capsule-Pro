@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@repo/auth/server";
+import { database, type Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { database, Prisma } from "@repo/database";
 
 export async function POST(request: NextRequest) {
   try {
@@ -33,7 +34,10 @@ export async function POST(request: NextRequest) {
     });
 
     if (!transfer) {
-      return NextResponse.json({ error: "Transfer not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Transfer not found" },
+        { status: 404 }
+      );
     }
 
     if (transfer.status !== "in_transit") {
@@ -99,6 +103,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    captureException(error);
     console.error("Error receiving inventory transfer:", error);
     return NextResponse.json(
       { error: "Failed to receive inventory transfer" },

@@ -1,9 +1,13 @@
 // Soft-delete a vendor
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import {
+  manifestErrorResponse,
+  manifestSuccessResponse,
+} from "@/lib/manifest-response";
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,7 +28,10 @@ export async function POST(request: NextRequest) {
     `;
     const poCount = (activePOs as any[])[0]?.count || 0;
     if (poCount > 0) {
-      return manifestErrorResponse(`Cannot delete vendor with ${poCount} active purchase order(s)`, 400);
+      return manifestErrorResponse(
+        `Cannot delete vendor with ${poCount} active purchase order(s)`,
+        400
+      );
     }
 
     const result = await database.$queryRaw`
@@ -34,10 +41,12 @@ export async function POST(request: NextRequest) {
       RETURNING id, supplier_number, name
     `;
 
-    if (!(result as any[]).length) return manifestErrorResponse("Vendor not found", 404);
+    if (!(result as any[]).length)
+      return manifestErrorResponse("Vendor not found", 404);
 
     return manifestSuccessResponse({ vendor: (result as any[])[0] });
   } catch (error) {
+    captureException(error);
     console.error("Error deleting vendor:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

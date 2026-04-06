@@ -14,11 +14,12 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { FSA_STATUSES, ITEM_CATEGORIES } from "../items/types";
 import type { FSAStatus, ItemCategory } from "../items/types";
+import { FSA_STATUSES, ITEM_CATEGORIES } from "../items/types";
 
 interface ImportResult {
   success: number;
@@ -73,58 +74,88 @@ function parseCSVLine(line: string): string[] {
  */
 function parseTags(tagStr: string | undefined): string[] | undefined {
   if (!tagStr || tagStr.trim() === "") return undefined;
-  const tags = tagStr.split(",").map((t) => t.trim()).filter(Boolean);
+  const tags = tagStr
+    .split(",")
+    .map((t) => t.trim())
+    .filter(Boolean);
   return tags.length > 0 ? tags : undefined;
 }
 
 /**
  * Validate and parse a single row
  */
-function parseRow(line: string, rowNum: number): { row: ParsedRow; error?: string } {
+function parseRow(
+  line: string,
+  rowNum: number
+): { row: ParsedRow; error?: string } {
   const fields = parseCSVLine(line);
 
   if (fields.length < 2) {
-    return { row: { row: rowNum, item_number: "", name: "" }, error: "Row must have at least item_number and name" };
+    return {
+      row: { row: rowNum, item_number: "", name: "" },
+      error: "Row must have at least item_number and name",
+    };
   }
 
   const item_number = fields[0].trim();
   const name = fields[1].trim();
 
   if (!item_number) {
-    return { row: { row: rowNum, item_number: "", name: "" }, error: "item_number is required" };
+    return {
+      row: { row: rowNum, item_number: "", name: "" },
+      error: "item_number is required",
+    };
   }
   if (!name) {
-    return { row: { row: rowNum, item_number, name: "" }, error: "name is required" };
+    return {
+      row: { row: rowNum, item_number, name: "" },
+      error: "name is required",
+    };
   }
 
   const category = fields[2]?.trim();
   if (category && !VALID_CATEGORIES.has(category as ItemCategory)) {
-    return { row: { row: rowNum, item_number, name, category }, error: `Invalid category: ${category}` };
+    return {
+      row: { row: rowNum, item_number, name, category },
+      error: `Invalid category: ${category}`,
+    };
   }
 
   const unitCostStr = fields[3]?.trim();
   const unit_cost = unitCostStr ? Number.parseFloat(unitCostStr) : undefined;
   if (unitCostStr && Number.isNaN(unit_cost!)) {
-    return { row: { row: rowNum, item_number, name, unit_cost: NaN }, error: `Invalid unit_cost: ${unitCostStr}` };
+    return {
+      row: { row: rowNum, item_number, name, unit_cost: Number.NaN },
+      error: `Invalid unit_cost: ${unitCostStr}`,
+    };
   }
 
   const qtyStr = fields[4]?.trim();
   const quantity_on_hand = qtyStr ? Number.parseFloat(qtyStr) : undefined;
   if (qtyStr && Number.isNaN(quantity_on_hand!)) {
-    return { row: { row: rowNum, item_number, name }, error: `Invalid quantity_on_hand: ${qtyStr}` };
+    return {
+      row: { row: rowNum, item_number, name },
+      error: `Invalid quantity_on_hand: ${qtyStr}`,
+    };
   }
 
   const reorderStr = fields[5]?.trim();
   const reorder_level = reorderStr ? Number.parseFloat(reorderStr) : undefined;
   if (reorderStr && Number.isNaN(reorder_level!)) {
-    return { row: { row: rowNum, item_number, name }, error: `Invalid reorder_level: ${reorderStr}` };
+    return {
+      row: { row: rowNum, item_number, name },
+      error: `Invalid reorder_level: ${reorderStr}`,
+    };
   }
 
   const tags = parseTags(fields[6]);
 
   const fsa_status = fields[7]?.trim() as FSAStatus | undefined;
   if (fsa_status && !VALID_FSA_STATUSES.has(fsa_status)) {
-    return { row: { row: rowNum, item_number, name, fsa_status }, error: `Invalid fsa_status: ${fsa_status}` };
+    return {
+      row: { row: rowNum, item_number, name, fsa_status },
+      error: `Invalid fsa_status: ${fsa_status}`,
+    };
   }
 
   return {
@@ -154,22 +185,34 @@ export async function POST(request: NextRequest) {
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 404 }
+      );
     }
 
     const formData = await request.formData();
     const file = formData.get("file") as File | null;
 
     if (!file) {
-      return NextResponse.json({ message: "No file provided" }, { status: 400 });
+      return NextResponse.json(
+        { message: "No file provided" },
+        { status: 400 }
+      );
     }
 
     if (!file.name.endsWith(".csv")) {
-      return NextResponse.json({ message: "File must be a CSV" }, { status: 400 });
+      return NextResponse.json(
+        { message: "File must be a CSV" },
+        { status: 400 }
+      );
     }
 
     const text = await file.text();
-    const lines = text.split("\n").map((l) => l.trim()).filter(Boolean);
+    const lines = text
+      .split("\n")
+      .map((l) => l.trim())
+      .filter(Boolean);
 
     if (lines.length < 2) {
       return NextResponse.json(
@@ -179,7 +222,7 @@ export async function POST(request: NextRequest) {
     }
 
     const headerLine = lines[0].toLowerCase();
-    if (!headerLine.includes("item_number") || !headerLine.includes("name")) {
+    if (!(headerLine.includes("item_number") && headerLine.includes("name"))) {
       return NextResponse.json(
         { message: "CSV must have 'item_number' and 'name' columns" },
         { status: 400 }
@@ -207,10 +250,14 @@ export async function POST(request: NextRequest) {
 
     // Check for duplicate item_numbers within the import
     const itemNumbers = validRows.map((r) => r.item_number);
-    const duplicates = itemNumbers.filter((num, idx) => itemNumbers.indexOf(num) !== idx);
+    const duplicates = itemNumbers.filter(
+      (num, idx) => itemNumbers.indexOf(num) !== idx
+    );
     if (duplicates.length > 0) {
       return NextResponse.json(
-        { message: `Duplicate item_numbers in import: ${[...new Set(duplicates)].join(", ")}` },
+        {
+          message: `Duplicate item_numbers in import: ${[...new Set(duplicates)].join(", ")}`,
+        },
         { status: 400 }
       );
     }
@@ -224,7 +271,9 @@ export async function POST(request: NextRequest) {
     `;
 
     const existingNumbers = new Set(existingItems.map((i) => i.item_number));
-    const alreadyExist = validRows.filter((r) => existingNumbers.has(r.item_number));
+    const alreadyExist = validRows.filter((r) =>
+      existingNumbers.has(r.item_number)
+    );
     if (alreadyExist.length > 0) {
       return NextResponse.json(
         {
@@ -262,8 +311,14 @@ export async function POST(request: NextRequest) {
         `;
         inserted++;
       } catch (err) {
-        console.error(`[InventoryImport] Failed to insert row ${row.row}:`, err);
-        errors.push({ row: row.row, message: `Insert failed: ${(err as Error).message}` });
+        console.error(
+          `[InventoryImport] Failed to insert row ${row.row}:`,
+          err
+        );
+        errors.push({
+          row: row.row,
+          message: `Insert failed: ${(err as Error).message}`,
+        });
       }
     }
 
@@ -274,6 +329,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
+    captureException(error);
     console.error("[InventoryImport/POST] Error:", error);
     return NextResponse.json(
       { message: "Internal server error" },

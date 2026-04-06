@@ -1,9 +1,13 @@
 // Receive items against a PO
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import {
+  manifestErrorResponse,
+  manifestSuccessResponse,
+} from "@/lib/manifest-response";
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,12 +18,16 @@ export async function POST(request: NextRequest) {
     if (!tenantId) return manifestErrorResponse("Tenant not found", 400);
 
     const { orderId, items } = await request.json();
-    if (!orderId || !items?.length) return manifestErrorResponse("orderId and items required", 400);
+    if (!(orderId && items?.length))
+      return manifestErrorResponse("orderId and items required", 400);
 
     for (const item of items) {
       if (!item.itemId || item.quantityReceived == null) continue;
 
-      const qualityStatus = Number(item.quantityReceived) >= Number(item.quantityOrdered) ? "accepted" : "partial";
+      const qualityStatus =
+        Number(item.quantityReceived) >= Number(item.quantityOrdered)
+          ? "accepted"
+          : "partial";
 
       await database.$queryRaw`
         UPDATE tenant_inventory.purchase_order_items
@@ -65,6 +73,7 @@ export async function POST(request: NextRequest) {
 
     return manifestSuccessResponse({ allReceived });
   } catch (error) {
+    captureException(error);
     console.error("Error receiving PO items:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

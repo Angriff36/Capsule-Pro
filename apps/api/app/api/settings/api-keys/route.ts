@@ -6,6 +6,7 @@
  */
 
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { generateApiKey } from "@/app/lib/api-key-service";
 import { requireCurrentUser } from "@/app/lib/tenant";
@@ -45,6 +46,7 @@ export const GET = withRateLimit(
 
       return NextResponse.json({ keys });
     } catch (error) {
+      captureException(error);
       console.error("[ApiKeys/list] Error:", error);
       return NextResponse.json(
         { message: "Failed to fetch API keys" },
@@ -138,6 +140,7 @@ export const POST = withRateLimit(
         { status: 201 }
       );
     } catch (error) {
+      captureException(error);
       console.error("[ApiKeys/create] Error:", error);
       return NextResponse.json(
         { message: "Failed to create API key" },

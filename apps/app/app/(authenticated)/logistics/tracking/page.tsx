@@ -1,17 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import {
-  Truck,
-  Package,
-  CheckCircle2,
-  Clock,
-  MapPin,
-  Navigation,
-  Phone,
-  Loader2,
-  RefreshCw,
-} from "lucide-react";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -20,8 +9,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Badge } from "@repo/design-system/components/ui/badge";
 import { Separator } from "@repo/design-system/components/ui/separator";
+import {
+  CheckCircle2,
+  MapPin,
+  Navigation,
+  Package,
+  Phone,
+  RefreshCw,
+  Truck,
+} from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
 // Types
 interface DeliveryPosition {
@@ -66,13 +64,44 @@ const MOCK_DELIVERIES: ActiveDelivery[] = [
     origin: "Main Warehouse",
     destination: "Grand Ballroom - Downtown",
     estimatedArrival: "2026-03-27T09:30:00",
-    position: { lat: 34.052, lng: -118.243, heading: 45, speed: 28, updatedAt: new Date().toISOString() },
+    position: {
+      lat: 34.052,
+      lng: -118.243,
+      heading: 45,
+      speed: 28,
+      updatedAt: new Date().toISOString(),
+    },
     timeline: [
-      { status: "dispatched", timestamp: "2026-03-27T07:00:00", description: "Dispatched from warehouse", completed: true },
-      { status: "picked_up", timestamp: "2026-03-27T07:15:00", description: "All items loaded", completed: true },
-      { status: "in_transit", timestamp: "2026-03-27T07:30:00", description: "En route to destination", completed: true },
-      { status: "arriving", timestamp: "", description: "Approaching destination", completed: false },
-      { status: "delivered", timestamp: "", description: "Delivered and confirmed", completed: false },
+      {
+        status: "dispatched",
+        timestamp: "2026-03-27T07:00:00",
+        description: "Dispatched from warehouse",
+        completed: true,
+      },
+      {
+        status: "picked_up",
+        timestamp: "2026-03-27T07:15:00",
+        description: "All items loaded",
+        completed: true,
+      },
+      {
+        status: "in_transit",
+        timestamp: "2026-03-27T07:30:00",
+        description: "En route to destination",
+        completed: true,
+      },
+      {
+        status: "arriving",
+        timestamp: "",
+        description: "Approaching destination",
+        completed: false,
+      },
+      {
+        status: "delivered",
+        timestamp: "",
+        description: "Delivered and confirmed",
+        completed: false,
+      },
     ],
     items: 12,
   },
@@ -86,13 +115,44 @@ const MOCK_DELIVERIES: ActiveDelivery[] = [
     origin: "Main Warehouse",
     destination: "Beachfront Venue - Santa Monica",
     estimatedArrival: "2026-03-27T10:15:00",
-    position: { lat: 34.019, lng: -118.491, heading: 0, speed: 0, updatedAt: new Date().toISOString() },
+    position: {
+      lat: 34.019,
+      lng: -118.491,
+      heading: 0,
+      speed: 0,
+      updatedAt: new Date().toISOString(),
+    },
     timeline: [
-      { status: "dispatched", timestamp: "2026-03-27T07:45:00", description: "Dispatched from warehouse", completed: true },
-      { status: "picked_up", timestamp: "", description: "All items loaded", completed: false },
-      { status: "in_transit", timestamp: "", description: "En route to destination", completed: false },
-      { status: "arriving", timestamp: "", description: "Approaching destination", completed: false },
-      { status: "delivered", timestamp: "", description: "Delivered and confirmed", completed: false },
+      {
+        status: "dispatched",
+        timestamp: "2026-03-27T07:45:00",
+        description: "Dispatched from warehouse",
+        completed: true,
+      },
+      {
+        status: "picked_up",
+        timestamp: "",
+        description: "All items loaded",
+        completed: false,
+      },
+      {
+        status: "in_transit",
+        timestamp: "",
+        description: "En route to destination",
+        completed: false,
+      },
+      {
+        status: "arriving",
+        timestamp: "",
+        description: "Approaching destination",
+        completed: false,
+      },
+      {
+        status: "delivered",
+        timestamp: "",
+        description: "Delivered and confirmed",
+        completed: false,
+      },
     ],
     items: 8,
   },
@@ -106,13 +166,44 @@ const MOCK_DELIVERIES: ActiveDelivery[] = [
     origin: "Main Warehouse",
     destination: "Rooftop Gardens - Hollywood",
     estimatedArrival: "2026-03-27T08:10:00",
-    position: { lat: 34.098, lng: -118.326, heading: 180, speed: 12, updatedAt: new Date().toISOString() },
+    position: {
+      lat: 34.098,
+      lng: -118.326,
+      heading: 180,
+      speed: 12,
+      updatedAt: new Date().toISOString(),
+    },
     timeline: [
-      { status: "dispatched", timestamp: "2026-03-27T06:30:00", description: "Dispatched from warehouse", completed: true },
-      { status: "picked_up", timestamp: "2026-03-27T06:45:00", description: "All items loaded", completed: true },
-      { status: "in_transit", timestamp: "2026-03-27T07:00:00", description: "En route to destination", completed: true },
-      { status: "arriving", timestamp: "2026-03-27T08:00:00", description: "Approaching destination", completed: true },
-      { status: "delivered", timestamp: "", description: "Delivered and confirmed", completed: false },
+      {
+        status: "dispatched",
+        timestamp: "2026-03-27T06:30:00",
+        description: "Dispatched from warehouse",
+        completed: true,
+      },
+      {
+        status: "picked_up",
+        timestamp: "2026-03-27T06:45:00",
+        description: "All items loaded",
+        completed: true,
+      },
+      {
+        status: "in_transit",
+        timestamp: "2026-03-27T07:00:00",
+        description: "En route to destination",
+        completed: true,
+      },
+      {
+        status: "arriving",
+        timestamp: "2026-03-27T08:00:00",
+        description: "Approaching destination",
+        completed: true,
+      },
+      {
+        status: "delivered",
+        timestamp: "",
+        description: "Delivered and confirmed",
+        completed: false,
+      },
     ],
     items: 24,
   },
@@ -126,44 +217,119 @@ const MOCK_DELIVERIES: ActiveDelivery[] = [
     origin: "Main Warehouse",
     destination: "Country Club - Pasadena",
     estimatedArrival: "2026-03-27T07:30:00",
-    position: { lat: 34.147, lng: -118.145, heading: 0, speed: 0, updatedAt: new Date().toISOString() },
+    position: {
+      lat: 34.147,
+      lng: -118.145,
+      heading: 0,
+      speed: 0,
+      updatedAt: new Date().toISOString(),
+    },
     timeline: [
-      { status: "dispatched", timestamp: "2026-03-27T05:30:00", description: "Dispatched from warehouse", completed: true },
-      { status: "picked_up", timestamp: "2026-03-27T05:45:00", description: "All items loaded", completed: true },
-      { status: "in_transit", timestamp: "2026-03-27T06:00:00", description: "En route to destination", completed: true },
-      { status: "arriving", timestamp: "2026-03-27T07:10:00", description: "Approaching destination", completed: true },
-      { status: "delivered", timestamp: "2026-03-27T07:25:00", description: "Delivered and confirmed", completed: true },
+      {
+        status: "dispatched",
+        timestamp: "2026-03-27T05:30:00",
+        description: "Dispatched from warehouse",
+        completed: true,
+      },
+      {
+        status: "picked_up",
+        timestamp: "2026-03-27T05:45:00",
+        description: "All items loaded",
+        completed: true,
+      },
+      {
+        status: "in_transit",
+        timestamp: "2026-03-27T06:00:00",
+        description: "En route to destination",
+        completed: true,
+      },
+      {
+        status: "arriving",
+        timestamp: "2026-03-27T07:10:00",
+        description: "Approaching destination",
+        completed: true,
+      },
+      {
+        status: "delivered",
+        timestamp: "2026-03-27T07:25:00",
+        description: "Delivered and confirmed",
+        completed: true,
+      },
     ],
     items: 16,
   },
 ];
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ComponentType<{ className?: string }> }> = {
-  dispatched: { label: "Dispatched", color: "bg-gray-100 text-gray-700", icon: Package },
-  in_transit: { label: "In Transit", color: "bg-blue-100 text-blue-700", icon: Truck },
-  arriving: { label: "Arriving", color: "bg-amber-100 text-amber-700", icon: Navigation },
-  delivered: { label: "Delivered", color: "bg-green-100 text-green-700", icon: CheckCircle2 },
+const STATUS_CONFIG: Record<
+  string,
+  {
+    label: string;
+    color: string;
+    icon: React.ComponentType<{ className?: string }>;
+  }
+> = {
+  dispatched: {
+    label: "Dispatched",
+    color: "bg-gray-100 text-gray-700",
+    icon: Package,
+  },
+  in_transit: {
+    label: "In Transit",
+    color: "bg-blue-100 text-blue-700",
+    icon: Truck,
+  },
+  arriving: {
+    label: "Arriving",
+    color: "bg-amber-100 text-amber-700",
+    icon: Navigation,
+  },
+  delivered: {
+    label: "Delivered",
+    color: "bg-green-100 text-green-700",
+    icon: CheckCircle2,
+  },
 };
 
 // Simple SVG map visualization (no external dependencies)
 function MiniMap({ deliveries }: { deliveries: ActiveDelivery[] }) {
-  const activeDeliveries = deliveries.filter(d => d.status !== "delivered");
+  const activeDeliveries = deliveries.filter((d) => d.status !== "delivered");
 
   // Map bounds (LA area approximate)
   const bounds = { minLat: 33.9, maxLat: 34.3, minLng: -118.6, maxLng: -118.0 };
 
-  const toX = (lng: number) => ((lng - bounds.minLng) / (bounds.maxLng - bounds.minLng)) * 100;
-  const toY = (lat: number) => (1 - (lat - bounds.minLat) / (bounds.maxLat - bounds.minLat)) * 100;
+  const toX = (lng: number) =>
+    ((lng - bounds.minLng) / (bounds.maxLng - bounds.minLng)) * 100;
+  const toY = (lat: number) =>
+    (1 - (lat - bounds.minLat) / (bounds.maxLat - bounds.minLat)) * 100;
 
   return (
     <div className="relative w-full h-full bg-gradient-to-br from-blue-50 to-blue-100 dark:from-slate-900 dark:to-slate-800 rounded-lg overflow-hidden">
       {/* Grid lines */}
-      <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+      <svg
+        className="absolute inset-0 w-full h-full"
+        preserveAspectRatio="none"
+      >
         {Array.from({ length: 8 }).map((_, i) => (
-          <line key={`h-${i}`} x1="0" y1={`${(i / 7) * 100}%`} x2="100%" y2={`${(i / 7) * 100}%`} stroke="currentColor" strokeOpacity="0.05" />
+          <line
+            key={`h-${i}`}
+            stroke="currentColor"
+            strokeOpacity="0.05"
+            x1="0"
+            x2="100%"
+            y1={`${(i / 7) * 100}%`}
+            y2={`${(i / 7) * 100}%`}
+          />
         ))}
         {Array.from({ length: 8 }).map((_, i) => (
-          <line key={`v-${i}`} x1={`${(i / 7) * 100}%`} y1="0" x2={`${(i / 7) * 100}%`} y2="100%" stroke="currentColor" strokeOpacity="0.05" />
+          <line
+            key={`v-${i}`}
+            stroke="currentColor"
+            strokeOpacity="0.05"
+            x1={`${(i / 7) * 100}%`}
+            x2={`${(i / 7) * 100}%`}
+            y1="0"
+            y2="100%"
+          />
         ))}
 
         {/* Delivery markers */}
@@ -176,13 +342,39 @@ function MiniMap({ deliveries }: { deliveries: ActiveDelivery[] }) {
           return (
             <g key={delivery.id}>
               {/* Destination marker (faded) */}
-              <circle cx={`${x + 3}%`} cy={`${y - 2}%`} r="4" fill="currentColor" fillOpacity="0.2" />
+              <circle
+                cx={`${x + 3}%`}
+                cy={`${y - 2}%`}
+                fill="currentColor"
+                fillOpacity="0.2"
+                r="4"
+              />
 
               {/* Pulse effect for in-transit */}
               {isPulsing && (
-                <circle cx={`${x}%`} cy={`${y}%`} r="12" fill="none" stroke="currentColor" strokeOpacity="0.15" strokeWidth="1">
-                  <animate attributeName="r" from="8" to="20" dur="2s" repeatCount="indefinite" />
-                  <animate attributeName="stroke-opacity" from="0.2" to="0" dur="2s" repeatCount="indefinite" />
+                <circle
+                  cx={`${x}%`}
+                  cy={`${y}%`}
+                  fill="none"
+                  r="12"
+                  stroke="currentColor"
+                  strokeOpacity="0.15"
+                  strokeWidth="1"
+                >
+                  <animate
+                    attributeName="r"
+                    dur="2s"
+                    from="8"
+                    repeatCount="indefinite"
+                    to="20"
+                  />
+                  <animate
+                    attributeName="stroke-opacity"
+                    dur="2s"
+                    from="0.2"
+                    repeatCount="indefinite"
+                    to="0"
+                  />
                 </circle>
               )}
 
@@ -190,20 +382,20 @@ function MiniMap({ deliveries }: { deliveries: ActiveDelivery[] }) {
               <circle
                 cx={`${x}%`}
                 cy={`${y}%`}
-                r={isActive ? "6" : "4"}
                 fill={isActive ? "#3b82f6" : "#22c55e"}
+                r={isActive ? "6" : "4"}
                 stroke="white"
                 strokeWidth="2"
               />
 
               {/* Shipment number label */}
               <text
-                x={`${x + 2}%`}
-                y={`${y - 3}%`}
-                fontSize="9"
                 fill="currentColor"
                 fillOpacity="0.7"
                 fontFamily="monospace"
+                fontSize="9"
+                x={`${x + 2}%`}
+                y={`${y - 3}%`}
               >
                 {delivery.shipmentNumber.slice(-4)}
               </text>
@@ -236,20 +428,29 @@ function DeliveryTimeline({ timeline }: { timeline: TimelineEvent[] }) {
   return (
     <div className="space-y-3">
       {timeline.map((event, i) => (
-        <div key={event.status} className="flex gap-3">
+        <div className="flex gap-3" key={event.status}>
           <div className="flex flex-col items-center">
-            <div className={`w-3 h-3 rounded-full border-2 ${event.completed ? "bg-green-500 border-green-500" : "bg-white border-gray-300"}`} />
+            <div
+              className={`w-3 h-3 rounded-full border-2 ${event.completed ? "bg-green-500 border-green-500" : "bg-white border-gray-300"}`}
+            />
             {i < timeline.length - 1 && (
-              <div className={`w-0.5 h-8 ${event.completed ? "bg-green-300" : "bg-gray-200"}`} />
+              <div
+                className={`w-0.5 h-8 ${event.completed ? "bg-green-300" : "bg-gray-200"}`}
+              />
             )}
           </div>
           <div className="pb-4">
-            <p className={`text-sm font-medium ${event.completed ? "" : "text-muted-foreground"}`}>
+            <p
+              className={`text-sm font-medium ${event.completed ? "" : "text-muted-foreground"}`}
+            >
               {event.description}
             </p>
             {event.timestamp && (
               <p className="text-xs text-muted-foreground">
-                {new Date(event.timestamp).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+                {new Date(event.timestamp).toLocaleTimeString([], {
+                  hour: "numeric",
+                  minute: "2-digit",
+                })}
               </p>
             )}
           </div>
@@ -260,18 +461,19 @@ function DeliveryTimeline({ timeline }: { timeline: TimelineEvent[] }) {
 }
 
 export default function TrackingPage() {
-  const [deliveries, setDeliveries] = useState<ActiveDelivery[]>(MOCK_DELIVERIES);
+  const [deliveries, setDeliveries] =
+    useState<ActiveDelivery[]>(MOCK_DELIVERIES);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [refreshing, setRefreshing] = useState(false);
 
-  const selected = deliveries.find(d => d.id === selectedId);
+  const selected = deliveries.find((d) => d.id === selectedId);
 
   // Simulate position updates (in production, this would poll an API)
   const refreshPositions = useCallback(() => {
     setRefreshing(true);
-    setDeliveries(prev =>
-      prev.map(d => {
+    setDeliveries((prev) =>
+      prev.map((d) => {
         if (d.status === "in_transit") {
           const jitter = (Math.random() - 0.5) * 0.005;
           return {
@@ -294,17 +496,22 @@ export default function TrackingPage() {
 
   // Auto-refresh every 15 seconds
   useEffect(() => {
-    const interval = setInterval(refreshPositions, 15000);
+    const interval = setInterval(refreshPositions, 15_000);
     return () => clearInterval(interval);
   }, [refreshPositions]);
 
   const formatTime = (dateStr: string) =>
-    new Date(dateStr).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    new Date(dateStr).toLocaleTimeString([], {
+      hour: "numeric",
+      minute: "2-digit",
+    });
 
   const stats = {
-    active: deliveries.filter(d => d.status === "in_transit" || d.status === "arriving").length,
-    dispatched: deliveries.filter(d => d.status === "dispatched").length,
-    delivered: deliveries.filter(d => d.status === "delivered").length,
+    active: deliveries.filter(
+      (d) => d.status === "in_transit" || d.status === "arriving"
+    ).length,
+    dispatched: deliveries.filter((d) => d.status === "dispatched").length,
+    delivered: deliveries.filter((d) => d.status === "delivered").length,
   };
 
   return (
@@ -312,7 +519,9 @@ export default function TrackingPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-0.5">
-          <h1 className="text-3xl font-bold tracking-tight">Delivery Tracking</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Delivery Tracking
+          </h1>
           <p className="text-muted-foreground">
             Real-time GPS tracking for active deliveries.
           </p>
@@ -321,8 +530,15 @@ export default function TrackingPage() {
           <span className="text-xs text-muted-foreground">
             Updated {formatTime(lastRefresh.toISOString())}
           </span>
-          <Button variant="outline" size="sm" onClick={refreshPositions} disabled={refreshing}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`} />
+          <Button
+            disabled={refreshing}
+            onClick={refreshPositions}
+            size="sm"
+            variant="outline"
+          >
+            <RefreshCw
+              className={`h-4 w-4 mr-2 ${refreshing ? "animate-spin" : ""}`}
+            />
             Refresh
           </Button>
         </div>
@@ -332,12 +548,16 @@ export default function TrackingPage() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Deliveries</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Active Deliveries
+            </CardTitle>
             <Truck className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{stats.active}</div>
-            <p className="text-xs text-muted-foreground">Currently in transit</p>
+            <p className="text-xs text-muted-foreground">
+              Currently in transit
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -351,7 +571,9 @@ export default function TrackingPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Delivered Today</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Delivered Today
+            </CardTitle>
             <CheckCircle2 className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
@@ -385,15 +607,21 @@ export default function TrackingPage() {
 
               return (
                 <button
+                  className={`w-full text-left rounded-lg border p-3 transition-colors ${
+                    isSelected
+                      ? "border-blue-300 bg-blue-50 dark:bg-blue-950/30"
+                      : "hover:bg-accent"
+                  }`}
                   key={delivery.id}
                   onClick={() => setSelectedId(isSelected ? null : delivery.id)}
-                  className={`w-full text-left rounded-lg border p-3 transition-colors ${
-                    isSelected ? "border-blue-300 bg-blue-50 dark:bg-blue-950/30" : "hover:bg-accent"
-                  }`}
                 >
                   <div className="flex items-center gap-2 mb-1">
-                    <Icon className={`h-4 w-4 ${delivery.status === "in_transit" ? "text-blue-500" : delivery.status === "delivered" ? "text-green-500" : "text-gray-500"}`} />
-                    <span className="font-mono text-xs">{delivery.shipmentNumber}</span>
+                    <Icon
+                      className={`h-4 w-4 ${delivery.status === "in_transit" ? "text-blue-500" : delivery.status === "delivered" ? "text-green-500" : "text-gray-500"}`}
+                    />
+                    <span className="font-mono text-xs">
+                      {delivery.shipmentNumber}
+                    </span>
                     <Badge className={config.color}>{config.label}</Badge>
                   </div>
                   <p className="text-sm font-medium">{delivery.destination}</p>
@@ -451,12 +679,16 @@ export default function TrackingPage() {
                   <div className="space-y-2 text-sm">
                     <div className="flex items-center gap-2">
                       <MapPin className="h-4 w-4 text-gray-400" />
-                      <span className="text-muted-foreground">{selected.origin}</span>
+                      <span className="text-muted-foreground">
+                        {selected.origin}
+                      </span>
                     </div>
                     <div className="ml-2 border-l-2 border-dashed h-4" />
                     <div className="flex items-center gap-2">
                       <MapPin className="h-4 w-4 text-red-500" />
-                      <span className="font-medium">{selected.destination}</span>
+                      <span className="font-medium">
+                        {selected.destination}
+                      </span>
                     </div>
                   </div>
                 </div>

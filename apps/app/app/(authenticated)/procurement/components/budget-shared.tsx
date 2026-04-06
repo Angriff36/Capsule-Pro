@@ -60,20 +60,32 @@ export const formatPeriodType = (t: string) => {
 
 export const getStatusColor = (status: string) => {
   switch (status) {
-    case "active": return "bg-green-100 text-green-700";
-    case "paused": return "bg-yellow-100 text-yellow-700";
-    case "closed": return "bg-gray-100 text-gray-700";
-    default: return "bg-gray-100 text-gray-700";
+    case "active":
+      return "bg-green-100 text-green-700";
+    case "paused":
+      return "bg-yellow-100 text-yellow-700";
+    case "closed":
+      return "bg-gray-100 text-gray-700";
+    default:
+      return "bg-gray-100 text-gray-700";
   }
 };
 
-export const getUtilizationColor = (pct: number, warningPct: number, criticalPct: number) => {
+export const getUtilizationColor = (
+  pct: number,
+  warningPct: number,
+  criticalPct: number
+) => {
   if (pct >= criticalPct) return "bg-red-500";
   if (pct >= warningPct) return "bg-amber-500";
   return "bg-blue-500";
 };
 
-export const getUtilizationBarColor = (pct: number, warningPct: number, criticalPct: number) => {
+export const getUtilizationBarColor = (
+  pct: number,
+  warningPct: number,
+  criticalPct: number
+) => {
   if (pct >= criticalPct) return "bg-red-500";
   if (pct >= warningPct) return "bg-amber-500";
   if (pct >= warningPct * 0.7) return "bg-blue-400";
@@ -99,10 +111,17 @@ export const UtilizationBar = ({
   return (
     <div className="space-y-1">
       <div className="flex items-center justify-between">
-        <span className={`text-sm font-medium ${
-          pct >= criticalPct ? "text-red-600" : pct >= warningPct ? "text-amber-600" : "text-foreground"
-        }`}>
-          {label ? `${label}: ` : ""}{displayPct}%
+        <span
+          className={`text-sm font-medium ${
+            pct >= criticalPct
+              ? "text-red-600"
+              : pct >= warningPct
+                ? "text-amber-600"
+                : "text-foreground"
+          }`}
+        >
+          {label ? `${label}: ` : ""}
+          {displayPct}%
         </span>
         {pct >= criticalPct && !compact && (
           <span className="flex items-center gap-1 text-xs text-red-600">
@@ -132,14 +151,19 @@ export const UtilizationBar = ({
   );
 };
 
-export const TrendIcon = ({ current, previous }: { current: number; previous: number }) => {
+export const TrendIcon = ({
+  current,
+  previous,
+}: {
+  current: number;
+  previous: number;
+}) => {
   if (previous === 0) return null;
   const change = ((current - previous) / previous) * 100;
   if (change > 0) {
     return (
       <span className="flex items-center gap-0.5 text-xs text-red-600">
-        <TrendingUp className="h-3 w-3" />
-        +{change.toFixed(0)}%
+        <TrendingUp className="h-3 w-3" />+{change.toFixed(0)}%
       </span>
     );
   }

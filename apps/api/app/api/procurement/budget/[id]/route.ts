@@ -1,9 +1,13 @@
 // Get single budget with spend breakdown and alerts
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import {
+  manifestErrorResponse,
+  manifestSuccessResponse,
+} from "@/lib/manifest-response";
 
 export async function GET(
   request: NextRequest,
@@ -18,16 +22,22 @@ export async function GET(
 
     const { id } = await params;
 
-    const budgets = await database.$queryRawUnsafe(`
+    const budgets = await database.$queryRawUnsafe(
+      `
       SELECT * FROM tenant_inventory.procurement_budgets
       WHERE tenant_id = $1::uuid AND id = $2::uuid AND deleted_at IS NULL
-    `, tenantId, id);
+    `,
+      tenantId,
+      id
+    );
 
-    if (!(budgets as any[]).length) return manifestErrorResponse("Budget not found", 404);
+    if (!(budgets as any[]).length)
+      return manifestErrorResponse("Budget not found", 404);
     const budget = (budgets as any[])[0];
 
     // Calculate actual spend from POs matching this budget's category and period
-    const spendResult = await database.$queryRawUnsafe(`
+    const spendResult = await database.$queryRawUnsafe(
+      `
       SELECT
         COALESCE(SUM(po.total), 0)::decimal(12,2) as total_spent,
         COUNT(DISTINCT po.id)::int as po_count
@@ -39,17 +49,19 @@ export async function GET(
         AND ii.category = $2
         ${budget.period_start ? "AND po.order_date >= $3" : ""}
         ${budget.period_end ? "AND po.order_date <= $4" : ""}
-    `, budget.period_start && budget.period_end
-      ? [tenantId, budget.category, budget.period_start, budget.period_end]
-      : budget.period_start
-        ? [tenantId, budget.category, budget.period_start]
-        : [tenantId, budget.category]
+    `,
+      budget.period_start && budget.period_end
+        ? [tenantId, budget.category, budget.period_start, budget.period_end]
+        : budget.period_start
+          ? [tenantId, budget.category, budget.period_start]
+          : [tenantId, budget.category]
     );
 
     const spend = (spendResult as any[])[0] || { total_spent: 0, po_count: 0 };
 
     // Committed spend (POs in draft/submitted/approved status)
-    const committedResult = await database.$queryRawUnsafe(`
+    const committedResult = await database.$queryRawUnsafe(
+      `
       SELECT
         COALESCE(SUM(po.total), 0)::decimal(12,2) as committed
       FROM tenant_inventory.purchase_orders po
@@ -60,25 +72,31 @@ export async function GET(
         AND ii.category = $2
         ${budget.period_start ? "AND po.order_date >= $3" : ""}
         ${budget.period_end ? "AND po.order_date <= $4" : ""}
-    `, budget.period_start && budget.period_end
-      ? [tenantId, budget.category, budget.period_start, budget.period_end]
-      : budget.period_start
-        ? [tenantId, budget.category, budget.period_start]
-        : [tenantId, budget.category]
+    `,
+      budget.period_start && budget.period_end
+        ? [tenantId, budget.category, budget.period_start, budget.period_end]
+        : budget.period_start
+          ? [tenantId, budget.category, budget.period_start]
+          : [tenantId, budget.category]
     );
 
     const committed = (committedResult as any[])[0]?.committed || 0;
 
     // Alerts
-    const alerts = await database.$queryRawUnsafe(`
+    const alerts = await database.$queryRawUnsafe(
+      `
       SELECT * FROM tenant_inventory.procurement_budget_alerts
       WHERE tenant_id = $1::uuid AND budget_id = $2::uuid AND deleted_at IS NULL
       ORDER BY created_at DESC
       LIMIT 50
-    `, tenantId, id);
+    `,
+      tenantId,
+      id
+    );
 
     // Monthly spend breakdown for the budget period
-    const monthlyBreakdown = await database.$queryRawUnsafe(`
+    const monthlyBreakdown = await database.$queryRawUnsafe(
+      `
       SELECT
         TO_CHAR(po.order_date, 'YYYY-MM') as month,
         SUM(po.total)::decimal(12,2) as amount,
@@ -93,11 +111,12 @@ export async function GET(
         ${budget.period_end ? "AND po.order_date <= $4" : ""}
       GROUP BY TO_CHAR(po.order_date, 'YYYY-MM')
       ORDER BY month
-    `, budget.period_start && budget.period_end
-      ? [tenantId, budget.category, budget.period_start, budget.period_end]
-      : budget.period_start
-        ? [tenantId, budget.category, budget.period_start]
-        : [tenantId, budget.category]
+    `,
+      budget.period_start && budget.period_end
+        ? [tenantId, budget.category, budget.period_start, budget.period_end]
+        : budget.period_start
+          ? [tenantId, budget.category, budget.period_start]
+          : [tenantId, budget.category]
     );
 
     return manifestSuccessResponse({
@@ -107,14 +126,19 @@ export async function GET(
         poCount: spend.po_count,
         committed: Number(committed),
         remaining: Number(budget.budget_amount) - Number(spend.total_spent),
-        utilizationPct: budget.budget_amount > 0
-          ? Math.round((Number(spend.total_spent) / Number(budget.budget_amount)) * 10000) / 100
-          : 0,
+        utilizationPct:
+          budget.budget_amount > 0
+            ? Math.round(
+                (Number(spend.total_spent) / Number(budget.budget_amount)) *
+                  10_000
+              ) / 100
+            : 0,
       },
       alerts,
       monthlyBreakdown,
     });
   } catch (error) {
+    captureException(error);
     console.error("Error fetching budget:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

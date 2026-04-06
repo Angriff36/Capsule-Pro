@@ -11,17 +11,25 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type {
-  CreateSimulationRequest,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+CreateSimulationRequest,
   SimulationListItem,
   SimulationStatus,
-} from "../types";
+} from "../types"
 
 interface PaginationParams {
   page: number;
   limit: number;
 }
 
-function parsePaginationParams(searchParams: URLSearchParams): PaginationParams {
+function parsePaginationParams(
+  searchParams: URLSearchParams
+): PaginationParams {
   const page = Number.parseInt(searchParams.get("page") || "1", 10);
   const limit = Math.min(
     Math.max(Number.parseInt(searchParams.get("limit") || "20", 10), 1),
@@ -117,6 +125,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
+    captureException(error);
     console.error("Failed to list simulations:", error);
     return NextResponse.json(
       { message: "Internal server error" },
@@ -146,7 +155,7 @@ export async function POST(request: NextRequest) {
     const body: CreateSimulationRequest = await request.json();
     const { source_board_id, simulation_name } = body;
 
-    if (!source_board_id || !simulation_name) {
+    if (!(source_board_id && simulation_name)) {
       return NextResponse.json(
         { message: "source_board_id and simulation_name are required" },
         { status: 400 }
@@ -298,6 +307,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
+    captureException(error);
     console.error("Failed to create simulation:", error);
     return NextResponse.json(
       { message: "Internal server error" },

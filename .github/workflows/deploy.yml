@@ -35,6 +35,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: check-dependabot
     if: needs.check-dependabot.outputs.has-failing-dependabot == 'false'
+    env:
+      NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
 
     steps:
       - name: Checkout code
@@ -49,9 +51,7 @@ jobs:
         uses: pnpm/action-setup@v4
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-        env:
-          NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
 
       - name: Run linting
         run: pnpm run check

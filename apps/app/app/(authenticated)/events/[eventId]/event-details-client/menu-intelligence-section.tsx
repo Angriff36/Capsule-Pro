@@ -100,7 +100,12 @@ interface MenuIntelligenceSectionProps {
     name: string;
     category: string | null;
   }>;
-  onCreateDishInline?: (name: string, recipeId: string, category?: string, course?: string) => Promise<void>;
+  onCreateDishInline?: (
+    name: string,
+    recipeId: string,
+    category?: string,
+    course?: string
+  ) => Promise<void>;
   isCreatingDish?: boolean;
   // Template suggestions
   templateSuggestions?: Array<{ name: string; added: boolean }>;
@@ -193,21 +198,21 @@ export function MenuIntelligenceSection({
           <MenuDishesSection
             availableDishes={availableDishes}
             eventDishes={menuDishRows}
+            isCreatingDish={isCreatingDish}
             isLoading={isLoadingDishes}
             onAddDish={onAddDish}
+            onAddSuggestedDish={onAddSuggestedDish}
+            onCreateDishInline={onCreateDishInline}
             onOpenVariantDialog={onOpenVariantDialog}
             onRemoveDish={onRemoveDish}
             onSelectedCourseChange={onSelectedCourseChange}
             onSelectedDishIdChange={onSelectedDishIdChange}
             onShowAddDialogChange={onShowAddDialogChange}
+            recipes={recipes}
             selectedCourse={selectedCourse}
             selectedDishId={selectedDishIdForAdd}
             showAddDialog={showAddDishDialog}
-            recipes={recipes}
-            onCreateDishInline={onCreateDishInline}
-            isCreatingDish={isCreatingDish}
             templateSuggestions={templateSuggestions}
-            onAddSuggestedDish={onAddSuggestedDish}
           />
         </TabsContent>
 

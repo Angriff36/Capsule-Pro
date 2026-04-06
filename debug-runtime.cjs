@@ -1,9 +1,21 @@
-const fs = require('fs');
+"use strict";
+const fs = require("fs");
 
-const path = require('path');
+const path = require("path");
 
 // Read the compiled JS file
-let content = fs.readFileSync(path.join('packages', 'manifest-runtime', 'packages', 'cli', 'dist', 'commands', 'audit-routes.js'), 'utf-8');
+let content = fs.readFileSync(
+  path.join(
+    "packages",
+    "manifest-runtime",
+    "packages",
+    "cli",
+    "dist",
+    "commands",
+    "audit-routes.js"
+  ),
+  "utf-8"
+);
 
 // Add debug logging to isExempted function
 const oldCode = `function isExempted(normalizedPath, method, exemptions) {
@@ -38,5 +50,16 @@ const newCode = `function isExempted(normalizedPath, method, exemptions) {
 content = content.replace(oldCode, newCode);
 
 // Write back
-fs.writeFileSync(path.join('packages', 'manifest-runtime', 'packages', 'cli', 'dist', 'commands', 'audit-routes.js'), content);
-console.log('Added debug logging to isExempted function');
+fs.writeFileSync(
+  path.join(
+    "packages",
+    "manifest-runtime",
+    "packages",
+    "cli",
+    "dist",
+    "commands",
+    "audit-routes.js"
+  ),
+  content
+);
+console.log("Added debug logging to isExempted function");

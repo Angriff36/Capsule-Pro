@@ -12,9 +12,15 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
-  manifestErrorResponse,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+manifestErrorResponse,
   manifestSuccessResponse,
-} from "@/lib/manifest-response";
+} from "@/lib/manifest-response"
 
 interface RouteParams {
   params: Promise<{ id: string }>;
@@ -52,6 +58,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
     return manifestSuccessResponse({ config });
   } catch (error) {
+    captureException(error);
     console.error("[rate-limits/detail] Error:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
@@ -137,8 +144,12 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json(config);
   } catch (error) {
+    captureException(error);
     console.error("[rate-limits/update] Error:", error);
-    return manifestErrorResponse("Failed to update rate limit configuration", 500);
+    return manifestErrorResponse(
+      "Failed to update rate limit configuration",
+      500
+    );
   }
 }
 
@@ -183,7 +194,11 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     return new NextResponse(null, { status: 204 });
   } catch (error) {
+    captureException(error);
     console.error("[rate-limits/delete] Error:", error);
-    return manifestErrorResponse("Failed to delete rate limit configuration", 500);
+    return manifestErrorResponse(
+      "Failed to delete rate limit configuration",
+      500
+    );
   }
 }

@@ -1,22 +1,13 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  Truck,
-  User,
-  MapPin,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  Loader2,
-  Plus,
-  Navigation,
-  Users,
-  Route,
-} from "lucide-react";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
 import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -25,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
+import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
 import {
   Select,
   SelectContent,
@@ -32,7 +24,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { ScrollArea } from "@repo/design-system/components/ui/scroll-area";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  Loader2,
+  MapPin,
+  Navigation,
+  Route,
+  Truck,
+  User,
+  Users,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 
 interface RouteStop {
   id: string;
@@ -79,11 +83,16 @@ interface DispatchData {
 
 const DISPATCH_STATUS_CONFIG: Record<
   string,
-  { label: string; color: string; icon: React.ComponentType<{ className?: string }> }
+  {
+    label: string;
+    color: string;
+    icon: React.ComponentType<{ className?: string }>;
+  }
 > = {
   unassigned: {
     label: "Unassigned",
-    color: "bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-400",
+    color:
+      "bg-orange-100 text-orange-700 dark:bg-orange-950 dark:text-orange-400",
     icon: AlertCircle,
   },
   assigned: {
@@ -93,7 +102,8 @@ const DISPATCH_STATUS_CONFIG: Record<
   },
   in_progress: {
     label: "In Progress",
-    color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-400",
+    color:
+      "bg-yellow-100 text-yellow-700 dark:bg-yellow-950 dark:text-yellow-400",
     icon: Truck,
   },
   complete: {
@@ -107,7 +117,9 @@ export default function DispatchPage() {
   const [data, setData] = useState<DispatchData | null>(null);
   const [loading, setLoading] = useState(true);
   const [showAssignDialog, setShowAssignDialog] = useState(false);
-  const [selectedRoute, setSelectedRoute] = useState<DispatchRoute | null>(null);
+  const [selectedRoute, setSelectedRoute] = useState<DispatchRoute | null>(
+    null
+  );
   const [selectedDriverId, setSelectedDriverId] = useState<string>("");
   const [assigning, setAssigning] = useState(false);
 
@@ -214,7 +226,7 @@ export default function DispatchPage() {
             Assign drivers to routes and track today&apos;s deliveries.
           </p>
         </div>
-        <Button variant="outline" onClick={loadData}>
+        <Button onClick={loadData} variant="outline">
           <Navigation className="h-4 w-4 mr-2" />
           Refresh
         </Button>
@@ -250,109 +262,125 @@ export default function DispatchPage() {
       <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
         {/* Routes List */}
         <div className="space-y-4">
-          {(["unassigned", "assigned", "in_progress"] as const).map((status) => {
-            const config = DISPATCH_STATUS_CONFIG[status];
-            const routes = groupedRoutes[status];
-            if (routes.length === 0) return null;
+          {(["unassigned", "assigned", "in_progress"] as const).map(
+            (status) => {
+              const config = DISPATCH_STATUS_CONFIG[status];
+              const routes = groupedRoutes[status];
+              if (routes.length === 0) return null;
 
-            return (
-              <div key={status}>
-                <div className="flex items-center gap-2 mb-3">
-                  <Badge className={config.color}>
-                    <config.icon className="h-3 w-3 mr-1" />
-                    {config.label}
-                  </Badge>
-                  <span className="text-sm text-muted-foreground">
-                    {routes.length} route{routes.length !== 1 ? "s" : ""}
-                  </span>
-                </div>
+              return (
+                <div key={status}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Badge className={config.color}>
+                      <config.icon className="h-3 w-3 mr-1" />
+                      {config.label}
+                    </Badge>
+                    <span className="text-sm text-muted-foreground">
+                      {routes.length} route{routes.length !== 1 ? "s" : ""}
+                    </span>
+                  </div>
 
-                <div className="space-y-3">
-                  {routes.map((route) => (
-                    <Card key={route.id} className="hover:shadow-sm transition-shadow">
-                      <CardContent className="p-4">
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-semibold">
-                                {route.routeNumber}
-                              </span>
-                              <span className="text-muted-foreground">—</span>
-                              <span className="truncate">{route.name}</span>
-                            </div>
-
-                            <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
-                              {route.scheduledDate && (
-                                <span className="flex items-center gap-1">
-                                  <Clock className="h-3 w-3" />
-                                  {new Date(route.scheduledDate).toLocaleDateString()}
+                  <div className="space-y-3">
+                    {routes.map((route) => (
+                      <Card
+                        className="hover:shadow-sm transition-shadow"
+                        key={route.id}
+                      >
+                        <CardContent className="p-4">
+                          <div className="flex items-start justify-between gap-4">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="font-semibold">
+                                  {route.routeNumber}
                                 </span>
+                                <span className="text-muted-foreground">—</span>
+                                <span className="truncate">{route.name}</span>
+                              </div>
+
+                              <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
+                                {route.scheduledDate && (
+                                  <span className="flex items-center gap-1">
+                                    <Clock className="h-3 w-3" />
+                                    {new Date(
+                                      route.scheduledDate
+                                    ).toLocaleDateString()}
+                                  </span>
+                                )}
+                                <span className="flex items-center gap-1">
+                                  <Route className="h-3 w-3" />
+                                  {route.stopCount} stop
+                                  {route.stopCount !== 1 ? "s" : ""}
+                                </span>
+                                {route.totalDuration && (
+                                  <span>
+                                    {formatDuration(route.totalDuration)}
+                                  </span>
+                                )}
+                              </div>
+
+                              {route.driverName && (
+                                <div className="flex items-center gap-2 text-sm">
+                                  <User className="h-3 w-3 text-muted-foreground" />
+                                  <span className="font-medium">
+                                    {route.driverName}
+                                  </span>
+                                  {route.vehicleName && (
+                                    <>
+                                      <span className="text-muted-foreground">
+                                        •
+                                      </span>
+                                      <Truck className="h-3 w-3 text-muted-foreground" />
+                                      <span>{route.vehicleName}</span>
+                                    </>
+                                  )}
+                                </div>
                               )}
-                              <span className="flex items-center gap-1">
-                                <Route className="h-3 w-3" />
-                                {route.stopCount} stop{route.stopCount !== 1 ? "s" : ""}
-                              </span>
-                              {route.totalDuration && (
-                                <span>{formatDuration(route.totalDuration)}</span>
+
+                              {route.stops.length > 0 && (
+                                <div className="mt-2 flex flex-wrap gap-1">
+                                  {route.stops.slice(0, 3).map((stop) => (
+                                    <span
+                                      className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-muted"
+                                      key={stop.id}
+                                    >
+                                      <MapPin className="h-2.5 w-2.5" />
+                                      {stop.name}
+                                    </span>
+                                  ))}
+                                  {route.stopCount > 3 && (
+                                    <span className="text-xs text-muted-foreground">
+                                      +{route.stopCount - 3} more
+                                    </span>
+                                  )}
+                                </div>
                               )}
                             </div>
 
-                            {route.driverName && (
-                              <div className="flex items-center gap-2 text-sm">
-                                <User className="h-3 w-3 text-muted-foreground" />
-                                <span className="font-medium">{route.driverName}</span>
-                                {route.vehicleName && (
-                                  <>
-                                    <span className="text-muted-foreground">•</span>
-                                    <Truck className="h-3 w-3 text-muted-foreground" />
-                                    <span>{route.vehicleName}</span>
-                                  </>
-                                )}
-                              </div>
-                            )}
-
-                            {route.stops.length > 0 && (
-                              <div className="mt-2 flex flex-wrap gap-1">
-                                {route.stops.slice(0, 3).map((stop) => (
-                                  <span
-                                    key={stop.id}
-                                    className="inline-flex items-center gap-1 text-xs px-2 py-0.5 rounded-full bg-muted"
-                                  >
-                                    <MapPin className="h-2.5 w-2.5" />
-                                    {stop.name}
-                                  </span>
-                                ))}
-                                {route.stopCount > 3 && (
-                                  <span className="text-xs text-muted-foreground">
-                                    +{route.stopCount - 3} more
-                                  </span>
-                                )}
-                              </div>
-                            )}
+                            <Button
+                              onClick={() => openAssignDialog(route)}
+                              size="sm"
+                              variant={route.driverId ? "outline" : "default"}
+                            >
+                              {route.driverId ? "Reassign" : "Assign"}
+                            </Button>
                           </div>
-
-                          <Button
-                            size="sm"
-                            variant={route.driverId ? "outline" : "default"}
-                            onClick={() => openAssignDialog(route)}
-                          >
-                            {route.driverId ? "Reassign" : "Assign"}
-                          </Button>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            }
+          )}
 
           {data.routes.length === 0 && (
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
                 <Truck className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>No routes scheduled for today.</p>
-                <p className="text-sm">Create routes in the Routes section to dispatch them.</p>
+                <p className="text-sm">
+                  Create routes in the Routes section to dispatch them.
+                </p>
               </CardContent>
             </Card>
           )}
@@ -377,8 +405,8 @@ export default function DispatchPage() {
                   <div className="space-y-1 px-2 pb-2">
                     {data.availableDrivers.map((driver) => (
                       <div
-                        key={driver.id}
                         className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50"
+                        key={driver.id}
                       >
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-950 dark:text-green-400">
                           <User className="h-4 w-4" />
@@ -404,14 +432,15 @@ export default function DispatchPage() {
       </div>
 
       {/* Assign Dialog */}
-      <Dialog open={showAssignDialog} onOpenChange={setShowAssignDialog}>
+      <Dialog onOpenChange={setShowAssignDialog} open={showAssignDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>Assign Driver</DialogTitle>
             <DialogDescription>
               {selectedRoute && (
                 <>
-                  Assign a driver to <strong>{selectedRoute.routeNumber}</strong> —{" "}
+                  Assign a driver to{" "}
+                  <strong>{selectedRoute.routeNumber}</strong> —{" "}
                   {selectedRoute.name}
                 </>
               )}
@@ -421,7 +450,10 @@ export default function DispatchPage() {
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Select Driver</label>
-              <Select value={selectedDriverId} onValueChange={setSelectedDriverId}>
+              <Select
+                onValueChange={setSelectedDriverId}
+                value={selectedDriverId}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Choose a driver..." />
                 </SelectTrigger>
@@ -445,10 +477,13 @@ export default function DispatchPage() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setShowAssignDialog(false)}>
+            <Button
+              onClick={() => setShowAssignDialog(false)}
+              variant="outline"
+            >
               Cancel
             </Button>
-            <Button onClick={handleAssign} disabled={assigning}>
+            <Button disabled={assigning} onClick={handleAssign}>
               {assigning && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               {selectedDriverId ? "Assign" : "Unassign"}
             </Button>

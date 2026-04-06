@@ -8,9 +8,15 @@
 import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import {
-  manifestErrorResponse,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+manifestErrorResponse,
   manifestSuccessResponse,
-} from "@/lib/manifest-response";
+} from "@/lib/manifest-response"
 
 export async function GET(
   request: NextRequest,
@@ -27,12 +33,13 @@ export async function GET(
     // - shareId field
     // - isPublic field
     // - projections, groups, annotations relations
-    
+
     return manifestErrorResponse(
       "Template sharing not yet implemented - CommandBoard model needs shareId, isPublic, and relation fields",
       501
     );
   } catch (error) {
+    captureException(error);
     console.error("Error fetching shared template:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
@@ -58,12 +65,13 @@ export async function POST(
     // - shareId field
     // - isPublic field
     // - projections, groups, annotations relations
-    
+
     return manifestErrorResponse(
       "Template sharing not yet implemented - CommandBoard model needs shareId, isPublic, and relation fields",
       501
     );
   } catch (error) {
+    captureException(error);
     console.error("Error creating board from shared template:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

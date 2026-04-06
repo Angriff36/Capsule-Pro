@@ -5,11 +5,17 @@ import { generateText } from "ai";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type {
-  SuggestedAction,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+SuggestedAction,
   SuggestionCategory,
   SuggestionPriority,
   SuggestionType,
-} from "./types";
+} from "./types"
 
 // AI model configuration
 const AI_MODEL = "gpt-4o-mini";
@@ -610,6 +616,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error: unknown) {
+    captureException(error);
     console.error("Suggestions API error:", error);
 
     return NextResponse.json(

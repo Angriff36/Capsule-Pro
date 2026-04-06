@@ -11,11 +11,19 @@ import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
-  type CreateBudgetLineItemInput,
-  type CreateEventBudgetInput,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+type CreateBudgetLineItemInput
+,
+type CreateEventBudgetInput
+,
   parseEventBudgetListFilters,
   validateCreateEventBudget,
-} from "./validation";
+} from "./validation"
 
 /**
  * GET /api/events/budgets
@@ -81,6 +89,7 @@ export async function GET(request: Request) {
       totalPages,
     });
   } catch (error) {
+    captureException(error);
     console.error("Error fetching event budgets:", error);
     return NextResponse.json(
       { message: "Failed to fetch event budgets" },
@@ -243,6 +252,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(budgetWithLineItems, { status: 201 });
   } catch (error) {
+    captureException(error);
     if (error instanceof Error) {
       if (error.name === "ZodError") {
         return NextResponse.json(

@@ -40,11 +40,12 @@
  */
 
 import { database } from "@repo/database";
-import { z } from "zod";
-import { NextResponse } from "next/server";
-import { connectorRegistry } from "@repo/supplier-connectors";
 import type { SupplierProduct } from "@repo/supplier-connectors";
+import { connectorRegistry } from "@repo/supplier-connectors";
+import { captureException } from "@sentry/nextjs";
 import { createHmac, timingSafeEqual } from "crypto";
+import { NextResponse } from "next/server";
+import { z } from "zod";
 
 export const runtime = "nodejs";
 
@@ -88,7 +89,10 @@ export async function POST(request: Request) {
   try {
     rawBody = await request.text();
   } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Invalid request body" },
+      { status: 400 }
+    );
   }
 
   // Parse and validate payload
@@ -97,6 +101,7 @@ export async function POST(request: Request) {
     const json = JSON.parse(rawBody);
     payload = WebhookPayloadSchema.parse(json);
   } catch (err) {
+    captureException(err);
     if (err instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Validation failed", details: err.issues },
@@ -118,15 +123,19 @@ export async function POST(request: Request) {
   // Verify webhook signature if present
   const signature = request.headers.get("x-supplier-signature");
   if (signature) {
-    const webhookSecret = process.env[
-      `SUPPLIER_${payload.connectorId.toUpperCase().replace(/-/g, "_")}_WEBHOOK_SECRET`
-    ];
+    const webhookSecret =
+      process.env[
+        `SUPPLIER_${payload.connectorId.toUpperCase().replace(/-/g, "_")}_WEBHOOK_SECRET`
+      ];
 
     if (!webhookSecret) {
       console.warn(
         `[webhook/supplier-catalog] Signature present but no webhook secret configured for ${payload.connectorId}`
       );
-      return NextResponse.json({ error: "Webhook secret not configured" }, { status: 500 });
+      return NextResponse.json(
+        { error: "Webhook secret not configured" },
+        { status: 500 }
+      );
     }
 
     const expectedSignature = createHmac("sha256", webhookSecret)
@@ -148,7 +157,7 @@ export async function POST(request: Request) {
   }
 
   // Look up supplier to get tenant ID
-  const supplier = await database.inventorySupplier.findFirst({
+  const supplier = (await database.inventorySupplier.findFirst({
     where: {
       id: payload.supplierId,
       deletedAt: null,
@@ -157,13 +166,10 @@ export async function POST(request: Request) {
       id: true,
       tenantId: true,
     },
-  }) as { id: string; tenantId: string } | null;
+  })) as { id: string; tenantId: string } | null;
 
   if (!supplier) {
-    return NextResponse.json(
-      { error: "Supplier not found" },
-      { status: 404 }
-    );
+    return NextResponse.json({ error: "Supplier not found" }, { status: 404 });
   }
 
   // Upsert products into VendorCatalog
@@ -186,8 +192,12 @@ export async function POST(request: Request) {
         leadTimeDays: product.leadTimeDays,
         minimumOrderQuantity: product.minimumOrderQuantity,
         orderMultiple: product.orderMultiple,
-        effectiveFrom: product.effectiveFrom ? new Date(product.effectiveFrom) : undefined,
-        effectiveTo: product.effectiveTo ? new Date(product.effectiveTo) : undefined,
+        effectiveFrom: product.effectiveFrom
+          ? new Date(product.effectiveFrom)
+          : undefined,
+        effectiveTo: product.effectiveTo
+          ? new Date(product.effectiveTo)
+          : undefined,
         tags: product.tags,
       };
 
@@ -250,7 +260,7 @@ export async function POST(request: Request) {
 
   console.log(
     `[webhook/supplier-catalog] Processed ${payload.event} from ${connector.name}: ` +
-    `${upserted} upserted, ${errors} errors`
+      `${upserted} upserted, ${errors} errors`
   );
 
   return NextResponse.json({

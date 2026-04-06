@@ -6,6 +6,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -41,7 +42,10 @@ export async function GET(request: Request) {
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 404 }
+      );
     }
 
     const { searchParams } = new URL(request.url);
@@ -124,6 +128,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
+    captureException(error);
     console.error("Failed to lookup barcode:", error);
     return NextResponse.json(
       { message: "Internal server error" },

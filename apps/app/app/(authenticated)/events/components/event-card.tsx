@@ -9,9 +9,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import { Progress } from "@repo/design-system/components/ui/progress";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { CalendarDaysIcon, MapPinIcon, UsersIcon } from "lucide-react";
-import { Progress } from "@repo/design-system/components/ui/progress";
 import Link from "next/link";
 import { parseISODateToLocal } from "../../../lib/format";
 import { DeleteEventButton } from "./delete-event-button";
@@ -128,7 +128,7 @@ export function EventCard({ event }: { event: EventCardEvent }) {
           )}
           <div className="pt-2 mt-2 border-t border-border">
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <Progress value={progressPercent} className="h-1.5 flex-1" />
+              <Progress className="h-1.5 flex-1" value={progressPercent} />
               <span>{setupProgress}/4</span>
             </div>
           </div>

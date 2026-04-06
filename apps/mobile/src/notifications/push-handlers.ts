@@ -1,7 +1,7 @@
 import * as Notifications from "expo-notifications";
 import { Platform } from "react-native";
-import { getAuthToken } from "../store/auth";
 import { apiClient } from "../api/client";
+import { getAuthToken } from "../store/auth";
 
 // Configure notification handling
 Notifications.setNotificationHandler({
@@ -191,11 +191,14 @@ export async function updateNotificationPreferences(
 ): Promise<boolean> {
   try {
     const authToken = await getAuthToken();
-    await apiClient<{ success: boolean }>("/api/mobile/notification-preferences", {
-      method: "PATCH",
-      token: authToken ?? undefined,
-      body: preferences,
-    });
+    await apiClient<{ success: boolean }>(
+      "/api/mobile/notification-preferences",
+      {
+        method: "PATCH",
+        token: authToken ?? undefined,
+        body: preferences,
+      }
+    );
     return true;
   } catch (error) {
     console.error("Error updating notification preferences:", error);

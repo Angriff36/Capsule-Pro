@@ -12,13 +12,19 @@ import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type { ShipmentItemUpdateInput } from "./helpers";
 import {
-  buildShipmentItemUpdateData,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+buildShipmentItemUpdateData,
   fetchExistingShipmentItem,
   fetchUpdatedShipmentItem,
   updateShipmentItemRaw,
   updateShipmentTotals,
   validateShipmentItemUpdate,
-} from "./helpers";
+} from "./helpers"
 
 export async function PUT(
   request: Request,
@@ -71,6 +77,7 @@ export async function PUT(
 
     return NextResponse.json(updated);
   } catch (error) {
+    captureException(error);
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }
@@ -149,6 +156,7 @@ export async function DELETE(
       { status: 200 }
     );
   } catch (error) {
+    captureException(error);
     console.error("Failed to delete shipment item:", error);
     return NextResponse.json(
       { message: "Internal server error" },

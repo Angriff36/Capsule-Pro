@@ -15,12 +15,16 @@ import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
 import {
-  getDisplayInfo,
-  isCardExpired,
-  isPaymentMethodUsable,
-  type PaymentMethodResponse,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+getDisplayInfo, isCardExpired, isPaymentMethodUsable, type;
+PaymentMethodResponse,
   validatePaymentMethodAccess,
-} from "../validation";
+} from "../validation"
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -57,6 +61,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
     return NextResponse.json<PaymentMethodResponse>(response);
   } catch (error) {
+    captureException(error);
     console.error("Error fetching payment method:", error);
     return NextResponse.json(
       { error: "Failed to fetch payment method" },
@@ -136,6 +141,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 
     return NextResponse.json<PaymentMethodResponse>(response);
   } catch (error) {
+    captureException(error);
     console.error("Error updating payment method:", error);
     return NextResponse.json(
       { error: "Failed to update payment method" },
@@ -185,6 +191,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    captureException(error);
     console.error("Error deleting payment method:", error);
     return NextResponse.json(
       { error: "Failed to delete payment method" },

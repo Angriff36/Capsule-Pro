@@ -1,6 +1,81 @@
 import { z } from "zod";
 
 /**
+ * Sentry docs show `tags` as either a map or a list of [key, value] pairs.
+ * @see https://docs.sentry.io/product/integrations/integration-platform/webhooks/issue-alerts/
+ */
+const normalizeSentryEventTags = (
+  val: unknown
+): Record<string, string> | undefined => {
+  if (val === null || val === undefined) {
+    return undefined;
+  }
+  if (Array.isArray(val)) {
+    const out: Record<string, string> = {};
+    for (const pair of val) {
+      if (
+        Array.isArray(pair) &&
+        pair.length >= 2 &&
+        typeof pair[0] === "string"
+      ) {
+        out[pair[0]] = String(pair[1]);
+      }
+    }
+    return out;
+  }
+  if (typeof val === "object") {
+    const entries = Object.entries(val as Record<string, unknown>);
+    const out: Record<string, string> = {};
+    for (const [k, v] of entries) {
+      out[k] = typeof v === "string" ? v : String(v);
+    }
+    return out;
+  }
+  return undefined;
+};
+
+const sentryEventTagsSchema = z.preprocess(
+  normalizeSentryEventTags,
+  z.record(z.string(), z.string()).optional()
+);
+
+/**
+ * Documented sample uses `settings` as an array of { name, value }.
+ * @see https://docs.sentry.io/product/integrations/integration-platform/webhooks/issue-alerts/
+ */
+const normalizeIssueAlertSettings = (
+  val: unknown
+): Record<string, unknown> | undefined => {
+  if (val === null || val === undefined) {
+    return undefined;
+  }
+  if (Array.isArray(val)) {
+    const out: Record<string, unknown> = {};
+    for (const item of val) {
+      if (
+        item &&
+        typeof item === "object" &&
+        "name" in item &&
+        "value" in item
+      ) {
+        const row = item as { name: string; value: unknown };
+        out[row.name] = row.value;
+      }
+    }
+    return out;
+  }
+  if (typeof val === "object") {
+    return val as Record<string, unknown>;
+  }
+  return undefined;
+};
+
+const issueAlertSettingsSchema = z.preprocess(
+  normalizeIssueAlertSettings,
+  z.record(z.string(), z.unknown()).optional()
+);
+
+/**
  * Sentry Issue Alert webhook payload schema
  * Based on Sentry's internal integration webhook documentation
  */
@@ -17,7 +92,7 @@ export const SentryIssueAlertSchema = z.object({
       message: z.string().optional(),
       title: z.string().optional(),
       culprit: z.string().optional(),
-      timestamp: z.string().optional(),
+      timestamp: z.union([z.string(), z.number()]).optional(),
       environment: z.string().optional(),
       release: z.string().optional(),
       project: z.number().optional(),
@@ -52,13 +127,13 @@ export const SentryIssueAlertSchema = z.object({
         })
         .optional(),
       context: z.record(z.string(), z.unknown()).optional(),
-      tags: z.record(z.string(), z.string()).optional(),
+      tags: sentryEventTagsSchema,
     }),
     triggered_rule: z.string(),
     issue_alert: z
       .object({
         title: z.string(),
-        settings: z.record(z.string(), z.unknown()).optional(),
+        settings: issueAlertSettingsSchema,
       })
       .optional(),
   }),

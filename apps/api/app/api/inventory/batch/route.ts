@@ -10,6 +10,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -52,14 +53,18 @@ function isValidBatchPayload(body: unknown): body is BatchPayload {
  * Validate category is a valid ItemCategory
  */
 function isValidCategory(cat: unknown): cat is ItemCategory {
-  return typeof cat === "string" && ITEM_CATEGORIES.includes(cat as ItemCategory);
+  return (
+    typeof cat === "string" && ITEM_CATEGORIES.includes(cat as ItemCategory)
+  );
 }
 
 /**
  * Validate fsa_status is a valid FSAStatus
  */
 function isValidFSAStatus(status: unknown): status is FSAStatus {
-  return typeof status === "string" && FSA_STATUSES.includes(status as FSAStatus);
+  return (
+    typeof status === "string" && FSA_STATUSES.includes(status as FSAStatus)
+  );
 }
 
 /**
@@ -74,14 +79,20 @@ export async function POST(request: NextRequest) {
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 404 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 404 }
+      );
     }
 
     const body = await request.json();
 
     if (!isValidBatchPayload(body)) {
       return NextResponse.json(
-        { message: "Invalid payload. Expected { action: 'update'|'delete', ids: string[], updates?: {...} }" },
+        {
+          message:
+            "Invalid payload. Expected { action: 'update'|'delete', ids: string[], updates?: {...} }",
+        },
         { status: 400 }
       );
     }
@@ -196,6 +207,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ message: "Unknown action" }, { status: 400 });
   } catch (error) {
+    captureException(error);
     console.error("[InventoryBatch/POST] Error:", error);
     return NextResponse.json(
       { message: "Internal server error" },

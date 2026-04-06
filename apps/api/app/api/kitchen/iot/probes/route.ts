@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getTenantIdForOrg } from '@/app/lib/tenant';
-import { database } from '@/lib/database';
-import { auth } from '@repo/auth/server';
+import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
+import { type NextRequest, NextResponse } from "next/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { database } from "@/lib/database";
 
 /**
  * GET /api/kitchen/iot/probes
@@ -11,16 +12,16 @@ export async function GET(request: NextRequest) {
   try {
     const { orgId, userId } = await auth();
     if (!(userId && orgId)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ error: 'Tenant not found' }, { status: 400 });
+      return NextResponse.json({ error: "Tenant not found" }, { status: 400 });
     }
 
     const { searchParams } = new URL(request.url);
-    const locationId = searchParams.get('locationId');
+    const locationId = searchParams.get("locationId");
 
     const where: Record<string, unknown> = { tenantId };
     if (locationId) {
@@ -29,14 +30,15 @@ export async function GET(request: NextRequest) {
 
     const probes = await database.temperatureProbe.findMany({
       where,
-      orderBy: { name: 'asc' },
+      orderBy: { name: "asc" },
     });
 
     return NextResponse.json({ probes });
   } catch (error) {
-    console.error('List probes error:', error);
+    captureException(error);
+    console.error("List probes error:", error);
     return NextResponse.json(
-      { error: 'Failed to list probes' },
+      { error: "Failed to list probes" },
       { status: 500 }
     );
   }
@@ -50,20 +52,20 @@ export async function POST(request: NextRequest) {
   try {
     const { orgId, userId } = await auth();
     if (!(userId && orgId)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ error: 'Tenant not found' }, { status: 400 });
+      return NextResponse.json({ error: "Tenant not found" }, { status: 400 });
     }
 
     const body = await request.json();
     const { name, probeId, locationId, probeType, minTemp, maxTemp } = body;
 
-    if (!name || !probeId) {
+    if (!(name && probeId)) {
       return NextResponse.json(
-        { error: 'Name and probe ID are required' },
+        { error: "Name and probe ID are required" },
         { status: 400 }
       );
     }
@@ -74,10 +76,10 @@ export async function POST(request: NextRequest) {
         name,
         probeId,
         locationId: locationId || null,
-        probeType: probeType || 'bluetooth',
+        probeType: probeType || "bluetooth",
         minTemp: minTemp || -40,
         maxTemp: maxTemp || 300,
-        status: 'active',
+        status: "active",
         lastReading: null,
         batteryLevel: 100,
         lastCalibration: null,
@@ -87,9 +89,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ probe });
   } catch (error) {
-    console.error('Create probe error:', error);
+    captureException(error);
+    console.error("Create probe error:", error);
     return NextResponse.json(
-      { error: 'Failed to create probe' },
+      { error: "Failed to create probe" },
       { status: 500 }
     );
   }

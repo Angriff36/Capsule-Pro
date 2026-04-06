@@ -7,6 +7,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -39,11 +40,15 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     });
 
     if (!entry) {
-      return NextResponse.json({ error: "DLQ entry not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "DLQ entry not found" },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json({ entry });
   } catch (error) {
+    captureException(error);
     console.error("Error getting DLQ entry:", error);
     return NextResponse.json(
       { error: "Failed to get DLQ entry" },
@@ -87,6 +92,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({ entry });
   } catch (error) {
+    captureException(error);
     console.error("Error resolving DLQ entry:", error);
     return NextResponse.json(
       { error: "Failed to resolve DLQ entry" },

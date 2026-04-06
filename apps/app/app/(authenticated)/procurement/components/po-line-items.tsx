@@ -1,6 +1,7 @@
 "use client";
 
 import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import { Input } from "@repo/design-system/components/ui/input";
 import {
   Table,
@@ -11,7 +12,6 @@ import {
   TableRow,
 } from "@repo/design-system/components/ui/table";
 import { Trash2 } from "lucide-react";
-import { Button } from "@repo/design-system/components/ui/button";
 import { formatCurrency } from "./po-shared";
 
 /* ------------------------------------------------------------------ */
@@ -85,9 +85,7 @@ export function POLineItemsDisplay({ items }: DisplayLineItemsProps) {
               <TableCell className="text-right">
                 <span
                   className={
-                    isComplete
-                      ? "text-green-600 font-medium"
-                      : "text-amber-600"
+                    isComplete ? "text-green-600 font-medium" : "text-amber-600"
                   }
                 >
                   {Number(item.quantity_received)}
@@ -101,7 +99,9 @@ export function POLineItemsDisplay({ items }: DisplayLineItemsProps) {
               </TableCell>
               <TableCell>
                 {isComplete ? (
-                  <Badge className="bg-green-100 text-green-700">Complete</Badge>
+                  <Badge className="bg-green-100 text-green-700">
+                    Complete
+                  </Badge>
                 ) : Number(item.quantity_received) > 0 ? (
                   <Badge className="bg-amber-100 text-amber-700">Partial</Badge>
                 ) : (
@@ -122,7 +122,11 @@ export function POLineItemsDisplay({ items }: DisplayLineItemsProps) {
 
 interface EditableLineItemsProps {
   items: EditableLineItem[];
-  onUpdate: (itemId: string, field: "quantityOrdered" | "unitCost", value: string) => void;
+  onUpdate: (
+    itemId: string,
+    field: "quantityOrdered" | "unitCost",
+    value: string
+  ) => void;
   onRemove: (itemId: string) => void;
 }
 
@@ -159,26 +163,26 @@ export function POLineItemsEditable({
             </TableCell>
             <TableCell className="text-right">
               <Input
-                type="number"
+                className="w-24 ml-auto text-right"
                 min="0.01"
-                step="0.01"
-                value={li.quantityOrdered}
                 onChange={(e) =>
                   onUpdate(li.itemId, "quantityOrdered", e.target.value)
                 }
-                className="w-24 ml-auto text-right"
+                step="0.01"
+                type="number"
+                value={li.quantityOrdered}
               />
             </TableCell>
             <TableCell className="text-right">
               <Input
-                type="number"
+                className="w-24 ml-auto text-right"
                 min="0"
-                step="0.01"
-                value={li.unitCost}
                 onChange={(e) =>
                   onUpdate(li.itemId, "unitCost", e.target.value)
                 }
-                className="w-24 ml-auto text-right"
+                step="0.01"
+                type="number"
+                value={li.unitCost}
               />
             </TableCell>
             <TableCell className="text-right font-medium">
@@ -186,11 +190,11 @@ export function POLineItemsEditable({
             </TableCell>
             <TableCell>
               <Button
-                type="button"
-                variant="ghost"
-                size="icon"
                 className="h-8 w-8 text-red-500 hover:text-red-700"
                 onClick={() => onRemove(li.itemId)}
+                size="icon"
+                type="button"
+                variant="ghost"
               >
                 <Trash2 className="h-4 w-4" />
               </Button>

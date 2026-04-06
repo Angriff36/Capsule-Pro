@@ -6,23 +6,28 @@ async function main() {
   const browser = await chromium.launch({ headless: true });
   const page = await browser.newPage();
 
-  await page.goto(`${BASE}/sign-in`, { waitUntil: "domcontentloaded", timeout: 20000 });
+  await page.goto(`${BASE}/sign-in`, {
+    waitUntil: "domcontentloaded",
+    timeout: 20_000,
+  });
   await page.waitForTimeout(4000); // Let Clerk JS fully load
 
   // Check if Clerk JS is loaded
   const clerkLoaded = await page.evaluate(() => {
-    return typeof (window).Clerk !== "undefined";
+    return typeof window.Clerk !== "undefined";
   });
   console.log("Clerk JS loaded:", clerkLoaded);
 
   if (clerkLoaded) {
     const clerkInfo = await page.evaluate(() => {
-      const c = (window).Clerk;
+      const c = window.Clerk;
       return {
         version: c.version,
         loaded: c.loaded,
         session: c.session,
-        user: c.user ? { id: c.user.id, email: c.user.primaryEmailAddress?.emailAddress } : null,
+        user: c.user
+          ? { id: c.user.id, email: c.user.primaryEmailAddress?.emailAddress }
+          : null,
         signIn: c.client?.signIn ? "available" : "not available",
       };
     });
@@ -31,16 +36,19 @@ async function main() {
     // Try to use Clerk's internal email code flow
     if (clerkInfo.signIn === "available") {
       const result = await page.evaluate(async () => {
-        const c = (window).Clerk;
+        const c = window.Clerk;
         const email = "jane+clerk_test@example.com";
         const code = "424242";
-        
+
         // Check available first factors
         const si = c.client.signIn;
         try {
           const created = await si.create({ identifier: email });
-          console.log("SignIn created, supportedFirstFactors:", JSON.stringify(created.supportedFirstFactors));
-          
+          console.log(
+            "SignIn created, supportedFirstFactors:",
+            JSON.stringify(created.supportedFirstFactors)
+          );
+
           const emailFactor = created.supportedFirstFactors?.find(
             (ff) => ff.strategy === "email_code"
           );
@@ -84,4 +92,7 @@ async function main() {
   await browser.close();
 }
 
-main().catch(e => { console.error(e.message); process.exit(1); });
+main().catch((e) => {
+  console.error(e.message);
+  process.exit(1);
+});

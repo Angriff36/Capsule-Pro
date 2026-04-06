@@ -23,6 +23,7 @@ import {
 import {
   getAvailableEmployees,
   getEmployees,
+  getEvents,
   getLocations,
   getSchedules,
 } from "../actions";
@@ -66,6 +67,14 @@ interface Schedule {
   status: string;
 }
 
+interface Event {
+  id: string;
+  title: string;
+  eventDate: Date;
+  eventType: string;
+  status: string;
+}
+
 const formatDateTimeLocal = (dateStr: string | undefined) => {
   if (!dateStr) {
     return "";
@@ -92,6 +101,7 @@ export function ShiftForm({
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
   const [availableEmployees, setAvailableEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [checkingAvailability, setCheckingAvailability] = useState(false);
@@ -102,6 +112,7 @@ export function ShiftForm({
     scheduleId: shift?.schedule_id || scheduleId || "",
     employeeId: shift?.employee_id || "",
     locationId: shift?.location_id || "",
+    eventId: "",
     shiftStart: formatDateTimeLocal(shift?.shift_start),
     shiftEnd: formatDateTimeLocal(shift?.shift_end),
     roleDuringShift: shift?.role_during_shift || "",
@@ -116,12 +127,17 @@ export function ShiftForm({
     async function loadData() {
       setLoading(true);
       try {
-        const [employeesData, locationsData, schedulesData] = await Promise.all(
-          [getEmployees(), getLocations(), getSchedules()]
-        );
+        const [employeesData, locationsData, schedulesData, eventsData] =
+          await Promise.all([
+            getEmployees(),
+            getLocations(),
+            getSchedules(),
+            getEvents(),
+          ]);
         setEmployees(employeesData.employees || []);
         setLocations(locationsData.locations || []);
         setSchedules(schedulesData.schedules || []);
+        setEvents(eventsData.events || []);
       } catch (error) {
         toast.error("Failed to load form data", {
           description: error instanceof Error ? error.message : "Unknown error",
@@ -195,6 +211,7 @@ export function ShiftForm({
       scheduleId: formData.scheduleId,
       employeeId: formData.employeeId,
       locationId: formData.locationId,
+      eventId: formData.eventId || undefined,
       shiftStart: new Date(formData.shiftStart).getTime(),
       shiftEnd: new Date(formData.shiftEnd).getTime(),
       roleDuringShift: formData.roleDuringShift || undefined,
@@ -294,7 +311,7 @@ export function ShiftForm({
             <SelectContent>
               {schedules.map((schedule) => (
                 <SelectItem key={schedule.id} value={schedule.id}>
-                  {schedule.schedule_date.toLocaleDateString()} (
+                  {new Date(schedule.schedule_date).toLocaleDateString()} (
                   {schedule.status})
                 </SelectItem>
               ))}
@@ -303,6 +320,32 @@ export function ShiftForm({
           {errors.scheduleId && (
             <p className="text-sm text-destructive">{errors.scheduleId}</p>
           )}
+        </div>
+
+        {/* Event */}
+        <div className="flex flex-col gap-2">
+          <Label htmlFor="eventId">Event</Label>
+          <Select
+            onValueChange={(value) =>
+              setFormData({ ...formData, eventId: value })
+            }
+            value={formData.eventId}
+          >
+            <SelectTrigger id="eventId">
+              <SelectValue placeholder="Select event (optional)" />
+            </SelectTrigger>
+            <SelectContent>
+              {events.map((event) => (
+                <SelectItem key={event.id} value={event.id}>
+                  {event.title}{" "}
+                  {event.eventDate
+                    ? `(${new Date(event.eventDate).toLocaleDateString()})`
+                    : ""}{" "}
+                  [{event.status}]
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         {/* Location */}

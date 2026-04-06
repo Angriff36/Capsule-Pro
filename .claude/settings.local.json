@@ -1,7 +1,9 @@
 {
   "permissions": {
     "allow": [
-      "Bash(wc:*)"
+      "Bash(wc:*)",
+      "Bash(find /home/oc/src/openclaw/projects/capsule-pro/apps/api/app/api -name \"route.ts\" -exec grep -l \"select\\\\|include\" {})",
+      "Bash(find /home/oc/src/openclaw/projects/capsule-pro -name dev* -o -name *dev.cmd)"
     ]
   },
   "enabledMcpjsonServers": [

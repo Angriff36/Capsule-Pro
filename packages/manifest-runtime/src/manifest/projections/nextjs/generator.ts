@@ -766,9 +766,7 @@ export class NextJsProjection implements ProjectionTarget {
 
     const lines: string[] = [];
 
-    lines.push(
-      `// Auto-generated Next.js API detail route for ${entity.name}`
-    );
+    lines.push(`// Auto-generated Next.js API detail route for ${entity.name}`);
     lines.push("// Generated from Manifest IR - DO NOT EDIT");
     lines.push("");
     lines.push('import type { NextRequest } from "next/server";');
@@ -819,7 +817,7 @@ export class NextJsProjection implements ProjectionTarget {
         ? `where: {
         ${whereConditions.join(",\n        ")}
       },`
-        : `where: { id },`;
+        : "where: { id },";
 
     lines.push(
       `    const ${delegateName} = await database.${delegateName}.findUnique({`

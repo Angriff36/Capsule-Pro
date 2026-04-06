@@ -4,7 +4,6 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { DownloadIcon, LoaderIcon } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
 
 interface ProposalExportButtonProps {
   proposalId: string;
@@ -12,10 +11,10 @@ interface ProposalExportButtonProps {
 }
 
 /**
- * Export button for downloading proposal as PDF
+ * Export button for downloading proposal as PDF.
+ * Uses the browser's print-to-PDF capability since there's no server-side PDF generation endpoint.
  */
 export function ProposalExportButton({
-  proposalId,
   proposalNumber,
 }: ProposalExportButtonProps) {
   const [isExporting, setIsExporting] = useState(false);
@@ -23,39 +22,16 @@ export function ProposalExportButton({
   const handleExport = async () => {
     setIsExporting(true);
     try {
-      toast.loading("Generating proposal PDF...", { id: "pdf-loading" });
-
-      const response = await apiFetch(
-        `/api/crm/proposals/${proposalId}/pdf?download=true`
-      );
-
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-
-        const sanitizedNumber = proposalNumber.replace(/[^a-z0-9-]+/gi, "-");
-        a.download = `proposal-${sanitizedNumber}.pdf`;
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-
-        toast.success("Proposal PDF downloaded successfully", {
-          id: "pdf-loading",
-        });
-      } else {
-        const error = await response.json();
-        throw new Error(error.message || "Failed to generate PDF");
-      }
+      // Open a print dialog for the current page.
+      // Users can "Save as PDF" from the browser's print dialog.
+      // This is a reliable client-side approach that doesn't require
+      // a server-side PDF generation endpoint.
+      window.print();
+      toast.success("Use 'Save as PDF' in the print dialog to export");
     } catch (error) {
-      console.error("Failed to download proposal PDF:", error);
+      console.error("Failed to export proposal PDF:", error);
       toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to download proposal PDF",
-        { id: "pdf-loading" }
+        error instanceof Error ? error.message : "Failed to export proposal PDF"
       );
     } finally {
       setIsExporting(false);

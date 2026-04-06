@@ -32,13 +32,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@repo/design-system/components/ui/tooltip";
-import { apiFetch } from "@/app/lib/api";
 import {
   ChevronDown,
   ChevronUp,
   Copy,
   DollarSign,
-  GripVertical,
   Info,
   Link as LinkIcon,
   Plus,
@@ -48,12 +46,9 @@ import {
 } from "lucide-react";
 // Auth handled at page level via server components
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
-import { toast } from "sonner";
-import {
-  kitchenRecipeVersionDetail,
-  kitchenRecipesSearch,
-} from "@/app/lib/routes";
+import { useEffect, useMemo, useState, useTransition } from "react";
+import { apiFetch } from "@/app/lib/api";
+import { kitchenRecipesSearch } from "@/app/lib/routes";
 
 interface IngredientRow {
   id: string;
@@ -156,16 +151,24 @@ function IngredientRowItem({
 }: {
   ingredient: IngredientRow;
   index: number;
-  onUpdate: (index: number, field: keyof IngredientRow, value: string | boolean) => void;
+  onUpdate: (
+    index: number,
+    field: keyof IngredientRow,
+    value: string | boolean
+  ) => void;
   onRemove: (index: number) => void;
   onMoveUp: (index: number) => void;
   onMoveDown: (index: number) => void;
   onSearchIngredients: (query: string) => Promise<string[]>;
-  onSearchRecipes: (query: string) => Promise<Array<{ id: string; name: string }>>;
+  onSearchRecipes: (
+    query: string
+  ) => Promise<Array<{ id: string; name: string }>>;
   isSearching: boolean;
 }) {
   const [showNameSearch, setShowNameSearch] = useState(false);
-  const [nameResults, setNameResults] = useState<Array<{ id: string; name: string; isSubRecipe?: boolean }>>([]);
+  const [nameResults, setNameResults] = useState<
+    Array<{ id: string; name: string; isSubRecipe?: boolean }>
+  >([]);
   const [nameInput, setNameInput] = useState(ingredient.name);
   const [costTooltipOpen, setCostTooltipOpen] = useState(false);
 
@@ -181,8 +184,16 @@ function IngredientRowItem({
         ]);
 
         const results = [
-          ...ingredients.map((name) => ({ id: `ing-${name}`, name, isSubRecipe: false })),
-          ...recipes.map((r) => ({ id: `rec-${r.id}`, name: r.name, isSubRecipe: true })),
+          ...ingredients.map((name) => ({
+            id: `ing-${name}`,
+            name,
+            isSubRecipe: false,
+          })),
+          ...recipes.map((r) => ({
+            id: `rec-${r.id}`,
+            name: r.name,
+            isSubRecipe: true,
+          })),
         ];
         setNameResults(results);
         setShowNameSearch(true);
@@ -194,7 +205,11 @@ function IngredientRowItem({
     }
   };
 
-  const selectName = (result: { id: string; name: string; isSubRecipe?: boolean }) => {
+  const selectName = (result: {
+    id: string;
+    name: string;
+    isSubRecipe?: boolean;
+  }) => {
     setNameInput(result.name);
     onUpdate(index, "name", result.name);
     setShowNameSearch(false);
@@ -254,8 +269,8 @@ function IngredientRowItem({
             className="h-9"
             onChange={(e) => onUpdate(index, "quantity", e.target.value)}
             placeholder="Qty"
-            type="number"
             step="0.01"
+            type="number"
             value={ingredient.quantity}
           />
         </div>
@@ -293,11 +308,14 @@ function IngredientRowItem({
               <Link
                 className="absolute right-8 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-primary"
                 href={`/kitchen/recipes/${ingredient.subRecipeId}`}
-                target="_blank"
                 onClick={(e) => e.preventDefault()}
+                target="_blank"
               >
                 <TooltipProvider>
-                  <Tooltip open={costTooltipOpen} onOpenChange={setCostTooltipOpen}>
+                  <Tooltip
+                    onOpenChange={setCostTooltipOpen}
+                    open={costTooltipOpen}
+                  >
                     <TooltipTrigger asChild>
                       <LinkIcon className="h-4 w-4" />
                     </TooltipTrigger>
@@ -314,7 +332,8 @@ function IngredientRowItem({
                       <DollarSign className="h-4 w-4 text-green-600" />
                     </TooltipTrigger>
                     <TooltipContent>
-                      Cost per ingredient: {formatCurrency(ingredient.costPerIngredient)}
+                      Cost per ingredient:{" "}
+                      {formatCurrency(ingredient.costPerIngredient)}
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
@@ -351,7 +370,9 @@ function IngredientRowItem({
         <div className="col-span-3">
           <Input
             className="h-9"
-            onChange={(e) => onUpdate(index, "preparationNotes", e.target.value)}
+            onChange={(e) =>
+              onUpdate(index, "preparationNotes", e.target.value)
+            }
             placeholder="Prep notes (optional)"
             value={ingredient.preparationNotes}
           />
@@ -409,7 +430,9 @@ export function RichRecipeEditor({
   const [scaleFactor, setScaleFactor] = useState(1);
   const [targetPrice, setTargetPrice] = useState<number | null>(null);
   const [foodCostTarget, setFoodCostTarget] = useState<number | null>(null);
-  const [costBreakdown, setCostBreakdown] = useState<CostBreakdown | null>(null);
+  const [costBreakdown, setCostBreakdown] = useState<CostBreakdown | null>(
+    null
+  );
   const [isCalculating, startCalculation] = useTransition();
   const [isSearching, setIsSearching] = useState(false);
 
@@ -429,7 +452,7 @@ export function RichRecipeEditor({
             body: JSON.stringify({
               ingredients: ingredients.map((ing) => ({
                 name: ing.name,
-                quantity: parseFloat(ing.quantity) || 0,
+                quantity: Number.parseFloat(ing.quantity) || 0,
                 unit: ing.unit,
                 isSubRecipe: ing.isSubRecipe,
                 subRecipeId: ing.subRecipeId,
@@ -448,7 +471,7 @@ export function RichRecipeEditor({
               prev.map((ing, idx) => ({
                 ...ing,
                 costPerIngredient: data.ingredients[idx]?.cost || 0,
-                hasCostData: data.ingredients[idx]?.hasInventoryItem || false,
+                hasCostData: data.ingredients[idx]?.hasInventoryItem,
               }))
             );
           }
@@ -535,7 +558,7 @@ export function RichRecipeEditor({
   const handleScale = (factor: number) => {
     setIngredients((prev) =>
       prev.map((ing) => {
-        const currentQty = parseFloat(ing.quantity) || 0;
+        const currentQty = Number.parseFloat(ing.quantity) || 0;
         return {
           ...ing,
           quantity: (currentQty * factor).toString(),
@@ -605,7 +628,7 @@ export function RichRecipeEditor({
   };
 
   const foodCostPercentage = useMemo(() => {
-    if (!costBreakdown || !targetPrice) return null;
+    if (!(costBreakdown && targetPrice)) return null;
     return (costBreakdown.totalCost / targetPrice) * 100;
   }, [costBreakdown, targetPrice]);
 
@@ -617,7 +640,10 @@ export function RichRecipeEditor({
 
   return (
     <Sheet onOpenChange={onOpenChange} open={open}>
-      <SheetContent className="w-full overflow-y-auto sm:max-w-4xl" side="right">
+      <SheetContent
+        className="w-full overflow-y-auto sm:max-w-4xl"
+        side="right"
+      >
         <SheetHeader>
           <SheetTitle>{modalTitle}</SheetTitle>
           <SheetDescription>{modalDescription}</SheetDescription>
@@ -709,7 +735,9 @@ export function RichRecipeEditor({
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
                       <DollarSign className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                      <p>Add ingredients with cost data to see recipe costing.</p>
+                      <p>
+                        Add ingredients with cost data to see recipe costing.
+                      </p>
                     </div>
                   )}
 
@@ -721,12 +749,16 @@ export function RichRecipeEditor({
                     <div className="flex flex-wrap items-center gap-2">
                       {[0.25, 0.5, 0.75, 1, 1.5, 2, 3].map((factor) => (
                         <Button
-                          className={scaleFactor === factor ? "ring-2 ring-primary" : ""}
+                          className={
+                            scaleFactor === factor ? "ring-2 ring-primary" : ""
+                          }
                           key={factor}
                           onClick={() => handleScale(factor / scaleFactor)}
                           size="sm"
                           type="button"
-                          variant={scaleFactor === factor ? "default" : "outline"}
+                          variant={
+                            scaleFactor === factor ? "default" : "outline"
+                          }
                         >
                           {factor}x
                         </Button>
@@ -737,7 +769,7 @@ export function RichRecipeEditor({
                           className="w-20 h-9"
                           min="0.1"
                           onChange={(e) => {
-                            const val = parseFloat(e.target.value);
+                            const val = Number.parseFloat(e.target.value);
                             if (val > 0) {
                               handleScale(val / scaleFactor);
                             }
@@ -765,7 +797,9 @@ export function RichRecipeEditor({
                           min="0"
                           onChange={(e) =>
                             setTargetPrice(
-                              e.target.value ? parseFloat(e.target.value) : null
+                              e.target.value
+                                ? Number.parseFloat(e.target.value)
+                                : null
                             )
                           }
                           placeholder="0.00"
@@ -786,7 +820,9 @@ export function RichRecipeEditor({
                           min="0"
                           onChange={(e) =>
                             setFoodCostTarget(
-                              e.target.value ? parseFloat(e.target.value) : null
+                              e.target.value
+                                ? Number.parseFloat(e.target.value)
+                                : null
                             )
                           }
                           placeholder="30"
@@ -916,12 +952,16 @@ export function RichRecipeEditor({
                     ingredient={ingredient}
                     isSearching={isSearching}
                     key={ingredient.id}
-                    onMoveDown={(index: number) => handleMoveIngredient(index, "down")}
-                    onMoveUp={(index: number) => handleMoveIngredient(index, "up")}
+                    onMoveDown={(index: number) =>
+                      handleMoveIngredient(index, "down")
+                    }
+                    onMoveUp={(index: number) =>
+                      handleMoveIngredient(index, "up")
+                    }
                     onRemove={handleRemoveIngredient}
-                    onUpdate={handleUpdateIngredient}
                     onSearchIngredients={handleSearchIngredients}
                     onSearchRecipes={handleSearchRecipes}
+                    onUpdate={handleUpdateIngredient}
                   />
                 ))}
               </div>
@@ -962,7 +1002,10 @@ export function RichRecipeEditor({
                   </SelectTrigger>
                   <SelectContent>
                     {commonUnits.map((unit) => (
-                      <SelectItem key={unit.code} value={unit.label.toLowerCase()}>
+                      <SelectItem
+                        key={unit.code}
+                        value={unit.label.toLowerCase()}
+                      >
                         {unit.label}
                       </SelectItem>
                     ))}
@@ -1025,8 +1068,16 @@ export function RichRecipeEditor({
           </div>
 
           <input name="tags" type="hidden" value={JSON.stringify(tags)} />
-          <input name="ingredients" type="hidden" value={JSON.stringify(ingredients)} />
-          <input name="scaleFactor" type="hidden" value={scaleFactor.toString()} />
+          <input
+            name="ingredients"
+            type="hidden"
+            value={JSON.stringify(ingredients)}
+          />
+          <input
+            name="scaleFactor"
+            type="hidden"
+            value={scaleFactor.toString()}
+          />
           <input
             name="targetPrice"
             type="hidden"

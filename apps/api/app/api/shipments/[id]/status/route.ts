@@ -7,6 +7,7 @@
 import { auth } from "@repo/auth/server";
 import type { Shipment } from "@repo/database";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -705,6 +706,7 @@ export async function POST(
 
     return NextResponse.json(mapShipmentToResponse(updated));
   } catch (error) {
+    captureException(error);
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }

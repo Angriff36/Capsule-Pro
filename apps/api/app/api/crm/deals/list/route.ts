@@ -6,7 +6,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import type { NextResponse } from "next/server";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse as NextResponseAlias } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -18,10 +18,7 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
  * - accepted   → negotiation
  * - rejected   → lost
  */
-function proposalStatusToStage(
-  status: string,
-  eventId: string | null
-): string {
+function proposalStatusToStage(status: string, eventId: string | null): string {
   switch (status) {
     case "draft":
       return "lead";
@@ -43,12 +40,18 @@ export async function GET() {
   try {
     const { orgId } = await auth();
     if (!orgId) {
-      return NextResponseAlias.json({ message: "Unauthorized" }, { status: 401 });
+      return NextResponseAlias.json(
+        { message: "Unauthorized" },
+        { status: 401 }
+      );
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponseAlias.json({ message: "Tenant not found" }, { status: 400 });
+      return NextResponseAlias.json(
+        { message: "Tenant not found" },
+        { status: 400 }
+      );
     }
 
     const proposals = await database.proposal.findMany({
@@ -111,6 +114,7 @@ export async function GET() {
 
     return NextResponseAlias.json({ data: deals });
   } catch (error) {
+    captureException(error);
     console.error("Error listing deals:", error);
     return NextResponseAlias.json(
       { message: "Internal server error" },

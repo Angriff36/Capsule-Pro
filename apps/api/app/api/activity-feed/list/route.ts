@@ -5,9 +5,16 @@ import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
-  manifestErrorResponse,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+manifestErrorResponse,
   manifestSuccessResponse,
-} from "@/lib/manifest-response";
+} from "@/lib/manifest-response"
+
 import { database } from "@/lib/database";
 
 export interface ActivityFeedItem {
@@ -99,7 +106,10 @@ export async function GET(request: NextRequest) {
 
     // Add date range filters if provided
     if (startDate || endDate) {
-      where.createdAt = { gte: startDate ? new Date(startDate) : undefined, lte: endDate ? new Date(endDate) : undefined } as any;
+      where.createdAt = {
+        gte: startDate ? new Date(startDate) : undefined,
+        lte: endDate ? new Date(endDate) : undefined,
+      } as any;
     }
 
     // Get total count for pagination
@@ -123,6 +133,7 @@ export async function GET(request: NextRequest) {
       totalCount,
     });
   } catch (error) {
+    captureException(error);
     console.error("Error fetching activity feed:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

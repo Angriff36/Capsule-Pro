@@ -20,7 +20,7 @@ const RecipesRealtime = ({ tenantId, userId }: RecipesRealtimeProps) => {
   useEffect(() => {
     // Skip if Ably is not configured in this environment.
     // Set NEXT_PUBLIC_ABLY_ENABLED=true alongside ABLY_API_KEY to enable.
-    if (!tenantId || !process.env.NEXT_PUBLIC_ABLY_ENABLED) {
+    if (!(tenantId && process.env.NEXT_PUBLIC_ABLY_ENABLED)) {
       return;
     }
 

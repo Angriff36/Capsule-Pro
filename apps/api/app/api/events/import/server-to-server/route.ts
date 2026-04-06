@@ -10,6 +10,7 @@
 import { randomUUID } from "node:crypto";
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -792,6 +793,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json(response);
   } catch (error) {
+    captureException(error);
     console.error("Server-to-server import error:", error);
     return NextResponse.json(
       {

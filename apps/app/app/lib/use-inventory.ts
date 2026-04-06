@@ -335,7 +335,9 @@ export async function batchUpdateItems(
 /**
  * Batch delete inventory items (soft delete)
  */
-export async function batchDeleteItems(ids: string[]): Promise<BatchDeleteResponse> {
+export async function batchDeleteItems(
+  ids: string[]
+): Promise<BatchDeleteResponse> {
   const response = await apiFetch("/api/inventory/batch", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -363,7 +365,9 @@ export interface ImportResponse {
 /**
  * Import inventory items from a CSV File object
  */
-export async function importInventoryItemsFromCSV(file: File): Promise<ImportResponse> {
+export async function importInventoryItemsFromCSV(
+  file: File
+): Promise<ImportResponse> {
   const formData = new FormData();
   formData.append("file", file);
 

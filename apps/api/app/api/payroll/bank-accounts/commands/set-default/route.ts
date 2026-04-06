@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -22,13 +23,14 @@ export async function POST(request: NextRequest) {
     const { id } = body;
 
     if (!id) {
-      return NextResponse.json({ error: "Account ID required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Account ID required" },
+        { status: 400 }
+      );
     }
 
     // Get the account's employee_id first
-    const [account] = await database.$queryRaw<
-      Array<{ employee_id: string }>
-    >(
+    const [account] = await database.$queryRaw<Array<{ employee_id: string }>>(
       Prisma.sql`
         SELECT employee_id FROM tenant_staff.employee_bank_accounts
         WHERE tenant_id = ${tenantId} AND id = ${id} AND deleted_at IS NULL
@@ -36,7 +38,10 @@ export async function POST(request: NextRequest) {
     );
 
     if (!account) {
-      return NextResponse.json({ error: "Bank account not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Bank account not found" },
+        { status: 404 }
+      );
     }
 
     // Unset all defaults for this employee, then set the target
@@ -70,7 +75,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, id });
   } catch (error) {
+    captureException(error);
     console.error("Failed to set default bank account:", error);
-    return NextResponse.json({ error: "Failed to set default" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to set default" },
+      { status: 500 }
+    );
   }
 }

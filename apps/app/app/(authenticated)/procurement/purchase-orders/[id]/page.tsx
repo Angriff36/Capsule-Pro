@@ -1,14 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
-import {
-  ArrowLeft,
-  Package,
-  DollarSign,
-  Loader2,
-} from "lucide-react";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -16,8 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Badge } from "@repo/design-system/components/ui/badge";
-import { Input } from "@repo/design-system/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -26,12 +16,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
-import { POLineItemsDisplay, type POItem } from "../../components/po-line-items";
+import { Input } from "@repo/design-system/components/ui/input";
+import { ArrowLeft, DollarSign, Loader2, Package } from "lucide-react";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
-  STATUS_CONFIG,
-  STATUS_WORKFLOW,
+  type POItem,
+  POLineItemsDisplay,
+} from "../../components/po-line-items";
+import {
   formatCurrency,
   formatDate,
+  STATUS_CONFIG,
+  STATUS_WORKFLOW,
 } from "../../components/po-shared";
 
 interface POOrder {
@@ -79,7 +77,10 @@ export default function PODetailPage() {
         const initial: Record<string, string> = {};
         (data.data.items || []).forEach((item: POItem) => {
           initial[item.id] = String(
-            Math.max(0, Number(item.quantity_ordered) - Number(item.quantity_received)),
+            Math.max(
+              0,
+              Number(item.quantity_ordered) - Number(item.quantity_received)
+            )
           );
         });
         setReceiveItems(initial);
@@ -101,13 +102,11 @@ export default function PODetailPage() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ orderId: order.id, status: newStatus }),
-        },
+        }
       );
       const data = await res.json();
       if (data.success) {
-        setOrder((prev) =>
-          prev ? { ...prev, status: newStatus } : prev,
-        );
+        setOrder((prev) => (prev ? { ...prev, status: newStatus } : prev));
       }
     } catch (error) {
       console.error("Failed to update status:", error);
@@ -126,7 +125,7 @@ export default function PODetailPage() {
           quantityReceived: Number(qty),
           quantityOrdered:
             Number(items.find((i) => i.id === itemId)?.quantity_ordered) || 0,
-        }),
+        })
       );
 
       const res = await fetch(
@@ -138,7 +137,7 @@ export default function PODetailPage() {
             orderId: order.id,
             items: receivePayload,
           }),
-        },
+        }
       );
       const data = await res.json();
       if (data.success) {
@@ -165,7 +164,7 @@ export default function PODetailPage() {
       <div className="p-8 text-center text-muted-foreground">
         <p>Purchase order not found.</p>
         <Link href="/procurement/purchase-orders">
-          <Button variant="outline" className="mt-4">
+          <Button className="mt-4" variant="outline">
             Back to Purchase Orders
           </Button>
         </Link>
@@ -178,11 +177,11 @@ export default function PODetailPage() {
   const workflowActions = STATUS_WORKFLOW[order.status] || [];
   const totalReceived = items.reduce(
     (sum, i) => sum + Number(i.quantity_received),
-    0,
+    0
   );
   const totalOrdered = items.reduce(
     (sum, i) => sum + Number(i.quantity_ordered),
-    0,
+    0
   );
   const receiveProgress =
     totalOrdered > 0 ? Math.round((totalReceived / totalOrdered) * 100) : 0;
@@ -192,7 +191,7 @@ export default function PODetailPage() {
       {/* Header */}
       <div className="flex items-center gap-4">
         <Link href="/procurement/purchase-orders">
-          <Button variant="ghost" size="icon">
+          <Button size="icon" variant="ghost">
             <ArrowLeft className="h-5 w-5" />
           </Button>
         </Link>
@@ -213,15 +212,15 @@ export default function PODetailPage() {
             const actionConfig = STATUS_CONFIG[action];
             return (
               <Button
+                disabled={updating === action}
                 key={action}
+                onClick={() => handleStatusUpdate(action)}
+                size="sm"
                 variant={
                   action === "cancelled" || action === "rejected"
                     ? "destructive"
                     : "default"
                 }
-                size="sm"
-                disabled={updating === action}
-                onClick={() => handleStatusUpdate(action)}
               >
                 {updating === action && (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -232,9 +231,9 @@ export default function PODetailPage() {
           })}
           {(order.status === "ordered" || order.status === "approved") && (
             <Button
+              onClick={() => setShowReceiveDialog(true)}
               size="sm"
               variant="outline"
-              onClick={() => setShowReceiveDialog(true)}
             >
               <Package className="h-4 w-4 mr-2" />
               Receive Items
@@ -324,7 +323,7 @@ export default function PODetailPage() {
       )}
 
       {/* Receive Dialog */}
-      <Dialog open={showReceiveDialog} onOpenChange={setShowReceiveDialog}>
+      <Dialog onOpenChange={setShowReceiveDialog} open={showReceiveDialog}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Receive Items</DialogTitle>
@@ -336,12 +335,12 @@ export default function PODetailPage() {
             {items.map((item) => {
               const remaining = Math.max(
                 0,
-                Number(item.quantity_ordered) - Number(item.quantity_received),
+                Number(item.quantity_ordered) - Number(item.quantity_received)
               );
               return (
                 <div
-                  key={item.id}
                   className="grid grid-cols-3 gap-4 items-center"
+                  key={item.id}
                 >
                   <div>
                     <p className="font-medium text-sm">
@@ -356,11 +355,8 @@ export default function PODetailPage() {
                     Remaining: {remaining} {item.unit_of_measure || ""}
                   </div>
                   <Input
-                    type="number"
-                    min="0"
                     max={remaining}
-                    step="0.01"
-                    value={receiveItems[item.id] || ""}
+                    min="0"
                     onChange={(e) =>
                       setReceiveItems((prev) => ({
                         ...prev,
@@ -368,6 +364,9 @@ export default function PODetailPage() {
                       }))
                     }
                     placeholder="0"
+                    step="0.01"
+                    type="number"
+                    value={receiveItems[item.id] || ""}
                   />
                 </div>
               );
@@ -375,15 +374,13 @@ export default function PODetailPage() {
           </div>
           <DialogFooter>
             <Button
-              variant="outline"
               onClick={() => setShowReceiveDialog(false)}
+              variant="outline"
             >
               Cancel
             </Button>
-            <Button onClick={handleReceive} disabled={receiving}>
-              {receiving && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
+            <Button disabled={receiving} onClick={handleReceive}>
+              {receiving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Confirm Receipt
             </Button>
           </DialogFooter>

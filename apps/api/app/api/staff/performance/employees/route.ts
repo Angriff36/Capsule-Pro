@@ -1,9 +1,13 @@
 // List employees for performance review dropdown
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import {
+  manifestErrorResponse,
+  manifestSuccessResponse,
+} from "@/lib/manifest-response";
 
 export async function GET(request: NextRequest) {
   try {
@@ -31,6 +35,7 @@ export async function GET(request: NextRequest) {
 
     return manifestSuccessResponse({ employees });
   } catch (error) {
+    captureException(error);
     console.error("Error listing employees:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

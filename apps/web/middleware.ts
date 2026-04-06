@@ -1,5 +1,5 @@
-import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { NextResponse } from "next/server";
 
 // Valid locales - must match packages/internationalization/languine.json
 const VALID_LOCALES = ["en", "es", "de", "zh", "fr", "pt"];
@@ -46,42 +46,42 @@ function normalizeLocale(locale: string): string {
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  
+
   // Get the first path segment (potential locale)
   const pathSegments = pathname.split("/").filter(Boolean);
   const potentialLocale = pathSegments[0];
-  
+
   // If no path segment, let it through (root redirect)
   if (!potentialLocale) {
     return NextResponse.next();
   }
-  
+
   // Check if this looks like a static file request
-  const isStaticFile = STATIC_FILE_PATTERNS.some(pattern => 
+  const isStaticFile = STATIC_FILE_PATTERNS.some((pattern) =>
     pattern.test(potentialLocale)
   );
-  
+
   if (isStaticFile) {
     // Return 404 for static files hitting the locale route
     return new NextResponse("Not Found", { status: 404 });
   }
-  
+
   // Normalize the locale before validation (handle "en-US", "EN", "en_US", etc.)
   const normalizedLocale = normalizeLocale(potentialLocale);
-  
+
   // Check if the normalized locale is valid
   const isValidLocale = VALID_LOCALES.includes(normalizedLocale);
-  
+
   if (!isValidLocale) {
     // Check if this might be a bot hitting an invalid URL
     const userAgent = request.headers.get("user-agent") || "";
-    const isBot = BOT_PATTERNS.some(pattern => pattern.test(userAgent));
-    
+    const isBot = BOT_PATTERNS.some((pattern) => pattern.test(userAgent));
+
     // For bots with invalid locales, return 404 to prevent errors
     if (isBot || potentialLocale.includes(".")) {
       return new NextResponse("Not Found", { status: 404 });
     }
-    
+
     // For humans, redirect to default locale (en) with the same path
     const url = request.nextUrl.clone();
     // Preserve the rest of the path after the invalid locale
@@ -89,7 +89,7 @@ export function middleware(request: NextRequest) {
     url.pathname = restOfPath ? `/en/${restOfPath}` : "/en";
     return NextResponse.redirect(url);
   }
-  
+
   return NextResponse.next();
 }
 

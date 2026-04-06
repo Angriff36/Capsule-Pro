@@ -5,6 +5,7 @@
  */
 
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { requireCurrentUser } from "@/app/lib/tenant";
 import { withRateLimit } from "@/middleware/rate-limiter";
@@ -82,6 +83,7 @@ export const POST = withRateLimit(
 
       return NextResponse.json(revoked);
     } catch (error) {
+      captureException(error);
       console.error("[ApiKeys/revoke] Error:", error);
       return NextResponse.json(
         { message: "Failed to revoke API key" },

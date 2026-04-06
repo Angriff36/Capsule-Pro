@@ -150,6 +150,7 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
         eventDishes={eventDishes}
         hasContract={hasContract}
         inventoryCoverage={inventoryCoverage}
+        prepLists={prepLists}
         prepTasks={prepTasksForClient}
         recipeDetails={recipeDetails}
         relatedEvents={relatedEvents}
@@ -157,7 +158,6 @@ const EventDetailsPage = async ({ params }: EventDetailsPageProps) => {
         rsvpCount={rsvpCount}
         staffCount={staffCount}
         tenantId={tenantId}
-        prepLists={prepLists}
       />
     </>
   );

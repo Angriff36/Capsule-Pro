@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import Ably from "ably";
 import { NextResponse } from "next/server";
 import { corsHeaders } from "@/app/lib/cors";
@@ -228,6 +229,7 @@ export async function GET(request: Request, context: RouteContext) {
       }
     );
   } catch (error) {
+    captureException(error);
     if (error instanceof InvariantError) {
       return NextResponse.json(
         { message: error.message },
@@ -349,6 +351,7 @@ export async function POST(request: Request, context: RouteContext) {
       headers: corsHeaders(request, "GET, POST, OPTIONS"),
     });
   } catch (error) {
+    captureException(error);
     if (error instanceof InvariantError) {
       return NextResponse.json(
         { message: error.message },

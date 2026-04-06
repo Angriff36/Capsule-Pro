@@ -1,12 +1,20 @@
 // API route for listing maintenance work orders
-import { Prisma } from "@repo/database";
+
 import { auth } from "@repo/auth/server";
+import { Prisma } from "@repo/database";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
-  manifestErrorResponse,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+manifestErrorResponse,
   manifestSuccessResponse,
-} from "@/lib/manifest-response";
+} from "@/lib/manifest-response"
+
 import { database } from "@/lib/database";
 
 export async function GET(request: NextRequest) {
@@ -53,6 +61,7 @@ export async function GET(request: NextRequest) {
 
     return manifestSuccessResponse({ workOrders });
   } catch (error) {
+    captureException(error);
     console.error("Error listing work orders:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

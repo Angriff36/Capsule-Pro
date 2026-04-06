@@ -186,7 +186,10 @@ async function resolveUserRole(
 
   // Clerk user IDs (e.g. user_...) are not UUIDs. Detect non-UUID format
   // and skip the UUID-based lookup to avoid poisoning Neon transactions.
-  const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(user.id);
+  const isUuid =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      user.id
+    );
 
   if (isUuid) {
     try {

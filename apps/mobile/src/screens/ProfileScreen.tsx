@@ -1,3 +1,5 @@
+import { useAuth, useUser } from "@clerk/clerk-expo";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
@@ -9,11 +11,9 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useAuth, useUser } from "@clerk/clerk-expo";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getAuthToken } from "../store/auth";
 import { apiClient } from "../api/client";
 import ErrorState from "../components/ErrorState";
+import { getAuthToken } from "../store/auth";
 
 interface UserProfile {
   id: string;
@@ -43,7 +43,9 @@ async function fetchUserProfile(): Promise<UserProfile> {
   return response.user;
 }
 
-async function updateUserProfile(data: ProfileUpdateRequest): Promise<UserProfile> {
+async function updateUserProfile(
+  data: ProfileUpdateRequest
+): Promise<UserProfile> {
   const token = await getAuthToken();
   const response = await apiClient<ProfileResponse>("/api/user/profile", {
     method: "PATCH",
@@ -113,18 +115,14 @@ export default function ProfileScreen() {
   }, [firstName, lastName, phone, updateMutation]);
 
   const handleSignOut = useCallback(() => {
-    Alert.alert(
-      "Sign Out",
-      "Are you sure you want to sign out?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Sign Out",
-          style: "destructive",
-          onPress: () => void signOut(),
-        },
-      ]
-    );
+    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Sign Out",
+        style: "destructive",
+        onPress: () => void signOut(),
+      },
+    ]);
   }, [signOut]);
 
   if (isLoading) {
@@ -139,7 +137,9 @@ export default function ProfileScreen() {
   if (error) {
     return (
       <ErrorState
-        message={error instanceof Error ? error.message : "Failed to load profile"}
+        message={
+          error instanceof Error ? error.message : "Failed to load profile"
+        }
         onRetry={() => void refetch()}
       />
     );
@@ -159,7 +159,9 @@ export default function ProfileScreen() {
             ? `${profile.firstName} ${profile.lastName}`
             : "User"}
         </Text>
-        <Text style={styles.userEmail}>{profile?.email ?? user?.primaryEmailAddress?.emailAddress}</Text>
+        <Text style={styles.userEmail}>
+          {profile?.email ?? user?.primaryEmailAddress?.emailAddress}
+        </Text>
         <View style={styles.roleBadge}>
           <Text style={styles.roleText}>{profile?.role ?? "Staff"}</Text>
         </View>
@@ -237,19 +239,27 @@ export default function ProfileScreen() {
           <View style={styles.infoList}>
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>First Name</Text>
-              <Text style={styles.infoValue}>{profile?.firstName ?? "Not set"}</Text>
+              <Text style={styles.infoValue}>
+                {profile?.firstName ?? "Not set"}
+              </Text>
             </View>
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Last Name</Text>
-              <Text style={styles.infoValue}>{profile?.lastName ?? "Not set"}</Text>
+              <Text style={styles.infoValue}>
+                {profile?.lastName ?? "Not set"}
+              </Text>
             </View>
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Email</Text>
-              <Text style={styles.infoValue}>{profile?.email ?? "Not set"}</Text>
+              <Text style={styles.infoValue}>
+                {profile?.email ?? "Not set"}
+              </Text>
             </View>
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Phone</Text>
-              <Text style={styles.infoValue}>{profile?.phone ?? "Not set"}</Text>
+              <Text style={styles.infoValue}>
+                {profile?.phone ?? "Not set"}
+              </Text>
             </View>
             <View style={styles.infoRow}>
               <Text style={styles.infoLabel}>Member Since</Text>
@@ -265,10 +275,7 @@ export default function ProfileScreen() {
 
       {/* Sign Out Button */}
       <View style={styles.section}>
-        <TouchableOpacity
-          onPress={handleSignOut}
-          style={styles.signOutButton}
-        >
+        <TouchableOpacity onPress={handleSignOut} style={styles.signOutButton}>
           <Text style={styles.signOutButtonText}>Sign Out</Text>
         </TouchableOpacity>
       </View>

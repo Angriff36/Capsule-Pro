@@ -1,8 +1,13 @@
 // Assign driver to route
-import { NextRequest } from "next/server";
+
+import { captureException } from "@sentry/nextjs";
+import type { NextRequest } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import {
+  manifestErrorResponse,
+  manifestSuccessResponse,
+} from "@/lib/manifest-response";
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,7 +29,10 @@ export async function POST(request: NextRequest) {
       return manifestErrorResponse("Route not found", 404);
     }
 
-    if (existingRoute.status === "completed" || existingRoute.status === "cancelled") {
+    if (
+      existingRoute.status === "completed" ||
+      existingRoute.status === "cancelled"
+    ) {
       return manifestErrorResponse(
         "Cannot assign driver to completed or cancelled route",
         400
@@ -82,6 +90,7 @@ export async function POST(request: NextRequest) {
 
     return manifestSuccessResponse({ route: updatedRoute });
   } catch (error) {
+    captureException(error);
     console.error("Error assigning driver:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

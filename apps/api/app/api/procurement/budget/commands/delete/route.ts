@@ -1,9 +1,13 @@
 // Soft-delete a procurement budget
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import {
+  manifestErrorResponse,
+  manifestSuccessResponse,
+} from "@/lib/manifest-response";
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,10 +27,12 @@ export async function POST(request: NextRequest) {
       RETURNING id, name
     `;
 
-    if (!(result as any[]).length) return manifestErrorResponse("Budget not found", 404);
+    if (!(result as any[]).length)
+      return manifestErrorResponse("Budget not found", 404);
 
     return manifestSuccessResponse({ budget: (result as any[])[0] });
   } catch (error) {
+    captureException(error);
     console.error("Error deleting budget:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

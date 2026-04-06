@@ -33,8 +33,8 @@ const formatDateValue = (value?: Date | null): string => {
   // PostgreSQL DATE type stores just the date, so we need to extract
   // the date portion as stored, not converted to UTC
   const year = value.getFullYear();
-  const month = String(value.getMonth() + 1).padStart(2, '0');
-  const day = String(value.getDate()).padStart(2, '0');
+  const month = String(value.getMonth() + 1).padStart(2, "0");
+  const day = String(value.getDate()).padStart(2, "0");
   return `${year}-${month}-${day}`;
 };
 
@@ -48,7 +48,12 @@ const formatDecimalValue = (
   return value.toString();
 };
 
-export const EventForm = ({ event, action, submitLabel, templateDefaults }: EventFormProps) => {
+export const EventForm = ({
+  event,
+  action,
+  submitLabel,
+  templateDefaults,
+}: EventFormProps) => {
   const isEdit = Boolean(event?.id);
   const [state, formAction, isPending] = useActionState(action, null);
 
@@ -61,7 +66,11 @@ export const EventForm = ({ event, action, submitLabel, templateDefaults }: Even
       )}
       {isEdit ? <input name="eventId" type="hidden" value={event?.id} /> : null}
       {templateDefaults?.templateId ? (
-        <input name="templateId" type="hidden" value={templateDefaults.templateId} />
+        <input
+          name="templateId"
+          type="hidden"
+          value={templateDefaults.templateId}
+        />
       ) : null}
       <div className="grid gap-6 md:grid-cols-2">
         <div className="flex flex-col gap-2">
@@ -149,7 +158,9 @@ export const EventForm = ({ event, action, submitLabel, templateDefaults }: Even
             Guest count
           </label>
           <Input
-            defaultValue={event?.guestCount ?? templateDefaults?.guestCount ?? 1}
+            defaultValue={
+              event?.guestCount ?? templateDefaults?.guestCount ?? 1
+            }
             id="guestCount"
             min={1}
             name="guestCount"
@@ -241,7 +252,11 @@ export const EventForm = ({ event, action, submitLabel, templateDefaults }: Even
             Tags (comma separated)
           </label>
           <Input
-            defaultValue={event?.tags?.join(", ") ?? templateDefaults?.tags?.join(", ") ?? ""}
+            defaultValue={
+              event?.tags?.join(", ") ??
+              templateDefaults?.tags?.join(", ") ??
+              ""
+            }
             id="tags"
             name="tags"
             placeholder="vip, offsite"

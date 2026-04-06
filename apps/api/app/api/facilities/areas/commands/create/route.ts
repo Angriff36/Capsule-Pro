@@ -3,9 +3,16 @@ import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
-  manifestErrorResponse,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+manifestErrorResponse,
   manifestSuccessResponse,
-} from "@/lib/manifest-response";
+} from "@/lib/manifest-response"
+
 import { database } from "@/lib/database";
 
 export async function POST(request: NextRequest) {
@@ -21,13 +28,23 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { venueId, name, code, areaType, floor, description, squareFeet } = body;
+    const { venueId, name, code, areaType, floor, description, squareFeet } =
+      body;
 
     if (!name) {
       return manifestErrorResponse("name is required", 400);
     }
 
-    const validTypes = ["kitchen", "storage", "dining", "prep", "office", "loading_dock", "restroom", "other"];
+    const validTypes = [
+      "kitchen",
+      "storage",
+      "dining",
+      "prep",
+      "office",
+      "loading_dock",
+      "restroom",
+      "other",
+    ];
     const type = validTypes.includes(areaType) ? areaType : "other";
 
     // Check for duplicate code if provided
@@ -60,6 +77,7 @@ export async function POST(request: NextRequest) {
 
     return manifestSuccessResponse({ area: (result as any[])[0] });
   } catch (error) {
+    captureException(error);
     console.error("Error creating facility area:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

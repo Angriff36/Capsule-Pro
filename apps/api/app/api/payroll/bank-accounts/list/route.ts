@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -92,7 +93,11 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ accounts, employees });
   } catch (error) {
+    captureException(error);
     console.error("Failed to list bank accounts:", error);
-    return NextResponse.json({ error: "Failed to list bank accounts" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to list bank accounts" },
+      { status: 500 }
+    );
   }
 }

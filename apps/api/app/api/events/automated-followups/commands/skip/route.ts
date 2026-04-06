@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@repo/auth/server';
-import { getTenantIdForOrg } from '@/app/lib/tenant';
-import { database } from '@repo/database';
+import { auth } from "@repo/auth/server";
+import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
+import { type NextRequest, NextResponse } from "next/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 /**
  * POST /api/events/automated-followups/commands/skip
@@ -11,12 +12,12 @@ export async function POST(request: NextRequest) {
   try {
     const { orgId, userId } = await auth();
     if (!(userId && orgId)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ error: 'Tenant not found' }, { status: 400 });
+      return NextResponse.json({ error: "Tenant not found" }, { status: 400 });
     }
 
     const body = await request.json();
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
 
     if (!followupId) {
       return NextResponse.json(
-        { error: 'followupId is required' },
+        { error: "followupId is required" },
         { status: 400 }
       );
     }
@@ -32,20 +33,24 @@ export async function POST(request: NextRequest) {
     const result = await database.$executeRaw`
       UPDATE tenant_events.event_followups
       SET status = 'skipped',
-          notes = ${reason || 'Skipped'},
+          notes = ${reason || "Skipped"},
           updated_at = NOW()
       WHERE id = ${followupId}::uuid AND tenant_id = ${tenantId}::uuid
     `;
 
     if (result === 0) {
-      return NextResponse.json({ error: 'Followup not found' }, { status: 404 });
+      return NextResponse.json(
+        { error: "Followup not found" },
+        { status: 404 }
+      );
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error skipping followup:', error);
+    captureException(error);
+    console.error("Error skipping followup:", error);
     return NextResponse.json(
-      { error: 'Failed to skip followup' },
+      { error: "Failed to skip followup" },
       { status: 500 }
     );
   }

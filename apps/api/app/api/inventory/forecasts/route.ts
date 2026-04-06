@@ -1,9 +1,16 @@
 import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import {
-  calculateDepletionForecast,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+calculateDepletionForecast,
   saveForecastToDatabase,
-} from "@/app/lib/inventory-forecasting";
+} from "@/app/lib/inventory-forecasting"
+
 import { requireTenantId } from "@/app/lib/tenant";
 
 // GET /api/inventory/forecasts?sku={sku}&from={date}&to={date}&horizon={days}&save={true|false}
@@ -59,6 +66,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(forecast);
   } catch (error) {
+    captureException(error);
     console.error("Failed to fetch forecasts:", error);
     return NextResponse.json(
       {

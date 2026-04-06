@@ -1,8 +1,13 @@
-'use client';
+"use client";
 
-import { Plus, FileText } from 'lucide-react';
-import { Button } from '@repo/design-system/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@repo/design-system/components/ui/card';
+import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import { FileText, Plus } from "lucide-react";
 
 export default function VendorContractsPage() {
   return (
@@ -10,7 +15,9 @@ export default function VendorContractsPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-bold">Vendor Contracts</h1>
-          <p className="text-muted-foreground">Manage vendor agreements and terms</p>
+          <p className="text-muted-foreground">
+            Manage vendor agreements and terms
+          </p>
         </div>
         <Button>
           <Plus className="h-4 w-4 mr-2" />
@@ -26,7 +33,9 @@ export default function VendorContractsPage() {
           <div className="text-center py-12 text-muted-foreground">
             <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
             <p>No vendor contracts found.</p>
-            <p className="text-sm">Add vendor contracts to track terms and agreements.</p>
+            <p className="text-sm">
+              Add vendor contracts to track terms and agreements.
+            </p>
           </div>
         </CardContent>
       </Card>

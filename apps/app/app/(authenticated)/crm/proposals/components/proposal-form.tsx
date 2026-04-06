@@ -40,7 +40,9 @@ import { Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useActionState, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { apiFetch } from "@/app/lib/api";
+import { getClients } from "../../clients/actions";
+import { getEventsForDropdown } from "../actions";
+import { getProposalTemplates } from "../templates/actions";
 
 interface LineItem {
   id: string;
@@ -64,6 +66,14 @@ interface TemplateOption {
   name: string;
   eventType: string | null;
   isDefault: boolean;
+}
+
+interface EventOption {
+  id: string;
+  title: string;
+  eventDate: Date | null;
+  eventType: string | null;
+  status: string;
 }
 
 interface ProposalFormProps {
@@ -119,6 +129,9 @@ export function ProposalForm({
   const [clients, setClients] = useState<ClientOption[]>([]);
   const [isLoadingClients, setIsLoadingClients] = useState(true);
 
+  const [events, setEvents] = useState<EventOption[]>([]);
+  const [isLoadingEvents, setIsLoadingEvents] = useState(true);
+
   const [templates, setTemplates] = useState<TemplateOption[]>([]);
   const [isLoadingTemplates, setIsLoadingTemplates] = useState(true);
   const [selectedTemplateId, setSelectedTemplateId] = useState<string>(
@@ -156,12 +169,8 @@ export function ProposalForm({
   useEffect(() => {
     async function fetchClients() {
       try {
-        const response = await apiFetch("/api/crm/clients?limit=100");
-        if (!response.ok) {
-          throw new Error("Failed to fetch clients");
-        }
-        const data = await response.json();
-        setClients(data.data || []);
+        const data = await getClients({}, 1, 200);
+        setClients(data.data as unknown as ClientOption[]);
       } catch (error) {
         console.error("Error fetching clients:", error);
         toast.error("Failed to load clients", {
@@ -178,12 +187,15 @@ export function ProposalForm({
   useEffect(() => {
     async function fetchTemplates() {
       try {
-        const response = await apiFetch("/api/crm/proposals/templates");
-        if (!response.ok) {
-          throw new Error("Failed to fetch templates");
-        }
-        const data = await response.json();
-        setTemplates(data || []);
+        const data = await getProposalTemplates({});
+        setTemplates(
+          data.map((t) => ({
+            id: t.id,
+            name: t.name,
+            eventType: t.eventType,
+            isDefault: t.isDefault,
+          }))
+        );
       } catch (error) {
         console.error("Error fetching templates:", error);
         // Non-critical, don't show toast
@@ -192,6 +204,29 @@ export function ProposalForm({
       }
     }
     fetchTemplates();
+  }, []);
+
+  // Fetch events on mount
+  useEffect(() => {
+    async function fetchEvents() {
+      try {
+        const data = await getEventsForDropdown();
+        setEvents(
+          data.map((e) => ({
+            id: e.id,
+            title: e.title,
+            eventDate: e.eventDate,
+            eventType: e.eventType,
+            status: e.status,
+          }))
+        );
+      } catch (error) {
+        console.error("Error fetching events:", error);
+      } finally {
+        setIsLoadingEvents(false);
+      }
+    }
+    fetchEvents();
   }, []);
 
   // Handle redirect after successful submission
@@ -325,6 +360,38 @@ export function ProposalForm({
                         clients.map((client) => (
                           <SelectItem key={client.id} value={client.id}>
                             {getClientDisplayName(client)}
+                          </SelectItem>
+                        ))
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="eventId">Linked Event</Label>
+                  <Select
+                    defaultValue={proposal?.eventId || "__none__"}
+                    name="eventId"
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select an event (optional)" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__">No event linked</SelectItem>
+                      {isLoadingEvents ? (
+                        <SelectItem disabled value="loading">
+                          Loading events...
+                        </SelectItem>
+                      ) : events.length === 0 ? (
+                        <SelectItem disabled value="empty">
+                          No events found
+                        </SelectItem>
+                      ) : (
+                        events.map((event) => (
+                          <SelectItem key={event.id} value={event.id}>
+                            {event.title}
+                            {event.eventDate &&
+                              ` (${format(new Date(event.eventDate), "MMM d, yyyy")})`}
                           </SelectItem>
                         ))
                       )}

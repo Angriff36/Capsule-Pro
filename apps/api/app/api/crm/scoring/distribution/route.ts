@@ -6,6 +6,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -22,7 +23,10 @@ export async function GET(_request: NextRequest) {
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 400 }
+      );
     }
 
     const distribution = await database.$queryRaw<
@@ -49,7 +53,11 @@ export async function GET(_request: NextRequest) {
 
     return NextResponse.json({ data: distMap });
   } catch (error) {
+    captureException(error);
     console.error("Error fetching distribution:", error);
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

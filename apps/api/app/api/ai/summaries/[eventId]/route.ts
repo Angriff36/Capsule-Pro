@@ -1,6 +1,7 @@
 import { openai } from "@ai-sdk/openai";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { generateText } from "ai";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -447,10 +448,14 @@ export const GET = withRateLimit<{ eventId: string }>(
         model: AI_MODEL,
       });
     } catch (error: unknown) {
+      captureException(error);
       console.error("Event summary generation error:", error);
 
       if (error instanceof Error && error.message === "Event not found") {
-        return NextResponse.json({ message: "Event not found" }, { status: 404 });
+        return NextResponse.json(
+          { message: "Event not found" },
+          { status: 404 }
+        );
       }
 
       return NextResponse.json(

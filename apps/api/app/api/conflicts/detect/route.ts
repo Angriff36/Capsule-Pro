@@ -43,7 +43,8 @@ import type {
 } from "./types";
 
 /** UUID validation regex - defined at top level for performance */
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 const SEVERITY_ORDER: Record<ConflictSeverity, number> = {
   low: 1,

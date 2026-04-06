@@ -6,6 +6,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -127,6 +128,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
+    captureException(error);
     console.error("Failed to get audit logs:", error);
     return NextResponse.json(
       { message: "Internal server error" },

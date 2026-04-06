@@ -185,7 +185,9 @@ export async function GET(request: Request): Promise<NextResponse> {
     }
 
     // Get unique tenant IDs from schedules
-    const tenantIds = Array.from(new Set(schedulesToRun.map((s) => s.tenantId)));
+    const tenantIds = Array.from(
+      new Set(schedulesToRun.map((s) => s.tenantId))
+    );
 
     let sessionsCreated = 0;
     const tenantsProcessed: string[] = [];

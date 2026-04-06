@@ -1,5 +1,6 @@
 import { generateSalesReport } from "@capsule-pro/sales-reporting";
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { withRateLimit } from "@/middleware/rate-limiter";
@@ -113,6 +114,16 @@ export const POST = withRateLimit(
         },
       });
     } catch (error) {
+      console.error(
+        "[sales-reporting/generate] Report generation failed:",
+        error
+      );
+      captureException(error, {
+        tags: {
+          route: "sales-reporting/generate",
+          errorType: "report_generation",
+        },
+      });
       const message =
         error instanceof Error ? error.message : "Failed to generate report";
       return NextResponse.json({ error: message }, { status: 500 });

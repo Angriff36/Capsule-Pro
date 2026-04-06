@@ -361,8 +361,10 @@ export default function TimecardsPage() {
   };
 
   const handleGenerateFromSchedules = async () => {
-    if (!startDate || !endDate) {
-      toast.error("Set a date range first to generate timecards from schedules");
+    if (!(startDate && endDate)) {
+      toast.error(
+        "Set a date range first to generate timecards from schedules"
+      );
       return;
     }
     setGenerateLoading(true);

@@ -69,8 +69,8 @@ vi.mock("@sentry/nextjs", () => ({
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
 import { getTenantIdForOrg, requireCurrentUser } from "@/app/lib/tenant";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 const mockAuth = vi.mocked(auth) as any;
 const mockGetTenantIdForOrg = vi.mocked(getTenantIdForOrg);
@@ -122,7 +122,7 @@ describe("Command Board Annotation Tests", () => {
         role: "admin",
         email: "test@example.com",
         firstName: "Test",
-        lastName: "User"
+        lastName: "User",
       });
 
       const mockRuntime = {
@@ -135,7 +135,9 @@ describe("Command Board Annotation Tests", () => {
       mockCreateManifestRuntime.mockResolvedValue(mockRuntime as any);
 
       // Mock board exists
-      mockCommandBoard.findFirst.mockResolvedValue({ id: TEST_BOARD_ID } as any);
+      mockCommandBoard.findFirst.mockResolvedValue({
+        id: TEST_BOARD_ID,
+      } as any);
 
       const annotationData = {
         boardId: TEST_BOARD_ID,
@@ -153,7 +155,7 @@ describe("Command Board Annotation Tests", () => {
         role: "admin",
         email: "test@example.com",
         firstName: "Test",
-        lastName: "User"
+        lastName: "User",
       });
 
       const annotation = createMockAnnotation({
@@ -172,7 +174,9 @@ describe("Command Board Annotation Tests", () => {
       mockCreateManifestRuntime.mockResolvedValue(mockRuntime as any);
 
       // Mock projections exist
-      mockBoardProjection.findFirst.mockResolvedValue({ id: TEST_PROJECTION_1_ID } as any);
+      mockBoardProjection.findFirst.mockResolvedValue({
+        id: TEST_PROJECTION_1_ID,
+      } as any);
 
       expect(annotation.fromProjectionId).toBe(TEST_PROJECTION_1_ID);
       expect(annotation.toProjectionId).toBe(TEST_PROJECTION_2_ID);
@@ -185,7 +189,7 @@ describe("Command Board Annotation Tests", () => {
         role: "admin",
         email: "test@example.com",
         firstName: "Test",
-        lastName: "User"
+        lastName: "User",
       });
 
       const styledAnnotation = createMockAnnotation({
@@ -235,7 +239,7 @@ describe("Command Board Annotation Tests", () => {
         role: "admin",
         email: "test@example.com",
         firstName: "Test",
-        lastName: "User"
+        lastName: "User",
       });
 
       // Board not found
@@ -268,7 +272,7 @@ describe("Command Board Annotation Tests", () => {
         role: "admin",
         email: "test@example.com",
         firstName: "Test",
-        lastName: "User"
+        lastName: "User",
       });
 
       const updatedAnnotation = createMockAnnotation({
@@ -297,7 +301,7 @@ describe("Command Board Annotation Tests", () => {
         role: "admin",
         email: "test@example.com",
         firstName: "Test",
-        lastName: "User"
+        lastName: "User",
       });
 
       const updatedAnnotation = createMockAnnotation({
@@ -325,7 +329,7 @@ describe("Command Board Annotation Tests", () => {
         role: "admin",
         email: "test@example.com",
         firstName: "Test",
-        lastName: "User"
+        lastName: "User",
       });
 
       const existingMetadata = { priority: "low", tags: ["a", "b"] };
@@ -351,7 +355,7 @@ describe("Command Board Annotation Tests", () => {
         role: "admin",
         email: "test@example.com",
         firstName: "Test",
-        lastName: "User"
+        lastName: "User",
       });
 
       const updatedAnnotation = createMockAnnotation({
@@ -395,7 +399,7 @@ describe("Command Board Annotation Tests", () => {
         role: "admin",
         email: "test@example.com",
         firstName: "Test",
-        lastName: "User"
+        lastName: "User",
       });
 
       mockAnnotation.findFirst.mockResolvedValue(null);
@@ -431,7 +435,7 @@ describe("Command Board Annotation Tests", () => {
         role: "admin",
         email: "test@example.com",
         firstName: "Test",
-        lastName: "User"
+        lastName: "User",
       });
 
       const deletedAnnotation = createMockAnnotation({
@@ -472,7 +476,7 @@ describe("Command Board Annotation Tests", () => {
         role: "admin",
         email: "test@example.com",
         firstName: "Test",
-        lastName: "User"
+        lastName: "User",
       });
 
       mockAnnotation.findFirst.mockResolvedValue(null);
@@ -496,7 +500,7 @@ describe("Command Board Annotation Tests", () => {
         role: "admin",
         email: "test@example.com",
         firstName: "Test",
-        lastName: "User"
+        lastName: "User",
       });
 
       // Annotation belongs to different tenant
@@ -627,7 +631,7 @@ describe("Command Board Annotation Tests", () => {
         role: "admin",
         email: "test@example.com",
         firstName: "Test",
-        lastName: "User"
+        lastName: "User",
       });
 
       const mockRuntime = {
@@ -649,7 +653,7 @@ describe("Command Board Annotation Tests", () => {
         role: "admin",
         email: "test@example.com",
         firstName: "Test",
-        lastName: "User"
+        lastName: "User",
       });
 
       // Projection not found
@@ -686,7 +690,7 @@ describe("Command Board Annotation Tests", () => {
         role: "admin",
         email: "test@example.com",
         firstName: "Test",
-        lastName: "User"
+        lastName: "User",
       });
 
       // Try to access annotation from different tenant

@@ -1,29 +1,17 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import {
-  DollarSign,
-  Calculator,
-  Settings,
-  Plus,
-  Trash2,
-  Loader2,
-  CheckCircle2,
-  Shield,
-  TrendingUp,
-} from "lucide-react";
+import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@repo/design-system/components/ui/card";
-import { Badge } from "@repo/design-system/components/ui/badge";
+import { Checkbox } from "@repo/design-system/components/ui/checkbox";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
-import { Checkbox } from "@repo/design-system/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -31,6 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
+import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Table,
   TableBody,
@@ -39,13 +28,24 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@repo/design-system/components/ui/tabs";
+import {
+  Calculator,
+  CheckCircle2,
+  DollarSign,
+  Loader2,
+  Plus,
+  Settings,
+  Shield,
+  Trash2,
+  TrendingUp,
+} from "lucide-react";
+import { useCallback, useEffect, useState } from "react";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -111,12 +111,60 @@ interface TaxPreviewResponse {
 }
 
 const US_STATES = [
-  "AL","AK","AZ","AR","CA","CO","CT","DE","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD",
-  "MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC",
-  "SD","TN","TX","UT","VT","VA","WA","WV","WI","WY","DC"
+  "AL",
+  "AK",
+  "AZ",
+  "AR",
+  "CA",
+  "CO",
+  "CT",
+  "DE",
+  "FL",
+  "GA",
+  "HI",
+  "ID",
+  "IL",
+  "IN",
+  "IA",
+  "KS",
+  "KY",
+  "LA",
+  "ME",
+  "MD",
+  "MA",
+  "MI",
+  "MN",
+  "MS",
+  "MO",
+  "MT",
+  "NE",
+  "NV",
+  "NH",
+  "NJ",
+  "NM",
+  "NY",
+  "NC",
+  "ND",
+  "OH",
+  "OK",
+  "OR",
+  "PA",
+  "RI",
+  "SC",
+  "SD",
+  "TN",
+  "TX",
+  "UT",
+  "VT",
+  "VA",
+  "WA",
+  "WV",
+  "WI",
+  "WY",
+  "DC",
 ];
 
-const NO_STATE_TAX = ["TX","FL","WA","NV","WY","AK","SD","NH","TN"];
+const NO_STATE_TAX = ["TX", "FL", "WA", "NV", "WY", "AK", "SD", "NH", "TN"];
 
 /* ------------------------------------------------------------------ */
 /*  Helpers                                                            */
@@ -140,7 +188,9 @@ const formatBracketRange = (b: TaxBracket) =>
 
 export default function TaxSetupPage() {
   const [configs, setConfigs] = useState<TaxConfiguration[]>([]);
-  const [brackets, setBrackets] = useState<BracketsResponse["data"] | null>(null);
+  const [brackets, setBrackets] = useState<BracketsResponse["data"] | null>(
+    null
+  );
   const [loading, setLoading] = useState(true);
   const [showAddState, setShowAddState] = useState(false);
   const [selectedState, setSelectedState] = useState("");
@@ -149,7 +199,9 @@ export default function TaxSetupPage() {
   const [previewIncome, setPreviewIncome] = useState("60000");
   const [previewStatus, setPreviewStatus] = useState("single");
   const [previewState, setPreviewState] = useState("CA");
-  const [previewResult, setPreviewResult] = useState<TaxPreviewResponse["data"] | null>(null);
+  const [previewResult, setPreviewResult] = useState<
+    TaxPreviewResponse["data"] | null
+  >(null);
   const [previewLoading, setPreviewLoading] = useState(false);
 
   const loadData = useCallback(async () => {
@@ -161,7 +213,8 @@ export default function TaxSetupPage() {
       ]);
       const configsData = await configsRes.json();
       const bracketsData = await bracketsRes.json();
-      if (configsData.success) setConfigs(configsData.data.configurations || []);
+      if (configsData.success)
+        setConfigs(configsData.data.configurations || []);
       if (bracketsData.success) setBrackets(bracketsData.data);
     } catch (error) {
       console.error("Failed to load tax data:", error);
@@ -182,7 +235,7 @@ export default function TaxSetupPage() {
         body: JSON.stringify({ configId, isActive }),
       });
       setConfigs((prev) =>
-        prev.map((c) => (c.id === configId ? { ...c, is_active: isActive } : c)),
+        prev.map((c) => (c.id === configId ? { ...c, is_active: isActive } : c))
       );
     } catch (error) {
       console.error("Failed to toggle config:", error);
@@ -197,7 +250,7 @@ export default function TaxSetupPage() {
   };
 
   const runTaxPreview = async () => {
-    const income = parseFloat(previewIncome);
+    const income = Number.parseFloat(previewIncome);
     if (!income || income <= 0) return;
 
     setPreviewLoading(true);
@@ -240,7 +293,7 @@ export default function TaxSetupPage() {
         </p>
       </div>
 
-      <Tabs defaultValue="federal" className="space-y-6">
+      <Tabs className="space-y-6" defaultValue="federal">
         <TabsList>
           <TabsTrigger value="federal">
             <DollarSign className="h-4 w-4 mr-2" />
@@ -261,7 +314,7 @@ export default function TaxSetupPage() {
         </TabsList>
 
         {/* Federal Tab */}
-        <TabsContent value="federal" className="space-y-6">
+        <TabsContent className="space-y-6" value="federal">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -316,7 +369,9 @@ export default function TaxSetupPage() {
                     {(brackets?.federalBrackets.single || []).map((b, i) => (
                       <TableRow key={i}>
                         <TableCell className="font-medium">
-                          <Badge variant="outline">{formatPercent(b.rate)}</Badge>
+                          <Badge variant="outline">
+                            {formatPercent(b.rate)}
+                          </Badge>
                         </TableCell>
                         <TableCell>{formatBracketRange(b)}</TableCell>
                       </TableRow>
@@ -325,7 +380,8 @@ export default function TaxSetupPage() {
                 </Table>
                 {brackets && (
                   <p className="text-sm text-muted-foreground">
-                    Standard Deduction: {formatCurrency(brackets.standardDeductions.single)}
+                    Standard Deduction:{" "}
+                    {formatCurrency(brackets.standardDeductions.single)}
                   </p>
                 )}
               </div>
@@ -346,7 +402,9 @@ export default function TaxSetupPage() {
                     {(brackets?.federalBrackets.married || []).map((b, i) => (
                       <TableRow key={i}>
                         <TableCell className="font-medium">
-                          <Badge variant="outline">{formatPercent(b.rate)}</Badge>
+                          <Badge variant="outline">
+                            {formatPercent(b.rate)}
+                          </Badge>
                         </TableCell>
                         <TableCell>{formatBracketRange(b)}</TableCell>
                       </TableRow>
@@ -365,7 +423,7 @@ export default function TaxSetupPage() {
         </TabsContent>
 
         {/* FICA Tab */}
-        <TabsContent value="fica" className="space-y-6">
+        <TabsContent className="space-y-6" value="fica">
           <Card>
             <CardHeader>
               <div className="flex items-center gap-3">
@@ -384,7 +442,9 @@ export default function TaxSetupPage() {
               <div className="grid gap-6 md:grid-cols-2">
                 <Card className="border-dashed">
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-base">Social Security (OASDI)</CardTitle>
+                    <CardTitle className="text-base">
+                      Social Security (OASDI)
+                    </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <div className="flex justify-between">
@@ -414,7 +474,7 @@ export default function TaxSetupPage() {
                       <span className="font-medium">
                         {brackets
                           ? formatCurrency(
-                              brackets.ficaRates.socialSecurityWageBase,
+                              brackets.ficaRates.socialSecurityWageBase
                             )
                           : "—"}
                       </span>
@@ -457,7 +517,7 @@ export default function TaxSetupPage() {
                       <span className="font-medium">
                         {brackets
                           ? formatPercent(
-                              brackets.ficaRates.medicareAdditionalRate,
+                              brackets.ficaRates.medicareAdditionalRate
                             )
                           : "—"}
                       </span>
@@ -473,7 +533,7 @@ export default function TaxSetupPage() {
         </TabsContent>
 
         {/* State Tab */}
-        <TabsContent value="state" className="space-y-6">
+        <TabsContent className="space-y-6" value="state">
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -489,9 +549,9 @@ export default function TaxSetupPage() {
                   </div>
                 </div>
                 <Button
-                  variant="outline"
-                  size="sm"
                   onClick={() => setShowAddState(true)}
+                  size="sm"
+                  variant="outline"
                 >
                   <Plus className="h-4 w-4 mr-2" />
                   Add State
@@ -503,8 +563,8 @@ export default function TaxSetupPage() {
                 <div className="py-8 text-center text-muted-foreground">
                   <p>No state tax configurations added.</p>
                   <p className="text-sm">
-                    Add states where you have employees to withhold state
-                    income tax.
+                    Add states where you have employees to withhold state income
+                    tax.
                   </p>
                 </div>
               ) : (
@@ -522,16 +582,14 @@ export default function TaxSetupPage() {
                         <TableCell className="font-medium">
                           {config.state_code}
                           {NO_STATE_TAX.includes(config.state_code || "") && (
-                            <Badge variant="secondary" className="ml-2">
+                            <Badge className="ml-2" variant="secondary">
                               No Income Tax
                             </Badge>
                           )}
                         </TableCell>
                         <TableCell>
                           <Badge
-                            variant={
-                              config.is_active ? "default" : "secondary"
-                            }
+                            variant={config.is_active ? "default" : "secondary"}
                           >
                             {config.is_active ? "Active" : "Inactive"}
                           </Badge>
@@ -539,21 +597,18 @@ export default function TaxSetupPage() {
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-1">
                             <Button
-                              variant="ghost"
-                              size="sm"
                               onClick={() =>
-                                handleToggleActive(
-                                  config.id,
-                                  !config.is_active,
-                                )
+                                handleToggleActive(config.id, !config.is_active)
                               }
+                              size="sm"
+                              variant="ghost"
                             >
                               {config.is_active ? "Disable" : "Enable"}
                             </Button>
                             <Button
-                              variant="ghost"
-                              size="icon"
                               className="h-8 w-8 text-red-500"
+                              size="icon"
+                              variant="ghost"
                             >
                               <Trash2 className="h-4 w-4" />
                             </Button>
@@ -578,7 +633,7 @@ export default function TaxSetupPage() {
         </TabsContent>
 
         {/* Tax Preview Tab */}
-        <TabsContent value="preview" className="space-y-6">
+        <TabsContent className="space-y-6" value="preview">
           <Card>
             <CardHeader>
               <div className="flex items-center gap-3">
@@ -598,32 +653,34 @@ export default function TaxSetupPage() {
                 <div className="space-y-2">
                   <Label>Annual Gross Income</Label>
                   <Input
-                    type="number"
                     min="0"
-                    step="1000"
-                    placeholder="60000"
-                    value={previewIncome}
                     onChange={(e) => setPreviewIncome(e.target.value)}
+                    placeholder="60000"
+                    step="1000"
+                    type="number"
+                    value={previewIncome}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label>Filing Status</Label>
                   <Select
-                    value={previewStatus}
                     onValueChange={setPreviewStatus}
+                    value={previewStatus}
                   >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="single">Single</SelectItem>
-                      <SelectItem value="married">Married Filing Jointly</SelectItem>
+                      <SelectItem value="married">
+                        Married Filing Jointly
+                      </SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>State</Label>
-                  <Select value={previewState} onValueChange={setPreviewState}>
+                  <Select onValueChange={setPreviewState} value={previewState}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -639,7 +696,7 @@ export default function TaxSetupPage() {
                 </div>
               </div>
 
-              <Button onClick={runTaxPreview} disabled={previewLoading}>
+              <Button disabled={previewLoading} onClick={runTaxPreview}>
                 {previewLoading ? (
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 ) : (
@@ -724,8 +781,8 @@ export default function TaxSetupPage() {
                               {formatCurrency(
                                 previewResult.biweeklyWithholding.reduce(
                                   (s, w) => s + w.amount,
-                                  0,
-                                ),
+                                  0
+                                )
                               )}
                             </TableCell>
                             <TableCell className="text-right">
@@ -753,11 +810,11 @@ export default function TaxSetupPage() {
                 Employee W-4 Required
               </h3>
               <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-                Each employee&apos;s filing status and allowances are
-                configured in their profile. Tax withholding calculations use
-                employee W-4 information during payroll processing. The payroll
-                engine automatically computes federal, state, and FICA
-                withholdings per pay period.
+                Each employee&apos;s filing status and allowances are configured
+                in their profile. Tax withholding calculations use employee W-4
+                information during payroll processing. The payroll engine
+                automatically computes federal, state, and FICA withholdings per
+                pay period.
               </p>
             </div>
           </div>
@@ -771,13 +828,13 @@ export default function TaxSetupPage() {
             <h3 className="text-lg font-semibold">Add State Tax</h3>
             <div className="space-y-2">
               <Label>Select State</Label>
-              <Select value={selectedState} onValueChange={setSelectedState}>
+              <Select onValueChange={setSelectedState} value={selectedState}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select a state..." />
                 </SelectTrigger>
                 <SelectContent>
                   {US_STATES.filter(
-                    (s) => !stateConfigs.find((c) => c.state_code === s),
+                    (s) => !stateConfigs.find((c) => c.state_code === s)
                   ).map((state) => (
                     <SelectItem key={state} value={state}>
                       {state}{" "}
@@ -788,16 +845,10 @@ export default function TaxSetupPage() {
               </Select>
             </div>
             <div className="flex justify-end gap-2">
-              <Button
-                variant="outline"
-                onClick={() => setShowAddState(false)}
-              >
+              <Button onClick={() => setShowAddState(false)} variant="outline">
                 Cancel
               </Button>
-              <Button
-                onClick={handleAddStateTax}
-                disabled={!selectedState}
-              >
+              <Button disabled={!selectedState} onClick={handleAddStateTax}>
                 Add State
               </Button>
             </div>

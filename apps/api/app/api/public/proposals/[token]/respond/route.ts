@@ -7,6 +7,7 @@
  */
 
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 
 type Params = Promise<{ token: string }>;
@@ -154,6 +155,7 @@ export async function POST(request: Request, { params }: { params: Params }) {
       },
     });
   } catch (error) {
+    captureException(error);
     console.error("Error responding to public proposal:", error);
     return NextResponse.json(
       { message: "Internal server error" },

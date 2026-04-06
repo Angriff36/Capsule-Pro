@@ -19,7 +19,7 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { MapPinIcon, UsersIcon } from "lucide-react";
-import { useTransition, useState } from "react";
+import { useTransition } from "react";
 
 interface EventEditorModalProps {
   open: boolean;
@@ -70,10 +70,7 @@ export const EventEditorModal = ({
           </DialogDescription>
         </DialogHeader>
 
-        <form
-          action={handleSubmit}
-          className="flex flex-col gap-6"
-        >
+        <form action={handleSubmit} className="flex flex-col gap-6">
           {event?.id && <input name="eventId" type="hidden" value={event.id} />}
 
           <div className="grid gap-4 md:grid-cols-2">

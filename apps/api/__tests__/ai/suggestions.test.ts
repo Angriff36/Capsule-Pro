@@ -3,7 +3,7 @@
  * Covers ai-natural-language-commands and ai-context-aware-suggestions features
  */
 
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 // Mock dependencies
 vi.mock("@repo/auth/server", () => ({
@@ -49,8 +49,8 @@ vi.mock("@ai-sdk/openai", () => ({
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { generateText } from "ai";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 // Import after mocks
 import { GET } from "../../app/api/ai/suggestions/route";
@@ -66,7 +66,9 @@ const mockDishFindMany = vi.mocked(database.dish.findMany);
 const mockPrepTaskFindMany = vi.mocked(database.prepTask.findMany);
 const mockInventoryAlertFindMany = vi.mocked(database.inventoryAlert.findMany);
 const mockInventoryItemFindMany = vi.mocked(database.inventoryItem.findMany);
-const mockEventStaffAssignmentFindMany = vi.mocked(database.eventStaffAssignment.findMany);
+const mockEventStaffAssignmentFindMany = vi.mocked(
+  database.eventStaffAssignment.findMany
+);
 const mockQueryRaw = vi.mocked(database.$queryRaw);
 
 describe("AI Suggestions API", () => {
@@ -77,7 +79,10 @@ describe("AI Suggestions API", () => {
     vi.clearAllMocks();
 
     // Setup default mocks - auth returns partial object for testing
-    mockAuth.mockResolvedValue({ orgId: mockOrgId, userId: "test-user" } as unknown as Awaited<ReturnType<typeof auth>>);
+    mockAuth.mockResolvedValue({
+      orgId: mockOrgId,
+      userId: "test-user",
+    } as unknown as Awaited<ReturnType<typeof auth>>);
     mockGetTenantId.mockResolvedValue(mockTenantId);
 
     // Mock database queries
@@ -96,9 +101,14 @@ describe("AI Suggestions API", () => {
 
   describe("Authentication", () => {
     it("should return 401 when not authenticated", async () => {
-      mockAuth.mockResolvedValue({ orgId: null, userId: null } as unknown as Awaited<ReturnType<typeof auth>>);
+      mockAuth.mockResolvedValue({
+        orgId: null,
+        userId: null,
+      } as unknown as Awaited<ReturnType<typeof auth>>);
 
-      const response = await GET(new Request("http://localhost/api/ai/suggestions"));
+      const response = await GET(
+        new Request("http://localhost/api/ai/suggestions")
+      );
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -108,7 +118,9 @@ describe("AI Suggestions API", () => {
     it("should return 401 when tenant not found", async () => {
       mockGetTenantId.mockResolvedValue(null as unknown as string);
 
-      const response = await GET(new Request("http://localhost/api/ai/suggestions"));
+      const response = await GET(
+        new Request("http://localhost/api/ai/suggestions")
+      );
       const data = await response.json();
 
       expect(response.status).toBe(401);
@@ -156,7 +168,7 @@ describe("AI Suggestions API", () => {
         {
           id: "event-1",
           title: "Test Event",
-          eventDate: new Date(Date.now() + 86400000), // Tomorrow
+          eventDate: new Date(Date.now() + 86_400_000), // Tomorrow
           guestCount: 100,
           venueName: "Test Venue",
           status: "confirmed",
@@ -165,7 +177,11 @@ describe("AI Suggestions API", () => {
         },
       ];
 
-      mockEventFindMany.mockResolvedValue(mockEvents as unknown as Awaited<ReturnType<typeof database.event.findMany>>);
+      mockEventFindMany.mockResolvedValue(
+        mockEvents as unknown as Awaited<
+          ReturnType<typeof database.event.findMany>
+        >
+      );
       mockGenerateText.mockResolvedValue({
         text: JSON.stringify({ suggestions: [] }),
       } as Awaited<ReturnType<typeof generateText>>);
@@ -197,7 +213,11 @@ describe("AI Suggestions API", () => {
         },
       ];
 
-      mockPrepTaskFindMany.mockResolvedValue(mockTasks as unknown as Awaited<ReturnType<typeof database.prepTask.findMany>>);
+      mockPrepTaskFindMany.mockResolvedValue(
+        mockTasks as unknown as Awaited<
+          ReturnType<typeof database.prepTask.findMany>
+        >
+      );
       mockGenerateText.mockResolvedValue({
         text: JSON.stringify({ suggestions: [] }),
       } as Awaited<ReturnType<typeof generateText>>);
@@ -227,7 +247,9 @@ describe("AI Suggestions API", () => {
           resolved_at: null,
           deleted_at: null,
         },
-      ] as unknown as Awaited<ReturnType<typeof database.inventoryAlert.findMany>>);
+      ] as unknown as Awaited<
+        ReturnType<typeof database.inventoryAlert.findMany>
+      >);
 
       mockGenerateText.mockResolvedValue({
         text: JSON.stringify({ suggestions: [] }),
@@ -268,7 +290,9 @@ describe("AI Suggestions API", () => {
         text: JSON.stringify(aiResponse),
       } as Awaited<ReturnType<typeof generateText>>);
 
-      const response = await GET(new Request("http://localhost/api/ai/suggestions"));
+      const response = await GET(
+        new Request("http://localhost/api/ai/suggestions")
+      );
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -291,7 +315,7 @@ describe("AI Suggestions API", () => {
           id: "task-1",
           name: "Urgent Task",
           status: "pending",
-          dueByDate: new Date(Date.now() + 3600000), // 1 hour from now
+          dueByDate: new Date(Date.now() + 3_600_000), // 1 hour from now
           priority: "high",
           estimatedMinutes: 30,
           taskType: "prep",
@@ -300,7 +324,9 @@ describe("AI Suggestions API", () => {
         },
       ] as unknown as Awaited<ReturnType<typeof database.prepTask.findMany>>);
 
-      const response = await GET(new Request("http://localhost/api/ai/suggestions"));
+      const response = await GET(
+        new Request("http://localhost/api/ai/suggestions")
+      );
       const data = await response.json();
 
       expect(response.status).toBe(200);
@@ -319,7 +345,7 @@ describe("AI Suggestions API", () => {
           id: "task-1",
           name: "Urgent Prep",
           status: "pending",
-          dueByDate: new Date(Date.now() + 3600000), // 1 hour
+          dueByDate: new Date(Date.now() + 3_600_000), // 1 hour
           priority: "high",
           estimatedMinutes: 30,
           taskType: "prep",
@@ -328,11 +354,13 @@ describe("AI Suggestions API", () => {
         },
       ] as unknown as Awaited<ReturnType<typeof database.prepTask.findMany>>);
 
-      const response = await GET(new Request("http://localhost/api/ai/suggestions"));
+      const response = await GET(
+        new Request("http://localhost/api/ai/suggestions")
+      );
       const data = await response.json();
 
-      const urgentSuggestion = data.suggestions.find(
-        (s: { title: string }) => s.title.includes("urgent")
+      const urgentSuggestion = data.suggestions.find((s: { title: string }) =>
+        s.title.includes("urgent")
       );
 
       expect(urgentSuggestion).toBeDefined();
@@ -354,13 +382,19 @@ describe("AI Suggestions API", () => {
           resolved_at: null,
           deleted_at: null,
         },
-      ] as unknown as Awaited<ReturnType<typeof database.inventoryAlert.findMany>>);
+      ] as unknown as Awaited<
+        ReturnType<typeof database.inventoryAlert.findMany>
+      >);
 
       mockInventoryItemFindMany.mockResolvedValue([
         { id: "item-1", name: "Olive Oil" },
-      ] as unknown as Awaited<ReturnType<typeof database.inventoryItem.findMany>>);
+      ] as unknown as Awaited<
+        ReturnType<typeof database.inventoryItem.findMany>
+      >);
 
-      const response = await GET(new Request("http://localhost/api/ai/suggestions"));
+      const response = await GET(
+        new Request("http://localhost/api/ai/suggestions")
+      );
       const data = await response.json();
 
       const inventorySuggestion = data.suggestions.find(
@@ -379,7 +413,7 @@ describe("AI Suggestions API", () => {
         id: `task-${i}`,
         name: `Task ${i}`,
         status: "pending",
-        dueByDate: new Date(Date.now() + 86400000),
+        dueByDate: new Date(Date.now() + 86_400_000),
         priority: "medium",
         estimatedMinutes: 30,
         taskType: "prep",
@@ -387,13 +421,20 @@ describe("AI Suggestions API", () => {
         deletedAt: null,
       }));
 
-      mockPrepTaskFindMany.mockResolvedValue(tasks as unknown as Awaited<ReturnType<typeof database.prepTask.findMany>>);
+      mockPrepTaskFindMany.mockResolvedValue(
+        tasks as unknown as Awaited<
+          ReturnType<typeof database.prepTask.findMany>
+        >
+      );
 
-      const response = await GET(new Request("http://localhost/api/ai/suggestions"));
+      const response = await GET(
+        new Request("http://localhost/api/ai/suggestions")
+      );
       const data = await response.json();
 
       const capacitySuggestion = data.suggestions.find(
-        (s: { title: string }) => s.title.includes("volume") || s.title.includes("capacity")
+        (s: { title: string }) =>
+          s.title.includes("volume") || s.title.includes("capacity")
       );
 
       expect(capacitySuggestion).toBeDefined();
@@ -406,7 +447,9 @@ describe("AI Suggestions API", () => {
         text: JSON.stringify({ suggestions: [] }),
       } as Awaited<ReturnType<typeof generateText>>);
 
-      const response = await GET(new Request("http://localhost/api/ai/suggestions"));
+      const response = await GET(
+        new Request("http://localhost/api/ai/suggestions")
+      );
       const data = await response.json();
 
       expect(data).toHaveProperty("suggestions");
@@ -437,7 +480,9 @@ describe("AI Suggestions API", () => {
     it("should handle database errors gracefully", async () => {
       mockEventFindMany.mockRejectedValue(new Error("Database error"));
 
-      const response = await GET(new Request("http://localhost/api/ai/suggestions"));
+      const response = await GET(
+        new Request("http://localhost/api/ai/suggestions")
+      );
       const data = await response.json();
 
       expect(response.status).toBe(500);
@@ -450,7 +495,9 @@ describe("AI Suggestions API", () => {
       } as Awaited<ReturnType<typeof generateText>>);
 
       // Should fallback to rule-based suggestions
-      const response = await GET(new Request("http://localhost/api/ai/suggestions"));
+      const response = await GET(
+        new Request("http://localhost/api/ai/suggestions")
+      );
 
       expect(response.status).toBe(200);
     });
@@ -460,7 +507,10 @@ describe("AI Suggestions API", () => {
 describe("AI Suggestion Types", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mockAuth.mockResolvedValue({ orgId: "org-1", userId: "user-1" } as unknown as Awaited<ReturnType<typeof auth>>);
+    mockAuth.mockResolvedValue({
+      orgId: "org-1",
+      userId: "user-1",
+    } as unknown as Awaited<ReturnType<typeof auth>>);
     mockGetTenantId.mockResolvedValue("tenant-1");
     mockEventFindMany.mockResolvedValue([]);
     mockDishFindMany.mockResolvedValue([]);
@@ -500,7 +550,9 @@ describe("AI Suggestion Types", () => {
         }),
       } as Awaited<ReturnType<typeof generateText>>);
 
-      const response = await GET(new Request("http://localhost/api/ai/suggestions"));
+      const response = await GET(
+        new Request("http://localhost/api/ai/suggestions")
+      );
       const data = await response.json();
 
       expect(response.status).toBe(200);

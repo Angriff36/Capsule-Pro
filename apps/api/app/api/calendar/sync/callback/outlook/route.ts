@@ -1,4 +1,5 @@
-import { NextRequest, NextResponse } from "next/server";
+import { captureException } from "@sentry/nextjs";
+import { type NextRequest, NextResponse } from "next/server";
 
 /**
  * GET /api/calendar/sync/callback/outlook
@@ -16,11 +17,14 @@ export async function GET(request: NextRequest) {
     if (error) {
       console.error("[outlook/callback] OAuth error:", error);
       return NextResponse.redirect(
-        new URL(`/calendar/sync?error=${encodeURIComponent(error)}`, request.url)
+        new URL(
+          `/calendar/sync?error=${encodeURIComponent(error)}`,
+          request.url
+        )
       );
     }
 
-    if (!code || !state) {
+    if (!(code && state)) {
       return NextResponse.redirect(
         new URL("/calendar/sync?error=missing_code_or_state", request.url)
       );
@@ -43,7 +47,7 @@ export async function GET(request: NextRequest) {
     const clientSecret = process.env.MICROSOFT_CLIENT_SECRET;
     const redirectUri = `${process.env.OAUTH_REDIRECT_URI}/api/calendar/sync/callback/outlook`;
 
-    if (!clientId || !clientSecret) {
+    if (!(clientId && clientSecret)) {
       return NextResponse.redirect(
         new URL("/calendar/sync?error=oauth_not_configured", request.url)
       );
@@ -70,7 +74,7 @@ export async function GET(request: NextRequest) {
       const errorText = await tokenResponse.text();
       console.error("[outlook/callback] Token exchange failed:", errorText);
       return NextResponse.redirect(
-        new URL(`/calendar/sync?error=token_exchange_failed`, request.url)
+        new URL("/calendar/sync?error=token_exchange_failed", request.url)
       );
     }
 
@@ -78,11 +82,14 @@ export async function GET(request: NextRequest) {
     const { access_token, refresh_token, expires_in } = tokenData;
 
     // Get user info to store provider user ID
-    const userInfoResponse = await fetch("https://graph.microsoft.com/v1.0/me", {
-      headers: {
-        Authorization: `Bearer ${access_token}`,
-      },
-    });
+    const userInfoResponse = await fetch(
+      "https://graph.microsoft.com/v1.0/me",
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+        },
+      }
+    );
 
     let providerUserId: string | undefined;
     let calendarName = "Primary Calendar";
@@ -146,6 +153,7 @@ export async function GET(request: NextRequest) {
       new URL("/calendar/sync?connected=outlook", request.url)
     );
   } catch (error) {
+    captureException(error);
     console.error("[outlook/callback] Error:", error);
     return NextResponse.redirect(
       new URL("/calendar/sync?error=callback_failed", request.url)

@@ -6,9 +6,17 @@
 
 import { database } from "@repo/database";
 import {
-  type EmailStatus,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+type EmailStatus
+,
   updateEmailDeliveryStatus,
-} from "@repo/notifications";
+} from "@repo/notifications"
+
 import { type NextRequest, NextResponse } from "next/server";
 
 /**
@@ -106,6 +114,7 @@ export async function POST(request: NextRequest) {
       message: `Updated status to ${newStatus}`,
     });
   } catch (error) {
+    captureException(error);
     console.error("Failed to process email webhook:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(

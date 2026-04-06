@@ -10,11 +10,17 @@ import { NextResponse } from "next/server";
 import { InvariantError } from "../../../../lib/invariant";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
 import type {
-  ContractListItem,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+ContractListItem,
   ContractListResponse,
   ContractStatus,
   DocumentType,
-} from "../types";
+} from "../types"
 
 /**
  * Parse and validate expiring contracts parameters from URL search params
@@ -203,6 +209,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json(response);
   } catch (error) {
+    captureException(error);
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });
     }

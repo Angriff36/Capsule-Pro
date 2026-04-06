@@ -356,7 +356,9 @@ describe("Test G: mirror check — commands.json entries have disk routes", () =
         // Filesystem uses kebab-case, commands.json uses camelCase
         const kebabId = `${entity}.${entry.name}`;
         const routeRel = `${domain}/commands/${entry.name}/route.ts`;
-        if (!kebabLookup.has(kebabId) && !ALLOWED_ORPHAN_ROUTES.has(routeRel)) {
+        if (
+          !(kebabLookup.has(kebabId) || ALLOWED_ORPHAN_ROUTES.has(routeRel))
+        ) {
           orphanRoutes.push(
             `${routeRel} (expected ${kebabId} in commands.json)`
           );

@@ -38,7 +38,7 @@ jobs:
         run: node -v && pnpm -v
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
         env:
           DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
           NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}

@@ -7,6 +7,7 @@
  */
 
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 
 type Params = Promise<{ token: string }>;
@@ -126,6 +127,7 @@ export async function POST(
       },
     });
   } catch (error) {
+    captureException(error);
     console.error("Error signing contract:", error);
     return NextResponse.json(
       { message: "Failed to sign contract" },

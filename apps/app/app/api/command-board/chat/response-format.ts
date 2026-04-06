@@ -24,7 +24,9 @@ export function formatStructuredAgentResponseForDisplay(
 
   const sections = [
     // Only show actions if there are errors or no summary
-    ...(!hasSummary ? [renderSection("Actions taken:", payload.actionsTaken)] : []),
+    ...(hasSummary
+      ? []
+      : [renderSection("Actions taken:", payload.actionsTaken)]),
     renderSection("Errors:", payload.errors),
     ...(hasErrors ? [renderSection("Next steps:", payload.nextSteps)] : []),
   ].filter((section) => section.length > 0);

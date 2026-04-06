@@ -3,9 +3,16 @@ import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
-  manifestErrorResponse,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+manifestErrorResponse,
   manifestSuccessResponse,
-} from "@/lib/manifest-response";
+} from "@/lib/manifest-response"
+
 import { database } from "@/lib/database";
 
 export async function POST(request: NextRequest) {
@@ -39,7 +46,9 @@ export async function POST(request: NextRequest) {
 
     const intervalDays = (existing as any[])[0]?.interval_days || 30;
     const now = new Date();
-    const nextDue = new Date(now.getTime() + intervalDays * 24 * 60 * 60 * 1000);
+    const nextDue = new Date(
+      now.getTime() + intervalDays * 24 * 60 * 60 * 1000
+    );
 
     // Update schedule with completion and calculate next due date
     const result = await database.$queryRaw`
@@ -77,6 +86,7 @@ export async function POST(request: NextRequest) {
 
     return manifestSuccessResponse({ schedule: (result as any[])[0] });
   } catch (error) {
+    captureException(error);
     console.error("Error completing preventive maintenance:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

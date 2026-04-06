@@ -3,8 +3,8 @@
 import { Button } from "@repo/design-system/components/ui/button";
 import { Sparkles } from "lucide-react";
 import { useState } from "react";
-import type { SuggestedAction } from "../../kitchen/lib/suggestions-types";
 import { SuggestionsPanel } from "../../kitchen/components/suggestions-panel";
+import type { SuggestedAction } from "../../kitchen/lib/suggestions-types";
 import { useSuggestions } from "../../kitchen/lib/use-suggestions";
 
 interface EventsPageWithSuggestionsProps {

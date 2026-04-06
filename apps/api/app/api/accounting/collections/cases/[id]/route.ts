@@ -5,6 +5,7 @@
  */
 
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireTenantId } from "@/app/lib/tenant";
@@ -82,7 +83,9 @@ export async function GET(request: NextRequest, context: RouteContext) {
       ...collectionCase,
       collectionPercentage:
         Number(collectionCase.originalAmount) > 0
-          ? Number(collectionCase.collectedAmount) / Number(collectionCase.originalAmount) * 100
+          ? (Number(collectionCase.collectedAmount) /
+              Number(collectionCase.originalAmount)) *
+            100
           : 0,
       isHighRisk:
         collectionCase.daysOverdue > 90 || collectionCase.status === "LEGAL",
@@ -90,6 +93,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
         collectionCase.daysOverdue > 120 || collectionCase.isEscalatedToLegal,
     });
   } catch (error) {
+    captureException(error);
     console.error("Error getting collection case:", error);
     return NextResponse.json(
       { error: "Failed to get collection case" },
@@ -162,7 +166,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (action === "escalateDunning") {
       const newStage = body.stage || collectionCase.dunningStage;
 
-      let newStatus = collectionCase.status;
+      const newStatus = collectionCase.status;
       let newPriority = collectionCase.priority;
 
       // COLLECTIONS stage indicates escalation to external collections
@@ -170,10 +174,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         newPriority = "URGENT";
       }
 
-      if (
-        newStage === "FINAL_NOTICE" ||
-        newStage === "COLLECTIONS"
-      ) {
+      if (newStage === "FINAL_NOTICE" || newStage === "COLLECTIONS") {
         newPriority = "URGENT";
       } else if (newStage === "REMINDER_2" || newStage === "REMINDER_3") {
         newPriority = "HIGH";
@@ -214,7 +215,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         data: {
           isDisputed: true,
           notes: collectionCase.notes
-            ? collectionCase.notes + "\nDispute reason: " + (body.reason || "No reason provided")
+            ? collectionCase.notes +
+              "\nDispute reason: " +
+              (body.reason || "No reason provided")
             : "Dispute reason: " + (body.reason || "No reason provided"),
           updatedAt: new Date(),
         },
@@ -246,8 +249,17 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
           status: "LEGAL",
           priority: "URGENT",
           notes: collectionCase.notes
-            ? collectionCase.notes + "\nEscalated to legal" + (body.legalCaseNumber ? ` (Case #: ${body.legalCaseNumber})` : "") + (body.legalFirm ? ` (Firm: ${body.legalFirm})` : "")
-            : "Escalated to legal" + (body.legalCaseNumber ? ` (Case #: ${body.legalCaseNumber})` : "") + (body.legalFirm ? ` (Firm: ${body.legalFirm})` : ""),
+            ? collectionCase.notes +
+              "\nEscalated to legal" +
+              (body.legalCaseNumber
+                ? ` (Case #: ${body.legalCaseNumber})`
+                : "") +
+              (body.legalFirm ? ` (Firm: ${body.legalFirm})` : "")
+            : "Escalated to legal" +
+              (body.legalCaseNumber
+                ? ` (Case #: ${body.legalCaseNumber})`
+                : "") +
+              (body.legalFirm ? ` (Firm: ${body.legalFirm})` : ""),
           updatedAt: new Date(),
         },
       });
@@ -322,7 +334,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
           hasPaymentPlan: true,
           priority: "MEDIUM",
           notes: collectionCase.notes
-            ? collectionCase.notes + "\nPayment plan created: " + validated.planId
+            ? collectionCase.notes +
+              "\nPayment plan created: " +
+              validated.planId
             : "Payment plan created: " + validated.planId,
           updatedAt: new Date(),
         },
@@ -332,6 +346,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   } catch (error) {
+    captureException(error);
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Validation failed", details: error.issues },

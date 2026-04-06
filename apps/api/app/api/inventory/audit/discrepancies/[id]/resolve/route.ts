@@ -14,8 +14,8 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
-import { createManifestRuntime } from "@/lib/manifest-runtime";
 import type { CommandResult, RuntimeEngine } from "@/lib/manifest-runtime";
+import { createManifestRuntime } from "@/lib/manifest-runtime";
 
 export const runtime = "nodejs";
 
@@ -184,7 +184,10 @@ function handleCommandError(
       422
     );
   }
-  return manifestErrorResponse(result.error ?? `${operation} command failed`, 400);
+  return manifestErrorResponse(
+    result.error ?? `${operation} command failed`,
+    400
+  );
 }
 
 async function executeReview(
@@ -232,7 +235,10 @@ function validateAndCalculateAdjustment(
 ): { error: Response | null; adjustmentAmount: number } {
   if (!body.adjustmentType) {
     return {
-      error: manifestErrorResponse("adjustmentType is required for resolution", 400),
+      error: manifestErrorResponse(
+        "adjustmentType is required for resolution",
+        400
+      ),
       adjustmentAmount: 0,
     };
   }
@@ -303,7 +309,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return manifestErrorResponse("Discrepancy not found", 404);
     }
 
-    if (existingReport.status === "approved" || existingReport.status === "adjusted") {
+    if (
+      existingReport.status === "approved" ||
+      existingReport.status === "adjusted"
+    ) {
       return manifestErrorResponse("Discrepancy is already resolved", 400);
     }
 
@@ -327,10 +336,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     // Validate and calculate adjustment
-    const { error: adjustmentError, adjustmentAmount } = validateAndCalculateAdjustment(
-      body,
-      toNumber(existingReport.variance)
-    );
+    const { error: adjustmentError, adjustmentAmount } =
+      validateAndCalculateAdjustment(body, toNumber(existingReport.variance));
     if (adjustmentError) {
       return adjustmentError;
     }

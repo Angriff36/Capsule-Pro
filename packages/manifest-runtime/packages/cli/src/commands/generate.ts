@@ -171,7 +171,13 @@ async function generateAllSurfaces(
   await generateRoutes(projection, ir, outputDir, spinner, projectionOptions);
 
   spinner.text = "Generating detail routes...";
-  await generateDetailRoutes(projection, ir, outputDir, spinner, projectionOptions);
+  await generateDetailRoutes(
+    projection,
+    ir,
+    outputDir,
+    spinner,
+    projectionOptions
+  );
 
   spinner.text = "Generating commands...";
   await generateCommands(projection, ir, outputDir, spinner, projectionOptions);

@@ -5,6 +5,7 @@
  * These routes return 501 Not Implemented until the model is added.
  */
 
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
 
@@ -15,13 +16,14 @@ import { requireTenantId } from "@/app/lib/tenant";
 export async function GET(request: NextRequest) {
   try {
     await requireTenantId();
-    
+
     // TODO: Implement when RevenueRecognitionSchedule model is added to schema
     return NextResponse.json(
       { error: "Revenue recognition schedules not yet implemented" },
       { status: 501 }
     );
   } catch (error) {
+    captureException(error);
     console.error("Error listing revenue recognition schedules:", error);
     return NextResponse.json(
       { error: "Failed to list revenue recognition schedules" },
@@ -37,13 +39,14 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     await requireTenantId();
-    
+
     // TODO: Implement when RevenueRecognitionSchedule model is added to schema
     return NextResponse.json(
       { error: "Revenue recognition schedules not yet implemented" },
       { status: 501 }
     );
   } catch (error) {
+    captureException(error);
     console.error("Error creating revenue recognition schedule:", error);
     return NextResponse.json(
       { error: "Failed to create revenue recognition schedule" },

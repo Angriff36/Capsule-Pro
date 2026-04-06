@@ -41,24 +41,25 @@ import { notFound } from "next/navigation";
 import { DietaryBadges } from "@/components/dietary-badges";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import { Header } from "../../components/header";
-import { MenuCard } from "./components/menu-card";
-import { getMenus } from "./menus/actions";
-import { RecipeEditButton } from "./recipe-edit-button";
 import { SingleDeleteButton } from "./components/bulk-actions-bar";
-import { SelectableList, ItemCheckbox } from "./components/selectable-list";
-import { RecipeFavoriteButton } from "./recipe-favorite-button";
-import { InlineRecipeName } from "./components/inline-recipe-fields";
-import { InlineDishName, InlineDishPrice } from "./components/inline-recipe-fields";
-import { RecipesPageClient } from "./recipes-page-client";
-import RecipesRealtime from "./recipes-realtime";
-import { RecipeQuickRename } from "./recipe-quick-rename";
-import { RecipesToolbar } from "./recipes-toolbar";
+import {
+  InlineDishName,
+  InlineDishPrice,
+  InlineRecipeName,
+} from "./components/inline-recipe-fields";
+import { MenuCard } from "./components/menu-card";
+import { ItemCheckbox, SelectableList } from "./components/selectable-list";
 import {
   getCostingSummaryStats,
   getVendorRecipeCostSummary,
-  type VendorRecipeCostSummary,
-  type CostingSummaryStats,
 } from "./costing-actions";
+import { getMenus } from "./menus/actions";
+import { RecipeEditButton } from "./recipe-edit-button";
+import { RecipeFavoriteButton } from "./recipe-favorite-button";
+import { RecipeQuickRename } from "./recipe-quick-rename";
+import { RecipesPageClient } from "./recipes-page-client";
+import RecipesRealtime from "./recipes-realtime";
+import { RecipesToolbar } from "./recipes-toolbar";
 
 interface RecipeRow {
   id: string;
@@ -489,7 +490,8 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
             <span className="text-xs text-muted-foreground font-medium">
               {activeTab === "recipes" && `${recipeTotals?.count ?? 0} recipes`}
               {activeTab === "dishes" && `${dishTotals?.count ?? 0} dishes`}
-              {activeTab === "ingredients" && `${ingredientTotals?.count ?? 0} ingredients`}
+              {activeTab === "ingredients" &&
+                `${ingredientTotals?.count ?? 0} ingredients`}
               {activeTab === "menus" && `${menuTotals?.count ?? 0} menus`}
             </span>
           </div>
@@ -518,104 +520,126 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                     </EmptyContent>
                   </Empty>
                 ) : (
-                  <SelectableList items={recipes.map(r => ({ id: r.id, name: r.name }))} type="recipes">
-                  {recipes.map((recipe) => {
-                    const categoryColors: Record<string, string> = {
-                      "appetizer": "bg-amber-500",
-                      "main course": "bg-emerald-600",
-                      "main": "bg-emerald-600",
-                      "dessert": "bg-rose-400",
-                      "side": "bg-sky-400",
-                      "beverage": "bg-violet-400",
-                    };
-                    const accentColor = recipe.category
-                      ? categoryColors[recipe.category.toLowerCase()] || "bg-[var(--brand-leafy-green)]"
-                      : "bg-[var(--brand-leafy-green)]";
+                  <SelectableList
+                    items={recipes.map((r) => ({ id: r.id, name: r.name }))}
+                    type="recipes"
+                  >
+                    {recipes.map((recipe) => {
+                      const categoryColors: Record<string, string> = {
+                        appetizer: "bg-amber-500",
+                        "main course": "bg-emerald-600",
+                        main: "bg-emerald-600",
+                        dessert: "bg-rose-400",
+                        side: "bg-sky-400",
+                        beverage: "bg-violet-400",
+                      };
+                      const accentColor = recipe.category
+                        ? categoryColors[recipe.category.toLowerCase()] ||
+                          "bg-[var(--brand-leafy-green)]"
+                        : "bg-[var(--brand-leafy-green)]";
 
-                    // Compact row layout for all recipes (Galley-style)
-                    return (
-                    <Link
-                      href={`/kitchen/recipes/${recipe.id}`}
-                      key={recipe.id}
-                      className="group flex items-center gap-3 p-3 border border-border/50 hover:border-border hover:bg-muted/30 transition-colors"
-                      data-testid="recipe-card"
-                    >
-                      {/* Selection checkbox */}
-                      <ItemCheckbox id={recipe.id} />
+                      // Compact row layout for all recipes (Galley-style)
+                      return (
+                        <Link
+                          className="group flex items-center gap-3 p-3 border border-border/50 hover:border-border hover:bg-muted/30 transition-colors"
+                          data-testid="recipe-card"
+                          href={`/kitchen/recipes/${recipe.id}`}
+                          key={recipe.id}
+                        >
+                          {/* Selection checkbox */}
+                          <ItemCheckbox id={recipe.id} />
 
-                      {/* Colored accent bar */}
-                      <div className={`w-1 h-10 rounded-sm ${accentColor}`} />
+                          {/* Colored accent bar */}
+                          <div
+                            className={`w-1 h-10 rounded-sm ${accentColor}`}
+                          />
 
-                      {/* Recipe name - primary info */}
-                      <div className="flex-1 min-w-0">
-                        <InlineRecipeName recipeId={recipe.id} name={recipe.name} />
-                        {recipe.description && (
-                          <div className="text-xs text-muted-foreground truncate">
-                            {recipe.description}
+                          {/* Recipe name - primary info */}
+                          <div className="flex-1 min-w-0">
+                            <InlineRecipeName
+                              name={recipe.name}
+                              recipeId={recipe.id}
+                            />
+                            {recipe.description && (
+                              <div className="text-xs text-muted-foreground truncate">
+                                {recipe.description}
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
 
-                      {/* Category badge */}
-                      {recipe.category && (
-                        <Badge className="bg-[var(--brand-avocado-mash)]/20 text-[var(--brand-leafy-green)] border-0 text-xs font-medium shrink-0">
-                          {recipe.category}
-                        </Badge>
-                      )}
+                          {/* Category badge */}
+                          {recipe.category && (
+                            <Badge className="bg-[var(--brand-avocado-mash)]/20 text-[var(--brand-leafy-green)] border-0 text-xs font-medium shrink-0">
+                              {recipe.category}
+                            </Badge>
+                          )}
 
-                      {/* Time info */}
-                      <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
-                        {recipe.prep_time_minutes ? (
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {formatMinutes(recipe.prep_time_minutes)}
-                          </span>
-                        ) : null}
-                        {recipe.cook_time_minutes ? (
-                          <span className="flex items-center gap-1">
-                            <UtensilsIcon className="h-3 w-3" />
-                            {formatMinutes(recipe.cook_time_minutes)}
-                          </span>
-                        ) : null}
-                      </div>
+                          {/* Time info */}
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
+                            {recipe.prep_time_minutes ? (
+                              <span className="flex items-center gap-1">
+                                <Clock className="h-3 w-3" />
+                                {formatMinutes(recipe.prep_time_minutes)}
+                              </span>
+                            ) : null}
+                            {recipe.cook_time_minutes ? (
+                              <span className="flex items-center gap-1">
+                                <UtensilsIcon className="h-3 w-3" />
+                                {formatMinutes(recipe.cook_time_minutes)}
+                              </span>
+                            ) : null}
+                          </div>
 
-                      {/* Counts */}
-                      <div className="flex items-center gap-4 text-xs shrink-0">
-                        <span className="text-muted-foreground">
-                          <span className="font-semibold text-foreground">{recipe.ingredient_count}</span> ing
-                        </span>
-                        {recipe.dish_count > 0 && (
-                          <span className="text-[var(--brand-spiced-orange)] font-medium">
-                            {recipe.dish_count} dish{recipe.dish_count > 1 ? "es" : ""}
-                          </span>
-                        )}
-                      </div>
+                          {/* Counts */}
+                          <div className="flex items-center gap-4 text-xs shrink-0">
+                            <span className="text-muted-foreground">
+                              <span className="font-semibold text-foreground">
+                                {recipe.ingredient_count}
+                              </span>{" "}
+                              ing
+                            </span>
+                            {recipe.dish_count > 0 && (
+                              <span className="text-[var(--brand-spiced-orange)] font-medium">
+                                {recipe.dish_count} dish
+                                {recipe.dish_count > 1 ? "es" : ""}
+                              </span>
+                            )}
+                          </div>
 
-                      {/* Dietary tags */}
-                      {recipe.tags && recipe.tags.filter(t => t.toLowerCase() !== 'imported').length > 0 && (
-                        <DietaryBadges compact size="sm" tags={recipe.tags.filter(t => t.toLowerCase() !== 'imported')} />
-                      )}
+                          {/* Dietary tags */}
+                          {recipe.tags &&
+                            recipe.tags.filter(
+                              (t) => t.toLowerCase() !== "imported"
+                            ).length > 0 && (
+                              <DietaryBadges
+                                compact
+                                size="sm"
+                                tags={recipe.tags.filter(
+                                  (t) => t.toLowerCase() !== "imported"
+                                )}
+                              />
+                            )}
 
-                      {/* Actions */}
-                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                        <RecipeQuickRename
-                          recipeId={recipe.id}
-                          recipeName={recipe.name}
-                        />
-                        <RecipeEditButton
-                          recipeId={recipe.id}
-                          recipeName={recipe.name}
-                        />
-                        <SingleDeleteButton
-                          id={recipe.id}
-                          name={recipe.name}
-                          type="recipe"
-                        />
-                        <RecipeFavoriteButton recipeName={recipe.name} />
-                      </div>
-                    </Link>
-                  );})
-                  }
+                          {/* Actions */}
+                          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                            <RecipeQuickRename
+                              recipeId={recipe.id}
+                              recipeName={recipe.name}
+                            />
+                            <RecipeEditButton
+                              recipeId={recipe.id}
+                              recipeName={recipe.name}
+                            />
+                            <SingleDeleteButton
+                              id={recipe.id}
+                              name={recipe.name}
+                              type="recipe"
+                            />
+                            <RecipeFavoriteButton recipeName={recipe.name} />
+                          </div>
+                        </Link>
+                      );
+                    })}
                   </SelectableList>
                 )}
               </div>
@@ -646,96 +670,136 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                     </EmptyContent>
                   </Empty>
                 ) : (
-                  <SelectableList items={dishes.map(d => ({ id: d.id, name: d.name }))} type="dishes">
-                  {dishes.map((dish) => {
-                    const margin = getDishMargin(dish);
-                    // Use brand colors for margin indicators
-                    const marginColor = margin !== null
-                      ? margin >= 60 ? "text-[var(--brand-leafy-green)]" : margin >= 40 ? "text-[var(--brand-golden-zest)]" : "text-[var(--brand-spiced-orange)]"
-                      : "text-muted-foreground";
-                    const marginBg = margin !== null
-                      ? margin >= 60 ? "bg-[var(--brand-leafy-green)]" : margin >= 40 ? "bg-[var(--brand-golden-zest)]" : "bg-[var(--brand-spiced-orange)]"
-                      : "bg-muted-foreground";
-                    return (
-                      <Link
-                        href={`/kitchen/recipes/dishes/${dish.id}`}
-                        key={dish.id}
-                        className="group flex items-center gap-3 p-3 border border-border/50 hover:border-border hover:bg-muted/30 transition-colors"
-                      >
-                        {/* Selection checkbox */}
-                        <ItemCheckbox id={dish.id} />
+                  <SelectableList
+                    items={dishes.map((d) => ({ id: d.id, name: d.name }))}
+                    type="dishes"
+                  >
+                    {dishes.map((dish) => {
+                      const margin = getDishMargin(dish);
+                      // Use brand colors for margin indicators
+                      const marginColor =
+                        margin !== null
+                          ? margin >= 60
+                            ? "text-[var(--brand-leafy-green)]"
+                            : margin >= 40
+                              ? "text-[var(--brand-golden-zest)]"
+                              : "text-[var(--brand-spiced-orange)]"
+                          : "text-muted-foreground";
+                      const marginBg =
+                        margin !== null
+                          ? margin >= 60
+                            ? "bg-[var(--brand-leafy-green)]"
+                            : margin >= 40
+                              ? "bg-[var(--brand-golden-zest)]"
+                              : "bg-[var(--brand-spiced-orange)]"
+                          : "bg-muted-foreground";
+                      return (
+                        <Link
+                          className="group flex items-center gap-3 p-3 border border-border/50 hover:border-border hover:bg-muted/30 transition-colors"
+                          href={`/kitchen/recipes/dishes/${dish.id}`}
+                          key={dish.id}
+                        >
+                          {/* Selection checkbox */}
+                          <ItemCheckbox id={dish.id} />
 
-                        {/* Margin indicator bar */}
-                        <div className={`w-1 h-10 rounded-sm ${marginBg}`} />
+                          {/* Margin indicator bar */}
+                          <div className={`w-1 h-10 rounded-sm ${marginBg}`} />
 
-                        {/* Dish name and recipe link */}
-                        <div className="flex-1 min-w-0">
-                          <InlineDishName dishId={dish.id} name={dish.name} />
-                          <div className="text-xs text-muted-foreground">
-                            {dish.recipe_name ?? <span className="italic">Unlinked</span>}
-                          </div>
-                        </div>
-
-                        {/* Category badge */}
-                        {dish.category && (
-                          <Badge className="bg-[var(--brand-avocado-mash)]/20 text-[var(--brand-leafy-green)] border-0 text-xs font-medium shrink-0">
-                            {dish.category}
-                          </Badge>
-                        )}
-
-                        {/* Dietary tags */}
-                        {dish.dietary_tags && dish.dietary_tags.length > 0 && (
-                          <DietaryBadges compact size="sm" tags={dish.dietary_tags} />
-                        )}
-
-                        {/* Cost data - prominent with brand colors */}
-                        <div className="flex items-center gap-4 text-xs shrink-0">
-                          <div className="text-center">
-                            <div className="text-muted-foreground text-[10px] uppercase">Cost</div>
-                            <div className="font-semibold text-foreground">
-                              {dish.cost_per_person
-                                ? currencyFormatter.format(dish.cost_per_person)
-                                : "-"}
+                          {/* Dish name and recipe link */}
+                          <div className="flex-1 min-w-0">
+                            <InlineDishName dishId={dish.id} name={dish.name} />
+                            <div className="text-xs text-muted-foreground">
+                              {dish.recipe_name ?? (
+                                <span className="italic">Unlinked</span>
+                              )}
                             </div>
                           </div>
-                          <div className="text-center">
-                            <div className="text-muted-foreground text-[10px] uppercase">Price</div>
-                            <InlineDishPrice dishId={dish.id} price={dish.price_per_person?.toString() ?? null} />
-                          </div>
-                          <div className="text-center min-w-[50px]">
-                            <div className="text-muted-foreground text-[10px] uppercase">Margin</div>
-                            <div className={`font-bold ${marginColor}`}>
-                              {formatPercent(margin)}
+
+                          {/* Category badge */}
+                          {dish.category && (
+                            <Badge className="bg-[var(--brand-avocado-mash)]/20 text-[var(--brand-leafy-green)] border-0 text-xs font-medium shrink-0">
+                              {dish.category}
+                            </Badge>
+                          )}
+
+                          {/* Dietary tags */}
+                          {dish.dietary_tags &&
+                            dish.dietary_tags.length > 0 && (
+                              <DietaryBadges
+                                compact
+                                size="sm"
+                                tags={dish.dietary_tags}
+                              />
+                            )}
+
+                          {/* Cost data - prominent with brand colors */}
+                          <div className="flex items-center gap-4 text-xs shrink-0">
+                            <div className="text-center">
+                              <div className="text-muted-foreground text-[10px] uppercase">
+                                Cost
+                              </div>
+                              <div className="font-semibold text-foreground">
+                                {dish.cost_per_person
+                                  ? currencyFormatter.format(
+                                      dish.cost_per_person
+                                    )
+                                  : "-"}
+                              </div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-muted-foreground text-[10px] uppercase">
+                                Price
+                              </div>
+                              <InlineDishPrice
+                                dishId={dish.id}
+                                price={
+                                  dish.price_per_person?.toString() ?? null
+                                }
+                              />
+                            </div>
+                            <div className="text-center min-w-[50px]">
+                              <div className="text-muted-foreground text-[10px] uppercase">
+                                Margin
+                              </div>
+                              <div className={`font-bold ${marginColor}`}>
+                                {formatPercent(margin)}
+                              </div>
                             </div>
                           </div>
-                        </div>
 
-                        {/* Event/prep counts */}
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
-                          <span>{dish.event_count} events</span>
-                          <span>{dish.prep_task_count} prep</span>
-                        </div>
+                          {/* Event/prep counts */}
+                          <div className="flex items-center gap-3 text-xs text-muted-foreground shrink-0">
+                            <span>{dish.event_count} events</span>
+                            <span>{dish.prep_task_count} prep</span>
+                          </div>
 
-                        {/* Status */}
-                        <div className="flex items-center gap-1 text-xs shrink-0">
-                          <CheckCircleIcon className={`size-3.5 ${dish.is_active ? "text-[var(--brand-leafy-green)]" : "text-muted-foreground"}`} />
-                          <span className={dish.is_active ? "text-[var(--brand-leafy-green)] font-medium" : "text-muted-foreground"}>
-                            {dish.is_active ? "Active" : "Paused"}
-                          </span>
-                        </div>
+                          {/* Status */}
+                          <div className="flex items-center gap-1 text-xs shrink-0">
+                            <CheckCircleIcon
+                              className={`size-3.5 ${dish.is_active ? "text-[var(--brand-leafy-green)]" : "text-muted-foreground"}`}
+                            />
+                            <span
+                              className={
+                                dish.is_active
+                                  ? "text-[var(--brand-leafy-green)] font-medium"
+                                  : "text-muted-foreground"
+                              }
+                            >
+                              {dish.is_active ? "Active" : "Paused"}
+                            </span>
+                          </div>
 
-                        {/* Delete */}
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                          <SingleDeleteButton
-                            id={dish.id}
-                            name={dish.name}
-                            type="dish"
-                          />
-                        </div>
-                      </Link>
-                    );
-                  })
-                  }
+                          {/* Delete */}
+                          <div className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                            <SingleDeleteButton
+                              id={dish.id}
+                              name={dish.name}
+                              type="dish"
+                            />
+                          </div>
+                        </Link>
+                      );
+                    })}
                   </SelectableList>
                 )}
               </div>
@@ -768,11 +832,13 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                 ) : (
                   ingredients.map((ingredient) => (
                     <div
-                      key={ingredient.id}
                       className="group flex items-center gap-3 p-3 border border-border/50 hover:border-border hover:bg-muted/30 transition-colors"
+                      key={ingredient.id}
                     >
                       {/* Status indicator */}
-                      <div className={`w-1 h-10 rounded-sm ${ingredient.is_active ? "bg-[var(--brand-leafy-green)]" : "bg-muted-foreground/50"}`} />
+                      <div
+                        className={`w-1 h-10 rounded-sm ${ingredient.is_active ? "bg-[var(--brand-leafy-green)]" : "bg-muted-foreground/50"}`}
+                      />
 
                       {/* Ingredient name */}
                       <div className="flex-1 min-w-0">
@@ -791,24 +857,40 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                       {/* Allergens */}
                       {(ingredient.allergens ?? []).length > 0 && (
                         <div className="flex gap-1 shrink-0">
-                          {(ingredient.allergens ?? []).slice(0, 3).map((allergen) => (
-                            <Badge key={allergen} variant="outline" className="text-xs border-[var(--brand-spiced-orange)]/50 text-[var(--brand-spiced-orange)]">
-                              {allergen}
-                            </Badge>
-                          ))}
+                          {(ingredient.allergens ?? [])
+                            .slice(0, 3)
+                            .map((allergen) => (
+                              <Badge
+                                className="text-xs border-[var(--brand-spiced-orange)]/50 text-[var(--brand-spiced-orange)]"
+                                key={allergen}
+                                variant="outline"
+                              >
+                                {allergen}
+                              </Badge>
+                            ))}
                         </div>
                       )}
 
                       {/* Unit */}
                       <div className="text-xs text-muted-foreground shrink-0">
                         <span className="text-[10px] uppercase">Unit:</span>{" "}
-                        <span className="font-medium">{ingredient.unit_code ?? "-"}</span>
+                        <span className="font-medium">
+                          {ingredient.unit_code ?? "-"}
+                        </span>
                       </div>
 
                       {/* Status */}
                       <div className="flex items-center gap-1 text-xs shrink-0">
-                        <CheckCircleIcon className={`size-3.5 ${ingredient.is_active ? "text-[var(--brand-leafy-green)]" : "text-muted-foreground"}`} />
-                        <span className={ingredient.is_active ? "text-[var(--brand-leafy-green)] font-medium" : "text-muted-foreground"}>
+                        <CheckCircleIcon
+                          className={`size-3.5 ${ingredient.is_active ? "text-[var(--brand-leafy-green)]" : "text-muted-foreground"}`}
+                        />
+                        <span
+                          className={
+                            ingredient.is_active
+                              ? "text-[var(--brand-leafy-green)] font-medium"
+                              : "text-muted-foreground"
+                          }
+                        >
                           {ingredient.is_active ? "Active" : "Paused"}
                         </span>
                       </div>
@@ -868,11 +950,15 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                 <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-4">
                   <div className="p-4 border border-border/50 bg-card">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium uppercase text-muted-foreground tracking-wide">Avg Food Cost</span>
+                      <span className="text-xs font-medium uppercase text-muted-foreground tracking-wide">
+                        Avg Food Cost
+                      </span>
                       <CalculatorIcon className="h-4 w-4 text-[var(--brand-golden-zest)]" />
                     </div>
                     <div className="text-2xl font-bold text-[var(--brand-golden-zest)]">
-                      {costingStats ? formatPercent(costingStats.avgFoodCostPercent) : "-"}
+                      {costingStats
+                        ? formatPercent(costingStats.avgFoodCostPercent)
+                        : "-"}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
                       Target: &lt;35%
@@ -880,12 +966,16 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                   </div>
                   <div className="p-4 border border-border/50 bg-card">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium uppercase text-muted-foreground tracking-wide">Total Recipe Value</span>
+                      <span className="text-xs font-medium uppercase text-muted-foreground tracking-wide">
+                        Total Recipe Value
+                      </span>
                       <DollarSignIcon className="h-4 w-4 text-[var(--brand-golden-zest)]" />
                     </div>
                     <div className="text-2xl font-bold text-[var(--brand-golden-zest)]">
                       {costingStats
-                        ? currencyFormatter.format(costingStats.totalRecipeValue)
+                        ? currencyFormatter.format(
+                            costingStats.totalRecipeValue
+                          )
                         : currencyFormatter.format(0)}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
@@ -895,7 +985,9 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                   </div>
                   <div className="p-4 border border-border/50 bg-card">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium uppercase text-muted-foreground tracking-wide">Highest Margin</span>
+                      <span className="text-xs font-medium uppercase text-muted-foreground tracking-wide">
+                        Highest Margin
+                      </span>
                       <TrendingUpIcon className="h-4 w-4 text-[var(--brand-leafy-green)]" />
                     </div>
                     <div className="text-2xl font-bold text-[var(--brand-leafy-green)]">
@@ -909,29 +1001,34 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                   </div>
                   <div className="p-4 border border-border/50 bg-card">
                     <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-medium uppercase text-muted-foreground tracking-wide">Cost Alerts</span>
+                      <span className="text-xs font-medium uppercase text-muted-foreground tracking-wide">
+                        Cost Alerts
+                      </span>
                       <Badge
-                        variant="outline"
                         className={`h-5 w-5 rounded-full p-0 flex items-center justify-center text-xs ${
                           (costingStats?.highFoodCostAlerts ?? 0) > 0
                             ? "bg-[var(--brand-spiced-orange)] text-white border-[var(--brand-spiced-orange)]"
                             : "bg-[var(--brand-leafy-green)] text-white border-[var(--brand-leafy-green)]"
                         }`}
+                        variant="outline"
                       >
                         {costingStats?.highFoodCostAlerts ?? 0}
                       </Badge>
                     </div>
-                    <div className={`text-2xl font-bold ${
-                      (costingStats?.highFoodCostAlerts ?? 0) > 0
-                        ? "text-[var(--brand-spiced-orange)]"
-                        : "text-[var(--brand-leafy-green)]"
-                    }`}>
+                    <div
+                      className={`text-2xl font-bold ${
+                        (costingStats?.highFoodCostAlerts ?? 0) > 0
+                          ? "text-[var(--brand-spiced-orange)]"
+                          : "text-[var(--brand-leafy-green)]"
+                      }`}
+                    >
                       {(costingStats?.highFoodCostAlerts ?? 0) > 0
                         ? "Action Needed"
                         : "All Good"}
                     </div>
                     <p className="text-xs text-muted-foreground mt-1">
-                      {costingStats?.highFoodCostAlerts ?? 0} recipes over 35% threshold
+                      {costingStats?.highFoodCostAlerts ?? 0} recipes over 35%
+                      threshold
                     </p>
                   </div>
                 </div>
@@ -939,18 +1036,24 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                 {/* Recipe Cost Analysis Table */}
                 <div className="border border-border/50 bg-card">
                   <div className="p-4 border-b border-border/50">
-                    <h3 className="font-semibold text-sm">Recipe Cost Analysis</h3>
+                    <h3 className="font-semibold text-sm">
+                      Recipe Cost Analysis
+                    </h3>
                     <p className="text-xs text-muted-foreground">
-                      Compare recipe costs, margins, and identify high food cost items
+                      Compare recipe costs, margins, and identify high food cost
+                      items
                     </p>
                   </div>
                   <div className="p-4">
                     {costingSummary.length === 0 ? (
                       <div className="py-8 text-center text-muted-foreground">
                         <DollarSignIcon className="mx-auto mb-4 h-12 w-12 opacity-50" />
-                        <p className="text-lg font-medium">No vendor cost data available</p>
+                        <p className="text-lg font-medium">
+                          No vendor cost data available
+                        </p>
                         <p className="text-sm">
-                          Add vendor pricing to ingredients to see recipe cost analysis.
+                          Add vendor pricing to ingredients to see recipe cost
+                          analysis.
                         </p>
                       </div>
                     ) : (
@@ -958,7 +1061,9 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                         <Table>
                           <TableHeader>
                             <TableRow className="border-b border-border/50 hover:bg-transparent">
-                              <TableHead className="text-xs uppercase text-muted-foreground font-medium">Recipe</TableHead>
+                              <TableHead className="text-xs uppercase text-muted-foreground font-medium">
+                                Recipe
+                              </TableHead>
                               <TableHead className="text-right text-xs uppercase text-muted-foreground font-medium">
                                 Cost/Yield
                               </TableHead>
@@ -971,8 +1076,12 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                               <TableHead className="text-right text-xs uppercase text-muted-foreground font-medium">
                                 Margin
                               </TableHead>
-                              <TableHead className="text-xs uppercase text-muted-foreground font-medium">Ingredients</TableHead>
-                              <TableHead className="text-xs uppercase text-muted-foreground font-medium">Status</TableHead>
+                              <TableHead className="text-xs uppercase text-muted-foreground font-medium">
+                                Ingredients
+                              </TableHead>
+                              <TableHead className="text-xs uppercase text-muted-foreground font-medium">
+                                Status
+                              </TableHead>
                               <TableHead />
                             </TableRow>
                           </TableHeader>
@@ -985,7 +1094,10 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                                 foodCostPercent > 35;
 
                               return (
-                                <TableRow key={recipe.recipeId} className="border-b border-border/30">
+                                <TableRow
+                                  className="border-b border-border/30"
+                                  key={recipe.recipeId}
+                                >
                                   <TableCell>
                                     <div>
                                       <div className="font-medium text-sm">
@@ -998,11 +1110,15 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                                     </div>
                                   </TableCell>
                                   <TableCell className="text-right font-medium text-[var(--brand-golden-zest)]">
-                                    {currencyFormatter.format(recipe.costPerYield)}
+                                    {currencyFormatter.format(
+                                      recipe.costPerYield
+                                    )}
                                   </TableCell>
                                   <TableCell className="text-right font-medium">
                                     {recipe.menuPrice
-                                      ? currencyFormatter.format(recipe.menuPrice)
+                                      ? currencyFormatter.format(
+                                          recipe.menuPrice
+                                        )
                                       : "-"}
                                   </TableCell>
                                   <TableCell className="text-right">
@@ -1045,7 +1161,10 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                                         Calculated
                                       </Badge>
                                     ) : (
-                                      <Badge variant="secondary" className="text-xs">
+                                      <Badge
+                                        className="text-xs"
+                                        variant="secondary"
+                                      >
                                         Pending
                                       </Badge>
                                     )}
@@ -1053,9 +1172,9 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                                   <TableCell>
                                     <Button
                                       asChild
+                                      className="text-[var(--brand-leafy-green)] hover:text-[var(--brand-leafy-green)] hover:bg-[var(--brand-leafy-green)]/10"
                                       size="sm"
                                       variant="ghost"
-                                      className="text-[var(--brand-leafy-green)] hover:text-[var(--brand-leafy-green)] hover:bg-[var(--brand-leafy-green)]/10"
                                     >
                                       <Link
                                         href={`/kitchen/recipes/${recipe.recipeId}`}
@@ -1085,9 +1204,12 @@ const KitchenRecipesPage = async ({ searchParams }: RecipesPageProps) => {
                               <p className="text-xs text-muted-foreground">
                                 This recipe has a margin of{" "}
                                 <span className="text-[var(--brand-spiced-orange)] font-medium">
-                                  {formatPercent(costingStats.lowestMarginDish.margin)}
+                                  {formatPercent(
+                                    costingStats.lowestMarginDish.margin
+                                  )}
                                 </span>
-                                . Consider reviewing ingredient costs or adjusting menu price.
+                                . Consider reviewing ingredient costs or
+                                adjusting menu price.
                               </p>
                             </div>
                           )}

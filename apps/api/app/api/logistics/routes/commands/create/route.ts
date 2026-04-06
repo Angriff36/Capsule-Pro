@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { database } from '@repo/database';
-import { requireTenantId } from '@/app/lib/tenant';
+import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
+import { type NextRequest, NextResponse } from "next/server";
+import { requireTenantId } from "@/app/lib/tenant";
 
 export async function POST(request: NextRequest) {
   try {
@@ -12,14 +13,14 @@ export async function POST(request: NextRequest) {
     // Generate route number
     const lastRoute = await database.deliveryRoute.findFirst({
       where: { tenantId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       select: { routeNumber: true },
     });
 
     const nextNumber = lastRoute
-      ? parseInt(lastRoute.routeNumber.replace('RT-', '')) + 1
+      ? Number.parseInt(lastRoute.routeNumber.replace("RT-", "")) + 1
       : 1;
-    const routeNumber = `RT-${nextNumber.toString().padStart(6, '0')}`;
+    const routeNumber = `RT-${nextNumber.toString().padStart(6, "0")}`;
 
     const route = await database.deliveryRoute.create({
       data: {
@@ -45,7 +46,7 @@ export async function POST(request: NextRequest) {
                 countryCode: stop.countryCode,
                 latitude: stop.latitude,
                 longitude: stop.longitude,
-                stopType: stop.stopType || 'delivery',
+                stopType: stop.stopType || "delivery",
                 plannedArrival: stop.plannedArrival
                   ? new Date(stop.plannedArrival)
                   : null,
@@ -56,15 +57,16 @@ export async function POST(request: NextRequest) {
           : undefined,
       },
       include: {
-        stops: { orderBy: { stopNumber: 'asc' } },
+        stops: { orderBy: { stopNumber: "asc" } },
       },
     });
 
     return NextResponse.json({ route });
   } catch (error) {
-    console.error('Error creating route:', error);
+    captureException(error);
+    console.error("Error creating route:", error);
     return NextResponse.json(
-      { error: 'Failed to create route' },
+      { error: "Failed to create route" },
       { status: 500 }
     );
   }

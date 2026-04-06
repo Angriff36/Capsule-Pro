@@ -1,7 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
-import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
@@ -25,9 +25,7 @@ export async function POST(request: NextRequest) {
     const searchTerm = `%${query.trim().toLowerCase()}%`;
 
     // Search for ingredients matching the query
-    const ingredients = await database.$queryRaw<
-      { name: string }[]
-    >(
+    const ingredients = await database.$queryRaw<{ name: string }[]>(
       Prisma.sql`
         SELECT name
         FROM tenant_kitchen.ingredients

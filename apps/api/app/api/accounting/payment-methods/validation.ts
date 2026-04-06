@@ -129,7 +129,9 @@ export function validateCreatePaymentMethodRequest(
         "cardNetwork must be a string"
       );
       invariant(
-        (CARD_NETWORKS as readonly string[]).includes(data.cardNetwork as string),
+        (CARD_NETWORKS as readonly string[]).includes(
+          data.cardNetwork as string
+        ),
         `Invalid card network: ${data.cardNetwork}`
       );
     }
@@ -166,19 +168,19 @@ export function getDisplayInfo(paymentMethod: {
   }
 
   if (type === "ACH" || type === "WIRE_TRANSFER") {
-    return `Bank Account`;
+    return "Bank Account";
   }
 
   if (type === "DIGITAL_WALLET") {
-    return `Digital Wallet`;
+    return "Digital Wallet";
   }
 
   if (type === "CHECK") {
-    return `Check`;
+    return "Check";
   }
 
   if (type === "CASH") {
-    return `Cash`;
+    return "Cash";
   }
 
   return type;

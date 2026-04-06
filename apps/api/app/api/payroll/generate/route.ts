@@ -1,10 +1,17 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import {
-  GeneratePayrollRequestSchema,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+GeneratePayrollRequestSchema,
   PayrollService,
   PrismaPayrollDataSource,
-} from "@repo/payroll-engine";
+} from "@repo/payroll-engine"
+
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -100,6 +107,7 @@ export async function POST(request: NextRequest) {
       status: result.status === "failed" ? 500 : 200,
     });
   } catch (error) {
+    captureException(error);
     console.error("Payroll generation error:", error);
     return NextResponse.json(
       { error: "Failed to generate payroll" },

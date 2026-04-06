@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -29,20 +30,47 @@ export async function POST(request: NextRequest) {
     const tenantId = await getTenantIdForOrg(orgId);
     const body = await request.json();
 
-    const { employeeId, bankName, accountType, routingNumber, accountNumber, accountHolderName, isDefault, notes } = body;
+    const {
+      employeeId,
+      bankName,
+      accountType,
+      routingNumber,
+      accountNumber,
+      accountHolderName,
+      isDefault,
+      notes,
+    } = body;
 
-    if (!employeeId || !bankName || !accountType || !routingNumber || !accountNumber || !accountHolderName) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    if (
+      !(
+        employeeId &&
+        bankName &&
+        accountType &&
+        routingNumber &&
+        accountNumber &&
+        accountHolderName
+      )
+    ) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
     }
 
     // Validate routing number (9 digits)
     if (!/^\d{9}$/.test(routingNumber)) {
-      return NextResponse.json({ error: "Routing number must be 9 digits" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Routing number must be 9 digits" },
+        { status: 400 }
+      );
     }
 
     // Validate account number (4-17 digits)
     if (!/^\d{4,17}$/.test(accountNumber)) {
-      return NextResponse.json({ error: "Account number must be 4-17 digits" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Account number must be 4-17 digits" },
+        { status: 400 }
+      );
     }
 
     // If setting as default, unset other defaults for this employee
@@ -60,13 +88,18 @@ export async function POST(request: NextRequest) {
     }
 
     const [account] = await database.$queryRaw<
-      Array<{ id: string; employee_id: string; account_number_last4: string; status: string }>
+      Array<{
+        id: string;
+        employee_id: string;
+        account_number_last4: string;
+        status: string;
+      }>
     >(
       Prisma.sql`
         INSERT INTO tenant_staff.employee_bank_accounts
           (tenant_id, employee_id, bank_name, account_type, routing_number, account_number, account_holder_name, is_default, notes)
         VALUES
-          (${tenantId}, ${employeeId}, ${bankName}, ${accountType}, ${routingNumber}, ${accountNumber}, ${accountHolderName}, ${isDefault || false}, ${notes || null})
+          (${tenantId}, ${employeeId}, ${bankName}, ${accountType}, ${routingNumber}, ${accountNumber}, ${accountHolderName}, ${isDefault}, ${notes || null})
         RETURNING id, employee_id, account_number_last4, status
       `
     );
@@ -89,9 +122,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ success: true, id: account.id, last4: account.account_number_last4 }, { status: 201 });
+    return NextResponse.json(
+      { success: true, id: account.id, last4: account.account_number_last4 },
+      { status: 201 }
+    );
   } catch (error) {
+    captureException(error);
     console.error("Failed to create bank account:", error);
-    return NextResponse.json({ error: "Failed to create bank account" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to create bank account" },
+      { status: 500 }
+    );
   }
 }

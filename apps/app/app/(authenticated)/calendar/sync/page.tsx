@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
@@ -10,8 +9,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Badge } from "@repo/design-system/components/ui/badge";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   ArrowLeft,
@@ -23,6 +20,9 @@ import {
   Trash2,
   X,
 } from "lucide-react";
+import Link from "next/link";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
 
 interface SyncStatus {
   id: string;
@@ -188,7 +188,7 @@ export default function CalendarSyncPage() {
       <div className="space-y-0.5">
         <div className="flex items-center gap-2">
           <Link href="/calendar">
-            <Button variant="ghost" size="icon">
+            <Button size="icon" variant="ghost">
               <ArrowLeft className="h-4 w-4" />
             </Button>
           </Link>
@@ -256,9 +256,7 @@ export default function CalendarSyncPage() {
                     <div className="text-sm text-muted-foreground">
                       Last synced: {new Date(sync.lastSyncAt).toLocaleString()}
                       {sync.lastSyncStatus && (
-                        <span className="ml-2">
-                          ({sync.lastSyncStatus})
-                        </span>
+                        <span className="ml-2">({sync.lastSyncStatus})</span>
                       )}
                     </div>
                   )}
@@ -276,8 +274,8 @@ export default function CalendarSyncPage() {
                     {sync?.status === "connected" ? (
                       <>
                         <Button
-                          onClick={() => handleSync(provider.id)}
                           disabled={isLoading}
+                          onClick={() => handleSync(provider.id)}
                           size="sm"
                         >
                           {actionLoading === `sync-${provider.id}` ? (
@@ -288,10 +286,10 @@ export default function CalendarSyncPage() {
                           Sync Now
                         </Button>
                         <Button
-                          onClick={() => handleDisconnect(provider.id)}
                           disabled={isLoading}
-                          variant="outline"
+                          onClick={() => handleDisconnect(provider.id)}
                           size="sm"
+                          variant="outline"
                         >
                           {actionLoading === `disconnect-${provider.id}` ? (
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -303,8 +301,8 @@ export default function CalendarSyncPage() {
                       </>
                     ) : (
                       <Button
-                        onClick={() => handleConnect(provider.id)}
                         disabled={isLoading}
+                        onClick={() => handleConnect(provider.id)}
                         size="sm"
                       >
                         {actionLoading === provider.id ? (
@@ -336,23 +334,25 @@ export default function CalendarSyncPage() {
             <li>
               Go to{" "}
               <a
-                href="https://console.cloud.google.com/apis/credentials"
-                target="_blank"
-                rel="noopener noreferrer"
                 className="text-primary underline"
+                href="https://console.cloud.google.com/apis/credentials"
+                rel="noopener noreferrer"
+                target="_blank"
               >
                 Google Cloud Console
               </a>
             </li>
             <li>Create OAuth 2.0 credentials</li>
-            <li>Add the redirect URI:{" "}
+            <li>
+              Add the redirect URI:{" "}
               <code className="bg-muted rounded px-1">
                 {process.env.NEXT_PUBLIC_APP_URL || "http://localhost:2221"}
                 /api/calendar/sync/callback/google
               </code>
             </li>
             <li>
-              Set <code className="bg-muted rounded px-1">GOOGLE_CLIENT_ID</code>{" "}
+              Set{" "}
+              <code className="bg-muted rounded px-1">GOOGLE_CLIENT_ID</code>{" "}
               and{" "}
               <code className="bg-muted rounded px-1">
                 GOOGLE_CLIENT_SECRET
@@ -368,16 +368,17 @@ export default function CalendarSyncPage() {
             <li>
               Go to{" "}
               <a
-                href="https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps/ApplicationsListBlade"
-                target="_blank"
-                rel="noopener noreferrer"
                 className="text-primary underline"
+                href="https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps/ApplicationsListBlade"
+                rel="noopener noreferrer"
+                target="_blank"
               >
                 Azure App Registrations
               </a>
             </li>
             <li>Register a new application</li>
-            <li>Add the redirect URI:{" "}
+            <li>
+              Add the redirect URI:{" "}
               <code className="bg-muted rounded px-1">
                 {process.env.NEXT_PUBLIC_APP_URL || "http://localhost:2221"}
                 /api/calendar/sync/callback/outlook
@@ -385,9 +386,7 @@ export default function CalendarSyncPage() {
             </li>
             <li>
               Set{" "}
-              <code className="bg-muted rounded px-1">
-                MICROSOFT_CLIENT_ID
-              </code>{" "}
+              <code className="bg-muted rounded px-1">MICROSOFT_CLIENT_ID</code>{" "}
               and{" "}
               <code className="bg-muted rounded px-1">
                 MICROSOFT_CLIENT_SECRET

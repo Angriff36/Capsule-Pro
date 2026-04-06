@@ -7,6 +7,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -23,7 +24,10 @@ export async function GET(_request: NextRequest) {
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 400 }
+      );
     }
 
     const rules = await database.$queryRaw<
@@ -51,8 +55,12 @@ export async function GET(_request: NextRequest) {
 
     return NextResponse.json({ data: rules });
   } catch (error) {
+    captureException(error);
     console.error("Error listing scoring rules:", error);
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
   }
 }
 
@@ -66,25 +74,62 @@ export async function POST(request: NextRequest) {
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ message: "Tenant not found" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Tenant not found" },
+        { status: 400 }
+      );
     }
 
     const body = await request.json();
-    const { rule_name, field, condition, value, points, is_active = true, priority = 0 } = body;
+    const {
+      rule_name,
+      field,
+      condition,
+      value,
+      points,
+      is_active = true,
+      priority = 0,
+    } = body;
 
-    if (!rule_name || !field || !condition || value === undefined || points === undefined) {
-      return NextResponse.json({ message: "Missing required fields" }, { status: 400 });
+    if (
+      !(rule_name && field && condition) ||
+      value === undefined ||
+      points === undefined
+    ) {
+      return NextResponse.json(
+        { message: "Missing required fields" },
+        { status: 400 }
+      );
     }
 
-    const validConditions = ["equals", "gt", "lt", "gte", "lte", "contains", "exists", "not_equals"];
+    const validConditions = [
+      "equals",
+      "gt",
+      "lt",
+      "gte",
+      "lte",
+      "contains",
+      "exists",
+      "not_equals",
+    ];
     if (!validConditions.includes(condition)) {
-      return NextResponse.json({ message: "Invalid condition type" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Invalid condition type" },
+        { status: 400 }
+      );
     }
 
     const validFields = [
-      "source", "companyName", "contactName", "contactEmail",
-      "contactPhone", "eventType", "status", "estimatedGuests",
-      "estimatedValue", "eventDate",
+      "source",
+      "companyName",
+      "contactName",
+      "contactEmail",
+      "contactPhone",
+      "eventType",
+      "status",
+      "estimatedGuests",
+      "estimatedValue",
+      "eventDate",
     ];
     if (!validFields.includes(field)) {
       return NextResponse.json({ message: "Invalid field" }, { status: 400 });
@@ -116,7 +161,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ data: rule[0] }, { status: 201 });
   } catch (error) {
+    captureException(error);
     console.error("Error creating scoring rule:", error);
-    return NextResponse.json({ message: "Internal server error" }, { status: 500 });
+    return NextResponse.json(
+      { message: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

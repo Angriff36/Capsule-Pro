@@ -1,9 +1,13 @@
 // List drivers
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import {
+  manifestErrorResponse,
+  manifestSuccessResponse,
+} from "@/lib/manifest-response";
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,7 +27,8 @@ export async function GET(request: NextRequest) {
       params.push(status);
     }
 
-    const drivers = await database.$queryRawUnsafe(`
+    const drivers = await database.$queryRawUnsafe(
+      `
       SELECT
         d.id, d.name, d.phone, d.email, d.license_number, d.license_expiry,
         d.status, d.vehicle_id, d.notes, d.created_at,
@@ -33,10 +38,13 @@ export async function GET(request: NextRequest) {
       WHERE d.tenant_id = $1::uuid AND d.deleted_at IS NULL
         ${statusFilter}
       ORDER BY d.name
-    `, ...params);
+    `,
+      ...params
+    );
 
     return manifestSuccessResponse({ drivers });
   } catch (error) {
+    captureException(error);
     console.error("Error listing drivers:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

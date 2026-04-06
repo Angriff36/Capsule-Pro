@@ -15,12 +15,18 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type {
-  BoardDelta,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+BoardDelta,
   BoardProjection,
   BoardGroup,
   BoardAnnotation,
   EntityType as ApiEntityType,
-} from "../../../types";
+} from "../../../types"
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -48,8 +54,12 @@ function computeBoardDelta(
   const removedAnnotationIds: string[] = [];
 
   // Build maps for quick lookup by entity_id
-  const originalProjMap = new Map(originalProjections.map((p) => [p.entity_id, p]));
-  const simulatedProjMap = new Map(simulatedProjections.map((p) => [p.entity_id, p]));
+  const originalProjMap = new Map(
+    originalProjections.map((p) => [p.entity_id, p])
+  );
+  const simulatedProjMap = new Map(
+    simulatedProjections.map((p) => [p.entity_id, p])
+  );
 
   const originalGroupMap = new Map(originalGroups.map((g) => [g.id, g]));
   const simulatedGroupMap = new Map(simulatedGroups.map((g) => [g.id, g]));
@@ -189,7 +199,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       },
     });
 
-    if (!simulationBoard || !simulationBoard.tags.includes("simulation")) {
+    if (!(simulationBoard && simulationBoard.tags.includes("simulation"))) {
       return NextResponse.json(
         { message: "Simulation not found" },
         { status: 404 }
@@ -237,39 +247,42 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     // Map to API types
-    const originalProjections: BoardProjection[] = sourceBoard.projections.map((p) => ({
-      id: p.id,
-      tenant_id: p.tenantId,
-      board_id: p.boardId,
-      entity_type: p.entityType as ApiEntityType,
-      entity_id: p.entityId,
-      position_x: p.positionX,
-      position_y: p.positionY,
-      width: p.width,
-      height: p.height,
-      z_index: p.zIndex,
-      color_override: p.colorOverride,
-      collapsed: p.collapsed,
-      group_id: p.groupId,
-      pinned: p.pinned,
-    }));
+    const originalProjections: BoardProjection[] = sourceBoard.projections.map(
+      (p) => ({
+        id: p.id,
+        tenant_id: p.tenantId,
+        board_id: p.boardId,
+        entity_type: p.entityType as ApiEntityType,
+        entity_id: p.entityId,
+        position_x: p.positionX,
+        position_y: p.positionY,
+        width: p.width,
+        height: p.height,
+        z_index: p.zIndex,
+        color_override: p.colorOverride,
+        collapsed: p.collapsed,
+        group_id: p.groupId,
+        pinned: p.pinned,
+      })
+    );
 
-    const simulatedProjections: BoardProjection[] = simulationBoard.projections.map((p) => ({
-      id: p.id,
-      tenant_id: p.tenantId,
-      board_id: p.boardId,
-      entity_type: p.entityType as ApiEntityType,
-      entity_id: p.entityId,
-      position_x: p.positionX,
-      position_y: p.positionY,
-      width: p.width,
-      height: p.height,
-      z_index: p.zIndex,
-      color_override: p.colorOverride,
-      collapsed: p.collapsed,
-      group_id: p.groupId,
-      pinned: p.pinned,
-    }));
+    const simulatedProjections: BoardProjection[] =
+      simulationBoard.projections.map((p) => ({
+        id: p.id,
+        tenant_id: p.tenantId,
+        board_id: p.boardId,
+        entity_type: p.entityType as ApiEntityType,
+        entity_id: p.entityId,
+        position_x: p.positionX,
+        position_y: p.positionY,
+        width: p.width,
+        height: p.height,
+        z_index: p.zIndex,
+        color_override: p.colorOverride,
+        collapsed: p.collapsed,
+        group_id: p.groupId,
+        pinned: p.pinned,
+      }));
 
     const originalGroups: BoardGroup[] = sourceBoard.groups.map((g) => ({
       id: g.id,
@@ -299,27 +312,30 @@ export async function POST(request: NextRequest, context: RouteContext) {
       z_index: g.zIndex,
     }));
 
-    const originalAnnotations: BoardAnnotation[] = sourceBoard.annotations.map((a) => ({
-      id: a.id,
-      board_id: a.boardId,
-      annotation_type: a.annotationType,
-      from_projection_id: a.fromProjectionId,
-      to_projection_id: a.toProjectionId,
-      label: a.label,
-      color: a.color,
-      style: a.style,
-    }));
+    const originalAnnotations: BoardAnnotation[] = sourceBoard.annotations.map(
+      (a) => ({
+        id: a.id,
+        board_id: a.boardId,
+        annotation_type: a.annotationType,
+        from_projection_id: a.fromProjectionId,
+        to_projection_id: a.toProjectionId,
+        label: a.label,
+        color: a.color,
+        style: a.style,
+      })
+    );
 
-    const simulatedAnnotations: BoardAnnotation[] = simulationBoard.annotations.map((a) => ({
-      id: a.id,
-      board_id: a.boardId,
-      annotation_type: a.annotationType,
-      from_projection_id: a.fromProjectionId,
-      to_projection_id: a.toProjectionId,
-      label: a.label,
-      color: a.color,
-      style: a.style,
-    }));
+    const simulatedAnnotations: BoardAnnotation[] =
+      simulationBoard.annotations.map((a) => ({
+        id: a.id,
+        board_id: a.boardId,
+        annotation_type: a.annotationType,
+        from_projection_id: a.fromProjectionId,
+        to_projection_id: a.toProjectionId,
+        label: a.label,
+        color: a.color,
+        style: a.style,
+      }));
 
     // Compute delta
     const delta = computeBoardDelta(
@@ -434,7 +450,9 @@ export async function POST(request: NextRequest, context: RouteContext) {
         const simProj = simulatedProjections.find((p) => p.id === mod.id);
         if (!simProj) continue;
 
-        const sourceProj = originalProjections.find((p) => p.entity_id === simProj.entity_id);
+        const sourceProj = originalProjections.find(
+          (p) => p.entity_id === simProj.entity_id
+        );
         if (!sourceProj) continue;
 
         // Map field names
@@ -467,7 +485,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
           },
         },
         data: {
-          tags: [...simulationBoard.tags.filter((t) => t !== "applied"), "applied"],
+          tags: [
+            ...simulationBoard.tags.filter((t) => t !== "applied"),
+            "applied",
+          ],
           status: "archived",
         },
       });
@@ -490,6 +511,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       delta: delta.summary,
     });
   } catch (error) {
+    captureException(error);
     console.error("Failed to apply simulation:", error);
     return NextResponse.json(
       { message: "Internal server error" },

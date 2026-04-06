@@ -25,7 +25,6 @@ import { getTenantIdForOrg } from "../../../lib/tenant";
 import { Header } from "../../components/header";
 import { getKitchenTasks, getMyActiveClaims } from "./actions";
 
-
 const priorityLabels: Record<number, string> = {
   1: "Urgent",
   2: "High",
@@ -233,9 +232,7 @@ const KitchenTasksPage = async () => {
                               {format(new Date(task.createdAt), "MMM d")}
                             </div>
                           </TableCell>
-                          <TableCell>
-
-                          </TableCell>
+                          <TableCell />
                         </TableRow>
                       );
                     })}

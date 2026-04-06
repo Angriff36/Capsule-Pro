@@ -42,10 +42,10 @@ import {
   TableHeader,
   TableRow,
 } from "@repo/design-system/components/ui/table";
-import { PackageIcon, PlusIcon, MoreHorizontal, TrashIcon, UploadIcon } from "lucide-react";
+import { PackageIcon, PlusIcon, TrashIcon, UploadIcon } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import Link from "next/link";
 import {
   batchDeleteItems,
   batchUpdateItems,
@@ -94,7 +94,9 @@ export const InventoryItemsPageClient = () => {
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [batchUpdateDialogOpen, setBatchUpdateDialogOpen] = useState(false);
   const [batchDeleteDialogOpen, setBatchDeleteDialogOpen] = useState(false);
-  const [batchUpdateField, setBatchUpdateField] = useState<"category" | "fsa_status">("category");
+  const [batchUpdateField, setBatchUpdateField] = useState<
+    "category" | "fsa_status"
+  >("category");
   const [batchUpdateValue, setBatchUpdateValue] = useState<string>("");
   const [batchUpdating, setBatchUpdating] = useState(false);
 
@@ -207,18 +209,29 @@ export const InventoryItemsPageClient = () => {
     try {
       const updates: Record<string, string> = {};
       updates[batchUpdateField] = batchUpdateValue;
-      await batchUpdateItems(Array.from(selectedIds), updates as Parameters<typeof batchUpdateItems>[1]);
+      await batchUpdateItems(
+        Array.from(selectedIds),
+        updates as Parameters<typeof batchUpdateItems>[1]
+      );
       toast.success(`Updated ${selectedIds.size} items`);
       setBatchUpdateDialogOpen(false);
       setBatchUpdateValue("");
       clearSelection();
       loadItems();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to batch update items");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to batch update items"
+      );
     } finally {
       setBatchUpdating(false);
     }
-  }, [batchUpdateValue, batchUpdateField, selectedIds, clearSelection, loadItems]);
+  }, [
+    batchUpdateValue,
+    batchUpdateField,
+    selectedIds,
+    clearSelection,
+    loadItems,
+  ]);
 
   // Batch delete handler
   const handleBatchDelete = useCallback(async () => {
@@ -230,7 +243,9 @@ export const InventoryItemsPageClient = () => {
       clearSelection();
       loadItems();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to batch delete items");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to batch delete items"
+      );
     } finally {
       setBatchUpdating(false);
     }
@@ -386,13 +401,10 @@ export const InventoryItemsPageClient = () => {
             <div className="flex items-center justify-between rounded-xl border bg-muted/50 p-4">
               <div className="flex items-center gap-3">
                 <span className="text-sm font-medium">
-                  {selectedIds.size} item{selectedIds.size !== 1 ? "s" : ""} selected
+                  {selectedIds.size} item{selectedIds.size !== 1 ? "s" : ""}{" "}
+                  selected
                 </span>
-                <Button
-                  onClick={clearSelection}
-                  size="sm"
-                  variant="ghost"
-                >
+                <Button onClick={clearSelection} size="sm" variant="ghost">
                   Clear
                 </Button>
               </div>
@@ -407,10 +419,20 @@ export const InventoryItemsPageClient = () => {
                   <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Update Field</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => { setBatchUpdateField("category"); setBatchUpdateDialogOpen(true); }}>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setBatchUpdateField("category");
+                        setBatchUpdateDialogOpen(true);
+                      }}
+                    >
                       Update Category
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => { setBatchUpdateField("fsa_status"); setBatchUpdateDialogOpen(true); }}>
+                    <DropdownMenuItem
+                      onClick={() => {
+                        setBatchUpdateField("fsa_status");
+                        setBatchUpdateDialogOpen(true);
+                      }}
+                    >
                       Update FSA Status
                     </DropdownMenuItem>
                   </DropdownMenuContent>

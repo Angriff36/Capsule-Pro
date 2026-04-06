@@ -3,9 +3,16 @@ import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
-  manifestErrorResponse,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+manifestErrorResponse,
   manifestSuccessResponse,
-} from "@/lib/manifest-response";
+} from "@/lib/manifest-response"
+
 import { database } from "@/lib/database";
 
 export async function POST(request: NextRequest) {
@@ -41,11 +48,17 @@ export async function POST(request: NextRequest) {
     const validPriorities = ["critical", "high", "medium", "low"];
 
     if (!validTypes.includes(workOrderType)) {
-      return manifestErrorResponse(`Invalid work order type. Must be one of: ${validTypes.join(", ")}`, 400);
+      return manifestErrorResponse(
+        `Invalid work order type. Must be one of: ${validTypes.join(", ")}`,
+        400
+      );
     }
 
     if (!validPriorities.includes(priority)) {
-      return manifestErrorResponse(`Invalid priority. Must be one of: ${validPriorities.join(", ")}`, 400);
+      return manifestErrorResponse(
+        `Invalid priority. Must be one of: ${validPriorities.join(", ")}`,
+        400
+      );
     }
 
     // Generate work order number
@@ -83,6 +96,7 @@ export async function POST(request: NextRequest) {
 
     return manifestSuccessResponse({ workOrder: (result as any[])[0] });
   } catch (error) {
+    captureException(error);
     console.error("Error creating work order:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

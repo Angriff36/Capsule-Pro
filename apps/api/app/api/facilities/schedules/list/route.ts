@@ -1,12 +1,20 @@
 // API route for listing preventive maintenance schedules
-import { Prisma } from "@repo/database";
+
 import { auth } from "@repo/auth/server";
+import { Prisma } from "@repo/database";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
-  manifestErrorResponse,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+manifestErrorResponse,
   manifestSuccessResponse,
-} from "@/lib/manifest-response";
+} from "@/lib/manifest-response"
+
 import { database } from "@/lib/database";
 
 export async function GET(request: NextRequest) {
@@ -40,6 +48,7 @@ export async function GET(request: NextRequest) {
 
     return manifestSuccessResponse({ schedules });
   } catch (error) {
+    captureException(error);
     console.error("Error listing preventive maintenance schedules:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

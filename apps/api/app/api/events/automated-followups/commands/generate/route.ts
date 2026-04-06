@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { auth } from '@repo/auth/server';
-import { getTenantIdForOrg } from '@/app/lib/tenant';
-import { database } from '@repo/database';
+import { auth } from "@repo/auth/server";
+import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
+import { type NextRequest, NextResponse } from "next/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 /**
  * POST /api/events/automated-followups/commands/generate
@@ -11,12 +12,12 @@ export async function POST(request: NextRequest) {
   try {
     const { orgId, userId } = await auth();
     if (!(userId && orgId)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ error: 'Tenant not found' }, { status: 400 });
+      return NextResponse.json({ error: "Tenant not found" }, { status: 400 });
     }
 
     const body = await request.json();
@@ -24,18 +25,20 @@ export async function POST(request: NextRequest) {
 
     if (!eventId) {
       return NextResponse.json(
-        { error: 'eventId is required' },
+        { error: "eventId is required" },
         { status: 400 }
       );
     }
 
     // Get event details
-    const events = await database.$queryRaw<Array<{
-      id: string;
-      eventName: string;
-      eventDate: Date;
-      eventType: string | null;
-    }>>`
+    const events = await database.$queryRaw<
+      Array<{
+        id: string;
+        eventName: string;
+        eventDate: Date;
+        eventType: string | null;
+      }>
+    >`
       SELECT id, event_name, event_date, event_type
       FROM tenant_events.events
       WHERE id = ${eventId}::uuid AND tenant_id = ${tenantId}::uuid
@@ -43,7 +46,7 @@ export async function POST(request: NextRequest) {
 
     const event = events[0];
     if (!event) {
-      return NextResponse.json({ error: 'Event not found' }, { status: 404 });
+      return NextResponse.json({ error: "Event not found" }, { status: 404 });
     }
 
     // Check if follow-ups already exist
@@ -53,10 +56,10 @@ export async function POST(request: NextRequest) {
     `;
 
     if (Number(existing[0]?.count || 0) > 0) {
-      return NextResponse.json({ 
-        success: true, 
-        message: 'Follow-ups already exist for this event',
-        generated: 0 
+      return NextResponse.json({
+        success: true,
+        message: "Follow-ups already exist for this event",
+        generated: 0,
       });
     }
 
@@ -73,45 +76,45 @@ export async function POST(request: NextRequest) {
     const thankYou = new Date(eventDate);
     thankYou.setDate(thankYou.getDate() + 1);
     followups.push({
-      taskType: 'communication',
-      description: 'Send thank you email to client',
-      dueDate: thankYou
+      taskType: "communication",
+      description: "Send thank you email to client",
+      dueDate: thankYou,
     });
 
     // 2. Feedback request (3 days after)
     const feedback = new Date(eventDate);
     feedback.setDate(feedback.getDate() + 3);
     followups.push({
-      taskType: 'feedback',
-      description: 'Request client feedback/review',
-      dueDate: feedback
+      taskType: "feedback",
+      description: "Request client feedback/review",
+      dueDate: feedback,
     });
 
     // 3. Invoice follow-up (7 days after if not paid)
     const invoice = new Date(eventDate);
     invoice.setDate(invoice.getDate() + 7);
     followups.push({
-      taskType: 'billing',
-      description: 'Verify invoice payment status',
-      dueDate: invoice
+      taskType: "billing",
+      description: "Verify invoice payment status",
+      dueDate: invoice,
     });
 
     // 4. Final cleanup (14 days after)
     const cleanup = new Date(eventDate);
     cleanup.setDate(cleanup.getDate() + 14);
     followups.push({
-      taskType: 'administrative',
-      description: 'Archive event documents and close event',
-      dueDate: cleanup
+      taskType: "administrative",
+      description: "Archive event documents and close event",
+      dueDate: cleanup,
     });
 
     // 5. Re-engagement (30 days after)
     const reengage = new Date(eventDate);
     reengage.setDate(reengage.getDate() + 30);
     followups.push({
-      taskType: 'sales',
-      description: 'Send re-engagement email for future bookings',
-      dueDate: reengage
+      taskType: "sales",
+      description: "Send re-engagement email for future bookings",
+      dueDate: reengage,
     });
 
     // Insert all follow-ups
@@ -134,15 +137,16 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       generated,
-      message: `Generated ${generated} follow-up tasks for event` 
+      message: `Generated ${generated} follow-up tasks for event`,
     });
   } catch (error) {
-    console.error('Error generating followups:', error);
+    captureException(error);
+    console.error("Error generating followups:", error);
     return NextResponse.json(
-      { error: 'Failed to generate followups' },
+      { error: "Failed to generate followups" },
       { status: 500 }
     );
   }

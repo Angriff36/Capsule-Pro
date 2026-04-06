@@ -112,7 +112,10 @@ export const POST = withRateLimit(
         return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
       }
 
-      if (error instanceof Error && error.message.includes("Tenant not found")) {
+      if (
+        error instanceof Error &&
+        error.message.includes("Tenant not found")
+      ) {
         return NextResponse.json(
           { message: "Tenant not found" },
           { status: 404 }

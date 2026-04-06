@@ -5,6 +5,7 @@
  */
 
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { runGoodshuffleInventorySync } from "@/app/lib/goodshuffle-inventory-sync-service";
@@ -52,6 +53,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
+    captureException(error);
     console.error("Failed to run Goodshuffle inventory sync:", error);
     return NextResponse.json(
       { error: "Failed to run inventory sync" },

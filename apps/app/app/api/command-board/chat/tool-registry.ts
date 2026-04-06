@@ -847,7 +847,8 @@ async function createEventDraftTool(
 ): Promise<AgentToolResult> {
   // Validate required fields
   const title = typeof args.title === "string" ? args.title : "";
-  const eventType = typeof args.eventType === "string" ? args.eventType : "general";
+  const eventType =
+    typeof args.eventType === "string" ? args.eventType : "general";
   const guestCount = typeof args.guestCount === "number" ? args.guestCount : 0;
 
   if (!title) {
@@ -903,7 +904,9 @@ async function createEventDraftTool(
     return result;
   }
 
-  const responseData = result.data as { response?: { id?: string; eventNumber?: string } };
+  const responseData = result.data as {
+    response?: { id?: string; eventNumber?: string };
+  };
   const eventId = responseData?.response?.id;
   const eventNumber = responseData?.response?.eventNumber;
 
@@ -953,7 +956,7 @@ async function setEventMenuTool(
       entityName: "Menu",
       commandName: "create",
       args: {
-        name: args.menuName ?? `Event Menu`,
+        name: args.menuName ?? "Event Menu",
         eventId,
         status: "draft",
       },
@@ -982,7 +985,11 @@ async function setEventMenuTool(
   }
 
   // Create event dishes
-  const createdDishes: Array<{ name: string; category?: string; dietary?: string[] }> = [];
+  const createdDishes: Array<{
+    name: string;
+    category?: string;
+    dietary?: string[];
+  }> = [];
   const errors: string[] = [];
 
   for (const dish of dishes) {
@@ -1005,8 +1012,13 @@ async function setEventMenuTool(
             eventId,
             menuId,
             dishName,
-            category: typeof dishObj.category === "string" ? dishObj.category : undefined,
-            dietary: Array.isArray(dishObj.dietary) ? dishObj.dietary : undefined,
+            category:
+              typeof dishObj.category === "string"
+                ? dishObj.category
+                : undefined,
+            dietary: Array.isArray(dishObj.dietary)
+              ? dishObj.dietary
+              : undefined,
           },
         },
         context,
@@ -1016,7 +1028,8 @@ async function setEventMenuTool(
       if (dishResult.ok) {
         createdDishes.push({
           name: dishName,
-          category: typeof dishObj.category === "string" ? dishObj.category : undefined,
+          category:
+            typeof dishObj.category === "string" ? dishObj.category : undefined,
           dietary: Array.isArray(dishObj.dietary) ? dishObj.dietary : undefined,
         });
       } else {
@@ -1052,7 +1065,9 @@ async function assignEventStaffTool(
   callId: string
 ): Promise<AgentToolResult> {
   const eventId = typeof args.eventId === "string" ? args.eventId : "";
-  const staffAssignments = Array.isArray(args.staffAssignments) ? args.staffAssignments : [];
+  const staffAssignments = Array.isArray(args.staffAssignments)
+    ? args.staffAssignments
+    : [];
 
   if (!eventId) {
     return {
@@ -1070,7 +1085,11 @@ async function assignEventStaffTool(
     };
   }
 
-  const createdAssignments: Array<{ role: string; count: number; employeeId?: string }> = [];
+  const createdAssignments: Array<{
+    role: string;
+    count: number;
+    employeeId?: string;
+  }> = [];
   const errors: string[] = [];
 
   for (const assignment of staffAssignments) {
@@ -1078,7 +1097,10 @@ async function assignEventStaffTool(
       const assignObj = assignment as Record<string, unknown>;
       const role = typeof assignObj.role === "string" ? assignObj.role : "";
       const count = typeof assignObj.count === "number" ? assignObj.count : 1;
-      const employeeId = typeof assignObj.employeeId === "string" ? assignObj.employeeId : undefined;
+      const employeeId =
+        typeof assignObj.employeeId === "string"
+          ? assignObj.employeeId
+          : undefined;
 
       if (!role) {
         errors.push("Staff role is required");
@@ -1106,7 +1128,9 @@ async function assignEventStaffTool(
       if (assignResult.ok) {
         createdAssignments.push({ role, count, employeeId });
       } else {
-        errors.push(`Failed to assign ${count} ${role}(s): ${assignResult.error}`);
+        errors.push(
+          `Failed to assign ${count} ${role}(s): ${assignResult.error}`
+        );
       }
     }
   }
@@ -1115,7 +1139,8 @@ async function assignEventStaffTool(
     return {
       ok: false,
       summary: "No staff assignments were successfully created",
-      error: errors.length > 0 ? errors.join("; ") : "No valid assignments provided",
+      error:
+        errors.length > 0 ? errors.join("; ") : "No valid assignments provided",
     };
   }
 
@@ -1141,7 +1166,8 @@ async function setEventVenueTool(
 ): Promise<AgentToolResult> {
   const eventId = typeof args.eventId === "string" ? args.eventId : "";
   const venueName = typeof args.venueName === "string" ? args.venueName : "";
-  const venueAddress = typeof args.venueAddress === "string" ? args.venueAddress : "";
+  const venueAddress =
+    typeof args.venueAddress === "string" ? args.venueAddress : "";
 
   if (!eventId) {
     return {
@@ -1151,7 +1177,7 @@ async function setEventVenueTool(
     };
   }
 
-  if (!venueName && !venueAddress) {
+  if (!(venueName || venueAddress)) {
     return {
       ok: false,
       summary: "At least venue name or address is required",
@@ -1456,11 +1482,13 @@ const BASE_TOOL_DEFINITIONS: ToolDefinition[] = [
       properties: {
         title: {
           type: "string",
-          description: "The event title or name (e.g., 'Smith Wedding Reception', 'TechCorp Q4 Gala')",
+          description:
+            "The event title or name (e.g., 'Smith Wedding Reception', 'TechCorp Q4 Gala')",
         },
         eventType: {
           type: "string",
-          description: "Type of event (e.g., 'wedding', 'corporate', 'birthday', 'catering', 'gala', 'party')",
+          description:
+            "Type of event (e.g., 'wedding', 'corporate', 'birthday', 'catering', 'gala', 'party')",
         },
         eventDate: {
           type: "number",
@@ -1511,16 +1539,19 @@ const BASE_TOOL_DEFINITIONS: ToolDefinition[] = [
             properties: {
               name: {
                 type: "string",
-                description: "Name of the dish (e.g., 'Grilled Salmon', 'Caesar Salad')",
+                description:
+                  "Name of the dish (e.g., 'Grilled Salmon', 'Caesar Salad')",
               },
               category: {
                 type: "string",
-                description: "Category of dish (e.g., 'appetizer', 'main', 'dessert', 'beverage')",
+                description:
+                  "Category of dish (e.g., 'appetizer', 'main', 'dessert', 'beverage')",
               },
               dietary: {
                 type: "array",
                 items: { type: "string" },
-                description: "Dietary labels (e.g., 'vegetarian', 'vegan', 'gluten-free', 'kosher')",
+                description:
+                  "Dietary labels (e.g., 'vegetarian', 'vegan', 'gluten-free', 'kosher')",
               },
             },
             required: ["name"],
@@ -1551,7 +1582,8 @@ const BASE_TOOL_DEFINITIONS: ToolDefinition[] = [
             properties: {
               role: {
                 type: "string",
-                description: "Staff role (e.g., 'server', 'bartender', 'chef', 'event_manager', 'dishwasher')",
+                description:
+                  "Staff role (e.g., 'server', 'bartender', 'chef', 'event_manager', 'dishwasher')",
               },
               count: {
                 type: "number",
@@ -1585,7 +1617,8 @@ const BASE_TOOL_DEFINITIONS: ToolDefinition[] = [
         },
         venueName: {
           type: "string",
-          description: "Name of the venue (e.g., 'Grand Ballroom', 'The Ritz Hotel', 'Client Home')",
+          description:
+            "Name of the venue (e.g., 'Grand Ballroom', 'The Ritz Hotel', 'Client Home')",
         },
         venueAddress: {
           type: "string",
@@ -1615,7 +1648,8 @@ const BASE_TOOL_DEFINITIONS: ToolDefinition[] = [
         },
         includeDietary: {
           type: "boolean",
-          description: "Whether to include dietary labels in the output (default: true)",
+          description:
+            "Whether to include dietary labels in the output (default: true)",
         },
       },
       required: ["eventId"],
@@ -1902,14 +1936,14 @@ const MONTH_ABBREVIATIONS = [
 
 function parseMonth(text: string): number | null {
   const lower = text.toLowerCase();
-  
+
   // Try full month names first
   for (let i = 0; i < MONTH_NAMES.length; i++) {
     if (lower.includes(MONTH_NAMES[i])) {
       return i;
     }
   }
-  
+
   // Try abbreviations as whole words
   for (let i = 0; i < MONTH_ABBREVIATIONS.length; i++) {
     const regex = new RegExp(`\\b${MONTH_ABBREVIATIONS[i]}\\.?\\b`, "i");
@@ -1917,52 +1951,53 @@ function parseMonth(text: string): number | null {
       return i;
     }
   }
-  
+
   return null;
 }
 
 function parseDayOfMonth(text: string): number | null {
   // Look for day patterns that are likely dates, not guest counts
   // Prioritize patterns near month names or after "on"
-  
+
   // Pattern 1: Day immediately after month name (e.g., "March 25th")
-  const monthDayPattern = /\b(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{1,2})(?:st|nd|rd|th)?\b/i;
+  const monthDayPattern =
+    /\b(?:january|february|march|april|may|june|july|august|september|october|november|december)\s+(\d{1,2})(?:st|nd|rd|th)?\b/i;
   const monthDayMatch = text.match(monthDayPattern);
   if (monthDayMatch) {
-    const day = parseInt(monthDayMatch[1], 10);
+    const day = Number.parseInt(monthDayMatch[1], 10);
     if (day >= 1 && day <= 31) {
       return day;
     }
   }
-  
+
   // Pattern 2: Day after "on" (e.g., "on the 25th", "on 25th")
   const onDayPattern = /\bon\s+(?:the\s+)?(\d{1,2})(?:st|nd|rd|th)?\b/i;
   const onDayMatch = text.match(onDayPattern);
   if (onDayMatch) {
-    const day = parseInt(onDayMatch[1], 10);
+    const day = Number.parseInt(onDayMatch[1], 10);
     if (day >= 1 && day <= 31) {
       return day;
     }
   }
-  
+
   // Pattern 3: Standalone day with ordinal (e.g., "25th")
   // Only use this if not preceded by "for" (which indicates guest count)
   const standalonePattern = /(?<!\bfor\s+)(\d{1,2})(?:st|nd|rd|th)\b/i;
   const standaloneMatch = text.match(standalonePattern);
   if (standaloneMatch) {
-    const day = parseInt(standaloneMatch[1], 10);
+    const day = Number.parseInt(standaloneMatch[1], 10);
     if (day >= 1 && day <= 31) {
       return day;
     }
   }
-  
+
   return null;
 }
 
 function parseYear(text: string, referenceYear: number): number | null {
   const yearMatch = text.match(/\b(20\d{2})\b/);
   if (yearMatch) {
-    return parseInt(yearMatch[1], 10);
+    return Number.parseInt(yearMatch[1], 10);
   }
   return null;
 }
@@ -1990,7 +2025,7 @@ function parseRelativeDate(
   // "in X weeks" - check this before "next [day]" to avoid conflicts
   const inWeeksMatch = lower.match(/\bin\s+(\d+)\s+weeks?\b/);
   if (inWeeksMatch) {
-    const weeks = parseInt(inWeeksMatch[1], 10);
+    const weeks = Number.parseInt(inWeeksMatch[1], 10);
     const result = new Date(referenceDate);
     result.setDate(result.getDate() + weeks * 7);
     return { date: result, confidence: 0.95 };
@@ -2006,7 +2041,9 @@ function parseRelativeDate(
     "friday",
     "saturday",
   ];
-  const nextDayMatch = lower.match(/\bnext\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/i);
+  const nextDayMatch = lower.match(
+    /\bnext\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/i
+  );
   if (nextDayMatch) {
     const targetDay = dayNames.indexOf(nextDayMatch[1].toLowerCase());
     const result = new Date(referenceDate);
@@ -2021,7 +2058,9 @@ function parseRelativeDate(
   }
 
   // "this [day of week]"
-  const thisDayMatch = lower.match(/\bthis\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/i);
+  const thisDayMatch = lower.match(
+    /\bthis\s+(sunday|monday|tuesday|wednesday|thursday|friday|saturday)\b/i
+  );
   if (thisDayMatch) {
     const targetDay = dayNames.indexOf(thisDayMatch[1].toLowerCase());
     const result = new Date(referenceDate);
@@ -2037,7 +2076,7 @@ function parseRelativeDate(
   // "in X days"
   const inDaysMatch = lower.match(/\bin\s+(\d+)\s+days?\b/);
   if (inDaysMatch) {
-    const days = parseInt(inDaysMatch[1], 10);
+    const days = Number.parseInt(inDaysMatch[1], 10);
     const result = new Date(referenceDate);
     result.setDate(result.getDate() + days);
     return { date: result, confidence: 0.95 };
@@ -2115,8 +2154,8 @@ function parseGuestCount(text: string): number | null {
   for (const pattern of patterns) {
     const match = text.match(pattern);
     if (match) {
-      const count = parseInt(match[1], 10);
-      if (count > 0 && count <= 100000) {
+      const count = Number.parseInt(match[1], 10);
+      if (count > 0 && count <= 100_000) {
         return count;
       }
     }
@@ -2128,18 +2167,40 @@ function parseGuestCount(text: string): number | null {
 function parseVenue(text: string): { name: string; address: string } {
   // Look for patterns like "at Venue X", "at the Grand Ballroom", "venue: X"
   // Be careful to stop at prepositions, date indicators, and numbers
-  
+
   const stopWords = [
-    "on", "in", "for", "with", "by", "from", "to", "next", "this", 
-    "tomorrow", "today", "january", "february", "march", "april", "may", 
-    "june", "july", "august", "september", "october", "november", "december"
+    "on",
+    "in",
+    "for",
+    "with",
+    "by",
+    "from",
+    "to",
+    "next",
+    "this",
+    "tomorrow",
+    "today",
+    "january",
+    "february",
+    "march",
+    "april",
+    "may",
+    "june",
+    "july",
+    "august",
+    "september",
+    "october",
+    "november",
+    "december",
   ];
-  
+
   // Pattern 1: "at [Venue Name]" - capture words after 'at' until we hit a stop word or date pattern
-  const atMatch = text.match(/\b(?:at|@)\s+(?:the\s+)?([A-Z][A-Za-z]+(?:\s+[A-Za-z]+)*)/i);
+  const atMatch = text.match(
+    /\b(?:at|@)\s+(?:the\s+)?([A-Z][A-Za-z]+(?:\s+[A-Za-z]+)*)/i
+  );
   if (atMatch) {
     let venueName = atMatch[1].trim();
-    
+
     // Split into words and filter out stop words and anything after them
     const words = venueName.split(/\s+/);
     const filteredWords: string[] = [];
@@ -2151,25 +2212,42 @@ function parseVenue(text: string): { name: string; address: string } {
       }
       filteredWords.push(word);
     }
-    
+
     venueName = filteredWords.join(" ");
     if (venueName.length > 2 && !/^\d/.test(venueName)) {
       return { name: venueName, address: "" };
     }
   }
-  
+
   // Pattern 2: "venue: [Venue Name]"
-  const venueColonMatch = text.match(/\bvenue[:\s]+["']?([A-Za-z\s]+?)["']?(?:\s|$)/i);
+  const venueColonMatch = text.match(
+    /\bvenue[:\s]+["']?([A-Za-z\s]+?)["']?(?:\s|$)/i
+  );
   if (venueColonMatch) {
     const venueName = venueColonMatch[1].trim();
     if (venueName.length > 2) {
       return { name: venueName, address: "" };
     }
   }
-  
+
   // Pattern 3: "at [location]" where location is a known venue type
-  const venueTypes = ["ballroom", "hall", "hotel", "center", "centre", "house", "home", "restaurant", "venue", "garden", "park"];
-  const venueTypeRegex = new RegExp(`\\b(?:at|@)\\s+(?:the\\s+)?([A-Za-z]+\\s+(?:${venueTypes.join("|")}))`, "i");
+  const venueTypes = [
+    "ballroom",
+    "hall",
+    "hotel",
+    "center",
+    "centre",
+    "house",
+    "home",
+    "restaurant",
+    "venue",
+    "garden",
+    "park",
+  ];
+  const venueTypeRegex = new RegExp(
+    `\\b(?:at|@)\\s+(?:the\\s+)?([A-Za-z]+\\s+(?:${venueTypes.join("|")}))`,
+    "i"
+  );
   const venueTypeMatch = text.match(venueTypeRegex);
   if (venueTypeMatch) {
     return { name: venueTypeMatch[1].trim(), address: "" };
@@ -2178,7 +2256,10 @@ function parseVenue(text: string): { name: string; address: string } {
   return { name: "", address: "" };
 }
 
-function inferEventType(text: string): { eventType: string; confidence: number } {
+function inferEventType(text: string): {
+  eventType: string;
+  confidence: number;
+} {
   for (const { pattern, eventType } of EVENT_TYPE_PATTERNS) {
     if (pattern.test(text)) {
       return { eventType, confidence: 0.9 };
@@ -2186,7 +2267,9 @@ function inferEventType(text: string): { eventType: string; confidence: number }
   }
 
   // Default to "catering" if food-related keywords are present
-  if (/\b(food|menu|catering|dinner|lunch|breakfast|meal|buffet)\b/i.test(text)) {
+  if (
+    /\b(food|menu|catering|dinner|lunch|breakfast|meal|buffet)\b/i.test(text)
+  ) {
     return { eventType: "catering", confidence: 0.7 };
   }
 
@@ -2202,7 +2285,10 @@ function generateTitle(
   // Try to extract a descriptive title from the text
   // Remove common filler words and date/guest patterns
   let cleaned = text
-    .replace(/^(create|plan|schedule|set up|organize|need|want)\s+(an?\s+)?/i, "")
+    .replace(
+      /^(create|plan|schedule|set up|organize|need|want)\s+(an?\s+)?/i,
+      ""
+    )
     .replace(/\bfor\s+\d+\s*(people|guests?|pax)?\b/gi, "")
     .replace(/\bon\s+\w+\s+\d{1,2}(?:st|nd|rd|th)?/gi, "")
     .replace(/\bat\s+\d+\s*(pm|am)?/gi, "")
@@ -2265,7 +2351,12 @@ function parseNaturalLanguageEvent(
   const typeResult = inferEventType(text);
 
   // Generate title
-  const title = generateTitle(text, typeResult.eventType, guestCount, venue.name);
+  const title = generateTitle(
+    text,
+    typeResult.eventType,
+    guestCount,
+    venue.name
+  );
 
   // Calculate overall confidence
   let confidence = 0.5;
@@ -2296,7 +2387,7 @@ async function parseNaturalLanguageEventTool(
   callId: string
 ): Promise<AgentToolResult> {
   const text = typeof args.text === "string" ? args.text : "";
-  
+
   if (!text || text.trim().length === 0) {
     return {
       ok: false,
@@ -2315,7 +2406,10 @@ async function parseNaturalLanguageEventTool(
       commandName: "parse",
       args: {
         originalInput: text,
-        referenceDate: typeof args.referenceDate === "string" ? args.referenceDate : new Date().toISOString(),
+        referenceDate:
+          typeof args.referenceDate === "string"
+            ? args.referenceDate
+            : new Date().toISOString(),
       },
     },
     context,
@@ -2328,7 +2422,7 @@ async function parseNaturalLanguageEventTool(
 
   // Extract the parsed data from the response
   // executeManifestCommandRoute returns: { routePath, response: { success, result, events } }
-  const responseData = result.data as { 
+  const responseData = result.data as {
     response?: {
       success?: boolean;
       result?: {
@@ -2348,7 +2442,7 @@ async function parseNaturalLanguageEventTool(
       };
     };
   };
-  
+
   const parsed = responseData?.response?.result;
 
   if (!parsed) {
@@ -2387,7 +2481,8 @@ async function listEventsTool(
   context: ManifestAgentContext
 ): Promise<AgentToolResult> {
   try {
-    const limit = typeof args.limit === "number" ? Math.min(args.limit, 50) : 20;
+    const limit =
+      typeof args.limit === "number" ? Math.min(args.limit, 50) : 20;
     const where: Record<string, unknown> = { tenantId: context.tenantId };
 
     if (typeof args.status === "string") {
@@ -2437,7 +2532,11 @@ async function listEventsTool(
     };
   } catch (error) {
     const msg = error instanceof Error ? error.message : "Unknown error";
-    return { ok: false, summary: `Failed to list events: ${sanitizeErrorMessage(msg, "QUERY_ERROR").message}`, error: msg };
+    return {
+      ok: false,
+      summary: `Failed to list events: ${sanitizeErrorMessage(msg, "QUERY_ERROR").message}`,
+      error: msg,
+    };
   }
 }
 
@@ -2446,7 +2545,8 @@ async function listStaffTool(
   context: ManifestAgentContext
 ): Promise<AgentToolResult> {
   try {
-    const limit = typeof args.limit === "number" ? Math.min(args.limit, 50) : 20;
+    const limit =
+      typeof args.limit === "number" ? Math.min(args.limit, 50) : 20;
     const users = await database.user.findMany({
       where: { tenantId: context.tenantId },
       take: limit,
@@ -2473,7 +2573,11 @@ async function listStaffTool(
     };
   } catch (error) {
     const msg = error instanceof Error ? error.message : "Unknown error";
-    return { ok: false, summary: `Failed to list staff: ${sanitizeErrorMessage(msg, "QUERY_ERROR").message}`, error: msg };
+    return {
+      ok: false,
+      summary: `Failed to list staff: ${sanitizeErrorMessage(msg, "QUERY_ERROR").message}`,
+      error: msg,
+    };
   }
 }
 
@@ -2482,7 +2586,8 @@ async function listClientsTool(
   context: ManifestAgentContext
 ): Promise<AgentToolResult> {
   try {
-    const limit = typeof args.limit === "number" ? Math.min(args.limit, 50) : 20;
+    const limit =
+      typeof args.limit === "number" ? Math.min(args.limit, 50) : 20;
     const clients = await database.client.findMany({
       where: { tenantId: context.tenantId },
       take: limit,
@@ -2504,7 +2609,10 @@ async function listClientsTool(
       summary: `Found ${clients.length} client(s).`,
       data: clients.map((c) => ({
         id: c.id,
-        name: [c.first_name, c.last_name].filter(Boolean).join(" ") || c.company_name || "Unnamed",
+        name:
+          [c.first_name, c.last_name].filter(Boolean).join(" ") ||
+          c.company_name ||
+          "Unnamed",
         company: c.company_name,
         email: c.email,
         phone: c.phone,
@@ -2514,7 +2622,11 @@ async function listClientsTool(
     };
   } catch (error) {
     const msg = error instanceof Error ? error.message : "Unknown error";
-    return { ok: false, summary: `Failed to list clients: ${sanitizeErrorMessage(msg, "QUERY_ERROR").message}`, error: msg };
+    return {
+      ok: false,
+      summary: `Failed to list clients: ${sanitizeErrorMessage(msg, "QUERY_ERROR").message}`,
+      error: msg,
+    };
   }
 }
 
@@ -2523,7 +2635,8 @@ async function listInventoryTool(
   context: ManifestAgentContext
 ): Promise<AgentToolResult> {
   try {
-    const limit = typeof args.limit === "number" ? Math.min(args.limit, 50) : 20;
+    const limit =
+      typeof args.limit === "number" ? Math.min(args.limit, 50) : 20;
     const where: Record<string, unknown> = { tenantId: context.tenantId };
 
     const items = await database.inventoryItem.findMany({
@@ -2563,7 +2676,11 @@ async function listInventoryTool(
     };
   } catch (error) {
     const msg = error instanceof Error ? error.message : "Unknown error";
-    return { ok: false, summary: `Failed to list inventory: ${sanitizeErrorMessage(msg, "QUERY_ERROR").message}`, error: msg };
+    return {
+      ok: false,
+      summary: `Failed to list inventory: ${sanitizeErrorMessage(msg, "QUERY_ERROR").message}`,
+      error: msg,
+    };
   }
 }
 
@@ -2572,7 +2689,8 @@ async function listKitchenTasksTool(
   context: ManifestAgentContext
 ): Promise<AgentToolResult> {
   try {
-    const limit = typeof args.limit === "number" ? Math.min(args.limit, 50) : 20;
+    const limit =
+      typeof args.limit === "number" ? Math.min(args.limit, 50) : 20;
     const where: Record<string, unknown> = { tenantId: context.tenantId };
 
     if (typeof args.status === "string") {
@@ -2607,7 +2725,11 @@ async function listKitchenTasksTool(
     };
   } catch (error) {
     const msg = error instanceof Error ? error.message : "Unknown error";
-    return { ok: false, summary: `Failed to list kitchen tasks: ${sanitizeErrorMessage(msg, "QUERY_ERROR").message}`, error: msg };
+    return {
+      ok: false,
+      summary: `Failed to list kitchen tasks: ${sanitizeErrorMessage(msg, "QUERY_ERROR").message}`,
+      error: msg,
+    };
   }
 }
 
@@ -2654,7 +2776,11 @@ async function getDashboardSummaryTool(
     };
   } catch (error) {
     const msg = error instanceof Error ? error.message : "Unknown error";
-    return { ok: false, summary: `Failed to get summary: ${sanitizeErrorMessage(msg, "QUERY_ERROR").message}`, error: msg };
+    return {
+      ok: false,
+      summary: `Failed to get summary: ${sanitizeErrorMessage(msg, "QUERY_ERROR").message}`,
+      error: msg,
+    };
   }
 }
 
@@ -2714,7 +2840,11 @@ export function createManifestToolRegistry(context: ManifestAgentContext) {
 
         // Core Tools
         if (call.name === "parse_natural_language_event") {
-          return await parseNaturalLanguageEventTool(parsedArgs, context, call.callId);
+          return await parseNaturalLanguageEventTool(
+            parsedArgs,
+            context,
+            call.callId
+          );
         }
 
         if (call.name === "read_board_state") {

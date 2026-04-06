@@ -9,6 +9,7 @@
 import { auth } from "@repo/auth/server";
 import { database, type Prisma } from "@repo/database";
 import { sendWebhook, type WebhookPayload } from "@repo/notifications";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -49,7 +50,10 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     });
 
     if (!dlqEntry) {
-      return NextResponse.json({ error: "DLQ entry not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "DLQ entry not found" },
+        { status: 404 }
+      );
     }
 
     // Check if already resolved
@@ -73,12 +77,16 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
     }
 
     // Determine URL to use
-    const targetUrl = body.overrideUrl || (webhook?.url ?? dlqEntry.originalUrl);
+    const targetUrl =
+      body.overrideUrl || (webhook?.url ?? dlqEntry.originalUrl);
 
     // If webhook was deleted and no override URL, require explicit URL
-    if (!dlqEntry.webhookId && !body.overrideUrl) {
+    if (!(dlqEntry.webhookId || body.overrideUrl)) {
       return NextResponse.json(
-        { error: "Original webhook was deleted. Please provide an override URL." },
+        {
+          error:
+            "Original webhook was deleted. Please provide an override URL.",
+        },
         { status: 400 }
       );
     }
@@ -116,7 +124,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         url: targetUrl,
         secret: webhook?.secret ?? null,
         apiKey: webhook?.apiKey ?? null,
-        timeoutMs: webhook?.timeoutMs ?? 30000,
+        timeoutMs: webhook?.timeoutMs ?? 30_000,
         customHeaders: webhook?.customHeaders as Record<string, string> | null,
       },
       payload
@@ -192,6 +200,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       errorMessage: result.errorMessage,
     });
   } catch (error) {
+    captureException(error);
     console.error("Error retrying DLQ entry:", error);
     return NextResponse.json(
       { error: "Failed to retry DLQ entry" },

@@ -75,7 +75,9 @@ export function EventDetailTabs({
       return;
     }
 
-    const nextSearchParams = new URLSearchParams(searchParams?.toString() ?? "");
+    const nextSearchParams = new URLSearchParams(
+      searchParams?.toString() ?? ""
+    );
     if (nextTab === DEFAULT_TAB) {
       nextSearchParams.delete("tab");
     } else {

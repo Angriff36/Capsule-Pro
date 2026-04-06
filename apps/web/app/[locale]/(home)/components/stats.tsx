@@ -7,7 +7,7 @@ const VALID_LOCALES = ["en", "es", "de", "zh", "fr", "pt"] as const;
 /**
  * Safely validates and normalizes a locale string for use with Intl APIs.
  * Handles edge cases like whitespace, empty strings, and invalid locales.
- * 
+ *
  * @param locale - The locale string to validate (may be undefined or malformed)
  * @returns A valid locale string safe for Intl APIs, defaults to "en"
  */
@@ -16,20 +16,20 @@ function safeLocale(locale: string | undefined): string {
   if (!locale || typeof locale !== "string") {
     return "en";
   }
-  
+
   // Trim whitespace and get base locale (e.g., "en-US" -> "en")
   const trimmed = locale.trim();
   if (!trimmed) {
     return "en";
   }
-  
+
   const base = trimmed.split("-")[0]?.toLowerCase() || "en";
-  
+
   // Validate against known locales
-  if (VALID_LOCALES.includes(base as typeof VALID_LOCALES[number])) {
+  if (VALID_LOCALES.includes(base as (typeof VALID_LOCALES)[number])) {
     return base;
   }
-  
+
   return "en";
 }
 
@@ -53,7 +53,7 @@ interface StatsProps {
 
 export const Stats = ({ dictionary, locale }: StatsProps) => {
   const safeLocaleValue = safeLocale(locale);
-  
+
   return (
     <div className="w-full py-20 lg:py-40">
       <div className="container mx-auto">
@@ -82,7 +82,10 @@ export const Stats = ({ dictionary, locale }: StatsProps) => {
                   )}
                   <h2 className="flex max-w-xl flex-row items-end gap-4 text-left font-regular text-4xl tracking-tighter">
                     {item.type === "currency" && "$"}
-                    {safeFormatNumber(Number.parseFloat(item.metric), safeLocaleValue)}
+                    {safeFormatNumber(
+                      Number.parseFloat(item.metric),
+                      safeLocaleValue
+                    )}
                     <span className="text-muted-foreground text-sm tracking-normal">
                       {Number.parseFloat(item.delta) > 0 ? "+" : ""}
                       {item.delta}%

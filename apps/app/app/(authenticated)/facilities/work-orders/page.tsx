@@ -1,8 +1,8 @@
 "use client";
 
-import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
+import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,6 @@ import {
 } from "@repo/design-system/components/ui/dialog";
 import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
-import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -21,15 +20,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { useState, useEffect } from "react";
+import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
-  Wrench,
-  Clock,
   AlertTriangle,
   CheckCircle2,
-  Plus,
+  Clock,
   Loader2,
+  Plus,
 } from "lucide-react";
+import { useEffect, useState } from "react";
 import { FacilitiesNavigation } from "../components/facilities-navigation";
 
 interface WorkOrder {
@@ -85,21 +84,18 @@ export default function FacilitiesWorkOrdersPage() {
 
     setCreating(true);
     try {
-      const res = await fetch(
-        "/api/facilities/work-orders/commands/create",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            title: createForm.title,
-            description: createForm.description || null,
-            priority: createForm.priority,
-            workOrderType: createForm.workOrderType,
-            scheduledDate: createForm.scheduledDate || null,
-            assignedVendor: createForm.assignedVendor || null,
-          }),
-        },
-      );
+      const res = await fetch("/api/facilities/work-orders/commands/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          title: createForm.title,
+          description: createForm.description || null,
+          priority: createForm.priority,
+          workOrderType: createForm.workOrderType,
+          scheduledDate: createForm.scheduledDate || null,
+          assignedVendor: createForm.assignedVendor || null,
+        }),
+      });
       const data = await res.json();
       if (data.success) {
         setWorkOrders((prev) => [data.data.workOrder, ...prev]);
@@ -231,9 +227,9 @@ export default function FacilitiesWorkOrdersPage() {
                             {wo.priority}
                           </Badge>
                           <Button
-                            variant="outline"
-                            size="sm"
                             onClick={() => setViewWorkOrder(wo)}
+                            size="sm"
+                            variant="outline"
                           >
                             View
                           </Button>
@@ -249,7 +245,7 @@ export default function FacilitiesWorkOrdersPage() {
       </div>
 
       {/* Create Work Order Dialog */}
-      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+      <Dialog onOpenChange={setShowCreateDialog} open={showCreateDialog}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Create Work Order</DialogTitle>
@@ -262,22 +258,22 @@ export default function FacilitiesWorkOrdersPage() {
               <Label htmlFor="title">Title *</Label>
               <Input
                 id="title"
-                placeholder="e.g., Walk-in cooler not cooling"
-                value={createForm.title}
                 onChange={(e) =>
                   setCreateForm((prev) => ({ ...prev, title: e.target.value }))
                 }
+                placeholder="e.g., Walk-in cooler not cooling"
                 required
+                value={createForm.title}
               />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Priority</Label>
                 <Select
-                  value={createForm.priority}
                   onValueChange={(v) =>
                     setCreateForm((prev) => ({ ...prev, priority: v }))
                   }
+                  value={createForm.priority}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -293,13 +289,13 @@ export default function FacilitiesWorkOrdersPage() {
               <div className="space-y-2">
                 <Label>Type</Label>
                 <Select
-                  value={createForm.workOrderType}
                   onValueChange={(v) =>
                     setCreateForm((prev) => ({
                       ...prev,
                       workOrderType: v,
                     }))
                   }
+                  value={createForm.workOrderType}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -316,57 +312,55 @@ export default function FacilitiesWorkOrdersPage() {
             <div className="space-y-2">
               <Label>Scheduled Date</Label>
               <Input
-                type="date"
-                value={createForm.scheduledDate}
                 onChange={(e) =>
                   setCreateForm((prev) => ({
                     ...prev,
                     scheduledDate: e.target.value,
                   }))
                 }
+                type="date"
+                value={createForm.scheduledDate}
               />
             </div>
             <div className="space-y-2">
               <Label>Assigned Vendor</Label>
               <Input
-                placeholder="e.g., HVAC Services Inc."
-                value={createForm.assignedVendor}
                 onChange={(e) =>
                   setCreateForm((prev) => ({
                     ...prev,
                     assignedVendor: e.target.value,
                   }))
                 }
+                placeholder="e.g., HVAC Services Inc."
+                value={createForm.assignedVendor}
               />
             </div>
             <div className="space-y-2">
               <Label>Description</Label>
               <Textarea
-                placeholder="Describe the issue..."
-                value={createForm.description}
                 onChange={(e) =>
                   setCreateForm((prev) => ({
                     ...prev,
                     description: e.target.value,
                   }))
                 }
+                placeholder="Describe the issue..."
+                value={createForm.description}
               />
             </div>
             <DialogFooter>
               <Button
+                onClick={() => setShowCreateDialog(false)}
                 type="button"
                 variant="outline"
-                onClick={() => setShowCreateDialog(false)}
               >
                 Cancel
               </Button>
               <Button
-                type="submit"
                 disabled={!createForm.title.trim() || creating}
+                type="submit"
               >
-                {creating && (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                )}
+                {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create Work Order
               </Button>
             </DialogFooter>
@@ -375,7 +369,10 @@ export default function FacilitiesWorkOrdersPage() {
       </Dialog>
 
       {/* View Work Order Dialog */}
-      <Dialog open={!!viewWorkOrder} onOpenChange={() => setViewWorkOrder(null)}>
+      <Dialog
+        onOpenChange={() => setViewWorkOrder(null)}
+        open={!!viewWorkOrder}
+      >
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>{viewWorkOrder?.title}</DialogTitle>
@@ -432,13 +429,12 @@ export default function FacilitiesWorkOrdersPage() {
                 </div>
               )}
               <div className="text-xs text-muted-foreground">
-                Reported:{" "}
-                {new Date(viewWorkOrder.reported_at).toLocaleString()}
+                Reported: {new Date(viewWorkOrder.reported_at).toLocaleString()}
               </div>
             </div>
           )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setViewWorkOrder(null)}>
+            <Button onClick={() => setViewWorkOrder(null)} variant="outline">
               Close
             </Button>
           </DialogFooter>

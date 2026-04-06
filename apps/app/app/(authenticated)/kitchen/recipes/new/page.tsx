@@ -29,7 +29,17 @@ const NewRecipePage = async () => {
   );
 
   // Yield-appropriate units in priority order
-  const yieldUnitPriority = ["servings", "each", "portions", "pieces", "items", "dozen", "batch", "pan", "sheet"];
+  const yieldUnitPriority = [
+    "servings",
+    "each",
+    "portions",
+    "pieces",
+    "items",
+    "dozen",
+    "batch",
+    "pan",
+    "sheet",
+  ];
 
   // Sort units: yield-appropriate first (in priority order), then rest alphabetically
   const units = allUnits.sort((a, b) => {

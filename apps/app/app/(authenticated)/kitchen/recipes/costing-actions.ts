@@ -1,7 +1,7 @@
 "use server";
 
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { getTenantIdForOrg } from "../../../lib/tenant";
 
 export interface VendorRecipeCostSummary {
@@ -160,7 +160,8 @@ export async function getVendorRecipeCostSummary(): Promise<{
     console.error("[costing-actions] getVendorRecipeCostSummary error:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to fetch recipe costs",
+      error:
+        error instanceof Error ? error.message : "Failed to fetch recipe costs",
     };
   }
 }
@@ -168,9 +169,7 @@ export async function getVendorRecipeCostSummary(): Promise<{
 /**
  * Get vendor-based cost breakdown for a specific recipe
  */
-export async function getVendorRecipeCostBreakdown(
-  recipeId: string
-): Promise<{
+export async function getVendorRecipeCostBreakdown(recipeId: string): Promise<{
   success: boolean;
   data?: VendorRecipeCostBreakdown;
   error?: string;
@@ -229,9 +228,7 @@ export async function getVendorRecipeCostBreakdown(
     }
 
     // Get ingredient costs with vendor catalog pricing
-    const ingredients = await database.$queryRaw<
-      IngredientCostDetail[]
-    >`
+    const ingredients = await database.$queryRaw<IngredientCostDetail[]>`
       WITH ingredient_costs AS (
         SELECT
           i.id AS ingredient_id,
@@ -397,10 +394,16 @@ export async function getVendorRecipeCostBreakdown(
       },
     };
   } catch (error) {
-    console.error("[costing-actions] getVendorRecipeCostBreakdown error:", error);
+    console.error(
+      "[costing-actions] getVendorRecipeCostBreakdown error:",
+      error
+    );
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to fetch recipe breakdown",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch recipe breakdown",
     };
   }
 }
@@ -549,7 +552,10 @@ export async function getCostingSummaryStats(): Promise<{
     console.error("[costing-actions] getCostingSummaryStats error:", error);
     return {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to fetch summary stats",
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to fetch summary stats",
     };
   }
 }

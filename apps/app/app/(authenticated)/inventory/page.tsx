@@ -1,5 +1,13 @@
+import {
+  ArrowLeftRight,
+  BarChart3,
+  ChefHat,
+  Package,
+  ScanBarcode,
+  TrendingUp,
+  Upload,
+} from "lucide-react";
 import Link from "next/link";
-import { Package, BarChart3, ArrowLeftRight, ChefHat, TrendingUp, Upload, ScanBarcode } from "lucide-react";
 
 const InventoryPage = () => (
   <div className="flex flex-1 flex-col gap-8 p-4 pt-0">

@@ -1,9 +1,9 @@
 "use client";
 
-import { Html5Qrcode } from "html5-qrcode";
-import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "@repo/design-system/components/ui/button";
+import { Html5Qrcode } from "html5-qrcode";
 import { Camera, Square } from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface BarcodeScannerProps {
   onScan: (barcode: string) => void;
@@ -14,7 +14,9 @@ export function BarcodeScanner({ onScan, onError }: BarcodeScannerProps) {
   const scannerRef = useRef<Html5Qrcode | null>(null);
   const [isScanning, setIsScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [lastScannedBarcode, setLastScannedBarcode] = useState<string | null>(null);
+  const [lastScannedBarcode, setLastScannedBarcode] = useState<string | null>(
+    null
+  );
   const lastScannedRef = useRef<string | null>(null);
   const containerId = "barcode-scanner-container";
 
@@ -43,7 +45,8 @@ export function BarcodeScanner({ onScan, onError }: BarcodeScannerProps) {
 
       setIsScanning(true);
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Failed to start camera";
+      const message =
+        err instanceof Error ? err.message : "Failed to start camera";
       setError(message);
       onError?.(message);
     }
@@ -71,30 +74,31 @@ export function BarcodeScanner({ onScan, onError }: BarcodeScannerProps) {
   return (
     <div className="space-y-4">
       <div
-        id={containerId}
         className="w-full max-w-md mx-auto bg-muted rounded-lg overflow-hidden min-h-[300px]"
+        id={containerId}
       />
 
-      {error && (
-        <p className="text-sm text-destructive text-center">{error}</p>
-      )}
+      {error && <p className="text-sm text-destructive text-center">{error}</p>}
 
       <div className="flex justify-center gap-2">
-        {!isScanning ? (
+        {isScanning ? (
+          <Button onClick={stopScanning} variant="outline">
+            <Square className="h-4 w-4 mr-2" />
+            Stop Scanner
+          </Button>
+        ) : (
           <Button onClick={startScanning}>
             <Camera className="h-4 w-4 mr-2" />
             Start Scanner
-          </Button>
-        ) : (
-          <Button variant="outline" onClick={stopScanning}>
-            <Square className="h-4 w-4 mr-2" />
-            Stop Scanner
           </Button>
         )}
       </div>
       {lastScannedBarcode && (
         <p className="text-sm text-center text-muted-foreground">
-          Last scanned: <span className="font-mono font-medium text-foreground">{lastScannedBarcode}</span>
+          Last scanned:{" "}
+          <span className="font-mono font-medium text-foreground">
+            {lastScannedBarcode}
+          </span>
         </p>
       )}
     </div>

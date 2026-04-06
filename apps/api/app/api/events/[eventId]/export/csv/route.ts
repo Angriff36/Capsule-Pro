@@ -10,6 +10,7 @@
 import { auth } from "@repo/auth/server";
 import type { PrismaClient as Database } from "@repo/database";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { withRateLimit } from "@/middleware/rate-limiter";
@@ -249,7 +250,10 @@ export const GET = withRateLimit<{ eventId: string }>(
   ): Promise<NextResponse<unknown>> => {
     try {
       if (!context.params) {
-        return NextResponse.json({ error: "Missing route params" }, { status: 400 });
+        return NextResponse.json(
+          { error: "Missing route params" },
+          { status: 400 }
+        );
       }
       const { eventId } = await context.params;
       const { orgId, userId } = await auth();
@@ -299,7 +303,9 @@ export const GET = withRateLimit<{ eventId: string }>(
       }
 
       if (sections.includes("guests")) {
-        csvRows.push(...(await buildGuestsSection(database, tenantId, eventId)));
+        csvRows.push(
+          ...(await buildGuestsSection(database, tenantId, eventId))
+        );
       }
 
       // Combine rows with newlines
@@ -325,6 +331,7 @@ export const GET = withRateLimit<{ eventId: string }>(
         contentType: "text/csv; charset=utf-8",
       });
     } catch (error) {
+      captureException(error);
       console.error("Failed to export event CSV:", error);
       return NextResponse.json(
         {

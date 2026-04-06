@@ -1,5 +1,5 @@
-import { PipelineBoard } from "./components/pipeline-board";
 import { Separator } from "@repo/design-system/components/ui/separator";
+import { PipelineBoard } from "./components/pipeline-board";
 
 const PipelinePage = async () => {
   return (

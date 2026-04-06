@@ -10,11 +10,16 @@
 import { auth } from "@repo/auth/server";
 import { database, type Prisma } from "@repo/database";
 import {
-  determineNextStatus,
-  sendWebhook,
-  shouldAutoDisable,
-  type WebhookPayload,
-} from "@repo/notifications";
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+determineNextStatus, sendWebhook, shouldAutoDisable, type;
+WebhookPayload,
+} from "@repo/notifications"
+
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -258,6 +263,7 @@ export async function POST(request: NextRequest) {
       results,
     });
   } catch (error) {
+    captureException(error);
     console.error("Error retrying webhooks:", error);
     return NextResponse.json(
       { error: "Failed to retry webhooks" },

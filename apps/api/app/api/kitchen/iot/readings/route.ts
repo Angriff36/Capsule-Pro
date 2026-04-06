@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { getTenantIdForOrg } from '@/app/lib/tenant';
-import { database } from '@/lib/database';
-import { auth } from '@repo/auth/server';
+import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
+import { type NextRequest, NextResponse } from "next/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { database } from "@/lib/database";
 
 /**
  * GET /api/kitchen/iot/readings
@@ -11,18 +12,18 @@ export async function GET(request: NextRequest) {
   try {
     const { orgId, userId } = await auth();
     if (!(userId && orgId)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ error: 'Tenant not found' }, { status: 400 });
+      return NextResponse.json({ error: "Tenant not found" }, { status: 400 });
     }
 
     const { searchParams } = new URL(request.url);
-    const probeId = searchParams.get('probeId');
-    const hours = parseInt(searchParams.get('hours') || '24', 10);
-    const limit = parseInt(searchParams.get('limit') || '1000', 10);
+    const probeId = searchParams.get("probeId");
+    const hours = Number.parseInt(searchParams.get("hours") || "24", 10);
+    const limit = Number.parseInt(searchParams.get("limit") || "1000", 10);
 
     const where: Record<string, unknown> = { tenantId };
     if (probeId) {
@@ -36,15 +37,16 @@ export async function GET(request: NextRequest) {
         ...where,
         loggedAt: { gte: since },
       },
-      orderBy: { loggedAt: 'desc' },
+      orderBy: { loggedAt: "desc" },
       take: limit,
     });
 
     return NextResponse.json({ readings });
   } catch (error) {
-    console.error('List readings error:', error);
+    captureException(error);
+    console.error("List readings error:", error);
     return NextResponse.json(
-      { error: 'Failed to list readings' },
+      { error: "Failed to list readings" },
       { status: 500 }
     );
   }
@@ -58,12 +60,12 @@ export async function POST(request: NextRequest) {
   try {
     const { orgId, userId } = await auth();
     if (!(userId && orgId)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) {
-      return NextResponse.json({ error: 'Tenant not found' }, { status: 400 });
+      return NextResponse.json({ error: "Tenant not found" }, { status: 400 });
     }
 
     const body = await request.json();
@@ -71,7 +73,7 @@ export async function POST(request: NextRequest) {
 
     if (!probeId || temperature === undefined) {
       return NextResponse.json(
-        { error: 'Probe ID and temperature are required' },
+        { error: "Probe ID and temperature are required" },
         { status: 400 }
       );
     }
@@ -103,7 +105,7 @@ export async function POST(request: NextRequest) {
     if (probe && (temperature < probe.minTemp || temperature > probe.maxTemp)) {
       // Generate alert number
       const alertCount = await database.ioTAlert.count({ where: { tenantId } });
-      const alertNumber = `ALT-${String(alertCount + 1).padStart(6, '0')}`;
+      const alertNumber = `ALT-${String(alertCount + 1).padStart(6, "0")}`;
 
       // Create alert if out of range
       await database.ioTAlert.create({
@@ -111,12 +113,15 @@ export async function POST(request: NextRequest) {
           tenantId,
           alertNumber,
           probeId,
-          alertType: temperature < probe.minTemp ? 'low_temp' : 'high_temp',
-          severity: 'warning',
-          title: temperature < probe.minTemp ? 'Low Temperature' : 'High Temperature',
+          alertType: temperature < probe.minTemp ? "low_temp" : "high_temp",
+          severity: "warning",
+          title:
+            temperature < probe.minTemp
+              ? "Low Temperature"
+              : "High Temperature",
           message: `Temperature ${temperature}°C is outside safe range (${probe.minTemp}°C - ${probe.maxTemp}°C)`,
           temperature,
-          status: 'active',
+          status: "active",
           triggeredAt: new Date(),
         },
       });
@@ -124,9 +129,10 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ reading });
   } catch (error) {
-    console.error('Create reading error:', error);
+    captureException(error);
+    console.error("Create reading error:", error);
     return NextResponse.json(
-      { error: 'Failed to record reading' },
+      { error: "Failed to record reading" },
       { status: 500 }
     );
   }

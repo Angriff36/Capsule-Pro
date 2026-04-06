@@ -1,7 +1,7 @@
 "use client";
 
-import { CheckCircle2Icon, CircleIcon, ClockIcon } from "lucide-react";
 import { cn } from "@repo/design-system/lib/utils";
+import { CheckCircle2Icon, CircleIcon } from "lucide-react";
 
 export type EventStage =
   | "created"
@@ -21,13 +21,37 @@ interface StageConfig {
 
 const STAGES: StageConfig[] = [
   { id: "created", label: "Created", description: "Event created in system" },
-  { id: "client-set", label: "Client Set", description: "Client information added" },
-  { id: "venue-set", label: "Venue Set", description: "Venue details confirmed" },
-  { id: "menu-set", label: "Menu Set", description: "Menu and dishes finalized" },
-  { id: "staff-assigned", label: "Staff Assigned", description: "Team members assigned" },
-  { id: "prep-complete", label: "Prep Complete", description: "All prep tasks done" },
+  {
+    id: "client-set",
+    label: "Client Set",
+    description: "Client information added",
+  },
+  {
+    id: "venue-set",
+    label: "Venue Set",
+    description: "Venue details confirmed",
+  },
+  {
+    id: "menu-set",
+    label: "Menu Set",
+    description: "Menu and dishes finalized",
+  },
+  {
+    id: "staff-assigned",
+    label: "Staff Assigned",
+    description: "Team members assigned",
+  },
+  {
+    id: "prep-complete",
+    label: "Prep Complete",
+    description: "All prep tasks done",
+  },
   { id: "event-day", label: "Event Day", description: "Event has occurred" },
-  { id: "follow-ups-sent", label: "Follow-ups", description: "Post-event follow-ups sent" },
+  {
+    id: "follow-ups-sent",
+    label: "Follow-ups",
+    description: "Post-event follow-ups sent",
+  },
 ];
 
 interface EventTimelineProps {
@@ -70,18 +94,18 @@ export function EventTimeline({
 
             return (
               <button
-                key={stage.id}
                 className={cn(
                   "relative flex w-full items-start gap-3 rounded-lg p-2 text-left transition-colors",
                   isClickable && "hover:bg-muted",
                   isCurrent && "bg-muted"
                 )}
+                disabled={!isClickable}
+                key={stage.id}
                 onClick={() => {
                   if (isClickable && onStageClick) {
                     onStageClick(stage.id);
                   }
                 }}
-                disabled={!isClickable}
               >
                 <div className="relative z-10 flex-shrink-0">
                   {isComplete ? (
@@ -134,7 +158,9 @@ export function EventTimelineCompact({
   return (
     <div className={cn("space-y-2", className)}>
       <div className="flex items-center justify-between text-xs">
-        <span className="text-muted-foreground">{STAGES[currentIndex]?.label || "Created"}</span>
+        <span className="text-muted-foreground">
+          {STAGES[currentIndex]?.label || "Created"}
+        </span>
         <span className="text-muted-foreground">{progress}%</span>
       </div>
       <div className="h-2 w-full overflow-hidden rounded-full bg-secondary">

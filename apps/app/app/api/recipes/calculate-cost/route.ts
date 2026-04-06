@@ -1,7 +1,7 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
-import { NextRequest, NextResponse } from "next/server";
 
 interface IngredientInput {
   name: string;
@@ -37,7 +37,12 @@ async function getIngredientCost(
   ingredientName: string,
   quantity: number,
   unit: string
-): Promise<{ cost: number; unitCost: number; hasInventoryItem: boolean; wasteFactor: number }> {
+): Promise<{
+  cost: number;
+  unitCost: number;
+  hasInventoryItem: boolean;
+  wasteFactor: number;
+}> {
   // Try to find ingredient by name
   const [ingredient] = await database.$queryRaw<
     { id: string; default_unit_id: number; waste_factor?: number }[]
@@ -218,19 +223,18 @@ export async function POST(request: NextRequest) {
         // Add nested ingredients
         ingredientCosts.push(...subRecipeResult.ingredients);
         continue;
-      } else {
-        // Handle regular ingredient
-        const costResult = await getIngredientCost(
-          tenantId,
-          ingredient.name,
-          scaledQuantity,
-          ingredient.unit
-        );
-        cost = costResult.cost;
-        unitCost = costResult.unitCost;
-        hasInventoryItem = costResult.hasInventoryItem;
-        wasteFactor = costResult.wasteFactor;
       }
+      // Handle regular ingredient
+      const costResult = await getIngredientCost(
+        tenantId,
+        ingredient.name,
+        scaledQuantity,
+        ingredient.unit
+      );
+      cost = costResult.cost;
+      unitCost = costResult.unitCost;
+      hasInventoryItem = costResult.hasInventoryItem;
+      wasteFactor = costResult.wasteFactor;
 
       totalCost += cost;
 

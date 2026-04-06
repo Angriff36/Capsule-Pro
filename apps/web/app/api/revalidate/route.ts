@@ -1,5 +1,5 @@
 import { revalidatePath, revalidateTag } from "next/cache";
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
 /**
  * On-demand ISR revalidation webhook endpoint.
@@ -34,12 +34,7 @@ interface RevalidateBody {
   tag?: string;
 }
 
-const ALLOWED_PATHS = [
-  "/",
-  "/contact",
-  "/pricing",
-  "/blog",
-];
+const ALLOWED_PATHS = ["/", "/contact", "/pricing", "/blog"];
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   // Authenticate via secret token
@@ -75,7 +70,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
 
     // Strip locale prefix (e.g., /en/contact -> /contact, /fr/blog/my-post -> /blog/my-post)
     // Locale is 2+ char segment that appears right after leading slash
-    const pathWithoutLocale = normalizedPath.replace(/^\/[a-z]{2}(-[a-z]{2})?\//, "/");
+    const pathWithoutLocale = normalizedPath.replace(
+      /^\/[a-z]{2}(-[a-z]{2})?\//,
+      "/"
+    );
 
     // Allow exact match for known paths, or prefix match for dynamic routes
     const isAllowed =
@@ -119,7 +117,10 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
 
   return NextResponse.json(
-    { error: 'Must provide { type: "path", path: string } or { type: "tag", tag: string }' },
+    {
+      error:
+        'Must provide { type: "path", path: string } or { type: "tag", tag: string }',
+    },
     { status: 400 }
   );
 }
@@ -130,6 +131,7 @@ export async function GET(): Promise<NextResponse> {
     status: "ok",
     endpoint: "revalidate",
     method: "POST",
-    bodyFormat: '{ "type": "path", "path": "/pricing" } or { "type": "tag", "tag": "blog" }',
+    bodyFormat:
+      '{ "type": "path", "path": "/pricing" } or { "type": "tag", "tag": "blog" }',
   });
 }

@@ -3,11 +3,11 @@
 import { usePathname } from "next/navigation";
 import {
   createContext,
+  type ReactNode,
   useCallback,
   useContext,
   useEffect,
   useState,
-  type ReactNode,
 } from "react";
 import { getModuleKeyFromPathname, type ModuleKey } from "../module-nav";
 
@@ -67,7 +67,15 @@ export function AiAssistantProvider({ children }: { children: ReactNode }) {
 
   return (
     <AiAssistantContext.Provider
-      value={{ isOpen, isMinimized, currentModule, toggle, open, close, minimize }}
+      value={{
+        isOpen,
+        isMinimized,
+        currentModule,
+        toggle,
+        open,
+        close,
+        minimize,
+      }}
     >
       {children}
     </AiAssistantContext.Provider>

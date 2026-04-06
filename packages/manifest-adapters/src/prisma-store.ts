@@ -28,6 +28,31 @@ import type {
 } from "@repo/database/standalone";
 import { Prisma } from "@repo/database/standalone";
 
+/**
+ * Report a silent store error to Sentry without blocking the return path.
+ * Uses dynamic import so this module doesn't hard-depend on @sentry/nextjs.
+ */
+function reportStoreError(error: unknown, store: string, op: string): void {
+  import("@sentry/nextjs")
+    .then(({ captureException }) => {
+      captureException(error, {
+        tags: { source: "prisma-store", store, op },
+      });
+    })
+    .catch(() => {
+      // Sentry not available — swallow to avoid infinite loops
+    });
+}
+
+/** Shorthand used inside Store classes — derives the store name from the class name. */
+function reportOp(
+  self: { constructor: { name: string } },
+  op: string,
+  error: unknown
+): void {
+  reportStoreError(error, self.constructor.name, op);
+}
+
 export interface EntityInstance {
   id: string;
   [key: string]: unknown;
@@ -57,7 +82,7 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
     });
 
     // Return mapped entities (claims will be fetched on-demand if needed)
-    return tasks.map(task => this.mapToManifestEntity(task as PrepTask, []));
+    return tasks.map((task) => this.mapToManifestEntity(task as PrepTask, []));
   }
 
   async getById(id: string): Promise<EntityInstance | undefined> {
@@ -212,7 +237,8 @@ export class PrepTaskPrismaStore implements Store<EntityInstance> {
         data: { deletedAt: new Date() },
       });
       return true;
-    } catch {
+    } catch (error) {
+      reportOp(this, "delete", error);
       return false;
     }
   }
@@ -337,7 +363,8 @@ export class RecipePrismaStore implements Store<EntityInstance> {
         },
       });
       return this.mapToManifestEntity(updated);
-    } catch {
+    } catch (error) {
+      reportOp(this, "update", error);
       return undefined;
     }
   }
@@ -349,7 +376,8 @@ export class RecipePrismaStore implements Store<EntityInstance> {
         data: { deletedAt: new Date() },
       });
       return true;
-    } catch {
+    } catch (error) {
+      reportOp(this, "delete", error);
       return false;
     }
   }
@@ -408,10 +436,12 @@ export class RecipeVersionPrismaStore implements Store<EntityInstance> {
    * Get the latest RecipeVersion for a specific recipe (by versionNumber DESC).
    * This replaces the need for raw SQL queries like MAX(version_number).
    */
-  async getLatestByRecipeId(recipeId: string): Promise<EntityInstance | undefined> {
+  async getLatestByRecipeId(
+    recipeId: string
+  ): Promise<EntityInstance | undefined> {
     const version = await this.prisma.recipeVersion.findFirst({
       where: { tenantId: this.tenantId, recipeId, deletedAt: null },
-      orderBy: { versionNumber: 'desc' },
+      orderBy: { versionNumber: "desc" },
     });
     return version ? this.mapToManifestEntity(version) : undefined;
   }
@@ -422,7 +452,7 @@ export class RecipeVersionPrismaStore implements Store<EntityInstance> {
   async getByRecipeId(recipeId: string): Promise<EntityInstance[]> {
     const versions = await this.prisma.recipeVersion.findMany({
       where: { tenantId: this.tenantId, recipeId, deletedAt: null },
-      orderBy: { versionNumber: 'desc' },
+      orderBy: { versionNumber: "desc" },
     });
     return versions.map((version) => this.mapToManifestEntity(version));
   }
@@ -477,7 +507,8 @@ export class RecipeVersionPrismaStore implements Store<EntityInstance> {
         },
       });
       return this.mapToManifestEntity(updated);
-    } catch {
+    } catch (error) {
+      reportOp(this, "update", error);
       return undefined;
     }
   }
@@ -489,7 +520,8 @@ export class RecipeVersionPrismaStore implements Store<EntityInstance> {
         data: { deletedAt: new Date() },
       });
       return true;
-    } catch {
+    } catch (error) {
+      reportOp(this, "delete", error);
       return false;
     }
   }
@@ -592,7 +624,8 @@ export class IngredientPrismaStore implements Store<EntityInstance> {
         },
       });
       return this.mapToManifestEntity(updated);
-    } catch {
+    } catch (error) {
+      reportOp(this, "update", error);
       return undefined;
     }
   }
@@ -604,7 +637,8 @@ export class IngredientPrismaStore implements Store<EntityInstance> {
         data: { deletedAt: new Date() },
       });
       return true;
-    } catch {
+    } catch (error) {
+      reportOp(this, "delete", error);
       return false;
     }
   }
@@ -693,7 +727,8 @@ export class RecipeIngredientPrismaStore implements Store<EntityInstance> {
         },
       });
       return this.mapToManifestEntity(updated);
-    } catch {
+    } catch (error) {
+      reportOp(this, "update", error);
       return undefined;
     }
   }
@@ -705,7 +740,8 @@ export class RecipeIngredientPrismaStore implements Store<EntityInstance> {
         data: { deletedAt: new Date() },
       });
       return true;
-    } catch {
+    } catch (error) {
+      reportOp(this, "delete", error);
       return false;
     }
   }
@@ -800,7 +836,8 @@ export class RecipeStepPrismaStore implements Store<EntityInstance> {
         },
       });
       return this.mapToManifestEntity(updated);
-    } catch {
+    } catch (error) {
+      reportOp(this, "update", error);
       return undefined;
     }
   }
@@ -812,7 +849,8 @@ export class RecipeStepPrismaStore implements Store<EntityInstance> {
         data: { deleted_at: new Date() },
       });
       return true;
-    } catch {
+    } catch (error) {
+      reportOp(this, "delete", error);
       return false;
     }
   }
@@ -911,7 +949,8 @@ export class DishPrismaStore implements Store<EntityInstance> {
         },
       });
       return this.mapToManifestEntity(updated);
-    } catch {
+    } catch (error) {
+      reportOp(this, "update", error);
       return undefined;
     }
   }
@@ -923,7 +962,8 @@ export class DishPrismaStore implements Store<EntityInstance> {
         data: { deletedAt: new Date() },
       });
       return true;
-    } catch {
+    } catch (error) {
+      reportOp(this, "delete", error);
       return false;
     }
   }
@@ -1270,7 +1310,8 @@ export class AllergenWarningPrismaStore implements Store<EntityInstance> {
         },
       });
       return this.mapToManifestEntity(updated);
-    } catch {
+    } catch (error) {
+      reportOp(this, "update", error);
       return undefined;
     }
   }
@@ -1282,7 +1323,8 @@ export class AllergenWarningPrismaStore implements Store<EntityInstance> {
         data: { deletedAt: new Date() },
       });
       return true;
-    } catch {
+    } catch (error) {
+      reportOp(this, "delete", error);
       return false;
     }
   }
@@ -1358,12 +1400,26 @@ export class AllergenWarningPrismaStore implements Store<EntityInstance> {
 // ---------------------------------------------------------------------------
 
 const toNull = (v: unknown): string | null => {
-  if (v === null || v === undefined || v === "null" || v === "undefined" || v === "") return null;
+  if (
+    v === null ||
+    v === undefined ||
+    v === "null" ||
+    v === "undefined" ||
+    v === ""
+  )
+    return null;
   return String(v);
 };
 
 const toNullNum = (v: unknown): number | null => {
-  if (v === null || v === undefined || v === "null" || v === "undefined" || v === "") return null;
+  if (
+    v === null ||
+    v === undefined ||
+    v === "null" ||
+    v === "undefined" ||
+    v === ""
+  )
+    return null;
   const n = Number(v);
   return Number.isNaN(n) ? null : n;
 };
@@ -1373,7 +1429,10 @@ const toStringArray = (v: unknown): string[] => {
   if (Array.isArray(v)) return v.map(String);
   if (typeof v === "string") {
     if (v === "null" || v === "") return [];
-    return v.split(",").map((s) => s.trim()).filter(Boolean);
+    return v
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
   }
   return [];
 };
@@ -1395,22 +1454,31 @@ export class EventPrismaStore implements Store<EntityInstance> {
       venueId: row.venueId ?? null,
       venueEntityId: row.venueEntityId ?? null,
       eventType: row.eventType ?? "",
-      eventDate: row.eventDate instanceof Date ? row.eventDate.getTime() : row.eventDate,
+      eventDate:
+        row.eventDate instanceof Date ? row.eventDate.getTime() : row.eventDate,
       guestCount: Number(row.guestCount ?? 1),
       status: row.status ?? "confirmed",
       budget: row.budget != null ? Number(row.budget) : null,
       ticketPrice: row.ticketPrice != null ? Number(row.ticketPrice) : null,
       ticketTier: row.ticketTier ?? null,
       eventFormat: row.eventFormat ?? null,
-      accessibilityOptions: Array.isArray(row.accessibilityOptions) ? row.accessibilityOptions : [],
+      accessibilityOptions: Array.isArray(row.accessibilityOptions)
+        ? row.accessibilityOptions
+        : [],
       featuredMediaUrl: row.featuredMediaUrl ?? null,
       assignedTo: row.assignedTo ?? null,
       venueName: row.venueName ?? null,
       venueAddress: row.venueAddress ?? null,
       notes: row.notes ?? null,
       tags: Array.isArray(row.tags) ? row.tags : [],
-      createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : row.createdAt,
-      updatedAt: row.updatedAt instanceof Date ? row.updatedAt.toISOString() : row.updatedAt,
+      createdAt:
+        row.createdAt instanceof Date
+          ? row.createdAt.toISOString()
+          : row.createdAt,
+      updatedAt:
+        row.updatedAt instanceof Date
+          ? row.updatedAt.toISOString()
+          : row.updatedAt,
     } as EntityInstance;
   }
 
@@ -1433,7 +1501,9 @@ export class EventPrismaStore implements Store<EntityInstance> {
   async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
     const eventDateRaw = (data as Record<string, unknown>).eventDate;
     const eventDate = eventDateRaw
-      ? new Date(typeof eventDateRaw === "number" ? eventDateRaw : Number(eventDateRaw))
+      ? new Date(
+          typeof eventDateRaw === "number" ? eventDateRaw : Number(eventDateRaw)
+        )
       : new Date();
 
     // biome-ignore lint/suspicious/noExplicitAny: prisma dynamic access
@@ -1441,21 +1511,30 @@ export class EventPrismaStore implements Store<EntityInstance> {
       data: {
         tenantId: this.tenantId,
         eventNumber: toNull((data as Record<string, unknown>).eventNumber),
-        title: String((data as Record<string, unknown>).title ?? "Untitled Event"),
+        title: String(
+          (data as Record<string, unknown>).title ?? "Untitled Event"
+        ),
         clientId: toNull((data as Record<string, unknown>).clientId),
         locationId: toNull((data as Record<string, unknown>).locationId),
         venueId: toNull((data as Record<string, unknown>).venueId),
         venueEntityId: toNull((data as Record<string, unknown>).venueEntityId),
-        eventType: String((data as Record<string, unknown>).eventType ?? "general"),
+        eventType: String(
+          (data as Record<string, unknown>).eventType ?? "general"
+        ),
         eventDate,
-        guestCount: toNullNum((data as Record<string, unknown>).guestCount) ?? 1,
+        guestCount:
+          toNullNum((data as Record<string, unknown>).guestCount) ?? 1,
         status: String((data as Record<string, unknown>).status ?? "confirmed"),
         budget: toNullNum((data as Record<string, unknown>).budget),
         ticketPrice: toNullNum((data as Record<string, unknown>).ticketPrice),
         ticketTier: toNull((data as Record<string, unknown>).ticketTier),
         eventFormat: toNull((data as Record<string, unknown>).eventFormat),
-        accessibilityOptions: toStringArray((data as Record<string, unknown>).accessibilityOptions),
-        featuredMediaUrl: toNull((data as Record<string, unknown>).featuredMediaUrl),
+        accessibilityOptions: toStringArray(
+          (data as Record<string, unknown>).accessibilityOptions
+        ),
+        featuredMediaUrl: toNull(
+          (data as Record<string, unknown>).featuredMediaUrl
+        ),
         assignedTo: toNull((data as Record<string, unknown>).assignedTo),
         venueName: toNull((data as Record<string, unknown>).venueName),
         venueAddress: toNull((data as Record<string, unknown>).venueAddress),
@@ -1466,26 +1545,37 @@ export class EventPrismaStore implements Store<EntityInstance> {
     return this.mapToEntity(row);
   }
 
-  async update(id: string, data: Partial<EntityInstance>): Promise<EntityInstance | undefined> {
+  async update(
+    id: string,
+    data: Partial<EntityInstance>
+  ): Promise<EntityInstance | undefined> {
     const updateData: Record<string, unknown> = {};
     const d = data as Record<string, unknown>;
     if (d.title !== undefined) updateData.title = String(d.title);
     if (d.eventType !== undefined) updateData.eventType = String(d.eventType);
     if (d.status !== undefined) updateData.status = String(d.status);
-    if (d.guestCount !== undefined) updateData.guestCount = toNullNum(d.guestCount) ?? 1;
-    if (d.eventDate !== undefined) updateData.eventDate = new Date(Number(d.eventDate));
+    if (d.guestCount !== undefined)
+      updateData.guestCount = toNullNum(d.guestCount) ?? 1;
+    if (d.eventDate !== undefined)
+      updateData.eventDate = new Date(Number(d.eventDate));
     if (d.clientId !== undefined) updateData.clientId = toNull(d.clientId);
-    if (d.locationId !== undefined) updateData.locationId = toNull(d.locationId);
+    if (d.locationId !== undefined)
+      updateData.locationId = toNull(d.locationId);
     if (d.venueId !== undefined) updateData.venueId = toNull(d.venueId);
     if (d.budget !== undefined) updateData.budget = toNullNum(d.budget);
-    if (d.ticketPrice !== undefined) updateData.ticketPrice = toNullNum(d.ticketPrice);
+    if (d.ticketPrice !== undefined)
+      updateData.ticketPrice = toNullNum(d.ticketPrice);
     if (d.notes !== undefined) updateData.notes = toNull(d.notes);
     if (d.tags !== undefined) updateData.tags = toStringArray(d.tags);
     if (d.venueName !== undefined) updateData.venueName = toNull(d.venueName);
-    if (d.venueAddress !== undefined) updateData.venueAddress = toNull(d.venueAddress);
-    if (d.assignedTo !== undefined) updateData.assignedTo = toNull(d.assignedTo);
-    if (d.eventFormat !== undefined) updateData.eventFormat = toNull(d.eventFormat);
-    if (d.ticketTier !== undefined) updateData.ticketTier = toNull(d.ticketTier);
+    if (d.venueAddress !== undefined)
+      updateData.venueAddress = toNull(d.venueAddress);
+    if (d.assignedTo !== undefined)
+      updateData.assignedTo = toNull(d.assignedTo);
+    if (d.eventFormat !== undefined)
+      updateData.eventFormat = toNull(d.eventFormat);
+    if (d.ticketTier !== undefined)
+      updateData.ticketTier = toNull(d.ticketTier);
 
     // biome-ignore lint/suspicious/noExplicitAny: prisma dynamic access
     const row = await (this.prisma as any).event.update({
@@ -1751,7 +1841,8 @@ export class MenuPrismaStore implements Store<EntityInstance> {
         },
       });
       return this.mapToManifestEntity(updated);
-    } catch {
+    } catch (error) {
+      reportOp(this, "update", error);
       return undefined;
     }
   }
@@ -1763,7 +1854,8 @@ export class MenuPrismaStore implements Store<EntityInstance> {
         data: { deletedAt: new Date() },
       });
       return true;
-    } catch {
+    } catch (error) {
+      reportOp(this, "delete", error);
       return false;
     }
   }
@@ -1856,7 +1948,8 @@ export class MenuDishPrismaStore implements Store<EntityInstance> {
         },
       });
       return this.mapToManifestEntity(updated);
-    } catch {
+    } catch (error) {
+      reportOp(this, "update", error);
       return undefined;
     }
   }
@@ -1868,7 +1961,8 @@ export class MenuDishPrismaStore implements Store<EntityInstance> {
         data: { deletedAt: new Date() },
       });
       return true;
-    } catch {
+    } catch (error) {
+      reportOp(this, "delete", error);
       return false;
     }
   }
@@ -2042,7 +2136,8 @@ export class PrepListPrismaStore implements Store<EntityInstance> {
         },
       });
       return this.mapToManifestEntity(updated);
-    } catch {
+    } catch (error) {
+      reportOp(this, "update", error);
       return undefined;
     }
   }
@@ -2054,7 +2149,8 @@ export class PrepListPrismaStore implements Store<EntityInstance> {
         data: { deletedAt: new Date() },
       });
       return true;
-    } catch {
+    } catch (error) {
+      reportOp(this, "delete", error);
       return false;
     }
   }
@@ -2187,7 +2283,8 @@ export class PrepListItemPrismaStore implements Store<EntityInstance> {
         },
       });
       return this.mapToManifestEntity(updated);
-    } catch {
+    } catch (error) {
+      reportOp(this, "update", error);
       return undefined;
     }
   }
@@ -2199,7 +2296,8 @@ export class PrepListItemPrismaStore implements Store<EntityInstance> {
         data: { deletedAt: new Date() },
       });
       return true;
-    } catch {
+    } catch (error) {
+      reportOp(this, "delete", error);
       return false;
     }
   }
@@ -2396,7 +2494,8 @@ export class StationPrismaStore implements Store<EntityInstance> {
         },
       });
       return this.mapToManifestEntity(updated);
-    } catch {
+    } catch (error) {
+      reportOp(this, "update", error);
       return undefined;
     }
   }
@@ -2408,7 +2507,8 @@ export class StationPrismaStore implements Store<EntityInstance> {
         data: { deletedAt: new Date() },
       });
       return true;
-    } catch {
+    } catch (error) {
+      reportOp(this, "delete", error);
       return false;
     }
   }
@@ -2535,7 +2635,8 @@ export class InventoryItemPrismaStore implements Store<EntityInstance> {
         },
       });
       return this.mapToManifestEntity(updated);
-    } catch {
+    } catch (error) {
+      reportOp(this, "update", error);
       return undefined;
     }
   }
@@ -2547,7 +2648,8 @@ export class InventoryItemPrismaStore implements Store<EntityInstance> {
         data: { deletedAt: new Date() },
       });
       return true;
-    } catch {
+    } catch (error) {
+      reportOp(this, "delete", error);
       return false;
     }
   }
@@ -2893,7 +2995,10 @@ export function createPrismaOutboxWriter(
           eventType: eventData.eventType || eventData.name || "unknown",
           payload: eventData.payload as Prisma.InputJsonValue,
           aggregateId:
-            eventData.aggregateId || eventData.payload?.taskId || eventData.payload?.id || "unknown",
+            eventData.aggregateId ||
+            eventData.payload?.taskId ||
+            eventData.payload?.id ||
+            "unknown",
           status: "pending",
         },
       });

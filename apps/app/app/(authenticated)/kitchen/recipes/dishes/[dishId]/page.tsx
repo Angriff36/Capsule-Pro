@@ -1,7 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
-import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
   CardContent,
@@ -12,17 +11,15 @@ import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   ArrowLeft,
   CheckCircle,
-  ChefHat,
-  Clock,
   DollarSign,
   TrendingUp,
-  UtensilsIcon,
   Users,
+  UtensilsIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { Header } from "@/app/(authenticated)/components/header";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { EditDishDialog } from "./edit-dish-dialog";
 
 interface DishDetailRow {
@@ -111,7 +108,9 @@ export default async function DishDetailPage({
 
   const margin =
     dish.price_per_person && dish.cost_per_person
-      ? ((dish.price_per_person - dish.cost_per_person) / dish.price_per_person) * 100
+      ? ((dish.price_per_person - dish.cost_per_person) /
+          dish.price_per_person) *
+        100
       : null;
 
   const marginColor =
@@ -125,13 +124,16 @@ export default async function DishDetailPage({
 
   return (
     <>
-      <Header page={dish.name} pages={["Kitchen Ops", "Recipes & Menus", "Dishes"]} />
+      <Header
+        page={dish.name}
+        pages={["Kitchen Ops", "Recipes & Menus", "Dishes"]}
+      />
       <Separator />
       <div className="flex flex-1 flex-col gap-6 p-6">
         {/* Back link */}
         <Link
-          href="/kitchen/recipes?tab=dishes"
           className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors w-fit"
+          href="/kitchen/recipes?tab=dishes"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Dishes
@@ -168,7 +170,9 @@ export default async function DishDetailPage({
                     <Badge variant="secondary">Paused</Badge>
                   )}
                   {dish.category && (
-                    <Badge className="bg-primary/10 text-primary border-0">{dish.category}</Badge>
+                    <Badge className="bg-primary/10 text-primary border-0">
+                      {dish.category}
+                    </Badge>
                   )}
                   {dish.service_style && (
                     <Badge variant="outline">{dish.service_style}</Badge>
@@ -185,12 +189,15 @@ export default async function DishDetailPage({
             {/* Dietary & Allergens */}
             <div className="flex flex-wrap gap-2">
               {(dish.dietary_tags ?? []).map((tag) => (
-                <Badge key={tag} className="bg-secondary/20 text-secondary-foreground border-0 text-xs">
+                <Badge
+                  className="bg-secondary/20 text-secondary-foreground border-0 text-xs"
+                  key={tag}
+                >
                   {tag}
                 </Badge>
               ))}
               {(dish.allergens ?? []).map((allergen) => (
-                <Badge key={allergen} variant="destructive" className="text-xs">
+                <Badge className="text-xs" key={allergen} variant="destructive">
                   ⚠ {allergen}
                 </Badge>
               ))}
@@ -201,8 +208,8 @@ export default async function DishDetailPage({
               <div className="text-sm">
                 <span className="text-muted-foreground">Recipe: </span>
                 <Link
-                  href={`/kitchen/recipes/${dish.recipe_id}`}
                   className="text-primary hover:underline font-medium"
+                  href={`/kitchen/recipes/${dish.recipe_id}`}
                 >
                   {dish.recipe_name}
                 </Link>
@@ -222,7 +229,9 @@ export default async function DishDetailPage({
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {dish.cost_per_person ? currencyFormatter.format(dish.cost_per_person) : "-"}
+                {dish.cost_per_person
+                  ? currencyFormatter.format(dish.cost_per_person)
+                  : "-"}
               </div>
               <p className="text-xs text-muted-foreground">per person</p>
             </CardContent>
@@ -237,7 +246,9 @@ export default async function DishDetailPage({
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {dish.price_per_person ? currencyFormatter.format(dish.price_per_person) : "-"}
+                {dish.price_per_person
+                  ? currencyFormatter.format(dish.price_per_person)
+                  : "-"}
               </div>
               <p className="text-xs text-muted-foreground">per person</p>
             </CardContent>
@@ -282,19 +293,30 @@ export default async function DishDetailPage({
             </CardHeader>
             <CardContent className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-muted-foreground">Min prep lead time</span>
-                <span className="font-medium">{dish.min_prep_lead_days} day{dish.min_prep_lead_days !== 1 ? "s" : ""}</span>
+                <span className="text-muted-foreground">
+                  Min prep lead time
+                </span>
+                <span className="font-medium">
+                  {dish.min_prep_lead_days} day
+                  {dish.min_prep_lead_days !== 1 ? "s" : ""}
+                </span>
               </div>
               {dish.max_prep_lead_days && (
                 <div className="flex justify-between">
-                  <span className="text-muted-foreground">Max prep lead time</span>
-                  <span className="font-medium">{dish.max_prep_lead_days} days</span>
+                  <span className="text-muted-foreground">
+                    Max prep lead time
+                  </span>
+                  <span className="font-medium">
+                    {dish.max_prep_lead_days} days
+                  </span>
                 </div>
               )}
               {dish.portion_size_description && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Portion size</span>
-                  <span className="font-medium">{dish.portion_size_description}</span>
+                  <span className="font-medium">
+                    {dish.portion_size_description}
+                  </span>
                 </div>
               )}
             </CardContent>

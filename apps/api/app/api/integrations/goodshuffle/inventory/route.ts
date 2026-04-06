@@ -6,6 +6,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -52,6 +53,7 @@ export async function GET(request: NextRequest) {
       offset,
     });
   } catch (error) {
+    captureException(error);
     console.error("Failed to list Goodshuffle inventory syncs:", error);
     return NextResponse.json(
       { error: "Failed to list inventory syncs" },

@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 export async function PATCH(request: NextRequest) {
@@ -18,7 +19,7 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
     const { eventId, eventType, newDate } = body;
 
-    if (!eventId || !eventType || !newDate) {
+    if (!(eventId && eventType && newDate)) {
       return NextResponse.json(
         { error: "Missing required fields: eventId, eventType, newDate" },
         { status: 400 }
@@ -42,7 +43,8 @@ export async function PATCH(request: NextRequest) {
       });
 
       return NextResponse.json({ success: true, event: updated });
-    } else if (eventType === "shift") {
+    }
+    if (eventType === "shift") {
       // Update shift start and end, preserving duration
       const existingShift = await database.scheduleShift.findFirst({
         where: {
@@ -82,13 +84,13 @@ export async function PATCH(request: NextRequest) {
       });
 
       return NextResponse.json({ success: true, shift: updated });
-    } else {
-      return NextResponse.json(
-        { error: "Invalid eventType. Must be 'event' or 'shift'" },
-        { status: 400 }
-      );
     }
+    return NextResponse.json(
+      { error: "Invalid eventType. Must be 'event' or 'shift'" },
+      { status: 400 }
+    );
   } catch (error) {
+    captureException(error);
     console.error("Calendar reschedule error:", error);
     return NextResponse.json(
       { error: "Failed to reschedule event" },

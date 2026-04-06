@@ -512,18 +512,18 @@ export function PrepListClient({
                 aria-label="Export prep list as CSV"
                 onClick={handleExport}
                 size="icon"
-                variant="outline"
                 title="Export CSV"
+                variant="outline"
               >
                 <Download className="h-4 w-4" />
               </Button>
               <Button
                 aria-label="Export prep list as PDF"
+                disabled={isDownloadingPdf || !savedPrepListId}
                 onClick={handleDownloadPdf}
                 size="icon"
-                variant="outline"
                 title="Export PDF (requires save first)"
-                disabled={isDownloadingPdf || !savedPrepListId}
+                variant="outline"
               >
                 {isDownloadingPdf ? (
                   <RefreshCw className="h-4 w-4 animate-spin" />

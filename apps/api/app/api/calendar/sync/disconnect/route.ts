@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 const SUPPORTED_PROVIDERS = ["google", "outlook"] as const;
@@ -19,9 +20,11 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { provider } = body as { provider: string };
 
-    if (!provider || !SUPPORTED_PROVIDERS.includes(provider as any)) {
+    if (!(provider && SUPPORTED_PROVIDERS.includes(provider as any))) {
       return NextResponse.json(
-        { error: `Unsupported provider. Must be one of: ${SUPPORTED_PROVIDERS.join(", ")}` },
+        {
+          error: `Unsupported provider. Must be one of: ${SUPPORTED_PROVIDERS.join(", ")}`,
+        },
         { status: 400 }
       );
     }
@@ -60,6 +63,7 @@ export async function POST(request: NextRequest) {
       message: `${provider} disconnected successfully`,
     });
   } catch (error) {
+    captureException(error);
     console.error("[calendar/sync/disconnect] Error:", error);
     return NextResponse.json(
       { error: "Failed to disconnect provider" },

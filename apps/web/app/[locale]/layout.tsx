@@ -20,12 +20,12 @@ interface RootLayoutProperties {
 
 const RootLayout = async ({ children, params }: RootLayoutProperties) => {
   const { locale } = await params;
-  
+
   // Validate locale - return 404 for invalid locales (bots, static files, etc.)
   if (!isValidLocale(locale)) {
     notFound();
   }
-  
+
   const dictionary = await getDictionary(locale);
 
   return (

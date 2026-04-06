@@ -5,6 +5,7 @@
  */
 
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireTenantId } from "@/app/lib/tenant";
@@ -92,7 +93,7 @@ export async function GET(request: NextRequest) {
         ...c,
         collectionPercentage:
           Number(c.originalAmount) > 0
-            ? Number(c.collectedAmount) / Number(c.originalAmount) * 100
+            ? (Number(c.collectedAmount) / Number(c.originalAmount)) * 100
             : 0,
         isHighRisk: c.daysOverdue > 90 || c.status === "LEGAL",
         isCritical: c.daysOverdue > 120 || c.isEscalatedToLegal,
@@ -105,6 +106,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
+    captureException(error);
     console.error("Error listing collection cases:", error);
     return NextResponse.json(
       { error: "Failed to list collection cases" },
@@ -192,6 +194,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
+    captureException(error);
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { error: "Validation failed", details: error.issues },

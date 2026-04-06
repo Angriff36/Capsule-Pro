@@ -1,4 +1,5 @@
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { batchCalculateForecasts } from "@/app/lib/inventory-forecasting";
 import { requireTenantId } from "@/app/lib/tenant";
@@ -94,6 +95,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ alerts });
   } catch (error) {
+    captureException(error);
     console.error("Failed to fetch forecast alerts:", error);
     return NextResponse.json(
       {

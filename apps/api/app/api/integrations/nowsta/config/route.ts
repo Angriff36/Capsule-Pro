@@ -7,6 +7,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createNowstaClient } from "@/app/lib/nowsta-client";
@@ -72,6 +73,7 @@ export async function GET() {
       },
     });
   } catch (error) {
+    captureException(error);
     console.error("Failed to get Nowsta config:", error);
     return NextResponse.json(
       { error: "Failed to get configuration" },
@@ -150,6 +152,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
+    captureException(error);
     console.error("Failed to save Nowsta config:", error);
     return NextResponse.json(
       { error: "Failed to save configuration" },
@@ -180,6 +183,7 @@ export async function DELETE() {
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    captureException(error);
     console.error("Failed to delete Nowsta config:", error);
     return NextResponse.json(
       { error: "Failed to delete configuration" },

@@ -11,9 +11,15 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
-  manifestErrorResponse,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+manifestErrorResponse,
   manifestSuccessResponse,
-} from "@/lib/manifest-response";
+} from "@/lib/manifest-response"
 
 /**
  * GET /api/settings/rate-limits
@@ -36,14 +42,12 @@ export async function GET(request: NextRequest) {
         tenantId,
         deletedAt: null,
       },
-      orderBy: [
-        { priority: "desc" },
-        { createdAt: "desc" },
-      ],
+      orderBy: [{ priority: "desc" }, { createdAt: "desc" }],
     });
 
     return manifestSuccessResponse({ rateLimitConfigs: configs });
   } catch (error) {
+    captureException(error);
     console.error("[rate-limits/list] Error:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
@@ -86,11 +90,17 @@ export async function POST(request: NextRequest) {
     }
 
     if (!windowMs || typeof windowMs !== "number" || windowMs <= 0) {
-      return manifestErrorResponse("Window duration must be a positive number", 400);
+      return manifestErrorResponse(
+        "Window duration must be a positive number",
+        400
+      );
     }
 
     if (!maxRequests || typeof maxRequests !== "number" || maxRequests <= 0) {
-      return manifestErrorResponse("Max requests must be a positive number", 400);
+      return manifestErrorResponse(
+        "Max requests must be a positive number",
+        400
+      );
     }
 
     // Validate regex pattern
@@ -133,7 +143,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(config, { status: 201 });
   } catch (error) {
+    captureException(error);
     console.error("[rate-limits/create] Error:", error);
-    return manifestErrorResponse("Failed to create rate limit configuration", 500);
+    return manifestErrorResponse(
+      "Failed to create rate limit configuration",
+      500
+    );
   }
 }

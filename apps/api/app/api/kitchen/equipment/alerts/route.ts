@@ -9,10 +9,15 @@ import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
-  manifestErrorResponse,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+manifestErrorResponse,
   manifestSuccessResponse,
-} from "@/lib/manifest-response";
-import { database } from "@/lib/database";
+} from "@/lib/manifest-response"
 
 export async function GET(request: NextRequest) {
   try {
@@ -29,7 +34,7 @@ export async function GET(request: NextRequest) {
 
     // TODO: Implement when Equipment model is added to schema
     // This endpoint will analyze equipment data and provide predictive failure alerts
-    
+
     return manifestSuccessResponse({
       alerts: [],
       summary: {
@@ -48,9 +53,11 @@ export async function GET(request: NextRequest) {
           predicted_failure: 0,
         },
       },
-      message: "Equipment alerts feature not yet implemented - Equipment model pending",
+      message:
+        "Equipment alerts feature not yet implemented - Equipment model pending",
     });
   } catch (error) {
+    captureException(error);
     console.error("Error fetching equipment alerts:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

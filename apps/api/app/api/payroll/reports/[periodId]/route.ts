@@ -1,10 +1,17 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import {
-  ExportFormat,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+ExportFormat,
   PayrollService,
   PrismaPayrollDataSource,
-} from "@repo/payroll-engine";
+} from "@repo/payroll-engine"
+
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -79,6 +86,7 @@ export async function GET(
       },
     });
   } catch (error) {
+    captureException(error);
     console.error("Report generation error:", error);
 
     if (error instanceof Error && error.message.includes("not found")) {

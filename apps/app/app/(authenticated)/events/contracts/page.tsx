@@ -123,10 +123,45 @@ const ContractsPage = async () => {
     )
   );
 
+  // Fetch events for the contract creation dropdown
+  const events = await database.event.findMany({
+    where: {
+      tenantId,
+      deletedAt: null,
+    },
+    select: {
+      id: true,
+      title: true,
+      eventDate: true,
+    },
+    orderBy: { eventDate: "desc" },
+    take: 100,
+  });
+
+  // Fetch clients for the contract creation dropdown
+  const rawClients = await database.$queryRaw<
+    Array<{ id: string; name: string }>
+  >`
+    SELECT c.id,
+           COALESCE(c.company_name, NULLIF(TRIM(CONCAT(c.first_name, ' ', c.last_name)), ''), 'Unknown') as name
+    FROM tenant_crm.clients c
+    WHERE c.tenant_id = ${tenantId}
+      AND c.deleted_at IS NULL
+    ORDER BY name
+    LIMIT 100
+  `;
+
+  // Serialize dates for client component
+  const serializedEvents = events.map((e) => ({
+    id: e.id,
+    title: e.title,
+    eventDate: e.eventDate.toISOString(),
+  }));
+
   return (
     <>
       <Header page="Contracts" pages={[{ label: "Events", href: "/events" }]}>
-        {/* Add action buttons here if needed */}
+        {/* New Contract button is in ContractsPageClient */}
       </Header>
 
       <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
@@ -179,7 +214,9 @@ const ContractsPage = async () => {
 
         {/* Client Component for Interactivity */}
         <ContractsPageClient
+          clientsForCreate={rawClients}
           contracts={contracts}
+          events={serializedEvents}
           tenantId={tenantId}
           uniqueClients={uniqueClients}
           uniqueDocumentTypes={uniqueDocumentTypes}

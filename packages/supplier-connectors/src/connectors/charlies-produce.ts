@@ -23,7 +23,11 @@
  * - (optionally) apiSecret: For HMAC signature auth
  */
 
-import type { SupplierConnector, SupplierConnectorConfig, SupplierProduct } from "../types.js";
+import type {
+  SupplierConnector,
+  SupplierConnectorConfig,
+  SupplierProduct,
+} from "../types.js";
 
 /**
  * Charlie's Produce connector implementation.
@@ -51,14 +55,18 @@ export class CharliesProduceConnector implements SupplierConnector {
     const { apiBaseUrl, apiKey } = config.credentials;
 
     // Validate required credentials are present
-    if (!apiBaseUrl || !apiKey) {
-      console.warn("[charlies-produce] Missing required credentials: apiBaseUrl, apiKey");
+    if (!(apiBaseUrl && apiKey)) {
+      console.warn(
+        "[charlies-produce] Missing required credentials: apiBaseUrl, apiKey"
+      );
       return false;
     }
 
     // TODO: Implement actual connection test
     // Example: fetch(`${apiBaseUrl}/health`, { headers: { 'Authorization': `Bearer ${apiKey}` } })
-    console.log("[charlies-produce] Connection test not implemented - API credentials required");
+    console.log(
+      "[charlies-produce] Connection test not implemented - API credentials required"
+    );
     return false;
   }
 
@@ -77,7 +85,9 @@ export class CharliesProduceConnector implements SupplierConnector {
    * - Availability status
    * - Category/classification
    */
-  async fetchCatalog(config: SupplierConnectorConfig): Promise<SupplierProduct[]> {
+  async fetchCatalog(
+    config: SupplierConnectorConfig
+  ): Promise<SupplierProduct[]> {
     const { apiBaseUrl, apiKey } = config.credentials;
 
     // TODO: Implement catalog fetch
@@ -101,7 +111,9 @@ export class CharliesProduceConnector implements SupplierConnector {
     //   quantityAvailable: p.quantityOnHand,
     // }));
 
-    console.log("[charlies-produce] Catalog fetch not implemented - API credentials required");
+    console.log(
+      "[charlies-produce] Catalog fetch not implemented - API credentials required"
+    );
     return [];
   }
 
@@ -123,10 +135,13 @@ export class CharliesProduceConnector implements SupplierConnector {
     // });
     // return response.json();
 
-    console.log("[charlies-produce] Availability check not implemented - API credentials required");
+    console.log(
+      "[charlies-produce] Availability check not implemented - API credentials required"
+    );
 
     // Return unavailable for all SKUs as stub
-    const result: Record<string, { available: boolean; quantity?: number }> = {};
+    const result: Record<string, { available: boolean; quantity?: number }> =
+      {};
     for (const sku of skus) {
       result[sku] = { available: false, quantity: 0 };
     }
@@ -148,14 +163,18 @@ export class CharliesProduceConnector implements SupplierConnector {
   async fetchPricing(
     config: SupplierConnectorConfig,
     skus: string[]
-  ): Promise<Record<string, { unitCost: number; currency: string; effectiveFrom?: Date }>> {
+  ): Promise<
+    Record<string, { unitCost: number; currency: string; effectiveFrom?: Date }>
+  > {
     // TODO: Implement pricing fetch
     // const response = await fetch(`${apiBaseUrl}/pricing?skus=${skus.join(',')}`, {
     //   headers: { 'Authorization': `Bearer ${apiKey}` },
     // });
     // return response.json();
 
-    console.log("[charlies-produce] Pricing fetch not implemented - API credentials required");
+    console.log(
+      "[charlies-produce] Pricing fetch not implemented - API credentials required"
+    );
     return {};
   }
 }

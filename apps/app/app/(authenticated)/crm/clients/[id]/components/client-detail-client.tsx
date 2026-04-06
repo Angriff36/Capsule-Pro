@@ -25,7 +25,6 @@ import {
   ArrowLeftIcon,
   CalendarIcon,
   DollarSignIcon,
-
   MailIcon,
   MessageSquareIcon,
   PhoneIcon,
@@ -214,7 +213,6 @@ export function ClientDetailClient({ client }: ClientDetailProps) {
           </div>
         </div>
         <div className="flex items-center gap-2">
-
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button disabled={isDeleting} variant="outline">

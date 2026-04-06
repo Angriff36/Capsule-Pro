@@ -1,8 +1,13 @@
 // Dispatch board data
-import { NextRequest } from "next/server";
+
+import { captureException } from "@sentry/nextjs";
+import type { NextRequest } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import {
+  manifestErrorResponse,
+  manifestSuccessResponse,
+} from "@/lib/manifest-response";
 
 export async function GET(request: NextRequest) {
   try {
@@ -69,9 +74,7 @@ export async function GET(request: NextRequest) {
     `;
 
     // Build driver map for route lookups
-    const driverIds = routes
-      .map((r) => r.driverId)
-      .filter(Boolean) as string[];
+    const driverIds = routes.map((r) => r.driverId).filter(Boolean) as string[];
 
     let driverMap: Record<string, { name: string; phone: string | null }> = {};
 
@@ -152,8 +155,9 @@ export async function GET(request: NextRequest) {
       unassigned: routesWithDispatch.filter(
         (r) => r.dispatchStatus === "unassigned"
       ).length,
-      assigned: routesWithDispatch.filter((r) => r.dispatchStatus === "assigned")
-        .length,
+      assigned: routesWithDispatch.filter(
+        (r) => r.dispatchStatus === "assigned"
+      ).length,
       inProgress: routesWithDispatch.filter(
         (r) => r.dispatchStatus === "in_progress"
       ).length,
@@ -168,6 +172,7 @@ export async function GET(request: NextRequest) {
       stats,
     });
   } catch (error) {
+    captureException(error);
     console.error("Error loading dispatch board:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

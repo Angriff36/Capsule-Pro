@@ -1,9 +1,13 @@
 // Add a contact to a vendor
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import {
+  manifestErrorResponse,
+  manifestSuccessResponse,
+} from "@/lib/manifest-response";
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,16 +17,29 @@ export async function POST(request: NextRequest) {
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) return manifestErrorResponse("Tenant not found", 400);
 
-    const { vendorId, contactName, contactEmail, contactPhone, contactRole, isPrimary, notes } = await request.json();
+    const {
+      vendorId,
+      contactName,
+      contactEmail,
+      contactPhone,
+      contactRole,
+      isPrimary,
+      notes,
+    } = await request.json();
 
-    if (!vendorId || !contactName) return manifestErrorResponse("vendorId and contactName are required", 400);
+    if (!(vendorId && contactName))
+      return manifestErrorResponse(
+        "vendorId and contactName are required",
+        400
+      );
 
     // Verify vendor exists
     const existing = await database.$queryRaw`
       SELECT id FROM tenant_inventory.inventory_suppliers
       WHERE tenant_id = ${tenantId}::uuid AND id = ${vendorId}::uuid AND deleted_at IS NULL
     `;
-    if (!(existing as any[]).length) return manifestErrorResponse("Vendor not found", 404);
+    if (!(existing as any[]).length)
+      return manifestErrorResponse("Vendor not found", 404);
 
     // If setting as primary, clear existing primary
     if (isPrimary) {
@@ -40,7 +57,7 @@ export async function POST(request: NextRequest) {
       ) VALUES (
         ${tenantId}::uuid, ${vendorId}::uuid, ${contactName},
         ${contactEmail || null}, ${contactPhone || null},
-        ${contactRole || null}, ${isPrimary || false}, ${notes || null}
+        ${contactRole || null}, ${isPrimary}, ${notes || null}
       )
       RETURNING id, contact_name, contact_email, contact_phone, contact_role, is_primary, created_at
     `;
@@ -50,6 +67,7 @@ export async function POST(request: NextRequest) {
 
     return manifestSuccessResponse({ contact });
   } catch (error) {
+    captureException(error);
     console.error("Error adding vendor contact:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

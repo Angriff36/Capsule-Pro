@@ -42,7 +42,9 @@ export function RecipeQuickRename({
         toast.success("Recipe renamed.");
         setOpen(false);
       } catch (error) {
-        toast.error(error instanceof Error ? error.message : "Failed to rename.");
+        toast.error(
+          error instanceof Error ? error.message : "Failed to rename."
+        );
       }
     });
   };
@@ -64,10 +66,7 @@ export function RecipeQuickRename({
           <PencilIcon className="h-4 w-4" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent
-        className="w-80"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <PopoverContent className="w-80" onClick={(e) => e.stopPropagation()}>
         <div className="space-y-3">
           <div className="text-sm font-medium">Rename Recipe</div>
           <Input

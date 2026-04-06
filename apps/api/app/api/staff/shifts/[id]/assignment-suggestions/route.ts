@@ -4,9 +4,15 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type { ShiftRequirement } from "@/lib/staff/auto-assignment";
 import {
-  autoAssignShift,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+autoAssignShift,
   getEligibleEmployeesForShift,
-} from "@/lib/staff/auto-assignment";
+} from "@/lib/staff/auto-assignment"
 
 /**
  * GET /api/staff/shifts/[shiftId]/assignment-suggestions
@@ -83,6 +89,7 @@ export async function GET(
 
     return NextResponse.json(result);
   } catch (error) {
+    captureException(error);
     console.error("Error getting assignment suggestions:", error);
     return NextResponse.json(
       { message: "Failed to get assignment suggestions" },
@@ -200,6 +207,7 @@ export async function POST(
       { status: 400 }
     );
   } catch (error) {
+    captureException(error);
     console.error("Error auto-assigning shift:", error);
     return NextResponse.json(
       { message: "Failed to auto-assign shift" },

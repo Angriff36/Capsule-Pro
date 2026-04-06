@@ -6,6 +6,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type { LocationListResponse } from "../types";
@@ -82,6 +83,7 @@ export async function GET(_request: Request) {
 
     return NextResponse.json(response);
   } catch (error) {
+    captureException(error);
     console.error("Failed to list storage locations:", error);
     return NextResponse.json(
       { message: "Internal server error" },

@@ -14,7 +14,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@repo/design-system/components/ui/tooltip";
-import type { DietaryTag, DIETARY_TAG_CONFIG } from "@/lib/dietary-utils";
+import type { DietaryTag } from "@/lib/dietary-utils";
 
 export interface DietaryBadgeProps {
   /** Dietary tag type */
@@ -39,65 +39,80 @@ function getTagConfig(tag: string): {
   color: string;
   icon: string;
 } {
-  const configs: Record<string, { label: string; color: string; icon: string }> = {
+  const configs: Record<
+    string,
+    { label: string; color: string; icon: string }
+  > = {
     vegan: {
       label: "Vegan",
-      color: "bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700",
+      color:
+        "bg-green-100 text-green-800 border-green-300 dark:bg-green-900/30 dark:text-green-300 dark:border-green-700",
       icon: "🌱",
     },
     vegetarian: {
       label: "Vegetarian",
-      color: "bg-lime-100 text-lime-800 border-lime-300 dark:bg-lime-900/30 dark:text-lime-300 dark:border-lime-700",
+      color:
+        "bg-lime-100 text-lime-800 border-lime-300 dark:bg-lime-900/30 dark:text-lime-300 dark:border-lime-700",
       icon: "🥬",
     },
     "gluten-free": {
       label: "GF",
-      color: "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700",
+      color:
+        "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-700",
       icon: "🌾",
     },
     "dairy-free": {
       label: "DF",
-      color: "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700",
+      color:
+        "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-700",
       icon: "🥛",
     },
     "nut-free": {
       label: "Nut-Free",
-      color: "bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-700",
+      color:
+        "bg-orange-100 text-orange-800 border-orange-300 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-700",
       icon: "🥜",
     },
     "soy-free": {
       label: "Soy-Free",
-      color: "bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-700",
+      color:
+        "bg-yellow-100 text-yellow-800 border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-700",
       icon: "🫘",
     },
     keto: {
       label: "Keto",
-      color: "bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700",
+      color:
+        "bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-700",
       icon: "🥑",
     },
     paleo: {
       label: "Paleo",
-      color: "bg-stone-100 text-stone-800 border-stone-300 dark:bg-stone-900/30 dark:text-stone-300 dark:border-stone-700",
+      color:
+        "bg-stone-100 text-stone-800 border-stone-300 dark:bg-stone-900/30 dark:text-stone-300 dark:border-stone-700",
       icon: "🍖",
     },
     halal: {
       label: "Halal",
-      color: "bg-teal-100 text-teal-800 border-teal-300 dark:bg-teal-900/30 dark:text-teal-300 dark:border-teal-700",
+      color:
+        "bg-teal-100 text-teal-800 border-teal-300 dark:bg-teal-900/30 dark:text-teal-300 dark:border-teal-700",
       icon: "☪️",
     },
     kosher: {
       label: "Kosher",
-      color: "bg-indigo-100 text-indigo-800 border-indigo-300 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-700",
+      color:
+        "bg-indigo-100 text-indigo-800 border-indigo-300 dark:bg-indigo-900/30 dark:text-indigo-300 dark:border-indigo-700",
       icon: "✡️",
     },
     "low-sodium": {
       label: "Low Sodium",
-      color: "bg-cyan-100 text-cyan-800 border-cyan-300 dark:bg-cyan-900/30 dark:text-cyan-300 dark:border-cyan-700",
+      color:
+        "bg-cyan-100 text-cyan-800 border-cyan-300 dark:bg-cyan-900/30 dark:text-cyan-300 dark:border-cyan-700",
       icon: "🧂",
     },
     "low-carb": {
       label: "Low Carb",
-      color: "bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-900/30 dark:text-rose-300 dark:border-rose-700",
+      color:
+        "bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-900/30 dark:text-rose-300 dark:border-rose-700",
       icon: "🍚",
     },
   };
@@ -106,7 +121,8 @@ function getTagConfig(tag: string): {
   return (
     configs[normalizedTag] || {
       label: tag,
-      color: "bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600",
+      color:
+        "bg-gray-100 text-gray-800 border-gray-300 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600",
       icon: "•",
     }
   );
@@ -138,11 +154,7 @@ export function DietaryBadge({
       className={`${config.color} ${sizeClass} font-medium border ${className}`}
     >
       {showIcon && <span className="mr-1">{config.icon}</span>}
-      {compact ? (
-        <span className="sr-only">{displayLabel}</span>
-      ) : (
-        displayLabel
-      )}
+      {compact ? <span className="sr-only">{displayLabel}</span> : displayLabel}
       {compact && showIcon && <span aria-hidden="true">{config.icon}</span>}
     </Badge>
   );
@@ -217,11 +229,7 @@ export function DietaryBadges({
             <TooltipContent>
               <div className="flex flex-wrap gap-1 max-w-[200px]">
                 {tags.slice(maxVisible).map((tag) => (
-                  <Badge
-                    className="text-xs"
-                    key={tag}
-                    variant="outline"
-                  >
+                  <Badge className="text-xs" key={tag} variant="outline">
                     {getTagConfig(tag).label}
                   </Badge>
                 ))}

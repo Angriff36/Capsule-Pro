@@ -6,14 +6,22 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { withRateLimit } from "@/middleware/rate-limiter";
 
 import {
-  type AssignmentResult,
-  type BulkAssignmentRequest,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+type AssignmentResult
+,
+type BulkAssignmentRequest
+,
   buildSummary,
   processAutoAssignShifts,
   processPreSelectedShifts,
   separateShiftsByAssignmentType,
   sortResultsByInputOrder,
-} from "./helpers";
+} from "./helpers"
 
 /**
  * POST /api/staff/shifts/bulk-assignment
@@ -113,6 +121,7 @@ export const POST = withRateLimit(
         summary,
       });
     } catch (error) {
+      captureException(error);
       console.error("Error executing bulk assignment:", error);
       return NextResponse.json(
         {

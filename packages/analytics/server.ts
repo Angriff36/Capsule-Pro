@@ -11,9 +11,8 @@ const createNoopAnalytics = (): AnalyticsClient => ({
   capture: (..._args: Parameters<PostHog["capture"]>) => undefined,
   identify: (..._args: Parameters<PostHog["identify"]>) => undefined,
   groupIdentify: (..._args: Parameters<PostHog["groupIdentify"]>) => undefined,
-  isFeatureEnabled: async (
-    ..._args: Parameters<PostHog["isFeatureEnabled"]>
-  ) => undefined,
+  isFeatureEnabled: async (..._args: Parameters<PostHog["isFeatureEnabled"]>) =>
+    undefined,
   shutdown: async (..._args: Parameters<PostHog["shutdown"]>) => undefined,
 });
 

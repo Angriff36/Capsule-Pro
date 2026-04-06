@@ -6,6 +6,11 @@ import { createPrismaJobStore } from "@repo/sentry-integration/prisma-store";
 // Both must opt out of static collection at build time.
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
+
+import {
+  buildPipelineCorrelationId,
+  pipelineLogFields,
+} from "@repo/sentry-integration/pipeline-correlation";
 import type { JobQueueConfig } from "@repo/sentry-integration/queue";
 import { SentryJobQueue } from "@repo/sentry-integration/queue";
 import {
@@ -197,10 +202,18 @@ const processJob = async (): Promise<{
     return { processed: false };
   }
 
-  log.info("[SentryWorker] Processing job", {
-    jobId: job.id,
-    issueId: job.sentryIssueId,
+  const pipelineCorrelationId = buildPipelineCorrelationId({
+    sentryIssueId: job.sentryIssueId,
+    sentryEventId: job.sentryEventId,
   });
+
+  log.info(
+    "[SentryWorker] Processing job",
+    pipelineLogFields("sentry_worker_pickup", pipelineCorrelationId, {
+      jobId: job.id,
+      issueId: job.sentryIssueId,
+    })
+  );
 
   await jobQueue.startJob(job.id);
 
@@ -220,10 +233,13 @@ const processJob = async (): Promise<{
 
       await notifyPRCreated(result, issue);
 
-      log.info("[SentryWorker] Job completed successfully", {
-        jobId: job.id,
-        prUrl: result.prUrl,
-      });
+      log.info(
+        "[SentryWorker] Job completed successfully",
+        pipelineLogFields("sentry_worker_complete", pipelineCorrelationId, {
+          jobId: job.id,
+          prUrl: result.prUrl,
+        })
+      );
 
       return { processed: true, jobId: job.id, success: true };
     }
@@ -239,12 +255,15 @@ const processJob = async (): Promise<{
       );
     }
 
-    log.warn("[SentryWorker] Job failed", {
-      jobId: job.id,
-      error: result.error,
-      retryCount: job.retryCount + 1,
-      maxRetries: job.maxRetries,
-    });
+    log.warn(
+      "[SentryWorker] Job failed",
+      pipelineLogFields("sentry_worker_failed", pipelineCorrelationId, {
+        jobId: job.id,
+        error: result.error,
+        retryCount: job.retryCount + 1,
+        maxRetries: job.maxRetries,
+      })
+    );
 
     return {
       processed: true,
@@ -257,7 +276,13 @@ const processJob = async (): Promise<{
 
     await jobQueue.failJob(job.id, message);
 
-    log.error("[SentryWorker] Job error", { jobId: job.id, error: message });
+    log.error(
+      "[SentryWorker] Job error",
+      pipelineLogFields("sentry_worker_failed", pipelineCorrelationId, {
+        jobId: job.id,
+        error: message,
+      })
+    );
 
     return { processed: true, jobId: job.id, success: false, error: message };
   }

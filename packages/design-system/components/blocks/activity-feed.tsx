@@ -324,9 +324,9 @@ function ActivityItem({
         {/* Metadata preview for certain types */}
         {activity.metadata && activity.activityType === "entity_change" && (
           <div className="mt-2 p-2 bg-muted/30 rounded text-xs text-muted-foreground">
-            {Boolean((activity.metadata as { oldValues?: unknown }).oldValues) && (
-              <span>Changed properties</span>
-            )}
+            {Boolean(
+              (activity.metadata as { oldValues?: unknown }).oldValues
+            ) && <span>Changed properties</span>}
           </div>
         )}
       </div>

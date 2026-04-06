@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { corsHeaders } from "@/app/lib/cors";
 import { InvariantError, invariant } from "@/app/lib/invariant";
@@ -173,6 +174,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       headers: corsHeaders(request, "PATCH, OPTIONS"),
     });
   } catch (error) {
+    captureException(error);
     if (error instanceof InvariantError) {
       return NextResponse.json(
         { message: error.message },

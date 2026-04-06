@@ -28,23 +28,16 @@ import { Spinner } from "@repo/design-system/components/ui/spinner";
 import {
   AlertTriangleIcon,
   ChevronDownIcon,
-  ChevronRightIcon,
   ChevronUpIcon,
   ClockIcon,
-  CopyIcon,
   DownloadIcon,
   InfoIcon,
-  LoaderIcon,
-  PlayCircleIcon,
-  PlusIcon,
   RefreshCwIcon,
   SparklesIcon,
   StopCircleIcon,
-  TrashIcon,
   UserIcon,
-  XIcon,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useState } from "react";
 import { formatDate, parseISODateToLocal } from "../../../lib/format";
 import type {
   TaskBreakdown,
@@ -689,7 +682,8 @@ export function GenerateTaskBreakdownModal({
       onOpenChange?.(false);
     } catch (error) {
       // Show error in progress area instead of silently failing
-      const message = error instanceof Error ? error.message : "Failed to generate tasks";
+      const message =
+        error instanceof Error ? error.message : "Failed to generate tasks";
       setGenerationProgress(`Error: ${message}`);
       // Don't close modal on error - let user see what happened
       throw error;

@@ -50,7 +50,9 @@ export default function SearchScreen() {
     for (const task of tasks) {
       const titleMatch = task.title.toLowerCase().includes(query);
       const summaryMatch = task.summary?.toLowerCase().includes(query);
-      const tagsMatch = task.tags.some((tag) => tag.toLowerCase().includes(query));
+      const tagsMatch = task.tags.some((tag) =>
+        tag.toLowerCase().includes(query)
+      );
 
       if (titleMatch || summaryMatch || tagsMatch) {
         results.push({ type: "task", key: `task-${task.id}`, task });
@@ -60,11 +62,19 @@ export default function SearchScreen() {
     // Search prep lists
     for (const prepList of prepLists) {
       const nameMatch = prepList.name.toLowerCase().includes(query);
-      const eventNameMatch = prepList.event?.name?.toLowerCase().includes(query);
-      const stationNameMatch = prepList.station?.name?.toLowerCase().includes(query);
+      const eventNameMatch = prepList.event?.name
+        ?.toLowerCase()
+        .includes(query);
+      const stationNameMatch = prepList.station?.name
+        ?.toLowerCase()
+        .includes(query);
 
       if (nameMatch || eventNameMatch || stationNameMatch) {
-        results.push({ type: "prepList", key: `prepList-${prepList.id}`, prepList });
+        results.push({
+          type: "prepList",
+          key: `prepList-${prepList.id}`,
+          prepList,
+        });
       }
     }
 
@@ -77,44 +87,53 @@ export default function SearchScreen() {
     setRefreshing(false);
   }, [refetchTasks, refetchPrepLists]);
 
-  const renderPrepListCard = useCallback((prepList: PrepList) => (
-    <View style={styles.prepListCard}>
-      <View style={styles.prepListHeader}>
-        <Text style={styles.prepListName}>{prepList.name}</Text>
-        <View style={[styles.statusBadge, getStatusStyle(prepList.status)]}>
-          <Text style={styles.statusText}>{prepList.status}</Text>
+  const renderPrepListCard = useCallback(
+    (prepList: PrepList) => (
+      <View style={styles.prepListCard}>
+        <View style={styles.prepListHeader}>
+          <Text style={styles.prepListName}>{prepList.name}</Text>
+          <View style={[styles.statusBadge, getStatusStyle(prepList.status)]}>
+            <Text style={styles.statusText}>{prepList.status}</Text>
+          </View>
+        </View>
+        {prepList.event && (
+          <Text style={styles.prepListEvent}>Event: {prepList.event.name}</Text>
+        )}
+        {prepList.station && (
+          <Text style={styles.prepListStation}>
+            Station: {prepList.station.name}
+          </Text>
+        )}
+        <View style={styles.prepListProgress}>
+          <Text style={styles.progressText}>
+            {prepList.completedCount}/{prepList.totalCount} items
+          </Text>
+          <View style={styles.progressBar}>
+            <View
+              style={[
+                styles.progressFill,
+                {
+                  width: `${
+                    prepList.totalCount > 0
+                      ? (prepList.completedCount / prepList.totalCount) * 100
+                      : 0
+                  }%`,
+                },
+              ]}
+            />
+          </View>
         </View>
       </View>
-      {prepList.event && (
-        <Text style={styles.prepListEvent}>Event: {prepList.event.name}</Text>
-      )}
-      {prepList.station && (
-        <Text style={styles.prepListStation}>Station: {prepList.station.name}</Text>
-      )}
-      <View style={styles.prepListProgress}>
-        <Text style={styles.progressText}>
-          {prepList.completedCount}/{prepList.totalCount} items
-        </Text>
-        <View style={styles.progressBar}>
-          <View
-            style={[
-              styles.progressFill,
-              {
-                width: `${prepList.totalCount > 0
-                  ? (prepList.completedCount / prepList.totalCount) * 100
-                  : 0}%`,
-              },
-            ]}
-          />
-        </View>
-      </View>
-    </View>
-  ), []);
+    ),
+    []
+  );
 
   if (tasksError) {
     return (
       <ErrorState
-        message={tasksError instanceof Error ? tasksError.message : "Search failed"}
+        message={
+          tasksError instanceof Error ? tasksError.message : "Search failed"
+        }
         onRetry={() => void onRefresh()}
       />
     );
@@ -135,10 +154,7 @@ export default function SearchScreen() {
           value={searchQuery}
         />
         {searchQuery.length > 0 && (
-          <Text
-            onPress={() => setSearchQuery("")}
-            style={styles.clearButton}
-          >
+          <Text onPress={() => setSearchQuery("")} style={styles.clearButton}>
             ✕
           </Text>
         )}

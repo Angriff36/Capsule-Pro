@@ -1,22 +1,13 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import Link from "next/link";
-import {
-  Plus,
-  Search,
-  Building2,
-  Star,
-  Package,
-  Users,
-  Loader2,
-  Trash2,
-  FileText,
-} from "lucide-react";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
 import { Badge } from "@repo/design-system/components/ui/badge";
-import { Input } from "@repo/design-system/components/ui/input";
+import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +15,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@repo/design-system/components/ui/dialog";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -31,13 +24,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import { Label } from "@repo/design-system/components/ui/label";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import {
-  type Vendor,
-  RatingStars,
+  Building2,
+  Loader2,
+  Package,
+  Plus,
+  Search,
+  Star,
+  Trash2,
+  Users,
+} from "lucide-react";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
+import {
   formatPaymentTerms,
   PAYMENT_TERMS_OPTIONS,
+  RatingStars,
+  type Vendor,
 } from "../components/vendor-shared";
 
 export default function VendorsPage() {
@@ -95,10 +99,20 @@ export default function VendorsPage() {
       if (data.success) {
         setDialogOpen(false);
         setForm({
-          name: "", contactPerson: "", email: "", phone: "",
-          paymentTerms: "NET_30", addressLine1: "", addressLine2: "",
-          city: "", state: "", postalCode: "", country: "US",
-          taxId: "", website: "", notes: "",
+          name: "",
+          contactPerson: "",
+          email: "",
+          phone: "",
+          paymentTerms: "NET_30",
+          addressLine1: "",
+          addressLine2: "",
+          city: "",
+          state: "",
+          postalCode: "",
+          country: "US",
+          taxId: "",
+          website: "",
+          notes: "",
         });
         loadVendors();
       } else {
@@ -113,7 +127,8 @@ export default function VendorsPage() {
 
   const handleDelete = async (vendor: Vendor, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm(`Delete vendor "${vendor.name}"? This cannot be undone.`)) return;
+    if (!confirm(`Delete vendor "${vendor.name}"? This cannot be undone.`))
+      return;
     try {
       const res = await fetch("/api/procurement/vendors/commands/delete", {
         method: "POST",
@@ -143,7 +158,10 @@ export default function VendorsPage() {
     );
   }, [vendors, searchQuery]);
 
-  const totalCatalogItems = vendors.reduce((sum, v) => sum + v.catalog_item_count, 0);
+  const totalCatalogItems = vendors.reduce(
+    (sum, v) => sum + v.catalog_item_count,
+    0
+  );
 
   if (loading) {
     return (
@@ -163,7 +181,7 @@ export default function VendorsPage() {
             Manage suppliers and vendor relationships.
           </p>
         </div>
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <Dialog onOpenChange={setDialogOpen} open={dialogOpen}>
           <DialogTrigger asChild>
             <Button>
               <Plus className="h-4 w-4 mr-2" />
@@ -177,24 +195,30 @@ export default function VendorsPage() {
             <div className="grid gap-4 py-4">
               {/* Basic Info */}
               <div className="grid gap-2">
-                <h3 className="font-semibold text-sm text-muted-foreground">Basic Information</h3>
+                <h3 className="font-semibold text-sm text-muted-foreground">
+                  Basic Information
+                </h3>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Vendor Name *</Label>
                     <Input
                       id="name"
-                      value={form.name}
-                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                      onChange={(e) =>
+                        setForm({ ...form, name: e.target.value })
+                      }
                       placeholder="Acme Supplies Inc."
+                      value={form.name}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="taxId">Tax ID / EIN</Label>
                     <Input
                       id="taxId"
-                      value={form.taxId}
-                      onChange={(e) => setForm({ ...form, taxId: e.target.value })}
+                      onChange={(e) =>
+                        setForm({ ...form, taxId: e.target.value })
+                      }
                       placeholder="XX-XXXXXXX"
+                      value={form.taxId}
                     />
                   </div>
                 </div>
@@ -203,16 +227,20 @@ export default function VendorsPage() {
                     <Label htmlFor="contactPerson">Primary Contact</Label>
                     <Input
                       id="contactPerson"
-                      value={form.contactPerson}
-                      onChange={(e) => setForm({ ...form, contactPerson: e.target.value })}
+                      onChange={(e) =>
+                        setForm({ ...form, contactPerson: e.target.value })
+                      }
                       placeholder="Jane Smith"
+                      value={form.contactPerson}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="paymentTerms">Payment Terms</Label>
                     <Select
+                      onValueChange={(v) =>
+                        setForm({ ...form, paymentTerms: v })
+                      }
                       value={form.paymentTerms}
-                      onValueChange={(v) => setForm({ ...form, paymentTerms: v })}
                     >
                       <SelectTrigger>
                         <SelectValue />
@@ -232,19 +260,23 @@ export default function VendorsPage() {
                     <Label htmlFor="email">Email</Label>
                     <Input
                       id="email"
+                      onChange={(e) =>
+                        setForm({ ...form, email: e.target.value })
+                      }
+                      placeholder="contact@acme.com"
                       type="email"
                       value={form.email}
-                      onChange={(e) => setForm({ ...form, email: e.target.value })}
-                      placeholder="contact@acme.com"
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="phone">Phone</Label>
                     <Input
                       id="phone"
-                      value={form.phone}
-                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                      onChange={(e) =>
+                        setForm({ ...form, phone: e.target.value })
+                      }
                       placeholder="(555) 123-4567"
+                      value={form.phone}
                     />
                   </div>
                 </div>
@@ -252,23 +284,29 @@ export default function VendorsPage() {
 
               {/* Address */}
               <div className="grid gap-2">
-                <h3 className="font-semibold text-sm text-muted-foreground">Address</h3>
+                <h3 className="font-semibold text-sm text-muted-foreground">
+                  Address
+                </h3>
                 <div className="space-y-2">
                   <Label htmlFor="addressLine1">Street Address</Label>
                   <Input
                     id="addressLine1"
-                    value={form.addressLine1}
-                    onChange={(e) => setForm({ ...form, addressLine1: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, addressLine1: e.target.value })
+                    }
                     placeholder="123 Main St"
+                    value={form.addressLine1}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="addressLine2">Address Line 2</Label>
                   <Input
                     id="addressLine2"
-                    value={form.addressLine2}
-                    onChange={(e) => setForm({ ...form, addressLine2: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, addressLine2: e.target.value })
+                    }
                     placeholder="Suite 100"
+                    value={form.addressLine2}
                   />
                 </div>
                 <div className="grid grid-cols-3 gap-4">
@@ -276,24 +314,30 @@ export default function VendorsPage() {
                     <Label htmlFor="city">City</Label>
                     <Input
                       id="city"
+                      onChange={(e) =>
+                        setForm({ ...form, city: e.target.value })
+                      }
                       value={form.city}
-                      onChange={(e) => setForm({ ...form, city: e.target.value })}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="state">State</Label>
                     <Input
                       id="state"
+                      onChange={(e) =>
+                        setForm({ ...form, state: e.target.value })
+                      }
                       value={form.state}
-                      onChange={(e) => setForm({ ...form, state: e.target.value })}
                     />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="postalCode">ZIP</Label>
                     <Input
                       id="postalCode"
+                      onChange={(e) =>
+                        setForm({ ...form, postalCode: e.target.value })
+                      }
                       value={form.postalCode}
-                      onChange={(e) => setForm({ ...form, postalCode: e.target.value })}
                     />
                   </div>
                 </div>
@@ -305,29 +349,36 @@ export default function VendorsPage() {
                   <Label htmlFor="website">Website</Label>
                   <Input
                     id="website"
-                    value={form.website}
-                    onChange={(e) => setForm({ ...form, website: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, website: e.target.value })
+                    }
                     placeholder="https://acme.com"
+                    value={form.website}
                   />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="notes">Notes</Label>
                   <Textarea
                     id="notes"
-                    value={form.notes}
-                    onChange={(e) => setForm({ ...form, notes: e.target.value })}
+                    onChange={(e) =>
+                      setForm({ ...form, notes: e.target.value })
+                    }
                     placeholder="Internal notes about this vendor..."
                     rows={3}
+                    value={form.notes}
                   />
                 </div>
               </div>
 
               {/* Actions */}
               <div className="flex justify-end gap-3 pt-2">
-                <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                <Button onClick={() => setDialogOpen(false)} variant="outline">
                   Cancel
                 </Button>
-                <Button onClick={handleCreate} disabled={!form.name.trim() || saving}>
+                <Button
+                  disabled={!form.name.trim() || saving}
+                  onClick={handleCreate}
+                >
                   {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   Create Vendor
                 </Button>
@@ -366,8 +417,10 @@ export default function VendorsPage() {
             <div className="text-2xl font-bold">
               {vendors.length
                 ? (
-                    vendors.reduce((sum, v) => sum + (v.performance_rating || 0), 0) /
-                    vendors.filter((v) => v.performance_rating).length || 0
+                    vendors.reduce(
+                      (sum, v) => sum + (v.performance_rating || 0),
+                      0
+                    ) / vendors.filter((v) => v.performance_rating).length || 0
                   ).toFixed(1)
                 : "—"}
             </div>
@@ -375,7 +428,9 @@ export default function VendorsPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Contacts</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Contacts
+            </CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -390,10 +445,10 @@ export default function VendorsPage() {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
+          className="pl-10"
+          onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search by name, contact, email, or vendor #..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10"
         />
       </div>
 
@@ -412,10 +467,7 @@ export default function VendorsPage() {
       ) : (
         <div className="space-y-3">
           {filtered.map((vendor) => (
-            <Card
-              key={vendor.id}
-              className="hover:shadow-sm transition-shadow"
-            >
+            <Card className="hover:shadow-sm transition-shadow" key={vendor.id}>
               <CardContent className="p-4">
                 <div className="flex items-center gap-4">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-100 text-blue-700">
@@ -424,16 +476,16 @@ export default function VendorsPage() {
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
                       <Link
-                        href={`/procurement/vendors/${vendor.id}`}
                         className="font-semibold hover:underline"
+                        href={`/procurement/vendors/${vendor.id}`}
                       >
                         {vendor.name}
                       </Link>
-                      <Badge variant="secondary" className="text-xs">
+                      <Badge className="text-xs" variant="secondary">
                         {vendor.supplier_number}
                       </Badge>
                       {vendor.tax_id && (
-                        <Badge variant="outline" className="text-xs">
+                        <Badge className="text-xs" variant="outline">
                           Tax: {vendor.tax_id}
                         </Badge>
                       )}
@@ -467,10 +519,10 @@ export default function VendorsPage() {
                       </Button>
                     </Link>
                     <Button
-                      size="sm"
-                      variant="ghost"
                       className="text-red-600 hover:text-red-700 hover:bg-red-50"
                       onClick={(e) => handleDelete(vendor, e)}
+                      size="sm"
+                      variant="ghost"
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>

@@ -9,6 +9,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -309,6 +310,7 @@ export async function POST(
 
     return NextResponse.json(response, { status: 201 });
   } catch (error) {
+    captureException(error);
     console.error("Failed to generate shipment from event:", error);
     return NextResponse.json(
       { message: "Internal server error" },
@@ -392,6 +394,7 @@ export async function GET(
       existingShipments,
     });
   } catch (error) {
+    captureException(error);
     console.error("Failed to preview shipment generation:", error);
     return NextResponse.json(
       { message: "Internal server error" },

@@ -2,7 +2,7 @@
  * @vitest-environment node
  */
 
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, expect, it } from "vitest";
 
 /**
  * Settings Module QA Tests (SET1-SET5)
@@ -217,12 +217,12 @@ describe("SET3: Persistence after reload", () => {
 describe("SET4: Invalid input validation", () => {
   describe("Audit-log API route", () => {
     it("clamps page to min 1", () => {
-      const page = Math.max(1, parseInt("0", 10));
+      const page = Math.max(1, Number.parseInt("0", 10));
       expect(page).toBe(1);
     });
 
     it("clamps page from negative number", () => {
-      const page = Math.max(1, parseInt("-5", 10));
+      const page = Math.max(1, Number.parseInt("-5", 10));
       expect(page).toBe(1);
     });
 
@@ -231,29 +231,32 @@ describe("SET4: Invalid input validation", () => {
       // Math.max(1, NaN) returns NaN (not 1)
       // The audit-log API uses Math.max(1, parseInt(searchParams.get("page")))
       // If page=abc is passed, page will be NaN, offset will be NaN
-      const page = Math.max(1, parseInt("abc", 10));
+      const page = Math.max(1, Number.parseInt("abc", 10));
       expect(page).toBeNaN(); // BUG: should be 1
     });
 
     it("clamps limit to max 100", () => {
-      const limit = Math.min(100, Math.max(1, parseInt("200", 10)));
+      const limit = Math.min(100, Math.max(1, Number.parseInt("200", 10)));
       expect(limit).toBe(100);
     });
 
     it("clamps limit to min 1", () => {
-      const limit = Math.min(100, Math.max(1, parseInt("0", 10)));
+      const limit = Math.min(100, Math.max(1, Number.parseInt("0", 10)));
       expect(limit).toBe(1);
     });
 
     it("defaults page to 1 when not provided", () => {
       const rawPage: string | undefined = undefined;
-      const page = Math.max(1, parseInt(rawPage ?? "1", 10));
+      const page = Math.max(1, Number.parseInt(rawPage ?? "1", 10));
       expect(page).toBe(1);
     });
 
     it("defaults limit to 50 when not provided", () => {
       const rawLimit: string | undefined = undefined;
-      const limit = Math.min(100, Math.max(1, parseInt(rawLimit ?? "50", 10)));
+      const limit = Math.min(
+        100,
+        Math.max(1, Number.parseInt(rawLimit ?? "50", 10))
+      );
       expect(limit).toBe(50);
     });
 

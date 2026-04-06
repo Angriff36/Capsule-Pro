@@ -129,12 +129,14 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
     const yieldUnitCode =
       getString(formData, "yieldUnit").toLowerCase() || "servings";
     // Prefer servings, then each, then first unit, then fallback to 1
-    const yieldUnitId = unitCodeToId.get(yieldUnitCode) ??
+    const yieldUnitId =
+      unitCodeToId.get(yieldUnitCode) ??
       unitCodeToId.get("servings") ??
       unitCodeToId.get("each") ??
-      units.find(u => u.code.toLowerCase() === "servings")?.id ??
-      units.find(u => u.code.toLowerCase() === "each")?.id ??
-      units[0]?.id ?? 1;
+      units.find((u) => u.code.toLowerCase() === "servings")?.id ??
+      units.find((u) => u.code.toLowerCase() === "each")?.id ??
+      units[0]?.id ??
+      1;
 
     const ingredientsText = getString(formData, "ingredients");
     const stepsText = getString(formData, "steps");
@@ -170,7 +172,10 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
     setResult(null);
 
     // Validate yield quantity before submission
-    const yieldQty = Number.parseInt(getString(data, "yieldQuantity") || "0", 10);
+    const yieldQty = Number.parseInt(
+      getString(data, "yieldQuantity") || "0",
+      10
+    );
     if (!yieldQty || yieldQty <= 0) {
       setError("Yield quantity must be a positive number greater than 0.");
       setYieldQtyError("Yield quantity must be greater than 0");
@@ -303,7 +308,7 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
                   Yield quantity *
                 </label>
                 <input
-                  className={`flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ${yieldQtyError ? 'border-red-500' : 'border-input'}`}
+                  className={`flex h-10 w-full rounded-md border bg-background px-3 py-2 text-sm ${yieldQtyError ? "border-red-500" : "border-input"}`}
                   defaultValue="1"
                   id="yieldQuantity"
                   min="1"
@@ -330,7 +335,13 @@ export function NewRecipeForm({ units }: NewRecipeFormProps) {
                 </label>
                 <select
                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  defaultValue={units.find(u => u.code.toLowerCase() === "servings")?.code ?? units.find(u => u.code.toLowerCase() === "each")?.code ?? units[0]?.code ?? "servings"}
+                  defaultValue={
+                    units.find((u) => u.code.toLowerCase() === "servings")
+                      ?.code ??
+                    units.find((u) => u.code.toLowerCase() === "each")?.code ??
+                    units[0]?.code ??
+                    "servings"
+                  }
                   name="yieldUnit"
                 >
                   {units.map((unit) => (

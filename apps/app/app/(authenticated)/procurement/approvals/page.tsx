@@ -1,26 +1,13 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
-import {
-  CheckCircle2,
-  XCircle,
-  Clock,
-  Shield,
-  User,
-  Eye,
-  Search,
-  Loader2,
-  FileText,
-  AlertTriangle,
-  ArrowRight,
-  MessageSquare,
-  DollarSign,
-} from "lucide-react";
-import { Button } from "@repo/design-system/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@repo/design-system/components/ui/card";
 import { Badge } from "@repo/design-system/components/ui/badge";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@repo/design-system/components/ui/tabs";
-import { Input } from "@repo/design-system/components/ui/input";
+import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -28,11 +15,32 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
+import { Input } from "@repo/design-system/components/ui/input";
 import {
-  STATUS_CONFIG,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs";
+import {
+  ArrowRight,
+  CheckCircle2,
+  Clock,
+  DollarSign,
+  Eye,
+  FileText,
+  Loader2,
+  MessageSquare,
+  Search,
+  Shield,
+  XCircle,
+} from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import {
   formatCurrency,
-  formatDateShort,
   formatDate,
+  formatDateShort,
+  STATUS_CONFIG,
 } from "../components/po-shared";
 
 interface ApprovalHistory {
@@ -68,16 +76,23 @@ const APPROVAL_STEPS = [
   { key: "finance", label: "Finance", description: "Final Review" },
 ];
 
-function ApprovalChainStepper({ status, approvalHistory }: { status: string; approvalHistory: ApprovalHistory[] }) {
+function ApprovalChainStepper({
+  status,
+  approvalHistory,
+}: {
+  status: string;
+  approvalHistory: ApprovalHistory[];
+}) {
   // Determine step status
-  const hasApproval = status === "approved" || status === "ordered" || status === "received";
+  const hasApproval =
+    status === "approved" || status === "ordered" || status === "received";
   const hasRejection = status === "rejected";
   const isSubmitted = status === "submitted";
-  
+
   // Check approval history for specific actions
-  const managerApproval = approvalHistory.find(h => h.action === "approved");
+  const managerApproval = approvalHistory.find((h) => h.action === "approved");
   const financeApproval = hasApproval && managerApproval; // If approved, we assume finance also signed off
-  
+
   return (
     <div className="flex items-center gap-1 mt-2">
       {/* Step 1: Requester - Always complete if we're viewing this */}
@@ -87,9 +102,9 @@ function ApprovalChainStepper({ status, approvalHistory }: { status: string; app
         </div>
         <span className="text-xs font-medium text-green-700">Requester</span>
       </div>
-      
+
       <ArrowRight className="h-3.5 w-3.5 text-gray-300 mx-1" />
-      
+
       {/* Step 2: Manager */}
       <div className="flex items-center gap-1.5">
         {managerApproval ? (
@@ -122,9 +137,9 @@ function ApprovalChainStepper({ status, approvalHistory }: { status: string; app
           </>
         )}
       </div>
-      
+
       <ArrowRight className="h-3.5 w-3.5 text-gray-300 mx-1" />
-      
+
       {/* Step 3: Finance */}
       <div className="flex items-center gap-1.5">
         {hasApproval ? (
@@ -175,18 +190,26 @@ function ApprovalHistoryTimeline({ history }: { history: ApprovalHistory[] }) {
       {history.map((item, index) => {
         const isApproved = item.action === "approved";
         const isRejected = item.action === "rejected";
-        
+
         return (
-          <div key={item.id} className="flex gap-3">
+          <div className="flex gap-3" key={item.id}>
             <div className="flex flex-col items-center">
-              <div className={`flex h-8 w-8 items-center justify-center rounded-full ${
-                isApproved ? "bg-green-100 text-green-600" :
-                isRejected ? "bg-red-100 text-red-600" :
-                "bg-blue-100 text-blue-600"
-              }`}>
-                {isApproved ? <CheckCircle2 className="h-4 w-4" /> :
-                 isRejected ? <XCircle className="h-4 w-4" /> :
-                 <Clock className="h-4 w-4" />}
+              <div
+                className={`flex h-8 w-8 items-center justify-center rounded-full ${
+                  isApproved
+                    ? "bg-green-100 text-green-600"
+                    : isRejected
+                      ? "bg-red-100 text-red-600"
+                      : "bg-blue-100 text-blue-600"
+                }`}
+              >
+                {isApproved ? (
+                  <CheckCircle2 className="h-4 w-4" />
+                ) : isRejected ? (
+                  <XCircle className="h-4 w-4" />
+                ) : (
+                  <Clock className="h-4 w-4" />
+                )}
               </div>
               {index < history.length - 1 && (
                 <div className="w-px h-full bg-gray-200 my-1" />
@@ -194,8 +217,10 @@ function ApprovalHistoryTimeline({ history }: { history: ApprovalHistory[] }) {
             </div>
             <div className="flex-1 pb-4">
               <div className="flex items-center gap-2">
-                <span className="font-medium text-sm capitalize">{item.action}</span>
-                <Badge variant="outline" className="text-xs">
+                <span className="font-medium text-sm capitalize">
+                  {item.action}
+                </span>
+                <Badge className="text-xs" variant="outline">
                   {item.newStatus || item.action}
                 </Badge>
               </div>
@@ -221,7 +246,9 @@ export default function ApprovalsPage() {
   const [actioning, setActioning] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("pending");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedOrder, setSelectedOrder] = useState<ApprovalOrder | null>(null);
+  const [selectedOrder, setSelectedOrder] = useState<ApprovalOrder | null>(
+    null
+  );
   const [detailOpen, setDetailOpen] = useState(false);
 
   useEffect(() => {
@@ -241,7 +268,10 @@ export default function ApprovalsPage() {
     }
   };
 
-  const handleAction = async (orderId: string, action: "approved" | "rejected") => {
+  const handleAction = async (
+    orderId: string,
+    action: "approved" | "rejected"
+  ) => {
     setActioning(orderId);
     try {
       const res = await fetch("/api/procurement/approvals/action", {
@@ -277,16 +307,18 @@ export default function ApprovalsPage() {
   }, [orders, activeTab, searchQuery]);
 
   const summaryStats = useMemo(() => {
-    const pending = orders.filter(o => o.status === "submitted").length;
+    const pending = orders.filter((o) => o.status === "submitted").length;
     const today = new Date().toDateString();
-    const approvedToday = orders.filter(o => 
-      o.status === "approved" && 
-      o.approval_history?.some(h => 
-        h.action === "approved" && 
-        new Date(h.performedAt).toDateString() === today
-      )
+    const approvedToday = orders.filter(
+      (o) =>
+        o.status === "approved" &&
+        o.approval_history?.some(
+          (h) =>
+            h.action === "approved" &&
+            new Date(h.performedAt).toDateString() === today
+        )
     ).length;
-    const rejected = orders.filter(o => o.status === "rejected").length;
+    const rejected = orders.filter((o) => o.status === "rejected").length;
     return { pending, approvedToday, rejected };
   }, [orders]);
 
@@ -318,22 +350,32 @@ export default function ApprovalsPage() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pending Approval</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Pending Approval
+            </CardTitle>
             <Clock className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{summaryStats.pending}</div>
-            <p className="text-xs text-muted-foreground">Awaiting your review</p>
+            <p className="text-xs text-muted-foreground">
+              Awaiting your review
+            </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Approved Today</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Approved Today
+            </CardTitle>
             <CheckCircle2 className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{summaryStats.approvedToday}</div>
-            <p className="text-xs text-muted-foreground">Orders processed today</p>
+            <div className="text-2xl font-bold">
+              {summaryStats.approvedToday}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Orders processed today
+            </p>
           </CardContent>
         </Card>
         <Card>
@@ -352,31 +394,29 @@ export default function ApprovalsPage() {
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
+          className="pl-10"
+          onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Search by PO # or vendor name..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10"
         />
       </div>
 
       {/* Tabs & List */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs onValueChange={setActiveTab} value={activeTab}>
         <TabsList>
           <TabsTrigger value="pending">
-            Pending ({orders.filter(o => o.status === "submitted").length})
+            Pending ({orders.filter((o) => o.status === "submitted").length})
           </TabsTrigger>
           <TabsTrigger value="approved">
-            Approved ({orders.filter(o => o.status === "approved").length})
+            Approved ({orders.filter((o) => o.status === "approved").length})
           </TabsTrigger>
           <TabsTrigger value="rejected">
-            Rejected ({orders.filter(o => o.status === "rejected").length})
+            Rejected ({orders.filter((o) => o.status === "rejected").length})
           </TabsTrigger>
-          <TabsTrigger value="all">
-            All History ({orders.length})
-          </TabsTrigger>
+          <TabsTrigger value="all">All History ({orders.length})</TabsTrigger>
         </TabsList>
 
-        <TabsContent value={activeTab} className="mt-4">
+        <TabsContent className="mt-4" value={activeTab}>
           {filtered.length === 0 ? (
             <Card>
               <CardContent className="py-12 text-center text-muted-foreground">
@@ -392,29 +432,39 @@ export default function ApprovalsPage() {
           ) : (
             <div className="space-y-3">
               {filtered.map((order) => {
-                const config = STATUS_CONFIG[order.status] || STATUS_CONFIG.draft;
+                const config =
+                  STATUS_CONFIG[order.status] || STATUS_CONFIG.draft;
                 const Icon = config.icon;
                 const isPending = order.status === "submitted";
                 const isActioning = actioning === order.id;
 
                 return (
-                  <Card key={order.id} className="hover:shadow-sm transition-shadow">
+                  <Card
+                    className="hover:shadow-sm transition-shadow"
+                    key={order.id}
+                  >
                     <CardContent className="p-4">
                       <div className="flex items-start gap-4">
-                        <div className={`flex h-10 w-10 items-center justify-center rounded-full ${config.color}`}>
+                        <div
+                          className={`flex h-10 w-10 items-center justify-center rounded-full ${config.color}`}
+                        >
                           <Icon className="h-5 w-5" />
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="font-semibold">{order.po_number}</span>
-                            <Badge className={config.color}>{config.label}</Badge>
+                            <span className="font-semibold">
+                              {order.po_number}
+                            </span>
+                            <Badge className={config.color}>
+                              {config.label}
+                            </Badge>
                             {order.vendor_name && (
                               <span className="text-sm text-muted-foreground">
                                 • {order.vendor_name}
                               </span>
                             )}
                           </div>
-                          
+
                           <div className="flex items-center gap-4 text-sm text-muted-foreground mb-1">
                             <span className="flex items-center gap-1">
                               <FileText className="h-3.5 w-3.5" />
@@ -433,18 +483,18 @@ export default function ApprovalsPage() {
                           </div>
 
                           {/* Approval Chain Status */}
-                          <ApprovalChainStepper 
-                            status={order.status} 
-                            approvalHistory={order.approval_history} 
+                          <ApprovalChainStepper
+                            approvalHistory={order.approval_history}
+                            status={order.status}
                           />
                         </div>
 
                         {/* Actions */}
                         <div className="flex items-center gap-2">
                           <Button
+                            onClick={() => openDetail(order)}
                             size="sm"
                             variant="ghost"
-                            onClick={() => openDetail(order)}
                           >
                             <Eye className="h-4 w-4 mr-1" />
                             Details
@@ -452,11 +502,13 @@ export default function ApprovalsPage() {
                           {isPending && (
                             <>
                               <Button
+                                className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
+                                disabled={isActioning}
+                                onClick={() =>
+                                  handleAction(order.id, "rejected")
+                                }
                                 size="sm"
                                 variant="outline"
-                                className="text-red-600 border-red-200 hover:bg-red-50 hover:text-red-700"
-                                onClick={() => handleAction(order.id, "rejected")}
-                                disabled={isActioning}
                               >
                                 {isActioning ? (
                                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -466,10 +518,12 @@ export default function ApprovalsPage() {
                                 Reject
                               </Button>
                               <Button
-                                size="sm"
                                 className="bg-green-600 hover:bg-green-700"
-                                onClick={() => handleAction(order.id, "approved")}
                                 disabled={isActioning}
+                                onClick={() =>
+                                  handleAction(order.id, "approved")
+                                }
+                                size="sm"
                               >
                                 {isActioning ? (
                                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -492,7 +546,7 @@ export default function ApprovalsPage() {
       </Tabs>
 
       {/* Detail Dialog */}
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
+      <Dialog onOpenChange={setDetailOpen} open={detailOpen}>
         <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -503,20 +557,25 @@ export default function ApprovalsPage() {
               {selectedOrder?.vendor_name || "No vendor assigned"}
             </DialogDescription>
           </DialogHeader>
-          
+
           {selectedOrder && (
             <div className="space-y-6">
               {/* Order Details */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-xs text-muted-foreground">Status</p>
-                  <Badge className={STATUS_CONFIG[selectedOrder.status]?.color || ""}>
-                    {STATUS_CONFIG[selectedOrder.status]?.label || selectedOrder.status}
+                  <Badge
+                    className={STATUS_CONFIG[selectedOrder.status]?.color || ""}
+                  >
+                    {STATUS_CONFIG[selectedOrder.status]?.label ||
+                      selectedOrder.status}
                   </Badge>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Total</p>
-                  <p className="font-semibold">{formatCurrency(selectedOrder.total)}</p>
+                  <p className="font-semibold">
+                    {formatCurrency(selectedOrder.total)}
+                  </p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Items</p>
@@ -525,8 +584,8 @@ export default function ApprovalsPage() {
                 <div>
                   <p className="text-xs text-muted-foreground">Submitted</p>
                   <p className="font-medium">
-                    {selectedOrder.submitted_at 
-                      ? formatDate(selectedOrder.submitted_at) 
+                    {selectedOrder.submitted_at
+                      ? formatDate(selectedOrder.submitted_at)
                       : "Not submitted"}
                   </p>
                 </div>
@@ -535,9 +594,9 @@ export default function ApprovalsPage() {
               {/* Approval Chain */}
               <div>
                 <h4 className="text-sm font-medium mb-3">Approval Chain</h4>
-                <ApprovalChainStepper 
-                  status={selectedOrder.status} 
-                  approvalHistory={selectedOrder.approval_history} 
+                <ApprovalChainStepper
+                  approvalHistory={selectedOrder.approval_history}
+                  status={selectedOrder.status}
                 />
               </div>
 
@@ -547,7 +606,9 @@ export default function ApprovalsPage() {
                   <MessageSquare className="h-4 w-4" />
                   Approval History
                 </h4>
-                <ApprovalHistoryTimeline history={selectedOrder.approval_history} />
+                <ApprovalHistoryTimeline
+                  history={selectedOrder.approval_history}
+                />
               </div>
             </div>
           )}

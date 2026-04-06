@@ -22,17 +22,24 @@ import {
   generateEventSummary,
   getEventSummary,
 } from "../../actions/event-summary";
+import { generateEventPrepList } from "../../actions/prep-list-generation";
 import {
   generateTaskBreakdown,
   saveTaskBreakdown,
   type TaskBreakdown,
 } from "../../actions/task-breakdown";
-import {
-  generateEventPrepList,
-} from "../../actions/prep-list-generation";
 import { GenerateEventSummaryModal } from "../../components/event-summary-display";
+import {
+  EVENT_TEMPLATES,
+  getTemplateMenuSuggestions,
+} from "../../components/event-templates";
 import { GenerateTaskBreakdownModal } from "../../components/task-breakdown-display";
 import { EventEditorModal } from "../../event-editor-modal";
+import { EventSetupChecklist } from "../components/event-setup-checklist";
+import {
+  determineEventStage,
+  EventTimeline,
+} from "../components/event-timeline";
 import {
   type AvailableDishOption,
   DishVariantDialog,
@@ -49,14 +56,11 @@ import type { PrepTaskSummaryClient } from "../prep-task-contract";
 import { EventDetailTabs } from "./event-detail-tabs";
 // Above-fold critical components loaded eagerly
 import { EventOverviewCard } from "./event-overview-card";
-import { EventSetupChecklist } from "../components/event-setup-checklist";
-import { EventTimeline, determineEventStage } from "../components/event-timeline";
 import { GuestManagementSection } from "./guest-management-section";
 // Lazy-loaded below-the-fold components for bundle optimization
 import { AIInsightsPanel } from "./lazy-ai-insights-panel";
 import { EventExplorer } from "./lazy-event-explorer";
 import { MenuIntelligenceSection } from "./menu-intelligence-section";
-import { getTemplateMenuSuggestions, EVENT_TEMPLATES } from "../../components/event-templates";
 import { OperationsSection } from "./operations-section";
 import { RecipeDrawer } from "./recipe-drawer";
 import {
@@ -587,8 +591,12 @@ async function runGenerateBreakdown(
     setBreakdown(result);
     setShowBreakdownModal(true);
     onRefresh();
-  } catch {
-    setGenerationProgress("Failed to generate breakdown. Please try again.");
+  } catch (error) {
+    clearInterval(interval);
+    const message =
+      error instanceof Error ? error.message : "Failed to generate breakdown";
+    setGenerationProgress(`Error: ${message}`);
+    // Don't close modal on error so user can see the message
   } finally {
     clearInterval(interval);
     setIsGenerating(false);
@@ -852,23 +860,27 @@ export function EventDetailsClient({
   const router = useRouter();
 
   // Timeline stage navigation - maps stages to tabs
-  const handleTimelineStageClick = useCallback((stage: string) => {
-    const stageToTab: Record<string, string> = {
-      "created": "overview",
-      "client-set": "overview",
-      "venue-set": "overview",
-      "menu-set": "menu",
-      "staff-assigned": "operations",
-      "prep-complete": "operations",
-      "event-day": "overview",
-      "follow-ups-sent": "followups",
-    };
-    const targetTab = stageToTab[stage] ?? "overview";
-    const url = targetTab === "overview"
-      ? `/events/${event.id}`
-      : `/events/${event.id}?tab=${targetTab}`;
-    router.push(url);
-  }, [event.id, router]);
+  const handleTimelineStageClick = useCallback(
+    (stage: string) => {
+      const stageToTab: Record<string, string> = {
+        created: "overview",
+        "client-set": "overview",
+        "venue-set": "overview",
+        "menu-set": "menu",
+        "staff-assigned": "operations",
+        "prep-complete": "operations",
+        "event-day": "overview",
+        "follow-ups-sent": "followups",
+      };
+      const targetTab = stageToTab[stage] ?? "overview";
+      const url =
+        targetTab === "overview"
+          ? `/events/${event.id}`
+          : `/events/${event.id}?tab=${targetTab}`;
+      router.push(url);
+    },
+    [event.id, router]
+  );
 
   // Time state
   const [now, setNow] = useState(() => new Date());
@@ -914,7 +926,12 @@ export function EventDetailsClient({
 
   // Inline dish creation handler
   const handleCreateDishInline = useCallback(
-    async (name: string, recipeId: string, category?: string, course?: string) => {
+    async (
+      name: string,
+      recipeId: string,
+      category?: string,
+      course?: string
+    ) => {
       setIsCreatingDish(true);
       try {
         const result = await createDishAndAddToEvent(
@@ -931,7 +948,9 @@ export function EventDetailsClient({
           toast.error(result.error || "Failed to create dish");
         }
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Failed to create dish");
+        toast.error(
+          err instanceof Error ? err.message : "Failed to create dish"
+        );
       } finally {
         setIsCreatingDish(false);
       }
@@ -1011,7 +1030,10 @@ export function EventDetailsClient({
     return map;
   }, [inventoryCoverage]);
 
-  const eventDate = useMemo(() => parseISODateToLocal(event.eventDate), [event.eventDate]);
+  const eventDate = useMemo(
+    () => parseISODateToLocal(event.eventDate),
+    [event.eventDate]
+  );
   const eventStart = useMemo(() => startOfDay(eventDate), [eventDate]);
   const eventEnd = useMemo(() => endOfDay(eventDate), [eventDate]);
   const isLive = now >= eventStart && now <= eventEnd;
@@ -1101,13 +1123,17 @@ export function EventDetailsClient({
 
   // Template suggestions - compute which suggestions haven't been added yet
   const templateSuggestions = useMemo(() => {
-    const suggestions = getTemplateMenuSuggestions((event as { templateId?: string | null }).templateId ?? null);
+    const suggestions = getTemplateMenuSuggestions(
+      (event as { templateId?: string | null }).templateId ?? null
+    );
     if (!suggestions) return [];
-    
+
     // Create a set of existing dish names for quick lookup
-    const existingDishNames = new Set(eventDishes.map(d => d.name.toLowerCase()));
-    
-    return suggestions.map(suggestion => ({
+    const existingDishNames = new Set(
+      eventDishes.map((d) => d.name.toLowerCase())
+    );
+
+    return suggestions.map((suggestion) => ({
       name: suggestion,
       added: existingDishNames.has(suggestion.toLowerCase()),
     }));
@@ -1117,7 +1143,7 @@ export function EventDetailsClient({
   const templateName = useMemo(() => {
     const templateId = (event as { templateId?: string | null }).templateId;
     if (!templateId) return null;
-    const template = EVENT_TEMPLATES.find(t => t.id === templateId);
+    const template = EVENT_TEMPLATES.find((t) => t.id === templateId);
     return template?.name ?? null;
   }, [(event as { templateId?: string | null }).templateId]);
 
@@ -1125,7 +1151,7 @@ export function EventDetailsClient({
   const templateStaffing = useMemo(() => {
     const templateId = (event as { templateId?: string | null }).templateId;
     if (!templateId) return null;
-    const template = EVENT_TEMPLATES.find(t => t.id === templateId);
+    const template = EVENT_TEMPLATES.find((t) => t.id === templateId);
     return template?.defaultStaffing ?? null;
   }, [(event as { templateId?: string | null }).templateId]);
 
@@ -1133,17 +1159,14 @@ export function EventDetailsClient({
   const currentStaffCount = staffCount;
 
   // Handler for adding a suggested dish
-  const handleAddSuggestedDish = useCallback(
-    async (suggestionName: string) => {
-      // For now, just open the add dish dialog with a pre-filled name
-      // The user will need to select a recipe to create the dish
-      setShowAddDishDialog(true);
-      // Note: We could pre-fill the dish name in the dialog, but that would require
-      // additional state management. For now, the suggestion serves as a reference.
-      toast.info(`Select or create a dish for: ${suggestionName}`);
-    },
-    []
-  );
+  const handleAddSuggestedDish = useCallback(async (suggestionName: string) => {
+    // For now, just open the add dish dialog with a pre-filled name
+    // The user will need to select a recipe to create the dish
+    setShowAddDishDialog(true);
+    // Note: We could pre-fill the dish name in the dialog, but that would require
+    // additional state management. For now, the suggestion serves as a reference.
+    toast.info(`Select or create a dish for: ${suggestionName}`);
+  }, []);
 
   // Handlers
   const openRecipeDrawer = (
@@ -1221,7 +1244,8 @@ export function EventDetailsClient({
           customInstructions
         );
       } catch (error) {
-        const message = error instanceof Error ? error.message : "Failed to generate tasks";
+        const message =
+          error instanceof Error ? error.message : "Failed to generate tasks";
         toast.error(message);
         throw error; // Re-throw so modal knows to handle it
       }
@@ -1247,15 +1271,18 @@ export function EventDetailsClient({
       const result = await generateEventPrepList({
         eventId: event.id,
       });
-      
+
       if (result.success) {
-        toast.success(`Prep list generated with ${result.prepList?.totalIngredients ?? 0} ingredients`);
+        toast.success(
+          `Prep list generated with ${result.prepList?.totalIngredients ?? 0} ingredients`
+        );
         router.refresh();
       } else {
         toast.error(result.error || "Failed to generate prep list");
       }
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Failed to generate prep list";
+      const message =
+        error instanceof Error ? error.message : "Failed to generate prep list";
       toast.error(message);
     } finally {
       setIsGeneratingPrepList(false);
@@ -1434,6 +1461,19 @@ export function EventDetailsClient({
               sortBy={sortBy}
             />
           }
+          followups={
+            <div className="p-4">
+              <p className="text-muted-foreground mb-4">
+                Manage automated follow-up tasks for this event.
+              </p>
+              <a
+                className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                href={`/events/${event.id}/follow-ups`}
+              >
+                Open Follow-Ups Dashboard
+              </a>
+            </div>
+          }
           guests={
             <GuestManagementSection
               eventId={event.id}
@@ -1447,75 +1487,63 @@ export function EventDetailsClient({
               aggregatedIngredients={aggregatedIngredients}
               availableDishes={availableDishes}
               dishRows={dishRows}
+              eventId={event.id}
               inventoryByIngredient={inventoryByIngredient}
+              isCreatingDish={isCreatingDish}
               isLoadingDishes={isLoadingDishes}
               menuDishRows={menuDishRows}
               onAddDish={handleAddDish}
+              onAddSuggestedDish={handleAddSuggestedDish}
+              onCreateDishInline={handleCreateDishInline}
               onOpenRecipeDrawer={openRecipeDrawer}
               onOpenVariantDialog={openVariantDialog}
               onRemoveDish={handleRemoveDish}
               onSelectedCourseChange={setSelectedCourse}
               onSelectedDishIdChange={setSelectedDishIdForAdd}
               onShowAddDialogChange={setShowAddDishDialog}
+              recipes={recipes}
               selectedCourse={selectedCourse}
               selectedDishIdForAdd={selectedDishIdForAdd}
               showAddDishDialog={showAddDishDialog}
-              recipes={recipes}
-              onCreateDishInline={handleCreateDishInline}
-              isCreatingDish={isCreatingDish}
-              templateSuggestions={templateSuggestions}
               templateName={templateName}
-              eventId={event.id}
-              onAddSuggestedDish={handleAddSuggestedDish}
+              templateSuggestions={templateSuggestions}
             />
           }
           operations={
             <OperationsSection
+              currentStaffCount={currentStaffCount}
               eventId={event.id}
+              isGeneratingPrepList={isGeneratingPrepList}
+              onGeneratePrepList={handleGeneratePrepList}
               onOpenGenerateModal={() => setShowBreakdownModal(true)}
+              prepLists={prepLists}
               prepTasks={sortedPrepTasks}
               taskSummary={taskSummary}
-              onGeneratePrepList={handleGeneratePrepList}
-              isGeneratingPrepList={isGeneratingPrepList}
               templateName={templateName}
               templateStaffing={templateStaffing}
-              currentStaffCount={currentStaffCount}
-              prepLists={prepLists}
             />
-          }
-          followups={
-            <div className="p-4">
-              <p className="text-muted-foreground mb-4">
-                Manage automated follow-up tasks for this event.
-              </p>
-              <a
-                href={`/events/${event.id}/follow-ups`}
-                className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-              >
-                Open Follow-Ups Dashboard
-              </a>
-            </div>
           }
           overview={
             <div className="space-y-6">
               <EventSetupChecklist
-                eventId={event.id}
-                hasClient={!!event.clientId}
-                hasVenue={!!event.venueName}
-                hasMenu={eventDishes.length > 0}
-                hasStaff={staffCount > 0}
-                hasPrepList={sortedPrepTasks.length > 0}
-                hasContract={hasContract}
-                hasBudget={!!budget && (budget.total_budget_amount ?? 0) > 0}
                 eventDate={event.eventDate}
+                eventId={event.id}
                 eventStatus={event.status ?? undefined}
+                hasBudget={!!budget && (budget.total_budget_amount ?? 0) > 0}
+                hasClient={!!event.clientId}
+                hasContract={hasContract}
+                hasMenu={eventDishes.length > 0}
+                hasPrepList={sortedPrepTasks.length > 0}
+                hasStaff={staffCount > 0}
+                hasVenue={!!event.venueName}
+                onEditEvent={() => setShowEditEvent(true)}
               />
               <EventTimeline
                 currentStage={determineEventStage({
                   createdAt: event.createdAt ?? undefined,
                   clientId: event.clientId ?? undefined,
                   venueName: event.venueName ?? undefined,
-                  eventDishes: eventDishes,
+                  eventDishes,
                   prepTasks: sortedPrepTasks,
                   status: event.status ?? undefined,
                   eventDate: event.eventDate,
@@ -1567,7 +1595,7 @@ export function EventDetailsClient({
       />
 
       <GenerateTaskBreakdownModal
-        eventDate={new Date(event.eventDate).toISOString()}
+        eventDate={parseISODateToLocal(event.eventDate).toISOString()}
         eventId={event.id}
         eventTitle={event.title}
         guestCount={event.guestCount ?? 0}

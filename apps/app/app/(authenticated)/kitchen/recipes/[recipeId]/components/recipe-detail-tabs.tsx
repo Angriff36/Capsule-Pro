@@ -34,20 +34,19 @@ import {
 } from "@repo/design-system/components/ui/tabs";
 import { captureException } from "@sentry/nextjs";
 import {
+  AlertTriangle,
+  Apple,
+  CheckCircle2,
   ChefHat,
+  ChevronDown,
   Clock,
   DollarSign,
   History as HistoryIcon,
-  Users,
-  Thermometer,
-  Wrench,
   Lightbulb,
-  AlertTriangle,
-  ChevronDown,
-  CheckCircle2,
-  Apple,
+  Thermometer,
+  Users,
+  Wrench,
 } from "lucide-react";
-import { NutritionFactsPanel } from "@/components/nutrition-facts-panel";
 import { useRouter } from "next/navigation";
 import { useEffect, useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -63,6 +62,7 @@ import {
   type IngredientCostBreakdown,
   type RecipeCostBreakdown,
 } from "@/app/lib/use-recipe-costing";
+import { NutritionFactsPanel } from "@/components/nutrition-facts-panel";
 
 interface RecipeDetailRow {
   id: string;
@@ -292,13 +292,7 @@ const isCriticalControlPoint = (
 };
 
 /** Enhanced step card component with timer, temperature, equipment, and tips */
-function StepCard({
-  step,
-  index,
-}: {
-  step: RecipeStepDisplay;
-  index: number;
-}) {
+function StepCard({ step, index }: { step: RecipeStepDisplay; index: number }) {
   const [tipsOpen, setTipsOpen] = useState(false);
   const [tempVerified, setTempVerified] = useState(false);
   const hasDuration = step.duration_minutes && step.duration_minutes > 0;
@@ -358,7 +352,10 @@ function StepCard({
                   variant={isCCP ? "outline" : "secondary"}
                 >
                   <Thermometer className="h-3 w-3" />
-                  {formatTemperature(step.temperature_value, step.temperature_unit)}
+                  {formatTemperature(
+                    step.temperature_value,
+                    step.temperature_unit
+                  )}
                 </Badge>
               )}
             </div>
@@ -423,7 +420,10 @@ function StepCard({
                 </button>
                 <span className="text-sm text-amber-700 dark:text-amber-400">
                   Temperature verified:{" "}
-                  {formatTemperature(step.temperature_value, step.temperature_unit)}
+                  {formatTemperature(
+                    step.temperature_value,
+                    step.temperature_unit
+                  )}
                 </span>
               </div>
             )}
@@ -1221,7 +1221,9 @@ export function RecipeDetailTabs({
     fetchCostData();
   }, [recipeVersionId]);
 
-  const hasCostData = Boolean(costData && (costData.ingredients?.length ?? 0) > 0);
+  const hasCostData = Boolean(
+    costData && (costData.ingredients?.length ?? 0) > 0
+  );
 
   return (
     <Tabs className="w-full" defaultValue="overview">
@@ -1274,19 +1276,25 @@ export function RecipeDetailTabs({
             <CardContent>
               <div className="grid grid-cols-3 gap-4">
                 <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide">Prep</div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wide">
+                    Prep
+                  </div>
                   <div className="text-lg font-semibold text-foreground">
                     {formatMinutes(recipe.prep_time_minutes)}
                   </div>
                 </div>
                 <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide">Cook</div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wide">
+                    Cook
+                  </div>
                   <div className="text-lg font-semibold text-foreground">
                     {formatMinutes(recipe.cook_time_minutes)}
                   </div>
                 </div>
                 <div>
-                  <div className="text-xs text-muted-foreground uppercase tracking-wide">Rest</div>
+                  <div className="text-xs text-muted-foreground uppercase tracking-wide">
+                    Rest
+                  </div>
                   <div className="text-lg font-semibold text-foreground">
                     {formatMinutes(recipe.rest_time_minutes)}
                   </div>
@@ -1305,14 +1313,18 @@ export function RecipeDetailTabs({
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-[var(--brand-leafy-green)]">
-                {recipe.yield_quantity ?? "-"} <span className="text-base font-normal text-muted-foreground">{recipe.yield_unit ?? ""}</span>
+                {recipe.yield_quantity ?? "-"}{" "}
+                <span className="text-base font-normal text-muted-foreground">
+                  {recipe.yield_unit ?? ""}
+                </span>
               </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Tags Card */}
-        {(recipe?.tags?.filter((t) => t.toLowerCase() !== "imported")?.length ?? 0) > 0 && (
+        {(recipe?.tags?.filter((t) => t.toLowerCase() !== "imported")?.length ??
+          0) > 0 && (
           <Card className="border-l-4 border-l-[var(--brand-spiced-orange)]">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
@@ -1322,14 +1334,16 @@ export function RecipeDetailTabs({
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
-                {(recipe.tags ?? []).filter((t) => t.toLowerCase() !== "imported").map((tag) => (
-                  <Badge
-                    className="bg-[var(--brand-avocado-mash)]/20 text-[var(--brand-leafy-green)] border-0"
-                    key={tag}
-                  >
-                    {tag}
-                  </Badge>
-                ))}
+                {(recipe.tags ?? [])
+                  .filter((t) => t.toLowerCase() !== "imported")
+                  .map((tag) => (
+                    <Badge
+                      className="bg-[var(--brand-avocado-mash)]/20 text-[var(--brand-leafy-green)] border-0"
+                      key={tag}
+                    >
+                      {tag}
+                    </Badge>
+                  ))}
               </div>
             </CardContent>
           </Card>
@@ -1339,10 +1353,14 @@ export function RecipeDetailTabs({
         {recipe.notes && (
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Notes</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">
+                Notes
+              </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground whitespace-pre-wrap">{recipe.notes}</p>
+              <p className="text-muted-foreground whitespace-pre-wrap">
+                {recipe.notes}
+              </p>
             </CardContent>
           </Card>
         )}
@@ -1396,16 +1414,21 @@ export function RecipeDetailTabs({
                 )}
                 {/* CCP count */}
                 {steps?.some((s) =>
-                  isCriticalControlPoint(s.temperature_value, s.temperature_unit)
+                  isCriticalControlPoint(
+                    s.temperature_value,
+                    s.temperature_unit
+                  )
                 ) && (
                   <Badge className="gap-1 bg-amber-500" variant="default">
                     <AlertTriangle className="h-3 w-3" />
-                    {steps?.filter((s) =>
-                      isCriticalControlPoint(
-                        s.temperature_value,
-                        s.temperature_unit
-                      )
-                    ).length}{" "}
+                    {
+                      steps?.filter((s) =>
+                        isCriticalControlPoint(
+                          s.temperature_value,
+                          s.temperature_unit
+                        )
+                      ).length
+                    }{" "}
                     CCP
                   </Badge>
                 )}
@@ -1457,7 +1480,8 @@ export function RecipeDetailTabs({
               />
             </div>
             <p className="mt-4 text-sm text-muted-foreground">
-              Nutrition data will be calculated automatically from ingredient nutritional information when available.
+              Nutrition data will be calculated automatically from ingredient
+              nutritional information when available.
             </p>
           </CardContent>
         </Card>

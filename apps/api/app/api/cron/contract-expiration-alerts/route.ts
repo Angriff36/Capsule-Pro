@@ -16,6 +16,7 @@ import {
   buildContractTemplateData,
   triggerEmailWorkflows,
 } from "@repo/notifications";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 
 // Force dynamic rendering — reads Authorization headers and queries DB at runtime
@@ -217,6 +218,13 @@ export async function POST(request: NextRequest) {
           `Failed to process contract alerts for tenant ${tenantId}:`,
           error
         );
+        captureException(error, {
+          tags: {
+            route: "cron/contract-expiration-alerts",
+            errorType: "per_tenant",
+          },
+          extra: { tenantId },
+        });
       }
     }
 
@@ -228,6 +236,9 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unknown error";
     console.error("Failed to process contract expiration alerts:", error);
+    captureException(error, {
+      tags: { route: "cron/contract-expiration-alerts", errorType: "outer" },
+    });
     return NextResponse.json(
       {
         success: false,

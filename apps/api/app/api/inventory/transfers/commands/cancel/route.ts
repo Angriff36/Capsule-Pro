@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@repo/auth/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
+import { type NextRequest, NextResponse } from "next/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,7 +31,10 @@ export async function POST(request: NextRequest) {
     });
 
     if (!transfer) {
-      return NextResponse.json({ error: "Transfer not found" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Transfer not found" },
+        { status: 404 }
+      );
     }
 
     if (!["pending", "approved"].includes(transfer.status)) {
@@ -52,6 +56,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, transfer: updatedTransfer });
   } catch (error) {
+    captureException(error);
     console.error("Error cancelling inventory transfer:", error);
     return NextResponse.json(
       { error: "Failed to cancel inventory transfer" },

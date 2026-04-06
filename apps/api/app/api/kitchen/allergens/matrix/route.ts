@@ -18,11 +18,40 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
  * The Big 9 allergens mapped to common allergen terms
  */
 const ALLERGEN_MAPPINGS: Record<string, string[]> = {
-  milk: ["milk", "dairy", "lactose", "casein", "whey", "butter", "cream", "cheese", "yogurt"],
+  milk: [
+    "milk",
+    "dairy",
+    "lactose",
+    "casein",
+    "whey",
+    "butter",
+    "cream",
+    "cheese",
+    "yogurt",
+  ],
   eggs: ["eggs", "egg", "albumin", "mayonnaise"],
   fish: ["fish", "salmon", "tuna", "cod", "anchovy", "sardine"],
-  shellfish: ["shellfish", "crustacean", "shrimp", "crab", "lobster", "clam", "mussel", "oyster", "scallop"],
-  tree_nuts: ["tree nuts", "almond", "cashew", "walnut", "pecan", "pistachio", "hazelnut", "macadamia"],
+  shellfish: [
+    "shellfish",
+    "crustacean",
+    "shrimp",
+    "crab",
+    "lobster",
+    "clam",
+    "mussel",
+    "oyster",
+    "scallop",
+  ],
+  tree_nuts: [
+    "tree nuts",
+    "almond",
+    "cashew",
+    "walnut",
+    "pecan",
+    "pistachio",
+    "hazelnut",
+    "macadamia",
+  ],
   peanuts: ["peanuts", "peanut"],
   wheat: ["wheat", "gluten", "flour", "bread", "pasta", "semolina", "spelt"],
   soybeans: ["soy", "soybeans", "tofu", "edamame", "tempeh"],
@@ -76,11 +105,15 @@ function checkAllergenCategory(
 /**
  * Build allergen matrix for dishes by querying ingredient allergens via $queryRaw
  */
-async function buildDishMatrix(tenantId: string, dishIds?: string[]): Promise<AllergenMatrixItem[]> {
+async function buildDishMatrix(
+  tenantId: string,
+  dishIds?: string[]
+): Promise<AllergenMatrixItem[]> {
   // Query dishes with their recipe ingredients and allergens using $queryRaw
-  const dishFilter = dishIds && dishIds.length > 0
-    ? `AND d.id IN (${dishIds.map((id) => `'${id}'`).join(", ")})`
-    : "";
+  const dishFilter =
+    dishIds && dishIds.length > 0
+      ? `AND d.id IN (${dishIds.map((id) => `'${id}'`).join(", ")})`
+      : "";
 
   const query = `
     SELECT
@@ -103,26 +136,31 @@ async function buildDishMatrix(tenantId: string, dishIds?: string[]): Promise<Al
     ORDER BY d.name
   `;
 
-  const results = await database.$queryRawUnsafe<{
-    id: string;
-    name: string;
-    category: string | null;
-    dietary_tags: string[];
-    dish_allergens: string[];
-    recipe_id: string | null;
-    ingredient_id: string | null;
-    ingredient_name: string | null;
-    ingredient_allergens: string[];
-  }[]>(query, tenantId);
+  const results = await database.$queryRawUnsafe<
+    {
+      id: string;
+      name: string;
+      category: string | null;
+      dietary_tags: string[];
+      dish_allergens: string[];
+      recipe_id: string | null;
+      ingredient_id: string | null;
+      ingredient_name: string | null;
+      ingredient_allergens: string[];
+    }[]
+  >(query, tenantId);
 
   // Group by dish
-  const dishMap = new Map<string, {
-    name: string;
-    category: string | null;
-    dietaryTags: string[];
-    dishAllergens: string[];
-    ingredients: Map<string, { name: string; allergens: string[] }>;
-  }>();
+  const dishMap = new Map<
+    string,
+    {
+      name: string;
+      category: string | null;
+      dietaryTags: string[];
+      dishAllergens: string[];
+      ingredients: Map<string, { name: string; allergens: string[] }>;
+    }
+  >();
 
   for (const row of results) {
     if (!dishMap.has(row.id)) {
@@ -224,11 +262,15 @@ async function buildDishMatrix(tenantId: string, dishIds?: string[]): Promise<Al
 /**
  * Build allergen matrix for recipes by querying ingredient allergens via $queryRaw
  */
-async function buildRecipeMatrix(tenantId: string, recipeIds?: string[]): Promise<AllergenMatrixItem[]> {
+async function buildRecipeMatrix(
+  tenantId: string,
+  recipeIds?: string[]
+): Promise<AllergenMatrixItem[]> {
   // Query recipes with their ingredients and allergens using $queryRaw
-  const recipeFilter = recipeIds && recipeIds.length > 0
-    ? `AND r.id IN (${recipeIds.map((id) => `'${id}'`).join(", ")})`
-    : "";
+  const recipeFilter =
+    recipeIds && recipeIds.length > 0
+      ? `AND r.id IN (${recipeIds.map((id) => `'${id}'`).join(", ")})`
+      : "";
 
   const query = `
     SELECT
@@ -248,23 +290,28 @@ async function buildRecipeMatrix(tenantId: string, recipeIds?: string[]): Promis
     ORDER BY r.name
   `;
 
-  const results = await database.$queryRawUnsafe<{
-    id: string;
-    name: string;
-    category: string | null;
-    tags: string[];
-    ingredient_id: string | null;
-    ingredient_name: string | null;
-    ingredient_allergens: string[];
-  }[]>(query, tenantId);
+  const results = await database.$queryRawUnsafe<
+    {
+      id: string;
+      name: string;
+      category: string | null;
+      tags: string[];
+      ingredient_id: string | null;
+      ingredient_name: string | null;
+      ingredient_allergens: string[];
+    }[]
+  >(query, tenantId);
 
   // Group by recipe
-  const recipeMap = new Map<string, {
-    name: string;
-    category: string | null;
-    tags: string[];
-    ingredients: Map<string, { name: string; allergens: string[] }>;
-  }>();
+  const recipeMap = new Map<
+    string,
+    {
+      name: string;
+      category: string | null;
+      tags: string[];
+      ingredients: Map<string, { name: string; allergens: string[] }>;
+    }
+  >();
 
   for (const row of results) {
     if (!recipeMap.has(row.id)) {
@@ -371,9 +418,10 @@ export async function GET(request: NextRequest) {
     const itemIds = ids ? ids.split(",").filter(Boolean) : undefined;
 
     // Build matrix based on type
-    const items = type === "recipe"
-      ? await buildRecipeMatrix(tenantId, itemIds)
-      : await buildDishMatrix(tenantId, itemIds);
+    const items =
+      type === "recipe"
+        ? await buildRecipeMatrix(tenantId, itemIds)
+        : await buildDishMatrix(tenantId, itemIds);
 
     return NextResponse.json({
       items,

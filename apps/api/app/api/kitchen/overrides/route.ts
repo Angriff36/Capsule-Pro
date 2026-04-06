@@ -1,7 +1,7 @@
 import type { OverrideRequest } from "@angriff36/manifest/ir";
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { logger } from "@sentry/nextjs";
+import { captureException, logger } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -183,6 +183,7 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ overrides });
   } catch (error) {
+    captureException(error);
     // If the table doesn't exist yet, return empty array
     logger.warn("Override audit table not available", { error: String(error) });
     return NextResponse.json({ overrides: [] });

@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@repo/design-system/components/ui/button";
-import { Calendar, MapPin, Wrench, Package } from "lucide-react";
+import { Calendar, MapPin, Package, Wrench } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 

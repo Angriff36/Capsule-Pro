@@ -8,14 +8,19 @@ import { database, type Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
 import {
-  calculateInvoiceTotals,
-  generateInvoiceNumber,
-  type InvoiceListResponse,
-  type InvoiceResponse,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+calculateInvoiceTotals, generateInvoiceNumber, type;
+InvoiceListResponse, type;
+InvoiceResponse,
   parseInvoiceFilters,
   parsePaginationParams,
   validateCreateInvoiceRequest,
-} from "./validation";
+} from "./validation"
 
 /**
  * GET /api/accounting/invoices
@@ -151,6 +156,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
+    captureException(error);
     console.error("Error listing invoices:", error);
     return NextResponse.json(
       { error: "Failed to list invoices" },
@@ -298,6 +304,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
+    captureException(error);
     console.error("Error creating invoice:", error);
     return NextResponse.json(
       { error: "Failed to create invoice" },

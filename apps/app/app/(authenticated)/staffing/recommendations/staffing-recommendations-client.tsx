@@ -212,9 +212,7 @@ export function StaffingRecommendationsClient() {
           <Card>
             <CardHeader>
               <CardTitle>Role Breakdown</CardTitle>
-              <CardDescription>
-                Recommended staffing by role
-              </CardDescription>
+              <CardDescription>Recommended staffing by role</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -241,7 +239,12 @@ export function StaffingRecommendationsClient() {
                       <div>${role.hourlyRate}/hr</div>
                       <div>{role.hoursNeeded}h each</div>
                       <div className="font-medium text-foreground">
-                        ${(role.count * role.hourlyRate * role.hoursNeeded).toLocaleString()}
+                        $
+                        {(
+                          role.count *
+                          role.hourlyRate *
+                          role.hoursNeeded
+                        ).toLocaleString()}
                       </div>
                     </div>
                   </div>

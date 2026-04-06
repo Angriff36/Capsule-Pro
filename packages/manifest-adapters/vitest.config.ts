@@ -1,10 +1,10 @@
-import { defineConfig } from "vitest/config";
 import { resolve } from "node:path";
+import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   resolve: {
     alias: {
-      "@repo/manifest-adapters": resolve(__dirname, "src/index.ts"),
+      "@repo/manifest-adapters": resolve(import.meta.dirname, "src/index.ts"),
     },
   },
   test: {

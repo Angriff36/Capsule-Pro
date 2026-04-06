@@ -9,6 +9,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -119,6 +120,7 @@ export async function POST(
       message: "Document uploaded successfully",
     });
   } catch (error) {
+    captureException(error);
     console.error("Error uploading document:", error);
     return NextResponse.json(
       { error: "Failed to upload document" },

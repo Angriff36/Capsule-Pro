@@ -46,7 +46,7 @@ import {
   TrashIcon,
   UtensilsIcon,
 } from "lucide-react";
-import { useState, useMemo } from "react";
+import { useState } from "react";
 import {
   getBudgetStatusLabel,
   getVarianceColor,
@@ -224,7 +224,12 @@ interface MenuDishesSectionProps {
   onOpenVariantDialog: (linkId: string, name: string) => void;
   // Inline dish creation
   recipes?: RecipeForDishCreation[];
-  onCreateDishInline?: (name: string, recipeId: string, category?: string, course?: string) => Promise<void>;
+  onCreateDishInline?: (
+    name: string,
+    recipeId: string,
+    category?: string,
+    course?: string
+  ) => Promise<void>;
   isCreatingDish?: boolean;
   // Template suggestions - pre-computed with added status
   templateSuggestions?: Array<{ name: string; added: boolean }>;
@@ -276,13 +281,15 @@ export function MenuDishesSection({
       setNewDishRecipeId("");
       setNewDishCategory("");
       setNewDishCourse("");
-      setActiveTab(availableDishes.length === 0 && recipes.length > 0 ? "create" : "select");
+      setActiveTab(
+        availableDishes.length === 0 && recipes.length > 0 ? "create" : "select"
+      );
     }
     onShowAddDialogChange(open);
   };
 
   const handleCreateDish = async () => {
-    if (!onCreateDishInline || !newDishName.trim() || !newDishRecipeId) return;
+    if (!(onCreateDishInline && newDishName.trim() && newDishRecipeId)) return;
     await onCreateDishInline(
       newDishName.trim(),
       newDishRecipeId,
@@ -319,7 +326,11 @@ export function MenuDishesSection({
         </DialogHeader>
 
         {hasInlineCreation && (
-          <Tabs className="w-full" onValueChange={(v) => setActiveTab(v as "select" | "create")} value={activeTab}>
+          <Tabs
+            className="w-full"
+            onValueChange={(v) => setActiveTab(v as "select" | "create")}
+            value={activeTab}
+          >
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="select">Select Existing</TabsTrigger>
               <TabsTrigger value="create">Create New</TabsTrigger>
@@ -327,7 +338,10 @@ export function MenuDishesSection({
 
             <TabsContent className="space-y-4 py-4" value="select">
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="add-dish-select">
+                <label
+                  className="text-sm font-medium"
+                  htmlFor="add-dish-select"
+                >
                   Dish
                 </label>
                 <Select
@@ -374,7 +388,10 @@ export function MenuDishesSection({
                 </Select>
               </div>
               <DialogFooter>
-                <Button onClick={() => handleDialogClose(false)} variant="outline">
+                <Button
+                  onClick={() => handleDialogClose(false)}
+                  variant="outline"
+                >
                   Cancel
                 </Button>
                 <Button disabled={!selectedDishId} onClick={onAddDish}>
@@ -396,7 +413,10 @@ export function MenuDishesSection({
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="new-dish-recipe">
+                <label
+                  className="text-sm font-medium"
+                  htmlFor="new-dish-recipe"
+                >
                   Recipe <span className="text-destructive">*</span>
                 </label>
                 <Select
@@ -418,7 +438,10 @@ export function MenuDishesSection({
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-medium" htmlFor="new-dish-category">
+                  <label
+                    className="text-sm font-medium"
+                    htmlFor="new-dish-category"
+                  >
                     Category
                   </label>
                   <Input
@@ -429,7 +452,10 @@ export function MenuDishesSection({
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-medium" htmlFor="new-dish-course">
+                  <label
+                    className="text-sm font-medium"
+                    htmlFor="new-dish-course"
+                  >
                     Course
                   </label>
                   <Select
@@ -450,10 +476,16 @@ export function MenuDishesSection({
                 </div>
               </div>
               <DialogFooter>
-                <Button onClick={() => handleDialogClose(false)} variant="outline">
+                <Button
+                  onClick={() => handleDialogClose(false)}
+                  variant="outline"
+                >
                   Cancel
                 </Button>
-                <Button disabled={!canCreate || isCreatingDish} onClick={handleCreateDish}>
+                <Button
+                  disabled={!canCreate || isCreatingDish}
+                  onClick={handleCreateDish}
+                >
                   {isCreatingDish ? "Creating..." : "Create & Add"}
                 </Button>
               </DialogFooter>
@@ -465,7 +497,10 @@ export function MenuDishesSection({
           <>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="add-dish-select">
+                <label
+                  className="text-sm font-medium"
+                  htmlFor="add-dish-select"
+                >
                   Dish
                 </label>
                 <Select
@@ -478,7 +513,8 @@ export function MenuDishesSection({
                   <SelectContent>
                     {availableDishes.length === 0 ? (
                       <div className="p-2 text-sm text-muted-foreground">
-                        No dishes available. Create dishes in Kitchen Recipes first.
+                        No dishes available. Create dishes in Kitchen Recipes
+                        first.
                       </div>
                     ) : (
                       availableDishes.map((d) => (
@@ -492,14 +528,20 @@ export function MenuDishesSection({
                 </Select>
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="add-course-select">
+                <label
+                  className="text-sm font-medium"
+                  htmlFor="add-course-select"
+                >
                   Course (optional)
                 </label>
                 <Select
                   onValueChange={onSelectedCourseChange}
                   value={selectedCourse}
                 >
-                  <SelectTrigger aria-label="Select course" id="add-course-select">
+                  <SelectTrigger
+                    aria-label="Select course"
+                    id="add-course-select"
+                  >
                     <SelectValue placeholder="Select course" />
                   </SelectTrigger>
                   <SelectContent>
@@ -554,7 +596,7 @@ export function MenuDishesSection({
           <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
         </div>
       )}
-      
+
       {/* Template Suggestions Section */}
       {!isLoading && templateSuggestions.length > 0 && (
         <div className="mb-4 rounded-lg border border-primary/30 bg-primary/5 p-4">
@@ -565,17 +607,18 @@ export function MenuDishesSection({
             </span>
           </div>
           <p className="mb-3 text-muted-foreground text-xs">
-            Quick-add suggestions based on the event template. Click to create and add to menu.
+            Quick-add suggestions based on the event template. Click to create
+            and add to menu.
           </p>
           <div className="flex flex-wrap gap-2">
             {templateSuggestions.map((suggestion, index) => (
               <Button
-                key={index}
-                size="sm"
-                variant={suggestion.added ? "secondary" : "outline"}
                 className={suggestion.added ? "opacity-50" : ""}
                 disabled={suggestion.added || !onAddSuggestedDish}
+                key={index}
                 onClick={() => onAddSuggestedDish?.(suggestion.name)}
+                size="sm"
+                variant={suggestion.added ? "secondary" : "outline"}
               >
                 {suggestion.added ? (
                   <>
@@ -593,7 +636,7 @@ export function MenuDishesSection({
           </div>
         </div>
       )}
-      
+
       {!isLoading && eventDishes.length > 0 && (
         <div className="grid gap-3">
           {eventDishes.map((dish) => (
@@ -978,8 +1021,8 @@ export function SourceDocumentsSection({
   );
 }
 
+import { ArrowUpRightIcon, ListChecksIcon } from "lucide-react";
 import Link from "next/link";
-import { ListChecksIcon, ArrowUpRightIcon } from "lucide-react";
 
 export interface PrepListSummary {
   id: string;
@@ -992,12 +1035,18 @@ export interface PrepListSummary {
   finalizedAt: Date | null;
 }
 
-function getPrepListStatusVariant(status: string): "default" | "secondary" | "outline" | "destructive" {
+function getPrepListStatusVariant(
+  status: string
+): "default" | "secondary" | "outline" | "destructive" {
   switch (status) {
-    case "finalized": return "default";
-    case "completed": return "secondary";
-    case "cancelled": return "destructive";
-    default: return "outline"; // draft
+    case "finalized":
+      return "default";
+    case "completed":
+      return "secondary";
+    case "cancelled":
+      return "destructive";
+    default:
+      return "outline"; // draft
   }
 }
 
@@ -1016,7 +1065,8 @@ export function PrepListsSection({ prepLists }: PrepListsSectionProps) {
           Prep Lists
         </CardTitle>
         <p className="text-foreground/75 text-xs">
-          {prepLists.length} prep list{prepLists.length !== 1 ? "s" : ""} linked to this event
+          {prepLists.length} prep list{prepLists.length !== 1 ? "s" : ""} linked
+          to this event
         </p>
       </CardHeader>
       <CardContent className="pt-0">
@@ -1024,20 +1074,26 @@ export function PrepListsSection({ prepLists }: PrepListsSectionProps) {
           {prepLists.map((list) => (
             <Link
               className="flex flex-wrap items-center justify-between gap-3 rounded-lg border px-3 py-2.5 transition-colors hover:bg-muted/50"
-              href={`/kitchen/prep-lists`}
+              href={"/kitchen/prep-lists"}
               key={list.id}
             >
               <div className="flex flex-col">
                 <span className="font-medium text-sm">{list.name}</span>
                 <span className="text-foreground/70 text-xs">
-                  {list.totalItems} item{list.totalItems !== 1 ? "s" : ""} · {list.batchMultiplier}x batch
+                  {list.totalItems} item{list.totalItems !== 1 ? "s" : ""} ·{" "}
+                  {list.batchMultiplier}x batch
                 </span>
               </div>
               <div className="flex items-center gap-2">
                 {!list.isActive && (
-                  <span className="rounded bg-muted px-2 py-1 text-xs">Inactive</span>
+                  <span className="rounded bg-muted px-2 py-1 text-xs">
+                    Inactive
+                  </span>
                 )}
-                <Badge className="text-xs" variant={getPrepListStatusVariant(list.status)}>
+                <Badge
+                  className="text-xs"
+                  variant={getPrepListStatusVariant(list.status)}
+                >
                   {list.status}
                 </Badge>
                 <ArrowUpRightIcon className="size-3 text-muted-foreground" />

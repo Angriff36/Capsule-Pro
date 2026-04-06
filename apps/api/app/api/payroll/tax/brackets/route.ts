@@ -1,12 +1,21 @@
 import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
-  calculateTaxes,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+calculateTaxes,
   getFicaRates,
   getSupportedJurisdictions,
-} from "@repo/payroll-engine";
-import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+} from "@repo/payroll-engine"
+
+import {
+  manifestErrorResponse,
+  manifestSuccessResponse,
+} from "@/lib/manifest-response";
 
 /**
  * GET /api/payroll/tax/brackets
@@ -15,7 +24,7 @@ import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-r
 export async function GET() {
   try {
     const { orgId, userId } = await auth();
-    if (!userId || !orgId) {
+    if (!(userId && orgId)) {
       return manifestErrorResponse("Unauthorized", 401);
     }
 
@@ -25,30 +34,30 @@ export async function GET() {
     // Federal brackets for 2026 (tax engine has 2024, return updated values)
     const federalBrackets = {
       single: [
-        { min: 0, max: 11600, rate: 0.1 },
-        { min: 11600, max: 47150, rate: 0.12 },
-        { min: 47150, max: 100525, rate: 0.22 },
-        { min: 100525, max: 191950, rate: 0.24 },
-        { min: 191950, max: 243725, rate: 0.32 },
-        { min: 243725, max: 609350, rate: 0.35 },
-        { min: 609350, max: null, rate: 0.37 },
+        { min: 0, max: 11_600, rate: 0.1 },
+        { min: 11_600, max: 47_150, rate: 0.12 },
+        { min: 47_150, max: 100_525, rate: 0.22 },
+        { min: 100_525, max: 191_950, rate: 0.24 },
+        { min: 191_950, max: 243_725, rate: 0.32 },
+        { min: 243_725, max: 609_350, rate: 0.35 },
+        { min: 609_350, max: null, rate: 0.37 },
       ],
       married: [
-        { min: 0, max: 23200, rate: 0.1 },
-        { min: 23200, max: 94300, rate: 0.12 },
-        { min: 94300, max: 201050, rate: 0.22 },
-        { min: 201050, max: 383900, rate: 0.24 },
-        { min: 383900, max: 487450, rate: 0.32 },
-        { min: 487450, max: 731200, rate: 0.35 },
-        { min: 731200, max: null, rate: 0.37 },
+        { min: 0, max: 23_200, rate: 0.1 },
+        { min: 23_200, max: 94_300, rate: 0.12 },
+        { min: 94_300, max: 201_050, rate: 0.22 },
+        { min: 201_050, max: 383_900, rate: 0.24 },
+        { min: 383_900, max: 487_450, rate: 0.32 },
+        { min: 487_450, max: 731_200, rate: 0.35 },
+        { min: 731_200, max: null, rate: 0.37 },
       ],
     };
 
     // Standard deductions
     const standardDeductions = {
-      single: 14600,
-      married: 29200,
-      headOfHousehold: 21900,
+      single: 14_600,
+      married: 29_200,
+      headOfHousehold: 21_900,
     };
 
     return manifestSuccessResponse({
@@ -59,6 +68,7 @@ export async function GET() {
       supportedJurisdictions,
     });
   } catch (error) {
+    captureException(error);
     console.error("Error fetching tax brackets:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
@@ -71,7 +81,7 @@ export async function GET() {
 export async function PUT(request: NextRequest) {
   try {
     const { orgId, userId } = await auth();
-    if (!userId || !orgId) {
+    if (!(userId && orgId)) {
       return manifestErrorResponse("Unauthorized", 401);
     }
 
@@ -124,6 +134,7 @@ export async function PUT(request: NextRequest) {
           : 0,
     });
   } catch (error) {
+    captureException(error);
     console.error("Error calculating tax preview:", error);
     return manifestErrorResponse("Internal server error", 500);
   }

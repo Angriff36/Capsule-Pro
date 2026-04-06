@@ -9,7 +9,6 @@
 
 "use client";
 
-import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -31,7 +30,6 @@ import { TooltipProvider } from "@repo/design-system/components/ui/tooltip";
 import * as Sentry from "@sentry/nextjs";
 import {
   AlertCircle,
-  Check,
   CheckCircle2,
   Download,
   Filter,
@@ -373,10 +371,7 @@ export function AllergenMatrix({
                       key={allergen.key}
                     >
                       {compact ? (
-                        <span
-                          className="text-xs"
-                          title={allergen.label}
-                        >
+                        <span className="text-xs" title={allergen.label}>
                           {allergen.shortLabel}
                         </span>
                       ) : (
@@ -401,10 +396,7 @@ export function AllergenMatrix({
                       </TableCell>
                     )}
                     {BIG_9_ALLERGENS.map((allergen) => (
-                      <TableCell
-                        className="text-center"
-                        key={allergen.key}
-                      >
+                      <TableCell className="text-center" key={allergen.key}>
                         <AllergenCell
                           compact={compact}
                           contains={recipe.allergens[allergen.key]}

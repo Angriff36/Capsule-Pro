@@ -5,9 +5,16 @@ import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
-  manifestErrorResponse,
+import
+{
+  captureException;
+}
+from;
+("@sentry/nextjs");
+manifestErrorResponse,
   manifestSuccessResponse,
-} from "@/lib/manifest-response";
+} from "@/lib/manifest-response"
+
 import { database } from "@/lib/database";
 
 // GET /api/knowledge-base/entries/[slug] - Get entry by slug
@@ -42,6 +49,7 @@ export async function GET(
 
     return manifestSuccessResponse({ entry });
   } catch (error) {
+    captureException(error);
     console.error("Error fetching knowledge base entry:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
