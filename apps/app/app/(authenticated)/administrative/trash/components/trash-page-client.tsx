@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -165,7 +166,7 @@ export function TrashPageClient({
     params.append("limit", "50");
 
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         `/api/administrative/trash/list?${params.toString()}`
       );
 
@@ -250,7 +251,7 @@ export function TrashPageClient({
     setRestoreResult(null);
 
     try {
-      const response = await fetch("/api/administrative/trash/restore", {
+      const response = await apiFetch("/api/administrative/trash/restore", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -298,7 +299,7 @@ export function TrashPageClient({
     setShowDependencyDialog(true);
 
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         `/api/administrative/trash/analyze?entityId=${item.id}&entityType=${item.entity}`
       );
 
@@ -326,7 +327,7 @@ export function TrashPageClient({
     }
 
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         `/api/administrative/trash/restore?entityId=${item.id}&entityType=${item.entity}`,
         { method: "DELETE" }
       );

@@ -1,6 +1,7 @@
 import "server-only";
 
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import {
   type ManifestPlanRecordPayload,
   planRecordPayloadSchema,
@@ -66,9 +67,23 @@ export async function getPendingManifestPlan(
 
   const payloadResult = planRecordPayloadSchema.safeParse(event.payload);
   if (!payloadResult.success) {
+    const validationError = new Error(
+      `[manifest-plans] Invalid stored plan payload for planId=${planId}`
+    );
+    captureException(validationError, {
+      tags: { source: "manifest-plans", type: "validation" },
+      extra: {
+        planId,
+        issues: payloadResult.error.issues,
+      },
+    });
     console.error("[manifest-plans] Invalid stored plan payload", {
       planId,
       issues: payloadResult.error.issues,
+    });
+    captureException(payloadResult.error, {
+      tags: { route: "manifest-plans", errorType: "zod_validation" },
+      extra: { planId, boardId },
     });
     return null;
   }

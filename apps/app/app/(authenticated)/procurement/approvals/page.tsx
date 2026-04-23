@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -258,7 +259,7 @@ export default function ApprovalsPage() {
   const loadOrders = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/procurement/approvals/list");
+      const res = await apiFetch("/api/procurement/approvals/list");
       const data = await res.json();
       if (data.success) setOrders(data.data.orders || []);
     } catch (error) {
@@ -274,7 +275,7 @@ export default function ApprovalsPage() {
   ) => {
     setActioning(orderId);
     try {
-      const res = await fetch("/api/procurement/approvals/action", {
+      const res = await apiFetch("/api/procurement/approvals/action", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ orderId, action }),

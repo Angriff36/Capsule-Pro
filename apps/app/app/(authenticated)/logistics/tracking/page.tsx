@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -12,6 +13,7 @@ import {
 import { Separator } from "@repo/design-system/components/ui/separator";
 import {
   CheckCircle2,
+  Loader2,
   MapPin,
   Navigation,
   Package,
@@ -43,6 +45,9 @@ interface ActiveDelivery {
   position: DeliveryPosition;
   timeline: TimelineEvent[];
   items: number;
+  carrier: string | null;
+  trackingNumber: string | null;
+  shippingMethod: string | null;
 }
 
 interface TimelineEvent {
@@ -52,213 +57,14 @@ interface TimelineEvent {
   completed: boolean;
 }
 
-// Mock data for active deliveries
-const MOCK_DELIVERIES: ActiveDelivery[] = [
-  {
-    id: "del-1",
-    shipmentNumber: "SHP-2026-0042",
-    driverName: "Marcus Johnson",
-    driverPhone: "(555) 234-5678",
-    vehicle: "Van #3 - Ford Transit",
-    status: "in_transit",
-    origin: "Main Warehouse",
-    destination: "Grand Ballroom - Downtown",
-    estimatedArrival: "2026-03-27T09:30:00",
-    position: {
-      lat: 34.052,
-      lng: -118.243,
-      heading: 45,
-      speed: 28,
-      updatedAt: new Date().toISOString(),
-    },
-    timeline: [
-      {
-        status: "dispatched",
-        timestamp: "2026-03-27T07:00:00",
-        description: "Dispatched from warehouse",
-        completed: true,
-      },
-      {
-        status: "picked_up",
-        timestamp: "2026-03-27T07:15:00",
-        description: "All items loaded",
-        completed: true,
-      },
-      {
-        status: "in_transit",
-        timestamp: "2026-03-27T07:30:00",
-        description: "En route to destination",
-        completed: true,
-      },
-      {
-        status: "arriving",
-        timestamp: "",
-        description: "Approaching destination",
-        completed: false,
-      },
-      {
-        status: "delivered",
-        timestamp: "",
-        description: "Delivered and confirmed",
-        completed: false,
-      },
-    ],
-    items: 12,
-  },
-  {
-    id: "del-2",
-    shipmentNumber: "SHP-2026-0043",
-    driverName: "Sarah Chen",
-    driverPhone: "(555) 345-6789",
-    vehicle: "Van #1 - Mercedes Sprinter",
-    status: "dispatched",
-    origin: "Main Warehouse",
-    destination: "Beachfront Venue - Santa Monica",
-    estimatedArrival: "2026-03-27T10:15:00",
-    position: {
-      lat: 34.019,
-      lng: -118.491,
-      heading: 0,
-      speed: 0,
-      updatedAt: new Date().toISOString(),
-    },
-    timeline: [
-      {
-        status: "dispatched",
-        timestamp: "2026-03-27T07:45:00",
-        description: "Dispatched from warehouse",
-        completed: true,
-      },
-      {
-        status: "picked_up",
-        timestamp: "",
-        description: "All items loaded",
-        completed: false,
-      },
-      {
-        status: "in_transit",
-        timestamp: "",
-        description: "En route to destination",
-        completed: false,
-      },
-      {
-        status: "arriving",
-        timestamp: "",
-        description: "Approaching destination",
-        completed: false,
-      },
-      {
-        status: "delivered",
-        timestamp: "",
-        description: "Delivered and confirmed",
-        completed: false,
-      },
-    ],
-    items: 8,
-  },
-  {
-    id: "del-3",
-    shipmentNumber: "SHP-2026-0041",
-    driverName: "David Kim",
-    driverPhone: "(555) 456-7890",
-    vehicle: "Van #5 - RAM ProMaster",
-    status: "arriving",
-    origin: "Main Warehouse",
-    destination: "Rooftop Gardens - Hollywood",
-    estimatedArrival: "2026-03-27T08:10:00",
-    position: {
-      lat: 34.098,
-      lng: -118.326,
-      heading: 180,
-      speed: 12,
-      updatedAt: new Date().toISOString(),
-    },
-    timeline: [
-      {
-        status: "dispatched",
-        timestamp: "2026-03-27T06:30:00",
-        description: "Dispatched from warehouse",
-        completed: true,
-      },
-      {
-        status: "picked_up",
-        timestamp: "2026-03-27T06:45:00",
-        description: "All items loaded",
-        completed: true,
-      },
-      {
-        status: "in_transit",
-        timestamp: "2026-03-27T07:00:00",
-        description: "En route to destination",
-        completed: true,
-      },
-      {
-        status: "arriving",
-        timestamp: "2026-03-27T08:00:00",
-        description: "Approaching destination",
-        completed: true,
-      },
-      {
-        status: "delivered",
-        timestamp: "",
-        description: "Delivered and confirmed",
-        completed: false,
-      },
-    ],
-    items: 24,
-  },
-  {
-    id: "del-4",
-    shipmentNumber: "SHP-2026-0040",
-    driverName: "Maria Garcia",
-    driverPhone: "(555) 567-8901",
-    vehicle: "Van #2 - Ford Transit",
-    status: "delivered",
-    origin: "Main Warehouse",
-    destination: "Country Club - Pasadena",
-    estimatedArrival: "2026-03-27T07:30:00",
-    position: {
-      lat: 34.147,
-      lng: -118.145,
-      heading: 0,
-      speed: 0,
-      updatedAt: new Date().toISOString(),
-    },
-    timeline: [
-      {
-        status: "dispatched",
-        timestamp: "2026-03-27T05:30:00",
-        description: "Dispatched from warehouse",
-        completed: true,
-      },
-      {
-        status: "picked_up",
-        timestamp: "2026-03-27T05:45:00",
-        description: "All items loaded",
-        completed: true,
-      },
-      {
-        status: "in_transit",
-        timestamp: "2026-03-27T06:00:00",
-        description: "En route to destination",
-        completed: true,
-      },
-      {
-        status: "arriving",
-        timestamp: "2026-03-27T07:10:00",
-        description: "Approaching destination",
-        completed: true,
-      },
-      {
-        status: "delivered",
-        timestamp: "2026-03-27T07:25:00",
-        description: "Delivered and confirmed",
-        completed: true,
-      },
-    ],
-    items: 16,
-  },
-];
+interface TrackingResponse {
+  deliveries: ActiveDelivery[];
+  stats: {
+    active: number;
+    dispatched: number;
+    delivered: number;
+  };
+}
 
 const STATUS_CONFIG: Record<
   string,
@@ -279,7 +85,7 @@ const STATUS_CONFIG: Record<
     icon: Truck,
   },
   arriving: {
-    label: "Arriving",
+    label: "Preparing",
     color: "bg-amber-100 text-amber-700",
     icon: Navigation,
   },
@@ -290,12 +96,28 @@ const STATUS_CONFIG: Record<
   },
 };
 
-// Simple SVG map visualization (no external dependencies)
+// Simple SVG map visualization
 function MiniMap({ deliveries }: { deliveries: ActiveDelivery[] }) {
   const activeDeliveries = deliveries.filter((d) => d.status !== "delivered");
 
-  // Map bounds (LA area approximate)
-  const bounds = { minLat: 33.9, maxLat: 34.3, minLng: -118.6, maxLng: -118.0 };
+  // Auto-compute bounds from delivery positions
+  if (deliveries.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full text-muted-foreground bg-muted/30 rounded-lg">
+        No deliveries to display
+      </div>
+    );
+  }
+
+  const lats = deliveries.map((d) => d.position.lat);
+  const lngs = deliveries.map((d) => d.position.lng);
+  const padFactor = 0.3;
+  const bounds = {
+    minLat: Math.min(...lats) - padFactor,
+    maxLat: Math.max(...lats) + padFactor,
+    minLng: Math.min(...lngs) - padFactor,
+    maxLng: Math.max(...lngs) + padFactor,
+  };
 
   const toX = (lng: number) =>
     ((lng - bounds.minLng) / (bounds.maxLng - bounds.minLng)) * 100;
@@ -304,7 +126,6 @@ function MiniMap({ deliveries }: { deliveries: ActiveDelivery[] }) {
 
   return (
     <div className="relative w-full h-full bg-gradient-to-br from-blue-50 to-blue-100 dark:from-slate-900 dark:to-slate-800 rounded-lg overflow-hidden">
-      {/* Grid lines */}
       <svg
         className="absolute inset-0 w-full h-full"
         preserveAspectRatio="none"
@@ -332,7 +153,6 @@ function MiniMap({ deliveries }: { deliveries: ActiveDelivery[] }) {
           />
         ))}
 
-        {/* Delivery markers */}
         {deliveries.map((delivery) => {
           const x = toX(delivery.position.lng);
           const y = toY(delivery.position.lat);
@@ -341,16 +161,6 @@ function MiniMap({ deliveries }: { deliveries: ActiveDelivery[] }) {
 
           return (
             <g key={delivery.id}>
-              {/* Destination marker (faded) */}
-              <circle
-                cx={`${x + 3}%`}
-                cy={`${y - 2}%`}
-                fill="currentColor"
-                fillOpacity="0.2"
-                r="4"
-              />
-
-              {/* Pulse effect for in-transit */}
               {isPulsing && (
                 <circle
                   cx={`${x}%`}
@@ -378,7 +188,6 @@ function MiniMap({ deliveries }: { deliveries: ActiveDelivery[] }) {
                 </circle>
               )}
 
-              {/* Vehicle dot */}
               <circle
                 cx={`${x}%`}
                 cy={`${y}%`}
@@ -388,7 +197,6 @@ function MiniMap({ deliveries }: { deliveries: ActiveDelivery[] }) {
                 strokeWidth="2"
               />
 
-              {/* Shipment number label */}
               <text
                 fill="currentColor"
                 fillOpacity="0.7"
@@ -404,7 +212,6 @@ function MiniMap({ deliveries }: { deliveries: ActiveDelivery[] }) {
         })}
       </svg>
 
-      {/* Legend */}
       <div className="absolute bottom-3 right-3 bg-white dark:bg-slate-800 rounded-md p-2 shadow-sm text-xs space-y-1">
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-blue-500" />
@@ -412,13 +219,14 @@ function MiniMap({ deliveries }: { deliveries: ActiveDelivery[] }) {
         </div>
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-green-500" />
-          <span>Delivered ({deliveries.length - activeDeliveries.length})</span>
+          <span>
+            Delivered ({deliveries.length - activeDeliveries.length})
+          </span>
         </div>
       </div>
 
-      {/* Scale bar */}
       <div className="absolute bottom-3 left-3 text-xs text-muted-foreground bg-white/80 dark:bg-slate-800/80 rounded px-2 py-1">
-        LA Metro Area
+        Delivery Area
       </div>
     </div>
   );
@@ -461,44 +269,45 @@ function DeliveryTimeline({ timeline }: { timeline: TimelineEvent[] }) {
 }
 
 export default function TrackingPage() {
-  const [deliveries, setDeliveries] =
-    useState<ActiveDelivery[]>(MOCK_DELIVERIES);
+  const [deliveries, setDeliveries] = useState<ActiveDelivery[]>([]);
+  const [stats, setStats] = useState({ active: 0, dispatched: 0, delivered: 0 });
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const selected = deliveries.find((d) => d.id === selectedId);
 
-  // Simulate position updates (in production, this would poll an API)
-  const refreshPositions = useCallback(() => {
-    setRefreshing(true);
-    setDeliveries((prev) =>
-      prev.map((d) => {
-        if (d.status === "in_transit") {
-          const jitter = (Math.random() - 0.5) * 0.005;
-          return {
-            ...d,
-            position: {
-              ...d.position,
-              lat: d.position.lat + jitter,
-              lng: d.position.lng + jitter,
-              speed: 20 + Math.random() * 15,
-              updatedAt: new Date().toISOString(),
-            },
-          };
-        }
-        return d;
-      })
-    );
-    setLastRefresh(new Date());
-    setTimeout(() => setRefreshing(false), 500);
+  const loadTrackingData = useCallback(async () => {
+    try {
+      const res = await apiFetch("/api/logistics/tracking");
+      const data: TrackingResponse = await res.json();
+      setDeliveries(data.deliveries || []);
+      setStats(data.stats || { active: 0, dispatched: 0, delivered: 0 });
+      setLastRefresh(new Date());
+    } catch (error) {
+      console.error("Failed to load tracking data:", error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
   }, []);
 
-  // Auto-refresh every 15 seconds
+  const refreshPositions = useCallback(() => {
+    setRefreshing(true);
+    loadTrackingData();
+  }, [loadTrackingData]);
+
+  // Initial load
   useEffect(() => {
-    const interval = setInterval(refreshPositions, 15_000);
+    loadTrackingData();
+  }, [loadTrackingData]);
+
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(loadTrackingData, 30_000);
     return () => clearInterval(interval);
-  }, [refreshPositions]);
+  }, [loadTrackingData]);
 
   const formatTime = (dateStr: string) =>
     new Date(dateStr).toLocaleTimeString([], {
@@ -506,13 +315,13 @@ export default function TrackingPage() {
       minute: "2-digit",
     });
 
-  const stats = {
-    active: deliveries.filter(
-      (d) => d.status === "in_transit" || d.status === "arriving"
-    ).length,
-    dispatched: deliveries.filter((d) => d.status === "dispatched").length,
-    delivered: deliveries.filter((d) => d.status === "delivered").length,
-  };
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-1 flex-col gap-6 p-4 pt-0">
@@ -523,7 +332,9 @@ export default function TrackingPage() {
             Delivery Tracking
           </h1>
           <p className="text-muted-foreground">
-            Real-time GPS tracking for active deliveries.
+            Real-time tracking for active deliveries.
+            {deliveries.length === 0 &&
+              " No active shipments found — create shipments and assign them to routes to see tracking data here."}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -582,140 +393,234 @@ export default function TrackingPage() {
         </Card>
       </div>
 
-      {/* Map + List Layout */}
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
-        {/* Map */}
-        <Card className="overflow-hidden">
-          <CardContent className="p-0">
-            <div className="h-[500px]">
-              <MiniMap deliveries={deliveries} />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Delivery List */}
-        <Card className="overflow-auto max-h-[500px]">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base">Active Deliveries</CardTitle>
-            <CardDescription>Click a delivery for details</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {deliveries.map((delivery) => {
-              const config = STATUS_CONFIG[delivery.status];
-              const Icon = config.icon;
-              const isSelected = selectedId === delivery.id;
-
-              return (
-                <button
-                  className={`w-full text-left rounded-lg border p-3 transition-colors ${
-                    isSelected
-                      ? "border-blue-300 bg-blue-50 dark:bg-blue-950/30"
-                      : "hover:bg-accent"
-                  }`}
-                  key={delivery.id}
-                  onClick={() => setSelectedId(isSelected ? null : delivery.id)}
-                >
-                  <div className="flex items-center gap-2 mb-1">
-                    <Icon
-                      className={`h-4 w-4 ${delivery.status === "in_transit" ? "text-blue-500" : delivery.status === "delivered" ? "text-green-500" : "text-gray-500"}`}
-                    />
-                    <span className="font-mono text-xs">
-                      {delivery.shipmentNumber}
-                    </span>
-                    <Badge className={config.color}>{config.label}</Badge>
-                  </div>
-                  <p className="text-sm font-medium">{delivery.destination}</p>
-                  <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
-                    <span>{delivery.driverName}</span>
-                    <span>·</span>
-                    <span>{delivery.items} items</span>
-                    <span>·</span>
-                    <span>ETA {formatTime(delivery.estimatedArrival)}</span>
-                  </div>
-                </button>
-              );
-            })}
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Selected Delivery Detail */}
-      {selected && (
+      {deliveries.length === 0 ? (
         <Card>
-          <CardContent className="pt-6">
-            <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_280px]">
-              {/* Timeline */}
-              <div>
-                <h3 className="font-semibold mb-4">Delivery Timeline</h3>
-                <DeliveryTimeline timeline={selected.timeline} />
-              </div>
-
-              {/* Driver & Vehicle Info */}
-              <div className="space-y-4">
-                <div>
-                  <h3 className="font-semibold mb-3">Driver Info</h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2">
-                      <Truck className="h-4 w-4 text-muted-foreground" />
-                      <span>{selected.driverName}</span>
-                    </div>
-                    {selected.driverPhone && (
-                      <div className="flex items-center gap-2">
-                        <Phone className="h-4 w-4 text-muted-foreground" />
-                        <span>{selected.driverPhone}</span>
-                      </div>
-                    )}
-                    <div className="flex items-center gap-2">
-                      <Navigation className="h-4 w-4 text-muted-foreground" />
-                      <span>{selected.vehicle}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div>
-                  <h3 className="font-semibold mb-3">Route</h3>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-gray-400" />
-                      <span className="text-muted-foreground">
-                        {selected.origin}
-                      </span>
-                    </div>
-                    <div className="ml-2 border-l-2 border-dashed h-4" />
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-red-500" />
-                      <span className="font-medium">
-                        {selected.destination}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                <Separator />
-
-                <div>
-                  <h3 className="font-semibold mb-3">Live Data</h3>
-                  <div className="space-y-1 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Speed</span>
-                      <span>{selected.position.speed.toFixed(0)} mph</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Heading</span>
-                      <span>{selected.position.heading}°</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Last update</span>
-                      <span>{formatTime(selected.position.updatedAt)}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+          <CardContent className="py-16 text-center">
+            <Truck className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
+            <h3 className="font-semibold text-lg mb-1">No deliveries to track</h3>
+            <p className="text-muted-foreground text-sm max-w-md mx-auto">
+              Create shipments and assign them to delivery routes to see real-time
+              tracking here. Go to Shipments to create a new shipment, then use
+              Dispatch to assign drivers and vehicles.
+            </p>
           </CardContent>
         </Card>
+      ) : (
+        <>
+          {/* Map + List Layout */}
+          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_380px]">
+            {/* Map */}
+            <Card className="overflow-hidden">
+              <CardContent className="p-0">
+                <div className="h-[500px]">
+                  <MiniMap deliveries={deliveries} />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Delivery List */}
+            <Card className="overflow-auto max-h-[500px]">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-base">
+                  Active Deliveries
+                </CardTitle>
+                <CardDescription>Click a delivery for details</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                {deliveries.map((delivery) => {
+                  const config =
+                    STATUS_CONFIG[delivery.status] || STATUS_CONFIG.dispatched;
+                  const Icon = config.icon;
+                  const isSelected = selectedId === delivery.id;
+
+                  return (
+                    <button
+                      className={`w-full text-left rounded-lg border p-3 transition-colors ${
+                        isSelected
+                          ? "border-blue-300 bg-blue-50 dark:bg-blue-950/30"
+                          : "hover:bg-accent"
+                      }`}
+                      key={delivery.id}
+                      onClick={() =>
+                        setSelectedId(isSelected ? null : delivery.id)
+                      }
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <Icon
+                          className={`h-4 w-4 ${delivery.status === "in_transit" ? "text-blue-500" : delivery.status === "delivered" ? "text-green-500" : "text-gray-500"}`}
+                        />
+                        <span className="font-mono text-xs">
+                          {delivery.shipmentNumber}
+                        </span>
+                        <Badge className={config.color}>
+                          {config.label}
+                        </Badge>
+                      </div>
+                      <p className="text-sm font-medium">
+                        {delivery.destination}
+                      </p>
+                      <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                        <span>{delivery.driverName}</span>
+                        <span>·</span>
+                        <span>{delivery.items} items</span>
+                        {delivery.estimatedArrival && (
+                          <>
+                            <span>·</span>
+                            <span>
+                              ETA{" "}
+                              {formatTime(delivery.estimatedArrival)}
+                            </span>
+                          </>
+                        )}
+                      </div>
+                      {(delivery.carrier || delivery.trackingNumber) && (
+                        <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                          {delivery.carrier && <span>{delivery.carrier}</span>}
+                          {delivery.trackingNumber && (
+                            <>
+                              <span>·</span>
+                              <span className="font-mono">
+                                {delivery.trackingNumber}
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Selected Delivery Detail */}
+          {selected && (
+            <Card>
+              <CardContent className="pt-6">
+                <div className="grid gap-6 md:grid-cols-[minmax(0,1fr)_280px]">
+                  {/* Timeline */}
+                  <div>
+                    <h3 className="font-semibold mb-4">Delivery Timeline</h3>
+                    <DeliveryTimeline timeline={selected.timeline} />
+                  </div>
+
+                  {/* Driver & Vehicle Info */}
+                  <div className="space-y-4">
+                    <div>
+                      <h3 className="font-semibold mb-3">Driver Info</h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2">
+                          <Truck className="h-4 w-4 text-muted-foreground" />
+                          <span>{selected.driverName}</span>
+                        </div>
+                        {selected.driverPhone && (
+                          <div className="flex items-center gap-2">
+                            <Phone className="h-4 w-4 text-muted-foreground" />
+                            <span>{selected.driverPhone}</span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-2">
+                          <Navigation className="h-4 w-4 text-muted-foreground" />
+                          <span>{selected.vehicle}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    <div>
+                      <h3 className="font-semibold mb-3">Route</h3>
+                      <div className="space-y-2 text-sm">
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-gray-400" />
+                          <span className="text-muted-foreground">
+                            {selected.origin}
+                          </span>
+                        </div>
+                        <div className="ml-2 border-l-2 border-dashed h-4" />
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-red-500" />
+                          <span className="font-medium">
+                            {selected.destination}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    <div>
+                      <h3 className="font-semibold mb-3">Live Data</h3>
+                      <div className="space-y-1 text-sm">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Speed</span>
+                          <span>
+                            {selected.position.speed.toFixed(0)} mph
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Heading</span>
+                          <span>{selected.position.heading}°</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">
+                            Last update
+                          </span>
+                          <span>
+                            {formatTime(selected.position.updatedAt)}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {(selected.carrier ||
+                      selected.trackingNumber ||
+                      selected.shippingMethod) && (
+                      <>
+                        <Separator />
+                        <div>
+                          <h3 className="font-semibold mb-3">
+                            Shipping Details
+                          </h3>
+                          <div className="space-y-1 text-sm">
+                            {selected.carrier && (
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">
+                                  Carrier
+                                </span>
+                                <span>{selected.carrier}</span>
+                              </div>
+                            )}
+                            {selected.trackingNumber && (
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">
+                                  Tracking #
+                                </span>
+                                <span className="font-mono">
+                                  {selected.trackingNumber}
+                                </span>
+                              </div>
+                            )}
+                            {selected.shippingMethod && (
+                              <div className="flex justify-between">
+                                <span className="text-muted-foreground">
+                                  Method
+                                </span>
+                                <span className="capitalize">
+                                  {selected.shippingMethod.replace("_", " ")}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </>
       )}
     </div>
   );

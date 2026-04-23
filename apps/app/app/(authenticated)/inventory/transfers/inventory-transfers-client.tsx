@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -97,7 +98,7 @@ export function InventoryTransfersClient() {
       if (statusFilter !== "all") {
         params.append("status", statusFilter);
       }
-      const response = await fetch(`/api/inventory/transfers/list?${params}`);
+      const response = await apiFetch(`/api/inventory/transfers/list?${params}`);
       const data = await response.json();
       setTransfers(data.transfers || []);
     } catch (error) {
@@ -109,7 +110,7 @@ export function InventoryTransfersClient() {
 
   const handleCreateTransfer = async () => {
     try {
-      const response = await fetch("/api/inventory/transfers/commands/create", {
+      const response = await apiFetch("/api/inventory/transfers/commands/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -137,7 +138,7 @@ export function InventoryTransfersClient() {
 
   const handleAction = async (action: string, transferId: string) => {
     try {
-      const response = await fetch(
+      const response = await apiFetch(
         `/api/inventory/transfers/commands/${action}`,
         {
           method: "POST",

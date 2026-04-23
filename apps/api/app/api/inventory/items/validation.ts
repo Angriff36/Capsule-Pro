@@ -7,9 +7,10 @@ import type {
   CreateInventoryItemRequest,
   FSAStatus,
   ItemCategory,
+  UnitOfMeasure,
   UpdateInventoryItemRequest,
 } from "./types";
-import { FSA_STATUSES, ITEM_CATEGORIES } from "./types";
+import { FSA_STATUSES, ITEM_CATEGORIES, UNITS_OF_MEASURE } from "./types";
 
 /**
  * Validate FSA status
@@ -63,6 +64,24 @@ export function validateNonNegativeNumber(
 }
 
 /**
+ * Validate unit of measure against known units
+ */
+export function validateUnitOfMeasure(
+  value: unknown
+): asserts value is UnitOfMeasure {
+  if (!value) {
+    return; // Optional — defaults to "each"
+  }
+
+  const unit = value as string;
+  if (!UNITS_OF_MEASURE.includes(unit as UnitOfMeasure)) {
+    throw new InvariantError(
+      `Invalid unit of measure: ${unit}. Must be one of: ${UNITS_OF_MEASURE.join(", ")}`
+    );
+  }
+}
+
+/**
  * Validate create inventory item request
  */
 export function validateCreateInventoryItemRequest(
@@ -92,6 +111,12 @@ export function validateCreateInventoryItemRequest(
   validateNonNegativeNumber(body.unit_cost, "unit_cost");
   validateNonNegativeNumber(body.quantity_on_hand, "quantity_on_hand");
   validateNonNegativeNumber(body.reorder_level, "reorder_level");
+  validateNonNegativeNumber(body.par_level, "par_level");
+
+  // Validate unit of measure
+  if (body.unit_of_measure) {
+    validateUnitOfMeasure(body.unit_of_measure);
+  }
 
   // Validate FSA status
   if (body.fsa_status) {
@@ -142,6 +167,12 @@ export function validateUpdateInventoryItemRequest(
   validateNonNegativeNumber(body.unit_cost, "unit_cost");
   validateNonNegativeNumber(body.quantity_on_hand, "quantity_on_hand");
   validateNonNegativeNumber(body.reorder_level, "reorder_level");
+  validateNonNegativeNumber(body.par_level, "par_level");
+
+  // Validate unit of measure if provided
+  if (body.unit_of_measure) {
+    validateUnitOfMeasure(body.unit_of_measure);
+  }
 
   // Validate FSA status if provided
   if (body.fsa_status) {

@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -103,7 +104,7 @@ export default function BudgetPage() {
   const loadBudgets = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/procurement/budget/list?status=active");
+      const res = await apiFetch("/api/procurement/budget/list?status=active");
       const data = await res.json();
       if (data.success) setBudgets(data.data.budgets || []);
     } catch (error) {
@@ -116,7 +117,7 @@ export default function BudgetPage() {
   const handleRefresh = async () => {
     setRefreshing(true);
     try {
-      await fetch("/api/procurement/budget/commands/refresh", {
+      await apiFetch("/api/procurement/budget/commands/refresh", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
@@ -135,7 +136,7 @@ export default function BudgetPage() {
     if (!(form.name.trim() && form.budgetAmount)) return;
     setSaving(true);
     try {
-      const res = await fetch("/api/procurement/budget/commands/create", {
+      const res = await apiFetch("/api/procurement/budget/commands/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -178,7 +179,7 @@ export default function BudgetPage() {
     if (!confirm(`Delete budget "${budget.name}"? This cannot be undone.`))
       return;
     try {
-      const res = await fetch("/api/procurement/budget/commands/delete", {
+      const res = await apiFetch("/api/procurement/budget/commands/delete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ budgetId: budget.id }),
@@ -202,7 +203,7 @@ export default function BudgetPage() {
     setDetailLoading(true);
     setSelectedBudget(budgetId);
     try {
-      const res = await fetch(`/api/procurement/budget/${budgetId}`);
+      const res = await apiFetch(`/api/procurement/budget/${budgetId}`);
       const data = await res.json();
       if (data.success) {
         setDetailData({

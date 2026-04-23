@@ -14,19 +14,14 @@ import { database, type Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
 import {
-import
-{
-  captureException;
-}
-from;
-("@sentry/nextjs");
-generatePaymentNumber, type;
-PaymentListResponse, type;
-PaymentResponse,
+  captureException,
+  generatePaymentNumber,
+  type PaymentListResponse,
+  type PaymentResponse,
   parsePaginationParams,
   parsePaymentFilters,
   validateCreatePaymentRequest,
-} from "./validation"
+} from "./validation";
 
 /**
  * GET /api/accounting/payments

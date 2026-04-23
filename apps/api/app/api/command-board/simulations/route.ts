@@ -10,14 +10,9 @@ import { database } from "@repo/database";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { captureException } from "@sentry/nextjs";
 import type {
-import
-{
-  captureException;
-}
-from;
-("@sentry/nextjs");
-CreateSimulationRequest,
+  CreateSimulationRequest,
   SimulationListItem,
   SimulationStatus,
 } from "../types"

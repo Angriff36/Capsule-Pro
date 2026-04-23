@@ -703,74 +703,78 @@ export async function savePrepListToProductionBoard(
   const tenantId = await getTenantIdForOrg(orgId);
 
   try {
+    // Collect all tasks to insert, then batch them
+    const tasksToInsert: Array<{
+      name: string;
+      quantityTotal: number;
+      dueDate: string;
+      priority: number;
+      ingredientsJson: string;
+    }> = [];
+
     for (const station of prepList.stationLists) {
       if (station.ingredients.length === 0) {
         continue;
       }
 
       for (const task of station.tasks) {
-        const existingTask = await database.$queryRaw<Array<{ id: string }>>(
-          Prisma.sql`
-            SELECT id
-            FROM tenant_kitchen.prep_tasks
-            WHERE tenant_id = ${tenantId}
-              AND event_id = ${eventId}
-              AND name = ${task.name}
-              AND status = 'pending'
-              AND deleted_at IS NULL
-            LIMIT 1
-          `
-        );
-
-        if (existingTask.length > 0) {
-          continue;
-        }
-
-        const ingredientsJson = JSON.stringify(
-          station.ingredients.map((ing) => ({
-            name: ing.ingredientName,
-            quantity: ing.scaledQuantity,
-            unit: ing.scaledUnit,
-            notes: ing.preparationNotes,
-          }))
-        );
-
-        await database.$executeRaw`
-          INSERT INTO tenant_kitchen.prep_tasks (
-            tenant_id,
-            event_id,
-            task_type,
-            name,
-            quantity_total,
-            quantity_unit_id,
-            quantity_completed,
-            servings_total,
-            start_by_date,
-            due_by_date,
-            status,
-            priority,
-            notes,
-            created_at,
-            updated_at
-          ) VALUES (
-            ${tenantId},
-            ${eventId},
-            'prep',
-            ${task.name},
-            ${station.ingredients.reduce((sum, ing) => sum + ing.scaledQuantity, 0)},
-            1,
-            0,
-            ${prepList.guestCount},
-            ${new Date(task.dueDate).toISOString().split("T")[0]},
-            ${new Date(task.dueDate).toISOString().split("T")[0]},
-            'pending',
-            ${task.priority},
-            ${ingredientsJson},
-            ${new Date()},
-            ${new Date()}
-          )
-        `;
+        tasksToInsert.push({
+          name: task.name,
+          quantityTotal: station.ingredients.reduce(
+            (sum, ing) => sum + ing.scaledQuantity,
+            0
+          ),
+          dueDate: new Date(task.dueDate).toISOString().split("T")[0],
+          priority: task.priority,
+          ingredientsJson: JSON.stringify(
+            station.ingredients.map((ing) => ({
+              name: ing.ingredientName,
+              quantity: ing.scaledQuantity,
+              unit: ing.scaledUnit,
+              notes: ing.preparationNotes,
+            }))
+          ),
+        });
       }
+    }
+
+    if (tasksToInsert.length > 0) {
+      const now = new Date();
+      const names = tasksToInsert.map((t) => t.name);
+      const quantities = tasksToInsert.map((t) => t.quantityTotal);
+      const dueDates = tasksToInsert.map((t) => t.dueDate);
+      const priorities = tasksToInsert.map((t) => t.priority);
+      const notes = tasksToInsert.map((t) => t.ingredientsJson);
+
+      await database.$executeRaw`
+        INSERT INTO tenant_kitchen.prep_tasks (
+          tenant_id, event_id, task_type, name,
+          quantity_total, quantity_unit_id, quantity_completed,
+          servings_total, start_by_date, due_by_date,
+          status, priority, notes, created_at, updated_at
+        )
+        SELECT
+          ${tenantId}, ${eventId}, 'prep', t.name,
+          t.quantity_total, 1, 0,
+          ${prepList.guestCount}, t.due_date::date, t.due_date::date,
+          'pending', t.priority, t.notes,
+          ${now}, ${now}
+        FROM unnest(
+          ${names}::text[],
+          ${quantities}::double precision[],
+          ${dueDates}::text[],
+          ${priorities}::integer[],
+          ${notes}::text[]
+        ) AS t(name, quantity_total, due_date, priority, notes)
+        WHERE NOT EXISTS (
+          SELECT 1 FROM tenant_kitchen.prep_tasks pt
+          WHERE pt.tenant_id = ${tenantId}
+            AND pt.event_id = ${eventId}
+            AND pt.name = t.name
+            AND pt.status = 'pending'
+            AND pt.deleted_at IS NULL
+        )
+      `;
     }
 
     return { success: true };
@@ -826,55 +830,93 @@ export async function savePrepListToDatabase(
 
     const prepListId = result[0].id;
 
-    // Create all prep list items
+    // Batch insert all prep list items in a single query
+    const allItems: Array<{
+      stationId: string;
+      stationName: string;
+      ingredient: IngredientItem;
+      sortOrder: number;
+    }> = [];
     let sortOrder = 0;
     for (const station of prepList.stationLists) {
       for (const ingredient of station.ingredients) {
-        await database.$executeRaw`
-          INSERT INTO tenant_kitchen.prep_list_items (
-            tenant_id,
-            prep_list_id,
-            station_id,
-            station_name,
-            ingredient_id,
-            ingredient_name,
-            category,
-            base_quantity,
-            base_unit,
-            scaled_quantity,
-            scaled_unit,
-            is_optional,
-            preparation_notes,
-            allergens,
-            dietary_substitutions,
-            dish_id,
-            dish_name,
-            recipe_version_id,
-            sort_order
-          ) VALUES (
-            ${tenantId},
-            ${prepListId},
-            ${station.stationId},
-            ${station.stationName},
-            ${ingredient.ingredientId},
-            ${ingredient.ingredientName},
-            ${ingredient.category},
-            ${ingredient.baseQuantity},
-            ${ingredient.baseUnit},
-            ${ingredient.scaledQuantity},
-            ${ingredient.scaledUnit},
-            ${ingredient.isOptional},
-            ${ingredient.preparationNotes},
-            ${ingredient.allergens},
-            ${ingredient.dietarySubstitutions},
-            NULL,
-            NULL,
-            NULL,
-            ${sortOrder}
-          )
-        `;
+        allItems.push({
+          stationId: station.stationId,
+          stationName: station.stationName,
+          ingredient,
+          sortOrder,
+        });
         sortOrder++;
       }
+    }
+
+    if (allItems.length > 0) {
+      const tenantIds = allItems.map(() => tenantId);
+      const prepListIds = allItems.map(() => prepListId);
+      const stationIds = allItems.map((i) => i.stationId);
+      const stationNames = allItems.map((i) => i.stationName);
+      const ingredientIds = allItems.map((i) => i.ingredient.ingredientId);
+      const ingredientNames = allItems.map(
+        (i) => i.ingredient.ingredientName
+      );
+      const categories = allItems.map((i) => i.ingredient.category);
+      const baseQuantities = allItems.map((i) => i.ingredient.baseQuantity);
+      const baseUnits = allItems.map((i) => i.ingredient.baseUnit);
+      const scaledQuantities = allItems.map(
+        (i) => i.ingredient.scaledQuantity
+      );
+      const scaledUnits = allItems.map((i) => i.ingredient.scaledUnit);
+      const isOptionals = allItems.map((i) => i.ingredient.isOptional);
+      const prepNotes = allItems.map(
+        (i) => i.ingredient.preparationNotes
+      );
+      const allergenArrays = allItems.map((i) =>
+        i.ingredient.allergens ?? []
+      );
+      const dietarySubArrays = allItems.map((i) =>
+        i.ingredient.dietarySubstitutions ?? []
+      );
+      const sortOrders = allItems.map((i) => i.sortOrder);
+
+      await database.$executeRaw`
+        INSERT INTO tenant_kitchen.prep_list_items (
+          tenant_id, prep_list_id, station_id, station_name,
+          ingredient_id, ingredient_name, category,
+          base_quantity, base_unit, scaled_quantity, scaled_unit,
+          is_optional, preparation_notes, allergens, dietary_substitutions,
+          dish_id, dish_name, recipe_version_id, sort_order
+        )
+        SELECT
+          t.tenant_id, t.prep_list_id, t.station_id, t.station_name,
+          t.ingredient_id, t.ingredient_name, t.category,
+          t.base_quantity, t.base_unit, t.scaled_quantity, t.scaled_unit,
+          t.is_optional, t.preparation_notes, t.allergens, t.dietary_substitutions,
+          NULL, NULL, NULL, t.sort_order
+        FROM unnest(
+          ${tenantIds}::uuid[],
+          ${prepListIds}::uuid[],
+          ${stationIds}::text[],
+          ${stationNames}::text[],
+          ${ingredientIds}::uuid[],
+          ${ingredientNames}::text[],
+          ${categories}::text[],
+          ${baseQuantities}::double precision[],
+          ${baseUnits}::text[],
+          ${scaledQuantities}::double precision[],
+          ${scaledUnits}::text[],
+          ${isOptionals}::boolean[],
+          ${prepNotes}::text[],
+          ${allergenArrays}::text[][],
+          ${dietarySubArrays}::text[][],
+          ${sortOrders}::integer[]
+        ) AS t(
+          tenant_id, prep_list_id, station_id, station_name,
+          ingredient_id, ingredient_name, category,
+          base_quantity, base_unit, scaled_quantity, scaled_unit,
+          is_optional, preparation_notes, allergens, dietary_substitutions,
+          sort_order
+        )
+      `;
     }
 
     return { success: true, prepListId };

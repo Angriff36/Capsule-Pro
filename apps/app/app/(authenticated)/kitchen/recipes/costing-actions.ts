@@ -87,7 +87,22 @@ export async function getVendorRecipeCostSummary(): Promise<{
 
     const tenantId = await getTenantIdForOrg(orgId);
 
-    const recipes = await database.$queryRaw<VendorRecipeCostSummary[]>`
+    const rows = await database.$queryRaw<
+      {
+        recipe_id: string;
+        recipe_name: string;
+        recipe_version_id: string;
+        yield_quantity: number;
+        yield_unit: string | null;
+        total_cost: number;
+        cost_per_yield: number;
+        food_cost_percent: number | null;
+        menu_price: number | null;
+        margin: number | null;
+        ingredient_count: number;
+        last_calculated: Date | null;
+      }[]
+    >`
       WITH recipe_costs AS (
         SELECT
           r.id AS recipe_id,
@@ -132,8 +147,8 @@ export async function getVendorRecipeCostSummary(): Promise<{
         GROUP BY dr.id
       )
       SELECT
-        rc.recipe_id AS id,
-        rc.recipe_name AS name,
+        rc.recipe_id,
+        rc.recipe_name,
         rc.recipe_version_id,
         rc.yield_quantity,
         rc.yield_unit,
@@ -155,7 +170,22 @@ export async function getVendorRecipeCostSummary(): Promise<{
       ORDER BY rc.recipe_name ASC
     `;
 
-    return { success: true, data: recipes };
+    const data: VendorRecipeCostSummary[] = rows.map((row) => ({
+      recipeId: row.recipe_id,
+      recipeName: row.recipe_name,
+      recipeVersionId: row.recipe_version_id,
+      yieldQuantity: Number(row.yield_quantity),
+      yieldUnit: row.yield_unit,
+      totalCost: Number(row.total_cost),
+      costPerYield: Number(row.cost_per_yield),
+      foodCostPercent: row.food_cost_percent === null ? null : Number(row.food_cost_percent),
+      menuPrice: row.menu_price === null ? null : Number(row.menu_price),
+      margin: row.margin === null ? null : Number(row.margin),
+      ingredientCount: Number(row.ingredient_count),
+      lastCalculated: row.last_calculated,
+    }));
+
+    return { success: true, data };
   } catch (error) {
     console.error("[costing-actions] getVendorRecipeCostSummary error:", error);
     return {
@@ -228,7 +258,21 @@ export async function getVendorRecipeCostBreakdown(recipeId: string): Promise<{
     }
 
     // Get ingredient costs with vendor catalog pricing
-    const ingredients = await database.$queryRaw<IngredientCostDetail[]>`
+    const ingredients = await database.$queryRaw<
+      {
+        ingredient_id: string;
+        ingredient_name: string;
+        quantity: number;
+        unit: string | null;
+        waste_factor: number;
+        adjusted_quantity: number;
+        lowest_vendor_cost: number;
+        total_cost: number;
+        cost_percent_of_total: number;
+        vendor_item_count: number;
+        vendor_name: string | null;
+      }[]
+    >`
       WITH ingredient_costs AS (
         SELECT
           i.id AS ingredient_id,
@@ -275,8 +319,8 @@ export async function getVendorRecipeCostBreakdown(recipeId: string): Promise<{
         lowest_vendor_cost,
         (adjusted_quantity * lowest_vendor_cost) AS total_cost,
         CASE
-          WHEN (SELECT SUM(total_cost) FROM ingredient_costs) > 0
-          THEN ROUND(((adjusted_quantity * lowest_vendor_cost) / (SELECT SUM(total_cost) FROM ingredient_costs)) * 100, 2)
+          WHEN (SELECT SUM(adjusted_quantity * lowest_vendor_cost) FROM ingredient_costs) > 0
+          THEN ROUND(((adjusted_quantity * lowest_vendor_cost) / (SELECT SUM(adjusted_quantity * lowest_vendor_cost) FROM ingredient_costs)) * 100, 2)
           ELSE 0
         END AS cost_percent_of_total,
         (
@@ -285,7 +329,7 @@ export async function getVendorRecipeCostBreakdown(recipeId: string): Promise<{
           WHERE vc.tenant_id = ${tenantId}
             AND vc.deleted_at IS NULL
             AND vc.is_active = true
-            AND vc.item_name = ingredient_costs.ingredientName
+            AND vc.item_name = ingredient_costs.ingredient_name
         ) AS vendor_item_count,
         (
           SELECT s.name
@@ -296,8 +340,8 @@ export async function getVendorRecipeCostBreakdown(recipeId: string): Promise<{
           WHERE vc.tenant_id = ${tenantId}
             AND vc.deleted_at IS NULL
             AND vc.is_active = true
-            AND vc.item_name = ingredient_costs.ingredientName
-            AND vc.base_unit_cost = ingredient_costs.lowestVendorCost
+            AND vc.item_name = ingredient_costs.ingredient_name
+            AND vc.base_unit_cost = ingredient_costs.lowest_vendor_cost
           LIMIT 1
         ) AS vendor_name
       FROM ingredient_costs
@@ -305,7 +349,7 @@ export async function getVendorRecipeCostBreakdown(recipeId: string): Promise<{
 
     // Calculate totals
     const totalCost = ingredients.reduce(
-      (sum, ing) => sum + Number(ing.totalCost),
+      (sum, ing) => sum + Number(ing.total_cost),
       0
     );
     const costPerYield =
@@ -375,17 +419,17 @@ export async function getVendorRecipeCostBreakdown(recipeId: string): Promise<{
           foodCostPercent,
         },
         ingredients: ingredients.map((ing) => ({
-          ingredientId: ing.ingredientId,
-          ingredientName: ing.ingredientName,
+          ingredientId: ing.ingredient_id,
+          ingredientName: ing.ingredient_name,
           quantity: Number(ing.quantity),
-          unit: ing.unit,
-          wasteFactor: Number(ing.wasteFactor),
-          adjustedQuantity: Number(ing.adjustedQuantity),
-          lowestVendorCost: Number(ing.lowestVendorCost),
-          vendorName: ing.vendorName,
-          vendorItemCount: Number(ing.vendorItemCount),
-          totalCost: Number(ing.totalCost),
-          costPercentOfTotal: Number(ing.costPercentOfTotal),
+          unit: ing.unit ?? "",
+          wasteFactor: Number(ing.waste_factor),
+          adjustedQuantity: Number(ing.adjusted_quantity),
+          lowestVendorCost: Number(ing.lowest_vendor_cost),
+          vendorName: ing.vendor_name,
+          vendorItemCount: Number(ing.vendor_item_count),
+          totalCost: Number(ing.total_cost),
+          costPercentOfTotal: Number(ing.cost_percent_of_total),
         })),
         vendors: vendors.map((v) => ({
           name: v.name,

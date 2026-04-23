@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -62,8 +63,8 @@ export default function NewPOPage() {
     setLoading(true);
     try {
       const [vendorsRes, itemsRes] = await Promise.all([
-        fetch("/api/procurement/vendors/list"),
-        fetch("/api/inventory/items?limit=200"),
+        apiFetch("/api/procurement/vendors/list"),
+        apiFetch("/api/inventory/items?limit=200"),
       ]);
       const vendorsData = await vendorsRes.json();
       const itemsData = await itemsRes.json();
@@ -128,7 +129,7 @@ export default function NewPOPage() {
 
     setCreating(true);
     try {
-      const res = await fetch(
+      const res = await apiFetch(
         "/api/procurement/purchase-orders/commands/create",
         {
           method: "POST",

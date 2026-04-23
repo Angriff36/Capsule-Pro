@@ -32,7 +32,7 @@ interface TaskSection {
 }
 
 function isDoneStatus(status: string): boolean {
-  return status === "complete" || status === "completed" || status === "done";
+  return status === "done";
 }
 
 function isTaskAtRisk(task: Task): boolean {

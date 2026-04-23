@@ -6,19 +6,14 @@
 
 import { auth } from "@repo/auth/server";
 import { database, type Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import {
-import
-{
-  captureException;
-}
-from;
-("@sentry/nextjs");
-buildWebhookPayload,
+  buildWebhookPayload,
   determineNextStatus,
   sendWebhook,
   shouldAutoDisable,
   shouldTriggerWebhook,
-} from "@repo/notifications"
+} from "@repo/notifications";
 
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";

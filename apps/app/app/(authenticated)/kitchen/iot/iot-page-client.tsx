@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -107,7 +108,7 @@ export function IoTPageClient() {
 
   async function fetchProbes() {
     try {
-      const res = await fetch("/api/kitchen/iot/probes");
+      const res = await apiFetch("/api/kitchen/iot/probes");
       const data = await res.json();
       setProbes(data.probes || []);
     } catch (error) {
@@ -119,7 +120,7 @@ export function IoTPageClient() {
 
   async function fetchReadings(probeId: string) {
     try {
-      const res = await fetch(
+      const res = await apiFetch(
         `/api/kitchen/iot/readings?probeId=${probeId}&limit=50`
       );
       const data = await res.json();
@@ -131,7 +132,7 @@ export function IoTPageClient() {
 
   async function fetchAlerts() {
     try {
-      const res = await fetch("/api/kitchen/iot/alerts?status=active");
+      const res = await apiFetch("/api/kitchen/iot/alerts?status=active");
       const data = await res.json();
       setAlerts(data.alerts || []);
     } catch (error) {

@@ -155,6 +155,7 @@ entity Event {
     guard self.status != "cancelled" "Cannot update cancelled event"
     guard self.status != "archived" "Cannot update archived event"
     guard newGuestCount > 0 "Guest count must be positive"
+    guard newGuestCount <= 100000 "Guest count exceeds maximum (100,000)"
 
     constraint warnLargeGuestCountChange:warn newGuestCount > self.guestCount * 1.5 or newGuestCount < self.guestCount * 0.5 {
       messageTemplate: "Guest count changing significantly from {oldCount} to {newCount}"
@@ -175,6 +176,7 @@ entity Event {
     guard self.status != "cancelled" "Cannot update cancelled event"
     guard self.status != "archived" "Cannot update archived event"
     guard self.status != "completed" "Cannot update completed event"
+    guard newEventDate != null and newEventDate > 0 "Event date is required"
 
     mutate eventDate = newEventDate
     mutate updatedAt = now()

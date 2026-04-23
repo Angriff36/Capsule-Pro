@@ -3,16 +3,11 @@ import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type { ShiftRequirement } from "@/lib/staff/auto-assignment";
+import { captureException } from "@sentry/nextjs";
 import {
-import
-{
-  captureException;
-}
-from;
-("@sentry/nextjs");
-autoAssignShift,
+  autoAssignShift,
   getEligibleEmployeesForShift,
-} from "@/lib/staff/auto-assignment"
+} from "@/lib/staff/auto-assignment";
 
 /**
  * GET /api/staff/shifts/[shiftId]/assignment-suggestions

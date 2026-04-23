@@ -7,16 +7,11 @@
 
 import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
+import { captureException } from "@sentry/nextjs";
 import {
-import
-{
-  captureException;
-}
-from;
-("@sentry/nextjs");
-manifestErrorResponse,
+  manifestErrorResponse,
   manifestSuccessResponse,
-} from "@/lib/manifest-response"
+} from "@/lib/manifest-response";
 
 export async function GET(
   request: NextRequest,

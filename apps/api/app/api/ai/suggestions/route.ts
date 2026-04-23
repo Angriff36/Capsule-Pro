@@ -4,18 +4,13 @@ import { database } from "@repo/database";
 import { generateText } from "ai";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { captureException } from "@sentry/nextjs";
 import type {
-import
-{
-  captureException;
-}
-from;
-("@sentry/nextjs");
-SuggestedAction,
+  SuggestedAction,
   SuggestionCategory,
   SuggestionPriority,
   SuggestionType,
-} from "./types"
+} from "./types";
 
 // AI model configuration
 const AI_MODEL = "gpt-4o-mini";

@@ -125,6 +125,7 @@
     "dev": "turbo dev --parallel",
     "dev:app": "turbo run dev --filter=./apps/app",
     "dev:api": "turbo run dev --filter=./apps/api",
+    "dev:web": "turbo run dev --filter=./apps/api --filter=./apps/app --parallel --continue",
     "dev:apps": "turbo run dev --filter=./apps/api --filter=./apps/app --filter=./apps/mobile --parallel --continue",
     "dev:mobile": "scripts\\mobile-dev.cmd",
     "dev:mobile:stack": "scripts\\dev-mobile-stack.cmd",

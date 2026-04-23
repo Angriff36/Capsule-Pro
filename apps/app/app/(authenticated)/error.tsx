@@ -1,5 +1,6 @@
 "use client";
 
+import { captureException } from "@sentry/nextjs";
 import { useEffect } from "react";
 
 // Match actual connection/infrastructure errors — NOT application-level messages
@@ -18,9 +19,15 @@ export default function AuthenticatedError({
   const isDbError = DB_ERROR_PATTERN.test(message);
 
   useEffect(() => {
-    // Log so devs see it in server logs too
     console.error("[AuthenticatedError]", message);
-  }, [message]);
+    captureException(error, {
+      tags: {
+        route: "authenticated",
+        errorType: isDbError ? "database_connection" : "runtime",
+      },
+      extra: { digest: error.digest },
+    });
+  }, [error, message, isDbError]);
 
   return (
     <div className="flex min-h-[40vh] flex-col items-center justify-center gap-4 p-8">

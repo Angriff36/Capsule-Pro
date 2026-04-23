@@ -9,6 +9,7 @@
  * @canonical true
  */
 
+import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -164,7 +165,7 @@ export function ScoringRulesClient({
 
     setIsSubmitting(true);
     try {
-      const res = await fetch("/api/crm/scoring", {
+      const res = await apiFetch("/api/crm/scoring", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -194,7 +195,7 @@ export function ScoringRulesClient({
     try {
       // For now, we'll delete and recreate since there's no PATCH endpoint
       // This is a workaround - ideally we'd add a PATCH endpoint
-      const res = await fetch("/api/crm/scoring", {
+      const res = await apiFetch("/api/crm/scoring", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -229,7 +230,7 @@ export function ScoringRulesClient({
   const handleCalculateScores = async () => {
     setIsCalculating(true);
     try {
-      const res = await fetch("/api/crm/scoring/calculate", {
+      const res = await apiFetch("/api/crm/scoring/calculate", {
         method: "POST",
       });
 

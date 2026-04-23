@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -49,8 +50,8 @@ export function UpcomingMaintenanceWidget({
     setLoading(true);
     try {
       const [schedulesRes, assetsRes] = await Promise.all([
-        fetch("/api/facilities/schedules/list?status=active"),
-        fetch("/api/facilities/assets/list?status=active"),
+        apiFetch("/api/facilities/schedules/list?status=active"),
+        apiFetch("/api/facilities/assets/list?status=active"),
       ]);
       const schedulesData = await schedulesRes.json();
       const assetsData = await assetsRes.json();

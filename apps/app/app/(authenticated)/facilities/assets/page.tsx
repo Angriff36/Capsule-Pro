@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -148,8 +149,8 @@ export default function AssetsPage() {
     setLoading(true);
     try {
       const [assetsRes, areasRes] = await Promise.all([
-        fetch("/api/facilities/assets/list?status=all"),
-        fetch("/api/facilities/areas/list?status=all"),
+        apiFetch("/api/facilities/assets/list?status=all"),
+        apiFetch("/api/facilities/areas/list?status=all"),
       ]);
       const assetsData = await assetsRes.json();
       const areasData = await areasRes.json();
@@ -245,7 +246,7 @@ export default function AssetsPage() {
             areaId: form.areaId || null,
             notes: form.notes || null,
           };
-      const res = await fetch(endpoint, {
+      const res = await apiFetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -264,7 +265,7 @@ export default function AssetsPage() {
   const handleDelete = async (assetId: string) => {
     setDeleting(assetId);
     try {
-      await fetch("/api/facilities/assets/commands/delete", {
+      await apiFetch("/api/facilities/assets/commands/delete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ assetId }),

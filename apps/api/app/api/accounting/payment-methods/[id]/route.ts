@@ -14,17 +14,14 @@
 import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
+import { captureException } from "@sentry/nextjs";
 import {
-import
-{
-  captureException;
-}
-from;
-("@sentry/nextjs");
-getDisplayInfo, isCardExpired, isPaymentMethodUsable, type;
-PaymentMethodResponse,
+  getDisplayInfo,
+  isCardExpired,
+  isPaymentMethodUsable,
+  type PaymentMethodResponse,
   validatePaymentMethodAccess,
-} from "../validation"
+} from "../validation";
 
 type RouteContext = {
   params: Promise<{ id: string }>;

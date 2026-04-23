@@ -380,9 +380,7 @@ export function isBoardStateReadIntent(request: string): boolean {
  * Detect if the user is asking a question / querying data rather than requesting a write action.
  * Returns the best matching query tool name, or null if it's a write intent.
  */
-export function detectQueryIntent(
-  request: string
-): string | null {
+export function detectQueryIntent(request: string): string | null {
   const lowered = request.trim().toLowerCase();
   if (!lowered) {
     return null;
@@ -1132,7 +1130,10 @@ export async function runManifestActionAgent(
     }
 
     // For inventory low stock
-    if (queryTool === "list_inventory" && /low|running|reorder/i.test(userRequest)) {
+    if (
+      queryTool === "list_inventory" &&
+      /low|running|reorder/i.test(userRequest)
+    ) {
       queryArgs.lowStockOnly = true;
     }
 
@@ -1161,7 +1162,8 @@ export async function runManifestActionAgent(
     const summaryResult = await callResponsesApi({
       apiKey: params.apiKey,
       model: params.model,
-      instructions: `You are Capsule AI, a helpful catering management assistant. The user asked a question and real data was retrieved from the database. Summarize the data in clear, conversational language. Be concise but include key details. Do NOT return JSON — respond in natural language.`,
+      instructions:
+        "You are Capsule AI, a helpful catering management assistant. The user asked a question and real data was retrieved from the database. Summarize the data in clear, conversational language. Be concise but include key details. Do NOT return JSON — respond in natural language.",
       input: [
         { role: "user", content: userRequest },
         {
@@ -1384,6 +1386,24 @@ async function executeToolWithRetry(
     lastError: lastError?.message,
     correlationId,
   });
+
+  // Report retry exhaustion to Sentry — these are network/infrastructure failures
+  // that would otherwise be invisible (returned as error envelope, not thrown)
+  captureException(
+    lastError ?? new Error(`Tool call ${functionCall.name} failed after ${MAX_TOOL_RETRIES + 1} retries`),
+    {
+      tags: {
+        route: "command-board-chat",
+        type: "retry_exhaustion",
+        toolName: functionCall.name,
+      },
+      extra: {
+        callId: functionCall.call_id,
+        attempts: MAX_TOOL_RETRIES + 1,
+        correlationId,
+      },
+    }
+  );
 
   return {
     ok: false,

@@ -1,15 +1,10 @@
 import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
+import { captureException } from "@sentry/nextjs";
 import {
-import
-{
-  captureException;
-}
-from;
-("@sentry/nextjs");
-calculateDepletionForecast,
+  calculateDepletionForecast,
   saveForecastToDatabase,
-} from "@/app/lib/inventory-forecasting"
+} from "@/app/lib/inventory-forecasting";
 
 import { requireTenantId } from "@/app/lib/tenant";
 

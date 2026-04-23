@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -63,7 +64,7 @@ export default function NutritionLabelsPage() {
   const fetchRecipes = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/kitchen/nutrition-labels/list");
+      const res = await apiFetch("/api/kitchen/nutrition-labels/list");
       const data = await res.json();
       if (data.success) {
         setRecipes(data.recipes);
@@ -82,7 +83,7 @@ export default function NutritionLabelsPage() {
     setNutritionLabel(null);
 
     try {
-      const res = await fetch("/api/kitchen/nutrition-labels/generate", {
+      const res = await apiFetch("/api/kitchen/nutrition-labels/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ recipeId: recipe.id }),

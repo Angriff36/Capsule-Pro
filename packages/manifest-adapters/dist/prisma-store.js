@@ -7,6 +7,25 @@
  */
 import { Prisma } from "@repo/database/standalone";
 /**
+ * Report a silent store error to Sentry without blocking the return path.
+ * Uses dynamic import so this module doesn't hard-depend on @sentry/nextjs.
+ */
+function reportStoreError(error, store, op) {
+    import("@sentry/nextjs")
+        .then(({ captureException }) => {
+        captureException(error, {
+            tags: { source: "prisma-store", store, op },
+        });
+    })
+        .catch(() => {
+        // Sentry not available — swallow to avoid infinite loops
+    });
+}
+/** Shorthand used inside Store classes — derives the store name from the class name. */
+function reportOp(self, op, error) {
+    reportStoreError(error, self.constructor.name, op);
+}
+/**
  * Prisma-backed store for PrepTask entities
  *
  * Maps Manifest PrepTask entities to the Prisma PrepTask and KitchenTaskClaim tables.
@@ -26,7 +45,7 @@ export class PrepTaskPrismaStore {
             where: { tenantId: this.tenantId, deletedAt: null },
         });
         // Return mapped entities (claims will be fetched on-demand if needed)
-        return tasks.map(task => this.mapToManifestEntity(task, []));
+        return tasks.map((task) => this.mapToManifestEntity(task, []));
     }
     async getById(id) {
         const task = await this.prisma.prepTask.findFirst({
@@ -163,7 +182,8 @@ export class PrepTaskPrismaStore {
             });
             return true;
         }
-        catch {
+        catch (error) {
+            reportOp(this, "delete", error);
             return false;
         }
     }
@@ -276,7 +296,8 @@ export class RecipePrismaStore {
             });
             return this.mapToManifestEntity(updated);
         }
-        catch {
+        catch (error) {
+            reportOp(this, "update", error);
             return undefined;
         }
     }
@@ -288,7 +309,8 @@ export class RecipePrismaStore {
             });
             return true;
         }
-        catch {
+        catch (error) {
+            reportOp(this, "delete", error);
             return false;
         }
     }
@@ -346,7 +368,7 @@ export class RecipeVersionPrismaStore {
     async getLatestByRecipeId(recipeId) {
         const version = await this.prisma.recipeVersion.findFirst({
             where: { tenantId: this.tenantId, recipeId, deletedAt: null },
-            orderBy: { versionNumber: 'desc' },
+            orderBy: { versionNumber: "desc" },
         });
         return version ? this.mapToManifestEntity(version) : undefined;
     }
@@ -356,7 +378,7 @@ export class RecipeVersionPrismaStore {
     async getByRecipeId(recipeId) {
         const versions = await this.prisma.recipeVersion.findMany({
             where: { tenantId: this.tenantId, recipeId, deletedAt: null },
-            orderBy: { versionNumber: 'desc' },
+            orderBy: { versionNumber: "desc" },
         });
         return versions.map((version) => this.mapToManifestEntity(version));
     }
@@ -406,7 +428,8 @@ export class RecipeVersionPrismaStore {
             });
             return this.mapToManifestEntity(updated);
         }
-        catch {
+        catch (error) {
+            reportOp(this, "update", error);
             return undefined;
         }
     }
@@ -418,7 +441,8 @@ export class RecipeVersionPrismaStore {
             });
             return true;
         }
-        catch {
+        catch (error) {
+            reportOp(this, "delete", error);
             return false;
         }
     }
@@ -511,7 +535,8 @@ export class IngredientPrismaStore {
             });
             return this.mapToManifestEntity(updated);
         }
-        catch {
+        catch (error) {
+            reportOp(this, "update", error);
             return undefined;
         }
     }
@@ -523,7 +548,8 @@ export class IngredientPrismaStore {
             });
             return true;
         }
-        catch {
+        catch (error) {
+            reportOp(this, "delete", error);
             return false;
         }
     }
@@ -603,7 +629,8 @@ export class RecipeIngredientPrismaStore {
             });
             return this.mapToManifestEntity(updated);
         }
-        catch {
+        catch (error) {
+            reportOp(this, "update", error);
             return undefined;
         }
     }
@@ -615,7 +642,8 @@ export class RecipeIngredientPrismaStore {
             });
             return true;
         }
-        catch {
+        catch (error) {
+            reportOp(this, "delete", error);
             return false;
         }
     }
@@ -703,7 +731,8 @@ export class RecipeStepPrismaStore {
             });
             return this.mapToManifestEntity(updated);
         }
-        catch {
+        catch (error) {
+            reportOp(this, "update", error);
             return undefined;
         }
     }
@@ -715,7 +744,8 @@ export class RecipeStepPrismaStore {
             });
             return true;
         }
-        catch {
+        catch (error) {
+            reportOp(this, "delete", error);
             return false;
         }
     }
@@ -807,7 +837,8 @@ export class DishPrismaStore {
             });
             return this.mapToManifestEntity(updated);
         }
-        catch {
+        catch (error) {
+            reportOp(this, "update", error);
             return undefined;
         }
     }
@@ -819,7 +850,8 @@ export class DishPrismaStore {
             });
             return true;
         }
-        catch {
+        catch (error) {
+            reportOp(this, "delete", error);
             return false;
         }
     }
@@ -1120,7 +1152,8 @@ export class AllergenWarningPrismaStore {
             });
             return this.mapToManifestEntity(updated);
         }
-        catch {
+        catch (error) {
+            reportOp(this, "update", error);
             return undefined;
         }
     }
@@ -1132,7 +1165,8 @@ export class AllergenWarningPrismaStore {
             });
             return true;
         }
-        catch {
+        catch (error) {
+            reportOp(this, "delete", error);
             return false;
         }
     }
@@ -1202,12 +1236,20 @@ export class AllergenWarningPrismaStore {
 // would try to write to a generic json_store table which doesn't exist for Events.
 // ---------------------------------------------------------------------------
 const toNull = (v) => {
-    if (v === null || v === undefined || v === "null" || v === "undefined" || v === "")
+    if (v === null ||
+        v === undefined ||
+        v === "null" ||
+        v === "undefined" ||
+        v === "")
         return null;
     return String(v);
 };
 const toNullNum = (v) => {
-    if (v === null || v === undefined || v === "null" || v === "undefined" || v === "")
+    if (v === null ||
+        v === undefined ||
+        v === "null" ||
+        v === "undefined" ||
+        v === "")
         return null;
     const n = Number(v);
     return Number.isNaN(n) ? null : n;
@@ -1220,7 +1262,10 @@ const toStringArray = (v) => {
     if (typeof v === "string") {
         if (v === "null" || v === "")
             return [];
-        return v.split(",").map((s) => s.trim()).filter(Boolean);
+        return v
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean);
     }
     return [];
 };
@@ -1249,15 +1294,21 @@ export class EventPrismaStore {
             ticketPrice: row.ticketPrice != null ? Number(row.ticketPrice) : null,
             ticketTier: row.ticketTier ?? null,
             eventFormat: row.eventFormat ?? null,
-            accessibilityOptions: Array.isArray(row.accessibilityOptions) ? row.accessibilityOptions : [],
+            accessibilityOptions: Array.isArray(row.accessibilityOptions)
+                ? row.accessibilityOptions
+                : [],
             featuredMediaUrl: row.featuredMediaUrl ?? null,
             assignedTo: row.assignedTo ?? null,
             venueName: row.venueName ?? null,
             venueAddress: row.venueAddress ?? null,
             notes: row.notes ?? null,
             tags: Array.isArray(row.tags) ? row.tags : [],
-            createdAt: row.createdAt instanceof Date ? row.createdAt.toISOString() : row.createdAt,
-            updatedAt: row.updatedAt instanceof Date ? row.updatedAt.toISOString() : row.updatedAt,
+            createdAt: row.createdAt instanceof Date
+                ? row.createdAt.toISOString()
+                : row.createdAt,
+            updatedAt: row.updatedAt instanceof Date
+                ? row.updatedAt.toISOString()
+                : row.updatedAt,
         };
     }
     async getAll() {
@@ -1563,7 +1614,8 @@ export class MenuPrismaStore {
             });
             return this.mapToManifestEntity(updated);
         }
-        catch {
+        catch (error) {
+            reportOp(this, "update", error);
             return undefined;
         }
     }
@@ -1575,7 +1627,8 @@ export class MenuPrismaStore {
             });
             return true;
         }
-        catch {
+        catch (error) {
+            reportOp(this, "delete", error);
             return false;
         }
     }
@@ -1658,7 +1711,8 @@ export class MenuDishPrismaStore {
             });
             return this.mapToManifestEntity(updated);
         }
-        catch {
+        catch (error) {
+            reportOp(this, "update", error);
             return undefined;
         }
     }
@@ -1670,7 +1724,8 @@ export class MenuDishPrismaStore {
             });
             return true;
         }
-        catch {
+        catch (error) {
+            reportOp(this, "delete", error);
             return false;
         }
     }
@@ -1815,7 +1870,8 @@ export class PrepListPrismaStore {
             });
             return this.mapToManifestEntity(updated);
         }
-        catch {
+        catch (error) {
+            reportOp(this, "update", error);
             return undefined;
         }
     }
@@ -1827,7 +1883,8 @@ export class PrepListPrismaStore {
             });
             return true;
         }
-        catch {
+        catch (error) {
+            reportOp(this, "delete", error);
             return false;
         }
     }
@@ -1950,7 +2007,8 @@ export class PrepListItemPrismaStore {
             });
             return this.mapToManifestEntity(updated);
         }
-        catch {
+        catch (error) {
+            reportOp(this, "update", error);
             return undefined;
         }
     }
@@ -1962,7 +2020,8 @@ export class PrepListItemPrismaStore {
             });
             return true;
         }
-        catch {
+        catch (error) {
+            reportOp(this, "delete", error);
             return false;
         }
     }
@@ -2124,7 +2183,8 @@ export class StationPrismaStore {
             });
             return this.mapToManifestEntity(updated);
         }
-        catch {
+        catch (error) {
+            reportOp(this, "update", error);
             return undefined;
         }
     }
@@ -2136,7 +2196,8 @@ export class StationPrismaStore {
             });
             return true;
         }
-        catch {
+        catch (error) {
+            reportOp(this, "delete", error);
             return false;
         }
     }
@@ -2250,7 +2311,8 @@ export class InventoryItemPrismaStore {
             });
             return this.mapToManifestEntity(updated);
         }
-        catch {
+        catch (error) {
+            reportOp(this, "update", error);
             return undefined;
         }
     }
@@ -2262,7 +2324,8 @@ export class InventoryItemPrismaStore {
             });
             return true;
         }
-        catch {
+        catch (error) {
+            reportOp(this, "delete", error);
             return false;
         }
     }
@@ -2511,7 +2574,10 @@ export function createPrismaOutboxWriter(entityName, tenantId) {
                     aggregateType: entityName,
                     eventType: eventData.eventType || eventData.name || "unknown",
                     payload: eventData.payload,
-                    aggregateId: eventData.aggregateId || eventData.payload?.taskId || eventData.payload?.id || "unknown",
+                    aggregateId: eventData.aggregateId ||
+                        eventData.payload?.taskId ||
+                        eventData.payload?.id ||
+                        "unknown",
                     status: "pending",
                 },
             });

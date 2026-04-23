@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -110,8 +111,8 @@ export default function SchedulesPage() {
     setLoading(true);
     try {
       const [schedulesRes, assetsRes] = await Promise.all([
-        fetch("/api/facilities/schedules/list?status=all"),
-        fetch("/api/facilities/assets/list?status=active"),
+        apiFetch("/api/facilities/schedules/list?status=all"),
+        apiFetch("/api/facilities/assets/list?status=active"),
       ]);
       const schedulesData = await schedulesRes.json();
       const assetsData = await assetsRes.json();
@@ -128,7 +129,7 @@ export default function SchedulesPage() {
   const handleComplete = async (scheduleId: string) => {
     setCompleting(scheduleId);
     try {
-      const res = await fetch("/api/facilities/schedules/commands/complete", {
+      const res = await apiFetch("/api/facilities/schedules/commands/complete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ scheduleId }),
@@ -147,7 +148,7 @@ export default function SchedulesPage() {
     if (!createForm.title.trim()) return;
     setCreating(true);
     try {
-      const res = await fetch("/api/facilities/schedules/commands/create", {
+      const res = await apiFetch("/api/facilities/schedules/commands/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

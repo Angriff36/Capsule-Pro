@@ -56,7 +56,7 @@ async function authRequest<T>(
   return apiClient<T>(endpoint, {
     token: token ?? undefined,
     method: options.method,
-    body: options.body ? JSON.stringify(options.body) : undefined,
+    body: options.body,
   });
 }
 
@@ -381,13 +381,13 @@ export function useMarkPrepItemComplete() {
       completed: boolean;
     }) => {
       try {
-        return await authRequest<{ success: boolean }>(
-          "/api/kitchen/prep-list-items/commands/mark-completed",
-          {
-            method: "POST",
-            body: { itemId, completed },
-          }
-        );
+        const endpoint = completed
+          ? "/api/kitchen/prep-list-items/commands/mark-completed"
+          : "/api/kitchen/prep-list-items/commands/mark-uncompleted";
+        return await authRequest<{ success: boolean }>(endpoint, {
+          method: "POST",
+          body: { itemId },
+        });
       } catch (error) {
         if (error instanceof TypeError && error.message.includes("Network")) {
           await queueAction("markPrepComplete", itemId, { completed });

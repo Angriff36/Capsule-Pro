@@ -6,6 +6,7 @@
 
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { ButtonGroup } from "@repo/design-system/components/ui/button-group";
@@ -99,7 +100,7 @@ export function PaymentListClient() {
       if (statusFilter) params.append("status", statusFilter);
       if (searchQuery) params.append("search", searchQuery);
 
-      const response = await fetch(`/api/accounting/payments?${params}`);
+      const response = await apiFetch(`/api/accounting/payments?${params}`);
       const data: PaymentListResponse = await response.json();
 
       setPayments(data.data);
@@ -119,7 +120,7 @@ export function PaymentListClient() {
 
   const handleExport = async () => {
     try {
-      const response = await fetch("/api/accounting/payments/export");
+      const response = await apiFetch("/api/accounting/payments/export");
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");

@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -117,8 +118,8 @@ export default function DriversPage() {
     setLoading(true);
     try {
       const [driversRes, vehiclesRes] = await Promise.all([
-        fetch("/api/logistics/drivers/list"),
-        fetch("/api/logistics/vehicles/list"),
+        apiFetch("/api/logistics/drivers/list"),
+        apiFetch("/api/logistics/vehicles/list"),
       ]);
       const driversData = await driversRes.json();
       const vehiclesData = await vehiclesRes.json();
@@ -172,7 +173,7 @@ export default function DriversPage() {
       const body = editing
         ? { driverId: editing.id, ...form, vehicleId: form.vehicleId || null }
         : { ...form, vehicleId: form.vehicleId || null };
-      const res = await fetch(endpoint, {
+      const res = await apiFetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -191,7 +192,7 @@ export default function DriversPage() {
   const handleDelete = async (driverId: string) => {
     setDeleting(driverId);
     try {
-      await fetch("/api/logistics/drivers/commands/delete", {
+      await apiFetch("/api/logistics/drivers/commands/delete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ driverId }),

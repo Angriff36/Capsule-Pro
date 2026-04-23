@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import type { Event } from "@repo/database";
 import { GridBackground } from "@repo/design-system/components/ui/grid-background";
 import { Separator } from "@repo/design-system/components/ui/separator";
@@ -366,7 +367,7 @@ async function submitQuickRsvp(deps: QuickRsvpDeps): Promise<void> {
   setQuickRsvpLoading(true);
   setRsvpCount((prev) => prev + 1);
   try {
-    const response = await fetch(`/api/events/${eventId}/guests`, {
+    const response = await apiFetch(`/api/events/${eventId}/guests`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({

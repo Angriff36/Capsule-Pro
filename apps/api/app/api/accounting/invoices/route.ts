@@ -7,20 +7,16 @@
 import { database, type Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
+import { captureException } from "@sentry/nextjs";
 import {
-import
-{
-  captureException;
-}
-from;
-("@sentry/nextjs");
-calculateInvoiceTotals, generateInvoiceNumber, type;
-InvoiceListResponse, type;
-InvoiceResponse,
+  calculateInvoiceTotals,
+  generateInvoiceNumber,
+  type InvoiceListResponse,
+  type InvoiceResponse,
   parseInvoiceFilters,
   parsePaginationParams,
   validateCreateInvoiceRequest,
-} from "./validation"
+} from "./validation";
 
 /**
  * GET /api/accounting/invoices

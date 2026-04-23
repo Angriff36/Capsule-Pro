@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -64,7 +65,7 @@ export default function EventFollowUpsPage() {
   const fetchFollowups = async () => {
     setLoading(true);
     try {
-      const res = await fetch(
+      const res = await apiFetch(
         `/api/events/automated-followups/list?eventId=${eventId}`
       );
       const data = await res.json();
@@ -79,7 +80,7 @@ export default function EventFollowUpsPage() {
   const generateFollowups = async () => {
     setGenerating(true);
     try {
-      const res = await fetch(
+      const res = await apiFetch(
         "/api/events/automated-followups/commands/generate",
         {
           method: "POST",
@@ -101,7 +102,7 @@ export default function EventFollowUpsPage() {
   const completeFollowup = async (followupId: string) => {
     setActioning(followupId);
     try {
-      const res = await fetch(
+      const res = await apiFetch(
         "/api/events/automated-followups/commands/complete",
         {
           method: "POST",
@@ -122,7 +123,7 @@ export default function EventFollowUpsPage() {
   const skipFollowup = async (followupId: string) => {
     setActioning(followupId);
     try {
-      const res = await fetch("/api/events/automated-followups/commands/skip", {
+      const res = await apiFetch("/api/events/automated-followups/commands/skip", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ followupId, reason: "Skipped by user" }),

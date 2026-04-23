@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -190,8 +191,8 @@ export function PerformancePageClient() {
     setLoading(true);
     try {
       const [reviewsRes, employeesRes] = await Promise.all([
-        fetch("/api/staff/performance/list"),
-        fetch("/api/staff/performance/employees"),
+        apiFetch("/api/staff/performance/list"),
+        apiFetch("/api/staff/performance/employees"),
       ]);
       const reviewsData = await reviewsRes.json();
       const employeesData = await employeesRes.json();
@@ -210,7 +211,7 @@ export function PerformancePageClient() {
     if (!(createForm.employeeId && createForm.scheduledDate)) return;
     setCreating(true);
     try {
-      const res = await fetch("/api/staff/performance/commands/create", {
+      const res = await apiFetch("/api/staff/performance/commands/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(createForm),
@@ -237,7 +238,7 @@ export function PerformancePageClient() {
     if (!selectedReview || completeForm.rating === 0) return;
     setCompleting(true);
     try {
-      const res = await fetch("/api/staff/performance/commands/complete", {
+      const res = await apiFetch("/api/staff/performance/commands/complete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

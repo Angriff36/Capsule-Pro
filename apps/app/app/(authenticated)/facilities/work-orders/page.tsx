@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
@@ -66,7 +67,7 @@ export default function FacilitiesWorkOrdersPage() {
 
   const loadWorkOrders = async () => {
     try {
-      const res = await fetch("/api/facilities/work-orders/list?status=all");
+      const res = await apiFetch("/api/facilities/work-orders/list?status=all");
       const data = await res.json();
       if (data.success) {
         setWorkOrders(data.data.workOrders || []);
@@ -84,7 +85,7 @@ export default function FacilitiesWorkOrdersPage() {
 
     setCreating(true);
     try {
-      const res = await fetch("/api/facilities/work-orders/commands/create", {
+      const res = await apiFetch("/api/facilities/work-orders/commands/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

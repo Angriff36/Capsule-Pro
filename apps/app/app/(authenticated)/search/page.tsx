@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -20,6 +21,7 @@ import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 import {
   BookOpen,
   CalendarDays,
+  CheckSquare,
   ChevronLeft,
   ChevronRight,
   MapPin,
@@ -44,6 +46,8 @@ interface SearchResult {
 }
 
 type SItem = Record<string, unknown>;
+
+const ITEMS_PER_GROUP = 5;
 
 const GROUP_CONFIG: Record<
   string,
@@ -135,6 +139,22 @@ const GROUP_CONFIG: Record<
       </CardDescription>
     ),
   },
+  tasks: {
+    label: "Tasks",
+    icon: <CheckSquare className="size-4" />,
+    href: (item) => {
+      const taskType = item.task_type as string;
+      return taskType === "admin" ? "/admin/tasks" : "/kitchen/tasks";
+    },
+    title: (item) => (item.title as string) || "Untitled Task",
+    description: (item) => (
+      <CardDescription>
+        {(item.task_type as string) === "admin" ? "Admin" : "Kitchen"}
+        {" · "}
+        {item.status as string}
+      </CardDescription>
+    ),
+  },
 };
 
 function SearchResults() {
@@ -159,7 +179,7 @@ function SearchResults() {
         limit: String(limit),
       });
       if (typeFilter !== "all") params.set("type", typeFilter);
-      const res = await fetch(`/api/search?${params}`);
+      const res = await apiFetch(`/api/search?${params}`);
       const json = await res.json();
       if (json.success) {
         setData(json);
@@ -290,7 +310,9 @@ function SearchResults() {
               );
             })}
 
-        {!loading && data && data.total > data.limit && (
+        {!loading &&
+          data &&
+          Object.values(data.groups).some((g) => g.total > ITEMS_PER_GROUP) && (
           <div className="flex items-center justify-center gap-4">
             <Button
               disabled={page <= 1}
@@ -305,7 +327,9 @@ function SearchResults() {
               Page {data.page}
             </span>
             <Button
-              disabled={page * data.limit >= data.total}
+              disabled={Object.values(data.groups).every(
+                (g) => page * ITEMS_PER_GROUP >= g.total
+              )}
               onClick={() => setPage((p) => p + 1)}
               size="sm"
               variant="outline"

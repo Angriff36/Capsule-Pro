@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Card } from "@repo/design-system/components/ui/card";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
@@ -23,7 +24,7 @@ const ManifestPolicyEditor = dynamic(
 );
 
 async function fetchEntities(): Promise<EntityListItem[]> {
-  const res = await fetch("/api/settings/manifest-editor/entities/list");
+  const res = await apiFetch("/api/settings/manifest-editor/entities/list");
   if (!res.ok) {
     throw new Error(`Failed to load entities (${res.status})`);
   }
@@ -32,7 +33,7 @@ async function fetchEntities(): Promise<EntityListItem[]> {
 }
 
 async function fetchEntityDetail(entityName: string): Promise<EntityDetail> {
-  const res = await fetch(
+  const res = await apiFetch(
     `/api/settings/manifest-editor/entities/${encodeURIComponent(entityName)}`
   );
   if (!res.ok) {

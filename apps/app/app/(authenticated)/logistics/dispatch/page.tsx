@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -130,7 +131,7 @@ export default function DispatchPage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/logistics/dispatch");
+      const res = await apiFetch("/api/logistics/dispatch");
       const json = await res.json();
       if (json.success) {
         setData(json.data);
@@ -153,7 +154,7 @@ export default function DispatchPage() {
 
     setAssigning(true);
     try {
-      const res = await fetch("/api/logistics/dispatch/commands/assign", {
+      const res = await apiFetch("/api/logistics/dispatch/commands/assign", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

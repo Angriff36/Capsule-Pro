@@ -10,18 +10,14 @@ import { database } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type {
-import
-{
-  captureException;
-}
-from;
-("@sentry/nextjs");
-SimulationContext,
+  SimulationContext,
   SimulationStatus,
   BoardProjection,
   BoardGroup,
   BoardAnnotation,
 } from "../../types"
+
+import { captureException } from "@sentry/nextjs";
 
 interface RouteContext {
   params: Promise<{ id: string }>;

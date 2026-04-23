@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -79,7 +80,7 @@ export function CreateTrainingModuleDialog({
   const onSubmit = async (values: FormValues) => {
     setIsSubmitting(true);
     try {
-      const response = await fetch("/api/training/modules", {
+      const response = await apiFetch("/api/training/modules", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

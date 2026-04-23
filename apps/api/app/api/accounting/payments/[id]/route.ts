@@ -15,18 +15,12 @@ import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
 import {
-import
-{
-  captureException;
-}
-from;
-("@sentry/nextjs");
-type PaymentResponse
-,
+  captureException,
+  type PaymentResponse,
   validatePaymentAccess,
   validatePaymentBusinessRules,
   validateRefundRequest,
-} from "../validation"
+} from "../validation";
 
 type RouteContext = {
   params: Promise<{ id: string }>;

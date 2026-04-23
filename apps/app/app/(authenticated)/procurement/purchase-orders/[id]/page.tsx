@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -69,7 +70,7 @@ export default function PODetailPage() {
   const loadOrder = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/procurement/purchase-orders/${id}`);
+      const res = await apiFetch(`/api/procurement/purchase-orders/${id}`);
       const data = await res.json();
       if (data.success) {
         setOrder(data.data.order);

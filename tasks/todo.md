@@ -1,5 +1,80 @@
 # Current Task
 
+## cp-092 — Feature Inventory — 2026-04-13
+
+**Goal:** Inventory all routes, map feature modules, and identify data tables/models touched.
+
+### Current Task
+- [x] Discover route surfaces and schema sources
+- [x] Audit API/frontend route files by feature area
+- [x] Read Prisma schema and model inventory
+- [x] Produce `planning/feature-inventory.md`
+- [x] Verify saved doc contents
+
+---
+
+## Phase 5 — Performance Pass (TEAM: perf) — 2026-04-06
+
+**Goal:** Measure and fix slow paths across dev, client, and API.
+
+### Task 1: Dev Process Count (DONE)
+
+| Command | Processes | What runs |
+|---------|-----------|-----------|
+| `pnpm dev` | ~12 | app + api + stripe + docs + email + storybook + studio + web + basehub + ai + cms + manifest-runtime + sentry-integration |
+| `pnpm dev:web` | 4 | app(2221) + api(2223) + stripe listener |
+| `pnpm dev:app` | 1 | app(2221) only |
+| `pnpm dev:api` | 2 | api(2223) + stripe listener |
+
+**Finding:** `pnpm dev:web` cuts concurrent processes by ~67% (4 vs 12) while keeping the full web+API stack.
+
+### Task 2: Client Bundle Analysis (DONE)
+
+Ran `ANALYZE=true` build. Top client-side chunks:
+
+| Chunk | Size | Library | Action |
+|-------|------|---------|--------|
+| 757 | 663KB | Zod + Next router | Framework, not actionable |
+| 9471 | 508KB | Radix UI + Lucide | Shared UI, not actionable |
+| 7737 | 503KB | Vega | Already lazy-loaded (sales dashboard) |
+| main | 484KB | Next.js runtime | Framework, not actionable |
+| 2733 | 484KB | Recharts | **Fixed: now lazy-loaded** |
+| 3087 | 449KB | Radix UI | Shared UI, not actionable |
+| db53 | 403KB | xlsx | Behind lazy boundary (sales export) |
+
+**Fix applied:** Wrapped `/analytics/kitchen` and `/inventory/forecasts` with `next/dynamic` + skeleton loading. Recharts (484KB) now code-split.
+
+### Task 3: API N+1 Fix — Prep List Save (DONE)
+
+**Documented slow user journey:** Saving a generated prep list to the database.
+
+**Before:** `savePrepListToDatabase` executed 1 INSERT per ingredient in a nested loop. A 50-ingredient prep list = 50 sequential round trips to Neon. `savePrepListToProductionBoard` executed SELECT + INSERT per task (2N queries for N tasks).
+
+**After:** Both functions batch all operations into single queries using PostgreSQL `unnest()`:
+- `savePrepListToDatabase`: 1 bulk INSERT via unnest (was N individual INSERTs)
+- `savePrepListToProductionBoard`: 1 INSERT ... WHERE NOT EXISTS via unnest (was 2N SELECT+INSERT)
+
+**Impact:** 50-ingredient, 5-station prep list: ~55 queries -> 2. At ~5ms per Neon HTTP round trip = ~265ms saved.
+
+### Task 4: Infrastructure Status (DONE)
+
+- **DB pooling:** Neon serverless + `PrismaNeon` adapter, HTTP fetch pooling enabled. Managed by Neon.
+- **Cold starts:** Sentry `automaticVercelMonitors` enabled. Typical Vercel cold starts 200-500ms.
+- **Observability:** Sentry + Logtail/BetterStack. No custom perf tracing needed.
+
+### Bonus: Merge Conflict Resolution
+
+Fixed pre-existing merge conflict in `apps/app/proxy.ts`. Removed dead `setLoopCookie` function.
+
+### Exit Criteria
+
+- [x] One documented slow user journey fixed: prep list save N+1 (55 queries -> 2)
+- [x] Dev process reduction confirmed: `dev:web` = 4 processes vs `dev` = 12
+- [x] Bundle analysis run and heavy routes lazy-loaded (recharts 484KB)
+- [x] Infra documented: Neon pooling, Sentry monitors, no blockers
+
+---
+
 ## Agent 88 — 2026-04-02
 
 **Goal:** Fix the remaining non-Command-Board app typecheck cluster in the UI regression bugfix worktree with minimal diffs.

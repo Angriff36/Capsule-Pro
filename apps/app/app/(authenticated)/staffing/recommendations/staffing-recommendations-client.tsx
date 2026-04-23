@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -51,7 +52,7 @@ export function StaffingRecommendationsClient() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/staffing/recommendations", {
+      const res = await apiFetch("/api/staffing/recommendations", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ guestCount, eventType, serviceStyle, duration }),

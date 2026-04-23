@@ -11,20 +11,15 @@
 import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
+import { captureException } from "@sentry/nextjs";
 import {
-import
-{
-  captureException;
-}
-from;
-("@sentry/nextjs");
-getDisplayInfo, type;
-PaymentMethodListResponse, type;
-PaymentMethodResponse,
+  getDisplayInfo,
+  type PaymentMethodListResponse,
+  type PaymentMethodResponse,
   parsePaginationParams,
   parsePaymentMethodFilters,
   validateCreatePaymentMethodRequest,
-} from "./validation"
+} from "./validation";
 
 /**
  * GET /api/accounting/payment-methods

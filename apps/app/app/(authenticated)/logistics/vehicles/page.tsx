@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -115,7 +116,7 @@ export default function VehiclesPage() {
   const loadVehicles = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/logistics/vehicles/list");
+      const res = await apiFetch("/api/logistics/vehicles/list");
       const data = await res.json();
       if (data.success) setVehicles(data.data.vehicles || []);
     } catch (e) {
@@ -203,7 +204,7 @@ export default function VehiclesPage() {
             fuelType: form.fuelType || null,
             notes: form.notes || null,
           };
-      const res = await fetch(endpoint, {
+      const res = await apiFetch(endpoint, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
@@ -222,7 +223,7 @@ export default function VehiclesPage() {
   const handleDelete = async (vehicleId: string) => {
     setDeleting(vehicleId);
     try {
-      await fetch("/api/logistics/vehicles/commands/delete", {
+      await apiFetch("/api/logistics/vehicles/commands/delete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ vehicleId }),

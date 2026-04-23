@@ -36,6 +36,17 @@ export interface ScaledRecipeCost {
   originalCost: number;
 }
 
+export interface ScaledIngredient {
+  ingredientId: string;
+  ingredientName: string;
+  originalQuantity: number;
+  scaledQuantity: number;
+  unitId: number;
+  preparationNotes: string | null;
+  isOptional: boolean;
+  scaleFactor: number;
+}
+
 /**
  * Calculate scaled recipe cost based on target portions.
  * This is a read-only calculation that does not modify data.
@@ -67,6 +78,135 @@ const scaleRecipeCost = async (
     originalCost,
   };
 };
+
+/**
+ * GET - Calculate scaled ingredient quantities for a recipe version.
+ * Query params: servings (required), recipeVersionId (optional, uses latest if omitted)
+ * Returns server-computed scaled quantities so clients don't need their own scaling math.
+ */
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ recipeId: string }> }
+) {
+  try {
+    const { recipeId } = await params;
+    const { orgId } = await auth();
+
+    if (!orgId) {
+      return manifestErrorResponse("Unauthorized", 401);
+    }
+
+    const tenantId = await getTenantIdForOrg(orgId);
+    if (!tenantId) {
+      return manifestErrorResponse("Tenant not found", 400);
+    }
+
+    const { searchParams } = new URL(request.url);
+    const servingsParam = searchParams.get("servings");
+    const versionIdParam = searchParams.get("recipeVersionId");
+
+    if (!servingsParam) {
+      return manifestErrorResponse("servings query parameter is required", 400);
+    }
+
+    const targetServings = Number(servingsParam);
+    if (Number.isNaN(targetServings) || targetServings <= 0) {
+      return manifestErrorResponse("servings must be a positive number", 400);
+    }
+
+    // Find recipe version — use specified version or latest
+    const recipeVersion = await database.recipeVersion.findFirst({
+      where: {
+        tenantId,
+        ...(versionIdParam ? { id: versionIdParam } : { recipeId }),
+        deletedAt: null,
+      },
+      orderBy: { versionNumber: "desc" },
+      select: {
+        id: true,
+        yieldQuantity: true,
+        versionNumber: true,
+        name: true,
+      },
+    });
+
+    if (!recipeVersion) {
+      return manifestErrorResponse("Recipe version not found", 404);
+    }
+
+    const yieldQuantity = Number(recipeVersion.yieldQuantity);
+    if (yieldQuantity <= 0) {
+      return manifestErrorResponse("Recipe has invalid yield quantity", 422);
+    }
+
+    const scaleFactor = targetServings / yieldQuantity;
+
+    // Fetch ingredients for this version
+    const ingredients = await database.recipeIngredient.findMany({
+      where: {
+        tenantId,
+        recipeVersionId: recipeVersion.id,
+        deletedAt: null,
+      },
+      orderBy: { sortOrder: "asc" },
+      select: {
+        ingredientId: true,
+        quantity: true,
+        unitId: true,
+        preparationNotes: true,
+        isOptional: true,
+        wasteFactor: true,
+      },
+    });
+
+    // Batch fetch ingredient names
+    const ingredientIds = ingredients.map((i) => i.ingredientId);
+    const ingredientRecords = await database.ingredient.findMany({
+      where: {
+        tenantId,
+        id: { in: ingredientIds },
+      },
+      select: { id: true, name: true },
+    });
+
+    const nameMap = new Map(ingredientRecords.map((i) => [i.id, i.name]));
+
+    // Compute scaled quantities server-side
+    const scaledIngredients: ScaledIngredient[] = ingredients.map((ing) => {
+      const originalQuantity = Number(ing.quantity);
+      const wasteFactor = Number(ing.wasteFactor);
+      const scaledQuantity =
+        Math.round(originalQuantity * scaleFactor * wasteFactor * 100) / 100;
+
+      return {
+        ingredientId: ing.ingredientId,
+        ingredientName: nameMap.get(ing.ingredientId) ?? "Unknown",
+        originalQuantity,
+        scaledQuantity,
+        unitId: ing.unitId,
+        preparationNotes: ing.preparationNotes,
+        isOptional: ing.isOptional,
+        scaleFactor,
+      };
+    });
+
+    return manifestSuccessResponse({
+      recipeVersionId: recipeVersion.id,
+      recipeVersionName: recipeVersion.name,
+      versionNumber: recipeVersion.versionNumber,
+      yieldQuantity,
+      targetServings,
+      scaleFactor,
+      ingredients: scaledIngredients,
+    });
+  } catch (error) {
+    console.error("[recipes/scale] GET Error:", error);
+    captureException(error);
+    const message =
+      error instanceof Error ? error.message : "Failed to scale ingredients";
+    return manifestErrorResponse(message, 500);
+  }
+}
 
 /**
  * POST - Calculate scaled recipe cost (read-only, no manifest runtime needed)

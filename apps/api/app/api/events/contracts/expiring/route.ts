@@ -9,18 +9,13 @@ import { database, type Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { InvariantError } from "../../../../lib/invariant";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
+import { captureException } from "@sentry/nextjs";
 import type {
-import
-{
-  captureException;
-}
-from;
-("@sentry/nextjs");
-ContractListItem,
+  ContractListItem,
   ContractListResponse,
   ContractStatus,
   DocumentType,
-} from "../types"
+} from "../types";
 
 /**
  * Parse and validate expiring contracts parameters from URL search params

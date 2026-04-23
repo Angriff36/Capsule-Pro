@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -99,7 +100,7 @@ export function RoutesView() {
 
   const loadRoutes = async () => {
     try {
-      const res = await fetch("/api/logistics/routes/list");
+      const res = await apiFetch("/api/logistics/routes/list");
       const data = await res.json();
       setRoutes(data.routes || []);
     } catch (error) {
@@ -115,7 +116,7 @@ export function RoutesView() {
 
     setCreating(true);
     try {
-      const res = await fetch("/api/logistics/routes/commands/create", {
+      const res = await apiFetch("/api/logistics/routes/commands/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -140,7 +141,7 @@ export function RoutesView() {
   const handleOptimize = async (routeId: string) => {
     setOptimizing(routeId);
     try {
-      const res = await fetch("/api/logistics/routes/commands/optimize", {
+      const res = await apiFetch("/api/logistics/routes/commands/optimize", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ routeId }),
@@ -160,7 +161,7 @@ export function RoutesView() {
 
   const handleStartRoute = async (routeId: string) => {
     try {
-      const res = await fetch("/api/logistics/routes/commands/update-status", {
+      const res = await apiFetch("/api/logistics/routes/commands/update-status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ routeId, status: "in_progress" }),
@@ -180,7 +181,7 @@ export function RoutesView() {
 
   const handleCompleteRoute = async (routeId: string) => {
     try {
-      const res = await fetch("/api/logistics/routes/commands/update-status", {
+      const res = await apiFetch("/api/logistics/routes/commands/update-status", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ routeId, status: "completed" }),

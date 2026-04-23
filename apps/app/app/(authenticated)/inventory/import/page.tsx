@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -76,7 +77,7 @@ export default function InventoryImportPage() {
       const formData = new FormData();
       formData.append("file", file);
 
-      const res = await fetch("/api/inventory/import", {
+      const res = await apiFetch("/api/inventory/import", {
         method: "POST",
         body: formData,
       });

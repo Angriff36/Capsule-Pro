@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Dialog,
@@ -62,7 +63,7 @@ export default function KnowledgeBaseClient() {
       if (selectedCategory) params.set("category", selectedCategory);
       params.set("status", "published");
 
-      const res = await fetch(`/api/knowledge-base/entries?${params}`);
+      const res = await apiFetch(`/api/knowledge-base/entries?${params}`);
       const data = await res.json();
 
       if (data.success) {
@@ -92,7 +93,7 @@ export default function KnowledgeBaseClient() {
 
     setCreating(true);
     try {
-      const res = await fetch("/api/knowledge-base/entries/commands/create", {
+      const res = await apiFetch("/api/knowledge-base/entries/commands/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

@@ -8,16 +8,11 @@ import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { captureException } from "@sentry/nextjs";
 import {
-import
-{
-  captureException;
-}
-from;
-("@sentry/nextjs");
-manifestErrorResponse,
+  manifestErrorResponse,
   manifestSuccessResponse,
-} from "@/lib/manifest-response"
+} from "@/lib/manifest-response";
 
 /**
  * GET /api/settings/rate-limits/events

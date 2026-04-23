@@ -7,6 +7,7 @@
 
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import {
   ActivityFeed,
   type ActivityFeedItem,
@@ -53,7 +54,7 @@ export function ActivityFeedClient({
           ),
         });
 
-        const response = await fetch(`/api/activity-feed/list?${params}`);
+        const response = await apiFetch(`/api/activity-feed/list?${params}`);
         if (!response.ok) {
           throw new Error("Failed to fetch activities");
         }
@@ -80,7 +81,7 @@ export function ActivityFeedClient({
 
   const fetchStats = useCallback(async () => {
     try {
-      const response = await fetch("/api/activity-feed/stats");
+      const response = await apiFetch("/api/activity-feed/stats");
       if (response.ok) {
         const data = await response.json();
         setStats(data.stats);
@@ -180,7 +181,7 @@ export function ActivityTimelineWidget({
     const fetchRecentActivities = async () => {
       setIsLoading(true);
       try {
-        const response = await fetch(`/api/activity-feed/list?limit=${limit}`);
+        const response = await apiFetch(`/api/activity-feed/list?limit=${limit}`);
         if (response.ok) {
           const data: ActivityFeedResponse = await response.json();
           setActivities(data.activities);

@@ -247,6 +247,10 @@ entity InventoryItem {
   command create(itemNumber: string, name: string, itemType: string, category: string, baseUnit: string, parLevel: number, reorderPoint: number, reorderQuantity: number, costPerUnit: number, supplierId: string, locationId: string, allergens: string) {
     guard itemNumber != null and itemNumber != "" "Item number/SKU is required"
     guard name != null and name != "" "Item name is required"
+    guard costPerUnit == null or costPerUnit >= 0 "Cost per unit must be non-negative"
+    guard parLevel == null or parLevel >= 0 "Par level must be non-negative"
+    guard reorderPoint == null or reorderPoint >= 0 "Reorder point must be non-negative"
+    guard reorderQuantity == null or reorderQuantity >= 0 "Reorder quantity must be non-negative"
 
     mutate itemNumber = itemNumber
     mutate name = name

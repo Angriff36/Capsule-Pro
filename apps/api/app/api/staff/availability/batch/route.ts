@@ -4,18 +4,13 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { withRateLimit } from "@/middleware/rate-limiter";
 import type { CreateBatchAvailabilityInput } from "../types";
+import { captureException } from "@sentry/nextjs";
 import {
-import
-{
-  captureException;
-}
-from;
-("@sentry/nextjs");
-checkOverlappingAvailability,
+  checkOverlappingAvailability,
   validateBatchAvailabilityInput,
   validateEffectiveDates,
   verifyEmployee,
-} from "../validation"
+} from "../validation";
 
 /**
  * POST /api/staff/availability/batch

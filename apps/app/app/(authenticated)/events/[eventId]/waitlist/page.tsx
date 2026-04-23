@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -128,7 +129,7 @@ export default function WaitlistPage() {
 
   const fetchGuests = useCallback(async () => {
     try {
-      const res = await fetch(`/api/events/${eventId}/waitlist`);
+      const res = await apiFetch(`/api/events/${eventId}/waitlist`);
       const json = await res.json();
       setGuests(json.data.guests);
       setSummary(json.data.summary);

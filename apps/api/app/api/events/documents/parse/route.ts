@@ -9,18 +9,13 @@
 
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import type {
-import
-{
-  captureException;
-}
-from;
-("@sentry/nextjs");
-MenuItem,
+  MenuItem,
   ParsedEvent,
   ProcessedDocument,
   StaffShift,
-} from "@repo/event-parser"
+} from "@repo/event-parser";
 
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";

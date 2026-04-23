@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
@@ -46,7 +47,7 @@ export default function AreasPage() {
   const loadAreas = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/facilities/areas/list?status=all");
+      const res = await apiFetch("/api/facilities/areas/list?status=all");
       const data = await res.json();
       if (data.success) setAreas(data.data.areas || []);
     } catch (error) {
@@ -61,7 +62,7 @@ export default function AreasPage() {
     if (!createForm.name.trim()) return;
     setCreating(true);
     try {
-      const res = await fetch("/api/facilities/areas/commands/create", {
+      const res = await apiFetch("/api/facilities/areas/commands/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

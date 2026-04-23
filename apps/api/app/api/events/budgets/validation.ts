@@ -28,25 +28,58 @@ export const BudgetCategorySchema = z.enum([
 ]);
 
 // Create Event Budget Schema
-export const CreateEventBudgetSchema = z.object({
-  eventId: z.string().uuid("Invalid event ID format"),
-  status: EventBudgetStatusSchema.optional().default("draft"),
-  totalBudgetAmount: z.number().min(0, "Budget amount must be positive"),
-  notes: z.string().optional(),
-  lineItems: z
-    .array(
-      z.object({
-        category: BudgetCategorySchema,
-        name: z.string().min(1, "Line item name is required"),
-        description: z.string().optional(),
-        budgetedAmount: z.number().min(0, "Budgeted amount must be positive"),
-        sortOrder: z.number().int().min(0).optional().default(0),
-        notes: z.string().optional(),
-      })
-    )
-    .optional()
-    .default([]),
-});
+export const CreateEventBudgetSchema = z
+  .object({
+    eventId: z.string().uuid("Invalid event ID format"),
+    status: EventBudgetStatusSchema.optional().default("draft"),
+    totalBudgetAmount: z.number().min(0, "Budget amount must be non-negative"),
+    notes: z.string().optional(),
+    lineItems: z
+      .array(
+        z.object({
+          category: BudgetCategorySchema,
+          name: z.string().min(1, "Line item name is required"),
+          description: z.string().optional(),
+          budgetedAmount: z
+            .number()
+            .min(0, "Budgeted amount must be non-negative"),
+          sortOrder: z.number().int().min(0).optional().default(0),
+          notes: z.string().optional(),
+        })
+      )
+      .optional()
+      .default([]),
+  })
+  .refine(
+    (data) => {
+      if (!data.lineItems || data.lineItems.length === 0) return true;
+      const lineItemsTotal = data.lineItems.reduce(
+        (sum, item) => sum + item.budgetedAmount,
+        0
+      );
+      // Allow totalBudgetAmount of 0 (auto-calculated from line items)
+      if (data.totalBudgetAmount === 0) return true;
+      return lineItemsTotal <= data.totalBudgetAmount;
+    },
+    {
+      message:
+        "Line item budgeted amounts cannot exceed the total budget amount",
+      path: ["lineItems"],
+    }
+  )
+  .refine(
+    (data) => {
+      // Non-draft budgets must have a positive amount
+      if (data.status && data.status !== "draft") {
+        return data.totalBudgetAmount > 0;
+      }
+      return true;
+    },
+    {
+      message: "Non-draft budgets must have a positive total budget amount",
+      path: ["totalBudgetAmount"],
+    }
+  );
 
 // Update Event Budget Schema
 export const UpdateEventBudgetSchema = z

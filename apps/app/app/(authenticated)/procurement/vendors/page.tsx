@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -76,7 +77,7 @@ export default function VendorsPage() {
   const loadVendors = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/procurement/vendors/list");
+      const res = await apiFetch("/api/procurement/vendors/list");
       const data = await res.json();
       if (data.success) setVendors(data.data.vendors || []);
     } catch (error) {
@@ -90,7 +91,7 @@ export default function VendorsPage() {
     if (!form.name.trim()) return;
     setSaving(true);
     try {
-      const res = await fetch("/api/procurement/vendors/commands/create", {
+      const res = await apiFetch("/api/procurement/vendors/commands/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -130,7 +131,7 @@ export default function VendorsPage() {
     if (!confirm(`Delete vendor "${vendor.name}"? This cannot be undone.`))
       return;
     try {
-      const res = await fetch("/api/procurement/vendors/commands/delete", {
+      const res = await apiFetch("/api/procurement/vendors/commands/delete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ vendorId: vendor.id }),

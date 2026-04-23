@@ -3,16 +3,11 @@ import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
+import { captureException } from "@sentry/nextjs";
 import {
-import
-{
-  captureException;
-}
-from;
-("@sentry/nextjs");
-manifestErrorResponse,
+  manifestErrorResponse,
   manifestSuccessResponse,
-} from "@/lib/manifest-response"
+} from "@/lib/manifest-response";
 
 export async function POST(request: NextRequest) {
   try {

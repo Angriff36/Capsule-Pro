@@ -40,6 +40,39 @@ Run these after implementing to get immediate feedback:
 - Shared packages: `packages/ai/`, `packages/database/`
 - Specs: `specs/command-board/`
 
+## Dev Workflow
+
+### Web-Only (day-to-day)
+```sh
+pnpm dev:web    # app (2221) + api (2223) — no mobile
+pnpm dev:app    # app only
+pnpm dev:api    # api only
+```
+
+### Full Stack (when mobile is in scope)
+```sh
+pnpm dev:apps   # app + api + mobile
+```
+
+Avoid `pnpm dev` (starts everything) unless doing integration testing across all services.
+
+## Package Boundaries
+
+Shared packages (`packages/`) must be framework-agnostic:
+- **No `next/*` imports** in shared packages — use DI or move to `apps/` or adapter packages
+- **No `react-native` imports** in web apps (`apps/app`, `apps/api`)
+- Allowed exceptions: `packages/next-config`, `packages/seo`, `packages/cms` (framework-specific by design)
+
+### Known Violations (to remediate)
+- `packages/design-system/lib/fonts.ts` — imports `next/font/google`
+- `packages/design-system/components/ui/chart.tsx` — imports `next/dynamic`
+- `packages/design-system/components/blocks/manifest-test-playground.tsx` — imports `next/link`
+- `packages/design-system/components/blocks/getting-started-checklist.tsx` — imports `next/link`
+- `packages/feature-flags/access.ts` — imports `next/server`
+- `packages/internationalization/proxy.ts` — imports `next/server`
+
+React Native boundary: clean (no violations in web apps).
+
 ## Important Efficiency Standards.
 - Never re-read files you just wrote or edited. You know the contents.
 - Never re-run commands to "verify" unless the outcome was uncertain.

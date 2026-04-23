@@ -15,18 +15,14 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type {
-import
-{
-  captureException;
-}
-from;
-("@sentry/nextjs");
-BoardDelta,
+  BoardDelta,
   BoardProjection,
   BoardGroup,
   BoardAnnotation,
   EntityType as ApiEntityType,
 } from "../../../types"
+
+import { captureException } from "@sentry/nextjs";
 
 interface RouteContext {
   params: Promise<{ id: string }>;

@@ -5,14 +5,9 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { withRateLimit } from "@/middleware/rate-limiter";
 
+import { captureException } from "@sentry/nextjs";
 import {
-import
-{
-  captureException;
-}
-from;
-("@sentry/nextjs");
-type AssignmentResult
+  type AssignmentResult
 ,
 type BulkAssignmentRequest
 ,
@@ -21,7 +16,7 @@ type BulkAssignmentRequest
   processPreSelectedShifts,
   separateShiftsByAssignmentType,
   sortResultsByInputOrder,
-} from "./helpers"
+} from "./helpers";
 
 /**
  * POST /api/staff/shifts/bulk-assignment

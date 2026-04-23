@@ -11,20 +11,15 @@ import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type { ShipmentItemUpdateInput } from "./helpers";
+import { captureException } from "@sentry/nextjs";
 import {
-import
-{
-  captureException;
-}
-from;
-("@sentry/nextjs");
-buildShipmentItemUpdateData,
+  buildShipmentItemUpdateData,
   fetchExistingShipmentItem,
   fetchUpdatedShipmentItem,
   updateShipmentItemRaw,
   updateShipmentTotals,
   validateShipmentItemUpdate,
-} from "./helpers"
+} from "./helpers";
 
 export async function PUT(
   request: Request,

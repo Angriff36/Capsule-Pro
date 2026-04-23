@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -208,8 +209,8 @@ export default function TaxSetupPage() {
     setLoading(true);
     try {
       const [configsRes, bracketsRes] = await Promise.all([
-        fetch("/api/payroll/tax/list"),
-        fetch("/api/payroll/tax/brackets"),
+        apiFetch("/api/payroll/tax/list"),
+        apiFetch("/api/payroll/tax/brackets"),
       ]);
       const configsData = await configsRes.json();
       const bracketsData = await bracketsRes.json();
@@ -229,7 +230,7 @@ export default function TaxSetupPage() {
 
   const handleToggleActive = async (configId: string, isActive: boolean) => {
     try {
-      await fetch("/api/payroll/tax/list", {
+      await apiFetch("/api/payroll/tax/list", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ configId, isActive }),
@@ -255,7 +256,7 @@ export default function TaxSetupPage() {
 
     setPreviewLoading(true);
     try {
-      const res = await fetch("/api/payroll/tax/brackets", {
+      const res = await apiFetch("/api/payroll/tax/brackets", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

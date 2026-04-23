@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Calendar } from "@repo/design-system/components/ui/calendar";
@@ -89,7 +90,7 @@ export function AssignTrainingDialog({
   useEffect(() => {
     if (open) {
       setLoadingEmployees(true);
-      fetch("/api/staff/employees")
+      apiFetch("/api/staff/employees")
         .then((res) => res.json())
         .then((data) => {
           if (data.employees) {
@@ -113,7 +114,7 @@ export function AssignTrainingDialog({
 
     setIsSubmitting(true);
     try {
-      const response = await fetch("/api/training/assignments", {
+      const response = await apiFetch("/api/training/assignments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

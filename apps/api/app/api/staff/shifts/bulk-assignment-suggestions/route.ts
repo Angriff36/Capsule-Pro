@@ -3,19 +3,13 @@ import { database, Prisma } from "@repo/database";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { withRateLimit } from "@/middleware/rate-limiter";
+import { captureException } from "@sentry/nextjs";
 import {
-import
-{
-  captureException;
-}
-from;
-("@sentry/nextjs");
-type AutoAssignmentResult
+  type AutoAssignmentResult
 ,
   getAssignmentSuggestionsForMultipleShifts,
-type ShiftRequirement
-,
-} from "@/lib/staff/auto-assignment"
+type ShiftRequirement,
+} from "@/lib/staff/auto-assignment";
 
 /**
  * POST /api/staff/shifts/bulk-assignment-suggestions

@@ -6,16 +6,11 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import {
-import
-{
-  captureException;
-}
-from;
-("@sentry/nextjs");
-sendEmailFromTemplate,
+  sendEmailFromTemplate,
   sendEmailNotification,
-} from "@repo/notifications"
+} from "@repo/notifications";
 
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";

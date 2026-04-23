@@ -106,6 +106,46 @@ const rewrites: NextConfig["rewrites"] = async () => {
       source: "/api/conflicts/:path*",
       destination: `${apiBaseUrl}/api/conflicts/:path*`,
     },
+    {
+      source: "/api/accounting/:path*",
+      destination: `${apiBaseUrl}/api/accounting/:path*`,
+    },
+    {
+      source: "/api/facilities/:path*",
+      destination: `${apiBaseUrl}/api/facilities/:path*`,
+    },
+    {
+      source: "/api/training/:path*",
+      destination: `${apiBaseUrl}/api/training/:path*`,
+    },
+    {
+      source: "/api/staffing/:path*",
+      destination: `${apiBaseUrl}/api/staffing/:path*`,
+    },
+    {
+      source: "/api/logistics/:path*",
+      destination: `${apiBaseUrl}/api/logistics/:path*`,
+    },
+    {
+      source: "/api/procurement/:path*",
+      destination: `${apiBaseUrl}/api/procurement/:path*`,
+    },
+    {
+      source: "/api/activity-feed/:path*",
+      destination: `${apiBaseUrl}/api/activity-feed/:path*`,
+    },
+    {
+      source: "/api/knowledge-base/:path*",
+      destination: `${apiBaseUrl}/api/knowledge-base/:path*`,
+    },
+    {
+      source: "/api/calendar/:path*",
+      destination: `${apiBaseUrl}/api/calendar/:path*`,
+    },
+    {
+      source: "/api/workorder/:path*",
+      destination: `${apiBaseUrl}/api/workorder/:path*`,
+    },
   ];
 };
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -62,7 +63,7 @@ export default function CalendarSyncPage() {
 
   const fetchSyncStatus = useCallback(async () => {
     try {
-      const response = await fetch("/api/calendar/sync/status");
+      const response = await apiFetch("/api/calendar/sync/status");
       if (response.ok) {
         const data = await response.json();
         setSyncs(data.syncs || []);
@@ -91,7 +92,7 @@ export default function CalendarSyncPage() {
   const handleConnect = async (provider: string) => {
     setActionLoading(provider);
     try {
-      const response = await fetch("/api/calendar/sync/connect", {
+      const response = await apiFetch("/api/calendar/sync/connect", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ provider, action: "initiate" }),
@@ -120,7 +121,7 @@ export default function CalendarSyncPage() {
 
     setActionLoading(`disconnect-${provider}`);
     try {
-      const response = await fetch("/api/calendar/sync/disconnect", {
+      const response = await apiFetch("/api/calendar/sync/disconnect", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ provider }),
@@ -143,7 +144,7 @@ export default function CalendarSyncPage() {
   const handleSync = async (provider: string) => {
     setActionLoading(`sync-${provider}`);
     try {
-      const response = await fetch("/api/calendar/sync/trigger", {
+      const response = await apiFetch("/api/calendar/sync/trigger", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ provider }),

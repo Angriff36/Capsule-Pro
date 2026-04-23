@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -118,7 +119,7 @@ export default function VendorDetailPage() {
   const loadVendor = async () => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/procurement/vendors/${vendorId}`);
+      const res = await apiFetch(`/api/procurement/vendors/${vendorId}`);
       const data = await res.json();
       if (data.success) {
         const v = data.data.vendor as Vendor;
@@ -155,7 +156,7 @@ export default function VendorDetailPage() {
   const handleSave = async () => {
     setSaving(true);
     try {
-      const res = await fetch("/api/procurement/vendors/commands/update", {
+      const res = await apiFetch("/api/procurement/vendors/commands/update", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ vendorId, ...form }),
@@ -177,7 +178,7 @@ export default function VendorDetailPage() {
   const handleAddContact = async () => {
     if (!contactForm.contactName.trim()) return;
     try {
-      const res = await fetch("/api/procurement/vendors/commands/add-contact", {
+      const res = await apiFetch("/api/procurement/vendors/commands/add-contact", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ vendorId, ...contactForm }),
@@ -202,7 +203,7 @@ export default function VendorDetailPage() {
 
   const handleRate = async () => {
     try {
-      const res = await fetch("/api/procurement/vendors/commands/rate", {
+      const res = await apiFetch("/api/procurement/vendors/commands/rate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ vendorId, ...ratingForm }),

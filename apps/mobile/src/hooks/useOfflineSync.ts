@@ -54,14 +54,15 @@ async function processQueueItem(item: OfflineQueueItem): Promise<boolean> {
       method = "PATCH";
       body = { status: "done" };
       break;
-    case "markPrepComplete":
-      endpoint = "/api/kitchen/prep-list-items/commands/mark-completed";
+    case "markPrepComplete": {
+      const completed = item.payload?.completed ?? true;
+      endpoint = completed
+        ? "/api/kitchen/prep-list-items/commands/mark-completed"
+        : "/api/kitchen/prep-list-items/commands/mark-uncompleted";
       method = "POST";
-      body = {
-        itemId: item.taskId,
-        completed: item.payload?.completed ?? true,
-      };
+      body = { itemId: item.taskId };
       break;
+    }
     case "updatePrepNotes":
       endpoint = "/api/kitchen/prep-list-items/commands/update-prep-notes";
       method = "POST";
@@ -79,7 +80,7 @@ async function processQueueItem(item: OfflineQueueItem): Promise<boolean> {
     await apiClient(endpoint, {
       token: token ?? undefined,
       method,
-      body: JSON.stringify(body),
+      body,
     });
     return true;
   } catch (error) {

@@ -3,7 +3,14 @@
     "allow": [
       "Bash(wc:*)",
       "Bash(find /home/oc/src/openclaw/projects/capsule-pro/apps/api/app/api -name \"route.ts\" -exec grep -l \"select\\\\|include\" {})",
-      "Bash(find /home/oc/src/openclaw/projects/capsule-pro -name dev* -o -name *dev.cmd)"
+      "Bash(find /home/oc/src/openclaw/projects/capsule-pro -name dev* -o -name *dev.cmd)",
+      "Bash(pnpm --filter api test __tests__/events/debug-budget.test.ts)",
+      "Bash(pnpm --filter api test __tests__/events/event-lifecycle.test.ts)",
+      "Bash(pnpm --filter api test __tests__/inventory/inventory-item-crud.test.ts __tests__/events/event-lifecycle.test.ts)",
+      "Bash(pnpm tsc:*)",
+      "Bash(pnpm --filter api test __tests__/inventory/forecasting.test.ts)",
+      "Bash(pnpm dlx:*)",
+      "Bash(pnpm --filter api test)"
     ]
   },
   "enabledMcpjsonServers": [

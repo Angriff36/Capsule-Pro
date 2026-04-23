@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -50,7 +51,7 @@ export function EventBriefingCard({
     setError(null);
 
     try {
-      const response = await fetch(`/api/ai/summaries/${eventId}`);
+      const response = await apiFetch(`/api/ai/summaries/${eventId}`);
       if (!response.ok) {
         throw new Error("Failed to generate briefing");
       }

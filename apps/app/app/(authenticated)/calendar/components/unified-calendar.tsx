@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import {
   DndContext,
   type DragEndEvent,
@@ -266,7 +267,7 @@ export function UnifiedCalendar({
           types: filters.join(","),
         });
 
-        const response = await fetch(`/api/calendar?${params}`);
+        const response = await apiFetch(`/api/calendar?${params}`);
         if (response.ok) {
           const data = await response.json();
           setEvents(data.events || []);
@@ -506,7 +507,7 @@ export function UnifiedCalendar({
         originalMinutes
       );
 
-      const response = await fetch("/api/events/event/commands/update-date", {
+      const response = await apiFetch("/api/events/event/commands/update-date", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

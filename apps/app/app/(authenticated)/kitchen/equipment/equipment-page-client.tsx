@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -96,7 +97,7 @@ export function EquipmentPageClient() {
 
   async function fetchEquipment() {
     try {
-      const res = await fetch("/api/kitchen/equipment/list");
+      const res = await apiFetch("/api/kitchen/equipment/list");
       const data = await res.json();
       if (data.success) {
         setEquipment(data.equipment || []);
@@ -108,7 +109,7 @@ export function EquipmentPageClient() {
 
   async function fetchWorkOrders() {
     try {
-      const res = await fetch("/api/workorder/list");
+      const res = await apiFetch("/api/workorder/list");
       const data = await res.json();
       if (data.success) {
         setWorkOrders(data.workOrders || []);
@@ -120,7 +121,7 @@ export function EquipmentPageClient() {
 
   async function fetchAlerts() {
     try {
-      const res = await fetch("/api/kitchen/equipment/alerts?minSeverity=low");
+      const res = await apiFetch("/api/kitchen/equipment/alerts?minSeverity=low");
       const data = await res.json();
       if (data.success) {
         setAlerts(data.alerts || []);

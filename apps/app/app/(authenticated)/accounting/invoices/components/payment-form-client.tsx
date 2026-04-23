@@ -6,6 +6,7 @@
 
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card } from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
@@ -86,7 +87,7 @@ export function PaymentFormClient({
 
     try {
       // Create payment
-      const response = await fetch("/api/accounting/payments", {
+      const response = await apiFetch("/api/accounting/payments", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -109,7 +110,7 @@ export function PaymentFormClient({
       const payment = await response.json();
 
       // Process payment (in real implementation, this would call the payment gateway)
-      await fetch(`/api/accounting/payments/${payment.id}`, {
+      await apiFetch(`/api/accounting/payments/${payment.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -123,7 +124,7 @@ export function PaymentFormClient({
 
       // If saving payment method, create tokenized record
       if (savePaymentMethod && paymentMethodNickname) {
-        await fetch("/api/accounting/payment-methods", {
+        await apiFetch("/api/accounting/payment-methods", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({

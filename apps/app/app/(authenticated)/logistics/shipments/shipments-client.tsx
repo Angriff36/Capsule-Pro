@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -148,7 +149,7 @@ export function ShipmentsClient() {
   const loadShipments = async () => {
     setLoading(true);
     try {
-      const res = await fetch("/api/shipments/shipment/list");
+      const res = await apiFetch("/api/shipments/shipment/list");
       const data = await res.json();
       setShipments(data.shipments || []);
     } catch (error) {
@@ -162,7 +163,7 @@ export function ShipmentsClient() {
     e.preventDefault();
     setCreating(true);
     try {
-      const res = await fetch("/api/shipments/shipment/commands/create", {
+      const res = await apiFetch("/api/shipments/shipment/commands/create", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -211,7 +212,7 @@ export function ShipmentsClient() {
       const command = commandMap[status];
       if (!command) return;
 
-      const res = await fetch(`/api/shipments/shipment/commands/${command}`, {
+      const res = await apiFetch(`/api/shipments/shipment/commands/${command}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ shipmentId }),
