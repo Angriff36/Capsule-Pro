@@ -11,8 +11,24 @@ interface GlobalErrorProperties {
   readonly reset: () => void;
 }
 
+/**
+ * Next.js throws NEXT_HTTP_ERROR_FALLBACK;<status> for expected HTTP errors
+ * (404, 401, 403). These are not real exceptions — they're normal responses
+ * that should NOT be reported to Sentry.
+ */
+function isNextHTTPErrorFallback(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "digest" in error &&
+    typeof (error as { digest: unknown }).digest === "string" &&
+    (error as { digest: string }).digest.startsWith("NEXT_HTTP_ERROR_FALLBACK")
+  );
+}
+
 const GlobalError = ({ error, reset }: GlobalErrorProperties) => {
   useEffect(() => {
+    if (isNextHTTPErrorFallback(error)) return;
     captureException(error);
   }, [error]);
 

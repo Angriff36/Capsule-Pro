@@ -9,11 +9,32 @@ interface LocaleErrorProps {
 }
 
 /**
+ * Next.js throws NEXT_HTTP_ERROR_FALLBACK;<status> for expected HTTP errors
+ * (404, 401, 403). These are not real exceptions — skip Sentry reporting.
+ */
+function isNextHTTPErrorFallback(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "digest" in error &&
+    typeof (error as { digest: unknown }).digest === "string" &&
+    (error as { digest: string }).digest.startsWith("NEXT_HTTP_ERROR_FALLBACK")
+  );
+}
+
+/**
  * Error boundary for the [locale] route.
  * Catches RangeError from Intl APIs and other locale-related errors.
  */
 export default function LocaleError({ error, reset }: LocaleErrorProps) {
+  // Check if this is a locale-related RangeError
+  const isLocaleError =
+    error instanceof RangeError ||
+    error.message?.includes("locale") ||
+    error.message?.includes("Intl");
+
   useEffect(() => {
+    if (isNextHTTPErrorFallback(error)) return;
     console.error("[Locale Error]", {
       message: error.message,
       name: error.name,
@@ -26,12 +47,6 @@ export default function LocaleError({ error, reset }: LocaleErrorProps) {
       },
     });
   }, [error, isLocaleError]);
-
-  // Check if this is a locale-related RangeError
-  const isLocaleError =
-    error instanceof RangeError ||
-    error.message?.includes("locale") ||
-    error.message?.includes("Intl");
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background text-foreground">

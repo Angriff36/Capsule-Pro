@@ -8,6 +8,20 @@ import { useEffect } from "react";
 const DB_ERROR_PATTERN =
   /connection terminated|connection refused|ECONNREFUSED|ENOTFOUND|DATABASE_URL|Database connection failed/i;
 
+/**
+ * Next.js throws NEXT_HTTP_ERROR_FALLBACK;<status> for expected HTTP errors
+ * (404, 401, 403). These are not real exceptions — skip Sentry reporting.
+ */
+function isNextHTTPErrorFallback(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "digest" in error &&
+    typeof (error as { digest: unknown }).digest === "string" &&
+    (error as { digest: string }).digest.startsWith("NEXT_HTTP_ERROR_FALLBACK")
+  );
+}
+
 export default function AuthenticatedError({
   error,
   reset,
@@ -19,6 +33,7 @@ export default function AuthenticatedError({
   const isDbError = DB_ERROR_PATTERN.test(message);
 
   useEffect(() => {
+    if (isNextHTTPErrorFallback(error)) return;
     console.error("[AuthenticatedError]", message);
     captureException(error, {
       tags: {

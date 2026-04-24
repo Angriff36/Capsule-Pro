@@ -10,11 +10,26 @@ interface ErrorProperties {
 }
 
 /**
+ * Next.js throws NEXT_HTTP_ERROR_FALLBACK;<status> for expected HTTP errors
+ * (404, 401, 403). These are not real exceptions — skip Sentry reporting.
+ */
+function isNextHTTPErrorFallback(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "digest" in error &&
+    typeof (error as { digest: unknown }).digest === "string" &&
+    (error as { digest: string }).digest.startsWith("NEXT_HTTP_ERROR_FALLBACK")
+  );
+}
+
+/**
  * Error boundary for the home page route.
  * Catches locale-related errors and other runtime errors gracefully.
  */
 const Error = ({ error, reset }: ErrorProperties) => {
   useEffect(() => {
+    if (isNextHTTPErrorFallback(error)) return;
     // Log to Sentry with additional context
     captureException(error, {
       tags: {

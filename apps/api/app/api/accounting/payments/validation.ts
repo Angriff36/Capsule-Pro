@@ -9,6 +9,9 @@
  */
 
 import { invariant } from "@/app/lib/invariant";
+import { captureException } from "@sentry/nextjs";
+
+export { captureException };
 
 export const PAYMENT_STATUSES = [
   "PENDING",
