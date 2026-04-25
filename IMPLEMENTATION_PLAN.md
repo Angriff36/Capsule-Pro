@@ -3524,3 +3524,265 @@ These patterns are correctly implemented and should be preserved:
 | A11-53 | AE2-B05: Cron timing-unsafe comparison | **TIER 3** | Replace string comparison with `crypto.timingSafeEqual` for CRON_SECRET check. |
 | A11-54 | AE2-B06: Employee emails in errors | **TIER 3** | Store only unmapped count, not email addresses. |
 | A11-55 | AE2-B01: CSP disabled | **TIER 3** | Configure at least a basic CSP in `packages/security/proxy.ts`. |
+
+---
+
+## Test Quality & Coverage Gap Audit (12th Pass)
+
+> **Audited:** 2026-04-25
+> **Scope:** All ~160 test files (55 in `apps/api`, 29 in `apps/app`, 76 in `packages/*`) + 57 E2E spec files. 6 parallel subagents read 30+ test files in full, grepped assertion patterns across the suite, cross-referenced every CRITICAL finding from passes 6-11 against test existence, mapped test distribution per domain, and assessed test infrastructure quality.
+> **Method:** 6 parallel subagents — (1) weak assertion pattern analysis, (2) mock-heavy/circular test detection, (3) CRITICAL bug coverage cross-reference, (4) test distribution heatmap, (5) test infrastructure & CI quality, (6) deep-read of 20 representative test files. All agent findings synthesized below.
+
+### Part A: Assertion Effectiveness
+
+#### 1. Weak Assertion Patterns
+
+**`expect(true).toBe(true)` tautologies — 4 files:**
+
+| File | Line(s) | Context |
+|---|---|---|
+| `apps/app/__tests__/settings/settings-workflow.test.ts` | 33 | Comment: "Cannot produce undefined crashes" — renders static JSX, asserts `true === true` |
+| `apps/app/__tests__/api/command-board/agent-loop-timeout.test.ts` | 32, 38 | Placeholder tests for timeout behavior — body is just `expect(true).toBe(true)` |
+| `apps/api/__tests__/kitchen/manifest-code-generation.test.ts` | 121 | Informational-only test; always passes |
+
+**`expect.anything()` / `expect.any()` — 20+ occurrences across 12 files:**
+
+Most uses are defensible (matching dynamic fields like timestamps, UUIDs, nonces). The problematic ones:
+- `apps/api/__tests__/command-board/board-crud.test.ts:296,335` — `expect.any(Object)` used where specific shape validation is needed
+- `apps/api/__tests__/command-board/board-crud.test.ts:546-547` — `expect.objectContaining({ name: expect.any(Object) })` masks structural issues
+
+**`expect(() => fn()).not.toThrow()` — 7 occurrences across 2 files:**
+
+| File | Line(s) | What's Not Thrown |
+|---|---|---|
+| `apps/api/__tests__/kitchen/manifest-shadow-claim-route.test.ts` | 5 occurrences | Route handler calls — passes regardless of what route returns |
+| `apps/api/__tests__/inventory/inventory-item-crud.test.ts` | 2 occurrences | Validation functions — only confirms no exception, not correct return value |
+
+**Vacuous tests (would pass even if code was deleted):**
+
+| File | Issue |
+|---|---|
+| `apps/app/__tests__/sign-in.test.tsx` | 1 test, 1 expect: `expect(container).toBeDefined()` — `render()` always returns a defined container |
+| `apps/app/__tests__/sign-up.test.tsx` | Same pattern as sign-in |
+| `apps/api/__tests__/outbox-publish-e2e.test.ts` | 8 tests test inline envelope-building logic, NOT imported from production code. If real publisher changes, tests still pass |
+| `apps/api/__tests__/sales-reporting/generate.test.ts` | Entire `describe.skip` with 0 assertions — only a comment pointing to package-level tests |
+
+#### 2. Mock-Heavy / Circular Tests
+
+**142 `vi.mock()` calls across 44 test files.** The mock landscape:
+
+| Mock Target | Files Mocking It | Assessment |
+|---|---|---|
+| `@repo/database` | 25+ files | Full Prisma replacement — tests verify mock call patterns, not real DB behavior |
+| `@repo/auth/server` | 15+ files | Clerk auth mocked — prevents testing real auth enforcement |
+| `next/headers` | 10+ files | Headers mocked — prevents testing real middleware chain |
+
+**Circular mock testing — 2 most problematic files:**
+
+1. `apps/app/app/lib/tenant.test.ts` — Mocks `@repo/database` and `@repo/auth/server` entirely, then verifies the mock was called with data defined in the test setup. The test validates mock orchestration, not tenant resolution logic.
+
+2. `apps/mobile/__tests__/offline-sync.test.ts` — Mocks AsyncStorage, NetInfo, React Query, API client, and auth store. Tests verify `mockAsyncStorage.getItem` was called with the exact data set up by `mockAsyncStorage.getItem.mockResolvedValue()`.
+
+**Good patterns found:** 20+ test files import real production functions and test them directly. Packages like `realtime`, `sales-reporting`, `database` (critical-path), and `notifications` test pure functions with zero mocks — the ideal approach.
+
+#### 3. Conditional Assertions (Tests That Can Never Fail)
+
+`apps/api/__tests__/staff/auto-assignment.test.ts` lines 154-158, 200-212 use conditional branching:
+
+```typescript
+if (result.suggestions[0].confidence === "high") {
+  expect(result.suggestions[0].employeeId).toBeDefined();
+}
+```
+
+These assertions only run when the condition is met — the test moves the goalposts rather than asserting a specific outcome. Combined with `console.log` debug statements left in (lines 145-150, 182-196), this suggests tests were written before the implementation was fully understood.
+
+### Part B: Coverage Gap Analysis vs Known CRITICAL Bugs
+
+#### 1. Cross-Reference: CRITICAL Findings vs Test Coverage
+
+| # | CRITICAL Finding (Pass #) | Test Exists? | Would Catch Bug? | Gap Type |
+|---|---|---|---|---|
+| 1 | SQL injection in `payroll/approvals/history/route.ts` (pass 9) | **NO** | N/A | **COVERAGE GAP** |
+| 2 | Schema drift in `events/importer.ts` — camelCase vs snake_case (pass 8) | **NO** | N/A | **COVERAGE GAP** |
+| 3 | Broken `timecards/me/route.ts` — non-existent table JOIN (pass 8) | **NO** | N/A | **COVERAGE GAP** |
+| 4 | Missing auth on email webhook (pass 7/11) | **NO** | N/A | **COVERAGE GAP** |
+| 5 | Cross-tenant data in `outbox/publish` (pass 7) | Yes | **NO** — test blesses insecure behavior | **QUALITY ISSUE** |
+| 6 | Chart-of-accounts PATCH vs PUT mismatch (pass 9) | **NO** | N/A | **COVERAGE GAP** |
+| 7 | Mobile API `{taskId}` vs `{id}` mismatch (pass 10) | **NO** | N/A | **COVERAGE GAP** |
+| 8 | Ably auth tenant spoofing (pass 11) | Partial | **NO** — integration test exists but doesn't test spoofing | **QUALITY ISSUE** |
+| 9 | Rate limiter inert (pass 11) | Yes | **NO** — tests the limiter logic but not that headers are injected | **QUALITY ISSUE** |
+| 10 | Calendar callback IDOR (pass 11) | **NO** | N/A | **COVERAGE GAP** |
+| 11 | Cross-tenant forecast access (pass 11) | **NO** | N/A | **COVERAGE GAP** |
+| 12 | Webhook payload injection (pass 11) | **NO** | N/A | **COVERAGE GAP** |
+| 13 | Silent webhook drops (pass 11) | **NO** | N/A | **COVERAGE GAP** |
+| 14 | Hardcoded Clerk secret in scripts (pass 11) | N/A | N/A | Not testable — static analysis only |
+| 15 | Supplier-catalog sig bypass (pass 11) | **NO** | N/A | **COVERAGE GAP** |
+| 16 | `events/importer.ts` camelCase drift (pass 8, #10) | **NO** | N/A | **COVERAGE GAP** |
+| 17 | Labor-budget `Prisma.raw()` data corruption (pass 8, #16) | **NO** | N/A | **COVERAGE GAP** |
+| 18 | Recipe-costing division by zero (pass 11) | **NO** | N/A | **COVERAGE GAP** |
+| 19 | Recipe version race condition (pass 11) | **NO** | N/A | **COVERAGE GAP** |
+
+**Scorecard: 15 of 19 CRITICAL bugs have ZERO test coverage. 3 have tests that exist but don't catch the bug. 1 is not testable. ZERO CRITICAL bugs would have been caught by the existing test suite before the audit.**
+
+#### 2. High-Risk Areas Without ANY Tests
+
+| Area | Source Files | Risk Level | Zero Tests? |
+|---|---|---|---|
+| Auth middleware chain (`proxy.ts`) | `apps/api/proxy.ts` | CRITICAL | **YES** |
+| API key auth middleware | `apps/api/middleware/api-key-auth.ts` | HIGH | **YES** (service tested, middleware not) |
+| All webhook receivers (Clerk, Stripe, supplier-catalog, email, SMS) | 5 route files | CRITICAL | **YES** |
+| Tenant isolation in raw SQL queries | 250 files with raw SQL | CRITICAL | **YES** (1 invariant test exists for conflicts route only) |
+| Goodshuffle sync service | 4 files in `apps/api/app/lib/` | HIGH | **YES** |
+| Nowsta sync service | 2 files in `apps/api/app/lib/` | HIGH | **YES** |
+| Accounting module (17 routes) | `apps/api/app/api/accounting/` | CRITICAL | **YES** |
+| Facilities module (12 routes) | `apps/api/app/api/facilities/` | CRITICAL | **YES** |
+| Logistics module (14 routes) | `apps/api/app/api/logistics/` | CRITICAL | **YES** |
+| Payroll API routes (35 routes) | `apps/api/app/api/payroll/` | CRITICAL | **YES** (engine package tested, API routes not) |
+| Procurement module (37 routes) | `apps/api/app/api/procurement/` | CRITICAL | **YES** |
+| CRM module (61 routes) | `apps/api/app/api/crm/` | HIGH | **YES** |
+| Training module (12 routes) | `apps/api/app/api/training/` | MEDIUM | **YES** |
+| Mobile app screens (9 screens) | `apps/mobile/src/screens/` | HIGH | **YES** (only offline queue tested) |
+
+#### 3. Test Distribution Heatmap
+
+| Module | Route Files | Test Files | Test Cases | Had CRITICAL Finding? | Gap Severity |
+|---|---:|---:|---:|---|---|
+| Kitchen | 259 | 27 | ~200 | Schema drift in recipes | MEDIUM — best-tested module |
+| Command Board | 39 | 9 | ~80 | UI removed (L1.1) | LOW — tests still reference removed UI |
+| Inventory | 102 | 2 | ~90 | Forecast cross-tenant, CRUD bugs | HIGH |
+| Events | 141 | 1 | ~25 | Importer broken | HIGH |
+| Staff | 50 | 1 | ~11 | Auto-assignment conditional | HIGH |
+| CRM | 61 | 0 | 0 | SQL injection in scoring | CRITICAL |
+| Accounting | 17 | 0 | 0 | PATCH vs PUT, mock payments | CRITICAL |
+| Facilities | 12 | 0 | 0 | Assets broken | CRITICAL |
+| Logistics | 14 | 0 | 0 | Driver update correctness | CRITICAL |
+| Payroll | 35 | 0 | 0 | SQL injection, bank accounts | CRITICAL |
+| Procurement | 37 | 0 | 0 | Runtime crashes (Blocker 2) | CRITICAL |
+| Training | 12 | 0 | 0 | — | HIGH |
+| Timecards | 22 | 0 | 0 | Broken me/route | CRITICAL |
+| Calendar | 8 | 0 | 0 | Callback IDOR | CRITICAL |
+| Analytics | 5 | 0 | 0 | — | MEDIUM |
+| Search | 1 | 0 | 0 | — | LOW |
+| Settings | 14 | 0 | 0 | — | LOW |
+| Webhooks | 1 | 0 | 0 | Signature bypass | CRITICAL |
+
+**Correlation:** 5 of 5 modules with CRITICAL/HIGH bugs have ZERO test files. Kitchen, the only module with substantial test coverage, had the fewest CRITICAL bugs — confirming the expected correlation between test coverage and bug density.
+
+### Part C: Test Infrastructure Quality
+
+#### 1. Test Setup & Fixtures
+
+| Aspect | Finding | Assessment |
+|---|---|---|
+| Vitest configs | 17 separate `vitest.config.*` files across apps and packages | Good — proper isolation |
+| Global setup | `vitest.setup.ts` with browser mocks + `apps/api/test/setup.ts` | Adequate |
+| Integration setup | `apps/api/test/setup.integration.ts` connects to real DB | Good |
+| Shared fixtures | **NONE** — no centralized test-utils.ts or fixture files | POOR |
+| Test DB isolation | Integration tests create records but cleanup varies | CONCERN |
+| Mock defaults | API tests heavily alias `@repo/database` to vi.mock | FRAGILE |
+
+#### 2. Deep-Read Quality Assessment (20 files)
+
+| Quality Tier | Files | Example |
+|---|---|---|
+| **Very Thorough** (3+ expects/test, edge cases) | 10 | `inventory-item-crud.test.ts` (40 tests, 85 expects, NaN/null/undefined edge cases), `rate-limiter.test.ts` (30 tests, 80 expects), `outbox/publish.integration.test.ts` (22 tests, real DB) |
+| **Thorough** (2-3 expects/test) | 5 | `quickbooks-bill-export.test.ts` (18 tests, IIF structure), `sales-reporting/calculators.test.ts` (22 tests, pure functions) |
+| **Basic** (1-2 expects/test) | 3 | `health.test.ts` (1 test, appropriate), `recipe-costing-update.test.ts` (5 tests) |
+| **Vacuous** (0 effective expects) | 2 | `sales-reporting/generate.test.ts` (0 asserts, entire suite skipped), `sign-in.test.tsx` (1 assert, trivially passes) |
+
+**Average assertion density: ~2.5 expect() calls per test case** across the 20 files. This is reasonable but skewed by the thorough files — many kitchen manifest tests have 1-2 expects each.
+
+#### 3. E2E Test Effectiveness
+
+**47 E2E spec files** (not 57 — the prior 5th pass count included some file-existence checks and spider tests). Key findings:
+
+- **35 tests are skipped** (9.2% of suite) — 25 unconditional, 4 bare `test.skip()`, 6 conditional
+- **13 specs (23%) would encounter known blockers** if run against current code (command-board UI removed, procurement crashes, revenue recognition 501)
+- **E2E tests have NEVER been run in CI** — no GitHub Actions workflow triggers `pnpm test:e2e`
+- **Zero E2E coverage** for logistics, payroll, training, and notifications modules
+- **Average workflow E2E coverage: ~7.5%** of the 10 documented user workflows
+- **No database seeding** — 28 of 35 skips are caused by "no data available"
+- **Spider test (`full-site.spider.spec.ts`) crawls 101 routes**, many known to 404 or crash
+
+#### 4. CI Integration
+
+| Aspect | Finding |
+|---|---|
+| CI workflow | `.github/workflows/ci.yml` runs unit tests on every PR |
+| Separate manifest CI | `.github/workflows/manifest-ci.yml` for manifest-specific tests |
+| Coverage reporting | **NONE** — only `packages/payroll-engine` has coverage configured |
+| E2E in CI | **NOT CONFIGURED** |
+| Flaky test handling | **NONE** — retries: 0 in Playwright config |
+| Coverage thresholds | **NONE** — no minimum coverage enforced |
+
+### Part D: Recommended Actions
+
+#### Tier T0 — Delete Vacuous Tests (immediate, zero risk)
+
+1. Delete `apps/app/__tests__/sign-in.test.tsx` — trivially passes regardless of implementation
+2. Delete `apps/app/__tests__/sign-up.test.tsx` — same
+3. Delete `apps/app/__tests__/api/command-board/agent-loop-timeout.test.ts` lines 32, 38 — `expect(true).toBe(true)` placeholders
+4. Delete `apps/api/__tests__/kitchen/manifest-code-generation.test.ts` line 121 — informational-only tautology
+5. Delete `apps/app/__tests__/settings/settings-workflow.test.ts` line 33 — tautology
+
+#### Tier T1 — Write Tests for CRITICAL Bug Classes (prevent re-introduction)
+
+6. **SQL injection prevention test** — parameterized test for `payroll/approvals/history/route.ts` asserting that `action`, `tenantId`, and `payrollRunId` are validated/parameterized before SQL construction
+7. **Schema drift invariant test** — extend `apps/api/__tests__/conflicts/detect-route-sql.invariant.test.ts` to cover camelCase-vs-snake_case column names in raw SQL across ALL modules (currently only covers conflicts route)
+8. **Timecards `me/route.ts` smoke test** — verify the route doesn't 500 on standard queries
+9. **Webhook auth enforcement test** — test suite for ALL webhook receivers asserting signature verification is required
+10. **Tenant isolation integration test** — parameterized test asserting that outbox/publish, forecasts/batch, and calendar callbacks filter by `tenantId`
+11. **Chart-of-accounts HTTP method test** — verify PATCH returns 405, PUT works, GET returns expected shape
+12. **Mobile API contract test** — test that `kitchen-tasks/commands/claim` accepts both `{ id }` and `{ taskId }` (or document the canonical field name)
+
+#### Tier T2 — Fix Quality Issues in Existing Tests
+
+13. **Fix `outbox/publish.integration.test.ts`** line 690 — change comment from documenting insecure behavior to asserting tenant filtering IS enforced
+14. **Fix `staff/auto-assignment.test.ts`** — remove conditional assertions (`if (confidence === "high")`) and assert specific outcomes; remove `console.log` debug statements
+15. **Fix `outbox-publish-e2e.test.ts`** — import envelope-building logic from production code instead of inlining it
+16. **Unskip `sales-reporting/generate.test.ts`** — either implement the PDF generation test or add a proper API-level test for the endpoint
+
+#### Tier T3 — Test Infrastructure Improvements
+
+17. **Create shared test fixtures** — centralized `test-utils.ts` with common mock patterns, database seed data, and auth helpers
+18. **Add coverage reporting** to main vitest config with `text` and `json` reporters; enforce minimum 50% coverage on new files
+19. **Enable E2E in CI** — add GitHub Actions step: start dev server → run migrations → seed → run E2E
+20. **Create database seeding script** — minimum: 1 org, 5 recipes, 10 inventory items, 5 staff, 2 events
+21. **Add flaky test handling** — configure Playwright retries: 2 for CI, 0 for local
+
+#### Tier T4 — Coverage Targets by Module (Prioritized by Bug Density)
+
+| Module | Target Test Files | Priority | Justification |
+|---|---|---|---|
+| Payroll API routes | 5 | P0 | CRITICAL SQL injection + bank accounts broken |
+| Accounting | 3 | P0 | CRITICAL PATCH vs PUT + mock payments |
+| Procurement | 3 | P0 | CRITICAL runtime crashes |
+| Logistics | 3 | P0 | CRITICAL correctness bugs |
+| Facilities | 2 | P1 | HIGH — assets broken |
+| Timecards | 2 | P1 | CRITICAL — broken me/route |
+| CRM | 3 | P1 | HIGH — SQL injection in scoring |
+| Events importer | 1 | P1 | CRITICAL — entire pipeline broken |
+| Integration sync (Goodshuffle/Nowsta) | 2 | P1 | HIGH — data loss risks |
+| Webhook receivers | 1 | P2 | CRITICAL — auth enforcement |
+| Auth middleware chain | 1 | P2 | CRITICAL — tenant spoofing |
+| Mobile screens | 3 | P2 | HIGH — contract mismatches |
+
+### Summary Statistics
+
+| Metric | Value |
+|---|---|
+| Total test files (unit) | ~160 (55 API + 29 app + 76 packages) |
+| Total test files (E2E) | 57 spec files |
+| `vi.mock()` calls | 142 across 44 files |
+| Tautological tests | 4 files with `expect(true).toBe(true)` |
+| Vacuous tests | 2 files with trivially-passing assertions |
+| `describe.skip` / `test.skip` in unit tests | 9 total (5 `it.todo`, 3 `it.todo`, 1 `describe.skip`) |
+| E2E skips | 35 across 9 files |
+| CRITICAL bugs with ZERO tests | 15 of 19 (79%) |
+| CRITICAL bugs with tests that don't catch them | 3 of 19 (16%) |
+| CRITICAL bugs prevented by tests | 0 of 19 (0%) |
+| API domains with zero test files | 22 of 24 (92%) |
+| E2E workflow coverage | ~7.5% of 10 documented workflows |
+| CI coverage reporting | None |
+| E2E in CI | Not configured |
