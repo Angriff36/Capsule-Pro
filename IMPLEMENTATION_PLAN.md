@@ -1,6 +1,6 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-25 (eleventh-pass credential exposure & webhook security deep-dive)
+> **Last updated:** 2026-04-25 (twelfth-pass test quality & coverage gap audit — verified & corrected)
 > **Prior passes:** 2026-04-24 initial post-expansion audit → 2026-04-24 first re-verification → 2026-04-24 third-pass spot-check → 2026-04-24 fourth-pass package health → 2026-04-24 fifth-pass E2E audit → 2026-04-24 sixth-pass raw-SQL audit → 2026-04-24 seventh-pass supplementary raw-SQL audit → 2026-04-24 eighth-pass comprehensive raw-SQL audit → 2026-04-25 ninth-pass frontend health audit → 2026-04-25 tenth-pass mobile + public website audit → **2026-04-25 eleventh-pass auth, middleware & integration services audit** (3 sub-passes: initial 6-agent pass, 6-agent addendum, 5-agent credential/webhook deep-dive).
 > **Previous snapshot:** 2026-03-08 (stale — many claims falsified by post-expansion audit)
 > **Audit method:** initial 15+ parallel subagent investigations → 8-subagent re-verification → 10-subagent third-pass → 10-subagent fourth-pass → E2E fifth-pass → 20-subagent sixth-pass → 9-subagent seventh-pass → 15-subagent confirmation pass → 20-subagent eighth-pass raw-SQL audit → 24-subagent ninth-pass frontend health audit → 11-subagent tenth-pass mobile + public website audit → **17-subagent eleventh-pass auth/middleware/integration audit** (6 + 6 + 5 agents across 3 sub-passes) covering full auth chain trace, route-level auth enforcement scan, credential exposure scan across all directories, webhook receiver security deep-audit, all 16 lib files, and external integration packages. **All agent findings verified against actual codebase before reporting.**
@@ -3529,9 +3529,9 @@ These patterns are correctly implemented and should be preserved:
 
 ## Test Quality & Coverage Gap Audit (12th Pass — Enhanced)
 
-> **Audited:** 2026-04-25
-> **Scope:** All ~160 test files (55 in `apps/api`, 29 in `apps/app`, 76 in `packages/*`) + 57 E2E spec files. 8 parallel subagents performed: (1) assertion pattern grep across full suite, (2) mock-heavy/circular test analysis with per-file quality ratings for 19 files, (3) CRITICAL-finding cross-reference against test existence for all findings from passes 6-11, (4) untested critical paths audit (auth, rate limiting, webhooks, tenant isolation, sync services), (5) E2E effectiveness deep-read of 15 spec files, (6) test infrastructure & CI quality with vitest config analysis, (7) API test quality deep-dive of 12 files, (8) package test quality analysis of 13 files.
-> **Method:** 8 parallel subagents (all Sonnet model) — every finding backed by file:line references. 30+ test files read in full across agents. Global assertion counts via grep. Cross-reference of all 19 CRITICAL findings from passes 6-11 against test file existence and quality.
+> **Audited:** 2026-04-25 (verified & corrected 2026-04-25)
+> **Scope:** 142 unit test files (55 in `apps/api/__tests__`, 29 in `apps/app/__tests__`, 1 in `apps/web/__tests__`, 57 in `packages/` — 29 in `__tests__/` dirs + 28 colocated with source) + 59 E2E spec files (57 in `e2e/` + 2 in `apps/app/e2e/`). 8 parallel subagents performed: (1) assertion pattern grep across full suite, (2) mock-heavy/circular test analysis with per-file quality ratings for 19 files, (3) CRITICAL-finding cross-reference against test existence for all findings from passes 6-11, (4) untested critical paths audit (auth, rate limiting, webhooks, tenant isolation, sync services), (5) E2E effectiveness deep-read of 15 spec files, (6) test infrastructure & CI quality with vitest config analysis, (7) API test quality deep-dive of 12 files, (8) package test quality analysis of 13 files.
+> **Method:** 8 parallel subagents (Sonnet model) + 4 verification subagents — every finding backed by file:line references. 30+ test files read in full across agents. Global assertion counts via grep, independently verified against codebase. Cross-reference of all 19 CRITICAL findings from passes 6-11 against test file existence and quality.
 
 ### Part A: Assertion Effectiveness
 
@@ -3539,13 +3539,15 @@ These patterns are correctly implemented and should be preserved:
 
 | Metric | Value |
 |---|---|
-| Total `it()` + `test()` calls | **1,663** |
-| Total `expect()` calls | **3,599** |
-| **Expects-to-tests ratio** | **2.16 : 1** |
-| `vi.mock()` calls | **167 across 44+ files** |
+| Total `it()` + `test()` calls (unit) | **2,397** (832 API + 225 app + 14 web + 1,326 packages) |
+| Total `it()` + `test()` calls (E2E) | **397** (382 in `e2e/` + 15 in `apps/app/e2e/`) |
+| Total `it()` + `test()` calls (all) | **2,794** |
+| Total `expect()` calls (unit) | **5,187** (2,080 API + 460 app + 33 web + 2,614 packages) |
+| **Expects-to-tests ratio (unit)** | **2.16 : 1** |
+| `vi.mock()` calls | **142 across 44 files** (137 in apps/ + 5 in packages/) |
 | `vi.spyOn()` calls | **21** |
 
-#### 1. Weak Assertion Patterns (~107 total)
+#### 1. Weak Assertion Patterns (~130 total)
 
 **Status-only assertions — 30 instances:**
 
@@ -3561,16 +3563,24 @@ Most concerning success-path tests:
 
 23 of 30 are in a single file: `apps/api/__tests__/inventory/inventory-item-crud.test.ts` (lines 568-1040). Validation functions like `validateCreateInventoryItemRequest`, `validateUnitOfMeasure`, `validateFSAStatus`, `validateNonNegativeNumber` are only checked for "doesn't throw" — return values are never verified. If these functions silently return wrong data, the tests still pass.
 
-Additional 7 in `apps/app/__tests__/prep-task-contract.test.ts:19`, `packages/sales-reporting/__tests__/calculators.test.ts:645`, `packages/database/__tests__/critical-path.test.ts:58`, and `packages/manifest-adapters/__tests__/rbac-permission-guard.test.ts:299-300`.
+Additional 7 in `apps/app/__tests__/prep-task-contract.test.ts:19`, `packages/sales-reporting/__tests__/calculators.test.ts:645`, `packages/database/__tests__/critical-path.test.ts:58`, `packages/manifest-adapters/__tests__/rbac-permission-guard.test.ts:299-300`, and `packages/manifest-adapters/__tests__/permission-edge-cases.test.ts:648`, `packages/sales-reporting/__tests__/parsers.test.ts:123`.
 
-**Empty/loose matchers — 25 lines (28 usages):**
+**Empty/loose matchers — 30+ usages:**
 
-- `expect.anything()` — 7 usages across 3 files. Most are third-argument wildcards in `toHaveBeenCalledWith` (structurally defensible but lack argument verification).
+- `expect.anything()` — **30 usages across 7 files** (verified by grep). Heaviest: `apps/api/__tests__/inventory/inventory-item-crud.test.ts` with 23 usages (wildcards in `toHaveBeenCalledWith` — structurally defensible but lack argument verification).
 - `expect.any(String/Number/Object)` — 18 usages. Problematic: `apps/api/__tests__/command-board/board-crud.test.ts:296,335` uses `expect.any(Object)` where specific shape validation is needed; `board-crud.test.ts:546-547` uses `expect.objectContaining({ name: expect.any(Object) })` masking structural issues.
+
+**Tautological assertions (`expect(true).toBe(true)`) — 57 instances across 5 files:**
+
+- `apps/app/__tests__/settings/settings-workflow.test.ts` — **39 of 48** test blocks contain `expect(true).toBe(true)` (81% tautological). Only 9 tests have real assertions.
+- `packages/notifications/__tests__/provider-disabled.test.ts` — **13 instances**. Tests document behavior without verifying it.
+- `apps/api/__tests__/kitchen/manifest-code-generation.test.ts` — 2 instances.
+- `apps/app/__tests__/api/command-board/agent-loop-timeout.test.ts` — 2 instances.
+- `e2e/tenant-audit-log-verification.spec.ts` — 1 instance.
 
 **Tests with NO assertions — 17 instances:**
 
-- `packages/manifest-adapters/__tests__/manifest-telemetry.test.ts` — **14 consecutive test blocks** (lines 121-488) with zero `expect()` calls. Tests call methods and `await collector.flush()` with zero verification. These will always pass regardless of whether the telemetry code works. **Most critical quality finding.**
+- `packages/manifest-adapters/__tests__/manifest-telemetry.test.ts` — **14 consecutive test blocks** (lines 121-515) with zero `expect()` calls. Tests call methods and `await collector.flush()` with zero verification. These will always pass regardless of whether the telemetry code works. **Most critical quality finding.**
 - `apps/api/__tests__/sales-reporting/generate.test.ts:34` — entire `describe.skip` with 0 assertions.
 - `apps/api/__tests__/kitchen/manifest-preptask-claim.test.ts:96` — uses `if (condition) throw new Error()` instead of `expect()`.
 - `apps/api/__tests__/kitchen/manifest-build-determinism.test.ts:179` — same pattern.
@@ -3596,7 +3606,7 @@ Additional 7 in `apps/app/__tests__/prep-task-contract.test.ts:19`, `packages/sa
 
 2. `packages/realtime/__tests__/publisher-concurrency.test.ts` — Copies `parseLimit` and `isAuthorized` functions inline from production (lines 19-40), then tests the inline copies. Lines 122-319 create literal objects and assert their own string properties: `expect(behavior.mechanism).toBe("FOR UPDATE SKIP LOCKED")`. The production publisher module is never imported. **Quality: CIRCULAR for 60% of file, ADEQUATE for utility functions**
 
-3. `apps/app/__tests__/settings/settings-workflow.test.ts` — 21 of 28 test blocks contain `expect(true).toBe(true)`. The file is a code review formatted as a test suite. Only 7 tests (formatRole, pagination clamping including a real NaN bug) have real assertions. **Quality: CIRCULAR**
+3. `apps/app/__tests__/settings/settings-workflow.test.ts` — **39 of 48** test blocks contain `expect(true).toBe(true)` (81%). The file is a code review formatted as a test suite. Only 9 tests (formatRole, pagination clamping including a real NaN bug, Math.max/Min clamping) have real assertions. **Quality: CIRCULAR**
 
 **Tests that delegate to `executeManifestCommand` mock** — inventory-item POST, email-template POST/PUT/DELETE, and similar routes all mock the manifest handler and verify it was called with the right arguments. These test delegation, not business logic. They would not catch bugs inside the manifest execution engine.
 
@@ -3608,7 +3618,9 @@ Additional 7 in `apps/app/__tests__/prep-task-contract.test.ts:19`, `packages/sa
 | `apps/app/__tests__/sign-up.test.tsx` | Same | Same pattern |
 | `apps/app/__tests__/api/command-board/chat-route-runtime.test.ts` | 1 test, 2 expects | Reads source file from disk, checks for `runtime = "nodejs"` string. Static analysis, not runtime testing |
 | `apps/api/__tests__/sales-reporting/generate.test.ts` | Entire file | `describe.skip` with 0 active assertions |
-| `packages/manifest-adapters/__tests__/manifest-telemetry.test.ts` | Lines 121-488 | 14 tests with zero `expect()` calls |
+| `packages/manifest-adapters/__tests__/manifest-telemetry.test.ts` | Lines 121-515 | 14 tests with zero `expect()` calls |
+| `apps/app/__tests__/settings/settings-workflow.test.ts` | 39 of 48 tests | `expect(true).toBe(true)` — always passes |
+| `packages/notifications/__tests__/provider-disabled.test.ts` | 13 tests | `expect(true).toBe(true)` — always passes |
 
 #### 4. Per-File Quality Ratings (30+ files deep-read)
 
@@ -3739,7 +3751,7 @@ Additional 7 in `apps/app/__tests__/prep-task-contract.test.ts:19`, `packages/sa
 |---|---|---|
 | Vitest configs | Multi-project workspace with 9 sub-projects in root `vitest.config.ts` | GOOD |
 | Database mock plugin | Custom `vitest-database-mock` Vite plugin intercepts ALL `@repo/database` imports in unit tests | FRAGILE — tests can never catch real schema mismatches |
-| Divergent mock files | `apps/api/test/mocks/@repo/database.ts` has 18 models; `apps/app/test/mocks/@repo/database.ts` has only `outboxEvent` | FRAGILE — schema changes risk desynchronizing these mocks |
+| Divergent mock files | `apps/api/test/mocks/@repo/database.ts` has 19-20 models; `apps/app/test/mocks/@repo/database.ts` has only `outboxEvent` (1 partial mock) | FRAGILE — schema changes risk desynchronizing these mocks |
 | Integration test setup | `apps/api/test/setup.integration.ts` loads `.env.local` for real DB URL | CONCERN — no dedicated test database |
 | Shared fixtures | **NONE** — no centralized test-utils.ts or fixture factory | POOR |
 | Seed data | `packages/database/src/sample-data/seed.ts` exists but **zero test files import it** | POOR — seed data is demo-only |
@@ -3840,15 +3852,18 @@ Additional 7 in `apps/app/__tests__/prep-task-contract.test.ts:19`, `packages/sa
 
 | Metric | Value |
 |---|---|
-| Total test cases (`it()` + `test()`) | **1,663** |
-| Total `expect()` calls | **3,599** |
-| Expects-to-tests ratio | **2.16 : 1** |
-| Total test files (unit) | ~160 (55 API + 29 app + 76 packages) |
-| Total test files (E2E) | 57 spec files |
-| `vi.mock()` calls | **167** across 44+ files |
+| Total unit test files | **142** (55 API + 29 app + 1 web + 57 packages) |
+| Total unit test cases (`it()` + `test()`) | **2,397** (832 API + 225 app + 14 web + 1,326 packages) |
+| Total E2E spec files | **59** (57 in `e2e/` + 2 in `apps/app/e2e/`) |
+| Total E2E test cases | **397** |
+| Total `expect()` calls (unit) | **5,187** (2,080 API + 460 app + 33 web + 2,614 packages) |
+| Expects-to-tests ratio (unit) | **2.16 : 1** |
+| `vi.mock()` calls | **142** across 44 files |
 | Circular test files (assert on own data) | **3 files** (agent-loop-timeout, publisher-concurrency, settings-workflow) |
+| Tautological assertions (`expect(true).toBe(true)`) | **57** across 5 files (39 in settings-workflow alone) |
 | Zero-assertion test blocks | **17** (14 in manifest-telemetry alone) |
 | `.not.toThrow()` without return check | **30** (23 in inventory-item-crud) |
+| `expect.anything()` loose matchers | **30** across 7 files (23 in inventory-item-crud) |
 | Status-only assertions (no body check) | **30** |
 | CRITICAL bugs with ZERO tests | **16 of 19 (84%)** |
 | CRITICAL bugs with tests that don't catch them | **2 of 19 (11%)** |
