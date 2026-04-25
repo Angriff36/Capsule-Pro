@@ -18,7 +18,7 @@ Run these after implementing to get immediate feedback:
 ## Manifest Commands
 
 - Routes from IR: `pnpm manifest:routes:ir -- --format summary`
-- Lint routes: `pnpm manifest:lint-routes`
+- ~~Lint routes: `pnpm manifest:lint-routes`~~ — **script does not exist** (see Known Gotchas). Use `pnpm manifest:build` and inspect diff against `packages/manifest-ir/dist/routes.manifest.json`.
 - After .manifest edits: `pnpm manifest:build`
 - Manifest CLI must run from the installed/published `@angriff36/manifest` package (`pnpm exec manifest ...`), not from `packages/manifest-runtime/...` source paths
 
@@ -34,7 +34,7 @@ Run these after implementing to get immediate feedback:
 
 ### Codebase Patterns
 
-- Command Board UI: `apps/app/app/(authenticated)/command-board/`
+- Command Board UI: **currently missing** — `apps/app/app/(authenticated)/command-board/` does not exist (see Known Gotchas). Only `apps/app/app/lib/command-board/` (lib) and `apps/app/app/api/command-board/` (proxy) remain.
 - Command Board API: `apps/api/app/api/command-board/`
 - AI API: `apps/api/app/api/ai/`
 - Shared packages: `packages/ai/`, `packages/database/`
@@ -70,8 +70,48 @@ Shared packages (`packages/`) must be framework-agnostic:
 - `packages/design-system/components/blocks/getting-started-checklist.tsx` — imports `next/link`
 - `packages/feature-flags/access.ts` — imports `next/server`
 - `packages/internationalization/proxy.ts` — imports `next/server`
+- `packages/analytics/provider.tsx` — imports `@next/third-parties/google` + `@vercel/analytics/react` (added 2026-04-24)
 
 React Native boundary: clean (no violations in web apps).
+
+## Cron Schedule Registry
+
+Vercel runs only what's in `apps/api/vercel.json` — adding a file under `apps/api/app/api/cron/` does NOT schedule it. The endpoint directory currently has 5 routes but only 3 are scheduled:
+
+| Route | Schedule | Scheduled? |
+|-------|----------|-----------|
+| `cron/webhook-retry` | `*/5 * * * *` | ✅ |
+| `cron/inventory-audit` | `0 6 * * *` | ✅ |
+| `sentry-fixer/process` | `0 0 * * *` | ✅ |
+| `cron/contract-expiration-alerts` | — | ❌ missing |
+| `cron/email-reminders` | — | ❌ missing |
+| `cron/idempotency-cleanup` | — | ❌ missing |
+
+When you add a new cron endpoint, add the matching entry to `vercel.json` in the same PR, otherwise it never runs in production.
+
+## Test & Logging Hygiene
+
+- **No `console.log` in production code.** Re-verified 2026-04-24: `apps/api/` has **449 `console.log` + 1,727 `console.error` + 16 `console.warn` ≈ 2,192 total** — clean up when you touch them and use `@repo/observability` / Sentry instead. Error-path logging is the biggest share; prioritize replacing `console.error` first.
+- **No `.bak` / `.backup` / `.new` / `.tmp` files in the repo.** Re-verified 2026-04-24 (third pass): **21 files violate this** — 11 `.bak` + 6 `.backup` + 3 `.new` + 1 `.tmp` (prior note said "17" but the components already summed to 21 — arithmetic slip). Includes `AGENTS.md.backup`, `packages/database/prisma/schema.prisma.{bak,backup}`, `apps/app/next.config.ts.bak`, `.autolab/tasks.json.bak`. Delete them when touching surrounding code — use git instead of filename suffixes.
+- **No `describe.skip` or `test.todo` in committed code without a linked issue.** If a test must be skipped, open a follow-up ticket and reference it in a comment on the skip line. Current offenders: `apps/api/__tests__/sales-reporting/generate.test.ts:33`, `apps/api/__tests__/inventory/forecasting.test.ts:834-836`, `apps/api/__tests__/email-templates/templates.test.ts:1073-1077`. **E2E (third-pass re-count):** **25** `test.skip(true, …)` conditionals across **6** spec files — `integrated-payment-processor` (7), `recipe-scaling` (7), `role-aware-empty-states` (4), `illustrated-empty-states` (4), `communication-preferences` (2), `getting-started-checklist` (1). Prior note of "35 across 8 files" over-counted.
+
+## Schema ↔ Migrations ↔ Code Drift
+
+New migrations must include matching Prisma models in the same PR. The repo currently has several orphaned cases — treat them as tech debt and fix alongside related work:
+
+- Migrations that create tables without Prisma models: `20260327000000_add_vendor_management`, `20260327010000_add_procurement_budgets`, `20260327020000_add_employee_bank_accounts`, `20260327040000_add_event_waitlist`, `20260327040000_add_lead_scoring`.
+- Routes that use raw SQL against non-existent Prisma entities: `Driver`, `Vehicle`, `FacilityAsset`, `Equipment`, `Vendor`, `VendorContact`, `Budget`, `PurchaseRequisition`, `ProcurementApproval`, `Deal`, `RevenueRecognitionSchedule`.
+
+Before adding a route that queries a table, check `packages/database/prisma/schema.prisma` first — if the model is missing, add it before the route.
+
+## RLS Reminder
+
+Tenant isolation is enforced via Postgres RLS policies on `tenant_*` schemas, but coverage is incomplete. Current critical gaps (no RLS policy):
+- `tenant_accounting.*` (all tables)
+- `tenant_inventory.vendor_catalogs`, `pricing_tiers`, `bulk_order_rules`, `procurement_budgets`, `vendor_contacts`
+- `tenant_staff.employee_bank_accounts`
+
+When adding a new `tenant_*`-schema table migration, include `ALTER TABLE ... ENABLE ROW LEVEL SECURITY;` + `CREATE POLICY tenant_isolation ON ...;` in the same migration.
 
 ## Important Efficiency Standards.
 - Never re-read files you just wrote or edited. You know the contents.
@@ -81,3 +121,22 @@ React Native boundary: clean (no violations in web apps).
 - Skip confirmations like "I'll continue..."  Lust do it.
 - If a task needs 1 tool call, don't use 3. Plan before acting.
 - Do not summarize what you just did unless the result is ambiguous or you need additional input.
+
+## Known Gotchas
+
+Operational pitfalls discovered during the 2026-04-24 post-expansion audit. Read these before blaming a tool or your environment.
+
+- **`pnpm manifest:lint-routes` does not exist.** Prior plans referenced it, but the script is not in `package.json`. Use `pnpm manifest:build` or `pnpm manifest:routes:ir` instead.
+- **Biome check may be blocked by stray merge conflicts in `.autolab/tasks.json`.** A single unresolved `<<<<<<< / ======= / >>>>>>>` block in that file causes `pnpm biome check` to report 1000+ spurious errors. Always check `git status` for a modified `.autolab/tasks.json` before trusting a lint failure.
+- **New modules frequently use raw SQL against tables with no Prisma model.** Accounting, facilities, logistics, payroll, and procurement each contain routes that query tables (e.g., `facility_assets`, `drivers`, `vehicles`, `vendor_contacts`, `procurement_budgets`, `employee_bank_accounts`) via raw SQL because the Prisma model was never created. Before trusting that a module is "done", open `packages/database/prisma/schema.prisma` and confirm the model exists. A passing test or a 200 response on GET does not prove completion.
+- **Duplicate `softDelete/` + `soft-delete/` route directories exist in several modules.** Next.js routing on case-sensitive filesystems is ambiguous about which wins. Canonical choice in this repo is **`soft-delete/` (kebab-case)**; delete any `softDelete/` sibling you encounter.
+- **Command Board UI location is currently unclear.** The old `apps/app/app/(authenticated)/command-board/` directory does not exist, yet multiple documents still reference it. Only `apps/app/app/lib/command-board/` (library code) and `apps/app/app/api/command-board/` (API proxy) remain. Treat any doc pointing at the authenticated UI path as stale until a rebuild lands.
+- **17 manifests are quarantined in `packages/manifest-adapters/manifests-disabled/`.** Before authoring a new `.manifest` file for Accounting, Facilities, Procurement, Payment, Shipment, Equipment, Knowledge Base, Quality Control, Rate Limit, or Payment Reconciliation domains — **check `manifests-disabled/` first**. The file may already exist, and re-integration (add the matching Prisma model, then move into `manifests/`) is usually cheaper than a new authoring pass. See `IMPLEMENTATION_PLAN.md` "Quarantined manifests" for the full list.
+- **Procurement requisitions/vendor-contracts command routes will 500 on POST.** They call `createManifestRuntime()` against manifests that live in `manifests-disabled/` and reference Prisma models (`PurchaseRequisition`, `VendorContract`) that do not exist. Route inventory (third-pass 2026-04-24): requisitions has **8 command dirs** (missing `delete/`), vendor-contracts has **7** (missing `update/`) — do NOT assume the README-style "CRUD" set is complete. Confirm by reading `apps/api/app/api/procurement/requisitions/commands/create/route.ts` and grepping `schema.prisma` before any change there.
+- **Fabricated routes pattern.** Multiple new-module routes bind manifests that exist in `manifests-disabled/` plus Prisma models that do not exist at all. Before trusting any module listed as "DONE", (1) open `schema.prisma` and confirm the models exist, (2) grep `manifests-disabled/` to confirm the manifest is actually active. See Blocker 2a/2b and P2.D Bank Accounts in `IMPLEMENTATION_PLAN.md`.
+- **Payroll bank-accounts routes do NOT crash — they bypass Prisma.** All 5 commands use `database.$queryRaw` directly against `tenant_staff.employee_bank_accounts`. They return data but sit outside the ORM (and outside any RLS the tenant schema should enforce). Don't conclude from a 200 response that the module is sound; the missing `BankAccount` Prisma model is still tech debt.
+- **`$queryRaw` template interpolation IS parameterized, but JS-composed values are not safe-by-assumption.** Example: `logistics/drivers/commands/update/route.ts:41` writes `vehicle_id = ${vehicleId !== undefined ? (vehicleId || null) + "::uuid" : "vehicle_id"}::uuid` — Prisma parameterizes the ternary's output string, so there's no classical injection, BUT the ternary emits nonsense values (`"<uuid>::uuid"` as a literal, or `"vehicle_id"` as a parameter when the author wanted a column ref). Always branch explicitly or use `Prisma.sql` fragments for optional predicates. Don't copy this pattern.
+- **`planning/route-audit.md` numbers are stale (dated 2026-04-13).** It says 163 bypass-dispatcher routes; current count is closer to ~490. The b8c31eef expansion landed after the audit. Re-run the scan before quoting or citing these figures.
+- **`routes.manifest.json` only tracks POST handlers.** PUT/PATCH/DELETE are not in the IR — so "manifest coverage" numbers computed only from the IR undercount the gap. Real coverage gap: ~617 of 1,001 write handlers (61.6%), not the 46% previously quoted.
+- **Dozens of auto-generated camelCase route duplicates exist.** Full top-level `ls apps/api/app/api/` shows ~60 directories with no hyphens that appear to pair with canonical hyphenated paths (or orphan entirely). Don't add a new route under a camelCase directory without first checking whether a canonical kebab-case equivalent exists. See "Auto-generated API duplicates" in IMPLEMENTATION_PLAN.md for the full list before any cleanup sweep.
+- **MCP server has 165 tests, not 10.** Prior plan passes read "10 test files" as "10 tests". If you touch `packages/mcp-server/`, expect to run ~165 `it()` blocks.

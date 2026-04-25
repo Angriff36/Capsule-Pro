@@ -1,38 +1,92 @@
-0a. Study `specs/*` with up to 250 parallel subagents to learn the application specifications.
-0b. Study @IMPLEMENTATION_PLAN.md (if present) to understand the plan so far.
-0c. Study `packages/*` with up to 250 parallel subagents to understand shared utilities and components.
-0d. For reference, the application source code is in `apps/*`
-0e. Study `specs/` directory for requirement specifications.
+0a. Study @IMPLEMENTATION_PLAN.md — it already has FIVE verification passes. DO NOT repeat any of that work. The prior passes covered: (1) route-level claims & blockers, (2) blocker count re-verification, (3) third-pass spot-check corrections, (4) full package health audit of all 34 shared packages, (5) E2E test suite audit. Your focus is entirely new.
+0b. Study `packages/*` with up to 250 parallel subagents to understand shared utilities and components.
+0c. For reference, the application source code is in `apps/*`.
 
-1. @IMPLEMENTATION_PLAN.md was last updated 2026-03-08 but a MASSIVE feature expansion happened since (commit b8c31eef: "Massive feature expansion: accounting, command board, CRM, facilities, inventory, kitchen, logistics, payroll, procurement, staff modules; load testing"). The plan is 6 weeks stale. Your job: use up to 500 subagents to study the CURRENT source code in `apps/*` and `packages/*` and find what's ACTUALLY there now vs what the plan claims. For each claimed-completed item: verify the code still exists, tests pass, and the feature works end-to-end. For new features NOT in the plan: document what exists and its actual completion state. Ultrathink.
+## FOCUS: Raw-SQL Correctness, Parameterization & Tenant Isolation Audit (6th pass — NEW focus)
 
-2. Use an Opus subagent to analyze findings and update @IMPLEMENTATION_PLAN.md. Structure as:
-   - Category 1: CLAIMED DONE BUT BROKEN OR MISSING (highest priority — lies in the plan)
-   - Category 2: PARTIALLY IMPLEMENTED (code exists but incomplete)
-   - Category 3: NOT STARTED (spec exists but no code)
-   - Category 4: NEW FEATURES (not in plan, found in codebase — document state)
-   - Category 5: VERIFIED DONE (actually works — move to bottom, keep for reference)
+The IMPLEMENTATION_PLAN identifies **527 raw-SQL instances across 187 files** but never deep-audited them. Blocker 6 exposed a correctness bug in logistics drivers caused by a broken ternary inside `$queryRaw`. This pass systematically audits EVERY raw-SQL call for:
 
-3. For each issue found, include: file path, what's wrong, what's needed to fix it. Be specific — function names, line ranges, missing imports.
+1. **SQL injection / parameterization correctness** — For each `$queryRaw` / `$queryRawUnsafe` / `$executeRaw` / `$executeRawUnsafe` usage:
+   - Is it using tagged template literals (safe, Prisma parameterizes)?
+   - Is it using `$queryRawUnsafe` / `$executeRawUnsafe` with string concatenation (DANGEROUS)?
+   - Are there dynamic table/column names constructed from user input without validation?
+   - Does the query use Prisma.sql tagged template literals for safe interpolation?
+   - Check specifically for patterns like: `WHERE column = '${userInput}'` (unsanitized interpolation BEFORE Prisma sees it)
+   - Check for dynamic ORDER BY, LIMIT, OFFSET values injected without bounds checking
+   - Categorize each file: SAFE (tagged template, no dynamic identifiers), AT_RISK (dynamic identifiers without allowlist), UNSAFE (raw string concatenation with user input)
 
-4. Check for: TODO comments, placeholder/stub functions, skipped tests, inconsistent patterns, missing error handling, hardcoded values that should be configurable, schema drift (Prisma vs actual DB), missing RLS policies, dead code, routes that reference non-existent Prisma models (like the marketing routes that were deleted).
+2. **Tenant isolation in raw SQL** — The app uses multi-tenancy with org_id filters. For each raw-SQL query:
+   - Does it include a `WHERE org_id = ...` or `WHERE tenant_id = ...` clause?
+   - If not, is the table single-tenant (check schema.prisma)?
+   - Are there queries that could return cross-tenant data if the dispatcher is bypassed?
+   - Compare against the IMPLEMENTATION_PLAN's list of 115 unauthenticated routes — any raw-SQL on those routes without tenant filtering is a data-leak vulnerability
 
-5. Pay SPECIAL ATTENTION to the post-March-8 additions:
-   - Accounting module (chart-of-accounts, invoices, payments, collections, revenue-recognition)
-   - Facilities module (areas, assets, schedules, work-orders)
-   - Logistics module (dispatch, drivers, routes, tracking, vehicles, shipments)
-   - Payroll module (periods, runs, bank-accounts, deductions, approvals, tax)
-   - Procurement module (purchase-orders, vendors, budgets, approvals, requisitions)
-   - Load testing infrastructure (testing/load-test.js)
-   - New pages and UI components across all modules
-   - Any new specs/ that were added
+3. **Correctness bugs (Blocker 6 pattern)** — The logistics drivers bug showed that JavaScript-level string manipulation INSIDE a tagged template literal can produce invalid SQL even though Prisma parameterizes the VALUES. Search for:
+   - Ternary expressions inside template literals that produce column names or cast expressions
+   - String concatenation like `${value}::uuid`, `${value}::timestamp`, `${value}::jsonb` where the value might be null/undefined
+   - Dynamic WHERE clauses built via JavaScript conditionals that could produce malformed SQL
+   - `COALESCE` or `NULLIF` wrappers around parameters that might break type casting
 
-6. Also check `planning/` directory for documented gaps and `tasks/todo.md` for known issues.
+4. **Schema drift in raw SQL** — The IMPLEMENTATION_PLAN identifies 8 orphaned tables and several missing Prisma models. For each raw-SQL query:
+   - Does the table/column it references actually exist in schema.prisma or migrations?
+   - Are there queries referencing tables that were renamed, dropped, or never had a Prisma model?
+   - Cross-reference against the orphaned table list: vendor_contacts, vendor_ratings, employee_bank_accounts, audit_log, crm_scoring_rules, procurement_budgets, procurement_budget_alerts, facility_assets, drivers, vehicles
 
-IMPORTANT: Plan only. Do NOT implement anything. Do NOT assume functionality is missing; confirm with code search first. This is a DIAGNOSIS run — we want the honest truth about project state, not an optimistic summary.
+5. **$queryRawUnsafe / $executeRawUnsafe audit** — These are the most dangerous calls. Find ALL of them:
+   - List every file using unsafe variants
+   - For each: is the unsafety justified (e.g., dynamic table name from allowlist) or dangerous (user-controlled string)?
+   - Flag any that combine user input with unsafe variants
 
-99999. Be brutal. If a feature is claimed complete but has no tests, it's not complete. If it has tests but they're skipped, it's not complete. If the code exists but throws errors, it's not complete. Mark it honestly.
+### Investigation approach:
 
-999999. Keep @IMPLEMENTATION_PLAN.md as the single source of truth. When items are verified done, move them to a VERIFIED section at the bottom. When items are found broken, mark them clearly with evidence. UPDATE the "Last updated" date at the top.
+- Use `grep -rn '\$queryRaw\|\$executeRaw\|\$queryRawUnsafe\|\$executeRawUnsafe\|Prisma\.sql' apps/ packages/ --include='*.ts' --include='*.tsx'` to find all raw-SQL usage
+- Use parallel subagents to read each file and classify the SQL calls
+- Group findings by severity: CRITICAL (unsafe + user input), HIGH (at-risk dynamic identifiers), MEDIUM (correctness bugs), LOW (safe but could be cleaner)
+- For each finding, cite the exact file:line
 
-9999999. Update @AGENTS.md if you discover new operational learnings (build commands, test patterns, gotchas).
+### Output format:
+
+Append findings to IMPLEMENTATION_PLAN.md under a new section:
+
+```markdown
+## Raw-SQL Audit (6th Pass)
+
+> **Audited:** 2026-04-24
+> **Scope:** All $queryRaw, $executeRaw, $queryRawUnsafe, $executeRawUnsafe, Prisma.sql usage across apps/ and packages/
+> **Method:** Full grep + parallel subagent file-by-file analysis
+
+### Executive Summary
+[Total count, severity breakdown, top risks]
+
+### CRITICAL — Unsafe SQL with User Input
+| File | Line | Pattern | Risk |
+|---|---|---|---|
+
+### HIGH — Dynamic Identifiers Without Allowlist
+| File | Line | Pattern | Risk |
+|---|---|---|---|
+
+### MEDIUM — Correctness Bugs (Blocker-6 pattern)
+| File | Line | Pattern | Risk |
+|---|---|---|---|
+
+### Tenant Isolation Gaps in Raw SQL
+| File | Line | Query | Missing Filter |
+|---|---|---|---|
+
+### Schema Drift in Raw SQL References
+| File | Line | Table/Column Referenced | Status |
+|---|---|---|---|
+
+### Safe Usage (stats only, no per-file listing)
+[Count of safe tagged-template usages]
+```
+
+### Guardrails:
+- DO NOT modify any source code. This is diagnosis only.
+- DO NOT commit or push.
+- DO confirm every finding by reading the actual source — do not flag based on grep alone.
+- If a query looks suspicious, read the surrounding 50 lines to understand the full context before classifying.
+- Treat Prisma tagged template literals (`$queryRaw\`...\``) as SAFE unless they contain dynamic identifiers.
+- Treat `$queryRawUnsafe(string)` with ANY user-derived variable as CRITICAL.
+- Update IMPLEMENTATION_PLAN.md only with the new section; do not modify existing sections.
