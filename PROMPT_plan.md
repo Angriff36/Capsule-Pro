@@ -2,138 +2,119 @@
 
 ## What's Already Done
 
-0a. Study @IMPLEMENTATION_PLAN.md — it already has TWELVE verification passes (plus 6 addenda/sub-passes). DO NOT repeat any of that work. The prior passes covered: (1) route-level claims & blockers, (2-3) blocker re-verification, (4) full package health audit of all 34 shared packages, (5) E2E test suite audit, (6-9) raw-SQL correctness audit (4 passes — parameterization, injection, schema drift, tenant isolation), (9) frontend health audit (imports, API contracts, error handling, accessibility), (10) mobile app + public website audit (3 sub-passes), (11) auth, middleware & integration services audit (3 sub-passes), (12) test quality & coverage gap audit. Your focus is entirely new.
-0b. The raw-SQL passes (6-9) focused on CORRECTNESS (SQL injection, schema drift, tenant isolation) — NOT on performance. They identified ~1,603 raw-SQL lines across 233 files but did NOT systematically check for N+1 queries, missing indexes, or query plan inefficiencies.
-0c. One N+1 query was fixed reactively via Sentry (commit `f1067043`: "fix(sentry): CAPSULE-PRO-3B - N+1 query on users by org_id"). This was found by monitoring, NOT by proactive audit. The codebase likely has many more.
+0a. Study @IMPLEMENTATION_PLAN.md — it already has THIRTEEN verification passes (plus 6 addenda/sub-passes). DO NOT repeat any of that work. The prior passes covered: (1) route-level claims & blockers, (2-3) blocker re-verification, (4) full package health audit of all 34 shared packages, (5) E2E test suite audit, (6-9) raw-SQL correctness audit (4 passes — parameterization, injection, schema drift, tenant isolation), (9) frontend health audit (imports, API contracts, error handling, accessibility), (10) mobile app + public website audit (3 sub-passes), (11) auth, middleware & integration services audit (3 sub-passes), (12) test quality & coverage gap audit, (13) database query performance & N+1 pattern audit (with supplementary deep-verification). Your focus is entirely new.
+0b. The frontend health audit (pass 9) did flag some missing error handling on the frontend side — but this pass focuses on the API/backend layer's error handling patterns, not the frontend.
+0c. The test quality audit (pass 12) identified missing error-path test coverage but did NOT audit the actual error handling code paths in production route handlers.
 0d. Study `apps/api/app/api/` — the main API routes directory. Routes use a mix of Prisma ORM calls and raw SQL (`$queryRaw`, `$queryRawUnsafe`, `Prisma.sql`).
-0e. Study `packages/database/prisma/schema.prisma` — the Prisma schema. Check for missing indexes on foreign keys and frequently-queried columns.
-0f. Study `packages/database/src/` for any custom query builders, connection pooling, or middleware.
+0e. Study `apps/api/app/lib/` — shared libraries, middleware, utilities.
+0f. Study `packages/` — shared packages including database, manifest-adapters, notifications, etc.
 0g. For reference, the main app routes are in `apps/api/app/api/`, shared packages are in `packages/`, the web app is in `apps/app/`, and E2E tests are in `e2e/`.
 
-## FOCUS: Database Query Performance & N+1 Pattern Audit (13th pass — NEW focus)
+## FOCUS: Error Handling & API Resilience Audit (14th pass — NEW focus)
 
-All prior audits focused on correctness, security, and test quality. The **query performance** of the application has never been systematically audited. This pass asks: where are the N+1 query patterns? Which foreign keys lack indexes? Which routes will collapse under load?
+All prior audits focused on correctness, security, performance, and test quality. The **error handling patterns** of the application have never been systematically audited. This pass asks: when things go wrong, what happens? Are errors caught, classified, and returned properly? Do partial failures leave inconsistent state? Are there silent failures?
 
-### Part A: N+1 Query Pattern Detection
+### Part A: Route-Level Error Handling Patterns
 
-#### 1. ORM-Level N+1 Patterns
-- Find all route handlers that query a list of entities, then loop over results to fetch related data (classic N+1)
-- Look for patterns like: `const items = await prisma.X.findMany(...)` followed by `for (const item of items) { await prisma.Y.findUnique({ where: { xId: item.id } }) }` inside a loop
-- Check for `.map()` + `await` patterns that execute sequential queries per item instead of batch fetching
-- Find `Promise.all(items.map(...))` patterns — these are parallel N+1 (better than serial, but still N queries instead of 1-2)
+#### 1. Try/Catch Coverage
+- Scan ALL route handlers in `apps/api/app/api/` for try/catch blocks
+- Classify each handler: (a) has try/catch, (b) has no try/catch (relies on framework), (c) has partial try/catch (catches some but not all async operations)
+- For handlers WITHOUT try/catch: will Next.js catch the error? Or will it result in an unhandled promise rejection that crashes the process?
+- Find handlers where the try/catch is present but only wraps PART of the handler (e.g., catches the Prisma call but not the subsequent response construction)
 
-#### 2. Raw SQL N+1 Patterns
-- Find raw SQL queries inside loops (any `$queryRaw` or `$queryRawUnsafe` call inside a `for`/`.forEach`/`.map`/`while`)
-- Find patterns where a query result is iterated and individual rows trigger additional queries
-- Check batch processing functions (imports, syncs, bulk operations) for row-by-row queries
+#### 2. Error Response Consistency
+- Sample 50+ route handlers across different domains and check their error response format
+- Are all errors returned with consistent structure? (e.g., `{ error: string, code: string, statusCode: number }`)
+- Do 4xx errors include helpful messages? Do 5xx errors leak internal details (stack traces, SQL errors, file paths)?
+- Check if there's a shared error handler/middleware in `apps/api/app/lib/` or `apps/api/middleware.ts`
+- Find routes that throw generic `Error()` vs. custom error classes vs. HTTP-specific errors
 
-#### 3. Include/Select Depth Analysis
-- Find Prisma `include` chains with 3+ levels of nesting — deep includes can generate massive JOIN trees
-- Find routes that fetch entire related records when they only need a single field (e.g., `include: { user: true }` when only `user.name` is needed)
-- Look for routes missing `select` clauses where specific fields are known (fetching entire rows when 2-3 columns suffice)
+#### 3. Prisma Error Handling
+- Find all `catch` blocks that catch Prisma errors
+- Are Prisma-specific errors (P2002 unique constraint, P2025 record not found, P2003 foreign key) properly translated to HTTP status codes?
+- Find routes where Prisma errors are caught generically (catching all errors) vs. specifically (checking error.code)
+- Find routes where Prisma errors would leak database schema details to the client
 
-### Part B: Missing Database Indexes
+#### 4. Raw SQL Error Handling
+- For the ~250 files using `$queryRaw` / `$executeRaw` / `$queryRawUnsafe`: do they handle SQL errors?
+- Find raw SQL queries inside try/catch vs. bare (no error handling)
+- For `$queryRawUnsafe` calls (42 files): if the query fails, what happens? Is the error propagated, swallowed, or transformed?
 
-#### 1. Foreign Key Index Audit
-- Read the Prisma schema (`packages/database/prisma/schema.prisma`) and list ALL foreign key relations (`@relation`)
-- Check which foreign key columns have `@index` or `@@index` directives
-- Cross-reference against route handlers to identify frequently-queried foreign key columns that lack indexes
-- Pay special attention to: tenant_id (multi-tenant queries), org_id, user_id, event_id — these are in almost every WHERE clause
+### Part B: Partial Failure & State Consistency
 
-#### 2. Query WHERE Clause Analysis
-- Grep for common query patterns: `where: { tenantId: ... }`, `where: { eventId: ... }`, `where: { status: ... }`
-- For each frequently-filtered column, verify an index exists in the schema
-- Look for composite WHERE clauses (e.g., `tenantId + status + date`) that would benefit from composite indexes
+#### 1. Transaction Rollback Analysis
+- Find all `$transaction()` calls and check: if the transaction fails partway through, does error handling properly propagate? Or are there cases where partial state is committed?
+- Find transactions with side effects OUTSIDE the transaction (e.g., sending an email, calling a webhook, updating a cache AFTER the transaction commits but without retry logic)
+- Find patterns where `$transaction` is used but the error from a failed transaction is caught and swallowed (the caller never knows it failed)
 
-#### 3. Raw SQL WHERE Clause Analysis
-- For raw SQL queries, check which columns appear in WHERE clauses
-- Verify corresponding indexes exist (especially for `ORDER BY` + `WHERE` combinations — these need covering indexes)
-- Look for `ILIKE`/`LIKE` queries on unindexed columns — these require full table scans
+#### 2. Multi-Step Operation Resilience
+- Find handlers that perform multiple sequential operations (create A, then create B, then send notification) where failure at step 2 or 3 leaves orphaned state
+- Check if the outbox pattern is used consistently for side effects (events that trigger notifications, webhooks, etc.)
+- Find operations that should be atomic but aren't wrapped in transactions
 
-### Part C: Query Plan & Resource Concerns
+#### 3. Webhook & Integration Failure Handling
+- Audit webhook delivery: what happens when a webhook target is unreachable? Is there retry logic? Exponential backoff?
+- Check the DLQ (dead letter queue) implementation — does it actually work?
+- For Goodshuffle and Nowsta syncs: what happens when a sync partially fails? Is there a resume mechanism or does it restart from scratch?
+- Find any fire-and-forget patterns (async operations launched without awaiting, with no error handling on the promise)
 
-#### 1. Unbounded Queries
-- Find queries without LIMIT clauses (or with user-controlled limit set to very high values)
-- Prior passes found 9+ unbounded pagination routes — verify these are the ONLY ones
-- Check for `findMany` calls without any `take`/`limit` parameter
+### Part C: Unhandled Promise Rejections & Silent Failures
 
-#### 2. Full Table Scans
-- Find queries that filter on columns without indexes (cross-reference Part B)
-- Look for `SELECT *` equivalents in Prisma (any `findMany` without `select`)
-- Find raw SQL queries using `SELECT *` or equivalent
+#### 1. Unhandled Async Errors
+- Find `.then()` chains without `.catch()` 
+- Find `Promise.all()` / `Promise.allSettled()` usage — is `Promise.allSettled` used where partial failure is expected? Or does `Promise.all` cause one failure to reject everything?
+- Find `async` functions called without `await` (fire-and-forget) — are these intentional background tasks or bugs?
+- Check `process.on('unhandledRejection')` — is there a global handler?
 
-#### 3. Connection Pool & Transaction Concerns
-- Check if the Prisma client uses connection pooling (PgBouncer, Prisma Accelerate, or built-in pool)
-- Find long-running transactions — any `prisma.$transaction()` with many sequential operations
-- Look for `$queryRaw` inside `$transaction` — these hold connections longer than necessary
+#### 2. Silent Error Swallowing
+- Find empty `catch {}` or `catch (e) { console.error(e) }` patterns that log but don't propagate
+- Find `try { ... } catch { return { success: true } }` patterns — claiming success when the operation failed
+- Find routes that return 200 even when the underlying operation failed (common in update/delete endpoints)
 
-#### 4. Batch Operation Efficiency
-- Audit the event importer (`apps/api/app/lib/events/importer.ts`) — it imports events with 15+ raw SQL queries. Are these batched or row-by-row?
-- Audit the Goodshuffle sync services — do they batch updates or update one record at a time?
-- Audit the Nowsta sync — same question
-- Check the outbox processor for batch processing patterns
+#### 3. Error Logging Quality
+- How are errors logged? Is there structured logging (JSON with context) or just `console.error(e)`?
+- Are errors correlated with request IDs for debugging?
+- Are Prisma errors logged with full context (query, params, model) or just the message?
+- Check if there's a logging library or if it's all raw console calls
 
-### Part D: Route-Level Performance Risk Assessment
+### Part D: Rate Limiting & Circuit Breaking
 
-For each API domain module, assess the performance risk:
+#### 1. External API Call Resilience
+- Find all outbound HTTP calls (fetch, axios, etc.) — to Goodshuffle, Nowsta, Clerk, email providers, etc.
+- Do these calls have timeouts? What's the default timeout if none is set?
+- Is there retry logic with exponential backoff?
+- Is there circuit breaking (stop calling a failing service)?
+- What happens when an external API is slow — does it block the request thread?
 
-1. **Kitchen** (259 route files) — prep list generation, recipe costing, allergen matrix
-2. **Events** (141 route files) — event listing with filters, guest management, budget calculations
-3. **Inventory** (102 route files) — stock levels, forecasts, cycle counting, transfers
-4. **CRM** (61 route files) — client search, scoring calculations, pipeline queries
-5. **Procurement** (37 route files) — PO listing with joins, budget calculations, vendor search
-6. **Staff/Scheduling** (50 route files) — availability overlap detection, auto-assignment, shift generation
-7. **Payroll** (35 route files) — timecard aggregation, labor budget calculations, tax computations
-8. **Analytics** (9 route files) — aggregate queries across multiple modules
-9. **Accounting** (17 route files) — journal entries, invoice generation
-10. **Logistics** (14 route files) — dispatch with driver/vehicle joins, route optimization
+#### 2. Rate Limiting Coverage
+- Which endpoints have rate limiting? Is it consistent across all public-facing endpoints?
+- Are rate limits applied at the middleware level or per-route?
+- What happens when a rate limit is hit — is the response informative?
+- Are internal/admin endpoints accidentally rate-limited (or not rate-limited when they should be)?
 
-For each module: identify the top 3 most complex queries, estimate their execution cost, and flag any that would struggle with >1,000 rows.
+#### 3. Timeout Configuration
+- Find all `setTimeout`, `AbortController`, or timeout configurations
+- Are database queries subject to a timeout? What's the default Prisma query timeout?
+- Are webhook deliveries subject to a timeout?
+- Are sync operations (Goodshuffle, Nowsta) subject to overall timeouts?
 
-### Investigation approach:
+### Part E: Domain-Specific Error Handling Deep Dives
 
-- Start with grep for loop patterns: `for.*await.*prisma`, `\.map.*await.*prisma`, `\.forEach.*await.*`
-- Search for `$queryRaw` and `$queryRawUnsafe` inside any loop construct
-- Read the Prisma schema to build a complete index inventory
-- Cross-reference foreign keys against index declarations
-- Read the top 10 most complex route handlers (by file size or raw SQL count)
-- Read all sync/import service files for batch patterns
-- Check database migration files for index creation patterns
+For each of these critical flows, trace the FULL error path end-to-end:
 
-### Output format:
-
-Append findings to IMPLEMENTATION_PLAN.md under a new section:
-
-```markdown
-## Database Query Performance & N+1 Pattern Audit (13th Pass)
-
-> **Audited:** 2026-04-25
-> **Scope:** All Prisma ORM calls and raw SQL queries across apps/api/app/api/ (750+ route files), packages/database/, and sync/import services
-> **Method:** N+1 pattern detection, foreign key index audit, query plan analysis, batch operation efficiency review
-
-### Part A: N+1 Query Patterns
-[ORM-level, raw SQL, include depth analysis]
-
-### Part B: Missing Database Indexes
-[Foreign key audit, WHERE clause analysis, composite index recommendations]
-
-### Part C: Query Plan & Resource Concerns
-[Unbounded queries, full table scans, connection pool, batch operations]
-
-### Part D: Route-Level Performance Risk Assessment
-[Per-module risk ratings, top complex queries, scaling concerns]
-
-### Part E: Recommended Actions
-[Prioritized index additions, N+1 fixes, query optimizations]
-```
+1. **Event Import (server-to-server)** — what happens if dish creation fails mid-import? Is the entire event rolled back?
+2. **Procurement PO Creation** — what happens if creating line items fails after the PO header is created?
+3. **Inventory Cycle Count Finalization** — what happens if the finalize transaction fails on the 50th variance record?
+4. **Payroll Run Generation** — what happens if a timecard INSERT fails partway through the payroll run?
+5. **Webhook Delivery Pipeline** — trace the full path: event → outbox → publisher → HTTP delivery → retry → DLQ. Where are the failure points?
+6. **Goodshuffle Full Sync** — what happens if the sync is interrupted? Can it resume?
 
 ### Guardrails
 
-- Do NOT modify any source code. This is diagnosis only.
-- Do NOT report issues already documented in IMPLEMENTATION_PLAN.md (check all prior sections first).
-- Cite exact file:line for every finding.
-- Distinguish between "confirmed N+1" (code pattern found) and "suspected N+1" (pattern likely exists but complex to verify without runtime).
-- Prioritize findings by estimated performance impact (queries that would be called most frequently with the most data).
-- Focus on ROUTE HANDLERS and SYNC SERVICES — these are the hot paths. Library/package code is lower priority unless it's used in every request.
-- When reading Prisma schema, note that multi-tenant queries ALWAYS filter by tenant_id — every tenant_id column MUST have an index.
-```
+- This is PLAN MODE ONLY. Do NOT modify source code. Do NOT commit. Do NOT run build commands.
+- Write all findings to @IMPLEMENTATION_PLAN.md as a new section "## Error Handling & API Resilience Audit (14th Pass)".
+- For each finding, include the EXACT file path and line numbers. Do not guess — read the actual code.
+- Classify severity as: CRITICAL (will cause data corruption or silent failure), HIGH (poor error handling that could cause issues under load), MEDIUM (inconsistent but not dangerous), LOW (style/cosmetic).
+- Distinguish between "missing error handling" (no try/catch at all) and "bad error handling" (try/catch that swallows or misclassifies errors).
+- Do NOT re-audit anything from passes 1-13. Focus exclusively on error handling patterns.
+- If you find an error handling pattern that's actually GOOD, note it as a positive example.
