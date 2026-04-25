@@ -1,9 +1,9 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-25 (tenth-pass mobile + public website audit)
-> **Prior passes:** 2026-04-24 initial post-expansion audit → 2026-04-24 first re-verification → 2026-04-24 third-pass spot-check → 2026-04-24 fourth-pass package health → 2026-04-24 fifth-pass E2E audit → 2026-04-24 sixth-pass raw-SQL audit → 2026-04-24 seventh-pass supplementary raw-SQL audit → 2026-04-24 eighth-pass comprehensive raw-SQL audit → 2026-04-25 ninth-pass frontend health audit → **2026-04-25 tenth-pass mobile + public website audit**.
+> **Last updated:** 2026-04-25 (eleventh-pass credential exposure & webhook security deep-dive)
+> **Prior passes:** 2026-04-24 initial post-expansion audit → 2026-04-24 first re-verification → 2026-04-24 third-pass spot-check → 2026-04-24 fourth-pass package health → 2026-04-24 fifth-pass E2E audit → 2026-04-24 sixth-pass raw-SQL audit → 2026-04-24 seventh-pass supplementary raw-SQL audit → 2026-04-24 eighth-pass comprehensive raw-SQL audit → 2026-04-25 ninth-pass frontend health audit → 2026-04-25 tenth-pass mobile + public website audit → **2026-04-25 eleventh-pass auth, middleware & integration services audit** (3 sub-passes: initial 6-agent pass, 6-agent addendum, 5-agent credential/webhook deep-dive).
 > **Previous snapshot:** 2026-03-08 (stale — many claims falsified by post-expansion audit)
-> **Audit method:** initial 15+ parallel subagent investigations → 8-subagent re-verification → 10-subagent third-pass → 10-subagent fourth-pass → E2E fifth-pass → 20-subagent sixth-pass → 9-subagent seventh-pass → 15-subagent confirmation pass → 20-subagent eighth-pass raw-SQL audit → 24-subagent ninth-pass frontend health audit → **11-subagent tenth-pass mobile + public website audit** covering all 57 .ts/.tsx files under `apps/mobile/` + 37 .ts/.tsx files under `apps/web/` with full API contract comparison against backend routes, offline architecture deep-read, push notification flow audit, security posture assessment, feature completeness vs web app (20 modules compared), and SEO/i18n/performance/content completeness audit. **All agent findings verified against actual codebase before reporting.**
+> **Audit method:** initial 15+ parallel subagent investigations → 8-subagent re-verification → 10-subagent third-pass → 10-subagent fourth-pass → E2E fifth-pass → 20-subagent sixth-pass → 9-subagent seventh-pass → 15-subagent confirmation pass → 20-subagent eighth-pass raw-SQL audit → 24-subagent ninth-pass frontend health audit → 11-subagent tenth-pass mobile + public website audit → **17-subagent eleventh-pass auth/middleware/integration audit** (6 + 6 + 5 agents across 3 sub-passes) covering full auth chain trace, route-level auth enforcement scan, credential exposure scan across all directories, webhook receiver security deep-audit, all 16 lib files, and external integration packages. **All agent findings verified against actual codebase before reporting.**
 > **Current state:** Massive feature expansion in commit b8c31eef (2026-04-19) added 5 new modules; no commits since a71ec8d5 (2026-04-24). **Ninth pass re-verified: prior draft claimed 16 CRITICAL but 12 were false positives** (broken imports resolved correctly via path alias, `manifestSuccessResponse` wrapping makes `data.data.xxx` correct, many "missing" API modules actually exist). **Verified findings: 4 NEW CRITICAL, 6 NEW HIGH, 8 NEW MEDIUM, 5 NEW LOW** frontend issues. Key verified issues: chart-of-accounts uses PATCH where API only supports PUT (405), missing `/api/accounting/payments/export` endpoint, only 2 `loading.tsx` files across the entire app, procurement budget hooks use ambiguous base paths, 6 hook libraries missing `'use client'` directives.
 
 ---
@@ -2869,8 +2869,9 @@ The "115 routes lack authentication" claim in prior sections of this document is
 **Finding A-13 | INFO | Clerk JWT Token Refresh**
 - Token refresh is handled automatically by Clerk's client-side SDK. Server-side routes call `auth()` which reads the current session. There is no mid-request token expiry issue because each route handler gets a fresh session from the middleware.
 
-**Finding A-14 | INFO | No Hardcoded Secrets Found**
-- Grep for `sk_live`, `sk_test`, `api_key.*=.*['"]`, `password.*=.*['"]`, `Bearer\s+[A-Za-z0-9]`, `BEGIN PRIVATE KEY`, database connection strings with passwords — no hardcoded secret values found in source files. Secrets are loaded exclusively through `process.env` with Zod validation via `@t3-oss/env-nextjs`.
+**Finding A-14 | ~~INFO~~ → SUPERSEDED | Hardcoded Secrets Found in Root Scripts**
+- **Original claim (WRONG):** "No hardcoded secret values found in source files." The grep only covered `apps/` and `packages/` — it missed 5 tracked root scripts.
+- **Actual state (per Addendum 2):** Three root scripts contain a hardcoded Clerk secret key (`sk_test_...`), two contain a hardcoded Neon database connection string. See findings AE2-A01 and AE2-A02 in Addendum 2. Production source code (`apps/`, `packages/`) correctly loads secrets via `process.env` with Zod validation via `@t3-oss/env-nextjs`. The hardcoded secrets are exclusively in ad-hoc test/debug scripts at the repository root.
 
 ### Part B: Integration Services
 
@@ -3342,3 +3343,184 @@ The "115 routes lack authentication" claim in prior sections of this document is
 | A11-41 | C-PAY6: Full user scan | `webhooks/payments/route.ts:12-20` | Replace `getUserList()` with Clerk metadata query or local customer-to-user mapping table. |
 | A11-42 | X-01: dangerouslySetInnerHTML | AI assistant panel, chart component | Add DOMPurify or similar sanitizer before rendering HTML content. |
 | A11-43 | B-G10: 204 parse failure | `goodshuffle-client.ts:245-249` | Check `response.status === 204` before calling `response.json()` in delete methods. |
+
+---
+
+## 11th Pass Addendum 2: Credential Exposure & Webhook Security Deep-Dive
+
+> **Audited:** 2026-04-25 (third sub-pass over same scope)
+> **Method:** 5 parallel subagents — credential exposure scan across all `apps/` + `packages/`, webhook receiver deep-audit, route-level auth re-verification, integration services re-audit, external package re-audit. Findings cross-referenced against existing 11th pass + Addendum 1. Only genuinely NEW findings listed.
+> **Why a third sub-pass:** The original 11th pass did not scan for hardcoded secrets in tracked scripts (only grepped source files under `apps/api/` and `packages/`). It also accepted the supplier-catalog webhook as the "gold standard" without verifying the conditional signature check. This addendum corrects both gaps.
+
+### Corrections to Existing Findings
+
+**CRITICAL Correction to A-14 ("No Hardcoded Secrets Found"):**
+- The original 11th pass states: "Grep for `sk_live`, `sk_test` ... no hardcoded secret values found in source files." This is **incorrect**. The grep only covered `apps/` and `packages/` directories — it missed **5 tracked scripts in the repository root** that contain hardcoded credentials. See findings AE2-A01 and AE2-A02 below. Finding A-14 should be revised to acknowledge these exceptions.
+
+**Correction to A-03 Assessment ("supplier-catalog is gold standard"):**
+- The original 11th pass states: "`webhooks/supplier-catalog` correctly uses HMAC-SHA256 with `timingSafeEqual` — this is the gold standard pattern." While the HMAC implementation itself is correct, the signature check is **conditional** — it only runs when the `x-supplier-signature` header is present. Requests without this header are processed without verification. See finding AE2-A04 below. The "gold standard" assessment should be qualified.
+
+### New Findings — Part A: Credential Exposure & Webhook Security
+
+#### AE2-A01 | CRITICAL | Hardcoded Clerk Secret Key in Tracked Scripts
+
+- **Files:**
+  - `test-cp031-cp048-cp049.mjs:15`
+  - `test-final.mjs:16`
+  - `debug-ticket.mjs:7`
+- All three tracked-in-git scripts contain an identical hardcoded Clerk `secretKey`: `sk_test_8hldxeqOyMCZV62r6ves3vMapWwko8Qfl1qa2FOGHr`. This key grants full backend API access to the Clerk instance — user impersonation, org management, session creation. Anyone with repository read access can extract it.
+- **Exploitable:** YES — key is in git history even if files are removed.
+- **Action:** Rotate the Clerk secret key immediately. Refactor scripts to use `process.env.CLERK_SECRET_KEY` or `git rm --cached` them. If key was ever pushed to a public remote, treat as a credential breach.
+
+#### AE2-A02 | CRITICAL | Hardcoded Database Connection String in Tracked Scripts
+
+- **Files:**
+  - `check-new-event.mjs:4`
+  - `test-cp086.mjs:119-120`
+- Both contain a real Neon PostgreSQL connection string: `postgresql://neondb_owner:npg_4xRiAGLCaT7s@ep-divine-math-ah5lmxku[...].us-east-1.aws.neon.tech/neondb`. Credentials (`neondb_owner` / `npg_4xRiAGLCaT7s`) are embedded in the URL.
+- **Exploitable:** YES — direct database access with owner-level credentials.
+- **Action:** Rotate the Neon database password immediately. Refactor scripts to use `process.env.DATABASE_URL`.
+
+#### AE2-A03 | CRITICAL | Clerk Webhook Body Round-Trip Breaks Signature Verification
+
+- **File:** `apps/api/app/webhooks/auth/route.ts:166-167`
+- The Clerk webhook handler reads the body via `request.json()` and then re-serializes with `JSON.stringify(payload)` before passing to Svix's `webhook.verify()`. This JSON round-trip can alter whitespace, key ordering, and number formatting compared to the raw bytes Svix signed. A legitimate webhook could be rejected (false negative), or an attacker could craft a payload that passes verification after the round-trip transformation (theoretical false positive).
+- **Contrast:** The Stripe webhook handler at `apps/api/app/webhooks/payments/route.ts:70` correctly uses `request.text()` for the raw body — this is the correct pattern.
+- **Exploitable:** YES — legitimate webhooks may be rejected, causing user creation/update events to be silently lost.
+- **Action:** Replace `request.json()` + `JSON.stringify()` with `request.text()` and pass the raw string to `webhook.verify()`.
+
+#### AE2-A04 | HIGH | Supplier Catalog Webhook Signature Check Bypassed by Omitting Header
+
+- **File:** `apps/api/app/api/webhooks/supplier-catalog/route.ts:124-157`
+- The HMAC-SHA256 signature verification is **conditional**: `if (signature)` at line 125. If the `x-supplier-signature` header is absent, the entire verification block is skipped and the payload is processed without any authentication. An attacker can inject arbitrary vendor catalog data (pricing, availability, product details) by sending POST requests without a signature header.
+- **Note:** The HMAC implementation itself is correct (uses `timingSafeEqual`), but the conditional guard makes it ineffective against attackers who simply omit the header.
+- **Exploitable:** YES — any external party can submit catalog updates without credentials.
+- **Action:** Reject requests where `x-supplier-signature` header is missing. Change `if (signature)` to a required check that returns 401 when absent.
+
+#### AE2-A05 | HIGH | PII Logged in Clerk Webhook Body
+
+- **File:** `apps/api/app/webhooks/auth/route.ts:192`
+- After Svix signature verification, the full webhook body is logged: `log.info("Webhook", { id, eventType, body })`. This body contains user PII — email addresses, phone numbers, first/last names, avatar URLs. The PII enters the observability pipeline (Sentry, Better Stack) and may be accessible to support staff and developers.
+- **Exploitable:** NO — but PII exposure to internal teams violates data minimization.
+- **Action:** Remove the `body` field from the log statement, or redact to only `eventType` + `id` + timestamp.
+
+#### AE2-A06 | HIGH | Unscoped Raw SQL in Email Webhook
+
+- **File:** `apps/api/app/api/collaboration/notifications/email/webhook/route.ts:81-88`
+- The unauthenticated Resend email webhook performs a raw SQL `$queryRaw` lookup by `email_id` (Resend ID) without any `tenant_id` filter. Combined with the lack of authentication (A-03), any external caller can enumerate email IDs and trigger database queries across all tenants. The query is parameterized (no SQL injection), but the lack of auth + lack of tenant scoping means this endpoint leaks cross-tenant email metadata.
+- **Exploitable:** YES — in conjunction with A-03 (no signature verification).
+- **Action:** Add HMAC signature verification (as A-03 recommends) AND add `tenant_id` filter to the query.
+
+### New Findings — Part B: Security Configuration
+
+#### AE2-B01 | MEDIUM | CSP Completely Disabled
+
+- **File:** `packages/security/proxy.ts:13`
+- Content Security Policy is explicitly set to `false`: `contentSecurityPolicy: false`. The comment notes "values depend on which Next Forge features are enabled." The web app (`apps/app/next.config.ts:250-265`) does set comprehensive CSP headers, but the API app (`apps/api/next.config.ts:81-96`) does not — it sets X-Frame-Options, X-Content-Type-Options, and HSTS but has no CSP at all. The `packages/security/` Nosecone config is the centralized place for this.
+- **Exploitable:** THEORETICAL — depends on whether XSS vectors exist.
+- **Action:** Configure at least a basic CSP in `packages/security/proxy.ts` or in `apps/api/next.config.ts` headers.
+
+#### AE2-B02 | MEDIUM | Inconsistent CRON_SECRET Handling Across Cron Endpoints
+
+- **Files:**
+  - `apps/api/app/api/cron/inventory-audit/route.ts:131` — returns 503 when CRON_SECRET not set (correct)
+  - `apps/api/app/api/cron/idempotency-cleanup/route.ts` — returns 503 when CRON_SECRET not set (correct)
+  - `apps/api/app/api/cron/email-reminders/route.ts:27-29` — **allows access** when CRON_SECRET not set
+  - `apps/api/app/api/cron/contract-expiration-alerts/route.ts:42-44` — **allows access** when CRON_SECRET not set
+  - `apps/api/app/api/cron/webhook-retry/route.ts` — uses CRON_SECRET (correct)
+- Two of five cron endpoints have `verifyCronAuth()` functions that return `true` when `CRON_SECRET` is not configured, effectively making those endpoints publicly accessible in environments where the env var is accidentally unset.
+- **Exploitable:** YES — in misconfigured deployments.
+- **Action:** Make all cron endpoints return 503 when `CRON_SECRET` is not set (follow the `inventory-audit` pattern).
+
+#### AE2-B03 | MEDIUM | Public Routes at `/api/public/*` Blocked by Clerk Middleware
+
+- **File:** `apps/api/proxy.ts:6-11`
+- The `isPublicRoute` matcher does NOT include `/api/public(.*)`. However, public proposal response and contract signing endpoints exist at `/api/public/proposals/[token]/respond` and `/api/public/contracts/[token]/sign`. Since the middleware matcher is `["/api(.*)"]`, these routes go through Clerk auth. The route handlers use token-based access (no `auth()` call), but the middleware rejects unauthenticated requests with 401 before the handler can validate the token. This means **public proposal/contract links are likely broken for unauthenticated users**.
+- **Exploitable:** NO — this is a **functional bug**, not a security vulnerability. The routes are over-protected rather than under-protected.
+- **Action:** Add `/api/public(.*)` to the `isPublicRoute` matcher in `proxy.ts`.
+
+#### AE2-B04 | MEDIUM | Sentry Signature Verification Falls Back to Timing-Unsafe Comparison
+
+- **File:** `packages/sentry-integration/src/webhook.ts:41-44`
+- The `verifySentrySignature` function catches hex parsing errors and falls back to plain string comparison: `return digest === signature`. This is NOT timing-safe and leaks information about the expected signature via timing side-channels. The comment acknowledges this: "(less secure but handles edge cases)."
+- **Exploitable:** THEORETICAL — requires timing measurement capability and hex parsing failure.
+- **Action:** Return `false` instead of falling back to `===`. If hex parsing fails, the signature is invalid.
+
+#### AE2-B05 | MEDIUM | Cron Retry Uses Timing-Unsafe Bearer Token Comparison
+
+- **File:** `apps/api/app/api/cron/webhook-retry/route.ts:49-50`
+- The CRON_SECRET is compared via string inequality: `authHeader !== \`Bearer ${cronSecret}\``. This is not a timing-safe comparison. An attacker could use timing side-channels to brute-force the CRON_SECRET character by character.
+- **Exploitable:** THEORETICAL — requires many requests and precise timing measurement.
+- **Action:** Replace with `crypto.timingSafeEqual(Buffer.from(authHeader), Buffer.from(\`Bearer ${cronSecret}\`))`.
+
+#### AE2-B06 | MEDIUM | Nowsta Sync Exposes Employee Emails in Error Messages
+
+- **File:** `apps/api/app/lib/nowsta-sync-service.ts:173-178`
+- The error message concatenates all unmapped employee email addresses: `${unmapped.map((e) => e.email).join(", ")}`. This list is stored in `result.errors`, which is persisted to `nowstaConfig.lastSyncError` in the database (line 208-210). Employee PII (email addresses) are stored in an error log column visible through the admin UI.
+- **Exploitable:** NO — internal data exposure to tenant admins.
+- **Action:** Store only the count of unmapped employees, not their email addresses. Or log emails to a separate audit table not exposed in the UI.
+
+### New Findings — Part C: Minor & Informational
+
+#### AE2-C01 | LOW | Integration Client Credentials Stored as Plain Class Properties
+
+- **Files:** `apps/api/app/lib/nowsta-client.ts:62-64`, `apps/api/app/lib/goodshuffle-client.ts:126-129`
+- Both `NowstaClient` and `GoodshuffleClient` store `apiKey` and `apiSecret` as plain private properties with no `toString()` or `toJSON()` override. If the client instance is accidentally logged (e.g., by Sentry error capture or `console.log`), credentials would be exposed in logs/telemetry.
+- **Exploitable:** THEORETICAL — requires accidental logging of the client object.
+- **Action:** Add `toJSON()` override that returns `[Client redacted]` or similar.
+
+#### AE2-C02 | LOW | Full Stripe Event Returned in Webhook Response
+
+- **File:** `apps/api/app/webhooks/payments/route.ts:100`
+- On successful processing, the full Stripe event object is returned: `NextResponse.json({ result: event, ok: true })`. This includes potentially sensitive customer and subscription details. While the caller is Stripe (low risk in practice), returning full event data is unnecessary.
+- **Action:** Return only `{ ok: true, eventId: event.id }`.
+
+#### AE2-C03 | LOW | Integration Test Logs Database URL Host
+
+- **File:** `apps/api/test/setup.integration.ts:26-27`
+- Logs the host portion of `DATABASE_URL`: `console.log("[integration] DATABASE_URL host:", process.env.DATABASE_URL?.split("@")[1]?.split("?")[0])`. Credentials are stripped (everything before `@`), but the hostname, region, and database name are logged in test output.
+- **Action:** Remove or reduce to just logging whether DATABASE_URL is set.
+
+### Positive Findings (Security Done Right)
+
+These patterns are correctly implemented and should be preserved:
+
+1. **Centralized secrets management** — `@t3-oss/env-nextjs` with Zod validation in per-package `keys.ts` files. All production code loads secrets via `process.env`. (Files: `packages/*/keys.ts`, `apps/api/env.ts`)
+
+2. **Integration secrets masked in API responses** — Both `apps/api/app/api/integrations/goodshuffle/config/route.ts:71-78` and `apps/api/app/api/integrations/nowsta/config/route.ts:67-73` correctly mask API keys (`maskApiKey()` returning first 4 / last 4) and replace secrets with `"********"`.
+
+3. **API key service uses secure patterns** — Keys generated with `crypto.randomBytes(32)`, hashed with SHA-256 (appropriate for high-entropy keys), timing-safe comparison. Plain key returned only once at creation. (File: `apps/api/app/lib/api-key-service.ts`)
+
+4. **Outbound webhook signatures are correct** — HMAC-SHA256 with timestamp-prefixed payload, standard `t=,v1=` format. (File: `packages/notifications/outbound-webhook-service.ts:55-65`)
+
+5. **Security headers on API app** — X-Frame-Options: DENY, X-Content-Type-Options: nosniff, HSTS with preload, Referrer-Policy: strict-origin-when-cross-origin, Permissions-Policy. (File: `apps/api/next.config.ts:81-96`)
+
+6. **CORS is NOT overly permissive** — Production has no CORS headers; development only allows `http://127.0.0.1:2221`. No `Access-Control-Allow-Origin: *`. (File: `apps/api/app/lib/cors.ts`)
+
+7. **Secretlint configured** — `.secretlintrc.json` with recommended preset. (However, the hardcoded secrets in findings AE2-A01/A02 indicate secretlint is either not run in CI or these root scripts are excluded.)
+
+### Summary of New Findings
+
+| Severity | Count | Finding IDs |
+|----------|-------|-------------|
+| CRITICAL | 3 | AE2-A01 (Clerk secret in scripts), AE2-A02 (DB creds in scripts), AE2-A03 (webhook body round-trip) |
+| HIGH | 3 | AE2-A04 (supplier sig bypass), AE2-A05 (PII in webhook log), AE2-A06 (unscoped email webhook) |
+| MEDIUM | 6 | AE2-B01 through AE2-B06 |
+| LOW | 3 | AE2-C01 through AE2-C03 |
+
+### Updated Recommended Actions
+
+| # | Finding | Priority | Action |
+|---|---------|----------|--------|
+| A11-44 | AE2-A01: Clerk secret in scripts | **TIER 0** | Rotate Clerk `sk_test_8hldxeqOy...` key immediately. `git rm --cached` the 3 scripts, refactor to use `process.env`. |
+| A11-45 | AE2-A02: DB creds in scripts | **TIER 0** | Rotate Neon `neondb_owner:npg_4xRiAGLCaT7s` password immediately. `git rm --cached` the 2 scripts, refactor to use `process.env`. |
+| A11-46 | AE2-A03: Webhook body round-trip | **TIER 0** | Replace `request.json()` + `JSON.stringify(payload)` with `request.text()` in `apps/api/app/webhooks/auth/route.ts:166`. |
+| A11-47 | AE2-A04: Supplier sig bypass | **TIER 1** | Make `x-supplier-signature` header required in `supplier-catalog/route.ts:125`. Reject with 401 if absent. |
+| A11-48 | AE2-A05: PII in webhook log | **TIER 1** | Remove `body` from `log.info("Webhook", ...)` at `webhooks/auth/route.ts:192`. Log only `id`, `eventType`, `timestamp`. |
+| A11-49 | AE2-A06: Unscoped email webhook | **TIER 1** | Add HMAC signature verification (as A-03 recommends) AND add `tenant_id` filter to the raw SQL query. |
+| A11-50 | AE2-B02: Inconsistent CRON_SECRET | **TIER 2** | Make `email-reminders` and `contract-expiration-alerts` return 503 when `CRON_SECRET` not set. |
+| A11-51 | AE2-B03: Public routes blocked | **TIER 2** | Add `/api/public(.*)` to `isPublicRoute` matcher in `proxy.ts`. |
+| A11-52 | AE2-B04: Sentry timing-unsafe fallback | **TIER 3** | Return `false` instead of `digest === signature` in the catch block. |
+| A11-53 | AE2-B05: Cron timing-unsafe comparison | **TIER 3** | Replace string comparison with `crypto.timingSafeEqual` for CRON_SECRET check. |
+| A11-54 | AE2-B06: Employee emails in errors | **TIER 3** | Store only unmapped count, not email addresses. |
+| A11-55 | AE2-B01: CSP disabled | **TIER 3** | Configure at least a basic CSP in `packages/security/proxy.ts`. |

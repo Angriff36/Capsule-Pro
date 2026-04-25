@@ -1,179 +1,133 @@
-0a. Study @IMPLEMENTATION_PLAN.md — it already has TEN verification passes. DO NOT repeat any of that work. The prior passes covered: (1) route-level claims & blockers, (2-3) blocker re-verification, (4) full package health audit of all 34 shared packages, (5) E2E test suite audit, (6-8) raw-SQL correctness audit (3 passes), (9) frontend health audit, (10) mobile app + public website audit. Your focus is entirely new.
-0b. Study `apps/api/proxy.ts` — the main Next.js middleware entry point (Clerk auth + global rate limiting). This is the security perimeter.
-0c. Study `apps/api/middleware/` — all middleware modules (api-key-auth, rate-limiter, global-rate-limit).
-0d. Study `apps/api/app/lib/` — all 16+ shared library files including Goodshuffle integrations, QuickBooks export, Nowsta sync, recipe costing, activity feed, tenant resolver, invariant utilities.
-0e. Study `packages/auth/`, `packages/security/`, `packages/rate-limit/` — auth/security shared packages.
-0f. Study `packages/supplier-connectors/`, `packages/payments/` — external integration packages.
-0g. For reference, the main API routes are in `apps/api/app/api/`, shared packages are in `packages/`, and the web app is in `apps/app/`.
+# Ralph Wiggum Diagnosis Prompt — Capsule Pro
 
-## FOCUS: Auth, Middleware & Integration Services Audit (11th pass — NEW focus)
+## What's Already Done
 
-All prior audits focused on route correctness, raw SQL, frontend, mobile, and packages. The **authentication chain, authorization enforcement, and external integration services** have never been systematically audited. This is the security and reliability perimeter.
+0a. Study @IMPLEMENTATION_PLAN.md — it already has ELEVEN verification passes (plus 4 addenda/sub-passes). DO NOT repeat any of that work. The prior passes covered: (1) route-level claims & blockers, (2-3) blocker re-verification, (4) full package health audit of all 34 shared packages, (5) E2E test suite audit, (6-8) raw-SQL correctness audit (3 passes), (9) frontend health audit, (10) mobile app + public website audit, (11) auth, middleware & integration services audit (3 sub-passes). Your focus is entirely new.
+0b. The test suite has 307 test files (296 unit via vitest, 117 E2E via Playwright). Prior passes noted test counts and skips but NEVER assessed test quality — whether tests actually catch real bugs, whether assertions are meaningful, or whether critical code paths have any coverage at all.
+0c. Study `apps/api/__tests__/` — the main API unit test directory. Read at least 10 representative test files across different domains.
+0d. Study `apps/app/__tests__/` — web app unit tests. Read at least 5 representative files.
+0e. Study `packages/*/__tests__/` — package-level tests. Read at least 5 files.
+0f. For reference, the main API routes are in `apps/api/app/api/`, shared packages are in `packages/`, and the web app is in `apps/app/`.
 
-### Part A: Authentication & Authorization Chain
+## FOCUS: Test Quality & Coverage Gap Audit (12th pass — NEW focus)
 
-#### 1. Middleware Chain Analysis
-- Read `apps/api/proxy.ts` fully — trace the auth flow: Clerk → userId extraction → global rate limit → route handler
-- What routes are marked public? Is the public route list correct and complete?
-- Does the middleware correctly handle all edge cases: missing auth tokens, expired sessions, malformed Clerk tokens?
-- Is the Clerk middleware configured for multi-tenancy? How are org/tenant IDs extracted?
-- Read `apps/api/middleware/global-rate-limit.ts` — is the rate limiting actually effective? What are the limits? Can they be bypassed?
+All prior audits focused on production code correctness. The **test suite itself** has never been audited for quality. This pass asks: do the tests actually protect against the bugs found in passes 6-11? Are critical code paths tested at all? Are assertions meaningful or just "it doesn't throw"?
 
-#### 2. Route-Level Auth Enforcement
-- The IMPLEMENTATION_PLAN mentions **115 routes lack authentication** — verify this claim by scanning `apps/api/app/api/` for routes that don't check `auth()` or `userId`
-- Check whether the Clerk middleware matcher (`/api(.*)`) covers ALL API routes or if some are missed
-- Are there routes that implement their own auth checks (duplicating middleware logic) or bypassing it entirely?
-- Check `apps/api/app/api/health/`, `apps/api/app/api/webhooks/`, `apps/api/app/api/cron/` — are these correctly excluded from auth?
+### Part A: Assertion Effectiveness Analysis
 
-#### 3. RBAC Enforcement
-- How is role-based access control enforced? Is it in middleware, route handlers, or manifest rules?
-- Are there routes that should be admin-only but are accessible to any authenticated user?
-- Check the manifest system — do manifests enforce role checks? Are manifests consistently applied?
-- Read `packages/auth/` — what auth utilities exist? Are they used consistently?
+#### 1. Weak Assertion Patterns
+- Search for tests that only assert status codes without checking response bodies (e.g., `expect(res.status).toBe(200)` and nothing else)
+- Find tests that use `.not.toThrow()` or empty `.resolves` — these pass regardless of behavior
+- Find tests with `expect.anything()`, `expect.objectContaining({})` with empty objects, or overly loose matchers
+- Count tests that don't assert on the returned data shape at all
 
-#### 4. API Key Authentication
-- Read `apps/api/middleware/api-key-auth.ts` and `apps/api/app/lib/api-key-service.ts` fully
-- How are API keys generated, stored, and validated?
-- Is the timing-safe hash comparison correctly implemented?
-- Are API keys scoped to tenants/orgs? Can one key access another tenant's data?
-- Where is `authenticateApiKey` / `withApiKeyAuth` actually used? Which routes use it?
-- Can API keys be used to bypass Clerk auth? Is that intentional?
+#### 2. Mock-Heavy Tests That Don't Test Real Behavior
+- Find tests where every dependency is mocked — the test only verifies the mock was called, not that the code produces correct output
+- Look for `vi.mock` at module level that replaces entire modules — these tests may pass even if the real code is broken
+- Identify tests where the mock return value is the same structure as the assertion — circular testing
 
-#### 5. Session & Token Handling
-- How are Clerk JWTs passed to downstream services?
-- Is there token refresh handling? What happens when a token expires mid-request?
-- Are there any hardcoded tokens, secrets, or credentials in the codebase?
+#### 3. Tests That Would Pass Even If Code Was Deleted
+- Find test files with no imports from the module under test
+- Find tests that only test the test harness itself (setup, teardown, fixtures)
+- Find describe blocks with no `it()`/`test()` calls
 
-### Part B: Integration Services (`apps/api/app/lib/`)
+### Part B: Coverage Gap Analysis vs Known Bugs
 
-#### 1. Goodshuffle Integration (4 files)
-- `goodshuffle-client.ts` — API client implementation
-- `goodshuffle-event-sync-service.ts` — event synchronization
-- `goodshuffle-inventory-sync-service.ts` — inventory synchronization
-- `goodshuffle-invoice-sync-service.ts` — invoice synchronization
-- Are API keys/credentials stored securely? Environment variables? Secrets manager?
-- Error handling — what happens when Goodshuffle is unreachable? Are there retries? Timeouts?
-- Data mapping — is the Goodshuffle → Capsule Pro mapping correct and complete?
-- Are there any data loss scenarios in sync operations?
+#### 1. Cross-Reference Tests Against CRITICAL Findings
+The prior passes found 19+ CRITICAL bugs (SQL injection, schema drift, broken endpoints, missing auth). For EACH CRITICAL finding from passes 6-11:
+- Does a test exist that would have caught this bug BEFORE it was found by the audit?
+- If not, flag as a coverage gap — the test suite failed to prevent this class of bug
 
-#### 2. QuickBooks Export (2 files)
-- `quickbooks-bill-export.ts` — bill export to QuickBooks
-- `quickbooks-invoice-export.ts` — invoice export to QuickBooks
-- Is OAuth configured correctly? Token refresh?
-- Error handling for QuickBooks API failures
-- Data consistency — what if export partially succeeds?
+Key CRITICAL findings to cross-reference:
+- SQL injection in `payroll/approvals/history/route.ts` (pass 9, finding #1)
+- Schema drift in `events/importer.ts` — camelCase vs snake_case (pass 8, finding #10)
+- Broken `timecards/me/route.ts` — non-existent table JOIN (pass 8, finding #14)
+- Missing auth on email webhook (pass 7, finding #7)
+- Cross-tenant data access in outbox/publish (pass 7, finding #8)
+- Chart-of-accounts PATCH vs PUT mismatch (pass 9, C1)
+- Mobile API body field mismatch `{ taskId }` vs `{ id }` (pass 10, C1)
 
-#### 3. Nowsta Integration
-- `nowsta-client.ts` — Nowsta API client
-- `nowsta-sync-service.ts` — employee sync service
-- Authentication method, error handling, data mapping
-- Is the sync bi-directional or one-way?
+#### 2. Untested Critical Code Paths
+For each of these high-risk areas, check if ANY test exists:
+- Authentication middleware chain (`apps/api/proxy.ts`, `apps/api/middleware/`)
+- Rate limiting (`apps/api/middleware/global-rate-limit.ts`)
+- API key authentication (`apps/api/middleware/api-key-auth.ts`)
+- Webhook signature verification (Clerk, Stripe, supplier-catalog)
+- Tenant isolation in raw SQL queries
+- Integration service sync logic (Goodshuffle, Nowsta)
 
-#### 4. Shared Libraries
-- `activity-feed-service.ts` — how is the activity feed populated? Performance concerns?
-- `tenant.ts` — tenant resolution logic — is it secure? Can tenants be spoofed?
-- `recipe-costing.ts` — business logic correctness
-- `inventory-forecasting.ts` — algorithm review
-- `cors.ts` — CORS configuration — is it overly permissive?
-- `invariant.ts` — utility quality
+#### 3. Test Distribution Heatmap
+Count tests per domain module and compare against code complexity:
+- Which modules have the MOST tests vs the MOST code?
+- Which modules have ZERO tests despite having CRITICAL/HIGH findings?
+- Is there a correlation between test coverage and bug density?
 
-### Part C: External Integration Packages
+### Part C: Test Infrastructure Quality
 
-#### 1. `packages/supplier-connectors/`
-- What suppliers are supported?
-- API client patterns, error handling, authentication
-- Are there any exposed credentials or API keys?
+#### 1. Test Setup & Fixtures
+- Are test databases properly isolated? Do tests clean up after themselves?
+- Are there shared mutable state issues between tests?
+- Do integration tests use real databases or mocks?
+- Is the test seed data consistent with the current Prisma schema?
 
-#### 2. `packages/payments/`
-- Payment processing logic
-- Which payment providers are integrated?
-- PCI compliance considerations
-- Error handling for payment failures
+#### 2. E2E Test Effectiveness
+- Read at least 10 Playwright spec files from `apps/app/e2e/` or similar
+- Do E2E tests cover authenticated flows or just public pages?
+- Are there E2E tests for critical user journeys (event creation, kitchen task workflow, procurement approval)?
+- Do E2E tests verify database state after actions, or just check UI elements?
 
-#### 3. `packages/webhooks/`
-- Webhook sending/receiving infrastructure
-- Signature verification
-- Retry logic and idempotency
+#### 3. CI Integration
+- Check if there's a CI configuration (`.github/workflows/`, `vercel.json`)
+- Are tests run on every PR?
+- Is there coverage reporting?
+- Are there flaky test suppressions that hide real failures?
+
+### Part D: Recommendations
+
+Based on the audit, produce a prioritized list of:
+1. Tests that should be WRITTEN to prevent the most impactful bugs found in prior passes
+2. Existing tests that should be DELETED (they test nothing or test mocks)
+3. Test infrastructure improvements (seeding, isolation, CI)
+4. Coverage targets by module (prioritized by bug density)
 
 ### Investigation approach:
 
-- Start with `cat apps/api/proxy.ts` and trace the full auth chain
-- Map ALL public routes: grep for `isPublicRoute` patterns and cross-reference with actual route files
-- Scan for auth bypasses: find routes that don't call `auth()` or import auth utilities
-- Read every file in `apps/api/app/lib/` (16 files) and categorize findings
-- Read every file in `packages/auth/`, `packages/security/`, `packages/rate-limit/`
-- Check `packages/supplier-connectors/` and `packages/payments/` for credential exposure
-- Grep for hardcoded secrets: `grep -rn 'sk_live\|sk_test\|api_key.*=\|password.*=\|secret.*=' apps/ packages/ --include='*.ts'`
-- Check `.env.example` or similar for expected env vars vs what's actually used
-- Verify rate limiter effectiveness: read the full implementation, check Redis dependency
+- Start with a grep for assertion patterns: `expect(.*status`, `expect(.*toBe`, `expect(.*toEqual`, `expect.anything`, `not.toThrow`
+- Read test files proportional to the criticality of the code they test
+- Cross-reference every CRITICAL finding from passes 6-11 against test existence
+- Map test file locations to production source file locations to identify gaps
+- Check CI configuration for test execution and coverage settings
+- Read at least 30 test files total across all domains
 
 ### Output format:
 
 Append findings to IMPLEMENTATION_PLAN.md under a new section:
 
 ```markdown
-## Auth, Middleware & Integration Services Audit (11th Pass)
+## Test Quality & Coverage Gap Audit (12th Pass)
 
 > **Audited:** 2026-04-25
-> **Scope:** Auth chain (proxy.ts, middleware/, packages/auth, packages/security), Integration services (apps/api/app/lib/), External integrations (packages/supplier-connectors, packages/payments, packages/webhooks)
-> **Method:** Full auth chain trace + lib file audit + credential exposure scan + integration correctness review
+> **Scope:** All 307 test files (296 unit vitest + 117 E2E Playwright) across apps/ and packages/
+> **Method:** Assertion pattern analysis, CRITICAL-finding cross-reference, coverage gap mapping, test infrastructure review
 
-### Part A: Authentication & Authorization
+### Part A: Assertion Effectiveness
+[Weak patterns, mock-heavy tests, tests that pass regardless]
 
-#### Executive Summary
-[Auth architecture overview, top risks]
+### Part B: Coverage Gap Analysis
+[Cross-reference against known CRITICAL bugs, untested critical paths, test distribution heatmap]
 
-#### 1. Middleware Chain
-[Findings from proxy.ts + middleware/]
+### Part C: Test Infrastructure Quality
+[Setup/fixtures, E2E effectiveness, CI integration]
 
-#### 2. Route-Level Auth Enforcement
-[Missing auth, bypass risks]
-
-#### 3. RBAC Enforcement
-[Role check gaps]
-
-#### 4. API Key Authentication
-[Security assessment]
-
-#### 5. Session & Token Handling
-[Token management findings]
-
-### Part B: Integration Services
-
-#### 1. Goodshuffle Integration
-[Findings]
-
-#### 2. QuickBooks Export
-[Findings]
-
-#### 3. Nowsta Integration
-[Findings]
-
-#### 4. Shared Libraries
-[Findings by file]
-
-### Part C: External Integration Packages
-
-#### 1. Supplier Connectors
-[Findings]
-
-#### 2. Payments
-[Findings]
-
-#### 3. Webhooks
-[Findings]
-
-### Recommended Actions
-[Priority-ordered action items]
+### Part D: Recommended Actions
+[Prioritized test writing plan, deletion candidates, infrastructure improvements]
 ```
 
 ### Guardrails
 
-- Do NOT modify any source code. This is diagnosis only.
+- Do NOT modify any source code or test code. This is diagnosis only.
 - Do NOT report issues already documented in IMPLEMENTATION_PLAN.md (check all prior sections first).
 - Cite exact file:line for every finding.
-- For auth issues, distinguish between "theoretical concern" and "exploitable vulnerability."
-- For integration services, distinguish between "missing error handling" and "data loss risk."
-- The Goodshuffle/QuickBooks/Nowsta integrations may use environment variables for credentials — report the PATTERN (how credentials are loaded), never the actual values.
-- Do NOT grep for or report actual secret values. Only report whether secrets management is done correctly.
-- Check if `packages/security/` has any CSP headers, CORS policies, or other security utilities that should be enforced but aren't.
+- Distinguish between "no test exists" (coverage gap) and "test exists but is weak" (quality issue).
+- Prioritize findings by the severity of the production bugs they fail to catch.
+- Count test files and assertions — provide data, not vibes.
