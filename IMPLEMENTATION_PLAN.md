@@ -4196,3 +4196,163 @@ Well-guarded routes (for comparison): `shipments/route.ts`, `events/route.ts`, `
 | Priority 1 (Critical) | **5** |
 | Priority 2 (High) | **8** |
 | Priority 3 (Medium) | **7** |
+
+---
+
+### Supplementary Findings — Deep Verification Pass (2026-04-25)
+
+> **Method:** Re-audit of all 13th Pass findings with targeted file-level verification, Prisma schema cross-reference, and per-module top-query analysis. Prior findings validated; gaps identified below.
+
+#### S1: New N+1 Pattern — Payroll Timecard Generation
+
+**Not in A1 or A2 tables.** The existing audit covers `timecards/bulk` (C3) but misses `timecards/generate`:
+
+| File:Line | Pattern | Severity | Queries per Invocation |
+|-----------|---------|----------|----------------------|
+| `payroll/timecards/generate/route.ts:211-245` | Serial N+1 — `for (const shift of needsEntry)` with individual `$queryRaw` INSERT per shift | **HIGH** | N (10-100 shifts per payroll period) |
+
+The route first runs a complex 2-CTE query (lines 62-96) computing weekly hours + shift assignments across the entire period, then iterates `needsEntry` doing one INSERT per shift. The CTE materializes all time entries in the period — with 1,000+ shifts this produces a large intermediate result. The subsequent per-shift INSERT loop is unbatched.
+
+**Recommended fix:** Replace the `for...of` INSERT loop with a single `$executeRaw` using `unnest()` arrays (same pattern used in `kitchen/prep-lists/generate/route.ts:854-881`).
+
+#### S2: Full-Table Scan — Allergen Matrix (Performance Aspect)
+
+The SQL injection in `kitchen/allergens/matrix/route.ts` is already documented (Pass 6, CRITICAL #4). The **performance** dimension is not:
+
+| Scenario | File:Line | Impact |
+|----------|-----------|--------|
+| No `ids` query param | `allergens/matrix/route.ts:118-151` | Full-table scan on `dishes` with 3 LEFT JOINs (recipes → recipe_ingredients → ingredients) |
+| No `ids` query param | `allergens/matrix/route.ts:275-303` | Full-table scan on `recipes` with 2 LEFT JOINs (recipe_ingredients → ingredients) |
+| With `ids` filter | Both queries | Performance is acceptable (filtered by tenantId + IN clause) |
+
+When called without `ids` (the default case from the frontend), both queries return ALL dishes/recipes for the tenant with their full ingredient lists. A tenant with 500+ dishes and 2,000+ ingredients produces a large result set that is then processed in-memory with O(dishes × ingredients × 9) Big-9 allergen matching.
+
+**Recommended fix:** Add default LIMIT (e.g., 200) when no `ids` filter is provided, or require `ids` parameter.
+
+#### S3: Positive Batch Pattern — Prep List Generation
+
+`kitchen/prep-lists/generate/route.ts` (955 lines) uses PostgreSQL `unnest()` for batch INSERT of prep list items (lines 854-881) and prep tasks (lines 743-749). This is the **best batch INSERT pattern in the codebase** and should be the reference for fixing the N+1 INSERT loops in:
+
+- `payroll/timecards/generate/route.ts:211-245` (S1 above)
+- `events/import/server-to-server/route.ts:396-430` (A1-4)
+- `inventory/import/route.ts:289-323` (A1-7)
+- All sync services in A2
+
+Pattern:
+```sql
+INSERT INTO table (col1, col2, col3)
+SELECT * FROM unnest($1::uuid[], $2::text[], $3::int[])
+```
+
+#### S4: Per-Module Top Complex Queries
+
+The existing Part D provides module-level risk ratings. Below are the **top 3 most complex queries per module** with exact file paths and scaling analysis. These are the routes that will degrade first under load.
+
+##### Kitchen (259 files, Risk 4/5)
+
+| Rank | File | Lines | Query Pattern | >1K Row Risk |
+|------|------|-------|---------------|-------------|
+| 1 | `kitchen/prep-lists/generate/route.ts` | 955 | 4-table JOIN (event_dishes → dishes → recipes → recipe_versions via LATERAL) + `unnest()` batch INSERT | HIGH — O(dishes × ingredients) for ingredient resolution |
+| 2 | `kitchen/allergens/matrix/route.ts` | 441 | Two full-table `$queryRawUnsafe` queries with 3 LEFT JOINs each, in-memory O(dishes × ingredients × 9) matrix | HIGH — no LIMIT when unfiltered |
+| 3 | `kitchen/waste/entries/route.ts` | 585 | Multi-step transaction: validate item + reason (2 reads), create waste entry, update stock levels, create inventory transaction, create outbox events | MEDIUM — single-entity operations |
+
+##### Events (141 files, Risk 4/5)
+
+| Rank | File | Lines | Query Pattern | >1K Row Risk |
+|------|------|-------|---------------|-------------|
+| 1 | `events/documents/parse/route.ts` | 1310 | Document parsing → event creation → battle board → checklist. `linkImportRecordsToEvent` uses `Promise.all` with N updates (parallel N+1, line 711-718) | MEDIUM — bounded by import record count |
+| 2 | `events/import/server-to-server/route.ts` | 806 | Already documented (A1-4, A2-7). 5-8 queries per event, no batching | HIGH — already in audit |
+| 3 | `events/budgets/route.ts` | 266 | `findMany` with nested include (lineItems) + count query. POST uses `createMany` in transaction (good pattern) | LOW — reasonable pagination |
+
+##### Inventory (102 files, Risk 4/5)
+
+| Rank | File | Lines | Query Pattern | >1K Row Risk |
+|------|------|-------|---------------|-------------|
+| 1 | `inventory/audit/reports/route.ts` | 804 | Fetches ALL finalized sessions for period → ALL variance reports → in-memory trend/discrepancy analysis | HIGH — unbounded in-memory processing |
+| 2 | `inventory/stock-levels/route.ts` | 632 | 3 sequential queries: storage locations, inventory items (paginated), stock records. Then computes reorder/par/stock-out risk in JS | HIGH — heavy in-memory computation |
+| 3 | `inventory/cycle-count/sessions/[id]/finalize/route.ts` | 334 | Already documented (A1-3). 4N+1 queries inside transaction | HIGH — transaction holds locks during loop |
+
+##### CRM (61 files, Risk 4/5)
+
+| Rank | File | Lines | Query Pattern | >1K Row Risk |
+|------|------|-------|---------------|-------------|
+| 1 | `crm/scoring/calculate/route.ts` | 205 | Single dynamic UPDATE with CASE WHEN for each rule (not N separate UPDATEs — better than suspected). Injection risk already documented (Pass 6, CRITICAL) | MEDIUM — one query, but dynamic SQL construction is fragile |
+| 2 | `crm/proposals/route.ts` | 188 | Multi-join list query with batched client/lead/line item fetches. Reasonable pagination | LOW |
+| 3 | `crm/clients/route.ts` | ~180 | 33-field client model overfetching (already in A3) | LOW — with pagination |
+
+**Correction:** Prior investigation suggested CRM scoring runs N full-table UPDATEs. Verified: it constructs a single UPDATE with N CASE WHEN branches. The injection risk (already documented) remains, but the performance pattern is acceptable.
+
+##### Procurement (37 files, Risk 4/5)
+
+| Rank | File | Lines | Query Pattern | >1K Row Risk |
+|------|------|-------|---------------|-------------|
+| 1 | `procurement/budget/[id]/route.ts` | 145 | 4 sequential `$queryRawUnsafe`: budget lookup, actual spend (3-table JOIN), committed spend (same JOIN), monthly breakdown (GROUP BY) | MEDIUM — single-budget scope limits impact |
+| 2 | `procurement/budget/commands/refresh/route.ts` | 125 | Already documented (A1-8). Per-budget N+1 with 3-table JOIN spend calc | HIGH — scales with budget count |
+| 3 | `procurement/approvals/action/route.ts` | 122 | Single approval action, moderate complexity | LOW |
+
+##### Staff (50 files, Risk 3/5)
+
+| Rank | File | Lines | Query Pattern | >1K Row Risk |
+|------|------|-------|---------------|-------------|
+| 1 | `staff/shifts/bulk-assignment-suggestions/route.ts` | 248 | Fetches open shifts via raw SQL, then per-shift employee matching (likely O(shifts × employees)) | HIGH — combinatorial growth |
+| 2 | `staff/shifts/bulk-assignment/helpers.ts` | 457 | Serial `for...of` with `processPreSelectedShift` per assignment | MEDIUM — bounded by batch size |
+| 3 | `staff/availability/employees/route.ts` | 286 | Raw SQL LEFT JOIN (employees → availability with date filters) + time-off requests | MEDIUM — returns all active employees |
+
+##### Payroll (35 files, Risk 4/5)
+
+| Rank | File | Lines | Query Pattern | >1K Row Risk |
+|------|------|-------|---------------|-------------|
+| 1 | `payroll/timecards/generate/route.ts` | 292 | **NEW (S1):** 2-CTE query (weekly_hours + shift_weekly) + serial per-shift INSERT loop | HIGH — CTE materializes all entries in period |
+| 2 | `payroll/approvals/[approvalId]/route.ts` | 218 | 3 sequential raw SQL queries (SELECT history, UPDATE status, INSERT history) | LOW — single-entity operations |
+| 3 | `payroll/deductions/route.ts` | 184 | Standard CRUD with validation | LOW |
+
+##### Analytics (9 files, Risk 5/5 — Critical)
+
+| Rank | File | Lines | Query Pattern | >1K Row Risk |
+|------|------|-------|---------------|-------------|
+| 1 | `analytics/staff/summary/route.ts` | 428 | Multi-CTE raw SQL joining employees with task stats, time stats, progress stats, client interaction stats, event participation stats | **CRITICAL** — 5+ CTE joins across employee table |
+| 2 | `analytics/finance/route.ts` | 496 | 4 parallel queries: event_profitability JOINs, 3 correlated subqueries (proposals, contracts, deposits), budget alerts | **CRITICAL** — cross-module aggregation |
+| 3 | `analytics/kitchen/route.ts` | 439 | 4 parallel queries: station metrics GROUP BY, kitchen health (4 sub-queries), station trends (GROUP BY date, LIMIT 500), top performers | HIGH — station trends capped at 500, others unbounded |
+
+All analytics routes are **CRITICAL at scale** because they perform full-table aggregation across modules. The missing Event indexes (status, eventDate — E1 in Part E) directly impact every analytics query.
+
+##### Accounting (17 files, Risk 3/5)
+
+| Rank | File | Lines | Query Pattern | >1K Row Risk |
+|------|------|-------|---------------|-------------|
+| 1 | `accounting/collections/cases/[id]/route.ts` | 362 | PATCH with 10+ conditional branches — each is a simple findFirst + update | LOW — single-entity |
+| 2 | `accounting/invoices/[id]/route.ts` | 326 | GET with includes (client + event), PUT with calculated totals | LOW |
+| 3 | `accounting/invoices/route.ts` | 310 | Invoice listing with pagination, uses `select` properly | LOW |
+
+##### Logistics (14 files, Risk 3/5)
+
+| Rank | File | Lines | Query Pattern | >1K Row Risk |
+|------|------|-------|---------------|-------------|
+| 1 | `logistics/tracking/route.ts` | 330 | 6 total queries: 2 Prisma (active + completed shipments) + 4 raw SQL map queries (location, supplier, driver, vehicle) | MEDIUM — results capped |
+| 2 | `logistics/dispatch/route.ts` | 179 | 5 queries: routes with stops (LIMIT 5), available drivers with vehicle JOIN, 2 raw SQL map queries | MEDIUM |
+| 3 | `logistics/routes/commands/optimize/route.ts` | 46 | Route optimization command | LOW |
+
+#### S5: Index Verification — Event Model FK Columns
+
+The Prisma schema was cross-referenced to verify Event model FK indexes. Prior agent investigation incorrectly flagged some as missing. Verified status:
+
+| FK Column | Index | Status |
+|-----------|-------|--------|
+| `clientId` | `@@index([clientId])` at line 496 | ✅ EXISTS |
+| `locationId` | `@@index([locationId])` at line 497 | ✅ EXISTS |
+| `venueId` | `@@index([tenantId, venueId])` at line 494 | ✅ EXISTS |
+| `venueEntityId` | `@@index([tenantId, venueEntityId])` at line 495 | ✅ EXISTS |
+| `status` | — | ❌ MISSING (confirmed in B1) |
+| `eventDate` | — | ❌ MISSING (confirmed in B1) |
+| `eventType` | — | ❌ MISSING (confirmed in B1) |
+
+The Event FK indexes are well-covered. The gaps remain `status`, `eventDate`, and `eventType` — already documented in Part E action E1.
+
+#### S6: Supplementary Recommended Actions
+
+| # | Action | Priority | Impact | Effort |
+|---|--------|----------|--------|--------|
+| S1 | Batch the `payroll/timecards/generate` INSERT loop using `unnest()` pattern (reference: `kitchen/prep-lists/generate/route.ts:854-881`) | P2 | 10-100 queries → 1 query | Low |
+| S2 | Add default LIMIT (200) to allergen matrix when no `ids` filter provided | P2 | Prevents full-table scan on large tenants | Low |
+| S3 | Add `@@index([tenantId, status, eventDate])` covering index to Event model for analytics queries | P1 | All analytics + dashboard queries benefit | Low |
+| S4 | Cap `inventory/audit/reports/route.ts` in-memory processing — stream or paginate variance report analysis | P3 | Prevents OOM on large tenants with many cycle counts | Medium |
