@@ -1,6 +1,6 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-25 (twelfth-pass test quality & coverage gap audit — verified & corrected)
+> **Last updated:** 2026-04-25 (fourteenth-pass error handling & API resilience audit)
 > **Prior passes:** 2026-04-24 initial post-expansion audit → 2026-04-24 first re-verification → 2026-04-24 third-pass spot-check → 2026-04-24 fourth-pass package health → 2026-04-24 fifth-pass E2E audit → 2026-04-24 sixth-pass raw-SQL audit → 2026-04-24 seventh-pass supplementary raw-SQL audit → 2026-04-24 eighth-pass comprehensive raw-SQL audit → 2026-04-25 ninth-pass frontend health audit → 2026-04-25 tenth-pass mobile + public website audit → **2026-04-25 eleventh-pass auth, middleware & integration services audit** (3 sub-passes: initial 6-agent pass, 6-agent addendum, 5-agent credential/webhook deep-dive).
 > **Previous snapshot:** 2026-03-08 (stale — many claims falsified by post-expansion audit)
 > **Audit method:** initial 15+ parallel subagent investigations → 8-subagent re-verification → 10-subagent third-pass → 10-subagent fourth-pass → E2E fifth-pass → 20-subagent sixth-pass → 9-subagent seventh-pass → 15-subagent confirmation pass → 20-subagent eighth-pass raw-SQL audit → 24-subagent ninth-pass frontend health audit → 11-subagent tenth-pass mobile + public website audit → **17-subagent eleventh-pass auth/middleware/integration audit** (6 + 6 + 5 agents across 3 sub-passes) covering full auth chain trace, route-level auth enforcement scan, credential exposure scan across all directories, webhook receiver security deep-audit, all 16 lib files, and external integration packages. **All agent findings verified against actual codebase before reporting.**
@@ -4769,3 +4769,444 @@ The data source CANNOT use transactions even if it wanted to.
 | F18 | Webhook retry requires external cron, no jitter on backoff | MEDIUM | `cron/webhook-retry` + outbound service | Add jitter, verify cron config |
 | F19 | Event import workflow: no rollback, partially imported data persists | HIGH | `eventimportworkflow/*` routes | Add compensating transactions or cleanup |
 | F20 | PO creation: header + line items via separate API calls, not atomic | HIGH | `purchase-orders/commands/create`, `purchase-order-items/commands/create` | Wrap in single transaction or saga |
+
+---
+
+## Error Handling & API Resilience Audit (14th Pass)
+
+> **Date:** 2026-04-25
+> **Method:** 7 parallel subagent investigations (A1 try/catch coverage, A2 error response consistency, A3-A4 Prisma & raw SQL errors, B partial failure & state consistency, C unhandled promises & silent failures, D rate limiting & resilience, E domain-specific deep dives).
+> **Scope:** Error handling patterns, transaction safety, error response consistency, external API resilience, and end-to-end flow tracing. All prior passes (1-13) focused on correctness, security, performance, and test quality; error handling was never systematically audited.
+> **Key stats:** 1,347 route files, 43 without try/catch (25 are bugs), 30 `$transaction()` call sites, 251+ raw SQL call sites, 0 specific Prisma error code checks, 2099 `console.*` calls (13 use structured logging), 44 `Promise.all` with 0 `Promise.allSettled`.
+
+### Executive Summary
+
+The codebase has a solid foundation — the outbound webhook pipeline (exponential backoff, DLQ, auto-disable), global rate limiting (Upstash Redis, 100 req/min), and the Manifest Runtime's atomic command execution are well-designed. However, the hand-written routes (the majority of the API) suffer from systematic error handling gaps:
+
+1. **Zero Prisma error translation** — No route anywhere checks for P2002/P2025/P2003 error codes. All database constraint violations surface as generic 500s.
+2. **Three incompatible error response shapes** — `{ message }`, `{ error }`, and `{ success: false, message }` coexist even within the same domain.
+3. **25 routes do async work without try/catch** — including 4 waitlist routes executing raw SQL with zero error handling.
+4. **Multi-step operations without transactions** — The three most financially sensitive flows (PO creation, cycle count finalize, payroll generation) are not atomic and can leave corrupted state on partial failure.
+5. **No timeouts on any external API client** — Goodshuffle, Nowsta, Google, and Microsoft clients all use bare `fetch()` with no AbortController.
+6. **Raw `error.message` leaked in 5xx responses** — 7+ routes return Prisma/SQL error details to clients.
+
+### Severity Counts
+
+| Severity | Count | Description |
+|----------|-------|-------------|
+| CRITICAL | 12 | Data corruption, SQL injection, silent success on failure, unbounded external calls |
+| HIGH | 16 | Missing transaction wrapping, no retry/timeout on integrations, error info leakage |
+| MEDIUM | 15 | Inconsistent error formats, partial try/catch, no structured logging |
+| LOW | 8 | Acceptable fire-and-forget, webhook 200-on-failure intentional |
+
+---
+
+### Part A: Route-Level Error Handling Patterns
+
+#### A1: Try/Catch Coverage
+
+**Total route files:** 1,347
+**With try/catch:** 1,304
+**Without try/catch:** 43
+
+Of the 43 without try/catch:
+- **3 files** are disabled/stub files (comment placeholders)
+- **15 files** delegate entirely to `executeManifestCommand` — ACCEPTABLE (the wrapper has its own comprehensive try/catch at `apps/api/lib/manifest-command-handler.ts:93-186`)
+- **25 files** do direct database queries, `request.json()`, or other async work with NO error handling — BUGS
+
+**CRITICAL — Routes doing raw SQL ($queryRawUnsafe) without any try/catch:**
+
+| File | Lines | Issue |
+|------|-------|-------|
+| `events/[eventId]/waitlist/commands/add-guest/route.ts` | 12-112 | 4x `$queryRawUnsafe` + `request.json()`, zero try/catch |
+| `events/[eventId]/waitlist/commands/promote/route.ts` | 14-72 | 3x `$queryRawUnsafe` + `request.json()`, zero try/catch |
+| `events/[eventId]/waitlist/commands/update-rsvp/route.ts` | 19-116 | 5x `$queryRawUnsafe` including UPDATEs + `request.json()`, zero try/catch |
+| `events/[eventId]/waitlist/route.ts` | 11-87 | 2x `$queryRawUnsafe`, zero try/catch |
+
+**CRITICAL — Routes doing direct DB queries without try/catch (GET handlers):**
+
+| File | Lines | Issue |
+|------|-------|-------|
+| `administrative/tasks/route.ts` | 11-65 | `auth()`, `database.adminTask.count()`, `database.adminTask.findMany()` all unprotected |
+| `kitchen/events/today/route.ts` | 13-212 | 6 separate `database.*` queries, all unprotected |
+| `kitchen/tasks/available/route.ts` | 14-141 | 4 `database.*` queries, all unprotected |
+| `kitchen/tasks/[id]/claim/route.ts` | 44-206 | 14-step handler with `$transaction()`, zero error handling |
+| `kitchen/tasks/my-tasks/route.ts` | 12-96 | 3 `database.*` queries, all unprotected |
+| `kitchen/tasks/route.ts` | 8-103 | GET handler has 3 `database.*` queries, unprotected |
+| `kitchen/waste/reports/route.ts` | 17-185 | 2 `database.*` queries, complex aggregation, no try/catch |
+| `staff/availability/[id]/route.ts` | 17-122 | GET calls `database.$queryRaw`, unprotected |
+| `staff/availability/route.ts` | 23-180 | GET calls 2x `database.$queryRaw`, unprotected |
+| `staff/certifications/[id]/route.ts` | 17-117 | GET calls `database.$queryRaw`, unprotected |
+| `staff/certifications/route.ts` | 20-129 | GET calls 2x `database.$queryRaw`, unprotected |
+| `staff/employees/[id]/route.ts` | 16-99 | GET calls `database.$queryRaw`, unprotected |
+| `staff/shifts/route.ts` | 21-131 | GET calls 2x `database.$queryRaw`, unprotected |
+| `staff/time-off/requests/[id]/route.ts` | 13-141 | GET calls `database.$queryRaw`, unprotected |
+| `staff/time-off/requests/route.ts` | 28-161 | GET calls 2x `database.$queryRaw`, unprotected |
+| `timecards/[id]/route.ts` | 8-168 | GET calls `database.$queryRaw` (120+ line query), unprotected |
+| `timecards/route.ts` | 21-201 | GET calls 2x `database.$queryRaw` (massive CTEs), unprotected |
+| `training/assignments/route.ts` | 23-203 | GET calls 2x `database.$queryRaw`, unprotected |
+| `training/modules/[id]/route.ts` | 17-115 | GET calls `database.$queryRaw`, unprotected |
+| `training/modules/route.ts` | 25-153 | GET calls 2x `database.$queryRaw`, unprotected |
+
+**CRITICAL — Routes with PARTIAL try/catch (async operations outside try block):**
+
+| File | Lines | Issue |
+|------|-------|-------|
+| `training/complete/route.ts` | 31, 42, 77 vs try at 93 | `request.json()`, 2x `database.$queryRaw` BEFORE try block |
+| `kitchen/tasks/bundle-claim/route.ts` | 60, 104, 127 vs try at 168 | `database.user.findFirst()`, `database.kitchenTaskClaim.findMany()`, `database.prepTask.findMany()` BEFORE try block |
+| `kitchen/overrides/route.ts` | 38, 52 vs try at 95 | `request.json()`, `database.user.findFirst()` BEFORE try block |
+| `kitchen/waste/entries/route.ts` | 531, 534 vs try at 540 | `request.json()`, `validateWasteRequest()` BEFORE try block |
+| `webhooks/supplier-catalog/route.ts` | 160 vs try | `database.inventorySupplier.findFirst()` outside try block |
+
+#### A2: Error Response Consistency
+
+**HIGH — THREE incompatible error response shapes coexist:**
+
+| Shape | Key | Used by | Example files |
+|-------|-----|---------|---------------|
+| `{ message: string }` | `message` | Direct routes (accounts, inventory, kitchen, staff) | `accounting/accounts/route.ts`, `inventory/items/route.ts` |
+| `{ error: string }` | `error` | Direct routes (invoices, payments, employees, logistics) | `accounting/invoices/route.ts`, `staff/employees/route.ts` |
+| `{ success: false, message: string }` | `success` + `message` | Manifest routes | All `commands/create` routes under events, procurement, facilities |
+
+**Within the accounting domain alone**, `accounts/` uses `{ message }` while `invoices/` and `payments/` use `{ error }`. The frontend cannot parse errors uniformly.
+
+**HIGH — Zero Prisma error code translation:**
+No route in the entire codebase checks for `error.code === 'P2002'` (unique constraint), `P2025` (not found), or `P2003` (FK violation). All database constraint violations surface as generic 500s instead of proper 409/404/422.
+
+**CRITICAL — Raw `error.message` leaked in 5xx responses:**
+
+| File | Lines | Issue |
+|------|-------|-------|
+| `kitchen/waste/entries/route.ts` | 577-583 | Returns `error: error.message` on 500 — Prisma errors leak table/column names |
+| `kitchen/ai/bulk-generate/prep-tasks/route.ts` | 81-87 | Returns `error: message` on 500 |
+| `staff/shifts/bulk-assignment/route.ts` | 124 | Returns `error: error.message` on 500 |
+| `kitchen/tasks/sync-claims/route.ts` | 91, 137 | Returns `error: error.message` on 500 |
+| `conflicts/detect/route.ts` | 114 | Returns `error: error.message` on 500 |
+| `command-board/simulations/merge/route.ts` | 550, 598 | Returns `error: error.message` on 500 |
+| `events/[eventId]/export/csv/route.ts` | 339 | Returns `message: error.message` on 500 from `$queryRawUnsafe` |
+| `events/[eventId]/export/pdf/route.tsx` | 388 | Same leak pattern from `$queryRawUnsafe` |
+| `events/[eventId]/battle-board/pdf/route.tsx` | 358 | Same leak pattern from `$queryRawUnsafe` |
+| `events/export/csv/route.ts` | 338 | Same leak pattern from `$queryRawUnsafe` |
+| `events/budgets/route.ts` | 252 | Serializes entire error object as `errors: error` |
+
+#### A3: Prisma Error Handling
+
+**Finding:** The codebase uses a consistent pattern of catching `InvariantError` (from the manifest/assertion layer) and returning 400, while all other errors (including Prisma errors) get a generic 500 with no classification. There are zero instances of `PrismaClientKnownRequestError` or `error.code` checks for Prisma-specific errors.
+
+**Impact:** Unique constraint violations return 500 instead of 409 Conflict. Record-not-found returns 500 instead of 404. FK violations return 500 instead of 400/422. The only 409 responses in the codebase come from manually coded duplicate checks.
+
+#### A4: Raw SQL Error Handling
+
+**251+ raw SQL call sites** across the API:
+- `database.$queryRaw` (tagged template): ~130 sites — parameterized, safe from injection
+- `database.$queryRawUnsafe`: ~80+ sites across ~30 files
+- `database.$executeRaw`: ~65 sites
+- `database.$executeRawUnsafe`: 4 sites across 3 files
+
+**CRITICAL — SQL injection via `buildRuleCondition()`:**
+- `apps/api/app/api/crm/scoring/calculate/route.ts`, lines 31-60, 147-157
+- `buildRuleCondition()` constructs SQL WHERE clauses via string interpolation. The `field` parameter falls back to raw value if not in `FIELD_COLUMN_MAP` (line 36: `FIELD_COLUMN_MAP[field] ?? field`). Values have basic single-quote escaping but this is insufficient.
+- If CRM scoring rules are user-controllable, this is a direct SQL injection vector via `$executeRawUnsafe`.
+
+**HIGH — 4 waitlist routes with `$queryRawUnsafe` and zero try/catch** (see A1 above).
+
+**MEDIUM — 6 export routes leak SQL error details** via `error.message` on 500 (see A2 above).
+
+---
+
+### Part B: Partial Failure & State Consistency
+
+#### B1: Transaction Safety Issues
+
+**CRITICAL — Transaction failure caught and success returned anyway:**
+- `apps/api/app/api/kitchen/overrides/route.ts`, lines 96-148
+- The `$transaction` (lines 96-129) writes an `overrideAudit` record and an `outboxEvent`. The catch block (line 130) only logs via `logger.warn()`. Execution proceeds to `return NextResponse.json({ success: true, ... })` at line 137.
+- If the transaction fails, the client receives `{ success: true }` but no audit trail was recorded and no outbox event was emitted. Compliance violation.
+
+**CRITICAL — `$transaction` explicitly removed from Payroll Data Source:**
+- `packages/payroll-engine/src/dataSource/PrismaPayrollDataSource.ts`, lines 22-24
+- `readonly #prisma: Omit<PrismaClient, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">;`
+- `savePayrollRecords` (lines 196-284) performs multiple sequential writes without any transaction capability. If a line item write fails, the payroll run exists with partial data.
+
+**CRITICAL — Cycle count finalization without transaction:**
+- `apps/api/app/api/inventory/cycle-count/sessions/[id]/finalize/route.ts`, lines 80-313
+- 5+ sequential DB operations: `createMany` variance reports, loop creating `inventoryTransaction` + updating `inventoryItem.quantityOnHand` + updating `varianceReport` status per record, then update session to finalized, then create audit log. None wrapped in `$transaction`.
+- If processing fails on the 50th of 100 variance records: 49 items have adjusted quantities, 51 do not. Session is not finalized. No rollback capability.
+
+**CRITICAL — Goodshuffle invoice sync DELETE + INSERT without transaction:**
+- `apps/api/app/lib/goodshuffle-invoice-sync-service.ts`, lines 338-370
+- `updateConvoyBudgetFromGoodshuffle` DELETEs all invoice-sourced line items, then loops to INSERT new ones. If the process crashes after DELETE but before all INSERTs, the budget has zero line items — data loss.
+
+**HIGH — Supplier sync eagerly-resolved promises in batch transaction:**
+- `packages/supplier-connectors/src/sync-service.ts`, lines 88-135
+- `createOps`/`updateOps` arrays contain already-executing promises (not deferred operations). Passed to `$transaction()` batch form which expects unresolved operations. Preceding operations may have already committed outside the transaction scope.
+
+**HIGH — Outbox events written after transaction commits:**
+- `apps/api/app/api/kitchen/tasks/bundle-claim/route.ts`, lines 242-256
+- The `$transaction` creates claims and updates tasks atomically, but `createOutboxEvent()` calls happen OUTSIDE the transaction block. If the process crashes between transaction commit and outbox writes, real-time subscribers never receive notification.
+- Note: The single-task claim route (`tasks/[id]/claim/route.ts:140`) correctly writes outbox events inside the transaction. Only the bundle-claim route has this bug.
+
+**HIGH — Goodshuffle event/inventory sync: entity + sync record not transactional:**
+- `apps/api/app/lib/goodshuffle-event-sync-service.ts`, lines 93-235
+- `apps/api/app/lib/goodshuffle-inventory-sync-service.ts`, lines 91-225
+- For each item, creates a Convoy entity via `$queryRaw INSERT`, then separately creates a sync record. If sync record creation fails, the next sync run creates a duplicate entity.
+
+**HIGH — Nowsta sync: multi-step shift creation without transaction:**
+- `apps/api/app/lib/nowsta-sync-service.ts`, lines 236-412
+- `processShift` performs 5+ sequential DB operations (find sync record, lookup employee, find/create schedule, create shift, create/update sync record) without a transaction.
+
+**MEDIUM — Outbox writes use separate transaction when no override provided:**
+- `packages/manifest-adapters/src/manifest-runtime-factory.ts`, lines 363-371
+- When `deps.prismaOverride` is not provided, outbox writes are wrapped in their own `$transaction`, separate from the command's mutations. If the command succeeded but the outbox transaction fails, the outbox event is lost while the mutation persists.
+
+**MEDIUM — No `isolationLevel` or `timeout` on any transaction:**
+- All 70+ `$transaction()` call sites use default Prisma settings (5s timeout). No explicit `isolationLevel`, `maxWait`, or `timeout` configured anywhere.
+
+#### B2: Outbox Pattern
+
+**POSITIVE — Outbox pattern is well-implemented:**
+- `packages/realtime/src/outbox/create.ts` accepts `PrismaClient | Prisma.TransactionClient` — can be called inside transactions
+- Most transaction routes correctly write outbox events inside `$transaction` blocks
+- Outbox publisher uses `FOR UPDATE SKIP LOCKED` for concurrent safety
+- One exception: `bundle-claim` route writes outbox events outside transaction (see B1 above)
+
+---
+
+### Part C: Unhandled Promise Rejections & Silent Failures
+
+#### C1: Async Error Patterns
+
+**LOW — `.then()` chains without `.catch()`:**
+- Only 1 file uses this pattern: `collaboration/notifications/email/workflows/[id]/route.ts` (lines 84, 109)
+- Mitigated: the returned promise delegates to `executeManifestCommand` which has comprehensive try/catch
+
+**LOW — Promise.all usage:**
+- 49 `Promise.all()` calls, 0 `Promise.allSettled()` calls
+- All 49 are appropriate: pagination data+count pairs, operations inside transactions, or metrics where partial data is useless
+- No instances require `Promise.allSettled()`
+
+**LOW — No fire-and-forget `void` patterns found** in the API route layer.
+
+#### C2: Silent Error Swallowing
+
+**MEDIUM — Catch blocks that silently swallow errors:**
+
+| File | Lines | Issue |
+|------|-------|-------|
+| `administrative/trash/analyze/route.ts` | 461-463 | `catch { return null; }` — entity lookup failure silently returns null |
+| `calendar/sync/trigger/route.ts` | 215-217, 274-276 | `catch { errors++; }` — individual event import errors discarded (only count kept) |
+| `cron/contract-expiration-alerts/route.ts` | 70-71 | `catch { return DEFAULT_CONFIG; }` — config parse failure silently falls back |
+
+**MEDIUM — Webhook routes returning 200 on processing failure (intentional):**
+- `collaboration/notifications/sms/webhook/route.ts:89` — Returns 200 to prevent Twilio retry loop (correct)
+- `collaboration/notifications/email/webhook/route.ts:97` — Returns `received: true` when log not found
+- `webhooks/supplier-catalog/route.ts:266-272` — Returns `received: true` with error count but no retry for failed items
+
+**POSITIVE — The catch-then-log-then-return-500 pattern is well-established** across 250+ route files:
+```typescript
+catch (error) {
+  captureException(error);
+  console.error("Description:", error);
+  return NextResponse.json({ error: "message" }, { status: 500 });
+}
+```
+
+#### C3: Error Logging Quality
+
+**MEDIUM — Inconsistent structured logging adoption:**
+- Structured logging library exists: `packages/observability/log.ts` wraps `@logtail/next` (Logtail/Better Stack)
+- Only **13 of 250+ route files** use the structured `log` export
+- The remaining 250+ files use raw `console.error`/`console.log` (412 total `console.*` calls)
+- In production, `console.*` calls may not be captured by log aggregation
+
+**MEDIUM — Correlation/request IDs not propagated:**
+- Correlation ID utility exists: `packages/observability/correlation.ts` with `generateCorrelationId()`, `getOrCreateCorrelationId()`
+- Only **1 route** (`conflicts/detect/route.ts`) uses correlation IDs
+- The remaining 250+ routes have no way to correlate logs from a single request across services
+
+**POSITIVE — Sentry integration is thorough:** `captureException` used in 376 catch blocks across 250 files.
+
+---
+
+### Part D: Rate Limiting & Circuit Breaking
+
+#### D1: External API Call Resilience
+
+**CRITICAL — No timeouts on external API clients:**
+
+| Client | File | Line | Issue |
+|--------|------|------|-------|
+| Nowsta Client | `apps/api/app/lib/nowsta-client.ts` | 80 | `fetch()` with no AbortController, no timeout |
+| Goodshuffle Client | `apps/api/app/lib/goodshuffle-client.ts` | 138 | `fetch()` with no AbortController, no timeout |
+| Google OAuth (3 calls) | `calendar/sync/callback/google/route.ts` | 56, 82, 98 | Token exchange + userinfo + calendar, no timeout |
+| Microsoft OAuth (3 calls) | `calendar/sync/callback/outlook/route.ts` | 56, 85, 102 | Token exchange + userinfo + calendar, no timeout |
+| Calendar sync trigger | `calendar/sync/trigger/route.ts` | 176, 240 | Google Calendar + Microsoft Graph, no timeout |
+
+Node.js `fetch` has no default timeout. A hung connection blocks the serverless function until the Vercel function timeout (10-60s).
+
+**CRITICAL — No retry on external API clients:**
+
+| Client | File | Issue |
+|--------|------|-------|
+| Nowsta Client | `apps/api/app/lib/nowsta-client.ts` | Throws `NowstaApiError` immediately, no retry |
+| Goodshuffle Client | `apps/api/app/lib/goodshuffle-client.ts` | Throws `GoodshuffleApiError` immediately, no retry |
+| Google/Microsoft OAuth | Both callback routes | Transient network failure loses the entire OAuth flow |
+| Calendar sync | `calendar/sync/trigger/route.ts` | Failures recorded as `lastSyncStatus: "error"`, no auto-retry |
+
+**HIGH — No circuit breaking anywhere in codebase:**
+- Zero instances of circuit breaker, half-open state, or automatic recovery
+- Closest approximation: outbound webhook auto-disable (5 consecutive failures), but this lacks half-open state and automatic recovery
+
+**HIGH — No Prisma connection pool or query timeout configuration:**
+- `packages/database/prisma/schema.prisma` has no `connection_limit`, `pool_timeout`, `queryTimeout`, or `interactiveTransactions` settings
+- Connection pool size defaults to `num_cpus * 2 + 1`
+- No explicit query timeout
+
+**HIGH — Public endpoints have NO rate limiting:**
+- `/api/public/(.*)` is explicitly exempt in `apps/api/middleware/global-rate-limit.ts:35`
+- These are the most abuse-prone endpoints
+
+**MEDIUM — No retry on notification providers:**
+- Email (Resend): `packages/notifications/email-notification-service.ts` — single try, no retry
+- SMS (Twilio): `packages/notifications/sms-notification-service.ts` — single try, no retry
+- Slack: `packages/sentry-integration/src/slack.ts` — no retry, notification silently lost on failure
+
+**MEDIUM — No timeout on internal webhooks:**
+- Slack webhook: `packages/sentry-integration/src/slack.ts:244` — no timeout
+- AI Metrics webhook: `packages/ai/src/metrics.ts:139` — no timeout
+
+**POSITIVE — Outbound webhook service has proper resilience:**
+- `packages/notifications/outbound-webhook-service.ts`: AbortController with configurable timeout (default 30s), exponential backoff retry (3 retries, 1s/2s/4s capped at 30s), auto-disable after 5 consecutive failures, HMAC-SHA256 signatures, delivery logging
+- This is the **only** outbound HTTP call in the codebase with timeout AND retry
+
+#### D2: Rate Limiting Coverage
+
+**POSITIVE — Two-layer rate limiting architecture:**
+1. Global middleware (all `/api(.*)` routes): 100 req/min per tenant+endpoint via Upstash Redis sliding window, fail-open on Redis errors, returns informative 429 with `retry-after` header
+2. Per-route `withRateLimit()` HOF: 14 routes have additional stricter limits (API key management, bulk operations, AI generation, exports)
+
+**MEDIUM — Webhook receivers have no rate limiting:**
+- `/webhooks/(.*)` is exempt from rate limiting in global middleware
+- While providers (Stripe, Clerk, Twilio) are trusted, endpoints can be abused
+
+**LOW — Admin endpoints rely on global rate limiting only** — same 100 req/min as all other routes.
+
+---
+
+### Part E: Domain-Specific Error Handling Deep Dives
+
+#### E1: Event Import (server-to-server) — MEDIUM
+
+**Files:** `apps/api/app/api/eventimportworkflow/*` routes, `packages/manifest-adapters/src/event-import-runtime.ts`
+**Architecture:** State machine with 12+ phases, each phase is a separate HTTP POST.
+**Per-step integrity:** GOOD — each step's state mutation + outbox event are atomic via `$transaction`.
+**Gap:** No overall transaction wrapping the entire import. If a later phase fails, prior phases' data persists. No compensating-transaction or saga pattern for rollback.
+**Relies on:** Caller to handle retries via explicit `/retry` endpoint.
+
+#### E2: Procurement PO Creation — CRITICAL (legacy route)
+
+**Files:** `apps/api/app/api/purchaseorder/create/route.ts` (legacy), `apps/api/app/api/procurement/purchase-orders/commands/create/route.ts` (Manifest)
+**Legacy route (CRITICAL):** Generates PO number, creates header via `$queryRaw` INSERT, then creates line items in a for-loop with individual `$queryRaw` INSERT calls — NO transaction. If line item #3 of 5 fails, the PO header + items 1-2 are committed with incorrect totals.
+**Manifest route (GOOD):** Delegates to `runtime.runCommand("create", ...)` which is atomic via Manifest JSON store.
+**Fix:** Migrate to Manifest route or wrap legacy route in `$transaction()`.
+
+#### E3: Inventory Cycle Count Finalization — CRITICAL
+
+**Files:** `apps/api/app/api/inventory/cycle-count/sessions/[id]/finalize/route.ts`, lines 80-313
+**Operations:** `createMany` variance reports → loop: create `inventoryTransaction` + update `inventoryItem.quantityOnHand` + update `varianceReport` per record → update session to `finalized` → create audit log.
+**If fails on 50th record:** 49 items have adjusted quantities, 51 do not. No rollback. Data is unrecoverable.
+**Fix:** Wrap entire operation in `$transaction()`.
+
+#### E4: Payroll Run Generation — CRITICAL
+
+**Files:** `apps/api/app/api/payroll/generate/route.ts`, `packages/payroll-engine/src/services/payrollService.ts`, `packages/payroll-engine/src/dataSource/PrismaPayrollDataSource.ts`
+**Operations:** `savePayrollPeriod` → `savePayrollRecords` (upsert payroll run + loop upsert line items) → `savePayrollAudit`.
+**Root cause:** `$transaction` is deliberately excluded from the `PrismaPayrollDataSource` type (line 22-24). Even callers cannot wrap it.
+**If line item #7 of 10 fails:** Payroll period and run header exist with partial line items. No rollback possible.
+**Fix:** Add `$transaction` back to the data source and wrap multi-step saves.
+
+#### E5: Webhook Delivery Pipeline — GOOD (mostly)
+
+**Files:** `packages/notifications/outbound-webhook-service.ts`, `apps/api/app/api/integrations/webhooks/trigger/route.ts`, `apps/api/app/cron/webhook-retry/route.ts`, `apps/api/app/api/integrations/webhooks/dlq/`
+**Full pipeline:**
+1. Manifest command emits event → written to `OutboxEvent` table atomically with state change (via `$transaction`)
+2. Outbox publisher uses `FOR UPDATE SKIP LOCKED` → publishes to Ably → marks as published/failed
+3. Webhook trigger creates delivery log → sends webhook → updates log → updates stats
+4. Cron retry processes `retrying` deliveries with exponential backoff (1s/2s/4s, max 30s)
+5. After 3 failed retries, creates DLQ entry
+6. Auto-disable after 5 consecutive failures
+7. DLQ retry endpoint with `overrideUrl` support and re-enable
+
+**Gaps:** `pending` deliveries created during trigger step have no automatic retry path. Webhook trigger's delivery log + send + update are not atomic (MEDIUM severity).
+
+#### E6: Goodshuffle Full Sync — HIGH
+
+**Files:** `apps/api/app/lib/goodshuffle-event-sync-service.ts`, `goodshuffle-inventory-sync-service.ts`, `goodshuffle-invoice-sync-service.ts`
+**Per-item error handling:** GOOD — errors caught per-item, loop continues, errors collected in `result.errors`.
+**Gap 1:** Entity creation + sync record creation not transactional → duplicate data risk on retry (event sync:93-235, inventory sync:91-225).
+**Gap 2:** Invoice sync DELETE+INSERT without transaction → line item data loss (invoice sync:338-370).
+**Gap 3:** No checkpoint/cursor mechanism → cannot resume from interruption point.
+**Nextsta sync** has identical issues: `apps/api/app/lib/nowsta-sync-service.ts:236-412`.
+
+---
+
+### Consolidated Findings Table
+
+| ID | Severity | Finding | Location | Fix |
+|----|----------|---------|----------|-----|
+| EH-01 | CRITICAL | SQL injection via `buildRuleCondition()` | `crm/scoring/calculate/route.ts:31-60,147-157` | Parameterize field names or use strict allowlist without fallback |
+| EH-02 | CRITICAL | 4 waitlist routes: `$queryRawUnsafe` + zero try/catch | `events/[eventId]/waitlist/{,commands/*}/route.ts` | Add try/catch with sanitized error responses |
+| EH-03 | CRITICAL | 21 routes: direct DB queries without try/catch | `kitchen/tasks/*`, `staff/*`, `timecards/*`, `training/*` GET handlers | Add try/catch wrapping all async operations |
+| EH-04 | CRITICAL | Transaction failure caught + success returned | `kitchen/overrides/route.ts:96-148` | Return 500 in catch block, not success |
+| EH-05 | CRITICAL | `$transaction` removed from PayrollDataSource | `packages/payroll-engine/src/dataSource/PrismaPayrollDataSource.ts:22-24` | Add `$transaction` back, wrap multi-step saves |
+| EH-06 | CRITICAL | Cycle count finalize: 5+ ops without transaction | `inventory/cycle-count/sessions/[id]/finalize/route.ts:80-313` | Wrap in `$transaction()` |
+| EH-07 | CRITICAL | PO creation: header + line items not atomic | `purchaseorder/create/route.ts:28-72` | Wrap in `$transaction()` or migrate to Manifest route |
+| EH-08 | CRITICAL | Goodshuffle invoice: DELETE+INSERT without transaction | `goodshuffle-invoice-sync-service.ts:338-370` | Wrap in `$transaction()` |
+| EH-09 | CRITICAL | No timeouts on Nowsta/Goodshuffle/Google/Microsoft clients | `nowsta-client.ts:80`, `goodshuffle-client.ts:138`, OAuth callbacks | Add AbortController with timeout to all `fetch()` calls |
+| EH-10 | CRITICAL | Unbounded sync pagination without timeout | Goodshuffle sync (getAll*), Nowsta sync (getAll*) | Add per-request timeout + overall sync timeout |
+| EH-11 | CRITICAL | Raw `error.message` leaked in 5xx responses | 7+ routes (kitchen/waste, staff/shifts, conflicts, exports) | Return generic message on 500, log details server-side |
+| EH-12 | CRITICAL | 5 routes with partial try/catch (async ops outside try) | `training/complete`, `kitchen/tasks/bundle-claim`, `kitchen/overrides`, `kitchen/waste/entries`, `webhooks/supplier-catalog` | Move all async operations inside try blocks |
+| EH-13 | HIGH | 3 incompatible error response shapes | API-wide: `{ message }` vs `{ error }` vs `{ success, message }` | Standardize on single format, e.g., `{ error: { code, message } }` |
+| EH-14 | HIGH | Zero Prisma error code translation (P2002/P2025/P2003) | All catch blocks in API routes | Add Prisma error classification middleware or utility |
+| EH-15 | HIGH | No retry on external API clients | `nowsta-client.ts`, `goodshuffle-client.ts`, OAuth callbacks, calendar sync | Add retry with exponential backoff for transient failures |
+| EH-16 | HIGH | No circuit breaking anywhere | All external integration code | Add circuit breaker for Goodshuffle/Nowsta/Google/Microsoft |
+| EH-17 | HIGH | Public endpoints have no rate limiting | `global-rate-limit.ts:35` exempts `/api/public/` | Apply separate rate limiting to public endpoints |
+| EH-18 | HIGH | Outbox events written after transaction commits | `kitchen/tasks/bundle-claim/route.ts:242-256` | Move outbox writes inside transaction block |
+| EH-19 | HIGH | Goodshuffle/Nowsta sync: entity+sync record not transactional | All 3 goodshuffle-sync + nowsta-sync services | Wrap entity creation + sync record in `$transaction()` |
+| EH-20 | HIGH | No Prisma connection pool or query timeout config | `packages/database/prisma/schema.prisma` | Add `connection_limit`, `pool_timeout`, `queryTimeout` to datasource |
+| EH-21 | HIGH | Goodshuffle/Nowsta sync: no checkpoint/resume | All sync services | Add cursor/checkpoint mechanism for resumable syncs |
+| EH-22 | HIGH | Supplier sync: eagerly-resolved promises in batch transaction | `packages/supplier-connectors/src/sync-service.ts:88-135` | Defer promise creation or use interactive transaction |
+| EH-23 | MEDIUM | Only 13/250 routes use structured logging | API-wide (412 `console.*` calls) | Migrate to `@repo/observability/log` structured logger |
+| EH-24 | MEDIUM | Correlation IDs not propagated (only 1 route uses them) | API-wide (only `conflicts/detect` uses correlation) | Add correlation ID middleware to propagate request IDs |
+| EH-25 | MEDIUM | Webhook receivers have no rate limiting | `global-rate-limit.ts:31` exempts `/webhooks/` | Apply rate limiting to webhook receivers with higher limits |
+| EH-26 | MEDIUM | No retry on notification providers (Resend, Twilio, Slack) | `email-notification-service.ts`, `sms-notification-service.ts`, `slack.ts` | Add retry with backoff for transient failures |
+| EH-27 | MEDIUM | Outbox writes use separate transaction when no override | `manifest-runtime-factory.ts:363-371` | Ensure outbox writes always happen inside the command's transaction |
+| EH-28 | MEDIUM | Webhook trigger: delivery log + send not atomic | `integrations/webhooks/trigger/route.ts:111-207` | Add cleanup for orphaned `pending` deliveries |
+| EH-29 | MEDIUM | Silent error swallowing in 3 routes | `trash/analyze`, `calendar/sync/trigger`, `contract-expiration-alerts` | Log errors, return appropriate status codes |
+| EH-30 | MEDIUM | No `isolationLevel` or `timeout` on any transaction | All 70+ `$transaction()` call sites | Add explicit timeout for long-running transactions |
+| EH-31 | LOW | Acceptable fire-and-forget patterns (rate limit logging, API key lastUsedAt) | `rate-limiter.ts:296-314`, `api-key-auth.ts:220-222` | No action needed |
+| EH-32 | LOW | Webhook 200-on-failure is intentional (prevent retry loops) | SMS/email/supplier webhook receivers | No action needed |
+| EH-33 | LOW | Admin endpoints have no stricter rate limits | API-wide | Consider stricter limits for admin operations |
+| EH-34 | LOW | `Promise.allSettled` not needed for current use cases | 49 `Promise.all` all appropriate | Monitor if batch operations need partial failure support |
+| EH-35 | LOW | No global `unhandledRejection` handler | Expected for Next.js (framework handles) | Confirm Next.js error boundary properly configured |
+
+### Positive Patterns Worth Noting
+
+1. **Manifest Runtime atomicity** — Commands that use `executeManifestCommand` get consistent error handling (auth, tenant, invariant, policy, guard) and atomic state + outbox writes. The newer Manifest-generated routes avoid all the issues found in hand-written routes.
+2. **Outbound webhook pipeline** — Exponential backoff, DLQ, auto-disable, HMAC signatures, concurrent publisher safety (`FOR UPDATE SKIP LOCKED`), manual retry with override URL. The most robust integration in the codebase.
+3. **Global rate limiting** — Two-layer architecture (global middleware + per-route HOF), informative 429 responses with `retry-after` headers, fail-open on Redis errors, rate limit event logging with IP hashing for privacy.
+4. **Sentry integration** — `captureException` used in 376 catch blocks across 250 files, providing structured error tracking even where structured logging is absent.
+5. **`catch-then-log-then-500` pattern** — The dominant error handling pattern across 250+ route files is correct: capture to Sentry, log to console, return sanitized 500.
+
+### Root Cause Analysis
+
+The systemic issues trace to a single architectural split:
+
+- **Manifest-generated routes** (newer, ~600 routes): Use `executeManifestCommand` → consistent error handling, atomic writes, proper status codes. These routes are mostly fine.
+- **Hand-written routes** (older, ~750 routes): Each implements its own error handling → inconsistent response formats, missing try/catch, no Prisma error translation, multi-step operations without transactions. These routes have the problems.
+
+The fix strategy should be:
+1. **Immediate patches** for the 12 CRITICAL findings (data corruption and security risks)
+2. **Shared error handling middleware** to unify response formats and add Prisma error translation
+3. **Gradual migration** of hand-written routes to Manifest commands where possible
+4. **External API client wrapper** with timeout, retry, and circuit breaking for all integration clients
