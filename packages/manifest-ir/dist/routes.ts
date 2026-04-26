@@ -677,6 +677,26 @@ export function purchaseOrderItemDetailPath(id: string): string {
   return "/api/purchaseorderitem/" + encodeURIComponent(id);
 }
 
+/** GET /api/purchaserequisition/list */
+export function purchaseRequisitionListPath(): string {
+  return "/api/purchaserequisition/list";
+}
+
+/** GET /api/purchaserequisition/:id */
+export function purchaseRequisitionDetailPath(id: string): string {
+  return "/api/purchaserequisition/" + encodeURIComponent(id);
+}
+
+/** GET /api/purchaserequisitionitem/list */
+export function purchaseRequisitionItemListPath(): string {
+  return "/api/purchaserequisitionitem/list";
+}
+
+/** GET /api/purchaserequisitionitem/:id */
+export function purchaseRequisitionItemDetailPath(id: string): string {
+  return "/api/purchaserequisitionitem/" + encodeURIComponent(id);
+}
+
 /** GET /api/recipe/list */
 export function recipeListPath(): string {
   return "/api/recipe/list";
@@ -855,6 +875,16 @@ export function vendorCatalogListPath(): string {
 /** GET /api/vendorcatalog/:id */
 export function vendorCatalogDetailPath(id: string): string {
   return "/api/vendorcatalog/" + encodeURIComponent(id);
+}
+
+/** GET /api/vendorcontract/list */
+export function vendorContractListPath(): string {
+  return "/api/vendorcontract/list";
+}
+
+/** GET /api/vendorcontract/:id */
+export function vendorContractDetailPath(id: string): string {
+  return "/api/vendorcontract/" + encodeURIComponent(id);
 }
 
 /** GET /api/wasteentry/list */
@@ -2401,6 +2431,61 @@ export function purchaseOrderItemUpdatePath(): string {
   return "/api/purchaseorderitem/update";
 }
 
+/** POST /api/purchaserequisition/approve-finance */
+export function purchaseRequisitionApproveFinancePath(): string {
+  return "/api/purchaserequisition/approve-finance";
+}
+
+/** POST /api/purchaserequisition/approve-manager */
+export function purchaseRequisitionApproveManagerPath(): string {
+  return "/api/purchaserequisition/approve-manager";
+}
+
+/** POST /api/purchaserequisition/cancel */
+export function purchaseRequisitionCancelPath(): string {
+  return "/api/purchaserequisition/cancel";
+}
+
+/** POST /api/purchaserequisition/convert-to-po */
+export function purchaseRequisitionConvertToPoPath(): string {
+  return "/api/purchaserequisition/convert-to-po";
+}
+
+/** POST /api/purchaserequisition/create */
+export function purchaseRequisitionCreatePath(): string {
+  return "/api/purchaserequisition/create";
+}
+
+/** POST /api/purchaserequisition/reject */
+export function purchaseRequisitionRejectPath(): string {
+  return "/api/purchaserequisition/reject";
+}
+
+/** POST /api/purchaserequisition/submit */
+export function purchaseRequisitionSubmitPath(): string {
+  return "/api/purchaserequisition/submit";
+}
+
+/** POST /api/purchaserequisition/update */
+export function purchaseRequisitionUpdatePath(): string {
+  return "/api/purchaserequisition/update";
+}
+
+/** POST /api/purchaserequisitionitem/create */
+export function purchaseRequisitionItemCreatePath(): string {
+  return "/api/purchaserequisitionitem/create";
+}
+
+/** POST /api/purchaserequisitionitem/remove */
+export function purchaseRequisitionItemRemovePath(): string {
+  return "/api/purchaserequisitionitem/remove";
+}
+
+/** POST /api/purchaserequisitionitem/update */
+export function purchaseRequisitionItemUpdatePath(): string {
+  return "/api/purchaserequisitionitem/update";
+}
+
 /** POST /api/recipe/activate */
 export function recipeActivatePath(): string {
   return "/api/recipe/activate";
@@ -2736,6 +2821,56 @@ export function vendorCatalogUpdatePath(): string {
   return "/api/vendorcatalog/update";
 }
 
+/** POST /api/vendorcontract/activate */
+export function vendorContractActivatePath(): string {
+  return "/api/vendorcontract/activate";
+}
+
+/** POST /api/vendorcontract/approve */
+export function vendorContractApprovePath(): string {
+  return "/api/vendorcontract/approve";
+}
+
+/** POST /api/vendorcontract/create */
+export function vendorContractCreatePath(): string {
+  return "/api/vendorcontract/create";
+}
+
+/** POST /api/vendorcontract/record-sla-breach */
+export function vendorContractRecordSlaBreachPath(): string {
+  return "/api/vendorcontract/record-sla-breach";
+}
+
+/** POST /api/vendorcontract/reject */
+export function vendorContractRejectPath(): string {
+  return "/api/vendorcontract/reject";
+}
+
+/** POST /api/vendorcontract/renew */
+export function vendorContractRenewPath(): string {
+  return "/api/vendorcontract/renew";
+}
+
+/** POST /api/vendorcontract/submit */
+export function vendorContractSubmitPath(): string {
+  return "/api/vendorcontract/submit";
+}
+
+/** POST /api/vendorcontract/terminate */
+export function vendorContractTerminatePath(): string {
+  return "/api/vendorcontract/terminate";
+}
+
+/** POST /api/vendorcontract/update */
+export function vendorContractUpdatePath(): string {
+  return "/api/vendorcontract/update";
+}
+
+/** POST /api/vendorcontract/update-compliance */
+export function vendorContractUpdateCompliancePath(): string {
+  return "/api/vendorcontract/update-compliance";
+}
+
 /** POST /api/wasteentry/create */
 export function wasteEntryCreatePath(): string {
   return "/api/wasteentry/create";
@@ -2969,6 +3104,10 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "PurchaseOrder.get.detail", path: "/api/purchaseorder/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "PurchaseOrderItem.get.list", path: "/api/purchaseorderitem/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "PurchaseOrderItem.get.detail", path: "/api/purchaseorderitem/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "PurchaseRequisition.get.list", path: "/api/purchaserequisition/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "PurchaseRequisition.get.detail", path: "/api/purchaserequisition/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "PurchaseRequisitionItem.get.list", path: "/api/purchaserequisitionitem/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "PurchaseRequisitionItem.get.detail", path: "/api/purchaserequisitionitem/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Recipe.get.list", path: "/api/recipe/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Recipe.get.detail", path: "/api/recipe/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "RecipeIngredient.get.list", path: "/api/recipeingredient/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -3005,6 +3144,8 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "VarianceReport.get.detail", path: "/api/variancereport/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "VendorCatalog.get.list", path: "/api/vendorcatalog/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "VendorCatalog.get.detail", path: "/api/vendorcatalog/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "VendorContract.get.list", path: "/api/vendorcontract/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "VendorContract.get.detail", path: "/api/vendorcontract/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "WasteEntry.get.list", path: "/api/wasteentry/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "WasteEntry.get.detail", path: "/api/wasteentry/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Workflow.get.list", path: "/api/workflow/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -3313,6 +3454,17 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "PurchaseOrderItem.create", path: "/api/purchaseorderitem/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PurchaseOrderItem.remove", path: "/api/purchaseorderitem/remove", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PurchaseOrderItem.update", path: "/api/purchaseorderitem/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PurchaseRequisition.approveFinance", path: "/api/purchaserequisition/approve-finance", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PurchaseRequisition.approveManager", path: "/api/purchaserequisition/approve-manager", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PurchaseRequisition.cancel", path: "/api/purchaserequisition/cancel", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PurchaseRequisition.convertToPo", path: "/api/purchaserequisition/convert-to-po", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PurchaseRequisition.create", path: "/api/purchaserequisition/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PurchaseRequisition.reject", path: "/api/purchaserequisition/reject", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PurchaseRequisition.submit", path: "/api/purchaserequisition/submit", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PurchaseRequisition.update", path: "/api/purchaserequisition/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PurchaseRequisitionItem.create", path: "/api/purchaserequisitionitem/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PurchaseRequisitionItem.remove", path: "/api/purchaserequisitionitem/remove", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PurchaseRequisitionItem.update", path: "/api/purchaserequisitionitem/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Recipe.activate", path: "/api/recipe/activate", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Recipe.create", path: "/api/recipe/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Recipe.deactivate", path: "/api/recipe/deactivate", method: "POST", source: "command", auth: true, tenant: true },
@@ -3380,6 +3532,16 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "VendorCatalog.create", path: "/api/vendorcatalog/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "VendorCatalog.softDelete", path: "/api/vendorcatalog/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "VendorCatalog.update", path: "/api/vendorcatalog/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "VendorContract.activate", path: "/api/vendorcontract/activate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "VendorContract.approve", path: "/api/vendorcontract/approve", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "VendorContract.create", path: "/api/vendorcontract/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "VendorContract.recordSlaBreach", path: "/api/vendorcontract/record-sla-breach", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "VendorContract.reject", path: "/api/vendorcontract/reject", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "VendorContract.renew", path: "/api/vendorcontract/renew", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "VendorContract.submit", path: "/api/vendorcontract/submit", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "VendorContract.terminate", path: "/api/vendorcontract/terminate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "VendorContract.update", path: "/api/vendorcontract/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "VendorContract.updateCompliance", path: "/api/vendorcontract/update-compliance", method: "POST", source: "command", auth: true, tenant: true },
   { id: "WasteEntry.create", path: "/api/wasteentry/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "WasteEntry.softDelete", path: "/api/wasteentry/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "WasteEntry.update", path: "/api/wasteentry/update", method: "POST", source: "command", auth: true, tenant: true },

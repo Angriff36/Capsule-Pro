@@ -1,13 +1,16 @@
-// Auto-generated Next.js API route for VendorContract
+// Auto-generated Next.js API detail route for VendorContract
 // Generated from Manifest IR - DO NOT EDIT
 
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { database } from "@/lib/database";
+import { database } from "@repo/database";
 import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
 import { auth } from "@repo/auth/server";
 
-export async function GET(request: NextRequest) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
   const { orgId, userId } = await auth();
   if (!(userId && orgId)) {
@@ -20,19 +23,23 @@ export async function GET(request: NextRequest) {
     return manifestErrorResponse("Tenant not found", 400);
   }
 
-const vendorContracts = await database.vendorContract.findMany({
-    where: {
+    const { id } = await params;
+
+    const vendorContract = await database.vendorContract.findUnique({
+      where: {
+        id,
         tenantId,
         deletedAt: null
       },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+    });
 
-    return manifestSuccessResponse({ vendorContracts });
+    if (!vendorContract) {
+      return manifestErrorResponse("VendorContract not found", 404);
+    }
+
+    return manifestSuccessResponse({ vendorContract });
   } catch (error) {
-    console.error("Error fetching vendorContracts:", error);
+    console.error("Error fetching vendorContract:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

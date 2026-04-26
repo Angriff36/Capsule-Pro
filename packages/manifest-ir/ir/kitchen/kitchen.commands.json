@@ -1500,6 +1500,61 @@
     "commandId": "PurchaseOrderItem.update"
   },
   {
+    "entity": "PurchaseRequisition",
+    "command": "approveFinance",
+    "commandId": "PurchaseRequisition.approveFinance"
+  },
+  {
+    "entity": "PurchaseRequisition",
+    "command": "approveManager",
+    "commandId": "PurchaseRequisition.approveManager"
+  },
+  {
+    "entity": "PurchaseRequisition",
+    "command": "cancel",
+    "commandId": "PurchaseRequisition.cancel"
+  },
+  {
+    "entity": "PurchaseRequisition",
+    "command": "convertToPo",
+    "commandId": "PurchaseRequisition.convertToPo"
+  },
+  {
+    "entity": "PurchaseRequisition",
+    "command": "create",
+    "commandId": "PurchaseRequisition.create"
+  },
+  {
+    "entity": "PurchaseRequisition",
+    "command": "reject",
+    "commandId": "PurchaseRequisition.reject"
+  },
+  {
+    "entity": "PurchaseRequisition",
+    "command": "submit",
+    "commandId": "PurchaseRequisition.submit"
+  },
+  {
+    "entity": "PurchaseRequisition",
+    "command": "update",
+    "commandId": "PurchaseRequisition.update"
+  },
+  {
+    "entity": "PurchaseRequisitionItem",
+    "command": "create",
+    "commandId": "PurchaseRequisitionItem.create"
+  },
+  {
+    "entity": "PurchaseRequisitionItem",
+    "command": "remove",
+    "commandId": "PurchaseRequisitionItem.remove"
+  },
+  {
+    "entity": "PurchaseRequisitionItem",
+    "command": "update",
+    "commandId": "PurchaseRequisitionItem.update"
+  },
+  {
     "entity": "Recipe",
     "command": "activate",
     "commandId": "Recipe.activate"
@@ -1833,6 +1888,56 @@
     "entity": "VendorCatalog",
     "command": "update",
     "commandId": "VendorCatalog.update"
+  },
+  {
+    "entity": "VendorContract",
+    "command": "activate",
+    "commandId": "VendorContract.activate"
+  },
+  {
+    "entity": "VendorContract",
+    "command": "approve",
+    "commandId": "VendorContract.approve"
+  },
+  {
+    "entity": "VendorContract",
+    "command": "create",
+    "commandId": "VendorContract.create"
+  },
+  {
+    "entity": "VendorContract",
+    "command": "recordSlaBreach",
+    "commandId": "VendorContract.recordSlaBreach"
+  },
+  {
+    "entity": "VendorContract",
+    "command": "reject",
+    "commandId": "VendorContract.reject"
+  },
+  {
+    "entity": "VendorContract",
+    "command": "renew",
+    "commandId": "VendorContract.renew"
+  },
+  {
+    "entity": "VendorContract",
+    "command": "submit",
+    "commandId": "VendorContract.submit"
+  },
+  {
+    "entity": "VendorContract",
+    "command": "terminate",
+    "commandId": "VendorContract.terminate"
+  },
+  {
+    "entity": "VendorContract",
+    "command": "update",
+    "commandId": "VendorContract.update"
+  },
+  {
+    "entity": "VendorContract",
+    "command": "updateCompliance",
+    "commandId": "VendorContract.updateCompliance"
   },
   {
     "entity": "WasteEntry",

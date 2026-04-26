@@ -77,6 +77,7 @@ model Account {
   purchaseOrderItems             PurchaseOrderItem[]
   purchaseRequisitions           PurchaseRequisition[]
   purchaseRequisitionItems       PurchaseRequisitionItem[]
+  vendorContracts                VendorContract[]
   shipments                      Shipment[]
   shipmentItems                  ShipmentItem[]
   wasteEntries                   WasteEntry[]
@@ -2034,6 +2035,51 @@ model PurchaseRequisitionItem {
   @@index([tenantId, requisitionId], map: "purchase_requisition_items_tenant_req_idx")
   @@index([tenantId, itemId], map: "purchase_requisition_items_tenant_item_idx")
   @@map("purchase_requisition_items")
+  @@schema("tenant_inventory")
+}
+
+model VendorContract {
+  tenantId                String    @map("tenant_id") @db.Uuid
+  id                      String    @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  contractNumber          String    @unique @map("contract_number")
+  vendorId                String    @map("vendor_id") @db.Uuid
+  vendorName              String?   @map("vendor_name")
+  contractType            String    @default("purchase") @map("contract_type")
+  status                  String    @default("draft")
+  startDate               DateTime  @map("start_date") @db.Date
+  endDate                 DateTime? @map("end_date") @db.Date
+  autoRenew               Boolean   @default(false) @map("auto_renew")
+  renewalTermDays         Int       @default(365) @map("renewal_term_days") @db.SmallInt
+  noticeDaysBeforeRenewal Int       @default(30) @map("notice_days_before_renewal") @db.SmallInt
+  paymentTerms            String    @default("NET_30") @map("payment_terms")
+  deliveryTerms           String?   @map("delivery_terms")
+  minimumOrderQuantity    Decimal   @default(0) @map("minimum_order_quantity") @db.Decimal(12, 2)
+  annualSpendCommitment   Decimal   @default(0) @map("annual_spend_commitment") @db.Decimal(12, 2)
+  spendToPeriod           DateTime? @map("spend_to_period") @db.Date
+  currencyCode            String    @default("USD") @map("currency_code")
+  approvedBy              String?   @map("approved_by") @db.Uuid
+  approvedAt              DateTime? @map("approved_at") @db.Timestamptz(6)
+  terminatedBy            String?   @map("terminated_by") @db.Uuid
+  terminatedAt            DateTime? @map("terminated_at") @db.Timestamptz(6)
+  terminationReason       String?   @map("termination_reason")
+  contractUrl             String?   @map("contract_url")
+  notes                   String?
+  complianceScore         Int       @default(100) @map("compliance_score") @db.SmallInt
+  lastComplianceReview    DateTime? @map("last_compliance_review") @db.Timestamptz(6)
+  slaBreachCount          Int       @default(0) @map("sla_breach_count")
+  onTimeDeliveryRate      Decimal   @default(0) @map("on_time_delivery_rate") @db.Decimal(5, 2)
+  qualityRating           Decimal   @default(0) @map("quality_rating") @db.Decimal(2, 1)
+  createdAt               DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt               DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt               DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenant                  Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@unique([tenantId, id])
+  @@index([tenantId, vendorId], map: "vendor_contracts_tenant_vendor_idx")
+  @@index([tenantId, status], map: "vendor_contracts_tenant_status_idx")
+  @@index([tenantId, endDate], map: "vendor_contracts_tenant_end_date_idx")
+  @@map("vendor_contracts")
   @@schema("tenant_inventory")
 }
 

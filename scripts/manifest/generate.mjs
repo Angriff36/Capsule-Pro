@@ -96,6 +96,7 @@ const ENTITY_DOMAIN_MAP = {
   PurchaseOrderItem: "inventory/purchase-order-items",
   PurchaseRequisition: "procurement/requisitions",
   PurchaseRequisitionItem: "procurement/requisition-items",
+  VendorContract: "procurement/vendor-contracts",
   Shipment: "shipments/shipment",
   ShipmentItem: "shipments/shipment-items",
   InventoryTransaction: "inventory/transactions",
