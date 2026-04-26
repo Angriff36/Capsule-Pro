@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -29,51 +29,47 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get the account's employee_id first
-    const [account] = await database.$queryRaw<Array<{ employee_id: string }>>(
-      Prisma.sql`
-        SELECT employee_id FROM tenant_staff.employee_bank_accounts
-        WHERE tenant_id = ${tenantId} AND id = ${id} AND deleted_at IS NULL
-      `
-    );
+    const updated = await database.$transaction(async (tx) => {
+      const account = await tx.employeeBankAccount.findFirst({
+        where: { tenantId, id, deletedAt: null },
+        select: { employeeId: true },
+      });
 
-    if (!account) {
+      if (!account) {
+        return null;
+      }
+
+      await tx.employeeBankAccount.updateMany({
+        where: {
+          tenantId,
+          employeeId: account.employeeId,
+          isDefault: true,
+          deletedAt: null,
+        },
+        data: { isDefault: false },
+      });
+
+      await tx.employeeBankAccount.update({
+        where: { tenantId_id: { tenantId, id } },
+        data: { isDefault: true },
+      });
+
+      await tx.user.update({
+        where: { tenantId_id: { tenantId, id: account.employeeId } },
+        data: { payoutMethod: "direct_deposit" },
+      });
+
+      return { id };
+    });
+
+    if (!updated) {
       return NextResponse.json(
         { error: "Bank account not found" },
         { status: 404 }
       );
     }
 
-    // Unset all defaults for this employee, then set the target
-    await database.$executeRaw(
-      Prisma.sql`
-        UPDATE tenant_staff.employee_bank_accounts
-        SET is_default = false, updated_at = NOW()
-        WHERE tenant_id = ${tenantId}
-          AND employee_id = ${account.employee_id}
-          AND is_default = true
-          AND deleted_at IS NULL
-      `
-    );
-
-    await database.$executeRaw(
-      Prisma.sql`
-        UPDATE tenant_staff.employee_bank_accounts
-        SET is_default = true, updated_at = NOW()
-        WHERE tenant_id = ${tenantId} AND id = ${id}
-      `
-    );
-
-    // Update employee payout_method
-    await database.$executeRaw(
-      Prisma.sql`
-        UPDATE tenant_staff.employees
-        SET payout_method = 'direct_deposit', updated_at = NOW()
-        WHERE tenant_id = ${tenantId} AND id = ${account.employee_id}
-      `
-    );
-
-    return NextResponse.json({ success: true, id });
+    return NextResponse.json({ success: true, id: updated.id });
   } catch (error) {
     captureException(error);
     console.error("Failed to set default bank account:", error);

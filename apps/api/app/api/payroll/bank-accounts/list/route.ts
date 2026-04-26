@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -30,66 +30,73 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status");
     const includeHistory = searchParams.get("includeDepositHistory") === "true";
 
-    // Build the select list — exclude account_number unless explicitly requested
-    const accountFields = includeHistory
-      ? Prisma.sql`ba.id, ba.employee_id, ba.bank_name, ba.account_type, ba.routing_number,
-         ba.account_number_last4, ba.account_holder_name, ba.is_default, ba.status,
-         ba.verified_at, ba.verification_method, ba.deposit_history, ba.notes,
-         ba.created_at, ba.updated_at`
-      : Prisma.sql`ba.id, ba.employee_id, ba.bank_name, ba.account_type, ba.routing_number,
-         ba.account_number_last4, ba.account_holder_name, ba.is_default, ba.status,
-         ba.verified_at, ba.verification_method, ba.notes,
-         ba.created_at, ba.updated_at`;
-
-    const [accounts, employees] = await Promise.all([
-      database.$queryRaw<
-        Array<{
-          id: string;
-          employee_id: string;
-          bank_name: string;
-          account_type: string;
-          routing_number: string;
-          account_number_last4: string;
-          account_holder_name: string;
-          is_default: boolean;
-          status: string;
-          verified_at: Date | null;
-          verification_method: string | null;
-          deposit_history: any[] | null;
-          notes: string | null;
-          created_at: Date;
-          updated_at: Date;
-        }>
-      >(
-        Prisma.sql`
-          SELECT ${accountFields}
-          FROM tenant_staff.employee_bank_accounts ba
-          WHERE ba.tenant_id = ${tenantId}
-            AND ba.deleted_at IS NULL
-            ${employeeId ? Prisma.sql`AND ba.employee_id = ${employeeId}` : Prisma.empty}
-            ${status ? Prisma.sql`AND ba.status = ${status}` : Prisma.empty}
-          ORDER BY ba.is_default DESC, ba.created_at DESC
-        `
-      ),
-      database.$queryRaw<
-        Array<{
-          id: string;
-          first_name: string | null;
-          last_name: string | null;
-          email: string;
-          payout_method: string;
-        }>
-      >(
-        Prisma.sql`
-          SELECT id, first_name, last_name, email, payout_method
-          FROM tenant_staff.employees
-          WHERE tenant_id = ${tenantId}
-            AND deleted_at IS NULL
-            AND is_active = true
-          ORDER BY first_name, last_name
-        `
-      ),
+    const [rawAccounts, rawEmployees] = await Promise.all([
+      database.employeeBankAccount.findMany({
+        where: {
+          tenantId,
+          deletedAt: null,
+          ...(employeeId ? { employeeId } : {}),
+          ...(status ? { status } : {}),
+        },
+        select: {
+          id: true,
+          employeeId: true,
+          bankName: true,
+          accountType: true,
+          routingNumber: true,
+          accountNumberLast4: true,
+          accountHolderName: true,
+          isDefault: true,
+          status: true,
+          verifiedAt: true,
+          verificationMethod: true,
+          notes: true,
+          createdAt: true,
+          updatedAt: true,
+          ...(includeHistory ? { depositHistory: true } : {}),
+        },
+        orderBy: [{ isDefault: "desc" }, { createdAt: "desc" }],
+      }),
+      database.user.findMany({
+        where: { tenantId, deletedAt: null, isActive: true },
+        select: {
+          id: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          payoutMethod: true,
+        },
+        orderBy: [{ firstName: "asc" }, { lastName: "asc" }],
+      }),
     ]);
+
+    const accounts = rawAccounts.map((a) => ({
+      id: a.id,
+      employee_id: a.employeeId,
+      bank_name: a.bankName,
+      account_type: a.accountType,
+      routing_number: a.routingNumber,
+      account_number_last4: a.accountNumberLast4,
+      account_holder_name: a.accountHolderName,
+      is_default: a.isDefault,
+      status: a.status,
+      verified_at: a.verifiedAt,
+      verification_method: a.verificationMethod,
+      notes: a.notes,
+      created_at: a.createdAt,
+      updated_at: a.updatedAt,
+      ...(includeHistory && "depositHistory" in a
+        ? { deposit_history: a.depositHistory }
+        : {}),
+    }));
+
+    const employees = rawEmployees.map((e) => ({
+      id: e.id,
+      first_name: e.firstName,
+      last_name: e.lastName,
+      email: e.email,
+      payout_method: e.payoutMethod,
+    }));
 
     return NextResponse.json({ accounts, employees });
   } catch (error) {

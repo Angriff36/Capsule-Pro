@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -22,7 +22,7 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
  */
 export async function POST(request: NextRequest) {
   try {
-    const { orgId, userId } = await auth();
+    const { orgId } = await auth();
     if (!orgId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
@@ -57,7 +57,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate routing number (9 digits)
     if (!/^\d{9}$/.test(routingNumber)) {
       return NextResponse.json(
         { error: "Routing number must be 9 digits" },
@@ -65,7 +64,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate account number (4-17 digits)
     if (!/^\d{4,17}$/.test(accountNumber)) {
       return NextResponse.json(
         { error: "Account number must be 4-17 digits" },
@@ -73,57 +71,50 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // If setting as default, unset other defaults for this employee
-    if (isDefault) {
-      await database.$executeRaw(
-        Prisma.sql`
-          UPDATE tenant_staff.employee_bank_accounts
-          SET is_default = false
-          WHERE tenant_id = ${tenantId}
-            AND employee_id = ${employeeId}
-            AND is_default = true
-            AND deleted_at IS NULL
-        `
-      );
-    }
+    const account = await database.$transaction(async (tx) => {
+      if (isDefault) {
+        await tx.employeeBankAccount.updateMany({
+          where: {
+            tenantId,
+            employeeId,
+            isDefault: true,
+            deletedAt: null,
+          },
+          data: { isDefault: false },
+        });
+      }
 
-    const [account] = await database.$queryRaw<
-      Array<{
-        id: string;
-        employee_id: string;
-        account_number_last4: string;
-        status: string;
-      }>
-    >(
-      Prisma.sql`
-        INSERT INTO tenant_staff.employee_bank_accounts
-          (tenant_id, employee_id, bank_name, account_type, routing_number, account_number, account_holder_name, is_default, notes)
-        VALUES
-          (${tenantId}, ${employeeId}, ${bankName}, ${accountType}, ${routingNumber}, ${accountNumber}, ${accountHolderName}, ${isDefault}, ${notes || null})
-        RETURNING id, employee_id, account_number_last4, status
-      `
-    );
+      const created = await tx.employeeBankAccount.create({
+        data: {
+          tenantId,
+          employeeId,
+          bankName,
+          accountType,
+          routingNumber,
+          accountNumber,
+          accountHolderName,
+          isDefault: Boolean(isDefault),
+          notes: notes ?? null,
+        },
+        select: { id: true, accountNumberLast4: true },
+      });
 
-    // Update employee payout_method to direct_deposit if this is their first account or they set it as default
-    const existingCount = await database.$queryRaw<[{ count: bigint }]>(
-      Prisma.sql`
-        SELECT COUNT(*)::bigint FROM tenant_staff.employee_bank_accounts
-        WHERE tenant_id = ${tenantId} AND employee_id = ${employeeId} AND deleted_at IS NULL
-      `
-    );
+      const remainingCount = await tx.employeeBankAccount.count({
+        where: { tenantId, employeeId, deletedAt: null },
+      });
 
-    if (Number(existingCount[0].count) <= 1 || isDefault) {
-      await database.$executeRaw(
-        Prisma.sql`
-          UPDATE tenant_staff.employees
-          SET payout_method = 'direct_deposit', updated_at = NOW()
-          WHERE tenant_id = ${tenantId} AND id = ${employeeId}
-        `
-      );
-    }
+      if (remainingCount <= 1 || isDefault) {
+        await tx.user.update({
+          where: { tenantId_id: { tenantId, id: employeeId } },
+          data: { payoutMethod: "direct_deposit" },
+        });
+      }
+
+      return created;
+    });
 
     return NextResponse.json(
-      { success: true, id: account.id, last4: account.account_number_last4 },
+      { success: true, id: account.id, last4: account.accountNumberLast4 },
       { status: 201 }
     );
   } catch (error) {

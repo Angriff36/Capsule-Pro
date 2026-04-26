@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -17,14 +17,14 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
  */
 export async function POST(request: NextRequest) {
   try {
-    const { orgId, userId } = await auth();
+    const { orgId } = await auth();
     if (!orgId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const tenantId = await getTenantIdForOrg(orgId);
     const body = await request.json();
-    const { id, method, notes } = body;
+    const { id, method } = body;
 
     if (!(id && method)) {
       return NextResponse.json(
@@ -41,28 +41,31 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const [verified] = await database.$queryRaw<
-      Array<{ id: string; employee_id: string; account_number_last4: string }>
-    >(
-      Prisma.sql`
-        UPDATE tenant_staff.employee_bank_accounts
-        SET status = 'verified', verified_at = NOW(), verification_method = ${method}, updated_at = NOW()
-        WHERE tenant_id = ${tenantId} AND id = ${id} AND deleted_at IS NULL
-        RETURNING id, employee_id, account_number_last4
-      `
-    );
+    const result = await database.employeeBankAccount.updateMany({
+      where: { tenantId, id, deletedAt: null },
+      data: {
+        status: "verified",
+        verifiedAt: new Date(),
+        verificationMethod: method,
+      },
+    });
 
-    if (!verified) {
+    if (result.count === 0) {
       return NextResponse.json(
         { error: "Bank account not found" },
         { status: 404 }
       );
     }
 
+    const verified = await database.employeeBankAccount.findUniqueOrThrow({
+      where: { tenantId_id: { tenantId, id } },
+      select: { id: true, accountNumberLast4: true },
+    });
+
     return NextResponse.json({
       success: true,
       id: verified.id,
-      last4: verified.account_number_last4,
+      last4: verified.accountNumberLast4,
       method,
     });
   } catch (error) {

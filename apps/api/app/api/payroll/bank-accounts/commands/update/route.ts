@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -45,7 +45,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate routing number if provided
     if (routingNumber && !/^\d{9}$/.test(routingNumber)) {
       return NextResponse.json(
         { error: "Routing number must be 9 digits" },
@@ -53,7 +52,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate account number if provided
     if (accountNumber && !/^\d{4,17}$/.test(accountNumber)) {
       return NextResponse.json(
         { error: "Account number must be 4-17 digits" },
@@ -61,35 +59,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const [updated] = await database.$queryRaw<
-      Array<{ id: string; account_number_last4: string }>
-    >(
-      Prisma.sql`
-        UPDATE tenant_staff.employee_bank_accounts
-        SET
-          bank_name = COALESCE(${bankName || null}, bank_name),
-          account_type = COALESCE(${accountType || null}, account_type),
-          routing_number = COALESCE(${routingNumber || null}, routing_number),
-          account_number = COALESCE(${accountNumber || null}, account_number),
-          account_holder_name = COALESCE(${accountHolderName || null}, account_holder_name),
-          notes = COALESCE(${notes !== undefined ? notes : null}, notes),
-          updated_at = NOW()
-        WHERE tenant_id = ${tenantId} AND id = ${id} AND deleted_at IS NULL
-        RETURNING id, account_number_last4
-      `
-    );
+    const data: Record<string, unknown> = {};
+    if (bankName !== undefined) data.bankName = bankName;
+    if (accountType !== undefined) data.accountType = accountType;
+    if (routingNumber !== undefined) data.routingNumber = routingNumber;
+    if (accountNumber !== undefined) data.accountNumber = accountNumber;
+    if (accountHolderName !== undefined) {
+      data.accountHolderName = accountHolderName;
+    }
+    if (notes !== undefined) data.notes = notes;
 
-    if (!updated) {
+    const result = await database.employeeBankAccount.updateMany({
+      where: { tenantId, id, deletedAt: null },
+      data,
+    });
+
+    if (result.count === 0) {
       return NextResponse.json(
         { error: "Bank account not found" },
         { status: 404 }
       );
     }
 
+    const updated = await database.employeeBankAccount.findUniqueOrThrow({
+      where: { tenantId_id: { tenantId, id } },
+      select: { id: true, accountNumberLast4: true },
+    });
+
     return NextResponse.json({
       success: true,
       id: updated.id,
-      last4: updated.account_number_last4,
+      last4: updated.accountNumberLast4,
     });
   } catch (error) {
     captureException(error);

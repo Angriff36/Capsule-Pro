@@ -240,18 +240,52 @@ model User {
   isActive              Boolean                @default(true) @map("is_active")
   avatarUrl             String?                @map("avatar_url")
   roleId                String?                @map("role_id") @db.Uuid
+  payoutMethod          String                 @default("check") @map("payout_method")
   tenant                Account                @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   payrollRole           Role?                  @relation("EmployeeRole", fields: [roleId, tenantId], references: [id, tenantId])
   adminChatParticipants AdminChatParticipant[]
   adminChatMessages     AdminChatMessage[]
   preferences           UserPreference[]
   documentVersions      DocumentVersion[]
+  bankAccounts          EmployeeBankAccount[]
 
   @@id([tenantId, id])
   @@unique([tenantId, id], map: "employees_tenant_id_unique_idx")
   @@unique([tenantId, authUserId], map: "employees_tenant_auth_user_idx")
   @@index([roleId])
   @@map("employees")
+  @@schema("tenant_staff")
+}
+
+/// Bank account info for direct-deposit payroll. Backed by migration
+/// `20260327020000_add_employee_bank_accounts`. `accountNumberLast4` is a
+/// generated column (`RIGHT(account_number, 4) STORED`) — never set it from
+/// application code.
+model EmployeeBankAccount {
+  tenantId           String    @map("tenant_id") @db.Uuid
+  id                 String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employeeId         String    @map("employee_id") @db.Uuid
+  bankName           String    @map("bank_name")
+  accountType        String    @default("checking") @map("account_type")
+  routingNumber      String    @map("routing_number")
+  accountNumber      String    @map("account_number")
+  accountNumberLast4 String    @default(dbgenerated("\"\"")) @map("account_number_last4")
+  accountHolderName  String    @map("account_holder_name")
+  isDefault          Boolean   @default(false) @map("is_default")
+  status             String    @default("pending")
+  verifiedAt         DateTime? @map("verified_at") @db.Timestamptz(6)
+  verificationMethod String?   @map("verification_method")
+  depositHistory     Json      @default("[]") @map("deposit_history")
+  notes              String?
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt          DateTime? @map("deleted_at") @db.Timestamptz(6)
+  employee           User      @relation(fields: [tenantId, employeeId], references: [tenantId, id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@index([tenantId, employeeId], map: "employee_bank_accounts_employee_idx")
+  @@index([tenantId, status], map: "employee_bank_accounts_status_idx")
+  @@map("employee_bank_accounts")
   @@schema("tenant_staff")
 }
 
@@ -1610,25 +1644,25 @@ model InventoryTransaction {
 }
 
 model InventorySupplier {
-  tenantId        String          @map("tenant_id") @db.Uuid
-  id              String          @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  supplier_number String
-  name            String
-  contact_person  String?
-  email           String?
-  phone           String?
-  payment_terms       String          @default("NET_30")
-  connectorType       String?         @map("connector_type")
-  connectorCredentials Json            @default("{}") @map("connector_credentials") @db.JsonB
-  notes               String?
-  tags                String[]        @default([])
-  createdAt           DateTime        @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt           DateTime        @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt           DateTime?       @map("deleted_at") @db.Timestamptz(6)
-  tenant              Account         @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  shipments           Shipment[]      @relation("ShipmentSupplier")
-  items               InventoryItem[]
-  syncLogs            SupplierSyncLog[]
+  tenantId             String            @map("tenant_id") @db.Uuid
+  id                   String            @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  supplier_number      String
+  name                 String
+  contact_person       String?
+  email                String?
+  phone                String?
+  payment_terms        String            @default("NET_30")
+  connectorType        String?           @map("connector_type")
+  connectorCredentials Json              @default("{}") @map("connector_credentials") @db.JsonB
+  notes                String?
+  tags                 String[]          @default([])
+  createdAt            DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt            DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt            DateTime?         @map("deleted_at") @db.Timestamptz(6)
+  tenant               Account           @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  shipments            Shipment[]        @relation("ShipmentSupplier")
+  items                InventoryItem[]
+  syncLogs             SupplierSyncLog[]
 
   @@id([tenantId, id])
   @@unique([tenantId, id])
@@ -1654,7 +1688,7 @@ model SupplierSyncLog {
   updatedAt           DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt           DateTime? @map("deleted_at") @db.Timestamptz(6)
 
-  tenant   Account          @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  tenant   Account           @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   supplier InventorySupplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
 
   @@id([tenantId, id])
@@ -1968,38 +2002,38 @@ model PurchaseOrderItem {
 }
 
 model PurchaseRequisition {
-  tenantId           String                    @map("tenant_id") @db.Uuid
-  id                 String                    @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  requisitionNumber  String                    @unique @map("requisition_number")
-  requestedBy        String                    @map("requested_by") @db.Uuid
-  requestDate        DateTime                  @default(now()) @map("request_date") @db.Date
-  requiredBy         DateTime?                 @map("required_by") @db.Date
-  locationId         String?                   @map("location_id") @db.Uuid
-  department         String?
-  justification      String?
-  status             String                    @default("draft")
-  subtotal           Decimal                   @default(0) @db.Decimal(12, 2)
-  estimatedTax       Decimal                   @default(0) @map("estimated_tax") @db.Decimal(12, 2)
-  estimatedShipping  Decimal                   @default(0) @map("estimated_shipping") @db.Decimal(12, 2)
-  estimatedTotal     Decimal                   @default(0) @map("estimated_total") @db.Decimal(12, 2)
-  approvedBy         String?                   @map("approved_by") @db.Uuid
-  approvedAt         DateTime?                 @map("approved_at") @db.Timestamptz(6)
-  managerApprovalBy  String?                   @map("manager_approval_by") @db.Uuid
-  managerApprovalAt  DateTime?                 @map("manager_approval_at") @db.Timestamptz(6)
-  financeApprovalBy  String?                   @map("finance_approval_by") @db.Uuid
-  financeApprovalAt  DateTime?                 @map("finance_approval_at") @db.Timestamptz(6)
-  convertedToPoId    String?                   @unique @map("converted_to_po_id") @db.Uuid
-  convertedAt        DateTime?                 @map("converted_at") @db.Timestamptz(6)
-  rejectionReason    String?                   @map("rejection_reason")
-  notes              String?
-  submittedAt        DateTime?                 @map("submitted_at") @db.Timestamptz(6)
-  itemCategory       String?                   @map("item_category")
-  priority           String                    @default("normal")
-  createdAt          DateTime                  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt          DateTime                  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt          DateTime?                 @map("deleted_at") @db.Timestamptz(6)
-  tenant             Account                   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  items              PurchaseRequisitionItem[]
+  tenantId          String                    @map("tenant_id") @db.Uuid
+  id                String                    @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  requisitionNumber String                    @unique @map("requisition_number")
+  requestedBy       String                    @map("requested_by") @db.Uuid
+  requestDate       DateTime                  @default(now()) @map("request_date") @db.Date
+  requiredBy        DateTime?                 @map("required_by") @db.Date
+  locationId        String?                   @map("location_id") @db.Uuid
+  department        String?
+  justification     String?
+  status            String                    @default("draft")
+  subtotal          Decimal                   @default(0) @db.Decimal(12, 2)
+  estimatedTax      Decimal                   @default(0) @map("estimated_tax") @db.Decimal(12, 2)
+  estimatedShipping Decimal                   @default(0) @map("estimated_shipping") @db.Decimal(12, 2)
+  estimatedTotal    Decimal                   @default(0) @map("estimated_total") @db.Decimal(12, 2)
+  approvedBy        String?                   @map("approved_by") @db.Uuid
+  approvedAt        DateTime?                 @map("approved_at") @db.Timestamptz(6)
+  managerApprovalBy String?                   @map("manager_approval_by") @db.Uuid
+  managerApprovalAt DateTime?                 @map("manager_approval_at") @db.Timestamptz(6)
+  financeApprovalBy String?                   @map("finance_approval_by") @db.Uuid
+  financeApprovalAt DateTime?                 @map("finance_approval_at") @db.Timestamptz(6)
+  convertedToPoId   String?                   @unique @map("converted_to_po_id") @db.Uuid
+  convertedAt       DateTime?                 @map("converted_at") @db.Timestamptz(6)
+  rejectionReason   String?                   @map("rejection_reason")
+  notes             String?
+  submittedAt       DateTime?                 @map("submitted_at") @db.Timestamptz(6)
+  itemCategory      String?                   @map("item_category")
+  priority          String                    @default("normal")
+  createdAt         DateTime                  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt         DateTime                  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt         DateTime?                 @map("deleted_at") @db.Timestamptz(6)
+  tenant            Account                   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  items             PurchaseRequisitionItem[]
 
   @@id([tenantId, id])
   @@unique([tenantId, id])
@@ -2724,24 +2758,24 @@ model admin_audit_trail {
 
 /// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
 model ActivityFeed {
-  tenantId      String    @map("tenant_id") @db.Uuid
-  id            String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  activityType  String    @map("activity_type")
-  entityType    String?   @map("entity_type")
-  entityId      String?   @map("entity_id") @db.Uuid
+  tenantId      String   @map("tenant_id") @db.Uuid
+  id            String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  activityType  String   @map("activity_type")
+  entityType    String?  @map("entity_type")
+  entityId      String?  @map("entity_id") @db.Uuid
   action        String
   title         String
   description   String?
   metadata      Json?
-  performedBy   String?   @map("performed_by") @db.Uuid
-  performerName String?   @map("performer_name")
+  performedBy   String?  @map("performed_by") @db.Uuid
+  performerName String?  @map("performer_name")
   correlationId String?  @map("correlation_id") @db.Uuid
-  parentId      String?   @map("parent_id") @db.Uuid
-  sourceType    String?   @map("source_type")
-  sourceId      String?   @map("source_id") @db.Uuid
-  importance    String    @default("normal")
-  visibility    String    @default("all")
-  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  parentId      String?  @map("parent_id") @db.Uuid
+  sourceType    String?  @map("source_type")
+  sourceId      String?  @map("source_id") @db.Uuid
+  importance    String   @default("normal")
+  visibility    String   @default("all")
+  createdAt     DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   @@id([tenantId, id])
   @@index([tenantId, createdAt])
@@ -4243,7 +4277,7 @@ model Payment {
   clientId               String    @map("client_id") @db.Uuid
   gatewayTransactionId   String?   @map("gateway_transaction_id")
   gatewayPaymentMethodId String?   @map("gateway_payment_method_id")
-  processor              String?   // stripe, square, etc.
+  processor              String? // stripe, square, etc.
   processedAt            DateTime? @map("processed_at") @db.Timestamptz(6)
   completedAt            DateTime? @map("completed_at") @db.Timestamptz(6)
   refundedAt             DateTime? @map("refunded_at") @db.Timestamptz(6)
@@ -4251,7 +4285,7 @@ model Payment {
   updatedAt              DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt              DateTime? @map("deleted_at") @db.Timestamptz(6)
 
-  tenant Account @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  tenant  Account @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
   event   Event   @relation(fields: [eventId], references: [id], onDelete: Restrict)
   client  Client  @relation(fields: [clientId], references: [id], onDelete: Restrict)
@@ -5489,41 +5523,41 @@ model PreventiveMaintenanceSchedule {
 // Imported from tenant_logistics schema
 
 model DeliveryRoute {
-  tenantId      String   @map("tenant_id") @db.Uuid
-  id            String   @unique @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
-  routeNumber   String   @map("route_number")
-  name          String
-  description   String?
-  status        String   @default("draft") // draft, optimized, in_progress, completed, cancelled
-  eventId       String?  @map("event_id") @db.Uuid
-  
+  tenantId    String  @map("tenant_id") @db.Uuid
+  id          String  @unique @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
+  routeNumber String  @map("route_number")
+  name        String
+  description String?
+  status      String  @default("draft") // draft, optimized, in_progress, completed, cancelled
+  eventId     String? @map("event_id") @db.Uuid
+
   // Route timing
   scheduledDate DateTime? @map("scheduled_date") @db.Date
   startTime     DateTime? @map("start_time") @db.Timestamptz(6)
   endTime       DateTime? @map("end_time") @db.Timestamptz(6)
-  
+
   // Optimization metadata
-  totalDistance Decimal? @map("total_distance") @db.Decimal(10, 2) // in km
-  totalDuration Int?     @map("total_duration") // in minutes
-  optimizationScore Decimal? @map("optimization_score") @db.Decimal(5, 2)
-  optimizationAlgorithm String? @map("optimization_algorithm")
-  
+  totalDistance         Decimal? @map("total_distance") @db.Decimal(10, 2) // in km
+  totalDuration         Int?     @map("total_duration") // in minutes
+  optimizationScore     Decimal? @map("optimization_score") @db.Decimal(5, 2)
+  optimizationAlgorithm String?  @map("optimization_algorithm")
+
   // Driver assignment
-  driverId      String?  @map("driver_id") @db.Uuid
-  vehicleId     String?  @map("vehicle_id") @db.Uuid
-  
+  driverId  String? @map("driver_id") @db.Uuid
+  vehicleId String? @map("vehicle_id") @db.Uuid
+
   // Tracking
-  actualStartTime   DateTime? @map("actual_start_time") @db.Timestamptz(6)
-  actualEndTime     DateTime? @map("actual_end_time") @db.Timestamptz(6)
-  actualDistance    Decimal? @map("actual_distance") @db.Decimal(10, 2)
-  
-  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt     DateTime? @map("deleted_at") @db.Timestamptz(6)
-  
-  tenant        Account      @relation(fields: [tenantId], references: [id], onDelete: Restrict)
-  stops         RouteStop[]
-  
+  actualStartTime DateTime? @map("actual_start_time") @db.Timestamptz(6)
+  actualEndTime   DateTime? @map("actual_end_time") @db.Timestamptz(6)
+  actualDistance  Decimal?  @map("actual_distance") @db.Decimal(10, 2)
+
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  tenant Account     @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  stops  RouteStop[]
+
   @@id([tenantId, id])
   @@unique([tenantId, routeNumber])
   @@index([tenantId, status])
@@ -5533,48 +5567,48 @@ model DeliveryRoute {
 }
 
 model RouteStop {
-  tenantId      String   @map("tenant_id") @db.Uuid
-  id            String   @unique @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
-  routeId       String   @map("route_id") @db.Uuid
-  stopNumber    Int      @map("stop_number")
-  
+  tenantId   String @map("tenant_id") @db.Uuid
+  id         String @unique @default(dbgenerated("gen_random_uuid()")) @map("id") @db.Uuid
+  routeId    String @map("route_id") @db.Uuid
+  stopNumber Int    @map("stop_number")
+
   // Location reference
-  locationId    String?  @map("location_id") @db.Uuid
-  venueId       String?  @map("venue_id") @db.Uuid
-  
+  locationId String? @map("location_id") @db.Uuid
+  venueId    String? @map("venue_id") @db.Uuid
+
   // Address (can be derived from location/venue or entered manually)
   name          String
-  addressLine1  String?  @map("address_line1")
-  addressLine2  String?  @map("address_line2")
+  addressLine1  String? @map("address_line1")
+  addressLine2  String? @map("address_line2")
   city          String?
-  stateProvince String?  @map("state_province")
-  postalCode    String?  @map("postal_code")
-  countryCode   String?  @map("country_code") @db.Char(2)
-  
+  stateProvince String? @map("state_province")
+  postalCode    String? @map("postal_code")
+  countryCode   String? @map("country_code") @db.Char(2)
+
   // Coordinates for mapping
-  latitude      Decimal? @db.Decimal(10, 8)
-  longitude     Decimal? @db.Decimal(11, 8)
-  
+  latitude  Decimal? @db.Decimal(10, 8)
+  longitude Decimal? @db.Decimal(11, 8)
+
   // Stop details
-  stopType      String   @default("delivery") // pickup, delivery, break
-  plannedArrival DateTime? @map("planned_arrival") @db.Timestamptz(6)
-  plannedDuration Int?   @map("planned_duration") // minutes at stop
-  notes         String?
-  
+  stopType        String    @default("delivery") // pickup, delivery, break
+  plannedArrival  DateTime? @map("planned_arrival") @db.Timestamptz(6)
+  plannedDuration Int?      @map("planned_duration") // minutes at stop
+  notes           String?
+
   // Optimization metadata
   distanceFromPrevious Decimal? @map("distance_from_previous") @db.Decimal(10, 2) // km
   timeFromPrevious     Int?     @map("time_from_previous") // minutes
-  
+
   // Tracking
-  status        String   @default("pending") // pending, in_transit, arrived, completed, skipped
-  actualArrival DateTime? @map("actual_arrival") @db.Timestamptz(6)
+  status          String    @default("pending") // pending, in_transit, arrived, completed, skipped
+  actualArrival   DateTime? @map("actual_arrival") @db.Timestamptz(6)
   actualDeparture DateTime? @map("actual_departure") @db.Timestamptz(6)
-  
-  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  
-  route         DeliveryRoute @relation(fields: [routeId, tenantId], references: [id, tenantId], onDelete: Cascade)
-  
+
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  route DeliveryRoute @relation(fields: [routeId, tenantId], references: [id, tenantId], onDelete: Cascade)
+
   @@id([tenantId, id])
   @@unique([routeId, stopNumber])
   @@index([routeId, status])
@@ -5586,7 +5620,7 @@ model RouteStop {
 model ProviderSync {
   tenantId       String    @map("tenant_id") @db.Uuid
   id             String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  provider       String    // "google" | "outlook"
+  provider       String // "google" | "outlook"
   providerUserId String?   @map("provider_user_id") // external account ID
   accessToken    String?   @map("access_token") @db.Text
   refreshToken   String?   @map("refresh_token") @db.Text
