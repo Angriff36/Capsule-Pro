@@ -1,6 +1,6 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-26 (eighteenth pass — cross-tenant leak fixes, recipe costing fixes, Goodshuffle sync fixes, falsy-value anti-pattern fix)
+> **Last updated:** 2026-04-26 (nineteenth pass — Blocker 7 resolved: RLS for 17 tables + 8 Prisma models + 3 phantom table migrations)
 > **Prior passes:** 2026-04-24 initial post-expansion audit → 2026-04-24 first re-verification → 2026-04-24 third-pass spot-check → 2026-04-24 fourth-pass package health → 2026-04-24 fifth-pass E2E audit → 2026-04-24 sixth-pass raw-SQL audit → 2026-04-24 seventh-pass supplementary raw-SQL audit → 2026-04-24 eighth-pass comprehensive raw-SQL audit → 2026-04-25 ninth-pass frontend health audit → 2026-04-25 tenth-pass mobile + public website audit → **2026-04-25 eleventh-pass auth, middleware & integration services audit** (3 sub-passes: initial 6-agent pass, 6-agent addendum, 5-agent credential/webhook deep-dive).
 > **Previous snapshot:** 2026-03-08 (stale — many claims falsified by post-expansion audit)
 > **Audit method:** initial 15+ parallel subagent investigations → 8-subagent re-verification → 10-subagent third-pass → 10-subagent fourth-pass → E2E fifth-pass → 20-subagent sixth-pass → 9-subagent seventh-pass → 15-subagent confirmation pass → 20-subagent eighth-pass raw-SQL audit → 24-subagent ninth-pass frontend health audit → 11-subagent tenth-pass mobile + public website audit → **17-subagent eleventh-pass auth/middleware/integration audit** (6 + 6 + 5 agents across 3 sub-passes) covering full auth chain trace, route-level auth enforcement scan, credential exposure scan across all directories, webhook receiver security deep-audit, all 16 lib files, and external integration packages. **All agent findings verified against actual codebase before reporting.**
@@ -21,9 +21,9 @@ However, the new-module expansion shipped with:
 - **Runtime crash bugs** in procurement (requisitions, vendor-contracts) and payroll (bank-accounts) caused by missing Prisma models and missing manifests.
 - **Duplicate route directories** (`softDelete/` alongside `soft-delete/`) in ~45 modules causing Next.js routing ambiguity.
 - **SQL injection risk** in logistics driver update.
-- **Zero row-level-security policies** on any post-March-8 migration — all new tables are cross-tenant readable.
+- ~~**Zero row-level-security policies** on any post-March-8 migration — all new tables are cross-tenant readable.~~ **RESOLVED 2026-04-26**: RLS policies now cover all 17 post-March-8 tenant-scoped tables.
 - **473 write handlers (46%)** still lack manifest coverage; 163 routes bypass the dispatcher entirely; 115 routes lack authentication.
-- **Eight orphaned tables** in migrations with no Prisma model.
+- **Eight orphaned tables** in migrations with no Prisma model. ~~**3 created + 5 modeled 2026-04-26**~~: `Driver`, `Vehicle`, `FacilityAsset` now have migrations; `VendorContact`, `VendorRating`, `ProcurementBudget`, `ProcurementBudgetAlert`, `CrmScoringRule` now have Prisma models. Remaining: `ProcurementApproval`, `Deal`, `RevenueRecognitionSchedule`.
 - **Falsified test claims** — several test-file paths and line counts referenced in the old plan do not match reality.
 
 The Command Board authenticated UI appears to have been removed: `apps/app/app/(authenticated)/command-board/` **does not exist**, yet the old plan repeatedly cited files inside that directory.
@@ -104,7 +104,10 @@ No new commits since `a71ec8d5`. All Tier 0/1 blockers re-verified to still hold
    - any other value → `Prisma.sql\`${vehicleId}::uuid\`` (parameterized cast)
    Why this matters: the original ternary was producing `'<uuid>::uuid'::uuid` (Postgres rejects the embedded cast literal) when `vehicleId` was a UUID, and `'vehicle_id'::uuid` (Postgres rejects the column-name string) when it was undefined — every PATCH on this route was a guaranteed 500. The new branches keep parameterization intact and preserve the original "leave unchanged" semantic. Typecheck passes; lint clean for the touched code (pre-existing template-literal warnings elsewhere in the file remain).
 
-7. **Zero RLS on new-module tables** — multi-tenant data leakage possible across accounting, facilities, logistics, payroll, procurement. See Schema Drift Audit.
+7. ~~**Zero RLS on new-module tables**~~ — **RESOLVED 2026-04-26.** Two migrations created:
+   - `20260427000000_add_rls_post_expansion_tables` — adds `ENABLE ROW LEVEL SECURITY` + 5 policies (select/insert/update/delete/service-role bypass) + triggers (`fn_update_timestamp`, `fn_prevent_tenant_mutation`) + `REPLICA IDENTITY FULL` to **14 existing tables**: `vendor_contacts`, `vendor_ratings`, `procurement_budgets`, `procurement_budget_alerts`, `employee_bank_accounts`, `audit_log` (TEXT tenant_id cast to UUID), `crm_scoring_rules`, `payment_methods`, `payments`, `delivery_routes`, `route_stops`, `ActivityFeed` (PascalCase, quoted), `webhook_dead_letter_queue`, `manifest_command_telemetry`.
+   - `20260427010000_add_logistics_facilities_tables` — creates **3 phantom tables** (referenced by raw-SQL routes but never had a CREATE TABLE migration): `tenant_logistics.drivers`, `tenant_logistics.vehicles`, `tenant_facilities.facility_assets`. Each includes composite PK `[tenant_id, id]`, FKs to `platform.accounts`, full RLS policies, triggers, and `REPLICA IDENTITY FULL`.
+   - **8 Prisma models** added to `schema.prisma`: `Driver`, `Vehicle`, `FacilityAsset`, `VendorContact`, `VendorRating`, `ProcurementBudget`, `ProcurementBudgetAlert`, `CrmScoringRule` — all with proper `@@map`, `@@index`, `Account` back-relations, and schema mappings. `prisma generate` clean; no new typecheck errors.
 
 ---
 
@@ -502,15 +505,15 @@ Each tier should be complete before the next, except where items can be parallel
 7. Duplicate `softDelete/` directories: remove camelCase variants in the 3 inventory modules (Blocker 4 — 23 modules use one of the two spellings; only 3 need cleanup).
 
 ### Tier 2 — Schema & Tenant Isolation
-8. Backfill Prisma models for 8 orphaned tables + `facility_assets`, `drivers`, `vehicles`.
-9. Add `ENABLE ROW LEVEL SECURITY` + policies to all post-March-8 tables (prevents cross-tenant data leak).
+8. ~~Backfill Prisma models for 8 orphaned tables + `facility_assets`, `drivers`, `vehicles`.~~ ✅ **RESOLVED 2026-04-26**: Added `Driver`, `Vehicle`, `FacilityAsset`, `VendorContact`, `VendorRating`, `ProcurementBudget`, `ProcurementBudgetAlert`, `CrmScoringRule` to `schema.prisma`. Remaining orphaned: `ProcurementApproval`, `Deal`, `RevenueRecognitionSchedule` (lower priority — no active routes).
+9. ~~Add `ENABLE ROW LEVEL SECURITY` + policies to all post-March-8 tables~~ ✅ **RESOLVED 2026-04-26**: Migration `20260427000000_add_rls_post_expansion_tables` adds RLS to 14 tables; migration `20260427010000_add_logistics_facilities_tables` creates 3 phantom tables with RLS baked in. All post-March-8 tenant-scoped tables now have RLS.
 10. Dedup duplicate `audit_log` migration.
 11. Remove auto-generated route aliases (`/api/chartofaccount/` etc.) after confirming no callers.
 
 ### Tier 3 — Incomplete Modules
 12. Accounting: complete payment gateway integration, invoice email, revenue recognition model + routes.
-13. Facilities: add `FacilityAsset` Prisma model; build work-order status/cost update UI; integrate `facility-rules.manifest` out of `manifests-disabled/`.
-14. Logistics: real GPS/webhook integration; add `Driver`, `Vehicle` models; implement `/routes/commands/optimize`; create logistics manifests.
+13. Facilities: ~~add `FacilityAsset` Prisma model~~ ✅ (added 2026-04-26); build work-order status/cost update UI; integrate `facility-rules.manifest` out of `manifests-disabled/`.
+14. Logistics: real GPS/webhook integration; ~~add `Driver`, `Vehicle` models~~ ✅ (added 2026-04-26); implement `/routes/commands/optimize`; create logistics manifests.
 15. Payroll: implement YTD tracking for SS wage cap; add `TaxInfo`, `PayrollPrefs`, `TipPool` models; API integration tests.
 16. Procurement: approvals baseline workflow is already wired (re-verification 2026-04-24); add rules-engine branching + hardening pass on raw SQL.
 17. Command Board: decide rebuild-or-retire for authenticated UI.

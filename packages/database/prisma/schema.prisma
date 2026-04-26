@@ -146,10 +146,18 @@ model Account {
   temperatureReadings            TemperatureReading[]
   iotAlerts                      IoTAlert[]
   facilityAreas                  FacilityArea[]
+  facilityAssets                 FacilityAsset[]
   maintenanceWorkOrders          MaintenanceWorkOrder[]
   preventiveMaintenanceSchedules PreventiveMaintenanceSchedule[]
   documentVersions               DocumentVersion[]
   deliveryRoutes                 DeliveryRoute[]
+  vehicles                       Vehicle[]
+  drivers                        Driver[]
+  vendorContacts                 VendorContact[]
+  vendorRatings                  VendorRating[]
+  procurementBudgets             ProcurementBudget[]
+  procurementBudgetAlerts        ProcurementBudgetAlert[]
+  crmScoringRules                CrmScoringRule[]
 
   @@map("accounts")
   @@schema("platform")
@@ -839,6 +847,27 @@ model ClientInteraction {
   @@index([leadId])
   @@index([employeeId], map: "client_interactions_employee_idx")
   @@map("client_interactions")
+  @@schema("tenant_crm")
+}
+
+model CrmScoringRule {
+  tenantId  String   @map("tenant_id") @db.Uuid
+  id        String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  ruleName  String   @map("rule_name") @db.VarChar(255)
+  field     String   @db.VarChar(100)
+  condition String   @db.VarChar(50)
+  value     String   @db.VarChar(255)
+  points    Int
+  isActive  Boolean  @default(true) @map("is_active")
+  priority  Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  tenant Account @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@index([tenantId, isActive, priority], map: "crm_scoring_rules_tenant_active_priority_idx")
+  @@map("crm_scoring_rules")
   @@schema("tenant_crm")
 }
 
@@ -1663,6 +1692,8 @@ model InventorySupplier {
   shipments            Shipment[]        @relation("ShipmentSupplier")
   items                InventoryItem[]
   syncLogs             SupplierSyncLog[]
+  vendorContacts       VendorContact[]
+  vendorRatings        VendorRating[]
 
   @@id([tenantId, id])
   @@unique([tenantId, id])
@@ -2114,6 +2145,108 @@ model VendorContract {
   @@index([tenantId, status], map: "vendor_contracts_tenant_status_idx")
   @@index([tenantId, endDate], map: "vendor_contracts_tenant_end_date_idx")
   @@map("vendor_contracts")
+  @@schema("tenant_inventory")
+}
+
+model VendorContact {
+  tenantId     String            @map("tenant_id") @db.Uuid
+  id           String            @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  supplierId   String            @map("supplier_id") @db.Uuid
+  contactName  String            @map("contact_name")
+  contactEmail String?           @map("contact_email")
+  contactPhone String?           @map("contact_phone")
+  contactRole  String?           @map("contact_role")
+  isPrimary    Boolean           @default(false) @map("is_primary")
+  notes        String?
+  createdAt    DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt    DateTime?         @map("deleted_at") @db.Timestamptz(6)
+
+  tenant   Account           @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  supplier InventorySupplier @relation(fields: [supplierId, tenantId], references: [id, tenantId], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@index([tenantId, supplierId], map: "vendor_contacts_tenant_supplier_idx")
+  @@map("vendor_contacts")
+  @@schema("tenant_inventory")
+}
+
+model VendorRating {
+  tenantId   String            @map("tenant_id") @db.Uuid
+  id         String            @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  supplierId String            @map("supplier_id") @db.Uuid
+  category   String            @default("overall")
+  rating     Int               @db.SmallInt
+  comment    String?
+  ratedBy    String?           @map("rated_by") @db.Uuid
+  createdAt  DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime          @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt  DateTime?         @map("deleted_at") @db.Timestamptz(6)
+
+  tenant   Account           @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  supplier InventorySupplier @relation(fields: [supplierId, tenantId], references: [id, tenantId], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@index([tenantId, supplierId], map: "vendor_ratings_tenant_supplier_idx")
+  @@map("vendor_ratings")
+  @@schema("tenant_inventory")
+}
+
+model ProcurementBudget {
+  tenantId            String    @map("tenant_id") @db.Uuid
+  id                  String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name                String
+  description         String?
+  category            String?
+  fiscalYear          Int       @map("fiscal_year")
+  periodType          String    @default("annual") @map("period_type")
+  periodStart         DateTime? @map("period_start") @db.Date
+  periodEnd           DateTime? @map("period_end") @db.Date
+  budgetAmount        Decimal   @map("budget_amount") @db.Decimal(12, 2)
+  spentAmount         Decimal   @default(0) @map("spent_amount") @db.Decimal(12, 2)
+  committedAmount     Decimal   @default(0) @map("committed_amount") @db.Decimal(12, 2)
+  thresholdWarningPct Int       @default(80) @map("threshold_warning_pct") @db.SmallInt
+  thresholdCriticalPct Int      @default(100) @map("threshold_critical_pct") @db.SmallInt
+  status              String    @default("active")
+  notes               String?
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt           DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  tenant Account                     @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  alerts ProcurementBudgetAlert[]
+
+  @@id([tenantId, id])
+  @@index([tenantId, status], map: "procurement_budgets_tenant_status_idx")
+  @@index([tenantId, category], map: "procurement_budgets_tenant_category_idx")
+  @@index([tenantId, fiscalYear], map: "procurement_budgets_tenant_year_idx")
+  @@map("procurement_budgets")
+  @@schema("tenant_inventory")
+}
+
+model ProcurementBudgetAlert {
+  tenantId        String    @map("tenant_id") @db.Uuid
+  id              String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  budgetId        String    @map("budget_id") @db.Uuid
+  alertType       String    @map("alert_type")
+  utilizationPct  Decimal   @map("utilization_pct") @db.Decimal(5, 2)
+  message         String
+  isAcknowledged  Boolean   @default(false) @map("is_acknowledged")
+  acknowledgedBy  String?   @map("acknowledged_by") @db.Uuid
+  acknowledgedAt  DateTime? @map("acknowledged_at") @db.Timestamptz(6)
+  resolved        Boolean   @default(false)
+  resolvedAt      DateTime? @map("resolved_at") @db.Timestamptz(6)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  tenant  Account           @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  budget  ProcurementBudget @relation(fields: [budgetId, tenantId], references: [id, tenantId], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@index([tenantId, budgetId], map: "procurement_budget_alerts_budget_idx")
+  @@index([tenantId, isAcknowledged], map: "procurement_budget_alerts_ack_idx")
+  @@map("procurement_budget_alerts")
   @@schema("tenant_inventory")
 }
 
@@ -5447,6 +5580,34 @@ model FacilityArea {
   @@schema("tenant_facilities")
 }
 
+model FacilityAsset {
+  tenantId       String    @map("tenant_id") @db.Uuid
+  id             String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name           String
+  assetType      String    @default("other") @map("asset_type")
+  serialNumber   String?   @map("serial_number")
+  manufacturer   String?
+  model          String?
+  purchaseDate   DateTime? @map("purchase_date") @db.Date
+  purchaseCost   Decimal?  @map("purchase_cost") @db.Decimal(12, 2)
+  warrantyExpiry DateTime? @map("warranty_expiry") @db.Date
+  areaId         String?   @map("area_id") @db.Uuid
+  status         String    @default("active")
+  notes          String?
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  tenant Account @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@index([tenantId, status])
+  @@index([tenantId, areaId])
+  @@index([tenantId, assetType])
+  @@map("facility_assets")
+  @@schema("tenant_facilities")
+}
+
 /// Maintenance work order for repairs and maintenance
 model MaintenanceWorkOrder {
   tenantId        String    @map("tenant_id") @db.Uuid
@@ -5613,6 +5774,58 @@ model RouteStop {
   @@unique([routeId, stopNumber])
   @@index([routeId, status])
   @@map("route_stops")
+  @@schema("tenant_logistics")
+}
+
+model Vehicle {
+  tenantId       String    @map("tenant_id") @db.Uuid
+  id             String    @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  make           String
+  model          String
+  year           Int?
+  plateNumber    String?   @map("plate_number")
+  vin            String?
+  capacityWeight Decimal?  @map("capacity_weight") @db.Decimal(10, 2)
+  capacityVolume Decimal?  @map("capacity_volume") @db.Decimal(10, 2)
+  fuelType       String?   @map("fuel_type")
+  mileage        Decimal?  @db.Decimal(10, 2)
+  status         String    @default("available")
+  notes          String?
+  createdAt      DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  tenant  Account  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  drivers Driver[]
+
+  @@id([tenantId, id])
+  @@index([tenantId, status])
+  @@map("vehicles")
+  @@schema("tenant_logistics")
+}
+
+model Driver {
+  tenantId      String    @map("tenant_id") @db.Uuid
+  id            String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String
+  phone         String?
+  email         String?
+  licenseNumber String?   @map("license_number")
+  licenseExpiry DateTime? @map("license_expiry") @db.Date
+  vehicleId     String?   @map("vehicle_id") @db.Uuid
+  status        String    @default("available")
+  notes         String?
+  createdAt     DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt     DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt     DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  tenant  Account  @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  vehicle Vehicle? @relation(fields: [vehicleId], references: [id], onDelete: SetNull)
+
+  @@id([tenantId, id])
+  @@index([tenantId, status])
+  @@index([tenantId, vehicleId])
+  @@map("drivers")
   @@schema("tenant_logistics")
 }
 
