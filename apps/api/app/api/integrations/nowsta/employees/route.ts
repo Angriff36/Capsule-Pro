@@ -27,7 +27,7 @@ export async function GET(_request: NextRequest) {
       return NextResponse.json({ error: "No tenant found" }, { status: 401 });
     }
 
-    const config = await database.nowstaConfig.findUnique({
+    const config = await database.nowstaConfig.findFirst({
       where: { tenantId },
     });
 

@@ -87,7 +87,7 @@ export async function GET(
 
     // Fetch yield unit code from core.units
     const unit = latestVersion.yieldUnitId
-      ? await database.units.findUnique({
+      ? await database.units.findFirst({
           where: { id: latestVersion.yieldUnitId },
           select: { code: true },
         })

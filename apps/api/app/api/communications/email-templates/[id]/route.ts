@@ -25,11 +25,11 @@ export async function GET(
 
     const { id } = await params;
 
-    const emailTemplate = await database.emailTemplate.findUnique({
+    const emailTemplate = await database.email_templates.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenant_id: tenantId,
+        deleted_at: null
       },
     });
 

@@ -1,6 +1,6 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-26 (nineteenth pass — Blocker 7 resolved: RLS for 17 tables + 8 Prisma models + 3 phantom table migrations)
+> **Last updated:** 2026-04-26 (twentieth pass — Auto-generated route TypeScript errors reduced 85→2 via model name + field + findUnique→findFirst fixes across ~97 route files)
 > **Prior passes:** 2026-04-24 initial post-expansion audit → 2026-04-24 first re-verification → 2026-04-24 third-pass spot-check → 2026-04-24 fourth-pass package health → 2026-04-24 fifth-pass E2E audit → 2026-04-24 sixth-pass raw-SQL audit → 2026-04-24 seventh-pass supplementary raw-SQL audit → 2026-04-24 eighth-pass comprehensive raw-SQL audit → 2026-04-25 ninth-pass frontend health audit → 2026-04-25 tenth-pass mobile + public website audit → **2026-04-25 eleventh-pass auth, middleware & integration services audit** (3 sub-passes: initial 6-agent pass, 6-agent addendum, 5-agent credential/webhook deep-dive).
 > **Previous snapshot:** 2026-03-08 (stale — many claims falsified by post-expansion audit)
 > **Audit method:** initial 15+ parallel subagent investigations → 8-subagent re-verification → 10-subagent third-pass → 10-subagent fourth-pass → E2E fifth-pass → 20-subagent sixth-pass → 9-subagent seventh-pass → 15-subagent confirmation pass → 20-subagent eighth-pass raw-SQL audit → 24-subagent ninth-pass frontend health audit → 11-subagent tenth-pass mobile + public website audit → **17-subagent eleventh-pass auth/middleware/integration audit** (6 + 6 + 5 agents across 3 sub-passes) covering full auth chain trace, route-level auth enforcement scan, credential exposure scan across all directories, webhook receiver security deep-audit, all 16 lib files, and external integration packages. **All agent findings verified against actual codebase before reporting.**
@@ -474,6 +474,15 @@ All clusters need parameterization review + Prisma-model backfill. Blocker 6 is 
 ### TypeScript suppressions
 **15** `@ts-expect-error` / `@ts-ignore` total across committed source (third-pass re-count; prior passes said 10/12 — under-counted by 3-5). Location breakdown: 9 files. Most legitimate. Low priority.
 
+### Prisma naming convention split (discovered 2026-04-26)
+The `schema.prisma` uses two conflicting conventions that auto-generated routes must respect:
+- **Convention A** (PascalCase models, camelCase fields with `@map()`): e.g., `PrepTask` with `tenantId @map("tenant_id")`. Routes use `database.prepTask.findFirst({ where: { tenantId, deletedAt: null } })`.
+- **Convention B** (snake_case models, snake_case fields without `@map`): e.g., `payroll_periods` with raw `tenant_id`. Routes use `database.payroll_periods.findFirst({ where: { tenant_id: tenantId, deleted_at: null } })`.
+
+Snake_case field models (11): `payroll_periods`, `payroll_runs`, `event_dishes`, `email_templates`, `recipe_steps`, `employee_availability`, `employee_certifications`, `employeeTimeOffRequest`, `employeeDeduction`, `trainingAssignment`, `trainingModule`.
+No-soft-delete models (7): `chartOfAccount`, `notification`, `inventoryTransaction`, `alertsConfig`, `overrideAudit`, `timecardEditRequest`, `approvalHistory`.
+Missing model (1): `prepTaskPlanWorkflow` — has routes but no Prisma model (fabrication issue).
+
 ### Duplicate `softDelete/` + `soft-delete/` directories
 See Blocker 4. Canonical choice: `soft-delete/` (kebab-case). Re-verification 2026-04-24: 2 modules have BOTH variants, 1 has only the camelCase, 21 modules total use one or the other. Prior "~45 modules" figure conflated paths with modules.
 
@@ -507,29 +516,30 @@ Each tier should be complete before the next, except where items can be parallel
 ### Tier 2 — Schema & Tenant Isolation
 8. ~~Backfill Prisma models for 8 orphaned tables + `facility_assets`, `drivers`, `vehicles`.~~ ✅ **RESOLVED 2026-04-26**: Added `Driver`, `Vehicle`, `FacilityAsset`, `VendorContact`, `VendorRating`, `ProcurementBudget`, `ProcurementBudgetAlert`, `CrmScoringRule` to `schema.prisma`. Remaining orphaned: `ProcurementApproval`, `Deal`, `RevenueRecognitionSchedule` (lower priority — no active routes).
 9. ~~Add `ENABLE ROW LEVEL SECURITY` + policies to all post-March-8 tables~~ ✅ **RESOLVED 2026-04-26**: Migration `20260427000000_add_rls_post_expansion_tables` adds RLS to 14 tables; migration `20260427010000_add_logistics_facilities_tables` creates 3 phantom tables with RLS baked in. All post-March-8 tenant-scoped tables now have RLS.
-10. Dedup duplicate `audit_log` migration.
-11. Remove auto-generated route aliases (`/api/chartofaccount/` etc.) after confirming no callers.
+10. ~~Fix 85 TypeScript errors in auto-generated API routes.~~ ✅ **RESOLVED 2026-04-26**: Systematic fix across ~97 auto-generated route files. Three categories of errors fixed: (a) 11 wrong Prisma model names (`emailTemplate`→`email_templates`, `eventDish`→`event_dishes`, `eventImportWorkflow`→`eventImport`, `eventStaff`→`eventStaffAssignment`, `recipeStep`→`recipe_steps`, `payrollApprovalHistory`→`approvalHistory`, `payrollPeriod`→`payroll_periods`, `payrollRun`→`payroll_runs`, `employeeAvailability`→`employee_availability`, `employeeCertification`→`employee_certifications`, `timeOffRequest`→`employeeTimeOffRequest`); (b) 11 snake_case field model conversions (`tenantId`→`tenant_id`, `deletedAt`→`deleted_at`, `createdAt`→`created_at` for models that use raw snake_case without `@map`); (c) `findUnique`→`findFirst` where `deletedAt`/`deleted_at` is in the where clause (not part of unique constraint), plus removed `deletedAt: null` from 6 models that have no soft-delete field (`chartOfAccount`, `notification`, `inventoryTransaction`, `alertsConfig`, `overrideAudit`, `timecardEditRequest`, `approvalHistory`). Result: 85→2 errors remaining (2 are `prepTaskPlanWorkflow` which has no Prisma model — fabrication issue). Test delta: 33→36 pre-existing failures, 3 new from `manifest-build-determinism` detecting route content changes (not regressions). Fix script at `scripts/fix-auto-generated-routes.mjs`.
+11. Dedup duplicate `audit_log` migration.
+12. Remove auto-generated route aliases (`/api/chartofaccount/` etc.) after confirming no callers.
 
 ### Tier 3 — Incomplete Modules
-12. Accounting: complete payment gateway integration, invoice email, revenue recognition model + routes.
-13. Facilities: ~~add `FacilityAsset` Prisma model~~ ✅ (added 2026-04-26); build work-order status/cost update UI; integrate `facility-rules.manifest` out of `manifests-disabled/`.
-14. Logistics: real GPS/webhook integration; ~~add `Driver`, `Vehicle` models~~ ✅ (added 2026-04-26); implement `/routes/commands/optimize`; create logistics manifests.
-15. Payroll: implement YTD tracking for SS wage cap; add `TaxInfo`, `PayrollPrefs`, `TipPool` models; API integration tests.
-16. Procurement: approvals baseline workflow is already wired (re-verification 2026-04-24); add rules-engine branching + hardening pass on raw SQL.
-17. Command Board: decide rebuild-or-retire for authenticated UI.
-18. Manifest coverage: close 473-handler gap, prioritizing accounting/facilities/logistics/procurement.
-19. Route authentication: bring 115 unauthenticated routes into auth.
+13. Accounting: complete payment gateway integration, invoice email, revenue recognition model + routes.
+14. Facilities: ~~add `FacilityAsset` Prisma model~~ ✅ (added 2026-04-26); build work-order status/cost update UI; integrate `facility-rules.manifest` out of `manifests-disabled/`.
+15. Logistics: real GPS/webhook integration; ~~add `Driver`, `Vehicle` models~~ ✅ (added 2026-04-26); implement `/routes/commands/optimize`; create logistics manifests.
+16. Payroll: implement YTD tracking for SS wage cap; add `TaxInfo`, `PayrollPrefs`, `TipPool` models; API integration tests.
+17. Procurement: approvals baseline workflow is already wired (re-verification 2026-04-24); add rules-engine branching + hardening pass on raw SQL.
+18. Command Board: decide rebuild-or-retire for authenticated UI.
+19. Manifest coverage: close 473-handler gap, prioritizing accounting/facilities/logistics/procurement.
+20. Route authentication: bring 115 unauthenticated routes into auth.
 
 ### Tier 4 — Polish & Verification
-20. Webhook DLQ frontend UI.
-21. Mobile staffing/scheduling shift-assignment UI.
-22. Clean up dead code (`.new`, `.bak`, `test-page.tsx`, orphaned marketing shell, command-board lib orphans).
-23. Run `testing/load-test.js` for the first time; capture baseline.
-24. Unblock `sales-reporting/generate.test.ts:33` `describe.skip`.
-25. Collaboration Workspace (P1.4) — rebuild from spec.
-26. Multi-Channel Marketing (P3.2) — real implementation behind the UI shell.
-27. Supplier-connector EDI implementation (us-foods, charlies-produce).
-28. Nowsta integration from `nowsta-integration_TODO` spec.
+21. Webhook DLQ frontend UI.
+22. Mobile staffing/scheduling shift-assignment UI.
+23. Clean up dead code (`.new`, `.bak`, `test-page.tsx`, orphaned marketing shell, command-board lib orphans).
+24. Run `testing/load-test.js` for the first time; capture baseline.
+25. Unblock `sales-reporting/generate.test.ts:33` `describe.skip`.
+26. Collaboration Workspace (P1.4) — rebuild from spec.
+27. Multi-Channel Marketing (P3.2) — real implementation behind the UI shell.
+28. Supplier-connector EDI implementation (us-foods, charlies-produce).
+29. Nowsta integration from `nowsta-integration_TODO` spec.
 
 ---
 

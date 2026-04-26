@@ -25,7 +25,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const commandBoardConnection = await database.commandBoardConnection.findUnique({
+    const commandBoardConnection = await database.commandBoardConnection.findFirst({
       where: {
         id,
         tenantId,

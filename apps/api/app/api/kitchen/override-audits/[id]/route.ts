@@ -25,11 +25,10 @@ export async function GET(
 
     const { id } = await params;
 
-    const overrideAudit = await database.overrideAudit.findUnique({
+    const overrideAudit = await database.overrideAudit.findFirst({
       where: {
         id,
         tenantId,
-        deletedAt: null
       },
     });
 

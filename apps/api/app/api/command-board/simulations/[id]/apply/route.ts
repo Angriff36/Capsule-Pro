@@ -180,7 +180,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     }
 
     // Get the simulation board
-    const simulationBoard = await database.commandBoard.findUnique({
+    const simulationBoard = await database.commandBoard.findFirst({
       where: {
         tenantId_id: {
           tenantId,

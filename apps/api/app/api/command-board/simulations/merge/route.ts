@@ -63,7 +63,7 @@ async function detectMergeConflicts(
   const conflicts: MergeConflict[] = [];
 
   // Get the simulation board
-  const simulationBoard = await database.commandBoard.findUnique({
+  const simulationBoard = await database.commandBoard.findFirst({
     where: {
       tenantId_id: {
         tenantId,
@@ -107,7 +107,7 @@ async function detectMergeConflicts(
   const sourceBoardId = sourceTag.replace("source:", "");
 
   // Get the source board
-  const sourceBoard = await database.commandBoard.findUnique({
+  const sourceBoard = await database.commandBoard.findFirst({
     where: {
       tenantId_id: {
         tenantId,
@@ -190,7 +190,7 @@ async function mergeSimulationToSource(
 ): Promise<MergeResult> {
   try {
     // Get the simulation board
-    const simulationBoard = await database.commandBoard.findUnique({
+    const simulationBoard = await database.commandBoard.findFirst({
       where: {
         tenantId_id: {
           tenantId,
@@ -224,7 +224,7 @@ async function mergeSimulationToSource(
     const sourceBoardId = sourceTag.replace("source:", "");
 
     // Get the source board
-    const sourceBoard = await database.commandBoard.findUnique({
+    const sourceBoard = await database.commandBoard.findFirst({
       where: {
         tenantId_id: {
           tenantId,

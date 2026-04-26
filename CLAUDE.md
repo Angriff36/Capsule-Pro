@@ -148,7 +148,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[auto-bridge snapshot @ 10 changes]
-Files: apps/api/app/api/facilities/work-orders/commands/update-status/route.ts (edit), apps/api/app/api/collaboration/notifications/email/webhook/route.ts (edit), apps/api/app/lib/goodshuffle-invoice-sync-service.ts (edit), apps/api/app/lib/goodshuffle-event-sync-service.ts (edit), apps/api/app/api/kitchen/recipes/[recipeId]/update-budgets/route.ts (edit), apps/api/app/api/inventory/forecasts/batch/route.ts (edit)
+[Emergency bridge — running bridge was not updated]
+Files: IMPLEMENTATION_PLAN.md (edit)
 
 # === END COGNILAYER ===
