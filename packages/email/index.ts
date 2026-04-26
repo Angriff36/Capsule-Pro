@@ -9,5 +9,7 @@ export type { ContactTemplateProps } from "./templates/contact";
 export { ContactTemplate } from "./templates/contact";
 export type { ContractTemplateProps } from "./templates/contract";
 export { ContractTemplate } from "./templates/contract";
+export type { InvoiceTemplateProps } from "./templates/invoice";
+export { InvoiceTemplate } from "./templates/invoice";
 export type { ProposalTemplateProps } from "./templates/proposal";
 export { ProposalTemplate } from "./templates/proposal";

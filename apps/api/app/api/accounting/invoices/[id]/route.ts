@@ -5,6 +5,7 @@
  */
 
 import { database } from "@repo/database";
+import { InvoiceTemplate, resend } from "@repo/email";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
@@ -14,6 +15,36 @@ import {
   validateInvoiceAccess,
   validateInvoiceBusinessRules,
 } from "../validation";
+
+export const runtime = "nodejs";
+
+/**
+ * Format a Decimal-as-money value (Prisma `@db.Money` arrives as Decimal)
+ * for human display in the invoice email. Falls back to plain stringification
+ * if the value cannot be coerced to a number.
+ */
+function formatMoney(value: unknown): string {
+  const num = Number(value);
+  if (!Number.isFinite(num)) {
+    return typeof value === "string" ? value : "0.00";
+  }
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(num);
+}
+
+function formatDueDate(value: Date | string): string {
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return String(value);
+  }
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  });
+}
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -230,8 +261,41 @@ export async function POST(request: NextRequest, context: RouteContext) {
       },
     });
 
-    // In a real implementation, this would send an email to the client
-    // with invoice details and payment link
+    // Send invoice email to client (best-effort — email failure does not roll
+    // back the SENT status transition, matching the pattern used by
+    // EventContract.send. The status change is the system-of-record event;
+    // the email is a side-effect that can be re-triggered.)
+    const recipientEmail = updatedInvoice.client?.email ?? null;
+    if (recipientEmail) {
+      const clientName =
+        updatedInvoice.client?.first_name ||
+        updatedInvoice.client?.company_name ||
+        "Valued Client";
+      const appUrl = process.env.APP_URL || "https://app.convoy.com";
+      const viewUrl = `${appUrl}/invoices/${updatedInvoice.id}`;
+
+      try {
+        await resend.emails.send({
+          from: process.env.RESEND_FROM || "noreply@convoy.com",
+          to: recipientEmail,
+          subject: `Invoice ${updatedInvoice.invoiceNumber} from ${updatedInvoice.client?.company_name || "Convoy Catering"}`,
+          react: InvoiceTemplate({
+            clientName,
+            invoiceNumber: updatedInvoice.invoiceNumber,
+            total: formatMoney(updatedInvoice.total),
+            amountDue: formatMoney(updatedInvoice.amountDue),
+            dueDate: formatDueDate(updatedInvoice.dueDate),
+            viewUrl,
+            companyName: updatedInvoice.client?.company_name ?? undefined,
+          }),
+        });
+      } catch (emailError) {
+        captureException(emailError);
+        console.error("Failed to send invoice email:", emailError);
+        // Continue — email failure is non-fatal; the invoice has already
+        // been marked SENT and can be re-sent.
+      }
+    }
 
     return NextResponse.json<InvoiceResponse>({
       ...updatedInvoice,
