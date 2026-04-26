@@ -1,0 +1,137 @@
+// Payments - Payment Rules
+// Manifest spec for payment processing, tracking, and reconciliation
+
+entity Payment {
+  property required id: string
+  property required tenantId: string
+
+  // Payment details
+  property required amount: number
+  property currency: string = "USD"
+  property status: string = "pending"
+  property required methodType: string
+
+  // Reference information
+  property required invoiceId: string
+  property required eventId: string
+  property clientId: string = ""
+
+  // Gateway/processor information
+  property gatewayTransactionId: string = ""
+  property gatewayPaymentMethodId: string = ""
+  property processor: string = ""
+  property processorResponseCode: string = ""
+  property processorResponseMessage: string = ""
+
+  // Timestamps
+  property processedAt: number = 0
+  property completedAt: number = 0
+  property refundedAt: number = 0
+  property chargebackAt: number = 0
+
+  // Fraud detection
+  property fraudStatus: string = "not_checked"
+  property fraudScore: number = 0
+  property fraudReasons: string = "[]"
+  property reviewedAt: number = 0
+  property reviewedBy: string = ""
+
+  // Metadata
+  property description: string = ""
+  property externalReference: string = ""
+  property metadata: string = "{}"
+
+  // Computed properties
+  computed isRefundable: boolean = self.status == "completed" && self.refundedAt == 0
+  computed isFinal: boolean = self.status in ["completed", "failed", "refunded", "partially_refunded", "chargeback", "void"]
+  computed daysSinceProcessed: number = days_between(self.processedAt, now())
+
+  // Constraints
+  constraint amount_positive: self.amount > 0 "Payment amount must be positive"
+  constraint valid_currency: self.currency in ["USD", "EUR", "GBP", "CAD"] "Currency must be supported"
+  constraint validStatus: self.status in ["pending", "processing", "completed", "failed", "refunded", "partially_refunded", "chargeback", "void"] "Invalid payment status"
+  constraint validMethodType: self.methodType in ["credit_card", "debit_card", "ach", "check", "cash", "wire_transfer", "digital_wallet"] "Invalid payment method"
+  constraint validFraudStatus: self.fraudStatus in ["not_checked", "passed", "failed", "review_needed", "manual_review"] "Invalid fraud status"
+
+  // Commands
+  command process(gatewayResponse: string, completedAt: number) {
+    guard self.status == "pending" || self.status == "processing" "Can only process pending or processing payments"
+    mutate status = completedAt != 0 ? "completed" : "failed"
+    mutate processedAt = now()
+    mutate completedAt = completedAt
+    emit PaymentProcessed
+  }
+
+  command refund(amount: number, reason: string) {
+    guard self.isRefundable "Payment must be completed to be refunded"
+    guard amount <= self.amount "Refund amount cannot exceed payment amount"
+    guard self.status != "refunded" "Already fully refunded"
+    mutate status = amount == self.amount ? "refunded" : "partially_refunded"
+    mutate refundedAt = now()
+    mutate description = reason
+    emit PaymentRefunded
+  }
+
+  command markChargeback(reason: string) {
+    guard self.status in ["completed", "partially_refunded"] "Can only chargeback completed payments"
+    mutate status = "chargeback"
+    mutate chargebackAt = now()
+    mutate description = reason
+    emit PaymentChargeback
+  }
+
+  command updateFraudStatus(fraudStatus: string, score: number, reasons: string) {
+    guard self.fraudStatus == "not_checked" "Fraud status already checked"
+    mutate fraudStatus = fraudStatus
+    mutate fraudScore = score
+    mutate fraudReasons = reasons
+    mutate status = fraudStatus == "failed" ? "failed" : self.status
+    emit FraudStatusUpdated
+  }
+
+  command markFraudReviewed(approved: boolean, reviewer: string) {
+    guard self.fraudStatus == "manual_review" "Payment must be in manual review"
+    mutate reviewedAt = now()
+    mutate reviewedBy = reviewer
+    mutate fraudStatus = approved ? "passed" : "failed"
+    mutate status = approved ? self.status : "failed"
+    emit FraudReviewCompleted
+  }
+
+  store Payment in memory
+}
+
+// Events
+event PaymentProcessed: "payments.payment.processed" {
+  paymentId: string
+  invoiceId: string
+  amount: number
+  status: string
+  gatewayTransactionId: string
+}
+
+event PaymentRefunded: "payments.payment.refunded" {
+  paymentId: string
+  invoiceId: string
+  refundAmount: number
+  reason: string
+}
+
+event PaymentChargeback: "payments.payment.chargeback" {
+  paymentId: string
+  invoiceId: string
+  reason: string
+}
+
+event FraudStatusUpdated: "payments.payment.fraud_status_updated" {
+  paymentId: string
+  fraudScore: number
+  reasons: string
+  triggeredManualReview: boolean
+}
+
+event FraudReviewCompleted: "payments.payment.fraud_review_completed" {
+  paymentId: string
+  approved: boolean
+  reviewer: string
+}

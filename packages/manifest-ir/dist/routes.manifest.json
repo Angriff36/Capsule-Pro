@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-04-26T13:40:34.807Z",
+  "generatedAt": "2026-04-26T14:39:32.251Z",
   "basePath": "/api",
   "routes": [
     {
@@ -1355,6 +1355,36 @@
       "tenant": true
     },
     {
+      "id": "Invoice.get.list",
+      "path": "/api/invoice/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "Invoice"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Invoice.get.detail",
+      "path": "/api/invoice/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "Invoice"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "KitchenTask.get.list",
       "path": "/api/kitchentask/list",
       "method": "GET",
@@ -1560,6 +1590,36 @@
       "source": {
         "kind": "entity-read",
         "entity": "OverrideAudit"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Payment.get.list",
+      "path": "/api/payment/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "Payment"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Payment.get.detail",
+      "path": "/api/payment/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "Payment"
       },
       "auth": true,
       "tenant": true
@@ -2190,6 +2250,66 @@
       "source": {
         "kind": "entity-read",
         "entity": "RecipeVersion"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionLine.get.list",
+      "path": "/api/revenuerecognitionline/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "RevenueRecognitionLine"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionLine.get.detail",
+      "path": "/api/revenuerecognitionline/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "RevenueRecognitionLine"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionSchedule.get.list",
+      "path": "/api/revenuerecognitionschedule/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "RevenueRecognitionSchedule"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionSchedule.get.detail",
+      "path": "/api/revenuerecognitionschedule/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "RevenueRecognitionSchedule"
       },
       "auth": true,
       "tenant": true
@@ -9552,6 +9672,183 @@
       "tenant": true
     },
     {
+      "id": "Invoice.applyPayment",
+      "path": "/api/invoice/apply-payment",
+      "method": "POST",
+      "params": [
+        {
+          "name": "paymentAmount",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "paymentId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Invoice",
+        "command": "applyPayment"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Invoice.markOverdue",
+      "path": "/api/invoice/mark-overdue",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "Invoice",
+        "command": "markOverdue"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Invoice.markViewed",
+      "path": "/api/invoice/mark-viewed",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "Invoice",
+        "command": "markViewed"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Invoice.recordRefund",
+      "path": "/api/invoice/record-refund",
+      "method": "POST",
+      "params": [
+        {
+          "name": "refundAmount",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "paymentId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Invoice",
+        "command": "recordRefund"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Invoice.send",
+      "path": "/api/invoice/send",
+      "method": "POST",
+      "params": [
+        {
+          "name": "clientContactId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Invoice",
+        "command": "send"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Invoice.sendReminder",
+      "path": "/api/invoice/send-reminder",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "Invoice",
+        "command": "sendReminder"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Invoice.updateLineItems",
+      "path": "/api/invoice/update-line-items",
+      "method": "POST",
+      "params": [
+        {
+          "name": "lineItems",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Invoice",
+        "command": "updateLineItems"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Invoice.voidInvoice",
+      "path": "/api/invoice/void-invoice",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Invoice",
+        "command": "voidInvoice"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Invoice.writeOff",
+      "path": "/api/invoice/write-off",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "writeOffAmount",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Invoice",
+        "command": "writeOff"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "KitchenTask.addTag",
       "path": "/api/kitchen/kitchen-tasks/commands/add-tag",
       "method": "POST",
@@ -10592,6 +10889,136 @@
         "kind": "command",
         "entity": "OverrideAudit",
         "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Payment.markChargeback",
+      "path": "/api/payment/mark-chargeback",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Payment",
+        "command": "markChargeback"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Payment.markFraudReviewed",
+      "path": "/api/payment/mark-fraud-reviewed",
+      "method": "POST",
+      "params": [
+        {
+          "name": "approved",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "reviewer",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Payment",
+        "command": "markFraudReviewed"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Payment.process",
+      "path": "/api/payment/process",
+      "method": "POST",
+      "params": [
+        {
+          "name": "gatewayResponse",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "completedAt",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Payment",
+        "command": "process"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Payment.refund",
+      "path": "/api/payment/refund",
+      "method": "POST",
+      "params": [
+        {
+          "name": "amount",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Payment",
+        "command": "refund"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Payment.updateFraudStatus",
+      "path": "/api/payment/update-fraud-status",
+      "method": "POST",
+      "params": [
+        {
+          "name": "fraudStatus",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "score",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "reasons",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Payment",
+        "command": "updateFraudStatus"
       },
       "auth": true,
       "tenant": true
@@ -13939,6 +14366,364 @@
         "kind": "command",
         "entity": "RecipeVersion",
         "command": "updateCosts"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionLine.cancel",
+      "path": "/api/revenuerecognitionline/cancel",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionLine",
+        "command": "cancel"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionLine.create",
+      "path": "/api/revenuerecognitionline/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "scheduleId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "sequence",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "dueDate",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "milestoneId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "milestoneName",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionLine",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionLine.recognize",
+      "path": "/api/revenuerecognitionline/recognize",
+      "method": "POST",
+      "params": [
+        {
+          "name": "amount",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "recognizedAt",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionLine",
+        "command": "recognize"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionLine.skip",
+      "path": "/api/revenuerecognitionline/skip",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionLine",
+        "command": "skip"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionSchedule.adjustSchedule",
+      "path": "/api/revenuerecognitionschedule/adjust-schedule",
+      "method": "POST",
+      "params": [
+        {
+          "name": "newEndDate",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "newTotalAmount",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionSchedule",
+        "command": "adjustSchedule"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionSchedule.cancel",
+      "path": "/api/revenuerecognitionschedule/cancel",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionSchedule",
+        "command": "cancel"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionSchedule.create",
+      "path": "/api/revenuerecognitionschedule/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "invoiceId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "eventId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "contractId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "clientId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "totalAmount",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "remainingAmount",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "method",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "startDate",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "endDate",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "recognitionPeriod",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionSchedule",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionSchedule.pause",
+      "path": "/api/revenuerecognitionschedule/pause",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionSchedule",
+        "command": "pause"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionSchedule.recognizeAmount",
+      "path": "/api/revenuerecognitionschedule/recognize-amount",
+      "method": "POST",
+      "params": [
+        {
+          "name": "amount",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "recognizedAt",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionSchedule",
+        "command": "recognizeAmount"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionSchedule.recognizeMilestone",
+      "path": "/api/revenuerecognitionschedule/recognize-milestone",
+      "method": "POST",
+      "params": [
+        {
+          "name": "milestoneId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionSchedule",
+        "command": "recognizeMilestone"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionSchedule.recognizePercentage",
+      "path": "/api/revenuerecognitionschedule/recognize-percentage",
+      "method": "POST",
+      "params": [
+        {
+          "name": "percentage",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionSchedule",
+        "command": "recognizePercentage"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionSchedule.resume",
+      "path": "/api/revenuerecognitionschedule/resume",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionSchedule",
+        "command": "resume"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionSchedule.startRecognition",
+      "path": "/api/revenuerecognitionschedule/start-recognition",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionSchedule",
+        "command": "startRecognition"
       },
       "auth": true,
       "tenant": true

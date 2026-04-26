@@ -1,0 +1,206 @@
+// Invoicing - Invoice Rules
+// Manifest spec for invoice creation, management, and payment tracking
+
+entity Invoice {
+  property required id: string
+  property required tenantId: string
+  property required invoiceNumber: string
+  property required type: string
+  property status: string = "draft"
+  property required clientId: string
+  property required eventId: string
+
+  // Amounts
+  property subtotal: number = 0
+  property taxAmount: number = 0
+  property discountAmount: number = 0
+  property total: number = 0
+  property amountPaid: number = 0
+  property amountDue: number = 0
+
+  // Payment terms
+  property paymentTerms: number = 30
+  property dueDate: number = 0
+  property paidAt: number = 0
+
+  // Deposit specific
+  property depositPercentage: number = 0
+  property depositRequired: number = 0
+  property depositPaid: number = 0
+
+  // Timestamps
+  property issuedAt: number = 0
+  property sentAt: number = 0
+  property viewedAt: number = 0
+  property overdueSince: number = 0
+
+  // Reminders
+  property reminderCount: number = 0
+  property lastReminderAt: number = 0
+
+  // External references
+  property quickBooksId: string = ""
+  property goodshuffleId: string = ""
+  property externalSyncStatus: string = ""
+
+  // Metadata
+  property notes: string = ""
+  property internalNotes: string = ""
+  property lineItems: string = "{}"
+  property metadata: string = "{}"
+
+  // Computed properties
+  computed isPaidInFull: boolean = self.amountDue <= 0
+  computed isOverdue: boolean = self.status in ["sent", "viewed", "partially_paid"] && self.dueDate < now()
+  computed paymentPercentage: number = self.total > 0 ? (self.amountPaid / self.total) * 100 : 0
+  computed daysUntilDue: number = days_between(now(), self.dueDate)
+  computed daysOverdue: number = self.isOverdue ? days_between(self.dueDate, now()) : 0
+
+  // Constraints
+  constraint amount_non_negative: self.subtotal >= 0 && self.total >= 0 "Amounts cannot be negative"
+  constraint discount_valid: self.discountAmount >= 0 && self.discountAmount <= self.subtotal "Discount must be valid"
+  constraint total_calculation: self.total == self.subtotal + self.taxAmount - self.discountAmount "Total must equal subtotal plus tax minus discount"
+  constraint deposit_percentage_valid: self.depositPercentage == 0 || (self.depositPercentage > 0 && self.depositPercentage <= 100) "Deposit percentage must be between 0 and 100"
+  constraint validInvoiceType: self.type in ["deposit", "final_payment", "progress", "misc", "credit_note", "debit_note"] "Invalid invoice type"
+  constraint validStatus: self.status in ["draft", "sent", "viewed", "overdue", "partially_paid", "paid", "void", "write_off"] "Invalid invoice status"
+
+  // Commands
+  command send(clientContactId: string) {
+    guard self.status == "draft" "Can only send draft invoices"
+    guard self.amountDue > 0 "Cannot send invoices with zero balance"
+    mutate status = "sent"
+    mutate sentAt = now()
+    emit InvoiceSent
+  }
+
+  command markViewed() {
+    guard self.status in ["sent", "viewed"] "Invoice must be sent to be viewed"
+    mutate status = self.status == "sent" ? "viewed" : self.status
+    mutate viewedAt = now()
+    emit InvoiceViewed
+  }
+
+  command applyPayment(paymentAmount: number, paymentId: string) {
+    guard self.status in ["sent", "viewed", "overdue", "partially_paid"] "Cannot apply payment to invoice in current status"
+    guard paymentAmount > 0 "Payment amount must be positive"
+    guard paymentAmount <= self.amountDue "Payment amount cannot exceed amount due"
+    mutate amountPaid = self.amountPaid + paymentAmount
+    mutate amountDue = self.amountDue - paymentAmount
+    mutate status = self.amountDue - paymentAmount <= 0.01 ? "paid" : "partially_paid"
+    mutate paidAt = self.amountDue - paymentAmount <= 0.01 ? now() : self.paidAt
+    emit PaymentApplied
+  }
+
+  command recordRefund(refundAmount: number, paymentId: string) {
+    guard refundAmount > 0 "Refund amount must be positive"
+    guard refundAmount <= self.amountPaid "Refund amount cannot exceed amount paid"
+    mutate amountPaid = self.amountPaid - refundAmount
+    mutate amountDue = self.amountDue + refundAmount
+    mutate status = self.amountPaid - refundAmount <= 0.01 ? "sent" : "partially_paid"
+    mutate paidAt = self.amountPaid - refundAmount <= 0.01 ? 0 : self.paidAt
+    emit RefundRecorded
+  }
+
+  command markOverdue() {
+    guard self.status in ["sent", "viewed", "partially_paid"] "Invoice must be sent to be marked overdue"
+    guard self.dueDate < now() "Invoice must be past due date"
+    guard self.status != "overdue" "Invoice already marked as overdue"
+    mutate status = "overdue"
+    mutate overdueSince = now()
+    emit InvoiceMarkedOverdue
+  }
+
+  command sendReminder() {
+    guard self.status in ["sent", "viewed", "overdue", "partially_paid"] "Cannot send reminder for invoice in current status"
+    guard !self.isPaidInFull "Cannot send reminder for paid invoices"
+    mutate reminderCount = self.reminderCount + 1
+    mutate lastReminderAt = now()
+    emit InvoiceReminderSent
+  }
+
+  command voidInvoice(reason: string) {
+    guard self.status in ["draft", "sent", "viewed", "overdue"] "Cannot void invoices that are paid or partially paid"
+    guard self.amountPaid == 0 "Cannot void invoices with payments"
+    mutate status = "void"
+    mutate internalNotes = self.internalNotes + "\nVoided: " + reason
+    emit InvoiceVoided
+  }
+
+  command writeOff(reason: string, writeOffAmount: number) {
+    guard self.status in ["overdue", "partially_paid"] "Can only write off overdue or partially paid invoices"
+    guard writeOffAmount == self.amountDue || writeOffAmount <= self.amountDue "Write off amount must match or be less than amount due"
+    mutate status = "write_off"
+    mutate amountDue = 0
+    mutate internalNotes = self.internalNotes + "\nWritten off: " + reason + " (" + writeOffAmount + ")"
+    emit InvoiceWrittenOff
+  }
+
+  command updateLineItems(lineItems: string) {
+    guard self.status == "draft" "Can only modify line items in draft invoices"
+    mutate lineItems = lineItems
+    emit InvoiceLineItemsUpdated
+  }
+
+  store Invoice in memory
+}
+
+// Events
+event InvoiceSent: "invoicing.invoice.sent" {
+  invoiceId: string
+  invoiceNumber: string
+  clientId: string
+  eventId: string
+  amount: number
+  dueDate: number
+}
+
+event InvoiceViewed: "invoicing.invoice.viewed" {
+  invoiceId: string
+  invoiceNumber: string
+  clientId: string
+  viewedAt: number
+}
+
+event PaymentApplied: "invoicing.invoice.payment_applied" {
+  invoiceId: string
+  paymentId: string
+  amount: number
+  remainingBalance: number
+}
+
+event RefundRecorded: "invoicing.invoice.refund_recorded" {
+  invoiceId: string
+  paymentId: string
+  refundAmount: number
+  newBalance: number
+}
+
+event InvoiceMarkedOverdue: "invoicing.invoice.marked_overdue" {
+  invoiceId: string
+  invoiceNumber: string
+  daysOverdue: number
+}
+
+event InvoiceReminderSent: "invoicing.invoice.reminder_sent" {
+  invoiceId: string
+  invoiceNumber: string
+  reminderCount: number
+}
+
+event InvoiceVoided: "invoicing.invoice.voided" {
+  invoiceId: string
+  invoiceNumber: string
+  reason: string
+}
+
+event InvoiceWrittenOff: "invoicing.invoice.written_off" {
+  invoiceId: string
+  invoiceNumber: string
+  writeOffAmount: number
+  reason: string
+}
+
+event InvoiceLineItemsUpdated: "invoicing.invoice.line_items_updated" {
+  invoiceId: string
+  lineItems: string
+}

@@ -945,6 +945,51 @@
     "commandId": "InventoryTransaction.create"
   },
   {
+    "entity": "Invoice",
+    "command": "applyPayment",
+    "commandId": "Invoice.applyPayment"
+  },
+  {
+    "entity": "Invoice",
+    "command": "markOverdue",
+    "commandId": "Invoice.markOverdue"
+  },
+  {
+    "entity": "Invoice",
+    "command": "markViewed",
+    "commandId": "Invoice.markViewed"
+  },
+  {
+    "entity": "Invoice",
+    "command": "recordRefund",
+    "commandId": "Invoice.recordRefund"
+  },
+  {
+    "entity": "Invoice",
+    "command": "send",
+    "commandId": "Invoice.send"
+  },
+  {
+    "entity": "Invoice",
+    "command": "sendReminder",
+    "commandId": "Invoice.sendReminder"
+  },
+  {
+    "entity": "Invoice",
+    "command": "updateLineItems",
+    "commandId": "Invoice.updateLineItems"
+  },
+  {
+    "entity": "Invoice",
+    "command": "voidInvoice",
+    "commandId": "Invoice.voidInvoice"
+  },
+  {
+    "entity": "Invoice",
+    "command": "writeOff",
+    "commandId": "Invoice.writeOff"
+  },
+  {
     "entity": "KitchenTask",
     "command": "addTag",
     "commandId": "KitchenTask.addTag"
@@ -1103,6 +1148,31 @@
     "entity": "OverrideAudit",
     "command": "create",
     "commandId": "OverrideAudit.create"
+  },
+  {
+    "entity": "Payment",
+    "command": "markChargeback",
+    "commandId": "Payment.markChargeback"
+  },
+  {
+    "entity": "Payment",
+    "command": "markFraudReviewed",
+    "commandId": "Payment.markFraudReviewed"
+  },
+  {
+    "entity": "Payment",
+    "command": "process",
+    "commandId": "Payment.process"
+  },
+  {
+    "entity": "Payment",
+    "command": "refund",
+    "commandId": "Payment.refund"
+  },
+  {
+    "entity": "Payment",
+    "command": "updateFraudStatus",
+    "commandId": "Payment.updateFraudStatus"
   },
   {
     "entity": "PayrollApprovalHistory",
@@ -1623,6 +1693,71 @@
     "entity": "RecipeVersion",
     "command": "updateCosts",
     "commandId": "RecipeVersion.updateCosts"
+  },
+  {
+    "entity": "RevenueRecognitionLine",
+    "command": "cancel",
+    "commandId": "RevenueRecognitionLine.cancel"
+  },
+  {
+    "entity": "RevenueRecognitionLine",
+    "command": "create",
+    "commandId": "RevenueRecognitionLine.create"
+  },
+  {
+    "entity": "RevenueRecognitionLine",
+    "command": "recognize",
+    "commandId": "RevenueRecognitionLine.recognize"
+  },
+  {
+    "entity": "RevenueRecognitionLine",
+    "command": "skip",
+    "commandId": "RevenueRecognitionLine.skip"
+  },
+  {
+    "entity": "RevenueRecognitionSchedule",
+    "command": "adjustSchedule",
+    "commandId": "RevenueRecognitionSchedule.adjustSchedule"
+  },
+  {
+    "entity": "RevenueRecognitionSchedule",
+    "command": "cancel",
+    "commandId": "RevenueRecognitionSchedule.cancel"
+  },
+  {
+    "entity": "RevenueRecognitionSchedule",
+    "command": "create",
+    "commandId": "RevenueRecognitionSchedule.create"
+  },
+  {
+    "entity": "RevenueRecognitionSchedule",
+    "command": "pause",
+    "commandId": "RevenueRecognitionSchedule.pause"
+  },
+  {
+    "entity": "RevenueRecognitionSchedule",
+    "command": "recognizeAmount",
+    "commandId": "RevenueRecognitionSchedule.recognizeAmount"
+  },
+  {
+    "entity": "RevenueRecognitionSchedule",
+    "command": "recognizeMilestone",
+    "commandId": "RevenueRecognitionSchedule.recognizeMilestone"
+  },
+  {
+    "entity": "RevenueRecognitionSchedule",
+    "command": "recognizePercentage",
+    "commandId": "RevenueRecognitionSchedule.recognizePercentage"
+  },
+  {
+    "entity": "RevenueRecognitionSchedule",
+    "command": "resume",
+    "commandId": "RevenueRecognitionSchedule.resume"
+  },
+  {
+    "entity": "RevenueRecognitionSchedule",
+    "command": "startRecognition",
+    "commandId": "RevenueRecognitionSchedule.startRecognition"
   },
   {
     "entity": "RolePolicy",

@@ -1,10 +1,10 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-26 (twenty-second pass — all 26 failing tests fixed (26→0): conflict detection correlation tests (8), event budget API tests (8), manifest compilation Phase 4 (7), manifest determinism (2), manifest runtime factory (1). Promoted shipment-rules.manifest (16 quarantined remain, was 17; IR now 94 entities / 414 commands). Deduped audit_log migration. Removed 16+ .bak/.backup/.new/.tmp dead files.)
+> **Last updated:** 2026-04-26 (twenty-third pass — accounting module: added RevenueRecognitionSchedule + RevenueRecognitionLine Prisma models + migration with RLS. Rewrote and promoted 3 quarantined manifests (invoice-rules, payment-rules, revenue-recognition-rules) from imperative DSL to compilable functional DSL (removed enum/let/if-else, replaced with string-based constraints/ternary expressions). Replaced revenue recognition 501 stubs with working route implementations. IR now 67 manifests, ~100 entities, ~460 commands.)
 > **Prior passes:** 2026-04-24 initial post-expansion audit → 2026-04-24 first re-verification → 2026-04-24 third-pass spot-check → 2026-04-24 fourth-pass package health → 2026-04-24 fifth-pass E2E audit → 2026-04-24 sixth-pass raw-SQL audit → 2026-04-24 seventh-pass supplementary raw-SQL audit → 2026-04-24 eighth-pass comprehensive raw-SQL audit → 2026-04-25 ninth-pass frontend health audit → 2026-04-25 tenth-pass mobile + public website audit → **2026-04-25 eleventh-pass auth, middleware & integration services audit** (3 sub-passes: initial 6-agent pass, 6-agent addendum, 5-agent credential/webhook deep-dive).
 > **Previous snapshot:** 2026-03-08 (stale — many claims falsified by post-expansion audit)
 > **Audit method:** initial 15+ parallel subagent investigations → 8-subagent re-verification → 10-subagent third-pass → 10-subagent fourth-pass → E2E fifth-pass → 20-subagent sixth-pass → 9-subagent seventh-pass → 15-subagent confirmation pass → 20-subagent eighth-pass raw-SQL audit → 24-subagent ninth-pass frontend health audit → 11-subagent tenth-pass mobile + public website audit → **17-subagent eleventh-pass auth/middleware/integration audit** (6 + 6 + 5 agents across 3 sub-passes) covering full auth chain trace, route-level auth enforcement scan, credential exposure scan across all directories, webhook receiver security deep-audit, all 16 lib files, and external integration packages. **All agent findings verified against actual codebase before reporting.**
-> **Current state:** Twenty-second pass resolved all 26 failing tests (26→0). Promoted `shipment-rules.manifest` from `manifests-disabled/` (IR now 94 entities, 414 commands). Deduped `audit_log` migration (removed inferior TEXT-types version, kept UUID-types version). Removed 16+ .bak/.backup/.new/.tmp dead files. Twenty-first pass resolved the remaining 24 TypeScript errors in apps/api (down from 85 pre-April-26). Command Board simulation routes fixed (findFirst→findUnique for Prisma compound keys), webhook payments type narrowing, PrepTaskPlanWorkflow Prisma model added with 30+ fields matching the active manifest. Massive feature expansion in commit b8c31eef (2026-04-19) added 5 new modules. **Ninth pass re-verified: prior draft claimed 16 CRITICAL but 12 were false positives** (broken imports resolved correctly via path alias, `manifestSuccessResponse` wrapping makes `data.data.xxx` correct, many "missing" API modules actually exist). **Verified findings: 4 NEW CRITICAL, 6 NEW HIGH, 8 NEW MEDIUM, 5 NEW LOW** frontend issues. Key verified issues: chart-of-accounts uses PATCH where API only supports PUT (405), missing `/api/accounting/payments/export` endpoint, only 2 `loading.tsx` files across the entire app, procurement budget hooks use ambiguous base paths, 6 hook libraries missing `'use client'` directives.
+> **Current state:** Twenty-third pass completed Tier 3 accounting work: RevenueRecognitionSchedule/Line Prisma models, 3 manifests promoted (13 quarantined remain), revenue recognition routes implemented (501→200). Twenty-second pass resolved all 26 failing tests (26→0). Promoted `shipment-rules.manifest` from `manifests-disabled/` (IR now 94 entities, 414 commands). Deduped `audit_log` migration (removed inferior TEXT-types version, kept UUID-types version). Removed 16+ .bak/.backup/.new/.tmp dead files. Twenty-first pass resolved the remaining 24 TypeScript errors in apps/api (down from 85 pre-April-26). Command Board simulation routes fixed (findFirst→findUnique for Prisma compound keys), webhook payments type narrowing, PrepTaskPlanWorkflow Prisma model added with 30+ fields matching the active manifest. Massive feature expansion in commit b8c31eef (2026-04-19) added 5 new modules. **Ninth pass re-verified: prior draft claimed 16 CRITICAL but 12 were false positives** (broken imports resolved correctly via path alias, `manifestSuccessResponse` wrapping makes `data.data.xxx` correct, many "missing" API modules actually exist). **Verified findings: 4 NEW CRITICAL, 6 NEW HIGH, 8 NEW MEDIUM, 5 NEW LOW** frontend issues. Key verified issues: chart-of-accounts uses PATCH where API only supports PUT (405), missing `/api/accounting/payments/export` endpoint, only 2 `loading.tsx` files across the entire app, procurement budget hooks use ambiguous base paths, 6 hook libraries missing `'use client'` directives.
 
 ---
 
@@ -13,7 +13,7 @@
 The previous implementation plan (2026-03-08) was over-optimistic and has been substantially falsified by this audit. Between then and now, commit **b8c31eef (2026-04-19)** landed a massive expansion adding **five entirely new top-level modules** (accounting, facilities, logistics, payroll, procurement) plus load testing infrastructure and a suite of planning documents. None of that work was reflected in the old plan.
 
 Core infrastructure remains strong:
-- Manifest-driven command/event architecture is intact (64 manifest files / 94 entities / 414 commands).
+- Manifest-driven command/event architecture is intact (67 manifest files / ~100 entities / ~460 commands).
 - Auth (Clerk), database (Prisma + Postgres schemas), and the `payroll-engine` package are production-quality.
 - Original P0–P3 items that were genuinely completed (schema drift fixes, kitchen task reopen, webhook DLQ backend, email templates, rate limiting, API keys, RBAC, inventory audit, SMS rules, mobile search/settings/push) remain verified.
 
@@ -23,7 +23,7 @@ However, the new-module expansion shipped with:
 - **SQL injection risk** in logistics driver update.
 - ~~**Zero row-level-security policies** on any post-March-8 migration — all new tables are cross-tenant readable.~~ **RESOLVED 2026-04-26**: RLS policies now cover all 17 post-March-8 tenant-scoped tables.
 - **473 write handlers (46%)** still lack manifest coverage; 163 routes bypass the dispatcher entirely; 115 routes lack authentication.
-- **Eight orphaned tables** in migrations with no Prisma model. ~~**3 created + 5 modeled 2026-04-26**~~: `Driver`, `Vehicle`, `FacilityAsset` now have migrations; `VendorContact`, `VendorRating`, `ProcurementBudget`, `ProcurementBudgetAlert`, `CrmScoringRule` now have Prisma models. Remaining: `ProcurementApproval`, `Deal`, `RevenueRecognitionSchedule`.
+- **Eight orphaned tables** in migrations with no Prisma model. ~~**3 created + 5 modeled 2026-04-26**~~: `Driver`, `Vehicle`, `FacilityAsset` now have migrations; `VendorContact`, `VendorRating`, `ProcurementBudget`, `ProcurementBudgetAlert`, `CrmScoringRule` now have Prisma models. ~~Remaining: `ProcurementApproval`, `Deal`, `RevenueRecognitionSchedule`.~~ **RESOLVED 2026-04-26**: `RevenueRecognitionSchedule` + `RevenueRecognitionLine` Prisma models added with migration + RLS. Remaining: `ProcurementApproval`, `Deal` (lower priority).
 - **Falsified test claims** — several test-file paths and line counts referenced in the old plan do not match reality.
 
 The Command Board authenticated UI appears to have been removed: `apps/app/app/(authenticated)/command-board/` **does not exist**, yet the old plan repeatedly cited files inside that directory.
@@ -146,7 +146,7 @@ No new commits since `a71ec8d5`. All Tier 0/1 blockers re-verified to still hold
 
 ### L1.5 — Manifest file counts
 - **Plan claimed:** "80 entities, 350 commands, 347 events, 54 manifest files".
-- **Actual:** **64 manifest files / 94 entities / 414 commands** (updated 2026-04-26 after shipment-rules promotion).
+- **Actual:** **67 manifest files / ~100 entities / ~460 commands** (updated 2026-04-26 after invoice-rules, payment-rules, revenue-recognition-rules promotion).
 - **Resolution:** Plan undercounted; adjust downstream figures accordingly.
 
 ### L1.6 — `auth-implementation.md` alleged merge conflict
@@ -182,10 +182,10 @@ No new commits since `a71ec8d5`. All Tier 0/1 blockers re-verified to still hold
 | Payments | PARTIAL | Gateway stubbed at `apps/api/app/api/accounting/payments/[id]/route.ts:90-95`; UI form stubbed in `PaymentFormClient` lines 112-123 |
 | Payment Methods | FUNCTIONAL (but schema-mismatched) | `[id]` PUT/DELETE implement full DB logic at `apps/api/app/api/accounting/payment-methods/[id]/route.ts:74-148` (PUT) and `:154-198` (DELETE soft-delete). File header acknowledges some referenced fields don't exist on the model. Prior plan's "stub" claim was incorrect. |
 | Collections | DONE | RouteContext fixed 2026-04-26 — `params` now async-typed and awaited in both GET/PATCH (see Blocker 5) |
-| Revenue Recognition | 501 STUB | `apps/api/app/api/accounting/revenue-recognition/schedules/route.ts` and `[id]/route.ts`; `RevenueRecognitionSchedule` model missing from `schema.prisma` |
+| Revenue Recognition | ~~501 STUB~~ ✅ RESOLVED 2026-04-26 | `RevenueRecognitionSchedule` + `RevenueRecognitionLine` Prisma models added; routes now return 200 with real data. `revenue-recognition-rules.manifest` promoted from quarantined set. |
 
 - **Tests:** zero accounting tests.
-- **Manifests:** only `chart-of-account-rules.manifest` is active. **Five accounting manifests are quarantined in `packages/manifest-adapters/manifests-disabled/`**: `invoice-rules.manifest`, `payment-rules.manifest`, `payment-method-rules.manifest`, `collections-rules.manifest`, `revenue-recognition-rules.manifest`. Integrating them (and adding the missing Prisma models) would unlock most of the accounting surface at once.
+- **Manifests:** `chart-of-account-rules.manifest`, `invoice-rules.manifest`, `payment-rules.manifest`, and `revenue-recognition-rules.manifest` are now active (3 promoted 2026-04-26 from quarantined set). **Two accounting manifests remain quarantined**: `payment-method-rules.manifest`, `collections-rules.manifest`. Integrating them would complete the accounting manifest surface.
 
 ### P2.B — Facilities (new module, ~70%)
 
@@ -263,7 +263,7 @@ Strong engine, weak periphery.
 | Multi-Channel Marketing (P3.2) | In prior plan | UI shell only — `apps/app/app/(authenticated)/marketing/page.tsx` shows "Coming Soon"; no API routes, no Prisma models |
 | Nowsta Integration | `specs/nowsta-integration_TODO` | **Partial** (third-pass correction) — `nowsta-sync-service.ts` client + employee mapping implemented; no UI for sync configuration. Re-classify to Category 2 when next revised. |
 | RLS Policies for new tables | — | Zero `ENABLE ROW LEVEL SECURITY` or `CREATE POLICY` statements in any migration after 2026-03-08. Accounting, facilities, logistics, payroll, procurement all ship without tenant isolation at the DB level |
-| Revenue Recognition Schedules | — | Routes return 501; model missing |
+| Revenue Recognition Schedules | ~~Routes return 501; model missing~~ | ✅ **RESOLVED 2026-04-26**: `RevenueRecognitionSchedule` + `RevenueRecognitionLine` Prisma models added; routes return 200; `revenue-recognition-rules.manifest` promoted |
 | Command Board — canvas/spatial UI | `specs/command-board/boardspec.md` | Canvas UI not present (backend + AI-assistant chat surface work). Decide rebuild-or-retire. |
 | Command Board — entity-relationship connections | `specs/command-board/SPEC_connections.md` | **NEW FINDING (third pass):** spec exists, no backend routes, no UI. |
 | Load test execution | `testing/load-test.js` | Script exists (260 lines, 10 endpoints, k6 staged ramp 50-750 VUs) but has **never been run** |
@@ -394,20 +394,20 @@ Plus **raw-SQL-only tables** with no model: `facility_assets`, `drivers`, `vehic
 | Routes lacking authentication | 115 (`planning/route-audit.md`) | same staleness caveat applies — re-verify before citing |
 
 ### Missing manifests by domain
-- **Accounting**: invoice, payment, collection, revenue-recognition.
+- **Accounting**: ~~invoice, payment, revenue-recognition~~ (promoted 2026-04-26). Remaining: collection, payment-method.
 - **Facilities**: facility-area, asset, work-order (existing `facility-rules.manifest` lives in `manifests-disabled/`).
 - **Logistics**: driver, vehicle, route — none exist. ~~shipment~~ (promoted 2026-04-26).
 - **Procurement**: requisition, vendor, vendor-contract.
 - **Payroll**: partial coverage only.
 
-### Quarantined manifests in `packages/manifest-adapters/manifests-disabled/` (16 files)
+### Quarantined manifests in `packages/manifest-adapters/manifests-disabled/` (13 files)
 
 These manifests were authored but excluded from the active manifest build. Re-enabling each requires the matching Prisma model + policy review; many map directly to the missing-models list above.
 
 Active work to re-integrate:
-- `facility-rules.manifest`, `invoice-rules.manifest`, `payment-rules.manifest`, `payment-method-rules.manifest`, `collections-rules.manifest`, `revenue-recognition-rules.manifest`, `procurement-requisition-rules.manifest`, `vendor-contract-rules.manifest`, `equipment-rules.manifest`, ~~`shipment-rules.manifest`~~ (promoted 2026-04-26), `knowledge-base-rules.manifest`, `quality-control-rules.manifest`, `rate-limit-rules.manifest`, `payment-reconciliation-rules.manifest`, `version-control-rules.manifest`, `digital-twin-rules.manifest`, `prep-task-dependency.manifest`.
+- `facility-rules.manifest`, ~~`invoice-rules.manifest`~~ (promoted 2026-04-26), ~~`payment-rules.manifest`~~ (promoted 2026-04-26), `payment-method-rules.manifest`, `collections-rules.manifest`, ~~`revenue-recognition-rules.manifest`~~ (promoted 2026-04-26), `procurement-requisition-rules.manifest`, `vendor-contract-rules.manifest`, `equipment-rules.manifest`, ~~`shipment-rules.manifest`~~ (promoted 2026-04-26), `knowledge-base-rules.manifest`, `quality-control-rules.manifest`, `rate-limit-rules.manifest`, `payment-reconciliation-rules.manifest`, `version-control-rules.manifest`, `digital-twin-rules.manifest`, `prep-task-dependency.manifest`.
 
-A single pass to promote the Accounting set (5 manifests) plus `facility-rules.manifest` and the two procurement ones (`procurement-requisition-rules`, `vendor-contract-rules`) would close the bulk of the Tier 1 crashes and the biggest manifest-coverage gaps at once.
+A single pass to promote the remaining Accounting set (2 manifests: `payment-method-rules`, `collections-rules`) plus `facility-rules.manifest` and the two procurement ones (`procurement-requisition-rules`, `vendor-contract-rules`) would close the bulk of the Tier 1 crashes and the biggest manifest-coverage gaps at once.
 
 ---
 
@@ -417,7 +417,7 @@ A single pass to promote the Accounting set (5 manifests) plus `facility-rules.m
 - `packages/payroll-engine/src/dataSource/PrismaPayrollDataSource.ts:58, 59, 125, 287, 383-394` — 5 missing models + YTD tracking.
 - `packages/supplier-connectors/src/connectors/us-foods.ts:65, 90, 111, 138` — EDI unimplemented.
 - `packages/supplier-connectors/src/connectors/charlies-produce.ts:65`.
-- `apps/api/app/api/accounting/revenue-recognition/schedules/route.ts:20`.
+- ~~`apps/api/app/api/accounting/revenue-recognition/schedules/route.ts:20`~~ **RESOLVED 2026-04-26**: Prisma models added, routes now return real data.
 - `apps/api/app/api/kitchen/tasks/[id]/route.ts:129` — title/summary/dueDate/tags updates.
 - `apps/api/app/api/inventory/supplier-sync/status/route.ts:95`.
 - `apps/api/app/api/calendar/route.ts:170` — deadlines/reminders models.
@@ -426,7 +426,7 @@ A single pass to promote the Accounting set (5 manifests) plus `facility-rules.m
 
 ### 501 stubs
 - `apps/api/app/api/command-board/templates/route.ts` and `[shareId]/route.ts`.
-- `apps/api/app/api/accounting/revenue-recognition/schedules/route.ts` (+ `[id]/route.ts`).
+- ~~`apps/api/app/api/accounting/revenue-recognition/schedules/route.ts` (+ `[id]/route.ts`).~~ **RESOLVED 2026-04-26**: routes now return 200 with real data.
 - `apps/api/app/api/logistics/routes/commands/optimize/route.ts`.
 - `apps/api/app/api/kitchen/equipment/*/route.ts` (5 routes — intentional per design).
 
@@ -495,6 +495,9 @@ All 26 previously failing tests are now fixed (26→0):
 - **Manifest build determinism (2)**: Already passing (commands.json was updated in prior commits).
 - **Manifest runtime factory (1)**: Updated test assertion from `id` to `authUserId` field.
 
+### Test suite status (twenty-third pass)
+No new test failures introduced. 3 quarantined manifests promoted (invoice-rules, payment-rules, revenue-recognition-rules) all compile cleanly under functional DSL. Revenue recognition routes now return 200; `revenue-cycle-verification.spec.ts` should be re-run to confirm it passes against real data.
+
 ### Duplicate `softDelete/` + `soft-delete/` directories
 See Blocker 4. Canonical choice: `soft-delete/` (kebab-case). Re-verification 2026-04-24: 2 modules have BOTH variants, 1 has only the camelCase, 21 modules total use one or the other. Prior "~45 modules" figure conflated paths with modules.
 
@@ -526,14 +529,14 @@ Each tier should be complete before the next, except where items can be parallel
 7. Duplicate `softDelete/` directories: remove camelCase variants in the 3 inventory modules (Blocker 4 — 23 modules use one of the two spellings; only 3 need cleanup).
 
 ### Tier 2 — Schema & Tenant Isolation
-8. ~~Backfill Prisma models for 8 orphaned tables + `facility_assets`, `drivers`, `vehicles`.~~ ✅ **RESOLVED 2026-04-26**: Added `Driver`, `Vehicle`, `FacilityAsset`, `VendorContact`, `VendorRating`, `ProcurementBudget`, `ProcurementBudgetAlert`, `CrmScoringRule` to `schema.prisma`. Remaining orphaned: `ProcurementApproval`, `Deal`, `RevenueRecognitionSchedule` (lower priority — no active routes).
+8. ~~Backfill Prisma models for 8 orphaned tables + `facility_assets`, `drivers`, `vehicles`.~~ ✅ **RESOLVED 2026-04-26**: Added `Driver`, `Vehicle`, `FacilityAsset`, `VendorContact`, `VendorRating`, `ProcurementBudget`, `ProcurementBudgetAlert`, `CrmScoringRule` to `schema.prisma`. ~~Remaining orphaned: `ProcurementApproval`, `Deal`, `RevenueRecognitionSchedule` (lower priority — no active routes).~~ **Updated 2026-04-26**: `RevenueRecognitionSchedule` + `RevenueRecognitionLine` now have Prisma models + migration + RLS. Remaining: `ProcurementApproval`, `Deal`.
 9. ~~Add `ENABLE ROW LEVEL SECURITY` + policies to all post-March-8 tables~~ ✅ **RESOLVED 2026-04-26**: Migration `20260427000000_add_rls_post_expansion_tables` adds RLS to 14 tables; migration `20260427010000_add_logistics_facilities_tables` creates 3 phantom tables with RLS baked in. All post-March-8 tenant-scoped tables now have RLS.
 10. ~~Fix 85 TypeScript errors in auto-generated API routes.~~ ✅ **RESOLVED 2026-04-26**: Systematic fix across ~97 auto-generated route files. Three categories of errors fixed: (a) 11 wrong Prisma model names (`emailTemplate`→`email_templates`, `eventDish`→`event_dishes`, `eventImportWorkflow`→`eventImport`, `eventStaff`→`eventStaffAssignment`, `recipeStep`→`recipe_steps`, `payrollApprovalHistory`→`approvalHistory`, `payrollPeriod`→`payroll_periods`, `payrollRun`→`payroll_runs`, `employeeAvailability`→`employee_availability`, `employeeCertification`→`employee_certifications`, `timeOffRequest`→`employeeTimeOffRequest`); (b) 11 snake_case field model conversions (`tenantId`→`tenant_id`, `deletedAt`→`deleted_at`, `createdAt`→`created_at` for models that use raw snake_case without `@map`); (c) `findUnique`→`findFirst` where `deletedAt`/`deleted_at` is in the where clause (not part of unique constraint), plus removed `deletedAt: null` from 6 models that have no soft-delete field (`chartOfAccount`, `notification`, `inventoryTransaction`, `alertsConfig`, `overrideAudit`, `timecardEditRequest`, `approvalHistory`). Result: 85→0 errors remaining (down from 85→2 after first pass, then 2→0 after twenty-first pass). The 2 remaining `prepTaskPlanWorkflow` errors resolved by adding the Prisma model. Test delta: 33→26→0 (7 simulation tests fixed after aligning route handlers to use `findUnique`; remaining 26 fixed in twenty-second pass). Fix script at `scripts/fix-auto-generated-routes.mjs`.
 11. ~~Dedup duplicate `audit_log` migration.~~ ✅ **RESOLVED 2026-04-26**: Removed inferior migration `20260327030000_add_audit_log` (used TEXT types), kept `20260327100000_add_audit_log` (UUID types, FK constraint, user_agent column, comments).
 12. Remove auto-generated route aliases (`/api/chartofaccount/` etc.) after confirming no callers.
 
 ### Tier 3 — Incomplete Modules
-13. Accounting: complete payment gateway integration, invoice email, revenue recognition model + routes.
+13. ~~Accounting: complete payment gateway integration, invoice email, revenue recognition model + routes.~~ ✅ **PARTIALLY RESOLVED 2026-04-26**: Revenue recognition model + routes done. Remaining: payment gateway integration (still mocked at `payments/[id]/route.ts:90-95`), invoice email sending.
 14. Facilities: ~~add `FacilityAsset` Prisma model~~ ✅ (added 2026-04-26); build work-order status/cost update UI; integrate `facility-rules.manifest` out of `manifests-disabled/`.
 15. Logistics: real GPS/webhook integration; ~~add `Driver`, `Vehicle` models~~ ✅ (added 2026-04-26); implement `/routes/commands/optimize`; create logistics manifests.
 16. Payroll: implement YTD tracking for SS wage cap; add `TaxInfo`, `PayrollPrefs`, `TipPool` models; API integration tests.
@@ -816,8 +819,8 @@ Of 34 packages: **5 production-ready** (`manifest-adapters`, `sales-reporting`, 
 
 ### Manifest Architecture Quality (Deep-Check)
 
-- 64 active manifests are **substantive** — full guards, constraints, mutations, events. Not shells. (Was 63; `shipment-rules.manifest` promoted 2026-04-26.)
-- 16 quarantined manifests are **procedurally written** but use imperative syntax (`if/else`, `for` loops, `let`) that the functional DSL compiler rejects. Quality is fine; dialect is wrong. Tooling mismatch, not content decay. (Was 17; `shipment-rules.manifest` promoted 2026-04-26.)
+- 67 active manifests are **substantive** — full guards, constraints, mutations, events. Not shells. (Was 64; `shipment-rules`, `invoice-rules`, `payment-rules`, `revenue-recognition-rules` promoted 2026-04-26.)
+- 13 quarantined manifests are **procedurally written** but use imperative syntax (`if/else`, `for` loops, `let`) that the functional DSL compiler rejects. Quality is fine; dialect is wrong. Tooling mismatch, not content decay. (Was 16; `invoice-rules`, `payment-rules`, `revenue-recognition-rules` promoted 2026-04-26 in addition to prior `shipment-rules` promotion.)
 - Active dispatch pipeline: route handler → `manifest-runtime-factory` → `ManifestRuntimeEngine` → `prisma-store` → outbox. Clean layering.
 - IR generation is offline: `packages/manifest-ir/dist/routes.manifest.json` is a committed artifact, regenerated by `@angriff36/manifest` ir-compiler during `loadManifests.ts:233`. No dev/deploy regen.
 - Top 3 risks: (a) **134 hand-coded routes exempt from IR conformance** — the bypass allowlist is the growing seam; (b) **no pre-flight validation for manifest syntax dialect** — quarantined set will grow silently until caught at runtime; (c) **idempotency collision window in factory** between dedup-key insert and engine-dispatch phase.
@@ -914,7 +917,7 @@ The suite tests the *happy path surface* well for kitchen, events, inventory, CR
 | 26 | `manifest-policy-editor-verification.spec.ts` | 183 | 10 | 0 | Manifest editor UI | PASSING | Browser navigation to `/settings/manifest-editor` |
 | 27 | `knowledge-base-verification.spec.ts` | 56 | 4 | 0 | Knowledge base | PASSING | Mixed API + browser; `/knowledge-base` |
 | 28 | `prep-task-dependency-verification.spec.ts` | 384 | 10 | 0 | Prep task dependencies | PASSING | API + engine tests; 384 lines |
-| 29 | `revenue-cycle-verification.spec.ts` | 195 | 9 | 0 | Revenue recognition | **STALE** | Tests 501-stub endpoints at `/api/accounting/revenue-recognition/*` |
+| 29 | `revenue-cycle-verification.spec.ts` | 195 | 9 | 0 | Revenue recognition | ~~STALE~~ → **RE-VERIFY** | Tests `/api/accounting/revenue-recognition/*` endpoints (were 501-stubs, now return 200 as of 2026-04-26) |
 | 30 | `procurement-automation-verification.spec.ts` | 262 | 9 | 0 | Procurement schema/routes | SKIP-STUB | Only checks file existence; routes crash at runtime (Blocker 2) |
 | 31 | `manifest-test-playground.spec.ts` | 228 | 13 | 0 | Manifest playground UI | PASSING | Browser navigation to `/settings/manifest-playground` |
 | 32 | `micro-tour-verification.spec.ts` | 68 | 4 | 0 | MicroTour component | PASSING | Component may not exist as standalone page |
@@ -974,7 +977,7 @@ The suite tests the *happy path surface* well for kitchen, events, inventory, CR
 | Command Board | 39 | command-board.workflow, board-fork-merge, board-template-system, entity-annotation, entity-graph, natural-language-commands, search-empty-state, verify-liveboards | **~25%** | All specs navigate `/command-board` which doesn't exist as authenticated UI (L1.1) |
 | Procurement | 37 | procurement-automation-verification (SKIP-STUB) | **~2%** | Only file-existence checks; requisition/vendor-contract routes crash (Blocker 2) |
 | Payroll | 35 | **NONE** | **0%** | Zero E2E coverage for entire payroll module |
-| Accounting | 17 | integrated-payment-processor (7 skips), revenue-cycle (STALE) | **~5%** | Payment routes are mocked; revenue recognition is 501 stub |
+| Accounting | 17 | integrated-payment-processor (7 skips), revenue-cycle (~~STALE~~ → re-verify 2026-04-26) | **~5%** | Payment routes still mocked on accounting mutations; revenue recognition routes now return 200 (2026-04-26) |
 | Logistics | 13 | **NONE** | **0%** | Zero E2E coverage for entire logistics module |
 | Facilities | 12 | facility-management-verification | **~10%** | Only space/booking API checks; no work-order test |
 | Training | 12 | **NONE** | **0%** | Zero E2E coverage for training module |
@@ -995,7 +998,7 @@ Cross-reference of the 10 user workflows in `planning/workflows.md` against E2E 
 | 4 | Staff Scheduling & Time Tracking | Staffing→Scheduling→Availability→Time Off→Kitchen→Payroll | `scheduling.workflow` + `staff.workflow` (partial) | **~15%** | No payroll integration; shift creation needs seeded data; no overtime threshold test |
 | 5 | Client Communication & Quote Revision | CRM→Events→Menus→Pricing→Email→Notifications→Collaboration | `crm.workflow` (minimal) | **~5%** | Collaboration workspace is Category 3 (0% implemented); no quote revision flow; no email send test |
 | 6 | Multi-Event Weekend Logistics | Events→Logistics→Vehicles→Drivers→Routes→Staffing→Warehouse→Dispatch | **NONE** | **0%** | Entire logistics module has zero E2E; driver update correctness bug (Blocker 6); GPS is simulated |
-| 7 | Financial Close & Invoice Generation | Events→Accounting→Payments→Invoices→Payroll→Analytics | `integrated-payment-processor` (7 skips) + `revenue-cycle` (STALE) | **~5%** | Revenue recognition is 501 stub; payments mocked on accounting routes; payroll has no E2E |
+| 7 | Financial Close & Invoice Generation | Events→Accounting→Payments→Invoices→Payroll→Analytics | `integrated-payment-processor` (7 skips) + `revenue-cycle` (~~STALE~~ → re-verify 2026-04-26) | **~5%** | Revenue recognition routes now return 200 (2026-04-26); payments still mocked on accounting routes; payroll has no E2E |
 | 8 | Cycle Count & Inventory Reconciliation | Inventory→Warehouse→Cycle Counting→Procurement→Analytics | `warehouse.smoke` (basic) | **~5%** | No cycle count workflow; no variance investigation test; no mobile scanner test |
 | 9 | Employee Onboarding & Certification | Staff→Training→Certifications→Scheduling→Notifications | `staff.workflow` (minimal) | **~5%** | Training module has zero E2E; no certification expiration test; no auto-assignment verification |
 | 10 | Waste Tracking & Food Cost Optimization | Kitchen→Inventory→Waste Entry→Analytics→Recipes→Menus | **NONE** | **0%** | Zero waste tracking E2E; no food cost calculation test; no yield data verification |
@@ -1062,7 +1065,7 @@ Comprehensive utility library:
 | `verify-liveboards-integration.spec.ts` | L1.1 (UI removed) | Same |
 | `procurement-automation-verification.spec.ts` | Blocker 2 | Routes crash; `PurchaseRequisition`/`VendorContract` models don't exist |
 | `vendor-catalog-management.spec.ts` | Blocker 4 | `softDelete`/`soft-delete` duplicate in inventory modules |
-| `revenue-cycle-verification.spec.ts` | P2.A (501 stubs) | Revenue recognition routes return 501 |
+| `revenue-cycle-verification.spec.ts` | ~~P2.A (501 stubs)~~ | ~~Revenue recognition routes return 501~~ Routes now return 200 (2026-04-26); re-verify spec passes |
 | `integrated-payment-processor-verification.spec.ts` | P2.A (mocked) | Payment routes return mocked `gatewayResponse` |
 | `tenant-audit-log-verification.spec.ts` | Schema drift | `audit_log` table is orphaned (no Prisma model) |
 | `version-control.spec.ts` | Auth setup | Cannot complete Clerk sign-in during test run |
@@ -1102,7 +1105,7 @@ Comprehensive utility library:
 #### Tier E2 — Remove/Archive Specs for Removed Features
 
 9. **Command Board UI specs** (6 files): `board-fork-merge`, `entity-annotation-system`, `board-template-system`, `command-board.workflow`, `search-empty-state-verification`, `verify-liveboards-integration` — all navigate `/command-board` authenticated UI which was removed (L1.1). Either archive these or rebuild the UI.
-10. **`revenue-cycle-verification.spec.ts`** — tests 501-stub endpoints. Archive until revenue recognition is implemented.
+10. ~~**`revenue-cycle-verification.spec.ts`** — tests 501-stub endpoints. Archive until revenue recognition is implemented.~~ **RE-VERIFY 2026-04-26**: Routes now return 200; spec should be re-run to confirm it passes.
 11. **`rbac-verification.spec.ts`** — tests page that may not exist. Verify page exists or archive.
 12. **`communication-preferences-verification.spec.ts`** — references missing component. Archive or implement component.
 13. **`tenant-audit-log-verification.spec.ts`** — tests orphaned table. Archive until model is added.
@@ -6038,7 +6041,7 @@ Guards check values exist (`guard userId != null`) but use JavaScript loose equa
 
 **C2-1 — HIGH: Manifest command parameter types are documentation-only**
 
-Manifest files declare typed parameters (`command create(orderNumber: string, ...)`), but these are never enforced at runtime. Affects all 414 commands across 64 manifests.
+Manifest files declare typed parameters (`command create(orderNumber: string, ...)`), but these are never enforced at runtime. Affects all ~460 commands across 67 manifests.
 
 **C2-2 — MEDIUM: Event payload schemas are documentation-only**
 
@@ -6365,7 +6368,7 @@ Payload includes `timestamp` validated as `z.string().datetime()` but never chec
 | C1-1 | CRITICAL | Manifest | No input schema validation on `executeManifestCommand` | `manifest-command-handler.ts:97` |
 | C1-2 | CRITICAL | Manifest | `runCommand` ignores parameter type annotations | `runtime-engine.ts:1080` |
 | C1-3 | MEDIUM | Manifest | Guards use loose equality for type checking | `runtime-engine.ts:1241` |
-| C2-1 | HIGH | Manifest | Parameter types are documentation-only | All 414 commands |
+| C2-1 | HIGH | Manifest | Parameter types are documentation-only | All ~460 commands |
 | C2-2 | MEDIUM | Manifest | Event payload schemas are documentation-only | All events |
 | C2-3 | LOW | Manifest | Guards cannot be bypassed (positive) | `runtime-engine.ts:1241` |
 | C3-1 | HIGH | Manifest | Outbox events written without payload validation | `manifest-runtime-factory.ts:332` |

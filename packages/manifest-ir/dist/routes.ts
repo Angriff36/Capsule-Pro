@@ -457,6 +457,16 @@ export function inventoryTransactionDetailPath(id: string): string {
   return "/api/inventorytransaction/" + encodeURIComponent(id);
 }
 
+/** GET /api/invoice/list */
+export function invoiceListPath(): string {
+  return "/api/invoice/list";
+}
+
+/** GET /api/invoice/:id */
+export function invoiceDetailPath(id: string): string {
+  return "/api/invoice/" + encodeURIComponent(id);
+}
+
 /** GET /api/kitchentask/list */
 export function kitchenTaskListPath(): string {
   return "/api/kitchentask/list";
@@ -525,6 +535,16 @@ export function overrideAuditListPath(): string {
 /** GET /api/overrideaudit/:id */
 export function overrideAuditDetailPath(id: string): string {
   return "/api/overrideaudit/" + encodeURIComponent(id);
+}
+
+/** GET /api/payment/list */
+export function paymentListPath(): string {
+  return "/api/payment/list";
+}
+
+/** GET /api/payment/:id */
+export function paymentDetailPath(id: string): string {
+  return "/api/payment/" + encodeURIComponent(id);
 }
 
 /** GET /api/payrollapprovalhistory/list */
@@ -735,6 +755,26 @@ export function recipeVersionListPath(): string {
 /** GET /api/recipeversion/:id */
 export function recipeVersionDetailPath(id: string): string {
   return "/api/recipeversion/" + encodeURIComponent(id);
+}
+
+/** GET /api/revenuerecognitionline/list */
+export function revenueRecognitionLineListPath(): string {
+  return "/api/revenuerecognitionline/list";
+}
+
+/** GET /api/revenuerecognitionline/:id */
+export function revenueRecognitionLineDetailPath(id: string): string {
+  return "/api/revenuerecognitionline/" + encodeURIComponent(id);
+}
+
+/** GET /api/revenuerecognitionschedule/list */
+export function revenueRecognitionScheduleListPath(): string {
+  return "/api/revenuerecognitionschedule/list";
+}
+
+/** GET /api/revenuerecognitionschedule/:id */
+export function revenueRecognitionScheduleDetailPath(id: string): string {
+  return "/api/revenuerecognitionschedule/" + encodeURIComponent(id);
 }
 
 /** GET /api/rolepolicy/list */
@@ -1896,6 +1936,51 @@ export function inventoryTransactionCreatePath(): string {
   return "/api/inventorytransaction/create";
 }
 
+/** POST /api/invoice/apply-payment */
+export function invoiceApplyPaymentPath(): string {
+  return "/api/invoice/apply-payment";
+}
+
+/** POST /api/invoice/mark-overdue */
+export function invoiceMarkOverduePath(): string {
+  return "/api/invoice/mark-overdue";
+}
+
+/** POST /api/invoice/mark-viewed */
+export function invoiceMarkViewedPath(): string {
+  return "/api/invoice/mark-viewed";
+}
+
+/** POST /api/invoice/record-refund */
+export function invoiceRecordRefundPath(): string {
+  return "/api/invoice/record-refund";
+}
+
+/** POST /api/invoice/send */
+export function invoiceSendPath(): string {
+  return "/api/invoice/send";
+}
+
+/** POST /api/invoice/send-reminder */
+export function invoiceSendReminderPath(): string {
+  return "/api/invoice/send-reminder";
+}
+
+/** POST /api/invoice/update-line-items */
+export function invoiceUpdateLineItemsPath(): string {
+  return "/api/invoice/update-line-items";
+}
+
+/** POST /api/invoice/void-invoice */
+export function invoiceVoidInvoicePath(): string {
+  return "/api/invoice/void-invoice";
+}
+
+/** POST /api/invoice/write-off */
+export function invoiceWriteOffPath(): string {
+  return "/api/invoice/write-off";
+}
+
 /** POST /api/kitchentask/add-tag */
 export function kitchenTaskAddTagPath(): string {
   return "/api/kitchentask/add-tag";
@@ -2054,6 +2139,31 @@ export function overrideAuditAuthorizePath(): string {
 /** POST /api/overrideaudit/create */
 export function overrideAuditCreatePath(): string {
   return "/api/overrideaudit/create";
+}
+
+/** POST /api/payment/mark-chargeback */
+export function paymentMarkChargebackPath(): string {
+  return "/api/payment/mark-chargeback";
+}
+
+/** POST /api/payment/mark-fraud-reviewed */
+export function paymentMarkFraudReviewedPath(): string {
+  return "/api/payment/mark-fraud-reviewed";
+}
+
+/** POST /api/payment/process */
+export function paymentProcessPath(): string {
+  return "/api/payment/process";
+}
+
+/** POST /api/payment/refund */
+export function paymentRefundPath(): string {
+  return "/api/payment/refund";
+}
+
+/** POST /api/payment/update-fraud-status */
+export function paymentUpdateFraudStatusPath(): string {
+  return "/api/payment/update-fraud-status";
 }
 
 /** POST /api/payrollapprovalhistory/create */
@@ -2574,6 +2684,71 @@ export function recipeVersionRestorePath(): string {
 /** POST /api/recipeversion/update-costs */
 export function recipeVersionUpdateCostsPath(): string {
   return "/api/recipeversion/update-costs";
+}
+
+/** POST /api/revenuerecognitionline/cancel */
+export function revenueRecognitionLineCancelPath(): string {
+  return "/api/revenuerecognitionline/cancel";
+}
+
+/** POST /api/revenuerecognitionline/create */
+export function revenueRecognitionLineCreatePath(): string {
+  return "/api/revenuerecognitionline/create";
+}
+
+/** POST /api/revenuerecognitionline/recognize */
+export function revenueRecognitionLineRecognizePath(): string {
+  return "/api/revenuerecognitionline/recognize";
+}
+
+/** POST /api/revenuerecognitionline/skip */
+export function revenueRecognitionLineSkipPath(): string {
+  return "/api/revenuerecognitionline/skip";
+}
+
+/** POST /api/revenuerecognitionschedule/adjust-schedule */
+export function revenueRecognitionScheduleAdjustSchedulePath(): string {
+  return "/api/revenuerecognitionschedule/adjust-schedule";
+}
+
+/** POST /api/revenuerecognitionschedule/cancel */
+export function revenueRecognitionScheduleCancelPath(): string {
+  return "/api/revenuerecognitionschedule/cancel";
+}
+
+/** POST /api/revenuerecognitionschedule/create */
+export function revenueRecognitionScheduleCreatePath(): string {
+  return "/api/revenuerecognitionschedule/create";
+}
+
+/** POST /api/revenuerecognitionschedule/pause */
+export function revenueRecognitionSchedulePausePath(): string {
+  return "/api/revenuerecognitionschedule/pause";
+}
+
+/** POST /api/revenuerecognitionschedule/recognize-amount */
+export function revenueRecognitionScheduleRecognizeAmountPath(): string {
+  return "/api/revenuerecognitionschedule/recognize-amount";
+}
+
+/** POST /api/revenuerecognitionschedule/recognize-milestone */
+export function revenueRecognitionScheduleRecognizeMilestonePath(): string {
+  return "/api/revenuerecognitionschedule/recognize-milestone";
+}
+
+/** POST /api/revenuerecognitionschedule/recognize-percentage */
+export function revenueRecognitionScheduleRecognizePercentagePath(): string {
+  return "/api/revenuerecognitionschedule/recognize-percentage";
+}
+
+/** POST /api/revenuerecognitionschedule/resume */
+export function revenueRecognitionScheduleResumePath(): string {
+  return "/api/revenuerecognitionschedule/resume";
+}
+
+/** POST /api/revenuerecognitionschedule/start-recognition */
+export function revenueRecognitionScheduleStartRecognitionPath(): string {
+  return "/api/revenuerecognitionschedule/start-recognition";
 }
 
 /** POST /api/rolepolicy/grant */
@@ -3125,6 +3300,8 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "InventorySupplier.get.detail", path: "/api/inventorysupplier/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "InventoryTransaction.get.list", path: "/api/inventorytransaction/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "InventoryTransaction.get.detail", path: "/api/inventorytransaction/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Invoice.get.list", path: "/api/invoice/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Invoice.get.detail", path: "/api/invoice/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "KitchenTask.get.list", path: "/api/kitchentask/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "KitchenTask.get.detail", path: "/api/kitchentask/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "LaborBudget.get.list", path: "/api/laborbudget/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -3139,6 +3316,8 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "Notification.get.detail", path: "/api/notification/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "OverrideAudit.get.list", path: "/api/overrideaudit/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "OverrideAudit.get.detail", path: "/api/overrideaudit/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Payment.get.list", path: "/api/payment/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Payment.get.detail", path: "/api/payment/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "PayrollApprovalHistory.get.list", path: "/api/payrollapprovalhistory/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "PayrollApprovalHistory.get.detail", path: "/api/payrollapprovalhistory/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "PayrollPeriod.get.list", path: "/api/payrollperiod/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -3181,6 +3360,10 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "RecipeStep.get.detail", path: "/api/recipestep/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "RecipeVersion.get.list", path: "/api/recipeversion/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "RecipeVersion.get.detail", path: "/api/recipeversion/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "RevenueRecognitionLine.get.list", path: "/api/revenuerecognitionline/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "RevenueRecognitionLine.get.detail", path: "/api/revenuerecognitionline/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "RevenueRecognitionSchedule.get.list", path: "/api/revenuerecognitionschedule/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "RevenueRecognitionSchedule.get.detail", path: "/api/revenuerecognitionschedule/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "RolePolicy.get.list", path: "/api/rolepolicy/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "RolePolicy.get.detail", path: "/api/rolepolicy/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "SampleData.get.list", path: "/api/sampledata/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -3412,6 +3595,15 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "InventorySupplier.deactivate", path: "/api/inventorysupplier/deactivate", method: "POST", source: "command", auth: true, tenant: true },
   { id: "InventorySupplier.update", path: "/api/inventorysupplier/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "InventoryTransaction.create", path: "/api/inventorytransaction/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Invoice.applyPayment", path: "/api/invoice/apply-payment", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Invoice.markOverdue", path: "/api/invoice/mark-overdue", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Invoice.markViewed", path: "/api/invoice/mark-viewed", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Invoice.recordRefund", path: "/api/invoice/record-refund", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Invoice.send", path: "/api/invoice/send", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Invoice.sendReminder", path: "/api/invoice/send-reminder", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Invoice.updateLineItems", path: "/api/invoice/update-line-items", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Invoice.voidInvoice", path: "/api/invoice/void-invoice", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Invoice.writeOff", path: "/api/invoice/write-off", method: "POST", source: "command", auth: true, tenant: true },
   { id: "KitchenTask.addTag", path: "/api/kitchentask/add-tag", method: "POST", source: "command", auth: true, tenant: true },
   { id: "KitchenTask.cancel", path: "/api/kitchentask/cancel", method: "POST", source: "command", auth: true, tenant: true },
   { id: "KitchenTask.claim", path: "/api/kitchentask/claim", method: "POST", source: "command", auth: true, tenant: true },
@@ -3444,6 +3636,11 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "Notification.remove", path: "/api/notification/remove", method: "POST", source: "command", auth: true, tenant: true },
   { id: "OverrideAudit.authorize", path: "/api/overrideaudit/authorize", method: "POST", source: "command", auth: true, tenant: true },
   { id: "OverrideAudit.create", path: "/api/overrideaudit/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Payment.markChargeback", path: "/api/payment/mark-chargeback", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Payment.markFraudReviewed", path: "/api/payment/mark-fraud-reviewed", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Payment.process", path: "/api/payment/process", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Payment.refund", path: "/api/payment/refund", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Payment.updateFraudStatus", path: "/api/payment/update-fraud-status", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PayrollApprovalHistory.create", path: "/api/payrollapprovalhistory/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PayrollPeriod.create", path: "/api/payrollperiod/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PayrollRun.updateStatus", path: "/api/payrollrun/update-status", method: "POST", source: "command", auth: true, tenant: true },
@@ -3548,6 +3745,19 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "RecipeVersion.create", path: "/api/recipeversion/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RecipeVersion.restore", path: "/api/recipeversion/restore", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RecipeVersion.updateCosts", path: "/api/recipeversion/update-costs", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RevenueRecognitionLine.cancel", path: "/api/revenuerecognitionline/cancel", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RevenueRecognitionLine.create", path: "/api/revenuerecognitionline/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RevenueRecognitionLine.recognize", path: "/api/revenuerecognitionline/recognize", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RevenueRecognitionLine.skip", path: "/api/revenuerecognitionline/skip", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RevenueRecognitionSchedule.adjustSchedule", path: "/api/revenuerecognitionschedule/adjust-schedule", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RevenueRecognitionSchedule.cancel", path: "/api/revenuerecognitionschedule/cancel", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RevenueRecognitionSchedule.create", path: "/api/revenuerecognitionschedule/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RevenueRecognitionSchedule.pause", path: "/api/revenuerecognitionschedule/pause", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RevenueRecognitionSchedule.recognizeAmount", path: "/api/revenuerecognitionschedule/recognize-amount", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RevenueRecognitionSchedule.recognizeMilestone", path: "/api/revenuerecognitionschedule/recognize-milestone", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RevenueRecognitionSchedule.recognizePercentage", path: "/api/revenuerecognitionschedule/recognize-percentage", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RevenueRecognitionSchedule.resume", path: "/api/revenuerecognitionschedule/resume", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RevenueRecognitionSchedule.startRecognition", path: "/api/revenuerecognitionschedule/start-recognition", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RolePolicy.grant", path: "/api/rolepolicy/grant", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RolePolicy.revoke", path: "/api/rolepolicy/revoke", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RolePolicy.update", path: "/api/rolepolicy/update", method: "POST", source: "command", auth: true, tenant: true },

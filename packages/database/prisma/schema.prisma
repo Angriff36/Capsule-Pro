@@ -4398,8 +4398,9 @@ model Invoice {
   tenant          Account          @relation(fields: [tenantId], references: [id], onDelete: Restrict)
   client          Client           @relation(fields: [clientId], references: [id], onDelete: Restrict)
   event           Event            @relation(fields: [eventId], references: [id], onDelete: Restrict)
-  payments        Payment[]
-  collectionCases CollectionCase[]
+  payments             Payment[]
+  collectionCases      CollectionCase[]
+  recognitionSchedules RevenueRecognitionSchedule[]
 
   @@id([tenantId, id])
   @@unique([id])
@@ -4562,6 +4563,70 @@ model CollectionPaymentPlan {
   @@index([tenantId])
   @@index([tenantId, collectionCaseId])
   @@map("collection_payment_plans")
+  @@schema("tenant_accounting")
+}
+
+model RevenueRecognitionSchedule {
+  tenantId              String   @map("tenant_id") @db.Uuid
+  id                    String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  invoiceId             String   @map("invoice_id") @db.Uuid
+  eventId               String?  @map("event_id") @db.Uuid
+  clientId              String   @map("client_id") @db.Uuid
+  totalAmount           Decimal  @map("total_amount") @db.Money
+  recognizedAmount      Decimal  @default(0) @map("recognized_amount") @db.Money
+  remainingAmount       Decimal  @map("remaining_amount") @db.Money
+  recognitionMethod     String   @default("IMMEDIATE") @map("recognition_method")
+  status                String   @default("PENDING")
+  startDate             DateTime @map("start_date") @db.Timestamptz(6)
+  endDate               DateTime? @map("end_date") @db.Timestamptz(6)
+  totalMilestones       Int      @default(0) @map("total_milestones")
+  completedMilestones   Int      @default(0) @map("completed_milestones")
+  recognitionPercentage Decimal  @default(0) @map("recognition_percentage") @db.Money
+  currency              String   @default("USD") @db.Char(3)
+  metadata              Json     @default("{}")
+  completedAt           DateTime? @map("completed_at") @db.Timestamptz(6)
+  cancelledAt           DateTime? @map("cancelled_at") @db.Timestamptz(6)
+  pausedAt              DateTime? @map("paused_at") @db.Timestamptz(6)
+  createdAt             DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt             DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt             DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  invoice Invoice                   @relation(fields: [invoiceId], references: [id], onDelete: Restrict)
+  lines   RevenueRecognitionLine[]
+
+  @@id([tenantId, id])
+  @@unique([id])
+  @@index([tenantId])
+  @@index([tenantId, invoiceId])
+  @@index([tenantId, clientId])
+  @@index([tenantId, status])
+  @@map("revenue_recognition_schedules")
+  @@schema("tenant_accounting")
+}
+
+model RevenueRecognitionLine {
+  tenantId        String   @map("tenant_id") @db.Uuid
+  id              String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  scheduleId      String   @map("schedule_id") @db.Uuid
+  amount          Decimal  @db.Money
+  recognitionDate DateTime @map("recognition_date") @db.Timestamptz(6)
+  status          String   @default("PENDING")
+  milestoneLabel  String?  @map("milestone_label")
+  percentage      Decimal? @db.Money
+  recognizedAt    DateTime? @map("recognized_at") @db.Timestamptz(6)
+  skippedAt       DateTime? @map("skipped_at") @db.Timestamptz(6)
+  cancelledAt     DateTime? @map("cancelled_at") @db.Timestamptz(6)
+  createdAt       DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  schedule RevenueRecognitionSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@unique([id])
+  @@index([tenantId])
+  @@index([tenantId, scheduleId])
+  @@index([tenantId, status])
+  @@map("revenue_recognition_lines")
   @@schema("tenant_accounting")
 }
 

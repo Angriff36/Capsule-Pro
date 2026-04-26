@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.dev/merge-report.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-04-26T13:40:31.663Z",
+  "generatedAt": "2026-04-26T14:39:29.791Z",
   "sources": [
     "admin-chat-participant-rules.manifest",
     "admin-task-rules.manifest",
@@ -35,12 +35,14 @@
     "inventory-rules.manifest",
     "inventory-supplier-rules.manifest",
     "inventory-transaction-rules.manifest",
+    "invoice-rules.manifest",
     "kitchen-task-rules.manifest",
     "labor-budget-rules.manifest",
     "lead-rules.manifest",
     "menu-rules.manifest",
     "notification-rules.manifest",
     "override-audit-rules.manifest",
+    "payment-rules.manifest",
     "payroll-rules.manifest",
     "prep-comment-rules.manifest",
     "prep-list-rules.manifest",
@@ -52,6 +54,7 @@
     "proposal-rules.manifest",
     "purchase-order-rules.manifest",
     "recipe-rules.manifest",
+    "revenue-recognition-rules.manifest",
     "role-policy-rules.manifest",
     "sample-data-rules.manifest",
     "schedule-rules.manifest",
@@ -72,10 +75,10 @@
   ],
   "totals": {
     "modules": 0,
-    "entities": 94,
-    "stores": 93,
-    "events": 412,
-    "commands": 414,
+    "entities": 98,
+    "stores": 97,
+    "events": 439,
+    "commands": 441,
     "policies": 159
   },
   "droppedDuplicates": [
