@@ -15,6 +15,7 @@ import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
 import { checkSensitiveTenantRateLimit } from "@/lib/sensitive-rate-limit";
+import { processPaymentGateway } from "../gateway";
 import {
   captureException,
   type PaymentResponse,
@@ -74,7 +75,14 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       return rateLimited;
     }
     const { id } = await context.params;
-    const body = await request.json();
+
+    // Intentionally NOT reading `gatewayResponse` from the request body.
+    // The gateway outcome is the system of record for whether a charge
+    // actually happened; trusting a client-supplied response would let any
+    // authenticated tenant caller mark a PENDING payment as COMPLETED by
+    // sending `{ gatewayResponse: { code: "200" } }` and forge a phantom
+    // invoice credit. See `apps/api/app/api/accounting/payments/gateway.ts`
+    // for the security invariant.
 
     // Get payment
     const payment = await database.payment.findFirst({
@@ -92,15 +100,17 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     validatePaymentAccess(payment, tenantId);
     validatePaymentBusinessRules(payment, "process");
 
-    // Process payment (in real implementation, this would call the payment gateway)
-    const gatewayResponse = body.gatewayResponse || {
-      code: "200",
-      message: "Success",
-      transactionId: `txn_${Date.now()}`,
-    };
+    // Server-side gateway dispatch. Replace the body of `processPaymentGateway`
+    // with a real Stripe call from `packages/payments` once the integration
+    // is wired up; the route does not need to change.
+    const gatewayResult = await processPaymentGateway({
+      paymentId: payment.id,
+      tenantId,
+      amount: Number(payment.amount),
+      currency: payment.currency,
+    });
 
-    const isCompleted =
-      gatewayResponse.code === "200" || gatewayResponse.code === "1";
+    const isCompleted = gatewayResult.success;
 
     // Update payment status
     const updatedPayment = await database.payment.update({
@@ -114,7 +124,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
         status: isCompleted ? "COMPLETED" : "FAILED",
         processedAt: new Date(),
         completedAt: isCompleted ? new Date() : null,
-        gatewayTransactionId: gatewayResponse.transactionId,
+        gatewayTransactionId: gatewayResult.transactionId,
       },
     });
 

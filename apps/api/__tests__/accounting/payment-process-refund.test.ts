@@ -38,6 +38,7 @@ const mocks = vi.hoisted(() => ({
   invoiceUpdateMock: vi.fn(),
   requireTenantIdMock: vi.fn(),
   checkSensitiveTenantRateLimitMock: vi.fn(),
+  processPaymentGatewayMock: vi.fn(),
 }));
 
 vi.mock("@repo/database", () => ({
@@ -59,6 +60,10 @@ vi.mock("@/app/lib/tenant", () => ({
 
 vi.mock("@/lib/sensitive-rate-limit", () => ({
   checkSensitiveTenantRateLimit: mocks.checkSensitiveTenantRateLimitMock,
+}));
+
+vi.mock("@/app/api/accounting/payments/gateway", () => ({
+  processPaymentGateway: mocks.processPaymentGatewayMock,
 }));
 
 vi.mock("@sentry/nextjs", () => ({
@@ -146,6 +151,15 @@ beforeEach(() => {
   // Tests that exercise the 429 path override per-call.
   mocks.checkSensitiveTenantRateLimitMock.mockReset();
   mocks.checkSensitiveTenantRateLimitMock.mockResolvedValue(null);
+  // Default: gateway dispatch succeeds with a deterministic transaction ID.
+  // Tests that exercise the failure path override per-call. Note: tests must
+  // NOT rely on `body.gatewayResponse` to drive PUT outcome — that path was
+  // removed because it let any caller forge a successful charge.
+  mocks.processPaymentGatewayMock.mockReset();
+  mocks.processPaymentGatewayMock.mockResolvedValue({
+    success: true,
+    transactionId: "txn_test",
+  });
 });
 
 afterEach(() => {
@@ -249,6 +263,14 @@ describe("PUT /api/accounting/payments/[id] — process payment", () => {
   });
 
   it("on gateway failure: marks payment FAILED and does NOT cascade to invoice", async () => {
+    // Failure path is now driven by the server-side gateway adapter, not the
+    // request body. A real Stripe decline would be reported by the gateway
+    // module; tests inject the equivalent failure result here.
+    mocks.processPaymentGatewayMock.mockResolvedValue({
+      success: false,
+      transactionId: "txn_failed",
+      failureReason: "card_declined",
+    });
     mocks.paymentFindFirstMock.mockResolvedValue(pendingPayment);
     mocks.paymentUpdateMock.mockResolvedValue({
       ...pendingPayment,
@@ -258,16 +280,9 @@ describe("PUT /api/accounting/payments/[id] — process payment", () => {
       gatewayTransactionId: "txn_failed",
     });
 
-    const res = await PUT(
-      makeRequest({
-        gatewayResponse: {
-          code: "402",
-          message: "Card declined",
-          transactionId: "txn_failed",
-        },
-      }),
-      { params: Promise.resolve({ id: PAYMENT_ID }) }
-    );
+    const res = await PUT(makeRequest({}), {
+      params: Promise.resolve({ id: PAYMENT_ID }),
+    });
 
     expect(res.status).toBe(200);
     const body = await res.json();
@@ -277,10 +292,112 @@ describe("PUT /api/accounting/payments/[id] — process payment", () => {
     expect(mocks.paymentUpdateMock.mock.calls[0][0].data).toMatchObject({
       status: "FAILED",
       completedAt: null,
+      gatewayTransactionId: "txn_failed",
     });
     // Invoice MUST NOT be touched on a failed payment.
     expect(mocks.invoiceFindFirstMock).not.toHaveBeenCalled();
     expect(mocks.invoiceUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("ignores client-supplied `gatewayResponse` body — gateway outcome is server-side only", async () => {
+    // SECURITY: prior versions read `body.gatewayResponse` and used its
+    // `code` to decide COMPLETED vs FAILED. That let any authenticated
+    // tenant caller forge a successful charge by sending
+    // `{ gatewayResponse: { code: "200", transactionId: "x" } }` against a
+    // PENDING payment, cascading a phantom credit into the invoice. The
+    // gateway adapter is now the single source of truth.
+    mocks.processPaymentGatewayMock.mockResolvedValue({
+      success: false,
+      transactionId: "txn_server_failed",
+      failureReason: "insufficient_funds",
+    });
+    mocks.paymentFindFirstMock.mockResolvedValue(pendingPayment);
+    mocks.paymentUpdateMock.mockResolvedValue({
+      ...pendingPayment,
+      status: "FAILED",
+      processedAt: new Date(),
+      completedAt: null,
+      gatewayTransactionId: "txn_server_failed",
+    });
+
+    // Caller tries to forge success via the body. This MUST be ignored.
+    const res = await PUT(
+      makeRequest({
+        gatewayResponse: {
+          code: "200",
+          message: "Forged",
+          transactionId: "txn_attacker_controlled",
+        },
+      }),
+      { params: Promise.resolve({ id: PAYMENT_ID }) }
+    );
+
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    // Server-side gateway said failure → payment is FAILED regardless of body.
+    expect(body.status).toBe("FAILED");
+
+    // The persisted transaction ID is the server-side one, never the
+    // attacker-controlled value from the request body.
+    expect(mocks.paymentUpdateMock.mock.calls[0][0].data).toMatchObject({
+      status: "FAILED",
+      gatewayTransactionId: "txn_server_failed",
+    });
+    expect(
+      mocks.paymentUpdateMock.mock.calls[0][0].data.gatewayTransactionId
+    ).not.toBe("txn_attacker_controlled");
+
+    // Server-side gateway must have been called with the server-known
+    // payment metadata, not anything from the body.
+    expect(mocks.processPaymentGatewayMock).toHaveBeenCalledTimes(1);
+    expect(mocks.processPaymentGatewayMock.mock.calls[0][0]).toMatchObject({
+      paymentId: PAYMENT_ID,
+      tenantId: TENANT_ID,
+      amount: 100,
+      currency: "USD",
+    });
+
+    // Failed payment must not cascade to the invoice.
+    expect(mocks.invoiceFindFirstMock).not.toHaveBeenCalled();
+    expect(mocks.invoiceUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("uses server-generated transaction ID even when caller forges a `transactionId` in body", async () => {
+    // Even on success, the persisted gateway transaction ID must come from
+    // the server-side gateway adapter, not from the request body.
+    mocks.processPaymentGatewayMock.mockResolvedValue({
+      success: true,
+      transactionId: "txn_server_generated",
+    });
+    mocks.paymentFindFirstMock.mockResolvedValue(pendingPayment);
+    mocks.paymentUpdateMock.mockResolvedValue({
+      ...pendingPayment,
+      status: "COMPLETED",
+      processedAt: new Date(),
+      completedAt: new Date(),
+      gatewayTransactionId: "txn_server_generated",
+    });
+    mocks.invoiceFindFirstMock.mockResolvedValue(sentInvoice);
+    mocks.invoiceUpdateMock.mockResolvedValue(paidInvoice);
+
+    const res = await PUT(
+      makeRequest({
+        gatewayResponse: {
+          code: "200",
+          transactionId: "txn_attacker_controlled",
+        },
+      }),
+      { params: Promise.resolve({ id: PAYMENT_ID }) }
+    );
+
+    expect(res.status).toBe(200);
+    expect(mocks.paymentUpdateMock.mock.calls[0][0].data).toMatchObject({
+      status: "COMPLETED",
+      gatewayTransactionId: "txn_server_generated",
+    });
+    expect(
+      mocks.paymentUpdateMock.mock.calls[0][0].data.gatewayTransactionId
+    ).not.toBe("txn_attacker_controlled");
   });
 
   it("returns 404 when payment not found for tenant", async () => {
