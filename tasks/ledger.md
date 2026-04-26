@@ -164,6 +164,77 @@ Checked 4 files in 11ms. No fixes applied. Found 1 warning.
 
 ---
 
+# Agent 89
+
+**Agent ID:** 89
+**Date/Time:** 2026-04-27 15:30
+**Base branch/commit:** main @ 467c87fc3
+
+**Goal:**
+Replace the 501 stub at `apps/api/app/api/logistics/routes/commands/optimize/route.ts` with a real nearest-neighbor TSP heuristic and add tests so the logistics module gains its first test coverage.
+
+**Invariants enforced:**
+
+- Route resequence must not violate the `(route_id, stop_number)` unique constraint — implemented via two-phase renumber (negative parking → final 1..N).
+- `optimizationScore` is clamped to `[0, 100]`; an already-optimal route returns 0, never a negative regression.
+- Tenant scoping is preserved on every read and write (composite `tenantId_id` keys, `findFirst` with explicit `tenantId`).
+
+**Subagents used:**
+
+- Explore (Haiku) — top-priority candidate scan in IMPLEMENTATION_PLAN.md (542KB), returned ranked shortlist; selected the optimize 501 because schema was already complete and frontend was already wired.
+- Explore (Haiku) — read existing `routes/commands/{create,list,update-status}/route.ts` to learn the established response/error envelope conventions before writing the new endpoint.
+
+**Reproducer:**
+
+- `apps/api/__tests__/logistics/route-optimization.test.ts` (10 tests). Pre-fix: endpoint returns 501 for any input — every business path is unreachable. Post-fix: 400/404/409/422/200 paths exercised, NN sequence verified on a 4-stop NYC topology, two-phase renumber verified by call count and parameters, score clamp verified on already-optimal collinear input.
+
+**Root cause:**
+
+The route was a placeholder: `return NextResponse.json({ error: "DeliveryRoute optimization not yet implemented..." }, { status: 501 })`. The schema (`schema.prisma:5805-5897`) already had every field needed (`totalDistance`, `totalDuration`, `optimizationScore`, `optimizationAlgorithm`, `distanceFromPrevious`, `timeFromPrevious`, `latitude`, `longitude`); only the algorithm and persistence loop were missing.
+
+**Fix strategy:**
+
+1. Implemented `haversineKm(lat1, lon1, lat2, lon2)` using the standard great-circle formula.
+2. Implemented `nearestNeighborOrder(stops)` which anchors at `stopNumber=1` and greedily picks the unvisited nearest stop until all are sequenced; emits `(ordered[], legDistanceKm[], legTimeMin[])` with leg time = `(distance / 50 km/h) * 60`.
+3. Validated 400 (missing routeId), 404 (not found / wrong tenant), 409 (status `completed` or `cancelled`), 422 (any stop missing lat/lng) before opening the transaction.
+4. Inside `database.$transaction`: phase-1 writes each stop to a unique negative `stopNumber` to "park" them, phase-2 writes the final 1..N. This is the minimal correct way to shuffle a unique-key sequence in one transaction.
+5. Persisted route totals, status `optimized`, algorithm `nearest-neighbor-v1`, and a `[0,100]`-clamped score: `score = max(0, ((originalDist - newDist) / originalDist) * 100)`.
+6. Decimal columns (`totalDistance`, `optimizationScore`, `distanceFromPrevious`) are passed as `.toFixed(2)` strings — Prisma accepts strings for `Decimal`, which avoids a runtime `@prisma/client` import in the route file (and trivially mocks in tests).
+
+**Verification evidence:**
+
+```
+$ pnpm --filter api test __tests__/logistics/route-optimization.test.ts
+ ✓ __tests__/logistics/route-optimization.test.ts (10 tests) 13ms
+   Test Files  1 passed (1)
+        Tests  10 passed (10)
+
+$ cd apps/api && npx tsc --noEmit -p tsconfig.json
+(clean — no output, no errors)
+
+$ pnpm dlx ultracite check apps/api/app/api/logistics/routes/commands/optimize/route.ts \
+                          apps/api/__tests__/logistics/route-optimization.test.ts
+Checked 2 files in 21ms. No fixes applied.
+(clean — 0 errors, 0 warnings)
+```
+
+**Follow-ups filed:**
+
+- Logistics manifests still don't exist (per IMPLEMENTATION_PLAN.md P2.C); creating one for `DeliveryRoute.optimize` would let it flow through `executeManifestCommand` like accounting/events do.
+- The 50 km/h average-speed constant lives inline as `AVERAGE_SPEED_KMH`; if multi-region behavior is needed later, lift it into per-tenant config.
+
+**Points tally:**
+
++3 invariant defined before implementation (two-phase renumber, score clamp, tenant scoping)
++5 minimal reproducer added (10 tests, all paths fail without the implementation, all pass with it)
++2 boundary/edge case added (0-stop trivial, 1-stop trivial, already-optimal collinear input → score 0 clamp)
++4 correct subagent delegation (2 Explore subagents with non-overlapping scopes — plan-priority scan + route-convention scan — synthesized before any code was written)
++4 fix addresses root cause with minimal diff (one file rewritten, one new test file; no schema changes, no other route touched)
++2 improved diagnosability (404/409/422 each carry a distinct payload — `body.stopIds` lists the offending stops on 422, `body.error` describes the status mismatch on 409)
+= **20 points**
+
+---
+
 # Agent 88
 
 **Agent ID:** 88
