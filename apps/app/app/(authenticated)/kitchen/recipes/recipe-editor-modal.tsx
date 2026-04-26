@@ -143,6 +143,40 @@ export const RecipeEditorModal = ({
     setTags(tags.filter((tag) => tag !== tagToRemove));
   };
 
+  const serializeToFormData = (formEl: HTMLFormElement): FormData => {
+    const fd = new FormData(formEl);
+    // Serialize React-controlled state into FormData
+    if (ingredients.length > 0) {
+      fd.set(
+        "ingredients",
+        JSON.stringify(
+          ingredients.map((ing, idx) => ({
+            name: ing.name,
+            quantity: Number.parseFloat(ing.quantity) || 1,
+            unit: ing.unit || null,
+            sortOrder: idx,
+          }))
+        )
+      );
+    }
+    if (instructions.length > 0) {
+      fd.set(
+        "steps",
+        JSON.stringify(
+          instructions.map((inst) => ({
+            stepNumber: inst.stepNumber,
+            instruction: inst.text,
+          }))
+        )
+      );
+    }
+    // Default yield unit — servings (ID 1 is the typical first unit)
+    if (!fd.get("yieldUnitId")) {
+      fd.set("yieldUnitId", "1");
+    }
+    return fd;
+  };
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     if (files.length === 0) {
@@ -187,9 +221,13 @@ export const RecipeEditorModal = ({
         </DialogHeader>
 
         <form
-          action={async (formData) => {
-            await onSave(formData);
-            onOpenChange(false);
+          onSubmit={(e) => {
+            e.preventDefault();
+            const formEl = e.currentTarget;
+            const fullFormData = serializeToFormData(formEl);
+            onSave(fullFormData).then(() => onOpenChange(false)).catch(() => {
+              // Error already handled in onSave (toast shown)
+            });
           }}
           className="flex flex-col gap-6"
         >

@@ -4,6 +4,11 @@ import { auth, currentUser } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
 import { InvariantError, invariant } from "../../../lib/invariant";
+
+// revalidatePath is intentionally NOT called from syncCurrentUser.
+// The client component (AutoRegisterStaff) handles refresh via router.refresh()
+// to avoid clearing form field values in sibling components during revalidation.
+// See: https://github.com/vercel/next.js/discussions/50090
 import { getTenantIdForOrg } from "../../../lib/tenant";
 import {
   type EmploymentTypeValue,
@@ -95,7 +100,6 @@ export const syncCurrentUser = async (): Promise<ActionState> => {
           lastName: clerkLastName || "User",
         },
       });
-      revalidatePath("/staff/team");
       return { status: "success", message: "Your account has been restored." };
     }
 
@@ -121,7 +125,6 @@ export const syncCurrentUser = async (): Promise<ActionState> => {
         where: { tenantId_id: { tenantId, id: byEmail.id } },
         data: { authUserId: userId },
       });
-      revalidatePath("/staff/team");
       return { status: "success", message: "Your account has been linked." };
     }
 
@@ -139,7 +142,6 @@ export const syncCurrentUser = async (): Promise<ActionState> => {
       },
     });
 
-    revalidatePath("/staff/team");
     return {
       status: "success",
       message: "Welcome! You're now registered as admin.",

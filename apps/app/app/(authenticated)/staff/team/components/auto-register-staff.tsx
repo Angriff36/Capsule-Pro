@@ -1,9 +1,11 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, startTransition, useState } from "react";
+import { useRouter } from "next/navigation";
 import { syncCurrentUser } from "../actions";
 
 export const AutoRegisterStaff = () => {
+  const router = useRouter();
   const [status, setStatus] = useState<
     "idle" | "loading" | "success" | "error"
   >("idle");
@@ -15,6 +17,12 @@ export const AutoRegisterStaff = () => {
       const result = await syncCurrentUser();
       if (result.status === "success") {
         setStatus("success");
+        // Refresh server data to show synced user in staff directory.
+        // Use startTransition + router.refresh() instead of revalidatePath
+        // from the server action to avoid clearing sibling form input values.
+        startTransition(() => {
+          router.refresh();
+        });
       } else {
         setStatus("error");
         setMessage(result.message ?? "Failed to sync");

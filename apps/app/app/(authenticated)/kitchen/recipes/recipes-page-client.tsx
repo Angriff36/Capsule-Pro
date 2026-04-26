@@ -30,6 +30,18 @@ const difficultyToLevel = (difficulty: string): number | undefined => {
   return map[difficulty];
 };
 
+/** Safely parse JSON from a FormData field */
+const parseJsonField = <T,>(formData: FormData, key: string): T | undefined => {
+  const raw = formData.get(key) as string | null;
+  if (!raw) return undefined;
+  try {
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? (parsed as T) : undefined;
+  } catch {
+    return undefined;
+  }
+};
+
 /** Build JSON payload from RecipeEditorModal FormData for create route */
 const buildCreatePayload = (formData: FormData) => {
   const tagsRaw = formData.get("tags") as string;
@@ -41,22 +53,40 @@ const buildCreatePayload = (formData: FormData) => {
     // Ignore parse errors
   }
 
+  const ingredients = parseJsonField<
+    Array<{
+      name: string;
+      quantity: number;
+      unit: string | null;
+      sortOrder: number;
+    }>
+  >(formData, "ingredients");
+
+  const steps = parseJsonField<
+    Array<{ stepNumber: number; instruction: string }>
+  >(formData, "steps");
+
   return {
     name: (formData.get("name") as string) || "",
     description: (formData.get("description") as string) || undefined,
     tags,
     yieldQuantity: formData.get("servings")
-      ? Number.parseInt(formData.get("servings") as string, 10)
-      : undefined,
+      ? Number.parseInt(formData.get("servings") as string, 10) || 1
+      : 1,
+    yieldUnitId: formData.get("yieldUnitId")
+      ? Number.parseInt(formData.get("yieldUnitId") as string, 10) || 1
+      : 1,
     prepTimeMinutes: formData.get("prepTime")
-      ? Number.parseInt(formData.get("prepTime") as string, 10)
+      ? Number.parseInt(formData.get("prepTime") as string, 10) || undefined
       : undefined,
     cookTimeMinutes: formData.get("cookTime")
-      ? Number.parseInt(formData.get("cookTime") as string, 10)
+      ? Number.parseInt(formData.get("cookTime") as string, 10) || undefined
       : undefined,
     difficultyLevel: formData.get("difficulty")
       ? difficultyToLevel(formData.get("difficulty") as string)
       : undefined,
+    ingredients,
+    steps,
   };
 };
 
@@ -71,22 +101,40 @@ const buildUpdatePayload = (formData: FormData) => {
     // Ignore parse errors
   }
 
+  const ingredients = parseJsonField<
+    Array<{
+      name: string;
+      quantity: number;
+      unit: string | null;
+      sortOrder: number;
+    }>
+  >(formData, "ingredients");
+
+  const steps = parseJsonField<
+    Array<{ stepNumber: number; instruction: string }>
+  >(formData, "steps");
+
   return {
     name: (formData.get("name") as string) || undefined,
     description: (formData.get("description") as string) || undefined,
     tags,
     yieldQuantity: formData.get("servings")
-      ? Number.parseInt(formData.get("servings") as string, 10)
+      ? Number.parseInt(formData.get("servings") as string, 10) || undefined
+      : undefined,
+    yieldUnitId: formData.get("yieldUnitId")
+      ? Number.parseInt(formData.get("yieldUnitId") as string, 10) || undefined
       : undefined,
     prepTimeMinutes: formData.get("prepTime")
-      ? Number.parseInt(formData.get("prepTime") as string, 10)
+      ? Number.parseInt(formData.get("prepTime") as string, 10) || undefined
       : undefined,
     cookTimeMinutes: formData.get("cookTime")
-      ? Number.parseInt(formData.get("cookTime") as string, 10)
+      ? Number.parseInt(formData.get("cookTime") as string, 10) || undefined
       : undefined,
     difficultyLevel: formData.get("difficulty")
       ? difficultyToLevel(formData.get("difficulty") as string)
       : undefined,
+    ingredients,
+    steps,
   };
 };
 
