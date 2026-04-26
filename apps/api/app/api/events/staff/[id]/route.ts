@@ -1,48 +1,45 @@
-// Auto-generated Next.js API route for EventStaffAssignment
+// Auto-generated Next.js API detail route for EventStaff
 // Generated from Manifest IR - DO NOT EDIT
 
-import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { database } from "@/lib/database";
-import {
-  manifestErrorResponse,
-  manifestSuccessResponse,
-} from "@/lib/manifest-response";
+import { database } from "@repo/database";
+import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import { auth } from "@repo/auth/server";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { orgId, userId } = await auth();
-    if (!(userId && orgId)) {
-      return manifestErrorResponse("Unauthorized", 401);
-    }
+  const { orgId, userId } = await auth();
+  if (!(userId && orgId)) {
+    return manifestErrorResponse("Unauthorized", 401);
+  }
 
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return manifestErrorResponse("Tenant not found", 400);
-    }
+  const tenantId = await getTenantIdForOrg(orgId);
+
+  if (!tenantId) {
+    return manifestErrorResponse("Tenant not found", 400);
+  }
 
     const { id } = await params;
 
-    const eventStaffAssignments = await database.eventStaffAssignment.findFirst(
-      {
-        where: {
-          id,
-          tenantId,
-        },
-      }
-    );
+    const eventStaff = await database.eventStaff.findUnique({
+      where: {
+        id,
+        tenantId,
+        deletedAt: null
+      },
+    });
 
-    if (!eventStaffAssignments) {
-      return manifestErrorResponse("Not found", 404);
+    if (!eventStaff) {
+      return manifestErrorResponse("EventStaff not found", 404);
     }
 
-    return manifestSuccessResponse({ eventStaffAssignments });
+    return manifestSuccessResponse({ eventStaff });
   } catch (error) {
-    console.error("Error fetching eventStaffAssignments:", error);
+    console.error("Error fetching eventStaff:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

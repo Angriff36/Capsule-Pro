@@ -178,7 +178,8 @@ export async function getVendorRecipeCostSummary(): Promise<{
       yieldUnit: row.yield_unit,
       totalCost: Number(row.total_cost),
       costPerYield: Number(row.cost_per_yield),
-      foodCostPercent: row.food_cost_percent === null ? null : Number(row.food_cost_percent),
+      foodCostPercent:
+        row.food_cost_percent === null ? null : Number(row.food_cost_percent),
       menuPrice: row.menu_price === null ? null : Number(row.menu_price),
       margin: row.margin === null ? null : Number(row.margin),
       ingredientCount: Number(row.ingredient_count),

@@ -1,6 +1,5 @@
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
 import { ManifestTestPlayground } from "@repo/design-system/components/blocks/manifest-test-playground";
 import type {
   EntityDetail,
@@ -8,6 +7,7 @@ import type {
   ExecutionResult,
 } from "@repo/types/manifest-editor";
 import { useEffect, useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 
 async function fetchEntities(): Promise<EntityListItem[]> {
   const res = await apiFetch("/api/settings/manifest-editor/entities/list");

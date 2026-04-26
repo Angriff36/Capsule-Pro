@@ -1,46 +1,45 @@
-// Auto-generated Next.js API route for ProposalLineItem
+// Auto-generated Next.js API detail route for ProposalLineItem
 // Generated from Manifest IR - DO NOT EDIT
 
-import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { database } from "@/lib/database";
-import {
-  manifestErrorResponse,
-  manifestSuccessResponse,
-} from "@/lib/manifest-response";
+import { database } from "@repo/database";
+import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import { auth } from "@repo/auth/server";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { orgId, userId } = await auth();
-    if (!(userId && orgId)) {
-      return manifestErrorResponse("Unauthorized", 401);
-    }
+  const { orgId, userId } = await auth();
+  if (!(userId && orgId)) {
+    return manifestErrorResponse("Unauthorized", 401);
+  }
 
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return manifestErrorResponse("Tenant not found", 400);
-    }
+  const tenantId = await getTenantIdForOrg(orgId);
+
+  if (!tenantId) {
+    return manifestErrorResponse("Tenant not found", 400);
+  }
 
     const { id } = await params;
 
-    const proposalLineItems = await database.proposalLineItem.findFirst({
+    const proposalLineItem = await database.proposalLineItem.findUnique({
       where: {
         id,
         tenantId,
+        deletedAt: null
       },
     });
 
-    if (!proposalLineItems) {
-      return manifestErrorResponse("Not found", 404);
+    if (!proposalLineItem) {
+      return manifestErrorResponse("ProposalLineItem not found", 404);
     }
 
-    return manifestSuccessResponse({ proposalLineItems });
+    return manifestSuccessResponse({ proposalLineItem });
   } catch (error) {
-    console.error("Error fetching proposalLineItems:", error);
+    console.error("Error fetching proposalLineItem:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

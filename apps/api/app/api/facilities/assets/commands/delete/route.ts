@@ -1,14 +1,13 @@
 // Soft-delete facility asset
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { captureException } from "@sentry/nextjs";
+import { database } from "@/lib/database";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
-
-import { database } from "@/lib/database";
 
 export async function POST(request: NextRequest) {
   try {

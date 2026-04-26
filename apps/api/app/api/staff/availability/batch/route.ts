@@ -1,10 +1,10 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { withRateLimit } from "@/middleware/rate-limiter";
 import type { CreateBatchAvailabilityInput } from "../types";
-import { captureException } from "@sentry/nextjs";
 import {
   checkOverlappingAvailability,
   validateBatchAvailabilityInput,

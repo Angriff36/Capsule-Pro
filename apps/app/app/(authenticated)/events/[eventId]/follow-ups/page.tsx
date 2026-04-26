@@ -1,6 +1,5 @@
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -22,6 +21,7 @@ import {
 } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 
 interface Followup {
   id: string;
@@ -123,11 +123,14 @@ export default function EventFollowUpsPage() {
   const skipFollowup = async (followupId: string) => {
     setActioning(followupId);
     try {
-      const res = await apiFetch("/api/events/automated-followups/commands/skip", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ followupId, reason: "Skipped by user" }),
-      });
+      const res = await apiFetch(
+        "/api/events/automated-followups/commands/skip",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ followupId, reason: "Skipped by user" }),
+        }
+      );
       if (res.ok) {
         fetchFollowups();
       }

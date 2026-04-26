@@ -9,7 +9,6 @@
  * @canonical true
  */
 
-import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -55,6 +54,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 
 // Types
 export interface ScoringRule {

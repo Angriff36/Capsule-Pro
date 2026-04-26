@@ -44,9 +44,8 @@ export async function GET() {
           e.phone,
           e.hourly_rate
         FROM tenant_staff.employees e
-        JOIN tenant.users u ON u.id = e.user_id
         WHERE e.tenant_id = ${tenantId}
-          AND u.auth_user_id = ${clerkId}
+          AND e.auth_user_id = ${clerkId}
           AND e.deleted_at IS NULL
         LIMIT 1
       `

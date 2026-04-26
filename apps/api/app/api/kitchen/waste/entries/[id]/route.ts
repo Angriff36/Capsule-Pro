@@ -8,18 +8,19 @@ import { executeManifestCommand } from "@/lib/manifest-command-handler";
 interface WasteEntryDetail {
   id: string;
   tenant_id: string;
-  ingredient_id: string;
+  inventory_item_id: string;
   quantity: string;
-  unit: string;
-  reason: string;
+  unit_id: number | null;
+  reason_id: number;
   notes: string | null;
   event_id: string | null;
-  created_by: string | null;
+  logged_by: string;
+  logged_at: Date;
   created_at: Date;
   updated_at: Date;
   deleted_at: Date | null;
-  ingredient_name: string | null;
-  ingredient_category: string | null;
+  item_name: string | null;
+  item_category: string | null;
   user_name: string | null;
   event_name: string | null;
 }
@@ -45,14 +46,14 @@ export async function GET(
     const wasteEntry = await database.$queryRaw<WasteEntryDetail[]>`
       SELECT
         we.*,
-        i.name AS ingredient_name,
-        i.category AS ingredient_category,
-        u.name AS user_name,
-        e.title AS event_name
+        ii.name AS item_name,
+        ii.category AS item_category,
+        e_usr.first_name || ' ' || e_usr.last_name AS user_name,
+        ev.title AS event_name
       FROM tenant_kitchen.waste_entries we
-      JOIN tenant_inventory.ingredients i ON we.ingredient_id = i.id
-      LEFT JOIN platform.users u ON we.created_by = u.id
-      LEFT JOIN tenant_events.events e ON we.event_id = e.id
+      JOIN tenant_inventory.inventory_items ii ON we.inventory_item_id = ii.id
+      LEFT JOIN tenant_staff.employees e_usr ON we.logged_by = e_usr.id
+      LEFT JOIN tenant_events.events ev ON we.event_id = ev.id
       WHERE we.tenant_id = ${tenantId}
         AND we.id = ${id}
         AND we.deleted_at IS NULL

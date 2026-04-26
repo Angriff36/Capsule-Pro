@@ -8,8 +8,8 @@
  * - createdAt, updatedAt, deletedAt
  */
 
-import { invariant } from "@/app/lib/invariant";
 import { captureException } from "@sentry/nextjs";
+import { invariant } from "@/app/lib/invariant";
 
 export { captureException };
 

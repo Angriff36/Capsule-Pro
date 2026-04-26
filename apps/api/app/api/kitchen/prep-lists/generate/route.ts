@@ -856,25 +856,17 @@ export async function savePrepListToDatabase(
       const stationIds = allItems.map((i) => i.stationId);
       const stationNames = allItems.map((i) => i.stationName);
       const ingredientIds = allItems.map((i) => i.ingredient.ingredientId);
-      const ingredientNames = allItems.map(
-        (i) => i.ingredient.ingredientName
-      );
+      const ingredientNames = allItems.map((i) => i.ingredient.ingredientName);
       const categories = allItems.map((i) => i.ingredient.category);
       const baseQuantities = allItems.map((i) => i.ingredient.baseQuantity);
       const baseUnits = allItems.map((i) => i.ingredient.baseUnit);
-      const scaledQuantities = allItems.map(
-        (i) => i.ingredient.scaledQuantity
-      );
+      const scaledQuantities = allItems.map((i) => i.ingredient.scaledQuantity);
       const scaledUnits = allItems.map((i) => i.ingredient.scaledUnit);
       const isOptionals = allItems.map((i) => i.ingredient.isOptional);
-      const prepNotes = allItems.map(
-        (i) => i.ingredient.preparationNotes
-      );
-      const allergenArrays = allItems.map((i) =>
-        i.ingredient.allergens ?? []
-      );
-      const dietarySubArrays = allItems.map((i) =>
-        i.ingredient.dietarySubstitutions ?? []
+      const prepNotes = allItems.map((i) => i.ingredient.preparationNotes);
+      const allergenArrays = allItems.map((i) => i.ingredient.allergens ?? []);
+      const dietarySubArrays = allItems.map(
+        (i) => i.ingredient.dietarySubstitutions ?? []
       );
       const sortOrders = allItems.map((i) => i.sortOrder);
 

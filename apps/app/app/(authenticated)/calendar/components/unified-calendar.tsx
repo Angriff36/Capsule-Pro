@@ -1,6 +1,5 @@
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
 import {
   DndContext,
   type DragEndEvent,
@@ -65,6 +64,7 @@ import {
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 
 interface CalendarEvent {
   id: string;
@@ -507,14 +507,17 @@ export function UnifiedCalendar({
         originalMinutes
       );
 
-      const response = await apiFetch("/api/events/event/commands/update-date", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: event.id,
-          newEventDate: newEventDate.getTime(), // Send as timestamp in ms
-        }),
-      });
+      const response = await apiFetch(
+        "/api/events/event/commands/update-date",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: event.id,
+            newEventDate: newEventDate.getTime(), // Send as timestamp in ms
+          }),
+        }
+      );
 
       if (!response.ok) {
         const error = await response.json();

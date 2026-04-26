@@ -1,15 +1,14 @@
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { withRateLimit } from "@/middleware/rate-limiter";
-import { captureException } from "@sentry/nextjs";
 import {
-  type AutoAssignmentResult
-,
+  type AutoAssignmentResult,
   getAssignmentSuggestionsForMultipleShifts,
-type ShiftRequirement,
+  type ShiftRequirement,
 } from "@/lib/staff/auto-assignment";
+import { withRateLimit } from "@/middleware/rate-limiter";
 
 /**
  * POST /api/staff/shifts/bulk-assignment-suggestions

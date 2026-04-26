@@ -1,6 +1,5 @@
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -25,6 +24,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 
 interface Equipment {
   id: string;
@@ -121,7 +121,9 @@ export function EquipmentPageClient() {
 
   async function fetchAlerts() {
     try {
-      const res = await apiFetch("/api/kitchen/equipment/alerts?minSeverity=low");
+      const res = await apiFetch(
+        "/api/kitchen/equipment/alerts?minSeverity=low"
+      );
       const data = await res.json();
       if (data.success) {
         setAlerts(data.alerts || []);

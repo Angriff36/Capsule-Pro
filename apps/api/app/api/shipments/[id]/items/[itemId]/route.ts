@@ -7,11 +7,11 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { InvariantError } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type { ShipmentItemUpdateInput } from "./helpers";
-import { captureException } from "@sentry/nextjs";
 import {
   buildShipmentItemUpdateData,
   fetchExistingShipmentItem,

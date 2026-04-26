@@ -1,6 +1,5 @@
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -36,6 +35,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { apiFetch } from "@/app/lib/api";
 
 const formSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),

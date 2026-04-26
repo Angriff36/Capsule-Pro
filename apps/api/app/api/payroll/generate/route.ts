@@ -1,11 +1,11 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { captureException } from "@sentry/nextjs";
 import {
   GeneratePayrollRequestSchema,
   PayrollService,
   PrismaPayrollDataSource,
 } from "@repo/payroll-engine";
+import { captureException } from "@sentry/nextjs";
 
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";

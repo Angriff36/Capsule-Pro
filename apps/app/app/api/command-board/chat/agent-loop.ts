@@ -1390,7 +1390,10 @@ async function executeToolWithRetry(
   // Report retry exhaustion to Sentry — these are network/infrastructure failures
   // that would otherwise be invisible (returned as error envelope, not thrown)
   captureException(
-    lastError ?? new Error(`Tool call ${functionCall.name} failed after ${MAX_TOOL_RETRIES + 1} retries`),
+    lastError ??
+      new Error(
+        `Tool call ${functionCall.name} failed after ${MAX_TOOL_RETRIES + 1} retries`
+      ),
     {
       tags: {
         route: "command-board-chat",

@@ -8,7 +8,7 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database } from "@repo/database";
+import { database, Prisma } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
@@ -109,34 +109,16 @@ async function buildDishMatrix(
   tenantId: string,
   dishIds?: string[]
 ): Promise<AllergenMatrixItem[]> {
-  // Query dishes with their recipe ingredients and allergens using $queryRaw
-  const dishFilter =
-    dishIds && dishIds.length > 0
-      ? `AND d.id IN (${dishIds.map((id) => `'${id}'`).join(", ")})`
-      : "";
+  // Build parameterized filter for dish IDs to prevent SQL injection
+  const hasDishFilter = dishIds && dishIds.length > 0;
+  const dishIdFragments = hasDishFilter
+    ? dishIds.map((id) => Prisma.sql`${id}::uuid`)
+    : [];
+  const dishFilter = hasDishFilter
+    ? Prisma.sql`AND d.id IN (${Prisma.join(dishIdFragments)})`
+    : Prisma.sql``;
 
-  const query = `
-    SELECT
-      d.id,
-      d.name,
-      d.category,
-      d.dietary_tags,
-      d.allergens as dish_allergens,
-      r.id as recipe_id,
-      ri.ingredient_id,
-      i.name as ingredient_name,
-      i.allergens as ingredient_allergens
-    FROM tenant_kitchen.dishes d
-    LEFT JOIN tenant_kitchen.recipes r ON r.id = d.recipe_id AND r.tenant_id = d.tenant_id
-    LEFT JOIN tenant_kitchen.recipe_ingredients ri ON ri.recipe_id = r.id AND ri.tenant_id = r.tenant_id
-    LEFT JOIN tenant_kitchen.ingredients i ON i.id = ri.ingredient_id AND i.tenant_id = ri.tenant_id
-    WHERE d.tenant_id = $1
-      AND d.deleted_at IS NULL
-      ${dishFilter}
-    ORDER BY d.name
-  `;
-
-  const results = await database.$queryRawUnsafe<
+  const results = await database.$queryRaw<
     {
       id: string;
       name: string;
@@ -148,7 +130,28 @@ async function buildDishMatrix(
       ingredient_name: string | null;
       ingredient_allergens: string[];
     }[]
-  >(query, tenantId);
+  >(
+    Prisma.sql`
+      SELECT
+        d.id,
+        d.name,
+        d.category,
+        d.dietary_tags,
+        d.allergens as dish_allergens,
+        r.id as recipe_id,
+        ri.ingredient_id,
+        i.name as ingredient_name,
+        i.allergens as ingredient_allergens
+      FROM tenant_kitchen.dishes d
+      LEFT JOIN tenant_kitchen.recipes r ON r.id = d.recipe_id AND r.tenant_id = d.tenant_id
+      LEFT JOIN tenant_kitchen.recipe_ingredients ri ON ri.recipe_id = r.id AND ri.tenant_id = r.tenant_id
+      LEFT JOIN tenant_kitchen.ingredients i ON i.id = ri.ingredient_id AND i.tenant_id = ri.tenant_id
+      WHERE d.tenant_id = ${tenantId}
+        AND d.deleted_at IS NULL
+        ${dishFilter}
+      ORDER BY d.name
+    `
+  );
 
   // Group by dish
   const dishMap = new Map<
@@ -266,31 +269,16 @@ async function buildRecipeMatrix(
   tenantId: string,
   recipeIds?: string[]
 ): Promise<AllergenMatrixItem[]> {
-  // Query recipes with their ingredients and allergens using $queryRaw
-  const recipeFilter =
-    recipeIds && recipeIds.length > 0
-      ? `AND r.id IN (${recipeIds.map((id) => `'${id}'`).join(", ")})`
-      : "";
+  // Build parameterized filter for recipe IDs to prevent SQL injection
+  const hasRecipeFilter = recipeIds && recipeIds.length > 0;
+  const recipeIdFragments = hasRecipeFilter
+    ? recipeIds.map((id) => Prisma.sql`${id}::uuid`)
+    : [];
+  const recipeFilter = hasRecipeFilter
+    ? Prisma.sql`AND r.id IN (${Prisma.join(recipeIdFragments)})`
+    : Prisma.sql``;
 
-  const query = `
-    SELECT
-      r.id,
-      r.name,
-      r.category,
-      r.tags,
-      ri.ingredient_id,
-      i.name as ingredient_name,
-      i.allergens as ingredient_allergens
-    FROM tenant_kitchen.recipes r
-    LEFT JOIN tenant_kitchen.recipe_ingredients ri ON ri.recipe_id = r.id AND ri.tenant_id = r.tenant_id
-    LEFT JOIN tenant_kitchen.ingredients i ON i.id = ri.ingredient_id AND i.tenant_id = ri.tenant_id
-    WHERE r.tenant_id = $1
-      AND r.deleted_at IS NULL
-      ${recipeFilter}
-    ORDER BY r.name
-  `;
-
-  const results = await database.$queryRawUnsafe<
+  const results = await database.$queryRaw<
     {
       id: string;
       name: string;
@@ -300,7 +288,25 @@ async function buildRecipeMatrix(
       ingredient_name: string | null;
       ingredient_allergens: string[];
     }[]
-  >(query, tenantId);
+  >(
+    Prisma.sql`
+      SELECT
+        r.id,
+        r.name,
+        r.category,
+        r.tags,
+        ri.ingredient_id,
+        i.name as ingredient_name,
+        i.allergens as ingredient_allergens
+      FROM tenant_kitchen.recipes r
+      LEFT JOIN tenant_kitchen.recipe_ingredients ri ON ri.recipe_id = r.id AND ri.tenant_id = r.tenant_id
+      LEFT JOIN tenant_kitchen.ingredients i ON i.id = ri.ingredient_id AND i.tenant_id = ri.tenant_id
+      WHERE r.tenant_id = ${tenantId}
+        AND r.deleted_at IS NULL
+        ${recipeFilter}
+      ORDER BY r.name
+    `
+  );
 
   // Group by recipe
   const recipeMap = new Map<

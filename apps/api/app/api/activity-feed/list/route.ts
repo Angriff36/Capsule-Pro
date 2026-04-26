@@ -2,15 +2,14 @@
 // Provides a unified feed of all system events, entity changes, AI plan approvals, and collaborator actions
 
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { captureException } from "@sentry/nextjs";
+import { database } from "@/lib/database";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
-
-import { database } from "@/lib/database";
 
 export interface ActivityFeedItem {
   id: string;

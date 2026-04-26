@@ -1,6 +1,5 @@
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
 import { Card } from "@repo/design-system/components/ui/card";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
@@ -14,6 +13,7 @@ import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 import type { EntityDetail, EntityListItem } from "@repo/types/manifest-editor";
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 
 const ManifestPolicyEditor = dynamic(
   () =>

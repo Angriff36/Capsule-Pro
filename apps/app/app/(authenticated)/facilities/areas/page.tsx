@@ -1,6 +1,5 @@
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
@@ -24,6 +23,7 @@ import {
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { Loader2, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 import { FacilitiesNavigation } from "../components/facilities-navigation";
 
 export default function AreasPage() {

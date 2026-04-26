@@ -37,7 +37,10 @@ export const getTenantIdForOrg = async (orgId: string): Promise<string> => {
     }
 
     // Cache the result
-    tenantCache.set(orgId, { id: account.id, expiresAt: Date.now() + TENANT_CACHE_TTL_MS });
+    tenantCache.set(orgId, {
+      id: account.id,
+      expiresAt: Date.now() + TENANT_CACHE_TTL_MS,
+    });
 
     return account.id;
   } catch (err) {
@@ -53,13 +56,10 @@ export const getTenantIdForOrg = async (orgId: string): Promise<string> => {
     }
 
     // Always report DB errors to Sentry — these are infrastructure failures
-    captureException(
-      err instanceof Error ? err : new Error(String(err)),
-      {
-        tags: { source: "getTenantIdForOrg", type: "database" },
-        extra: { orgId, errorCode: errWithCode.code },
-      }
-    );
+    captureException(err instanceof Error ? err : new Error(String(err)), {
+      tags: { source: "getTenantIdForOrg", type: "database" },
+      extra: { orgId, errorCode: errWithCode.code },
+    });
 
     const msg =
       err instanceof Error ? err.message : String(err ?? "Unknown error");

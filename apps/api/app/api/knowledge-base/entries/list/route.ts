@@ -2,15 +2,14 @@
 // Provides listing of knowledge base entries with filtering
 
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { captureException } from "@sentry/nextjs";
+import { database } from "@/lib/database";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
-
-import { database } from "@/lib/database";
 
 export interface KnowledgeBaseEntry {
   id: string;

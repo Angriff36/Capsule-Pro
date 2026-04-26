@@ -1,6 +1,5 @@
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -12,6 +11,7 @@ import { Skeleton } from "@repo/design-system/components/ui/skeleton";
 import { AlertTriangle, FileText, Scale, Sparkles } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 
 interface Recipe {
   id: string;

@@ -6,7 +6,6 @@
 
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
 import { Button } from "@repo/design-system/components/ui/button";
 import { Card } from "@repo/design-system/components/ui/card";
 import { Input } from "@repo/design-system/components/ui/input";
@@ -15,6 +14,7 @@ import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { Banknote, Building, CreditCard, Smartphone } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 
 type PaymentMethodType =
   | "CREDIT_CARD"

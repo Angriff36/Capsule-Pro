@@ -1,46 +1,45 @@
-// Auto-generated Next.js API route for EventDish
+// Auto-generated Next.js API detail route for EventDish
 // Generated from Manifest IR - DO NOT EDIT
 
-import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { database } from "@/lib/database";
-import {
-  manifestErrorResponse,
-  manifestSuccessResponse,
-} from "@/lib/manifest-response";
+import { database } from "@repo/database";
+import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import { auth } from "@repo/auth/server";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { orgId, userId } = await auth();
-    if (!(userId && orgId)) {
-      return manifestErrorResponse("Unauthorized", 401);
-    }
+  const { orgId, userId } = await auth();
+  if (!(userId && orgId)) {
+    return manifestErrorResponse("Unauthorized", 401);
+  }
 
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return manifestErrorResponse("Tenant not found", 400);
-    }
+  const tenantId = await getTenantIdForOrg(orgId);
+
+  if (!tenantId) {
+    return manifestErrorResponse("Tenant not found", 400);
+  }
 
     const { id } = await params;
 
-    const eventDishs = await database.event_dishes.findFirst({
+    const eventDish = await database.eventDish.findUnique({
       where: {
         id,
-        tenant_id: tenantId,
+        tenantId,
+        deletedAt: null
       },
     });
 
-    if (!eventDishs) {
-      return manifestErrorResponse("Not found", 404);
+    if (!eventDish) {
+      return manifestErrorResponse("EventDish not found", 404);
     }
 
-    return manifestSuccessResponse({ eventDishs });
+    return manifestSuccessResponse({ eventDish });
   } catch (error) {
-    console.error("Error fetching eventDishs:", error);
+    console.error("Error fetching eventDish:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

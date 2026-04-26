@@ -2,15 +2,14 @@
 // Get a single knowledge base entry by slug
 
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { captureException } from "@sentry/nextjs";
+import { database } from "@/lib/database";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
-
-import { database } from "@/lib/database";
 
 // GET /api/knowledge-base/entries/[slug] - Get entry by slug
 export async function GET(

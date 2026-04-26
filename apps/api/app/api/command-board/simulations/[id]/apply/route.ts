@@ -10,19 +10,18 @@
  */
 
 import { auth } from "@repo/auth/server";
-import { database, EntityType } from "@repo/database";
+import { database, type EntityType } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type {
-  BoardDelta,
-  BoardProjection,
-  BoardGroup,
-  BoardAnnotation,
   EntityType as ApiEntityType,
-} from "../../../types"
-
-import { captureException } from "@sentry/nextjs";
+  BoardAnnotation,
+  BoardDelta,
+  BoardGroup,
+  BoardProjection,
+} from "../../../types";
 
 interface RouteContext {
   params: Promise<{ id: string }>;

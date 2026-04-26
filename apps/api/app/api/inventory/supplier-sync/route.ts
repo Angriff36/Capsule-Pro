@@ -15,15 +15,14 @@ import {
   connectorRegistry,
   SupplierSyncService,
 } from "@repo/supplier-connectors";
-import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { captureException } from "@sentry/nextjs";
+import type { NextRequest } from "next/server";
+import { z } from "zod";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
-
-import { z } from "zod";
 
 export const runtime = "nodejs";
 

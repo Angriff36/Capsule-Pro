@@ -1,6 +1,5 @@
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -38,6 +37,7 @@ import {
   Truck,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 
 interface RouteStop {
   id: string;
@@ -161,11 +161,14 @@ export function RoutesView() {
 
   const handleStartRoute = async (routeId: string) => {
     try {
-      const res = await apiFetch("/api/logistics/routes/commands/update-status", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ routeId, status: "in_progress" }),
-      });
+      const res = await apiFetch(
+        "/api/logistics/routes/commands/update-status",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ routeId, status: "in_progress" }),
+        }
+      );
       const data = await res.json();
       if (data.route) {
         setRoutes((prev) =>
@@ -181,11 +184,14 @@ export function RoutesView() {
 
   const handleCompleteRoute = async (routeId: string) => {
     try {
-      const res = await apiFetch("/api/logistics/routes/commands/update-status", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ routeId, status: "completed" }),
-      });
+      const res = await apiFetch(
+        "/api/logistics/routes/commands/update-status",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ routeId, status: "completed" }),
+        }
+      );
       const data = await res.json();
       if (data.route) {
         setRoutes((prev) =>

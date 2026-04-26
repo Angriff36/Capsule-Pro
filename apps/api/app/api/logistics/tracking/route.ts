@@ -63,9 +63,7 @@ export async function GET(request: NextRequest) {
     // Get location info for origins/destinations
     const locationIds = [
       ...new Set(
-        allShipments
-          .map((s) => s.locationId)
-          .filter(Boolean) as string[]
+        allShipments.map((s) => s.locationId).filter(Boolean) as string[]
       ),
     ];
 
@@ -85,9 +83,7 @@ export async function GET(request: NextRequest) {
     // Get supplier info
     const supplierIds = [
       ...new Set(
-        allShipments
-          .map((s) => s.supplierId)
-          .filter(Boolean) as string[]
+        allShipments.map((s) => s.supplierId).filter(Boolean) as string[]
       ),
     ];
 
@@ -121,25 +117,17 @@ export async function GET(request: NextRequest) {
 
     // Get driver and vehicle info for routes
     const driverIds = [
-      ...new Set(
-        routes
-          .map((r) => r.driverId)
-          .filter(Boolean) as string[]
-      ),
+      ...new Set(routes.map((r) => r.driverId).filter(Boolean) as string[]),
     ];
     const vehicleIds = [
-      ...new Set(
-        routes
-          .map((r) => r.vehicleId)
-          .filter(Boolean) as string[]
-      ),
+      ...new Set(routes.map((r) => r.vehicleId).filter(Boolean) as string[]),
     ];
 
-    let driverMap: Record<
+    let driverMap: Record<string, { name: string; phone: string | null }> = {};
+    let vehicleMap: Record<
       string,
-      { name: string; phone: string | null }
+      { make: string; model: string; plateNumber?: string }
     > = {};
-    let vehicleMap: Record<string, { make: string; model: string; plateNumber?: string }> = {};
 
     if (driverIds.length > 0) {
       const drivers = await database.$queryRaw<
@@ -188,12 +176,8 @@ export async function GET(request: NextRequest) {
           r.stops.some((s) => s.locationId === shipment.locationId)
       );
 
-      const driver = route?.driverId
-        ? driverMap[route.driverId]
-        : null;
-      const vehicle = route?.vehicleId
-        ? vehicleMap[route.vehicleId]
-        : null;
+      const driver = route?.driverId ? driverMap[route.driverId] : null;
+      const vehicle = route?.vehicleId ? vehicleMap[route.vehicleId] : null;
 
       const location = shipment.locationId
         ? locationMap[shipment.locationId]
@@ -233,14 +217,12 @@ export async function GET(request: NextRequest) {
         {
           status: "in_transit",
           timestamp:
-            shipment.status === "in_transit" ||
-            shipment.status === "delivered"
+            shipment.status === "in_transit" || shipment.status === "delivered"
               ? new Date().toISOString()
               : "",
           description: "En route to destination",
           completed:
-            shipment.status === "in_transit" ||
-            shipment.status === "delivered",
+            shipment.status === "in_transit" || shipment.status === "delivered",
         },
         {
           status: "arriving",
@@ -250,8 +232,7 @@ export async function GET(request: NextRequest) {
         },
         {
           status: "delivered",
-          timestamp:
-            shipment.actualDeliveryDate?.toISOString() || "",
+          timestamp: shipment.actualDeliveryDate?.toISOString() || "",
           description: "Delivered and confirmed",
           completed: shipment.status === "delivered",
         },
@@ -277,7 +258,9 @@ export async function GET(request: NextRequest) {
               ? baseLng + jitter
               : baseLng - 0.01,
         heading:
-          shipment.status === "in_transit" ? Math.floor(Math.random() * 360) : 0,
+          shipment.status === "in_transit"
+            ? Math.floor(Math.random() * 360)
+            : 0,
         speed:
           shipment.status === "in_transit"
             ? 20 + Math.floor(Math.random() * 20)
@@ -313,12 +296,8 @@ export async function GET(request: NextRequest) {
       active: deliveries.filter(
         (d) => d.status === "in_transit" || d.status === "arriving"
       ).length,
-      dispatched: deliveries.filter(
-        (d) => d.status === "dispatched"
-      ).length,
-      delivered: deliveries.filter(
-        (d) => d.status === "delivered"
-      ).length,
+      dispatched: deliveries.filter((d) => d.status === "dispatched").length,
+      delivered: deliveries.filter((d) => d.status === "delivered").length,
     };
 
     return manifestSuccessResponse({ deliveries, stats });

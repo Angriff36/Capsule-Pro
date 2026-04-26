@@ -1,6 +1,5 @@
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -20,6 +19,7 @@ import {
 } from "@repo/design-system/components/ui/select";
 import { Loader2, Sparkles, User, Users } from "lucide-react";
 import { useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 
 interface StaffRole {
   role: string;

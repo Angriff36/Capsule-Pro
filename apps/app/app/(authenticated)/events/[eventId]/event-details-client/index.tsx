@@ -1,12 +1,12 @@
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
 import type { Event } from "@repo/database";
 import { GridBackground } from "@repo/design-system/components/ui/grid-background";
 import { Separator } from "@repo/design-system/components/ui/separator";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 import { useSuggestions } from "../../../kitchen/lib/use-suggestions";
 import { updateEvent } from "../../actions";
 import {

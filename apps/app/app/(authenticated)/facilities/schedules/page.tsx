@@ -1,6 +1,5 @@
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -56,6 +55,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 import { FacilitiesNavigation } from "../components/facilities-navigation";
 
 interface Schedule {
@@ -129,11 +129,14 @@ export default function SchedulesPage() {
   const handleComplete = async (scheduleId: string) => {
     setCompleting(scheduleId);
     try {
-      const res = await apiFetch("/api/facilities/schedules/commands/complete", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ scheduleId }),
-      });
+      const res = await apiFetch(
+        "/api/facilities/schedules/commands/complete",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ scheduleId }),
+        }
+      );
       const data = await res.json();
       if (data.success) await loadData();
     } catch (error) {

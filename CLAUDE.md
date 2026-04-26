@@ -149,6 +149,6 @@ Last: [first session]
 
 ## Last Session Bridge
 [Emergency bridge — running bridge was not updated]
-Files: apps/app/app/(authenticated)/knowledge-base/knowledge-base-client.tsx (edit)
+No changes or facts in this session.
 
 # === END COGNILAYER ===

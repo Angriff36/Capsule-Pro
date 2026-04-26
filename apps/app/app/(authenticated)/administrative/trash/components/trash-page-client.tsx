@@ -1,6 +1,5 @@
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -38,6 +37,7 @@ import {
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 import { Header } from "../../../components/header";
 import { DependencyAnalysisDialog } from "./dependency-analysis-dialog";
 

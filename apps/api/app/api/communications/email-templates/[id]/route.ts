@@ -1,46 +1,45 @@
-// Auto-generated Next.js API route for EmailTemplate
+// Auto-generated Next.js API detail route for EmailTemplate
 // Generated from Manifest IR - DO NOT EDIT
 
-import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { database } from "@/lib/database";
-import {
-  manifestErrorResponse,
-  manifestSuccessResponse,
-} from "@/lib/manifest-response";
+import { database } from "@repo/database";
+import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import { auth } from "@repo/auth/server";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { orgId, userId } = await auth();
-    if (!(userId && orgId)) {
-      return manifestErrorResponse("Unauthorized", 401);
-    }
+  const { orgId, userId } = await auth();
+  if (!(userId && orgId)) {
+    return manifestErrorResponse("Unauthorized", 401);
+  }
 
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return manifestErrorResponse("Tenant not found", 400);
-    }
+  const tenantId = await getTenantIdForOrg(orgId);
+
+  if (!tenantId) {
+    return manifestErrorResponse("Tenant not found", 400);
+  }
 
     const { id } = await params;
 
-    const emailTemplates = await database.email_templates.findFirst({
+    const emailTemplate = await database.emailTemplate.findUnique({
       where: {
         id,
-        tenant_id: tenantId,
+        tenantId,
+        deletedAt: null
       },
     });
 
-    if (!emailTemplates) {
-      return manifestErrorResponse("Not found", 404);
+    if (!emailTemplate) {
+      return manifestErrorResponse("EmailTemplate not found", 404);
     }
 
-    return manifestSuccessResponse({ emailTemplates });
+    return manifestSuccessResponse({ emailTemplate });
   } catch (error) {
-    console.error("Error fetching emailTemplates:", error);
+    console.error("Error fetching emailTemplate:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

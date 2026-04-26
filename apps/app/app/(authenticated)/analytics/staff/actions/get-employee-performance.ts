@@ -136,12 +136,12 @@ export async function getEmployeePerformance(
     }>
   >(
     `
-    SELECT 
+    SELECT
       COUNT(*) as total_shifts,
       COUNT(*) as attended_shifts,
-      COUNT(DISTINCT CASE 
+      COUNT(DISTINCT CASE
         WHEN te.clock_in::time <= ss.start_time::time + INTERVAL '15 minutes'
-        THEN te.id 
+        THEN te.id
       END) as punctual_shifts,
       COALESCE(SUM(
         CASE
@@ -157,11 +157,12 @@ export async function getEmployeePerformance(
       AND DATE(te.clock_in) = ss.shift_date
     WHERE te.tenant_id = $1
       AND te.employee_id = $2
-      AND te.clock_in >= $2
+      AND te.clock_in >= $3
       AND te.deleted_at IS NULL
     `,
     tenantId,
-    employeeId
+    employeeId,
+    threeMonthsAgo
   );
 
   const clientInteractionCount = await database.$queryRawUnsafe<
@@ -172,11 +173,12 @@ export async function getEmployeePerformance(
     FROM tenant_crm.client_interactions
     WHERE tenant_id = $1
       AND employee_id = $2
-      AND interaction_date >= $2
+      AND interaction_date >= $3
       AND deleted_at IS NULL
     `,
     tenantId,
-    employeeId
+    employeeId,
+    threeMonthsAgo
   );
 
   const eventParticipationCount = await database.$queryRawUnsafe<
@@ -200,16 +202,17 @@ export async function getEmployeePerformance(
     }>
   >(
     `
-    SELECT 
+    SELECT
       COUNT(*) as progress_count,
       COUNT(CASE WHEN progress_type = 'status_change' AND old_status = 'in_progress' AND new_status = 'pending' THEN 1 END) as rework_count
     FROM tenant_kitchen.task_progress
     WHERE tenant_id = $1
       AND employee_id = $2
-      AND created_at >= $2
+      AND created_at >= $3
     `,
     tenantId,
-    employeeId
+    employeeId,
+    threeMonthsAgo
   );
 
   const taskStats = taskMetrics[0];

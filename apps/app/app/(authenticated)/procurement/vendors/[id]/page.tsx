@@ -1,6 +1,5 @@
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -50,6 +49,7 @@ import {
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 import { formatDate } from "../../components/po-shared";
 import {
   formatPaymentTerms,
@@ -178,11 +178,14 @@ export default function VendorDetailPage() {
   const handleAddContact = async () => {
     if (!contactForm.contactName.trim()) return;
     try {
-      const res = await apiFetch("/api/procurement/vendors/commands/add-contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ vendorId, ...contactForm }),
-      });
+      const res = await apiFetch(
+        "/api/procurement/vendors/commands/add-contact",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ vendorId, ...contactForm }),
+        }
+      );
       const data = await res.json();
       if (data.success) {
         setContactDialogOpen(false);

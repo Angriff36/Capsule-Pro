@@ -6,10 +6,10 @@
 
 import { auth } from "@repo/auth/server";
 import { database, type Prisma } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { InvariantError } from "../../../../lib/invariant";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
-import { captureException } from "@sentry/nextjs";
 import type {
   ContractListItem,
   ContractListResponse,

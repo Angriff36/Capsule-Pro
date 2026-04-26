@@ -7,17 +7,16 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import type {
+  BoardAnnotation,
+  BoardGroup,
+  BoardProjection,
   SimulationContext,
   SimulationStatus,
-  BoardProjection,
-  BoardGroup,
-  BoardAnnotation,
-} from "../../types"
-
-import { captureException } from "@sentry/nextjs";
+} from "../../types";
 
 interface RouteContext {
   params: Promise<{ id: string }>;

@@ -288,55 +288,45 @@ export async function updateLaborBudget(
   budgetId: string,
   updates: Partial<Omit<LaborBudgetInput, "tenantId">>
 ) {
-  const updateFields: string[] = [];
-  const values: (string | number | Date | boolean | null)[] = [];
+  const setClauses: Prisma.Sql[] = [];
 
   if (updates.name !== undefined) {
-    updateFields.push("name = $2");
-    values.push(updates.name);
+    setClauses.push(Prisma.sql`name = ${updates.name}`);
   }
   if (updates.description !== undefined) {
-    updateFields.push(`description = $${values.length + 2}`);
-    values.push(updates.description);
+    setClauses.push(Prisma.sql`description = ${updates.description}`);
   }
   if (updates.budgetTarget !== undefined) {
-    updateFields.push(`budget_target = $${values.length + 2}`);
-    values.push(updates.budgetTarget);
+    setClauses.push(Prisma.sql`budget_target = ${updates.budgetTarget}`);
   }
   if (updates.status !== undefined) {
-    updateFields.push(`status = $${values.length + 2}`);
-    values.push(updates.status);
+    setClauses.push(Prisma.sql`status = ${updates.status}`);
   }
   if (updates.overrideReason !== undefined) {
-    updateFields.push(`override_reason = $${values.length + 2}`);
-    values.push(updates.overrideReason);
+    setClauses.push(Prisma.sql`override_reason = ${updates.overrideReason}`);
   }
   if (updates.threshold80Pct !== undefined) {
-    updateFields.push(`threshold_80_pct = $${values.length + 2}`);
-    values.push(updates.threshold80Pct);
+    setClauses.push(Prisma.sql`threshold_80_pct = ${updates.threshold80Pct}`);
   }
   if (updates.threshold90Pct !== undefined) {
-    updateFields.push(`threshold_90_pct = $${values.length + 2}`);
-    values.push(updates.threshold90Pct);
+    setClauses.push(Prisma.sql`threshold_90_pct = ${updates.threshold90Pct}`);
   }
   if (updates.threshold100Pct !== undefined) {
-    updateFields.push(`threshold_100_pct = $${values.length + 2}`);
-    values.push(updates.threshold100Pct);
+    setClauses.push(
+      Prisma.sql`threshold_100_pct = ${updates.threshold100Pct}`
+    );
   }
 
-  if (updateFields.length === 0) {
+  if (setClauses.length === 0) {
     return null;
   }
 
-  updateFields.push("updated_at = CURRENT_TIMESTAMP");
+  setClauses.push(Prisma.sql`updated_at = CURRENT_TIMESTAMP`);
 
   const result = await database.$queryRaw<Array<{ id: string; name: string }>>(
     Prisma.sql`
       UPDATE tenant_staff.labor_budgets
-      SET ${Prisma.join(
-        updateFields.map((f) => Prisma.raw(f)),
-        ", "
-      )}
+      SET ${Prisma.join(setClauses, ", ")}
       WHERE tenant_id = ${tenantId}
         AND id = ${budgetId}
         AND deleted_at IS NULL

@@ -6,7 +6,6 @@
 
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import { ButtonGroup } from "@repo/design-system/components/ui/button-group";
@@ -14,6 +13,7 @@ import { Card } from "@repo/design-system/components/ui/card";
 import { format } from "date-fns";
 import { Download, Filter, Plus, Search } from "lucide-react";
 import { useEffect, useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 
 type PaymentStatus =
   | "PENDING"

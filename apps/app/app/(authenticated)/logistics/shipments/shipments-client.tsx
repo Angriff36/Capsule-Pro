@@ -1,6 +1,5 @@
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -48,6 +47,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 
 // Types matching the API
 interface Shipment {
@@ -212,11 +212,14 @@ export function ShipmentsClient() {
       const command = commandMap[status];
       if (!command) return;
 
-      const res = await apiFetch(`/api/shipments/shipment/commands/${command}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ shipmentId }),
-      });
+      const res = await apiFetch(
+        `/api/shipments/shipment/commands/${command}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ shipmentId }),
+        }
+      );
       const data = await res.json();
       if (data.shipment) {
         setShipments((prev) =>

@@ -6,14 +6,12 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
-import { captureException } from "@sentry/nextjs";
 import {
-  type SendSmsOptions
-,
-type SmsRecipient
-,
+  type SendSmsOptions,
+  type SmsRecipient,
   sendSmsNotification,
 } from "@repo/notifications";
+import { captureException } from "@sentry/nextjs";
 
 import { type NextRequest, NextResponse } from "next/server";
 import { z } from "zod";

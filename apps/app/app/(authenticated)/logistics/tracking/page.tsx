@@ -1,6 +1,5 @@
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -22,6 +21,7 @@ import {
   Truck,
 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 
 // Types
 interface DeliveryPosition {
@@ -219,9 +219,7 @@ function MiniMap({ deliveries }: { deliveries: ActiveDelivery[] }) {
         </div>
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-green-500" />
-          <span>
-            Delivered ({deliveries.length - activeDeliveries.length})
-          </span>
+          <span>Delivered ({deliveries.length - activeDeliveries.length})</span>
         </div>
       </div>
 
@@ -270,7 +268,11 @@ function DeliveryTimeline({ timeline }: { timeline: TimelineEvent[] }) {
 
 export default function TrackingPage() {
   const [deliveries, setDeliveries] = useState<ActiveDelivery[]>([]);
-  const [stats, setStats] = useState({ active: 0, dispatched: 0, delivered: 0 });
+  const [stats, setStats] = useState({
+    active: 0,
+    dispatched: 0,
+    delivered: 0,
+  });
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState(new Date());
   const [refreshing, setRefreshing] = useState(false);
@@ -397,11 +399,13 @@ export default function TrackingPage() {
         <Card>
           <CardContent className="py-16 text-center">
             <Truck className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
-            <h3 className="font-semibold text-lg mb-1">No deliveries to track</h3>
+            <h3 className="font-semibold text-lg mb-1">
+              No deliveries to track
+            </h3>
             <p className="text-muted-foreground text-sm max-w-md mx-auto">
-              Create shipments and assign them to delivery routes to see real-time
-              tracking here. Go to Shipments to create a new shipment, then use
-              Dispatch to assign drivers and vehicles.
+              Create shipments and assign them to delivery routes to see
+              real-time tracking here. Go to Shipments to create a new shipment,
+              then use Dispatch to assign drivers and vehicles.
             </p>
           </CardContent>
         </Card>
@@ -421,9 +425,7 @@ export default function TrackingPage() {
             {/* Delivery List */}
             <Card className="overflow-auto max-h-[500px]">
               <CardHeader className="pb-2">
-                <CardTitle className="text-base">
-                  Active Deliveries
-                </CardTitle>
+                <CardTitle className="text-base">Active Deliveries</CardTitle>
                 <CardDescription>Click a delivery for details</CardDescription>
               </CardHeader>
               <CardContent className="space-y-2">
@@ -452,9 +454,7 @@ export default function TrackingPage() {
                         <span className="font-mono text-xs">
                           {delivery.shipmentNumber}
                         </span>
-                        <Badge className={config.color}>
-                          {config.label}
-                        </Badge>
+                        <Badge className={config.color}>{config.label}</Badge>
                       </div>
                       <p className="text-sm font-medium">
                         {delivery.destination}
@@ -467,8 +467,7 @@ export default function TrackingPage() {
                           <>
                             <span>·</span>
                             <span>
-                              ETA{" "}
-                              {formatTime(delivery.estimatedArrival)}
+                              ETA {formatTime(delivery.estimatedArrival)}
                             </span>
                           </>
                         )}
@@ -554,9 +553,7 @@ export default function TrackingPage() {
                       <div className="space-y-1 text-sm">
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Speed</span>
-                          <span>
-                            {selected.position.speed.toFixed(0)} mph
-                          </span>
+                          <span>{selected.position.speed.toFixed(0)} mph</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">Heading</span>
@@ -566,9 +563,7 @@ export default function TrackingPage() {
                           <span className="text-muted-foreground">
                             Last update
                           </span>
-                          <span>
-                            {formatTime(selected.position.updatedAt)}
-                          </span>
+                          <span>{formatTime(selected.position.updatedAt)}</span>
                         </div>
                       </div>
                     </div>

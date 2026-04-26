@@ -1,47 +1,45 @@
-// Auto-generated Next.js API route for CommandBoardConnection
+// Auto-generated Next.js API detail route for CommandBoardConnection
 // Generated from Manifest IR - DO NOT EDIT
 
-import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { database } from "@/lib/database";
-import {
-  manifestErrorResponse,
-  manifestSuccessResponse,
-} from "@/lib/manifest-response";
+import { database } from "@repo/database";
+import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import { auth } from "@repo/auth/server";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { orgId, userId } = await auth();
-    if (!(userId && orgId)) {
-      return manifestErrorResponse("Unauthorized", 401);
-    }
+  const { orgId, userId } = await auth();
+  if (!(userId && orgId)) {
+    return manifestErrorResponse("Unauthorized", 401);
+  }
 
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return manifestErrorResponse("Tenant not found", 400);
-    }
+  const tenantId = await getTenantIdForOrg(orgId);
+
+  if (!tenantId) {
+    return manifestErrorResponse("Tenant not found", 400);
+  }
 
     const { id } = await params;
 
-    const commandBoardConnections =
-      await database.commandBoardConnection.findFirst({
-        where: {
-          id,
-          tenantId,
-        },
-      });
+    const commandBoardConnection = await database.commandBoardConnection.findUnique({
+      where: {
+        id,
+        tenantId,
+        deletedAt: null
+      },
+    });
 
-    if (!commandBoardConnections) {
-      return manifestErrorResponse("Not found", 404);
+    if (!commandBoardConnection) {
+      return manifestErrorResponse("CommandBoardConnection not found", 404);
     }
 
-    return manifestSuccessResponse({ commandBoardConnections });
+    return manifestSuccessResponse({ commandBoardConnection });
   } catch (error) {
-    console.error("Error fetching commandBoardConnections:", error);
+    console.error("Error fetching commandBoardConnection:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

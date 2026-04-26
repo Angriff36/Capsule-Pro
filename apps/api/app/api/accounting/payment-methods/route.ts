@@ -9,9 +9,9 @@
  */
 
 import { database } from "@repo/database";
+import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
-import { captureException } from "@sentry/nextjs";
 import {
   getDisplayInfo,
   type PaymentMethodListResponse,

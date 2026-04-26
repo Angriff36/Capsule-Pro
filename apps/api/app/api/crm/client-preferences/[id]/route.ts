@@ -1,46 +1,45 @@
-// Auto-generated Next.js API route for ClientPreference
+// Auto-generated Next.js API detail route for ClientPreference
 // Generated from Manifest IR - DO NOT EDIT
 
-import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { database } from "@/lib/database";
-import {
-  manifestErrorResponse,
-  manifestSuccessResponse,
-} from "@/lib/manifest-response";
+import { database } from "@repo/database";
+import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import { auth } from "@repo/auth/server";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { orgId, userId } = await auth();
-    if (!(userId && orgId)) {
-      return manifestErrorResponse("Unauthorized", 401);
-    }
+  const { orgId, userId } = await auth();
+  if (!(userId && orgId)) {
+    return manifestErrorResponse("Unauthorized", 401);
+  }
 
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return manifestErrorResponse("Tenant not found", 400);
-    }
+  const tenantId = await getTenantIdForOrg(orgId);
+
+  if (!tenantId) {
+    return manifestErrorResponse("Tenant not found", 400);
+  }
 
     const { id } = await params;
 
-    const clientPreferences = await database.clientPreference.findFirst({
+    const clientPreference = await database.clientPreference.findUnique({
       where: {
         id,
         tenantId,
+        deletedAt: null
       },
     });
 
-    if (!clientPreferences) {
-      return manifestErrorResponse("Not found", 404);
+    if (!clientPreference) {
+      return manifestErrorResponse("ClientPreference not found", 404);
     }
 
-    return manifestSuccessResponse({ clientPreferences });
+    return manifestSuccessResponse({ clientPreference });
   } catch (error) {
-    console.error("Error fetching clientPreferences:", error);
+    console.error("Error fetching clientPreference:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

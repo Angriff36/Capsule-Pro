@@ -6,9 +6,9 @@
 // This endpoint returns an empty response until the model is added.
 
 import { auth } from "@repo/auth/server";
+import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { captureException } from "@sentry/nextjs";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,

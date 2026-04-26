@@ -1,13 +1,12 @@
 import { auth } from "@repo/auth/server";
-import { database } from "@/lib/database";
 import { captureException } from "@sentry/nextjs";
+import type { NextRequest } from "next/server";
+import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { database } from "@/lib/database";
 import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
-
-import type { NextRequest } from "next/server";
-import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 export async function GET(request: NextRequest) {
   try {

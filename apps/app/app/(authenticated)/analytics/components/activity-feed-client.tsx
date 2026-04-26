@@ -7,7 +7,6 @@
 
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
 import {
   ActivityFeed,
   type ActivityFeedItem,
@@ -20,6 +19,7 @@ import { Button } from "@repo/design-system/components/ui/button";
 import { Card, CardContent } from "@repo/design-system/components/ui/card";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 
 interface ActivityFeedClientProps {
   tenantId: string;
@@ -181,7 +181,9 @@ export function ActivityTimelineWidget({
     const fetchRecentActivities = async () => {
       setIsLoading(true);
       try {
-        const response = await apiFetch(`/api/activity-feed/list?limit=${limit}`);
+        const response = await apiFetch(
+          `/api/activity-feed/list?limit=${limit}`
+        );
         if (response.ok) {
           const data: ActivityFeedResponse = await response.json();
           setActivities(data.activities);

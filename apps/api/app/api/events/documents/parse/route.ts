@@ -9,13 +9,13 @@
 
 import { auth } from "@repo/auth/server";
 import { database, Prisma } from "@repo/database";
-import { captureException } from "@sentry/nextjs";
 import type {
   MenuItem,
   ParsedEvent,
   ProcessedDocument,
   StaffShift,
 } from "@repo/event-parser";
+import { captureException } from "@sentry/nextjs";
 
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";

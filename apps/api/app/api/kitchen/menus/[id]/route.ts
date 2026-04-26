@@ -1,46 +1,45 @@
-// Auto-generated Next.js API route for Menu
+// Auto-generated Next.js API detail route for Menu
 // Generated from Manifest IR - DO NOT EDIT
 
-import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { database } from "@/lib/database";
-import {
-  manifestErrorResponse,
-  manifestSuccessResponse,
-} from "@/lib/manifest-response";
+import { database } from "@repo/database";
+import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import { auth } from "@repo/auth/server";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { orgId, userId } = await auth();
-    if (!(userId && orgId)) {
-      return manifestErrorResponse("Unauthorized", 401);
-    }
+  const { orgId, userId } = await auth();
+  if (!(userId && orgId)) {
+    return manifestErrorResponse("Unauthorized", 401);
+  }
 
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return manifestErrorResponse("Tenant not found", 400);
-    }
+  const tenantId = await getTenantIdForOrg(orgId);
+
+  if (!tenantId) {
+    return manifestErrorResponse("Tenant not found", 400);
+  }
 
     const { id } = await params;
 
-    const menus = await database.menu.findFirst({
+    const menu = await database.menu.findUnique({
       where: {
         id,
         tenantId,
+        deletedAt: null
       },
     });
 
-    if (!menus) {
-      return manifestErrorResponse("Not found", 404);
+    if (!menu) {
+      return manifestErrorResponse("Menu not found", 404);
     }
 
-    return manifestSuccessResponse({ menus });
+    return manifestSuccessResponse({ menu });
   } catch (error) {
-    console.error("Error fetching menus:", error);
+    console.error("Error fetching menu:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

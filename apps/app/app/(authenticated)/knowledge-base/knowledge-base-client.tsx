@@ -1,6 +1,5 @@
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Dialog,
@@ -22,6 +21,7 @@ import {
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { FileText, Loader2, Plus, Search } from "lucide-react";
 import { useEffect, useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 
 interface KnowledgeBaseEntry {
   id: string;
@@ -93,23 +93,26 @@ export default function KnowledgeBaseClient() {
 
     setCreating(true);
     try {
-      const res = await apiFetch("/api/knowledge-base/entries/commands/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: createForm.title,
-          slug: createForm.slug,
-          content: createForm.content || null,
-          category: createForm.category || null,
-          tags: createForm.tags
-            ? createForm.tags
-                .split(",")
-                .map((t) => t.trim())
-                .filter(Boolean)
-            : [],
-          status: createForm.status,
-        }),
-      });
+      const res = await apiFetch(
+        "/api/knowledge-base/entries/commands/create",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: createForm.title,
+            slug: createForm.slug,
+            content: createForm.content || null,
+            category: createForm.category || null,
+            tags: createForm.tags
+              ? createForm.tags
+                  .split(",")
+                  .map((t) => t.trim())
+                  .filter(Boolean)
+              : [],
+            status: createForm.status,
+          }),
+        }
+      );
       const data = await res.json();
       if (data.success) {
         if (createForm.status === "published") {

@@ -1,46 +1,45 @@
-// Auto-generated Next.js API route for BudgetAlert
+// Auto-generated Next.js API detail route for BudgetAlert
 // Generated from Manifest IR - DO NOT EDIT
 
-import { auth } from "@repo/auth/server";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { database } from "@/lib/database";
-import {
-  manifestErrorResponse,
-  manifestSuccessResponse,
-} from "@/lib/manifest-response";
+import { database } from "@repo/database";
+import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
+import { auth } from "@repo/auth/server";
 
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { orgId, userId } = await auth();
-    if (!(userId && orgId)) {
-      return manifestErrorResponse("Unauthorized", 401);
-    }
+  const { orgId, userId } = await auth();
+  if (!(userId && orgId)) {
+    return manifestErrorResponse("Unauthorized", 401);
+  }
 
-    const tenantId = await getTenantIdForOrg(orgId);
-    if (!tenantId) {
-      return manifestErrorResponse("Tenant not found", 400);
-    }
+  const tenantId = await getTenantIdForOrg(orgId);
+
+  if (!tenantId) {
+    return manifestErrorResponse("Tenant not found", 400);
+  }
 
     const { id } = await params;
 
-    const budgetAlerts = await database.budgetAlert.findFirst({
+    const budgetAlert = await database.budgetAlert.findUnique({
       where: {
         id,
         tenantId,
+        deletedAt: null
       },
     });
 
-    if (!budgetAlerts) {
-      return manifestErrorResponse("Not found", 404);
+    if (!budgetAlert) {
+      return manifestErrorResponse("BudgetAlert not found", 404);
     }
 
-    return manifestSuccessResponse({ budgetAlerts });
+    return manifestSuccessResponse({ budgetAlert });
   } catch (error) {
-    console.error("Error fetching budgetAlerts:", error);
+    console.error("Error fetching budgetAlert:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

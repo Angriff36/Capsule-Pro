@@ -1,6 +1,5 @@
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -39,6 +38,7 @@ import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { Check, Package, Plus, Truck, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 
 interface TransferItem {
   id: string;
@@ -98,7 +98,9 @@ export function InventoryTransfersClient() {
       if (statusFilter !== "all") {
         params.append("status", statusFilter);
       }
-      const response = await apiFetch(`/api/inventory/transfers/list?${params}`);
+      const response = await apiFetch(
+        `/api/inventory/transfers/list?${params}`
+      );
       const data = await response.json();
       setTransfers(data.transfers || []);
     } catch (error) {
@@ -110,16 +112,19 @@ export function InventoryTransfersClient() {
 
   const handleCreateTransfer = async () => {
     try {
-      const response = await apiFetch("/api/inventory/transfers/commands/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          fromLocationId: fromLocation,
-          toLocationId: toLocation,
-          notes,
-          items: transferItems.filter((i) => i.itemId && i.quantity),
-        }),
-      });
+      const response = await apiFetch(
+        "/api/inventory/transfers/commands/create",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            fromLocationId: fromLocation,
+            toLocationId: toLocation,
+            notes,
+            items: transferItems.filter((i) => i.itemId && i.quantity),
+          }),
+        }
+      );
 
       if (response.ok) {
         toast.success("Transfer created successfully");
