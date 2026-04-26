@@ -37,6 +37,7 @@ const mocks = vi.hoisted(() => ({
   invoiceFindFirstMock: vi.fn(),
   invoiceUpdateMock: vi.fn(),
   requireTenantIdMock: vi.fn(),
+  checkSensitiveTenantRateLimitMock: vi.fn(),
 }));
 
 vi.mock("@repo/database", () => ({
@@ -56,11 +57,15 @@ vi.mock("@/app/lib/tenant", () => ({
   requireTenantId: mocks.requireTenantIdMock,
 }));
 
+vi.mock("@/lib/sensitive-rate-limit", () => ({
+  checkSensitiveTenantRateLimit: mocks.checkSensitiveTenantRateLimitMock,
+}));
+
 vi.mock("@sentry/nextjs", () => ({
   captureException: vi.fn(),
 }));
 
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { GET, POST, PUT } from "@/app/api/accounting/payments/[id]/route";
 
 function makeRequest(body?: unknown, method: "PUT" | "POST" | "GET" = "PUT") {
@@ -137,6 +142,10 @@ beforeEach(() => {
   mocks.paymentUpdateMock.mockReset();
   mocks.invoiceFindFirstMock.mockReset();
   mocks.invoiceUpdateMock.mockReset();
+  // Default: rate limit allows the request through.
+  // Tests that exercise the 429 path override per-call.
+  mocks.checkSensitiveTenantRateLimitMock.mockReset();
+  mocks.checkSensitiveTenantRateLimitMock.mockResolvedValue(null);
 });
 
 afterEach(() => {
@@ -442,5 +451,58 @@ describe("POST /api/accounting/payments/[id] — refund payment", () => {
 
     expect(res.status).toBe(500);
     expect(mocks.paymentUpdateMock).not.toHaveBeenCalled();
+  });
+});
+
+describe("sensitive rate limiting", () => {
+  // The PUT (process) and POST (refund) routes are financial mutations and
+  // sit behind a tighter per-tenant rate limiter. The 429 path MUST short-
+  // circuit before any DB lookup so a flood cannot exhaust DB connections.
+
+  it("PUT short-circuits with 429 when rate-limited and never touches DB", async () => {
+    const limited = NextResponse.json(
+      { message: "Too many requests. Please try again later." },
+      { status: 429 }
+    );
+    mocks.checkSensitiveTenantRateLimitMock.mockResolvedValueOnce(limited);
+
+    const res = await PUT(
+      makeRequest({ gatewayResponse: { code: "200", transactionId: "x" } }),
+      {
+        params: Promise.resolve({ id: PAYMENT_ID }),
+      }
+    );
+
+    expect(res.status).toBe(429);
+    // Critical assertion: rate limit fires BEFORE the DB lookup.
+    expect(mocks.paymentFindFirstMock).not.toHaveBeenCalled();
+    expect(mocks.paymentUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("POST short-circuits with 429 when rate-limited and never touches DB", async () => {
+    const limited = NextResponse.json(
+      { message: "Too many requests. Please try again later." },
+      { status: 429 }
+    );
+    mocks.checkSensitiveTenantRateLimitMock.mockResolvedValueOnce(limited);
+
+    const res = await POST(
+      makeRequest({ amount: 100, reason: "test" }, "POST"),
+      { params: Promise.resolve({ id: PAYMENT_ID }) }
+    );
+
+    expect(res.status).toBe(429);
+    expect(mocks.paymentFindFirstMock).not.toHaveBeenCalled();
+    expect(mocks.paymentUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("GET is NOT rate-limited (read-only, covered by global limiter)", async () => {
+    mocks.paymentFindFirstMock.mockResolvedValue(completedPayment);
+
+    await GET(makeRequest(undefined, "GET"), {
+      params: Promise.resolve({ id: PAYMENT_ID }),
+    });
+
+    expect(mocks.checkSensitiveTenantRateLimitMock).not.toHaveBeenCalled();
   });
 });

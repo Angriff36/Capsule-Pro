@@ -14,6 +14,7 @@
 import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
+import { checkSensitiveTenantRateLimit } from "@/lib/sensitive-rate-limit";
 import {
   captureException,
   type PaymentResponse,
@@ -68,6 +69,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
 export async function PUT(request: NextRequest, context: RouteContext) {
   try {
     const tenantId = await requireTenantId();
+    const rateLimited = await checkSensitiveTenantRateLimit(request, tenantId);
+    if (rateLimited) {
+      return rateLimited;
+    }
     const { id } = await context.params;
     const body = await request.json();
 
@@ -171,6 +176,10 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 export async function POST(request: NextRequest, context: RouteContext) {
   try {
     const tenantId = await requireTenantId();
+    const rateLimited = await checkSensitiveTenantRateLimit(request, tenantId);
+    if (rateLimited) {
+      return rateLimited;
+    }
     const { id } = await context.params;
     const body = await request.json();
 
