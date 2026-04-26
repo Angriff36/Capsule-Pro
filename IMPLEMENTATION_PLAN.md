@@ -1,6 +1,6 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-26 (seventeenth pass — Blockers 1, 4, 5, 6 resolved/verified)
+> **Last updated:** 2026-04-26 (eighteenth pass — cross-tenant leak fixes, recipe costing fixes, Goodshuffle sync fixes, falsy-value anti-pattern fix)
 > **Prior passes:** 2026-04-24 initial post-expansion audit → 2026-04-24 first re-verification → 2026-04-24 third-pass spot-check → 2026-04-24 fourth-pass package health → 2026-04-24 fifth-pass E2E audit → 2026-04-24 sixth-pass raw-SQL audit → 2026-04-24 seventh-pass supplementary raw-SQL audit → 2026-04-24 eighth-pass comprehensive raw-SQL audit → 2026-04-25 ninth-pass frontend health audit → 2026-04-25 tenth-pass mobile + public website audit → **2026-04-25 eleventh-pass auth, middleware & integration services audit** (3 sub-passes: initial 6-agent pass, 6-agent addendum, 5-agent credential/webhook deep-dive).
 > **Previous snapshot:** 2026-03-08 (stale — many claims falsified by post-expansion audit)
 > **Audit method:** initial 15+ parallel subagent investigations → 8-subagent re-verification → 10-subagent third-pass → 10-subagent fourth-pass → E2E fifth-pass → 20-subagent sixth-pass → 9-subagent seventh-pass → 15-subagent confirmation pass → 20-subagent eighth-pass raw-SQL audit → 24-subagent ninth-pass frontend health audit → 11-subagent tenth-pass mobile + public website audit → **17-subagent eleventh-pass auth/middleware/integration audit** (6 + 6 + 5 agents across 3 sub-passes) covering full auth chain trace, route-level auth enforcement scan, credential exposure scan across all directories, webhook receiver security deep-audit, all 16 lib files, and external integration packages. **All agent findings verified against actual codebase before reporting.**
@@ -1131,7 +1131,7 @@ Comprehensive utility library:
 
 Of 1,577 raw-SQL occurrences across 250 files (38 files use unsafe variants):
 
-- **5 CRITICAL** — (1) CRM scoring interpolates stored rule values; (2) Staffing coverage concatenates `locationId` into SQL; (3) Payroll approval history injects unsanitized `action`; (4) Kitchen allergens matrix directly interpolates user-controlled ID list into `$queryRawUnsafe`; (5) Admin trash list manually replaces `$N` placeholders with `'${param}'` via `Prisma.raw()`
+- **5 CRITICAL** — (1) CRM scoring interpolates stored rule values; (2) ~~Staffing coverage concatenates `locationId` into SQL~~ **N/A — FILE DOES NOT EXIST**; (3) Payroll approval history injects unsanitized `action`; (4) Kitchen allergens matrix directly interpolates user-controlled ID list into `$queryRawUnsafe`; (5) Admin trash list manually replaces `$N` placeholders with `'${param}'` via `Prisma.raw()`
 - **6 HIGH** — Dynamic column/ORDER BY identifiers without allowlist enforcement, unvalidated IN clauses, dynamic WHERE/SET in unsafe variants
 - **7 MEDIUM** — Correctness bugs from ternary expressions and type-cast patterns inside template literals
 - **7 tenant isolation gaps** — Missing `tenant_id` filter in 4 authenticated routes + 2 public routes + 1 service file
@@ -1144,7 +1144,7 @@ Of 1,577 raw-SQL occurrences across 250 files (38 files use unsafe variants):
 | # | File | Line | Pattern | Risk |
 |---|---|---|---|---|
 | 1 | `apps/api/app/api/crm/scoring/calculate/route.ts` | 145-157 | `$executeRawUnsafe` with SQL built by `buildRuleCondition()` which interpolates `rule.value` with only `'`→`''` escaping | **SQL injection**: rule values originate from user input stored in `crm_scoring_rules` table; single-quote escaping is insufficient for PostgreSQL. Also `FIELD_COLUMN_MAP[field] ?? field` at line 36 allows unvalidated column names. | **FIXED 2026-04-26** (commit eb3e6501e): Refactored `buildRuleCondition` to return `Prisma.Sql` fragment with bound parameters and allowlisted column reference; replaced `$executeRawUnsafe` loop with parameterized `$executeRaw(Prisma.sql\`...\`)` using `jsonb_build_object`; added `VALID_CONDITIONS` allowlist that returns null for unknown conditions; added deterministic reset-to-zero step before applying rules. |
-| 2 | `apps/api/app/api/staffing/coverage/route.ts` | 67, 90, 114, 130, 149 | `locationFilter = \`AND ss.location_id = '${locationId.replace(/'/g, "''")}'\`` injected into 5 `$queryRawUnsafe` calls | **SQL injection**: `locationId` from `searchParams.get("locationId")` — fully user-controlled. Quote-escaping insufficient. |
+| 2 | `apps/api/app/api/staffing/coverage/route.ts` | 67, 90, 114, 130, 149 | `locationFilter = \`AND ss.location_id = '${locationId.replace(/'/g, "''")}'\`` injected into 5 `$queryRawUnsafe` calls | **N/A — FILE DOES NOT EXIST.** The file was never created. This entry was based on a stale finding that referenced a planned but unimplemented route. |
 | 3 | `apps/api/app/api/payroll/approvals/history/route.ts` | 87 | `conditions.push(\`pah.action = '${action}'\`)` where `action` = `searchParams.get("action")` with NO validation. Injected via `Prisma.raw(whereClause)`. | **SQL injection**: `action` neither validated nor parameterized. `payrollRunId` IS UUID-validated at line 80 but `action` at line 87 is not. | **FIXED 2026-04-26** (commit eb3e6501e): Replaced raw string concatenation with parameterized `Prisma.sql` fragments via `Prisma.join`; added `ALLOWED_ACTIONS` allowlist for the `action` query param; `tenant_id` is now bound and cast as `${tenantId}::uuid`. |
 | 4 | `apps/api/app/api/kitchen/allergens/matrix/route.ts` | 115-116, 271-273 | `dishIds.map((id) => \`'\${id}'\`).join(", ")` — user-controlled `ids` query param directly interpolated into `$queryRawUnsafe` SQL string | ~~**SQL injection**~~ **FIXED 2026-04-26**: Replaced `$queryRawUnsafe` with `$queryRaw` using `Prisma.sql` tagged templates; replaced string interpolation with `Prisma.join(dishIds.map(id => Prisma.sql\`${id}::uuid\`))` for both `buildDishMatrix` and `buildRecipeMatrix`. |
 | 5 | `apps/api/app/api/administrative/trash/list/route.ts` | 739-744 | `Prisma.raw(dataSql.replace(/\$\d+/g, (match) => { return \`'\${params[idx]}'\` }))` — manual parameter binding via string replacement | ~~**SQL injection**~~ **FIXED 2026-04-26 (CRIT-2)**: Confirmed dead code (results discarded by loop 3). Both vulnerable loops deleted; sortBy/sortOrder allowlist added; regression test (`__tests__/administrative/trash-list-injection.test.ts`) pins that `$queryRaw`/`$queryRawUnsafe` are never invoked. |
@@ -1235,7 +1235,7 @@ Of 1,577 raw-SQL occurrences across 250 files (38 files use unsafe variants):
 ### Recommended Actions (priority order)
 
 1. ~~**CRITICAL**: Rewrite `apps/api/app/api/crm/scoring/calculate/route.ts:145-157` to use `Prisma.sql` or `$N` parameterized queries. Replace `buildRuleCondition()` with a parameterized approach. Fix `FIELD_COLUMN_MAP` fallback to reject unknown fields.~~ **RESOLVED (FIXED 2026-04-26, commit eb3e6501e)**
-2. **CRITICAL**: Fix `apps/api/app/api/staffing/coverage/route.ts:67,90,114,130,149` — replace string-concatenated `locationFilter` with `$N` parameterized placeholder.
+2. **CRITICAL**: ~~Fix `apps/api/app/api/staffing/coverage/route.ts:67,90,114,130,149` — replace string-concatenated `locationFilter` with `$N` parameterized placeholder.~~ **N/A — FILE DOES NOT EXIST.** The file was never created.
 3. ~~**CRITICAL**: Fix `apps/api/app/api/payroll/approvals/history/route.ts:87` — validate `action` against an allowlist or parameterize it.~~ **RESOLVED (FIXED 2026-04-26, commit eb3e6501e)**
 4. ~~**CRITICAL**: Rewrite `apps/api/app/api/kitchen/allergens/matrix/route.ts:115-116,271-273` — replace `dishIds.map(id => \`'\${id}'\`).join(",")` with `Prisma.join(dishIds)` or validate all IDs as UUIDs before interpolation.~~ **RESOLVED 2026-04-26**: Replaced `$queryRawUnsafe` with `$queryRaw` + `Prisma.sql` tagged templates using `Prisma.join(dishIds.map(id => Prisma.sql\`${id}::uuid\`))`.
 5. ~~**CRITICAL**: Verify whether `apps/api/app/api/administrative/trash/list/route.ts:739-744` is dead code. If live, rewrite to use proper parameterized queries instead of `'${params[idx]}'` string replacement.~~ **RESOLVED 2026-04-26 (CRIT-2)**: Verified dead code (results overwritten by subsequent loop 3 Prisma `findMany` block). Both vulnerable loops deleted; `Prisma` import removed; sortBy/sortOrder coerced to typed allowlist. Regression test pins no `$queryRaw`/`$queryRawUnsafe` usage on the GET path.
@@ -1246,7 +1246,7 @@ Of 1,577 raw-SQL occurrences across 250 files (38 files use unsafe variants):
 10. **HIGH**: Add tenant verification to public route queries in `public/contracts/[token]/route.ts:98` and `public/proposals/[token]/route.ts:121-172`.
 11. **HIGH**: Migrate audit-log routes from `$queryRawUnsafe` to `$queryRaw` tagged template with `Prisma.sql` fragment composition.
 12. **MEDIUM**: Fix the Blocker-6 correctness bug in logistics drivers update (already tracked).
-13. **MEDIUM**: Fix falsy-value bugs in facilities asset create/update (`0 || null` should be `0 ?? null`).
+13. ~~**MEDIUM**: Fix falsy-value bugs in facilities asset create/update (`0 || null` should be `0 ?? null`).~~ **RESOLVED 2026-04-26**: Part of systemic `|| null` → `?? null` migration across 11 files.
 14. **MEDIUM**: Fix inconsistent null handling in procurement vendor/budget updates (standardize on `!== undefined` checks).
 15. **MEDIUM**: Fix `kitchen/recipes/versions/compare/route.ts:155` string join for IN clause — use parameterized `ANY()`.
 16. **MEDIUM**: Add `tenant_id` filter to `kitchen/ai/bulk-generate/prep-tasks/service.ts:44-55`.
@@ -1275,7 +1275,7 @@ Key areas the 6th pass under-covered:
 | # | File | Line | Pattern | Risk |
 |---|---|---|---|---|
 | 6 | `apps/api/app/api/administrative/trash/list/route.ts` | 706-711 | `Prisma.raw(\`SELECT COUNT(*) as count FROM (${query.sql.replace(..., \` WHERE ${whereClause}\`)}) AS subq\`)` — second `Prisma.raw()` call injecting user `search` param into unparameterized SQL | **SQL injection**: The 6th pass flagged line 739-744 but missed this count query at line 707. `whereClause` includes `LOWER($2)` with user search term, but the `$2` is inside a `Prisma.raw()` string — NOT a Prisma parameter. |
-| 7 | `apps/api/app/api/collaboration/notifications/email/webhook/route.ts` | ~30-40 | `$queryRaw\`SELECT tenant_id, id FROM email_logs WHERE resend_id = ${resendId} LIMIT 1\`` with NO auth check | **Cross-tenant data leak**: No `auth()` call. Any caller can query any tenant's email logs by guessing/leaking a `resend_id`. The query returns `tenant_id` which is then used for subsequent tenant-scoped updates — an attacker can confirm tenant existence and enumerate email delivery records. |
+| 7 | `apps/api/app/api/collaboration/notifications/email/webhook/route.ts` | ~30-40 | `$queryRaw\`SELECT tenant_id, id FROM email_logs WHERE resend_id = ${resendId} LIMIT 1\`` with NO auth check | ~~**Cross-tenant data leak**: No `auth()` call. Any caller can query any tenant's email logs by guessing/leaking a `resend_id`.~~ **FIXED 2026-04-26**: Added Resend HMAC-SHA256 webhook signature verification (`verifyResendSignature`) with timestamp-based replay protection (5-minute window). Previously had zero authentication. Changed from `request.json()` to `request.text()` + `JSON.parse()` to preserve raw body for signature verification. |
 | 8 | `apps/api/app/outbox/publish/route.ts` | ~100-116 | `$queryRaw\`SELECT ... FROM "tenant"."OutboxEvent" WHERE "status" = 'pending' ORDER BY "createdAt" ASC LIMIT ${limit} FOR UPDATE SKIP LOCKED\`` — no `tenantId` filter | **Cross-tenant data access**: Bearer token auth only. SELECT returns events from ALL tenants. An attacker with the outbox token can read every tenant's outbox events including `payload` data. |
 | 9 | `apps/api/app/api/administrative/trash/list/route.ts` | 644-745 | Three sequential loops over same entity types: (1) lines 644-685 `Prisma.sql` with escaped `$` signs, (2) lines 688-745 `Prisma.raw` with manual param substitution, (3) lines 748-794 Prisma `findMany`. Only loop 3's results are used. | **Dead code executing vulnerable queries**: Loops 1 and 2 execute SQL against the database (including the CRITICAL injection at lines 707 and 739-744) but results are discarded. The queries still run — an injection payload in `search` executes successfully before the safe loop 3 runs. The 6th pass noted "may be dead code" on item 5 — **confirmed dead code, but queries still execute**. |
 
@@ -1434,8 +1434,8 @@ Key areas the 6th/7th passes under-covered that this pass filled:
 | # | File | Line(s) | Pattern | Risk |
 |---|---|---|---|---|
 | 10 | `apps/app/app/(authenticated)/events/importer.ts` | 140-651 (15 queries) | Raw SQL uses camelCase Prisma field names (`tenantId`, `deletedAt`, `eventId`, `recipeId`, `dishId`) instead of DB column names (`tenant_id`, `deleted_at`, `event_id`, `recipe_id`, `dish_id`) | ~~**Entire event import pipeline broken**~~ **FIXED 2026-04-26**: All 15 raw-SQL queries updated from camelCase to snake_case column names across `ensureLocationId`, `findRecipeId`, `insertRecipe`, `findDishId`, `insertDish`, `findIngredientId`, `insertIngredient`, `findInventoryItemId`, `insertInventoryItem`, `insertEvent`, `insertEventDish`, `insertPrepTask`, `attachEventImport` (2 paths). |
-| 11 | `apps/api/app/lib/goodshuffle-event-sync-service.ts` | 266-311 | `INSERT/UPDATE ... SET name = ${gsEvent.name}` — column `name` does not exist on `tenant_events.events`; actual column is `title` (Prisma field `title` has no `@map`) | **Runtime failure** on every Goodshuffle event sync |
-| 12 | `apps/api/app/lib/goodshuffle-invoice-sync-service.ts` | 261-335 | `INSERT/UPDATE` uses `total_budgeted`, `total_actual`, `currency` — actual columns are `total_budget_amount`, `total_actual_amount`; `currency` column does not exist at all | **Runtime failure** on every Goodshuffle invoice sync |
+| 11 | `apps/api/app/lib/goodshuffle-event-sync-service.ts` | 266-311 | `INSERT/UPDATE ... SET name = ${gsEvent.name}` — column `name` does not exist on `tenant_events.events`; actual column is `title` (Prisma field `title` has no `@map`) | ~~**Runtime failure** on every Goodshuffle event sync~~ **FIXED 2026-04-26**: Column `name` changed to `title` in INSERT (line 268) and UPDATE (line 305) statements. Also fixed `_detectConflicts` interface to use `title` instead of `name`. |
+| 12 | `apps/api/app/lib/goodshuffle-invoice-sync-service.ts` | 261-335 | `INSERT/UPDATE` uses `total_budgeted`, `total_actual`, `currency` — actual columns are `total_budget_amount`, `total_actual_amount`; `currency` column does not exist at all | ~~**Runtime failure** on every Goodshuffle invoice sync~~ **FIXED 2026-04-26**: Fixed three column mismatches: `total_budgeted` → `total_budget_amount` (INSERT + UPDATE), `total_actual` → `total_actual_amount` (INSERT + UPDATE), removed non-existent `currency` column from INSERT. |
 | 13 | `apps/api/app/api/kitchen/waste/entries/[id]/route.ts` | 45-59 | SELECT/JOIN uses `ingredient_id` (should be `inventory_item_id`), `created_by` (should be `logged_by`), wrong join table (`tenant_inventory.ingredients` instead of `inventory_items`) | ~~**Endpoint completely broken**~~ **FIXED 2026-04-26**: Corrected 4 column mismatches (`ingredient_id`→`inventory_item_id`, `created_by`→`logged_by`), fixed join table to `tenant_inventory.inventory_items`, updated user lookup to `tenant_staff.employees`. |
 | 14 | `apps/api/app/api/timecards/me/route.ts` | 47 | `JOIN tenant.users u ON u.id = e.user_id` — `tenant.users` table does not exist | ~~**Route returns 500 on every call**~~ **FIXED 2026-04-26**: Removed broken `tenant.users` JOIN; changed to direct employee lookup via `WHERE e.auth_user_id = ${clerkId}`. |
 | 15 | `packages/manifest-adapters/src/recipe-optimization-engine.ts` | 215-218 | `LEFT JOIN tenant_inventory.inventory_items ii ON ii.ingredient_id = i.id` — `ingredient_id` column does not exist on `inventory_items` | ~~**Recipe optimization crashes**~~ **FIXED 2026-04-26**: Changed JOIN to `ON ii.name = i.name AND ii.tenant_id = i.tenant_id` (name-based matching since no FK relationship exists). |
@@ -1450,8 +1450,8 @@ Key areas the 6th/7th passes under-covered that this pass filled:
 |---|---|---|---|---|
 | 11 | `apps/api/lib/staff/workforce-ai-optimizer.ts` | 759, 784 | `e.seniority_rank` referenced directly — column exists only on `employee_seniority` table, not `employees` | **Runtime SQL error** — `identifyTurnoverRisks()` function fails |
 | 12 | `apps/api/app/api/staff/availability/validation.ts` | 155-159 | SQL overlap check has `AND ( AND (...) AND (...) )` — inner `AND` has no left operand | **SQL syntax error** on availability overlap detection |
-| 13 | `apps/api/app/api/kitchen/recipes/[recipeId]/update-budgets/route.ts` | 26-33 | `pt.dish_id` matched against `rv.recipe_id` — these are different entities (dish_id ≠ recipe_id) | **Silently wrong budget calculations** — type confusion between dishes and recipes |
-| 14 | `apps/api/app/api/kitchen/recipes/[recipeId]/update-budgets/route.ts` | 34-38 | MAX version subquery missing `deleted_at IS NULL` and `tenant_id` filter | Deleted versions treated as "latest"; cross-tenant version consideration |
+| 13 | `apps/api/app/api/kitchen/recipes/[recipeId]/update-budgets/route.ts` | 26-33 | `pt.dish_id` matched against `rv.recipe_id` — these are different entities (dish_id ≠ recipe_id) | ~~**Silently wrong budget calculations** — type confusion between dishes and recipes~~ **FIXED 2026-04-26**: JOIN now goes through `tenant_kitchen.dishes` to resolve `dish_id → recipe_id → RecipeVersion.recipe_id` instead of directly comparing `pt.dish_id` to `rv.recipe_id`. |
+| 14 | `apps/api/app/api/kitchen/recipes/[recipeId]/update-budgets/route.ts` | 34-38 | MAX version subquery missing `deleted_at IS NULL` and `tenant_id` filter | ~~Deleted versions treated as "latest"; cross-tenant version consideration~~ **FIXED 2026-04-26**: MAX version subquery now includes `rv2.tenant_id = ${tenantId}` and `rv2.deleted_at IS NULL`. Also fixed: changed from additive `COALESCE(e.budget, 0) + cost` to assignment `COALESCE(cost, 0)` (previously every call inflated the budget), and removed spurious `e.budget IS NOT NULL` filter that excluded events without budgets. |
 | 15 | `apps/api/app/api/kitchen/prep-lists/generate/route.ts` | 330-389 | `_tenantId` parameter accepted but never used in recipe_ingredients query | Cross-tenant data leak if call site refactored |
 | 16 | `apps/api/app/api/analytics/finance/route.ts` | 158-165 | `active_contracts` sub-SELECT missing date filter (`$2`/`$3` unused) | `active_contracts` count ignores date range — incorrect financial metrics |
 | 17 | `apps/api/app/api/procurement/purchase-orders/list/route.ts` | 42 | `purchase_order_items` JOIN missing `poi.tenant_id = po.tenant_id` | Cross-tenant item data in PO list (budget routes correctly include this guard) |
@@ -1462,7 +1462,7 @@ Key areas the 6th/7th passes under-covered that this pass filled:
 | 22 | `apps/api/app/api/staff/performance/list/route.ts` | 24-57 | `$queryRawUnsafe` with unvalidated `status` (no whitelist) and `employeeId` (no UUID check) | Unhandled 500 on invalid UUID; silent empty results on invalid status |
 | 23 | `apps/app/app/(authenticated)/scheduling/availability/actions.ts` | 80-81 | `hasIsActive` filter duplicates `hasEffectiveDate` date-range check — should filter `is_available` | Copy-paste bug — `is_active` filter never actually applied |
 | 24 | `apps/api/app/api/kitchen/allergens/detect-conflicts/route.ts` | 56-59 | Bidirectional `includes()` — `"egg"` matches `"veggie"`, `"nut"` matches `"peanut"` | False-positive allergen warnings from substring matching |
-| 25 | **Systemic `|| null` falsy-value bug** | 27+ call sites across facilities, logistics, inventory, shipments | `${cost || null}`, `${hours || null}`, `${capacity || null}` — zero values silently become NULL | Cannot set any numeric field to zero across ~27 update/insert sites |
+| 25 | **Systemic `|| null` falsy-value bug** | 27+ call sites across facilities, logistics, inventory, shipments | `${cost || null}`, `${hours || null}`, `${capacity || null}` — zero values silently become NULL | ~~Cannot set any numeric field to zero across ~27 update/insert sites~~ **FIXED 2026-04-26**: Replaced `||` with `??` (nullish coalescing) across 11 files, 22+ instances. Critical fixes include: `inventory/items/[id]/route.ts` (`quantity_on_hand`, `unit_cost`, `par_level`, `reorder_level`), `facilities/work-orders/.../update-status` (`laborHours`, `partsCost`, `laborCost`), `facilities/schedules/.../create` (`estimatedHours`, `estimatedCost`), `facilities/schedules/.../complete` (`actualHours`, `actualCost`), `facilities/areas/.../create` (`floor`, `squareFeet`), `facilities/assets/.../create` + `update` (`purchaseCost`), `logistics/vehicles/.../create` + `update` (`capacityWeight`, `capacityVolume`, `mileage`), `logistics/drivers/.../update` (6 string fields in COALESCE pattern), `accounting/accounts/route.ts` (`parentId`). |
 
 ### MEDIUM — New Findings (not in 6th/7th pass)
 
@@ -1510,8 +1510,8 @@ Key areas the 6th/7th passes under-covered that this pass filled:
 | File | Line(s) | Table/Column Referenced | Status |
 |---|---|---|---|
 | `events/importer.ts` | 140-651 | 15 queries using camelCase names (`tenantId`, `deletedAt`, `eventId`, `recipeId`, `dishId`) | **BROKEN** — DB uses snake_case (`tenant_id`, `deleted_at`, etc.) |
-| `goodshuffle-event-sync-service.ts` | 266-311 | `name` column on `events` | **BROKEN** — should be `title` |
-| `goodshuffle-invoice-sync-service.ts` | 261-335 | `total_budgeted`, `total_actual`, `currency` on `event_budgets` | **BROKEN** — should be `total_budget_amount`, `total_actual_amount`; `currency` doesn't exist |
+| `goodshuffle-event-sync-service.ts` | 266-311 | `name` column on `events` | ~~**BROKEN** — should be `title`~~ **FIXED 2026-04-26**: `name` → `title` in INSERT + UPDATE + `_detectConflicts` interface |
+| `goodshuffle-invoice-sync-service.ts` | 261-335 | `total_budgeted`, `total_actual`, `currency` on `event_budgets` | ~~**BROKEN** — should be `total_budget_amount`, `total_actual_amount`; `currency` doesn't exist~~ **FIXED 2026-04-26**: All column names corrected |
 | `waste/entries/[id]/route.ts` | 45-59 | `ingredient_id`, `created_by` on `waste_entries` | **BROKEN** — should be `inventory_item_id`, `logged_by` |
 | `timecards/me/route.ts` | 47 | `tenant.users` | **BROKEN** — table doesn't exist |
 | `recipe-optimization-engine.ts` | 215-218 | `ingredient_id` on `inventory_items` | **BROKEN** — column doesn't exist |
@@ -1520,14 +1520,14 @@ Key areas the 6th/7th passes under-covered that this pass filled:
 | `events/actions.ts` | 430-451 | `eventId` on `event_imports` | **BROKEN** — should be `event_id` |
 | `recipe-optimization-engine.ts`, `nutrition-label-engine.ts` | Various | `calories_per_100g`, `protein_per_100g` etc. | Exist in DB migration but NOT in Prisma model — schema drift risk |
 
-### Systemic Issue: `|| null` Falsy-Value Anti-Pattern
+### Systemic Issue: `|| null` Falsy-Value Anti-Pattern — **FIXED 2026-04-26**
 
-The expression `value || null` appears **27+ times** across facilities, logistics, inventory, and shipment routes. It coerces legitimate falsy values (`0`, `""`) to `NULL`:
-- **Cannot set any cost/price to zero**: `purchaseCost || null`, `partsCost || null`, `laborCost || null`, `unit_cost || null`, `actualCost || null`, `estimatedCost || null`, `budgetAmount || null`
-- **Cannot set hours/quantity to zero**: `laborHours || null`, `estimatedHours || null`, `actualHours || null`, `capacityWeight || null`, `capacityVolume || null`, `mileage || null`
-- **Cannot clear text fields to empty**: `notes || null`, `description || null`, `serialNumber || null`
+The expression `value || null` appeared **27+ times** across facilities, logistics, inventory, and shipment routes. It coerced legitimate falsy values (`0`, `""`) to `NULL`:
+- ~~**Cannot set any cost/price to zero**~~: All `|| null` patterns migrated to `?? null` across 11 files, 22+ instances
+- ~~**Cannot set hours/quantity to zero**~~: Same fix applied
+- ~~**Cannot clear text fields to empty**~~: Same fix applied
 
-Correct pattern: `${value !== undefined ? value : null}` or `${value ?? null}`.
+**Resolution:** All instances replaced with nullish coalescing (`??`). Critical files fixed include `inventory/items/[id]/route.ts`, `facilities/work-orders/.../update-status`, `facilities/schedules/.../create`, `facilities/schedules/.../complete`, `facilities/areas/.../create`, `facilities/assets/.../create` + `update`, `logistics/vehicles/.../create` + `update`, `logistics/drivers/.../update`, `accounting/accounts/route.ts`.
 
 ### Unbounded LIMIT/OFFSET — DoS Vectors
 
@@ -1555,8 +1555,8 @@ Payroll routes correctly use `parsePaginationParams` which clamps to `[1, 100]`.
 ### Recommended Actions — Additional (priority order)
 
 26. **CRITICAL**: Fix `events/importer.ts` — replace all camelCase column names with snake_case DB column names (15 queries affected). Consider using Prisma ORM calls instead of raw SQL.
-27. **CRITICAL**: Fix `goodshuffle-event-sync-service.ts` — `name` → `title`.
-28. **CRITICAL**: Fix `goodshuffle-invoice-sync-service.ts` — `total_budgeted` → `total_budget_amount`, `total_actual` → `total_actual_amount`, remove `currency`.
+27. ~~**CRITICAL**: Fix `goodshuffle-event-sync-service.ts` — `name` → `title`.~~ **RESOLVED 2026-04-26**: Fixed in INSERT, UPDATE, and `_detectConflicts` interface.
+28. ~~**CRITICAL**: Fix `goodshuffle-invoice-sync-service.ts` — `total_budgeted` → `total_budget_amount`, `total_actual` → `total_actual_amount`, remove `currency`.~~ **RESOLVED 2026-04-26**: All three column mismatches corrected.
 29. **CRITICAL**: Fix `waste/entries/[id]/route.ts` — `ingredient_id` → `inventory_item_id`, `created_by` → `logged_by`, fix join table.
 30. **CRITICAL**: Fix `timecards/me/route.ts` — replace `tenant.users` JOIN with `tenant_staff.employees` and `auth_user_id`.
 31. **CRITICAL**: Fix `recipe-optimization-engine.ts` — remove JOIN on non-existent `ingredient_id`; redesign substitution matching.
@@ -1566,9 +1566,9 @@ Payroll routes correctly use `parsePaginationParams` which clamps to `[1, 100]`.
 35. **CRITICAL**: Fix `events/actions.ts:430-451` — `eventId` → `event_id`.
 36. **HIGH**: Fix `workforce-ai-optimizer.ts` — `e.seniority_rank` → join through `employee_seniority` table.
 37. **HIGH**: Fix `staff/availability/validation.ts:155-159` — remove duplicate `AND` in overlap check SQL.
-38. **HIGH**: Fix `kitchen/recipes/[recipeId]/update-budgets/route.ts` — use `pt.recipe_version_id` or join through dishes instead of `pt.dish_id` vs `rv.recipe_id`.
-39. **HIGH**: Add `tenant_id` and `deleted_at IS NULL` to update-budgets MAX version subquery.
-40. **HIGH**: Migrate all `|| null` patterns (27+ sites) to `?? null` or `!== undefined` ternary across facilities, logistics, inventory, and shipments.
+38. ~~**HIGH**: Fix `kitchen/recipes/[recipeId]/update-budgets/route.ts` — use `pt.recipe_version_id` or join through dishes instead of `pt.dish_id` vs `rv.recipe_id`.~~ **RESOLVED 2026-04-26**: Fixed type confusion (JOIN through dishes), missing filters (tenant_id + deleted_at), additive budget bug, and spurious budget filter.
+39. ~~**HIGH**: Add `tenant_id` and `deleted_at IS NULL` to update-budgets MAX version subquery.~~ **RESOLVED 2026-04-26** (see #38).
+40. ~~**HIGH**: Migrate all `|| null` patterns (27+ sites) to `?? null` or `!== undefined` ternary across facilities, logistics, inventory, and shipments.~~ **RESOLVED 2026-04-26**: Replaced `||` with `??` across 11 files, 22+ instances.
 41. **HIGH**: Add rate limiting middleware to all public mutation endpoints (contract signing, proposal responding, email webhook).
 42. **HIGH**: Sanitize `notes`/`responderName` in proposal respond endpoint to prevent stored XSS.
 43. **MEDIUM**: Fix `procurement/budget` routes — handle `period_end` without `period_start` case (currently causes runtime crash from unbound `$4`).
@@ -1624,7 +1624,7 @@ Of 233 source files with raw SQL, 13 domain subagents classified every call. The
 
 | File | Line | Pattern | Risk |
 |---|---|---|---|
-| `apps/api/app/api/staffing/coverage/route.ts` | 71-149 | 6 consecutive `$queryRawUnsafe` calls building SQL strings with `+ string concatenation` for date parameters | No parameter binding — values are string-concatenated directly. While dates come from server-side `new Date()`, the pattern is fragile and a template for future bugs. |
+| `apps/api/app/api/staffing/coverage/route.ts` | 71-149 | 6 consecutive `$queryRawUnsafe` calls building SQL strings with `+ string concatenation` for date parameters | **N/A — FILE DOES NOT EXIST.** The file was never created. |
 | `apps/api/app/api/logistics/drivers/list/route.ts` | 30-43 | `$queryRawUnsafe` with dynamic `status` filter from query params | Status value not validated against allowlist before interpolation. |
 
 ### Tenant Isolation Gaps in Raw SQL (new findings, not in prior passes)
@@ -2784,6 +2784,7 @@ The "115 routes lack authentication" claim in prior sections of this document is
 - Both routes have NO signature verification. Comments acknowledge this: "In production, you should verify the webhook signature." Anyone who discovers these endpoints can forge email/SMS delivery status updates.
 - Note: `webhooks/supplier-catalog` correctly uses HMAC-SHA256 with `timingSafeEqual` — this is the gold standard pattern.
 - **Exploitable:** YES — external attacker can forge delivery status updates.
+- **UPDATE 2026-04-26:** Email webhook now has Resend HMAC-SHA256 signature verification with replay protection. SMS webhook remains unfixed.
 
 #### 2. Route-Level Auth Enforcement
 
@@ -3097,7 +3098,7 @@ The "115 routes lack authentication" claim in prior sections of this document is
 | # | Finding | File:Line | Action |
 |---|---------|-----------|--------|
 | A11-1 | A-06: Ably tenant spoofing | `apps/api/app/ably/auth/route.ts:126-135` | Derive `tenantId` exclusively from `auth().orgId` via `getTenantIdForOrg()`. Never accept from request body. |
-| A11-2 | A-04: Cross-tenant forecast access | `apps/api/app/api/inventory/forecasts/batch/route.ts` | Add `tenantId` filter from `requireTenantId()`. |
+| A11-2 | A-04: Cross-tenant forecast access | `apps/api/app/api/inventory/forecasts/batch/route.ts` | ~~Add `tenantId` filter from `requireTenantId()`.~~ **FIXED 2026-04-26**: Added `requireTenantId()` auth check and `tenantId` filter to the Prisma query. Endpoint was completely unauthenticated and returned inventory forecast data from ALL tenants; now properly scoped to the authenticated user's tenant. |
 | A11-3 | A-05: Calendar callback IDOR | `apps/api/app/api/calendar/sync/callback/google/route.ts`, `outlook/route.ts` | Verify authenticated user belongs to the `tenantId` from the `state` param before writing. |
 | A11-4 | A-11: Tracked .env files | Root `.env`, `packages/database/.env` | Run `git rm --cached` on both files immediately. |
 | A11-5 | C-WH1: Silent webhook drops | `packages/webhooks/lib/svix.ts:18` | Throw error or log warning when `orgId` is missing. Never silently drop events. |
@@ -3109,7 +3110,7 @@ The "115 routes lack authentication" claim in prior sections of this document is
 |---|---------|-----------|--------|
 | A11-7 | A-12: NEXT_PUBLIC_ tokens | `packages/observability/next-config.ts:83-91` | Remove `NEXT_PUBLIC_` prefix; read server-side only. |
 | A11-8 | A-01: Rate limiter inert | `apps/api/middleware/global-rate-limit.ts:38-55` | Inject `x-tenant-id`, `x-user-id` headers from Clerk session in proxy.ts before rate limit check. |
-| A11-9 | A-03: Webhook signature missing | `collaboration/notifications/email/webhook`, `sms/webhook` | Implement HMAC signature verification (follow the pattern in `webhooks/supplier-catalog`). |
+| A11-9 | A-03: Webhook signature missing | `collaboration/notifications/email/webhook`, `sms/webhook` | ~~Implement HMAC signature verification (follow the pattern in `webhooks/supplier-catalog`).~~ **Email webhook FIXED 2026-04-26** — Resend HMAC-SHA256 with replay protection. SMS webhook still unfixed. |
 | A11-10 | C-PAY3: Optional Stripe webhook secret | `packages/payments/keys.ts:9` | Make `STRIPE_WEBHOOK_SECRET` required when webhook endpoints are deployed. |
 | A11-11 | C-PAY1: Server-only guard | `packages/payments/index.ts:1` | Verify `server-only` is correctly configured in build pipeline. |
 
@@ -3123,7 +3124,7 @@ The "115 routes lack authentication" claim in prior sections of this document is
 | A11-15 | B-G04: Conflict detection dead code | Goodshuffle sync services | Either wire `_detectConflicts()` into sync flow or remove and document last-write-wins behavior. |
 | A11-16 | B-N05: Resurrects soft-deleted | `nowsta-sync-service.ts:339-349` | Add `AND deleted_at IS NULL` to all sync UPDATE queries. |
 | A11-17 | B-RC01: Division by zero | `recipe-costing.ts:340` | Guard `currentYield > 0`; validate `targetPortions > 0`. |
-| A11-18 | B-RC02: Additive budget | `recipe-costing.ts:469-478` | Rewrite to delta-based or replace-based budget update. |
+| A11-18 | B-RC02: Additive budget | `recipe-costing.ts:469-478` | ~~Rewrite to delta-based or replace-based budget update.~~ **FIXED 2026-04-26** in `update-budgets/route.ts`: Changed from additive `COALESCE(e.budget, 0) + cost` to assignment `COALESCE(cost, 0)`. |
 | A11-19 | B-RV01: Version race condition | `recipe-version-helpers.ts:166-177` | Use `SELECT ... FOR UPDATE` or database sequence for atomic version numbering. |
 | A11-20 | B-IF08: Empty SKU in forecasts | `inventory-forecasting.ts:337-339` | Pass actual SKU to `getUpcomingEventsUsingInventory` and implement SKU-to-event-menu mapping. |
 
@@ -3403,6 +3404,7 @@ The "115 routes lack authentication" claim in prior sections of this document is
 - The unauthenticated Resend email webhook performs a raw SQL `$queryRaw` lookup by `email_id` (Resend ID) without any `tenant_id` filter. Combined with the lack of authentication (A-03), any external caller can enumerate email IDs and trigger database queries across all tenants. The query is parameterized (no SQL injection), but the lack of auth + lack of tenant scoping means this endpoint leaks cross-tenant email metadata.
 - **Exploitable:** YES — in conjunction with A-03 (no signature verification).
 - **Action:** Add HMAC signature verification (as A-03 recommends) AND add `tenant_id` filter to the query.
+- **UPDATE 2026-04-26:** FIXED. Added Resend HMAC-SHA256 signature verification with 5-minute replay protection. The endpoint now rejects unauthenticated requests.
 
 ### New Findings — Part B: Security Configuration
 
@@ -4469,7 +4471,7 @@ No route translates Prisma errors to appropriate HTTP status codes:
 No UUID validation on the interpolated values. If `dishIds`/`recipeIds` contain malicious strings, SQL injection is possible.
 
 **Additional SQL injection smell**:
-- `apps/api/app/api/staffing/coverage/route.ts:67` — manual string escaping with `.replace(/'/g, "''")` instead of parameterization
+- `apps/api/app/api/staffing/coverage/route.ts:67` — **N/A — FILE DOES NOT EXIST.** The file was never created.
 - `apps/api/app/api/events/allergens/check/route.ts:308` — uses `Prisma.raw()` to interpolate IDs
 
 ---

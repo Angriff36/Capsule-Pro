@@ -50,7 +50,7 @@ export async function GET(request: Request) {
 
     // Add parentId filter (null for root accounts)
     if (filters.parentId !== undefined) {
-      whereClause.parentId = filters.parentId || null;
+      whereClause.parentId = filters.parentId ?? null;
     }
 
     // Add search filter (searches account number and name)

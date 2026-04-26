@@ -49,14 +49,14 @@ export async function POST(request: NextRequest) {
     const result = await database.$queryRaw`
       UPDATE tenant_logistics.drivers
       SET
-        name = COALESCE(${name || null}, name),
-        phone = COALESCE(${phone || null}, phone),
-        email = COALESCE(${email || null}, email),
-        license_number = COALESCE(${licenseNumber || null}, license_number),
+        name = COALESCE(${name ?? null}, name),
+        phone = COALESCE(${phone ?? null}, phone),
+        email = COALESCE(${email ?? null}, email),
+        license_number = COALESCE(${licenseNumber ?? null}, license_number),
         license_expiry = COALESCE(${licenseExpiry ? new Date(licenseExpiry) : null}::date, license_expiry),
         vehicle_id = ${vehicleAssignment},
-        status = COALESCE(${status || null}, status),
-        notes = COALESCE(${notes || null}, notes),
+        status = COALESCE(${status ?? null}, status),
+        notes = COALESCE(${notes ?? null}, notes),
         updated_at = NOW()
       WHERE tenant_id = ${tenantId}::uuid AND id = ${driverId}::uuid AND deleted_at IS NULL
       RETURNING id, name, status

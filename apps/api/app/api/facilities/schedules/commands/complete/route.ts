@@ -72,8 +72,8 @@ export async function POST(request: NextRequest) {
           ${notes || null},
           NOW(),
           ${userId}::uuid,
-          ${actualHours || null},
-          ${actualCost || null}
+          ${actualHours ?? null},
+          ${actualCost ?? null}
         )
       `;
     }

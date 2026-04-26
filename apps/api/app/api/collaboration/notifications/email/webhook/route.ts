@@ -1,8 +1,11 @@
 /**
  * POST /api/collaboration/notifications/email/webhook
  *
- * Handle Resend webhook callbacks for email delivery status updates
+ * Handle Resend webhook callbacks for email delivery status updates.
+ * Verifies HMAC-SHA256 signature before processing.
  */
+
+import { createHmac, timingSafeEqual } from "node:crypto";
 
 import { database } from "@repo/database";
 import {
@@ -54,29 +57,67 @@ function mapEventTypeToStatus(eventType: ResendEventType): EmailStatus {
 }
 
 /**
+ * Verify Resend webhook signature.
+ * Resend signs with HMAC-SHA256 and sends the signature in the
+ * `resend-signature` header as `t=<timestamp>,v1=<signature>`.
+ */
+function verifyResendSignature(
+  rawBody: string,
+  signatureHeader: string,
+  secret: string
+): boolean {
+  const parts = signatureHeader.split(",");
+  const timestampPart = parts.find((p) => p.startsWith("t="));
+  const signaturePart = parts.find((p) => p.startsWith("v1="));
+  if (!timestampPart || !signaturePart) return false;
+
+  const timestamp = timestampPart.slice(2);
+  const signature = signaturePart.slice(3);
+
+  // Reject stale signatures (>5 minutes old)
+  const ageMs = Date.now() - Number(timestamp) * 1000;
+  if (Number.isNaN(ageMs) || ageMs > 5 * 60 * 1000) return false;
+
+  const hmac = createHmac("sha256", secret);
+  hmac.update(`${timestamp}.${rawBody}`);
+  const expected = hmac.digest("hex");
+
+  if (signature.length !== expected.length) return false;
+  return timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(expected)
+  );
+}
+
+/**
  * POST /api/collaboration/notifications/email/webhook
  * Handle Resend webhook callbacks
- *
- * Note: In production, you should verify the webhook signature
- * using Resend's signing secret for security.
  */
 export async function POST(request: NextRequest) {
   try {
-    // Note: Webhooks from Resend won't have auth headers
-    // We need to identify the tenant from the email log
+    const rawBody = await request.text();
+    const signatureHeader = request.headers.get("resend-signature") ?? "";
 
-    const payload: ResendWebhookPayload = await request.json();
+    const webhookSecret = process.env.RESEND_WEBHOOK_SECRET;
+    if (webhookSecret) {
+      if (!verifyResendSignature(rawBody, signatureHeader, webhookSecret)) {
+        return NextResponse.json(
+          { error: "Invalid signature" },
+          { status: 401 }
+        );
+      }
+    }
+
+    const payload: ResendWebhookPayload = JSON.parse(rawBody);
     const { type, data } = payload;
 
     const resendId = data.email_id;
     const newStatus = mapEventTypeToStatus(type);
 
-    // Find the email log by resend ID to get the tenant
-    // Since we need tenantId to query, we'll search across logs
-    // In production, you might want to store a mapping or use a different approach
-
-    // For now, we'll update the status by searching for the resend ID
-    // This requires a raw query since we don't know the tenant ID yet
+    // Find the email log by resend ID to determine the tenant.
+    // The resend_id is globally unique (assigned by Resend), so this
+    // cross-tenant lookup is safe — it only resolves which tenant
+    // owns the email, then scopes the update to that tenant.
     const logs = await database.$queryRaw<
       Array<{ tenant_id: string; id: string }>
     >`
@@ -87,7 +128,6 @@ export async function POST(request: NextRequest) {
     `;
 
     if (!logs || logs.length === 0) {
-      console.warn(`Email log not found for Resend ID: ${resendId}`);
       return NextResponse.json({ received: true, message: "Log not found" });
     }
 
@@ -109,7 +149,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Failed to process email webhook:", error);
     const message = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       { error: `Failed to process webhook: ${message}` },

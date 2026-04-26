@@ -38,10 +38,10 @@ export async function POST(request: NextRequest) {
         tenant_id, make, model, year, plate_number, vin,
         capacity_weight, capacity_volume, fuel_type, status, notes
       ) VALUES (
-        ${tenantId}::uuid, ${make}, ${model}, ${year || null},
-        ${plateNumber || null}, ${vin || null},
-        ${capacityWeight || null}, ${capacityVolume || null},
-        ${fuelType || null}, 'available', ${notes || null}
+        ${tenantId}::uuid, ${make}, ${model}, ${year ?? null},
+        ${plateNumber ?? null}, ${vin ?? null},
+        ${capacityWeight ?? null}, ${capacityVolume ?? null},
+        ${fuelType ?? null}, 'available', ${notes ?? null}
       )
       RETURNING id, make, model, status, created_at
     `;

@@ -62,9 +62,9 @@ export async function POST(request: NextRequest) {
         ${name},
         ${code || null},
         ${type},
-        ${floor || null},
+        ${floor ?? null},
         ${description || null},
-        ${squareFeet || null}
+        ${squareFeet ?? null}
       )
       RETURNING id, venue_id, name, code, area_type, floor, description, square_feet, status, created_at
     `;

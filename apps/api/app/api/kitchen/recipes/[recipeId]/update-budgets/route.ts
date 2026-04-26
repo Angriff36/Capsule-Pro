@@ -23,25 +23,31 @@ const updateEventBudgetsForRecipe = async (
           COALESCE(SUM(rv.total_cost), 0) as total_recipe_cost
         FROM recipe_events re
         JOIN tenant_events.events e ON e.id = re.event_id
-        JOIN tenant_kitchen.recipe_versions rv
-          ON rv.recipe_id IN (
+        JOIN tenant_kitchen.dishes d
+          ON d.id IN (
             SELECT DISTINCT pt.dish_id
             FROM tenant_kitchen.prep_tasks pt
             WHERE pt.event_id = e.id
               AND pt.tenant_id = ${tenantId}
               AND pt.deleted_at IS NULL
+              AND pt.dish_id IS NOT NULL
           )
+          AND d.tenant_id = ${tenantId}
+          AND d.deleted_at IS NULL
+        JOIN tenant_kitchen.recipe_versions rv
+          ON rv.recipe_id = d.recipe_id
           AND rv.version_number = (
-            SELECT MAX(version_number)
-            FROM tenant_kitchen.recipe_versions
-            WHERE recipe_id = rv.recipe_id
+            SELECT MAX(rv2.version_number)
+            FROM tenant_kitchen.recipe_versions rv2
+            WHERE rv2.recipe_id = rv.recipe_id
+              AND rv2.tenant_id = ${tenantId}
+              AND rv2.deleted_at IS NULL
           )
         WHERE e.tenant_id = ${tenantId}
-          AND e.budget IS NOT NULL
         GROUP BY e.id
       )
       UPDATE tenant_events.events e
-      SET budget = COALESCE(e.budget, 0) + COALESCE(
+      SET budget = COALESCE(
         (SELECT total_recipe_cost FROM event_recipe_costs WHERE event_id = e.id),
         0
       )

@@ -36,17 +36,17 @@ export async function POST(request: NextRequest) {
     const result = await database.$queryRaw`
       UPDATE tenant_logistics.vehicles
       SET
-        make = COALESCE(${make || null}, make),
-        model = COALESCE(${model || null}, model),
-        year = COALESCE(${year || null}, year),
-        plate_number = COALESCE(${plateNumber || null}, plate_number),
-        vin = COALESCE(${vin || null}, vin),
-        capacity_weight = COALESCE(${capacityWeight || null}, capacity_weight),
-        capacity_volume = COALESCE(${capacityVolume || null}, capacity_volume),
-        fuel_type = COALESCE(${fuelType || null}, fuel_type),
-        mileage = COALESCE(${mileage || null}, mileage),
-        status = COALESCE(${status || null}, status),
-        notes = COALESCE(${notes || null}, notes),
+        make = COALESCE(${make ?? null}, make),
+        model = COALESCE(${model ?? null}, model),
+        year = COALESCE(${year ?? null}, year),
+        plate_number = COALESCE(${plateNumber ?? null}, plate_number),
+        vin = COALESCE(${vin ?? null}, vin),
+        capacity_weight = COALESCE(${capacityWeight ?? null}, capacity_weight),
+        capacity_volume = COALESCE(${capacityVolume ?? null}, capacity_volume),
+        fuel_type = COALESCE(${fuelType ?? null}, fuel_type),
+        mileage = COALESCE(${mileage ?? null}, mileage),
+        status = COALESCE(${status ?? null}, status),
+        notes = COALESCE(${notes ?? null}, notes),
         updated_at = NOW()
       WHERE tenant_id = ${tenantId}::uuid AND id = ${vehicleId}::uuid AND deleted_at IS NULL
       RETURNING id, make, model, status

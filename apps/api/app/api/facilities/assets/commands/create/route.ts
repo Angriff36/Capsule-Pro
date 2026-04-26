@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
         ${manufacturer || null},
         ${model || null},
         ${purchaseDate ? new Date(purchaseDate) : null}::date,
-        ${purchaseCost || null}::numeric,
+        ${purchaseCost ?? null}::numeric,
         ${warrantyExpiry ? new Date(warrantyExpiry) : null}::date,
         ${areaId || null}::uuid,
         'active',

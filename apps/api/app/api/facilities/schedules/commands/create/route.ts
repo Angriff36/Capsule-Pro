@@ -94,8 +94,8 @@ export async function POST(request: NextRequest) {
         ${days},
         ${nextDue},
         ${assignedTo || null}::uuid,
-        ${estimatedHours || null},
-        ${estimatedCost || null}
+        ${estimatedHours ?? null},
+        ${estimatedCost ?? null}
       )
       RETURNING id, schedule_number, title, frequency, interval_days, next_due_at, status, created_at
     `;

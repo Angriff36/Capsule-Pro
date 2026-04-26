@@ -261,8 +261,8 @@ async function createConvoyBudgetFromGoodshuffle(
   const newBudget = await database.$queryRaw<Array<{ id: string }>>(
     Prisma.sql`
       INSERT INTO tenant_events.event_budgets (
-        tenant_id, id, event_id, total_budgeted, total_actual,
-        currency, created_at, updated_at
+        tenant_id, id, event_id, total_budget_amount, total_actual_amount,
+        created_at, updated_at
       )
       VALUES (
         ${tenantId},
@@ -270,7 +270,6 @@ async function createConvoyBudgetFromGoodshuffle(
         ${eventId},
         ${gsInvoice.total_amount},
         ${gsInvoice.total_amount},
-        'USD',
         NOW(),
         NOW()
       )
@@ -327,8 +326,8 @@ async function updateConvoyBudgetFromGoodshuffle(
   await database.$executeRaw`
     UPDATE tenant_events.event_budgets
     SET
-      total_budgeted = ${gsInvoice.total_amount},
-      total_actual = ${gsInvoice.total_amount},
+      total_budget_amount = ${gsInvoice.total_amount},
+      total_actual_amount = ${gsInvoice.total_amount},
       updated_at = NOW()
     WHERE tenant_id = ${tenantId}
       AND id = ${convoyBudgetId}

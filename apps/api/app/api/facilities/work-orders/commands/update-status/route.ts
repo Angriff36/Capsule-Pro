@@ -65,11 +65,11 @@ export async function POST(request: NextRequest) {
         started_at = COALESCE(started_at, ${startedAt}),
         completed_at = ${completedAt},
         completed_by = CASE WHEN ${status} = 'completed' THEN ${userId}::uuid ELSE completed_by END,
-        labor_hours = COALESCE(${laborHours || null}, labor_hours),
-        parts_cost = COALESCE(${partsCost || null}, parts_cost),
-        labor_cost = COALESCE(${laborCost || null}, labor_cost),
+        labor_hours = COALESCE(${laborHours ?? null}, labor_hours),
+        parts_cost = COALESCE(${partsCost ?? null}, parts_cost),
+        labor_cost = COALESCE(${laborCost ?? null}, labor_cost),
         total_cost = CASE WHEN ${totalCost > 0} THEN ${totalCost} ELSE total_cost END,
-        notes = COALESCE(${notes || null}, notes),
+        notes = COALESCE(${notes ?? null}, notes),
         updated_at = NOW()
       WHERE tenant_id = ${tenantId}::uuid AND id = ${workOrderId}::uuid
       RETURNING id, work_order_number, status, completed_at, total_cost

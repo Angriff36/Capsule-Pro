@@ -1,6 +1,7 @@
 import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
+import { requireTenantId } from "@/app/lib/tenant";
 
 // GET /api/inventory/forecasts/batch?skuList=sku1,sku2&from=&to=
 // Returns: map of sku -> [ForecastPoint]
@@ -20,8 +21,11 @@ export async function GET(request: NextRequest) {
   const skus = skuList.split(",");
 
   try {
+    const tenantId = await requireTenantId();
+
     const forecasts = await database.inventoryForecast.findMany({
       where: {
+        tenantId,
         sku: { in: skus },
         date: {
           gte: new Date(from),

@@ -43,17 +43,17 @@ export async function POST(request: NextRequest) {
     const result = await database.$queryRaw`
       UPDATE tenant_facilities.facility_assets
       SET
-        name = COALESCE(${name || null}, name),
-        asset_type = COALESCE(${assetType || null}, asset_type),
-        serial_number = COALESCE(${serialNumber || null}, serial_number),
-        manufacturer = COALESCE(${manufacturer || null}, manufacturer),
-        model = COALESCE(${model || null}, model),
+        name = COALESCE(${name ?? null}, name),
+        asset_type = COALESCE(${assetType ?? null}, asset_type),
+        serial_number = COALESCE(${serialNumber ?? null}, serial_number),
+        manufacturer = COALESCE(${manufacturer ?? null}, manufacturer),
+        model = COALESCE(${model ?? null}, model),
         purchase_date = COALESCE(${purchaseDate ? new Date(purchaseDate) : null}::date, purchase_date),
-        purchase_cost = COALESCE(${purchaseCost || null}::numeric, purchase_cost),
+        purchase_cost = COALESCE(${purchaseCost ?? null}::numeric, purchase_cost),
         warranty_expiry = COALESCE(${warrantyExpiry ? new Date(warrantyExpiry) : null}::date, warranty_expiry),
-        status = COALESCE(${status || null}, status),
-        area_id = COALESCE(${areaId || null}::uuid, area_id),
-        notes = COALESCE(${notes || null}, notes),
+        status = COALESCE(${status ?? null}, status),
+        area_id = COALESCE(${areaId ?? null}::uuid, area_id),
+        notes = COALESCE(${notes ?? null}, notes),
         updated_at = NOW()
       WHERE tenant_id = ${tenantId}::uuid
         AND id = ${assetId}::uuid

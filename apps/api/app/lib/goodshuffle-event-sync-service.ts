@@ -28,7 +28,7 @@ export interface EventSyncOptions {
 function _detectConflicts(
   goodshuffleEvent: GoodshuffleEvent,
   convoyEvent: {
-    name: string;
+    title: string;
     eventDate: Date;
     guestCount: number | null;
   }
@@ -38,15 +38,15 @@ function _detectConflicts(
   // Check name conflict
   if (
     goodshuffleEvent.name &&
-    convoyEvent.name &&
-    goodshuffleEvent.name !== convoyEvent.name
+    convoyEvent.title &&
+    goodshuffleEvent.name !== convoyEvent.title
   ) {
     conflicts.push({
       goodshuffleEventId: goodshuffleEvent.id,
       convoyEventId: "",
-      field: "name",
+      field: "title",
       goodshuffleValue: goodshuffleEvent.name,
-      convoyValue: convoyEvent.name,
+      convoyValue: convoyEvent.title,
       resolution: "pending",
     });
   }
@@ -265,7 +265,7 @@ async function createConvoyEventFromGoodshuffle(
   const newEvent = await database.$queryRaw<Array<{ id: string }>>(
     Prisma.sql`
       INSERT INTO tenant.events (
-        tenant_id, id, name, event_date, guest_count,
+        tenant_id, id, title, event_date, guest_count,
         location_id, status, created_at, updated_at
       )
       VALUES (
@@ -302,7 +302,7 @@ async function updateConvoyEventFromGoodshuffle(
   await database.$executeRaw`
     UPDATE tenant.events
     SET
-      name = ${gsEvent.name},
+      title = ${gsEvent.name},
       event_date = ${gsEvent.event_date ? new Date(gsEvent.event_date) : null},
       guest_count = ${gsEvent.guest_count ?? null},
       updated_at = NOW()
