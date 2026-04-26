@@ -105,7 +105,7 @@ test.describe("Staff: Full Workflow", () => {
   test("training page loads", async ({ page }, testInfo) => {
     await goto(page, "/staff/training");
     await expect(page).toHaveURL(/staff\/training/);
-    await expect(page.getByRole("heading", { name: /training/i })).toBeVisible({
+    await expect(page.getByRole("heading", { name: /training/i }).first()).toBeVisible({
       timeout: 10_000,
     });
     await assertNoErrors(page, testInfo, errors, "training page");

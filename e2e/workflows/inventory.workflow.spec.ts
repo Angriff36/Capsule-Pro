@@ -34,7 +34,7 @@ test.describe("Inventory: Full Workflow", () => {
   test("inventory overview loads", async ({ page }, testInfo) => {
     await goto(page, "/inventory");
     await expect(page).toHaveURL(/\/inventory/);
-    await expect(page.getByRole("heading", { name: /inventory/i })).toBeVisible(
+    await expect(page.getByRole("heading", { name: /inventory/i }).first()).toBeVisible(
       { timeout: 10_000 }
     );
     await assertNoErrors(page, testInfo, errors, "inventory overview");
@@ -83,7 +83,7 @@ test.describe("Inventory: Full Workflow", () => {
     await goto(page, "/inventory/levels");
     await expect(page).toHaveURL(/inventory\/levels/);
     await expect(
-      page.getByRole("heading", { name: /stock levels/i })
+      page.getByRole("heading", { name: /stock levels/i }).first()
     ).toBeVisible({ timeout: 10_000 });
     await assertNoErrors(page, testInfo, errors, "stock levels");
   });
@@ -92,7 +92,7 @@ test.describe("Inventory: Full Workflow", () => {
     await goto(page, "/inventory/forecasts");
     await expect(page).toHaveURL(/inventory\/forecasts/);
     await expect(
-      page.getByRole("heading", { name: /depletion forecasting/i })
+      page.getByRole("heading", { name: /depletion forecasting/i }).first()
     ).toBeVisible({ timeout: 10_000 });
     await assertNoErrors(page, testInfo, errors, "forecasts");
   });
