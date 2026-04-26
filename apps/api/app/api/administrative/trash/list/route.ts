@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -616,8 +616,15 @@ export async function GET(request: NextRequest) {
   const search = searchParams.get("search") || "";
   const page = Number.parseInt(searchParams.get("page") ?? "1", 10);
   const limit = Number.parseInt(searchParams.get("limit") ?? "50", 10);
-  const sortBy = searchParams.get("sortBy") ?? "deletedAt";
-  const sortOrder = searchParams.get("sortOrder") ?? "desc";
+  const sortByRaw = searchParams.get("sortBy") ?? "deletedAt";
+  const sortOrderRaw = searchParams.get("sortOrder") ?? "desc";
+
+  // Allowlist sort fields/directions — both are interpolated into Prisma `orderBy`
+  // shapes below, so any value reaching the DB must come from this fixed set.
+  const sortBy: "deletedAt" | "displayName" =
+    sortByRaw === "displayName" ? "displayName" : "deletedAt";
+  const sortOrder: "asc" | "desc" =
+    sortOrderRaw.toLowerCase() === "asc" ? "asc" : "desc";
 
   if (page < 1 || limit < 1 || limit > 200) {
     return NextResponse.json(
@@ -639,114 +646,12 @@ export async function GET(request: NextRequest) {
       ? ([entityType] as RestorableEntity[])
       : RESTORABLE_ENTITIES;
 
-    const allItems: TrashItem[] = [];
-
-    // Query each entity type
-    for (const ent of entityTypesToQuery) {
-      const query = ENTITY_QUERIES[ent];
-      if (!query) continue;
-
-      let sql = query.sql;
-      const params: (string | number)[] = [tenantId];
-
-      // Add search filter if provided
-      if (search) {
-        sql = sql.replace(
-          " deleted_at IS NOT NULL",
-          ` deleted_at IS NOT NULL AND LOWER(${query.displayNameColumn}) LIKE LOWER($2)`
-        );
-        params.push(`%${search}%`);
-      }
-
-      // Add sorting
-      const sortColumn =
-        sortBy === "deletedAt" ? "deleted_at" : query.displayNameColumn;
-      sql += ` ORDER BY ${sortColumn} ${sortOrder.toUpperCase()}`;
-
-      // Add pagination if filtering by single entity type
-      if (entityType) {
-        sql += ` LIMIT $${params.length + 1} OFFSET $${params.length + 2}`;
-        params.push(limit);
-        params.push((page - 1) * limit);
-      }
-
-      const results = await database.$queryRaw<
-        Array<{
-          id: string;
-          tenant_id: string;
-          deleted_at: Date;
-          entity_name: string;
-          display_name: string;
-        }>
-      >(Prisma.sql`${Prisma.raw(sql.replace(/\$/g, "\\"))}`); // Using tagged template properly
-
-      // Note: The above is a workaround - in production we'd properly parameterize
-      // For now, let's use the safer approach with individual queries
-    }
-
-    // Re-implement using safe parameterized queries
-    for (const ent of entityTypesToQuery) {
-      const query = ENTITY_QUERIES[ent];
-      if (!query) continue;
-
-      // Build a safe parameterized query
-      let whereClause = "tenant_id = $1 AND deleted_at IS NOT NULL";
-      const params: (string | Date | number)[] = [tenantId];
-      let paramIndex = 2;
-
-      // Add search filter
-      if (search) {
-        whereClause += ` AND LOWER(${query.displayNameColumn}) LIKE LOWER($${paramIndex})`;
-        params.push(`%${search}%`);
-        paramIndex++;
-      }
-
-      // Get count for pagination
-      const countResult = await database.$queryRaw<Array<{ count: bigint }>>(
-        Prisma.raw(
-          `SELECT COUNT(*) as count FROM (${query.sql.replace(
-            / WHERE tenant_id = \$1 AND deleted_at IS NOT NULL.*$/s,
-            ` WHERE ${whereClause}`
-          )}) AS subq`
-        )
-      );
-
-      // Fetch data with sorting and pagination
-      const orderByClause =
-        sortBy === "deletedAt"
-          ? `deleted_at ${sortOrder.toUpperCase()}`
-          : `${query.displayNameColumn} ${sortOrder.toUpperCase()}`;
-
-      const dataSql = `${query.sql
-        .replace(" WHERE tenant_id = $1 AND deleted_at IS NOT NULL", "")
-        .replace(/ FROM /, " FROM ")}
-        WHERE ${whereClause}
-        ORDER BY ${orderByClause}
-        LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
-
-      params.push(limit);
-      params.push((page - 1) * limit);
-
-      const results = await database.$queryRaw<
-        Array<{
-          id: string;
-          tenant_id: string;
-          deleted_at: Date;
-          entity_name: string;
-          display_name: string;
-        }>
-      >(
-        Prisma.raw(
-          dataSql.replace(/\$\d+/g, (match) => {
-            const idx = Number.parseInt(match.slice(1)) - 1;
-            return `'${params[idx]}'`;
-          })
-        )
-      );
-    }
-
-    // Simpler approach: fetch all soft-deleted items for the tenant
-    // using Prisma for each entity type with proper safety
+    // Fetch soft-deleted items for the tenant via Prisma per entity type.
+    // Two earlier loops that built dynamic SQL via `Prisma.raw` and manual
+    // `$N` -> `'value'` substitution were removed in 2026-04-26 — they were
+    // unused (their results were discarded by this third loop) but every call
+    // still executed them, exposing classic SQL-injection vectors through
+    // `sortOrder` and `search` parameters. See IMPLEMENTATION_PLAN.md CRIT-2.
     const items: TrashItem[] = [];
 
     for (const ent of entityTypesToQuery.slice(0, 10)) {
