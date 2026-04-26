@@ -1,5 +1,6 @@
 "use client";
 
+import { usePostHog } from "posthog-js/react";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -46,7 +47,7 @@ import {
   BoxIcon,
   DollarSignIcon,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ITEM_CATEGORIES, type ItemCategory } from "../../../lib/use-inventory";
 import {
@@ -83,6 +84,9 @@ const REORDER_STATUSES: Array<{
 ];
 
 export const StockLevelsPageClient = () => {
+  const posthog = usePostHog();
+  const lowStockFired = useRef(false);
+
   // Main data state
   const [stockLevels, setStockLevels] = useState<StockLevelWithStatus[]>([]);
   const [transactions, setTransactions] = useState<InventoryTransaction[]>([]);
@@ -149,6 +153,18 @@ export const StockLevelsPageClient = () => {
       setTotalPages(response.pagination.totalPages);
       setTotalCount(response.pagination.total);
       setSummary(response.summary);
+
+      // Fire low stock alert once when data loads with critical items
+      if (
+        !lowStockFired.current &&
+        (response.summary.belowParCount > 0 || response.summary.outOfStockCount > 0)
+      ) {
+        lowStockFired.current = true;
+        posthog?.capture("inventory:low_stock_alert", {
+          below_par_count: response.summary.belowParCount,
+          out_of_stock_count: response.summary.outOfStockCount,
+        });
+      }
     } catch (error) {
       console.error("Failed to load stock levels:", error);
       toast.error(

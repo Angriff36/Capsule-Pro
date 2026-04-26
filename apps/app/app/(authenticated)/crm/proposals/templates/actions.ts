@@ -10,6 +10,7 @@ import { auth } from "@repo/auth/server";
 import type { ProposalTemplate } from "@repo/database";
 import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
+import { serializeDecimals } from "@/app/lib/decimal";
 import { invariant } from "@/app/lib/invariant";
 import { getTenantId } from "@/app/lib/tenant";
 
@@ -110,7 +111,7 @@ export async function getProposalTemplates(
     orderBy: [{ isDefault: "desc" }, { name: "asc" }],
   });
 
-  return templates as ProposalTemplate[];
+  return templates.map(serializeDecimals) as ProposalTemplate[];
 }
 
 /**
@@ -133,7 +134,7 @@ export async function getProposalTemplateById(id: string) {
     return null;
   }
 
-  return template as ProposalTemplate;
+  return serializeDecimals(template) as unknown as ProposalTemplate;
 }
 
 /**
@@ -159,7 +160,7 @@ export async function getDefaultTemplateForEventType(eventType: string) {
   });
 
   if (eventTypeTemplate) {
-    return eventTypeTemplate as ProposalTemplate;
+    return serializeDecimals(eventTypeTemplate) as unknown as ProposalTemplate;
   }
 
   // Fall back to the global default template
@@ -174,7 +175,7 @@ export async function getDefaultTemplateForEventType(eventType: string) {
     },
   });
 
-  return defaultTemplate as ProposalTemplate | null;
+  return defaultTemplate ? serializeDecimals(defaultTemplate) as unknown as ProposalTemplate : null;
 }
 
 /**
@@ -225,7 +226,7 @@ export async function createProposalTemplate(
   revalidatePath("/crm/proposals/templates");
   revalidatePath("/crm/proposals/new");
 
-  return template as ProposalTemplate;
+  return serializeDecimals(template) as unknown as ProposalTemplate;
 }
 
 /**
@@ -309,7 +310,7 @@ export async function updateProposalTemplate(
   revalidatePath("/crm/proposals/new");
   revalidatePath(`/crm/proposals/templates/${id}`);
 
-  return template as ProposalTemplate;
+  return serializeDecimals(template) as unknown as ProposalTemplate;
 }
 
 /**
@@ -385,5 +386,5 @@ export async function duplicateProposalTemplate(id: string) {
 
   revalidatePath("/crm/proposals/templates");
 
-  return newTemplate as ProposalTemplate;
+  return serializeDecimals(newTemplate) as unknown as ProposalTemplate;
 }

@@ -3,6 +3,8 @@
  *
  * NOTE: RevenueRecognitionSchedule model is not yet implemented in the database schema.
  * These routes return 501 Not Implemented until the model is added.
+ * BLOCKER: RevenueRecognitionSchedule model does not exist in schema.
+ * Tracked as capsule-pro/TODO:revenue-recognition-schedule-model
  */
 
 import { captureException } from "@sentry/nextjs";
@@ -22,7 +24,8 @@ export async function GET(request: NextRequest, context: RouteContext) {
     await requireTenantId();
     const { id } = context.params;
 
-    // TODO: Implement when RevenueRecognitionSchedule model is added to schema
+    // BLOCKER: RevenueRecognitionSchedule model does not exist in schema.
+    // Tracked as capsule-pro/TODO:revenue-recognition-schedule-model
     return NextResponse.json(
       {
         error: `Revenue recognition schedule ${id} not found - feature not yet implemented`,
@@ -48,7 +51,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     await requireTenantId();
     const { id } = context.params;
 
-    // TODO: Implement when RevenueRecognitionSchedule model is added to schema
+    // BLOCKER: RevenueRecognitionSchedule model does not exist in schema.
+    // Tracked as capsule-pro/TODO:revenue-recognition-schedule-model
     return NextResponse.json(
       {
         error: `Revenue recognition schedule ${id} not found - feature not yet implemented`,

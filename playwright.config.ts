@@ -1,6 +1,11 @@
 import { defineConfig, devices } from "@playwright/test";
 import { detectBrowserEndpoint } from "./e2e/detect-browser-endpoint";
 import { loadEnvFiles } from "./e2e/env";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const AUTH_STORAGE_STATE = path.resolve(__dirname, "e2e", ".auth", "storageState.json");
 
 loadEnvFiles();
 
@@ -54,7 +59,7 @@ export default defineConfig({
   testMatch,
   globalSetup: USE_PERSISTENT_BROWSER
     ? "e2e/global-setup-persistent-browser.ts"
-    : "e2e/global-setup.ts",
+    : undefined, // Auth handled by setup project below
 
   timeout: 120_000,
   expect: { timeout: 15_000 },
@@ -69,9 +74,6 @@ export default defineConfig({
     trace: "on-first-retry",
     screenshot: "only-on-failure",
     video: "retain-on-failure",
-    storageState: process.env.PLAYWRIGHT_AUTH_READY
-      ? "e2e/.auth/storageState.json"
-      : undefined,
     ...(USE_PERSISTENT_BROWSER &&
       wsEndpoint && { connectOptions: { wsEndpoint } }),
   },
@@ -89,5 +91,32 @@ export default defineConfig({
         timeout: 180_000,
       },
 
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  projects: USE_PERSISTENT_BROWSER
+    ? [
+        // Persistent browser mode: user's real browser is already authenticated.
+        // No setup project needed — just connect to the running browser.
+        {
+          name: "chromium",
+          use: { ...devices["Desktop Chrome"] },
+        },
+      ]
+    : [
+        // Setup project: authenticates via Clerk and saves storageState.
+        // Runs before any test project. All test projects depend on it.
+        {
+          name: "setup",
+          testMatch: /.*\.setup\.ts/,
+          use: { ...devices["Desktop Chrome"] },
+        },
+        // Authenticated test project — uses stored Clerk session cookies.
+        // Clerk SSR requires __session cookies; Bearer tokens don't work.
+        {
+          name: "chromium",
+          use: {
+            ...devices["Desktop Chrome"],
+            storageState: AUTH_STORAGE_STATE,
+          },
+          dependencies: ["setup"],
+        },
+      ],
 });

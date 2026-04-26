@@ -39,6 +39,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+import { analytics } from "@repo/analytics";
 import { Header } from "../components/header";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
@@ -179,6 +180,7 @@ function SearchResults() {
     if (!q) return;
     setLoading(true);
     setError(null);
+    analytics.capture("search:query", { query: q });
     try {
       const params = new URLSearchParams({
         q,

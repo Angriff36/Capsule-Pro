@@ -1,5 +1,7 @@
 "use client";
 
+import { usePostHog } from "posthog-js/react";
+import { useEffect } from "react";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -47,6 +49,14 @@ const formatDate = (date: string) =>
   });
 
 export function InvoicesClient({ invoices }: { invoices: Invoice[] }) {
+  const posthog = usePostHog();
+
+  useEffect(() => {
+    posthog?.capture("billing:invoice_viewed", {
+      invoice_count: invoices.length,
+    });
+  }, [posthog, invoices.length]);
+
   return (
     <div className="flex flex-col gap-6 p-6">
       <div className="flex items-center justify-between">

@@ -126,8 +126,9 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     });
   }
 
-  // TODO: Handle other field updates (title, summary, dueDate, tags) when
-  // corresponding manifest commands are available. For now, log and return error.
+  // BLOCKER: No manifest commands exist for title, summary, dueDate, tags updates.
+  // These need corresponding kitchen-ops manifest definitions.
+  // Tracked as capsule-pro/TODO:kitchen-task-field-commands
   console.error(
     "[KitchenTask/PATCH] No manifest command available for the requested update",
     { taskId: id, bodyKeys: Object.keys(body) }

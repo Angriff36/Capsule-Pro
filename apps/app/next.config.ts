@@ -216,14 +216,14 @@ let nextConfig: NextConfig = withToolbar(
     productionBrowserSourceMaps: true,
     redirects: async () => [
       {
-        // Root of the authenticated layout used to be a server component that
-        // called redirect("/command-board").  Vercel's build tracer expects a
-        // page_client-reference-manifest.js for every page, but Next.js never
-        // generates one for a pure server-component redirect — causing ENOENT
-        // during "Collecting page data".  Moving the redirect here avoids
-        // generating any page artifact at all.
         source: "/",
         destination: "/calendar",
+        permanent: false,
+      },
+      {
+        // Legacy route — moved to /scheduling/availability
+        source: "/staff/availability",
+        destination: "/scheduling/availability",
         permanent: false,
       },
     ],
@@ -251,12 +251,12 @@ let nextConfig: NextConfig = withToolbar(
               key: "Content-Security-Policy",
               value: [
                 "default-src 'self'",
-                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.clerk.com https://*.clerk.accounts.dev blob:",
+                "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.clerk.com https://*.clerk.accounts.dev https://us-assets.i.posthog.com blob:",
                 "worker-src 'self' blob:",
                 "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
                 "font-src 'self' https://fonts.gstatic.com",
                 "img-src 'self' data: blob: https://img.clerk.com",
-                "connect-src 'self' https://*.clerk.com https://*.clerk.accounts.dev https://clerk-telemetry.com https://*.sentry.io",
+                "connect-src 'self' https://*.clerk.com https://*.clerk.accounts.dev https://clerk-telemetry.com https://*.sentry.io https://us.i.posthog.com https://*.ably.io https://*.ably-realtime.com https://*.ably.net",
                 "frame-ancestors 'none'",
                 "frame-src 'self' https://*.clerk.accounts.dev",
                 "base-uri 'self'",

@@ -92,8 +92,9 @@ export async function GET(request: NextRequest) {
       }),
     ]);
 
-    // TODO: Store explicit sync history records when sync is triggered
-    // For now, we derive status from catalog metadata
+    // BLOCKER: No SupplierSyncHistory model exists. Currently derives status from
+    // VendorCatalog updatedAt. Adding explicit sync records requires a new model.
+    // Tracked as capsule-pro/TODO:supplier-sync-history-model
 
     return NextResponse.json({
       supplierId,

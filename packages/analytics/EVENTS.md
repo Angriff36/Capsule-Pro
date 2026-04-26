@@ -48,6 +48,7 @@ Auto-captured by `posthog-js/react` `PostHogProvider`. No custom code needed.
 | `billing:plan_changed` | Subscription plan changes | `{ from_plan, to_plan }` |
 | `billing:subscription_cancelled` | User cancels | `{ plan, reason? }` |
 | `billing:subscription_resumed` | User reactivates | `{ plan }` |
+| `billing:invoice_viewed` | Invoices list page viewed | `{ invoice_count }` |
 
 ---
 
@@ -58,6 +59,8 @@ Auto-captured by `posthog-js/react` `PostHogProvider`. No custom code needed.
 | `feature:manifest_created` | New manifest file created | `{ manifest_id }` |
 | `feature:manifest_published` | Manifest published/activated | `{ manifest_id, version }` |
 | `feature:manifest_deleted` | Manifest removed | `{ manifest_id }` |
+| `inventory:low_stock_alert` | Stock levels page loads with critical items | `{ below_par_count, out_of_stock_count }` |
+| `procurement:order_created` | Purchase order created | `{ vendor_id, line_item_count }` |
 | `studio:page_opened` | Studio editor opened | `{ page_type, page_id? }` |
 | `studio:page_saved` | Studio page saved | `{ page_type, page_id, autosave: boolean }` |
 | `studio:page_published` | Studio page published | `{ page_type, page_id }` |

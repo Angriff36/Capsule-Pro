@@ -294,7 +294,20 @@ export async function deleteEmailTemplate(id: string) {
 
   invariant(existing, "Template not found");
 
-  // TODO: Check for workflow usage when workflows are implemented
+  // Check if any active email workflow references this template
+  const activeWorkflow = await database.emailWorkflow.findFirst({
+    where: {
+      tenantId,
+      emailTemplateId: id,
+      isActive: true,
+      deletedAt: null,
+    },
+  });
+
+  invariant(
+    !activeWorkflow,
+    "Cannot delete template: it is actively used by one or more email workflows"
+  );
 
   // Soft delete
   await database.email_templates.update({

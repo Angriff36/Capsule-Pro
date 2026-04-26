@@ -1,4 +1,5 @@
 import { auth } from "@repo/auth/server";
+import { analytics } from "@repo/analytics/server";
 import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
@@ -473,6 +474,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(response);
   } catch (error) {
     console.error("[/api/search] Error:", error);
+    analytics.capture({
+      distinctId: "server",
+      event: "error:api_request_failed",
+      properties: {
+        endpoint: "/api/search",
+        status_code: 500,
+      },
+    });
     return NextResponse.json(
       { success: false, message: "Search failed. Please try again." },
       { status: 500 }

@@ -15,6 +15,7 @@ import { Banknote, Building, CreditCard, Smartphone } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+import { usePostHog } from "posthog-js/react";
 
 type PaymentMethodType =
   | "CREDIT_CARD"
@@ -71,6 +72,7 @@ export function PaymentFormClient({
   invoiceTotal,
   invoiceAmountDue,
 }: PaymentFormProps) {
+  const posthog = usePostHog();
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [amount, setAmount] = useState(invoiceAmountDue);
@@ -86,6 +88,13 @@ export function PaymentFormClient({
     setLoading(true);
 
     try {
+      posthog?.capture("billing:checkout_started", {
+        plan: "invoice_payment",
+        interval: "one_time",
+        amount_cents: Math.round(amount * 100),
+        payment_method: methodType,
+      });
+
       // Create payment
       const response = await apiFetch("/api/accounting/payments", {
         method: "POST",
@@ -108,6 +117,13 @@ export function PaymentFormClient({
       }
 
       const payment = await response.json();
+
+      posthog?.capture("billing:checkout_completed", {
+        plan: "invoice_payment",
+        interval: "one_time",
+        amount_cents: Math.round(amount * 100),
+        payment_method: methodType,
+      });
 
       // Process payment (in real implementation, this would call the payment gateway)
       await apiFetch(`/api/accounting/payments/${payment.id}`, {

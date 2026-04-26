@@ -93,7 +93,9 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // TODO: Send notification to relevant staff
+    // BLOCKER: Notification service not yet implemented. Need to determine notification
+    // channel (in-app, push, email) and staff assignment routing.
+    // Tracked as capsule-pro/TODO:iot-notification-service
 
     return NextResponse.json({ alert });
   } catch (error) {

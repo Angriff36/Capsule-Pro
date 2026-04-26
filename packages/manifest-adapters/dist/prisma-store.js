@@ -1420,6 +1420,108 @@ export class EventPrismaStore {
     }
 }
 /**
+ * Prisma-backed store for EmailTemplate entities
+ *
+ * Maps Manifest EmailTemplate entities to the Prisma email_templates table.
+ */
+export class EmailTemplatePrismaStore {
+    prisma;
+    tenantId;
+    constructor(prisma, tenantId) {
+        this.prisma = prisma;
+        this.tenantId = tenantId;
+    }
+    async getAll() {
+        const templates = await this.prisma.email_templates.findMany({
+            where: { tenant_id: this.tenantId, deleted_at: null },
+        });
+        return templates.map((t) => this.mapToManifestEntity(t));
+    }
+    async getById(id) {
+        const template = await this.prisma.email_templates.findFirst({
+            where: { tenant_id: this.tenantId, id, deleted_at: null },
+        });
+        return template ? this.mapToManifestEntity(template) : undefined;
+    }
+    async create(data) {
+        const id = data.id ?? crypto.randomUUID();
+        const template = await this.prisma.email_templates.create({
+            data: {
+                tenant_id: this.tenantId,
+                id,
+                name: data.name || "",
+                template_type: (data.templateType || "custom"),
+                subject: data.subject || "",
+                body: data.body || "",
+                merge_fields: data.mergeFields || "[]",
+                is_active: data.isActive !== undefined ? Boolean(data.isActive) : true,
+                is_default: data.isDefault !== undefined ? Boolean(data.isDefault) : false,
+            },
+        });
+        return this.mapToManifestEntity(template);
+    }
+    async update(id, data) {
+        try {
+            const updated = await this.prisma.email_templates.update({
+                where: { tenant_id_id: { tenant_id: this.tenantId, id } },
+                data: {
+                    name: data.name,
+                    template_type: data.templateType
+                        ? data.templateType
+                        : undefined,
+                    subject: data.subject,
+                    body: data.body,
+                    merge_fields: data.mergeFields,
+                    is_active: data.isActive !== undefined ? Boolean(data.isActive) : undefined,
+                    is_default: data.isDefault !== undefined ? Boolean(data.isDefault) : undefined,
+                    updated_at: new Date(),
+                },
+            });
+            return this.mapToManifestEntity(updated);
+        }
+        catch (error) {
+            reportStoreError(error, "EmailTemplate", "update");
+            return undefined;
+        }
+    }
+    async delete(id) {
+        try {
+            await this.prisma.email_templates.update({
+                where: { tenant_id_id: { tenant_id: this.tenantId, id } },
+                data: { deleted_at: new Date() },
+            });
+            return true;
+        }
+        catch (error) {
+            reportStoreError(error, "EmailTemplate", "delete");
+            return false;
+        }
+    }
+    async clear() {
+        await this.prisma.email_templates.updateMany({
+            where: { tenant_id: this.tenantId, deleted_at: null },
+            data: { deleted_at: new Date() },
+        });
+    }
+    mapToManifestEntity(t) {
+        return {
+            id: t.id,
+            tenantId: t.tenant_id,
+            name: t.name ?? "",
+            templateType: t.template_type ?? "custom",
+            subject: t.subject ?? "",
+            body: t.body ?? "",
+            mergeFields: t.merge_fields ?? "[]",
+            isActive: t.is_active ?? true,
+            isDefault: t.is_default ?? false,
+            createdAt: t.created_at ? new Date(t.created_at).getTime() : 0,
+            updatedAt: t.updated_at ? new Date(t.updated_at).getTime() : 0,
+            deletedAt: t.deleted_at ? new Date(t.deleted_at).getTime() : 0,
+            isDeleted: t.deleted_at !== null,
+        };
+    }
+}
+/**
  * Create a Prisma store provider for Kitchen-Ops entities
  *
  * This returns a function that provides the appropriate Store implementation
@@ -1460,6 +1562,8 @@ export function createPrismaStoreProvider(prisma, tenantId) {
                 return new KitchenTaskPrismaStore(prisma, tenantId);
             case "Event":
                 return new EventPrismaStore(prisma, tenantId);
+            case "EmailTemplate":
+                return new EmailTemplatePrismaStore(prisma, tenantId);
             default:
                 console.error(`[createPrismaStoreProvider] No store for entity "${entityName}" — commands will fail`);
                 return undefined;

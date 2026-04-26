@@ -48,8 +48,11 @@ const middleware: NextMiddleware = clerkMiddleware(async (auth, req) => {
         tags: { source: "api-middleware", route: req.nextUrl.pathname },
       }
     );
-    // Let Next.js handle the error rather than silently swallowing
-    throw error;
+    // Return a safe 401 instead of letting unhandled auth errors surface as 500s
+    return new Response(JSON.stringify({ error: "Unauthorized", message: "Invalid or expired session" }), {
+      status: 401,
+      headers: { "Content-Type": "application/json" },
+    });
   }
 });
 

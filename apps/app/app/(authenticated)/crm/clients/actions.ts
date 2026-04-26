@@ -10,6 +10,7 @@ import { auth } from "@repo/auth/server";
 import type { Client, ClientContact, ClientInteraction } from "@repo/database";
 import { database } from "@repo/database";
 import { revalidatePath } from "next/cache";
+import { serializeDecimals } from "@/app/lib/decimal";
 import { invariant } from "@/app/lib/invariant";
 import { getTenantId } from "@/app/lib/tenant";
 
@@ -607,8 +608,12 @@ export async function createClientInteraction(
 
   invariant(client, "Client not found");
 
-  // Note: Using userId since Employee model doesn't exist in schema
-  // TODO: Add Employee model and proper employee lookup
+  // TODO(capsule-pro/TODO:crm-employee-model): No standalone Employee model exists in the schema.
+  // ClientInteraction.employeeId is a UUID with no FK constraint. Related tables exist
+  // (EmployeeBankAccount, EmployeeTimeOffRequest, etc.) but they reference employeeId
+  // externally — there is no central Employee table to look up userId → employeeId.
+  // Needed: an Employee model with a userId field linking Clerk users to employee records.
+  // Until then, userId is used directly as the employeeId stand-in.
   invariant(userId, "User ID not found");
 
   const interaction = await database.clientInteraction.create({
@@ -786,7 +791,7 @@ export async function getClientEventHistory(
   });
 
   return {
-    data: events,
+    data: events.map((e) => serializeDecimals(e)),
     pagination: {
       limit,
       offset,

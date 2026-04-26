@@ -72,7 +72,8 @@ async function findSubstitutions(db, tenantId, ingredientId, currentCost, catego
         COALESCE(ii.quantity_on_hand, 0) > 0 as in_stock
       FROM tenant_kitchen.ingredients i
       LEFT JOIN tenant_inventory.inventory_items ii
-        ON ii.ingredient_id = i.id
+        ON ii.name = i.name
+        AND ii.tenant_id = i.tenant_id
         AND ii.deleted_at IS NULL
       WHERE i.tenant_id = ${tenantId}
         AND i.id != ${ingredientId}

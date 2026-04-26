@@ -27,9 +27,10 @@ export async function GET(request: NextRequest) {
       return manifestErrorResponse("Tenant not found", 400);
     }
 
-    // TODO: Implement when CommandBoard model has:
-    // - shareId field
-    // - isPublic field
+    // NOTE: CommandBoard already has projections, groups, annotations relations.
+    // Only shareId and isPublic fields are missing from the schema.
+    // BLOCKER: Needs schema migration to add shareId/isPublic to CommandBoard.
+    // Tracked as capsule-pro/TODO:commandboard-share-fields
 
     return manifestSuccessResponse({
       templates: [],

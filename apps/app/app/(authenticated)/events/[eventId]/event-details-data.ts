@@ -17,6 +17,7 @@
 
 import { database, Prisma } from "@repo/database";
 import { cache } from "react";
+import { serializeDecimals } from "@/app/lib/decimal";
 import type {
   EventDishSummary,
   InventoryCoverageItem,
@@ -33,13 +34,14 @@ import type {
  * @tier 1 (Independent)
  */
 export const getEvent = cache(async (tenantId: string, eventId: string) => {
-  return database.event.findFirst({
+  const event = await database.event.findFirst({
     where: {
       tenantId,
       id: eventId,
       deletedAt: null,
     },
   });
+  return event ? serializeDecimals(event) : null;
 });
 
 /**

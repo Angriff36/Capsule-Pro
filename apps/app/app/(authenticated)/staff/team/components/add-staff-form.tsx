@@ -38,7 +38,7 @@ export const AddStaffForm = () => {
     <form action={formAction} className="space-y-4" ref={formRef}>
       {state.status === "error" ? (
         <Alert variant="destructive">
-          <AlertTitle>Could not add staff</AlertTitle>
+          <AlertTitle>Could not add staff:</AlertTitle>
           <AlertDescription>{state.message}</AlertDescription>
         </Alert>
       ) : null}

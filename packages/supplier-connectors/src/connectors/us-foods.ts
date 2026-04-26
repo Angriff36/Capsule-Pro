@@ -62,9 +62,10 @@ export class UsFoodsConnector implements SupplierConnector {
       return false;
     }
 
-    // TODO: Implement actual connection test
+    // BLOCKER: EDI infrastructure (AS2/FTP) not yet available.
     // For AS2: Send test message and await MDN response
     // For FTP: Connect and verify directory access
+    // Tracked as capsule-pro/TODO:us-foods-edi-integration
     console.log(
       "[us-foods] Connection test not implemented - EDI infrastructure required"
     );
@@ -87,10 +88,11 @@ export class UsFoodsConnector implements SupplierConnector {
   async fetchCatalog(
     config: SupplierConnectorConfig
   ): Promise<SupplierProduct[]> {
-    // TODO: Implement catalog fetch via EDI 832
+    // BLOCKER: EDI infrastructure not yet available.
     // 1. Connect to EDI endpoint
     // 2. Request or retrieve 832 catalog document
     // 3. Parse using parseEdi832Catalog()
+    // Tracked as capsule-pro/TODO:us-foods-edi-integration
     console.log(
       "[us-foods] Catalog fetch not implemented - EDI infrastructure required"
     );
@@ -108,7 +110,8 @@ export class UsFoodsConnector implements SupplierConnector {
     config: SupplierConnectorConfig,
     skus: string[]
   ): Promise<Record<string, { available: boolean; quantity?: number }>> {
-    // TODO: Implement availability check via EDI 846
+    // BLOCKER: EDI infrastructure not yet available.
+    // Tracked as capsule-pro/TODO:us-foods-edi-integration
     console.log(
       "[us-foods] Availability check not implemented - EDI infrastructure required"
     );
@@ -135,7 +138,8 @@ export class UsFoodsConnector implements SupplierConnector {
   ): Promise<
     Record<string, { unitCost: number; currency: string; effectiveFrom?: Date }>
   > {
-    // TODO: Implement pricing fetch via EDI 832
+    // BLOCKER: EDI infrastructure not yet available.
+    // Tracked as capsule-pro/TODO:us-foods-edi-integration
     console.log(
       "[us-foods] Pricing fetch not implemented - EDI infrastructure required"
     );
@@ -168,15 +172,17 @@ export class UsFoodsConnector implements SupplierConnector {
  * @param ediContent - Raw EDI X12 832 document content
  * @returns Parsed supplier products
  *
- * TODO: Implement full 832 parsing with proper segment handling
+ * BLOCKER: EDI infrastructure not yet available. Implement full 832 parsing with proper segment handling.
+ * Tracked as capsule-pro/TODO:us-foods-edi-integration
  */
 export function parseEdi832Catalog(ediContent: string): SupplierProduct[] {
-  // TODO: Implement X12 832 parsing
+  // BLOCKER: EDI infrastructure not yet available.
   // 1. Split by segment terminator (usually ~ or newline)
   // 2. Parse each segment by element delimiter (*)
   // 3. Build product records from LIN/CTP/PID segments
   // 4. Handle repeating groups for multiple prices/UOMs
   // 5. Validate required segments are present
+  // Tracked as capsule-pro/TODO:us-foods-edi-integration
 
   console.log("[us-foods] EDI 832 parsing not implemented");
 

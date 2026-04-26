@@ -1,8 +1,9 @@
 /**
  * API endpoint for getting a public template by shareId
  *
- * NOTE: CommandBoard model does not have shareId, isPublic fields, or the required relations.
- * This endpoint returns 501 Not Implemented until the model is updated.
+ * NOTE: CommandBoard model is missing shareId/isPublic fields (projections, groups,
+ * annotations relations already exist). This endpoint returns 501 Not Implemented
+ * until the model is updated.
  */
 
 import { auth } from "@repo/auth/server";
@@ -21,13 +22,13 @@ export async function GET(
       return manifestErrorResponse("Share ID is required", 400);
     }
 
-    // TODO: Implement when CommandBoard model has:
-    // - shareId field
-    // - isPublic field
-    // - projections, groups, annotations relations
+    // NOTE: CommandBoard already has projections, groups, annotations relations.
+    // Only shareId and isPublic fields are missing from the schema.
+    // BLOCKER: Needs schema migration to add shareId/isPublic to CommandBoard.
+    // Tracked as capsule-pro/TODO:commandboard-share-fields
 
     return manifestErrorResponse(
-      "Template sharing not yet implemented - CommandBoard model needs shareId, isPublic, and relation fields",
+      "Template sharing not yet implemented - needs shareId/isPublic fields on CommandBoard",
       501
     );
   } catch (error) {
@@ -53,13 +54,13 @@ export async function POST(
       return manifestErrorResponse("Share ID is required", 400);
     }
 
-    // TODO: Implement when CommandBoard model has:
-    // - shareId field
-    // - isPublic field
-    // - projections, groups, annotations relations
+    // NOTE: CommandBoard already has projections, groups, annotations relations.
+    // Only shareId and isPublic fields are missing from the schema.
+    // BLOCKER: Needs schema migration to add shareId/isPublic to CommandBoard.
+    // Tracked as capsule-pro/TODO:commandboard-share-fields
 
     return manifestErrorResponse(
-      "Template sharing not yet implemented - CommandBoard model needs shareId, isPublic, and relation fields",
+      "Template sharing not yet implemented - needs shareId/isPublic fields on CommandBoard",
       501
     );
   } catch (error) {

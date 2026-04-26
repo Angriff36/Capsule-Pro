@@ -3,6 +3,7 @@
 import { Button } from "@repo/design-system/components/ui/button";
 import { fonts } from "@repo/design-system/lib/fonts";
 import { captureException } from "@sentry/nextjs";
+import { posthog } from "posthog-js";
 import type NextError from "next/error";
 import { useEffect } from "react";
 
@@ -29,6 +30,9 @@ const GlobalError = ({ error, reset }: GlobalErrorProperties) => {
   useEffect(() => {
     if (isNextHTTPErrorFallback(error)) return;
     captureException(error);
+    posthog?.capture("error:boundary_triggered", {
+      error_message: String((error as unknown as Error).message).slice(0, 200),
+    });
   }, [error]);
 
   return (

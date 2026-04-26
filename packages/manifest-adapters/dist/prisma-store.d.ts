@@ -210,6 +210,23 @@ export declare class EventPrismaStore implements Store<EntityInstance> {
     clear(): Promise<void>;
 }
 /**
+ * Prisma-backed store for EmailTemplate entities
+ *
+ * Maps Manifest EmailTemplate entities to the Prisma email_templates table.
+ */
+export declare class EmailTemplatePrismaStore implements Store<EntityInstance> {
+    private readonly prisma;
+    private readonly tenantId;
+    constructor(prisma: PrismaClient, tenantId: string);
+    getAll(): Promise<EntityInstance[]>;
+    getById(id: string): Promise<EntityInstance | undefined>;
+    create(data: Partial<EntityInstance>): Promise<EntityInstance>;
+    update(id: string, data: Partial<EntityInstance>): Promise<EntityInstance | undefined>;
+    delete(id: string): Promise<boolean>;
+    clear(): Promise<void>;
+    private mapToManifestEntity;
+}
+/**
  * Create a Prisma store provider for Kitchen-Ops entities
  *
  * This returns a function that provides the appropriate Store implementation

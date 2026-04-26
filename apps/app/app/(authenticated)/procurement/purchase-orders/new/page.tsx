@@ -21,6 +21,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
+import { usePostHog } from "posthog-js/react";
 import type { POFormData, Vendor } from "../../components/po-form";
 import { POForm } from "../../components/po-form";
 import {
@@ -39,6 +40,7 @@ interface InventoryItem {
 }
 
 export default function NewPOPage() {
+  const posthog = usePostHog();
   const router = useRouter();
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [inventoryItems, setInventoryItems] = useState<InventoryItem[]>([]);
@@ -129,6 +131,11 @@ export default function NewPOPage() {
 
     setCreating(true);
     try {
+      posthog?.capture("procurement:order_created", {
+        vendor_id: form.vendorId,
+        line_item_count: lineItems.length,
+      });
+
       const res = await apiFetch(
         "/api/procurement/purchase-orders/commands/create",
         {

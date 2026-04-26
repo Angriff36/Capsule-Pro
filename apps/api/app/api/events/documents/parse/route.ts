@@ -930,7 +930,9 @@ async function processDocumentsAndGenerateResponse(
   );
 
   // Process each document import through Manifest (if available)
-  // TODO: Re-enable after porting event import functions from manifest-backup to kitchen-ops
+  // BLOCKER: Event import functions need porting from manifest-backup to kitchen-ops.
+  // This is a code migration task, not a schema blocker.
+  // Tracked as capsule-pro/TODO:event-import-porting
   // if (engine && processDoc) {
   //   try {
   //     const manifestImportIds: string[] = [];

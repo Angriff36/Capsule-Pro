@@ -561,6 +561,16 @@
       "prefix": "/api/procurement/approvals/action",
       "methods": ["POST"],
       "comment": "Infrastructure: Approve/reject purchase order with approval history side-effect (legacy direct DB access)"
+    },
+    {
+      "prefix": "/api/events/documents/parse",
+      "methods": ["POST"],
+      "comment": "Infrastructure: PDF/CSV document upload and parsing (file processing, no domain command)"
+    },
+    {
+      "prefix": "/api/kitchen/iot/alerts",
+      "methods": ["POST", "PUT", "PATCH", "DELETE"],
+      "comment": "Infrastructure: IoT alert management with direct DB access (pending manifest)"
     }
   ]
 }

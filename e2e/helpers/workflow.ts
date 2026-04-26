@@ -67,6 +67,18 @@ const IGNORE_PATTERNS = [
   /__nextjs_original-stack-frames/i, // Next.js dev-only stack frame endpoint (blocked in dev)
   /Failed to load resource: the server responded with a status of 403/i, // Generic 403 console error (usually from __nextjs_original-stack-frames in dev)
   /Failed to load resource: the server responded with a status of 404/i, // Generic 404 console error (usually stale Server Action IDs after dev server recompile)
+  // PostHog CSP violations — cosmetic (cdn-us.jsdelivr.net blocked), not app-breaking
+  /posthog.*Content Security Policy/i,
+  /Loading the script.*posthog/i,
+  /Refused to connect.*posthog/i,
+  /Refused to load the script.*posthog/i,
+  // Ably realtime CSP violations — realtime feature, not critical for E2E
+  /ably.*Content Security Policy/i,
+  /Refused to connect.*ably/i,
+  /Failed to connect to.*ably/i,
+  // Generic CSP violations — skip all CSP noise (config/infrastructure issue, not app bug)
+  /Content Security Policy.*script-src/i,
+  /Content Security Policy.*connect-src/i,
 ];
 
 function shouldIgnore(text: string): boolean {

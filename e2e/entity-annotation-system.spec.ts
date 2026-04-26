@@ -254,7 +254,7 @@ test.describe("Entity Annotation System", () => {
     });
 
     // Note should no longer be visible
-    await expect(page.getByText(/note to be deleted/i })).not.toBeVisible();
+    await expect(page.getByText(/note to be deleted/i)).not.toBeVisible();
   });
 
   test("should edit an existing note", async ({ page }) => {

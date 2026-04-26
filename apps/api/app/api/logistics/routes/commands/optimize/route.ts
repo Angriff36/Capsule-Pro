@@ -3,8 +3,10 @@
  *
  * POST /api/logistics/routes/commands/optimize - Optimize delivery route stops
  *
- * NOTE: DeliveryRoute and RouteStop models do not have all required fields in the current schema.
- * This endpoint returns 501 Not Implemented until the models are updated.
+ * NOTE: DeliveryRoute and RouteStop models now have all required fields
+ * (stops relation, totalDistance, totalDuration, optimizationScore,
+ * optimizationAlgorithm, distanceFromPrevious, timeFromPrevious).
+ * This endpoint returns 501 until an optimization algorithm is chosen.
  */
 
 import { captureException } from "@sentry/nextjs";
@@ -22,16 +24,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Route ID required" }, { status: 400 });
     }
 
-    // TODO: Implement when DeliveryRoute and RouteStop models have required fields:
-    // - stops relation
-    // - totalDistance, totalDuration, optimizationScore, optimizationAlgorithm
-    // - distanceFromPrevious, timeFromPrevious on RouteStop
+    // NOTE: All required schema fields now exist (stops, totalDistance, totalDuration,
+    // optimizationScore, optimizationAlgorithm on DeliveryRoute; distanceFromPrevious,
+    // timeFromPrevious on RouteStop). Implementation pending algorithm design.
+    // BLOCKER: No route optimization algorithm chosen yet (TSP variants, OSRM integration).
+    // Tracked as capsule-pro/TODO:route-optimization-algorithm
 
     return NextResponse.json(
       {
         error: "Route optimization not yet implemented",
-        message:
-          "DeliveryRoute and RouteStop models need additional fields for optimization",
+        message: "Schema ready — pending algorithm selection (TSP/OSRM)",
       },
       { status: 501 }
     );

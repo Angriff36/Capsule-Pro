@@ -55,8 +55,8 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
         roleId: user.roleId!,
         currency: "USD",
         hourlyRate: user.hourlyRate ? Number(user.hourlyRate) : 0,
-        taxInfo: undefined, // TODO: Add tax info when model exists
-        payrollPrefs: undefined, // TODO: Add payroll prefs when model exists
+        taxInfo: undefined, // BLOCKER: EmployeeTaxInfo model does not exist in schema. Tracked as capsule-pro/TODO:payroll-employee-models
+        payrollPrefs: undefined, // BLOCKER: EmployeePayrollPrefs model does not exist in schema. Tracked as capsule-pro/TODO:payroll-employee-models
       }));
   }
 
@@ -122,7 +122,7 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
   }
 
   async getTipPools(_tenantId: string, _periodId: string): Promise<TipPool[]> {
-    // TODO: Implement tip pools when model exists
+    // BLOCKER: TipPool model does not exist in schema. Tracked as capsule-pro/TODO:payroll-employee-models
     return [];
   }
 
@@ -284,7 +284,7 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
   }
 
   async savePayrollAudit(audit: PayrollAudit): Promise<void> {
-    // TODO: Implement audit logging when PayrollAudit model exists
+    // BLOCKER: PayrollAudit model does not exist in schema. Tracked as capsule-pro/TODO:payroll-employee-models
     // For now, log to console
     console.log("[PayrollAudit]", {
       id: audit.id,
@@ -380,18 +380,18 @@ export class PrismaPayrollDataSource implements PayrollDataSource {
         periodId,
         employeeId: item.employee_id,
         employeeName: employeeMap.get(item.employee_id) || "Unknown",
-        department: undefined, // TODO: Add department when available
-        roleName: "Default", // TODO: Get from role
+        department: undefined, // BLOCKER: Department model not yet linked to employees. Tracked as capsule-pro/TODO:payroll-employee-models
+        roleName: "Default", // BLOCKER: Role join not yet implemented in payroll record query. Tracked as capsule-pro/TODO:payroll-employee-models
         hoursRegular: Number(item.hours_regular),
         hoursOvertime: Number(item.hours_overtime),
         regularPay: Number(item.rate_regular) * Number(item.hours_regular),
         overtimePay: Number(item.rate_overtime) * Number(item.hours_overtime),
-        tips: 0, // TODO: Add tips when available
+        tips: 0, // BLOCKER: TipPool model does not exist in schema. Tracked as capsule-pro/TODO:payroll-employee-models
         grossPay: Number(item.gross_pay),
         preTaxDeductions: deductions.preTax || [],
         taxableIncome: Number(item.gross_pay),
-        taxesWithheld: [], // TODO: Add taxes when available
-        totalTaxes: 0, // TODO: Calculate from taxes
+        taxesWithheld: [], // BLOCKER: Tax calculation engine not yet implemented. Tracked as capsule-pro/TODO:payroll-employee-models
+        totalTaxes: 0, // BLOCKER: Tax calculation engine not yet implemented. Tracked as capsule-pro/TODO:payroll-employee-models
         postTaxDeductions: deductions.postTax || [],
         totalDeductions: Number(item.gross_pay) - Number(item.net_pay),
         netPay: Number(item.net_pay),

@@ -27,8 +27,9 @@ export async function GET(request: NextRequest) {
       return manifestErrorResponse("Tenant not found", 400);
     }
 
-    // TODO: Implement when Equipment model is added to schema
-    // This endpoint will analyze equipment data and provide predictive failure alerts
+  // BLOCKER: Equipment model does not exist in schema. Predictive failure analysis
+  // requires equipment lifecycle data, maintenance records, and usage metrics.
+  // Tracked as capsule-pro/TODO:equipment-model-implementation
 
     return manifestSuccessResponse({
       alerts: [],

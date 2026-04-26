@@ -11,6 +11,7 @@ import type { Prisma, Proposal } from "@repo/database";
 import { database } from "@repo/database";
 import { ProposalTemplate, resend } from "@repo/email";
 import { revalidatePath } from "next/cache";
+import { serializeDecimals } from "@/app/lib/decimal";
 import { invariant } from "@/app/lib/invariant";
 import { getTenantId } from "@/app/lib/tenant";
 
@@ -173,8 +174,10 @@ export async function getProposals(
     where: whereClause,
   });
 
+  const serializedProposals = proposals.map(serializeDecimals);
+
   return {
-    data: proposals as Proposal[],
+    data: serializedProposals as Proposal[],
     pagination: {
       page,
       limit,
@@ -208,7 +211,8 @@ export async function getProposalById(id: string) {
 
   invariant(proposal, "Proposal not found");
 
-  return proposal;
+  // Serialize Decimal fields for client component compatibility
+  return serializeDecimals(proposal);
 }
 
 /**
@@ -349,7 +353,7 @@ export async function createProposal(input: CreateProposalInput) {
 
   revalidatePath("/crm/proposals");
 
-  return proposal;
+  return serializeDecimals(proposal);
 }
 
 /**
@@ -473,7 +477,7 @@ export async function updateProposal(
   revalidatePath("/crm/proposals");
   revalidatePath(`/crm/proposals/${id}`);
 
-  return proposal;
+  return serializeDecimals(proposal);
 }
 
 /**
@@ -600,7 +604,7 @@ export async function sendProposal(id: string, input: SendProposalInput = {}) {
 
   return {
     success: true,
-    proposal,
+    proposal: serializeDecimals(proposal),
     sentTo: recipientEmail,
     publicUrl: proposalUrl,
   };

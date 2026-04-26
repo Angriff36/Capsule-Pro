@@ -62,8 +62,9 @@ export class CharliesProduceConnector implements SupplierConnector {
       return false;
     }
 
-    // TODO: Implement actual connection test
+    // BLOCKER: API credentials from Charlie's Produce not yet obtained.
     // Example: fetch(`${apiBaseUrl}/health`, { headers: { 'Authorization': `Bearer ${apiKey}` } })
+    // Tracked as capsule-pro/TODO:charlies-produce-api-integration
     console.log(
       "[charlies-produce] Connection test not implemented - API credentials required"
     );
@@ -90,7 +91,7 @@ export class CharliesProduceConnector implements SupplierConnector {
   ): Promise<SupplierProduct[]> {
     const { apiBaseUrl, apiKey } = config.credentials;
 
-    // TODO: Implement catalog fetch
+    // BLOCKER: API credentials from Charlie's Produce not yet obtained.
     // const response = await fetch(`${apiBaseUrl}/catalog`, {
     //   headers: {
     //     'Authorization': `Bearer ${apiKey}`,
@@ -129,7 +130,8 @@ export class CharliesProduceConnector implements SupplierConnector {
     config: SupplierConnectorConfig,
     skus: string[]
   ): Promise<Record<string, { available: boolean; quantity?: number }>> {
-    // TODO: Implement availability check
+    // BLOCKER: API credentials from Charlie's Produce not yet obtained.
+    // Tracked as capsule-pro/TODO:charlies-produce-api-integration
     // const response = await fetch(`${apiBaseUrl}/availability?skus=${skus.join(',')}`, {
     //   headers: { 'Authorization': `Bearer ${apiKey}` },
     // });
@@ -166,7 +168,8 @@ export class CharliesProduceConnector implements SupplierConnector {
   ): Promise<
     Record<string, { unitCost: number; currency: string; effectiveFrom?: Date }>
   > {
-    // TODO: Implement pricing fetch
+    // BLOCKER: API credentials from Charlie's Produce not yet obtained.
+    // Tracked as capsule-pro/TODO:charlies-produce-api-integration
     // const response = await fetch(`${apiBaseUrl}/pricing?skus=${skus.join(',')}`, {
     //   headers: { 'Authorization': `Bearer ${apiKey}` },
     // });

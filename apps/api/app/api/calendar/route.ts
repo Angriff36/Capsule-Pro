@@ -4,6 +4,23 @@ import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
+/**
+ * Normalize a date string to start-of-day UTC for comparing against @db.Date columns.
+ * Prevents timezone-offset mismatches when the client sends full ISO timestamps.
+ */
+function toDateStart(date: Date): Date {
+  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+}
+
+/**
+ * Normalize a date string to end-of-day UTC for comparing against @db.Date columns.
+ */
+function toDateEnd(date: Date): Date {
+  return new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 23, 59, 59, 999),
+  );
+}
+
 interface CalendarEvent {
   id: string;
   title: string;
@@ -40,20 +57,26 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const start = new Date(startParam);
-    const end = new Date(endParam);
+    const rawStart = new Date(startParam);
+    const rawEnd = new Date(endParam);
+    if (Number.isNaN(rawStart.getTime()) || Number.isNaN(rawEnd.getTime())) {
+      return NextResponse.json(
+        { error: "Invalid date format. Use ISO 8601." },
+        { status: 400 },
+      );
+    }
     const types = typesParam.split(",");
 
     const events: CalendarEvent[] = [];
 
-    // Fetch events
+    // Fetch events (eventDate is @db.Date — compare date-only bounds)
     if (types.includes("event")) {
       const dbEvents = await database.event.findMany({
         where: {
           tenantId,
           eventDate: {
-            gte: start,
-            lte: end,
+            gte: toDateStart(rawStart),
+            lte: toDateEnd(rawEnd),
           },
           deletedAt: null,
         },
@@ -90,8 +113,8 @@ export async function GET(request: NextRequest) {
           where: {
             tenantId,
             shift_start: {
-              gte: start,
-              lte: end,
+              gte: rawStart,
+              lte: rawEnd,
             },
             deletedAt: null,
           },
@@ -121,19 +144,20 @@ export async function GET(request: NextRequest) {
           );
         }
       } catch (error) {
-        // Shifts query failed - silently continue
+        console.error("[calendar] Shifts query failed:", error);
       }
     }
 
     // Fetch time off requests from tenant_staff.employee_time_off_requests
+    // start_date / end_date are @db.Date — compare date-only bounds
     if (types.includes("timeoff")) {
       try {
         const timeOff = await database.employeeTimeOffRequest.findMany({
           where: {
             tenant_id: tenantId,
             start_date: {
-              gte: start,
-              lte: end,
+              gte: toDateStart(rawStart),
+              lte: toDateEnd(rawEnd),
             },
             deleted_at: null,
           },
@@ -163,16 +187,17 @@ export async function GET(request: NextRequest) {
           );
         }
       } catch (error) {
-        // Time off query failed - silently continue
+        console.error("[calendar] Time-off query failed:", error);
       }
     }
 
-    // TODO: Fetch deadlines and reminders when those models exist
+    // BLOCKER: Deadline and Reminder models do not exist in schema.
+    // Tracked as capsule-pro/TODO:calendar-deadlines-reminders
 
     return NextResponse.json({ events });
   } catch (error) {
     captureException(error);
-    console.error("Calendar API error:", error);
+    console.error("[calendar] API error:", error instanceof Error ? error.message : error);
     return NextResponse.json(
       { error: "Failed to fetch calendar data" },
       { status: 500 }
