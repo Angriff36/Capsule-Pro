@@ -90,7 +90,9 @@ export async function GET(request: NextRequest) {
         ? ALL_TYPES
         : typeFilter
             .split(",")
-            .filter((t): t is SearchType => ALL_TYPES.includes(t as SearchType));
+            .filter((t): t is SearchType =>
+              ALL_TYPES.includes(t as SearchType)
+            );
 
     // Run all searches in parallel using plain Prisma findMany
     const [events, clients, contacts, venues, inventory, knowledge, tasks] =
@@ -131,7 +133,10 @@ export async function GET(request: NextRequest) {
                 },
               }),
             ]).then(([items, total]) => ({ items, total }))
-          : Promise.resolve({ items: [] as Record<string, unknown>[], total: 0 }),
+          : Promise.resolve({
+              items: [] as Record<string, unknown>[],
+              total: 0,
+            }),
 
         typesToSearch.includes("clients")
           ? Promise.all([
@@ -171,7 +176,10 @@ export async function GET(request: NextRequest) {
                 },
               }),
             ]).then(([items, total]) => ({ items, total }))
-          : Promise.resolve({ items: [] as Record<string, unknown>[], total: 0 }),
+          : Promise.resolve({
+              items: [] as Record<string, unknown>[],
+              total: 0,
+            }),
 
         typesToSearch.includes("contacts")
           ? Promise.all([
@@ -179,7 +187,6 @@ export async function GET(request: NextRequest) {
                 where: {
                   tenantId,
                   deletedAt: null,
-                  client: { deletedAt: null },
                   OR: [
                     { first_name: { contains: q, mode: "insensitive" } },
                     { last_name: { contains: q, mode: "insensitive" } },
@@ -205,7 +212,6 @@ export async function GET(request: NextRequest) {
                 where: {
                   tenantId,
                   deletedAt: null,
-                  client: { deletedAt: null },
                   OR: [
                     { first_name: { contains: q, mode: "insensitive" } },
                     { last_name: { contains: q, mode: "insensitive" } },
@@ -215,7 +221,10 @@ export async function GET(request: NextRequest) {
                 },
               }),
             ]).then(([items, total]) => ({ items, total }))
-          : Promise.resolve({ items: [] as Record<string, unknown>[], total: 0 }),
+          : Promise.resolve({
+              items: [] as Record<string, unknown>[],
+              total: 0,
+            }),
 
         typesToSearch.includes("venues")
           ? Promise.all([
@@ -257,7 +266,10 @@ export async function GET(request: NextRequest) {
                 },
               }),
             ]).then(([items, total]) => ({ items, total }))
-          : Promise.resolve({ items: [] as Record<string, unknown>[], total: 0 }),
+          : Promise.resolve({
+              items: [] as Record<string, unknown>[],
+              total: 0,
+            }),
 
         typesToSearch.includes("inventory")
           ? Promise.all([
@@ -295,7 +307,10 @@ export async function GET(request: NextRequest) {
                 },
               }),
             ]).then(([items, total]) => ({ items, total }))
-          : Promise.resolve({ items: [] as Record<string, unknown>[], total: 0 }),
+          : Promise.resolve({
+              items: [] as Record<string, unknown>[],
+              total: 0,
+            }),
 
         typesToSearch.includes("knowledge")
           ? Promise.all([
@@ -335,7 +350,10 @@ export async function GET(request: NextRequest) {
                 },
               }),
             ]).then(([items, total]) => ({ items, total }))
-          : Promise.resolve({ items: [] as Record<string, unknown>[], total: 0 }),
+          : Promise.resolve({
+              items: [] as Record<string, unknown>[],
+              total: 0,
+            }),
 
         typesToSearch.includes("tasks")
           ? (async () => {
@@ -414,7 +432,10 @@ export async function GET(request: NextRequest) {
                 total: kitchenCount + adminCount,
               };
             })()
-          : Promise.resolve({ items: [] as Record<string, unknown>[], total: 0 }),
+          : Promise.resolve({
+              items: [] as Record<string, unknown>[],
+              total: 0,
+            }),
       ]);
 
     // Build groups
@@ -433,7 +454,10 @@ export async function GET(request: NextRequest) {
 
     for (const [key, result] of groupEntries) {
       if (result.total > 0) {
-        groups[key] = { items: result.items as Record<string, unknown>[], total: result.total };
+        groups[key] = {
+          items: result.items as Record<string, unknown>[],
+          total: result.total,
+        };
         total += result.total;
       }
     }

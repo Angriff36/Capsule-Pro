@@ -7,14 +7,12 @@
 
 import { database } from "@repo/database";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { InvariantError } from "@/app/lib/invariant";
 import { GET, POST } from "@/app/api/inventory/items/route";
 import {
   FSA_STATUSES,
   ITEM_CATEGORIES,
-  UNITS_OF_MEASURE,
-  type FSAStatus,
   type ItemCategory,
+  UNITS_OF_MEASURE,
   type UnitOfMeasure,
 } from "@/app/api/inventory/items/types";
 import {
@@ -25,6 +23,7 @@ import {
   validateUnitOfMeasure,
   validateUpdateInventoryItemRequest,
 } from "@/app/api/inventory/items/validation";
+import { InvariantError } from "@/app/lib/invariant";
 
 // Mock dependencies
 vi.mock("@repo/auth/server", () => ({ auth: vi.fn() }));
@@ -112,7 +111,7 @@ describe("Inventory Items CRUD API", () => {
       });
 
       it("should return 404 when tenant not found", async () => {
-        vi.mocked(getTenantIdForOrg).mockResolvedValue(null);
+        vi.mocked(getTenantIdForOrg).mockResolvedValue(null as never);
 
         const request = new Request(
           "http://localhost/api/inventory/items?page=1&limit=20"
@@ -565,7 +564,9 @@ describe("Inventory Item Validation", () => {
         tags: ["organic", "local"],
       };
 
-      expect(() => validateCreateInventoryItemRequest(validRequest)).not.toThrow();
+      expect(() =>
+        validateCreateInventoryItemRequest(validRequest)
+      ).not.toThrow();
     });
 
     it("should accept minimal valid request", () => {
@@ -574,7 +575,9 @@ describe("Inventory Item Validation", () => {
         name: "Test Item",
       };
 
-      expect(() => validateCreateInventoryItemRequest(minimalRequest)).not.toThrow();
+      expect(() =>
+        validateCreateInventoryItemRequest(minimalRequest)
+      ).not.toThrow();
     });
 
     it("should reject missing item_number", () => {
@@ -701,7 +704,9 @@ describe("Inventory Item Validation", () => {
           fsa_status: status,
         };
 
-        expect(() => validateCreateInventoryItemRequest(validRequest)).not.toThrow();
+        expect(() =>
+          validateCreateInventoryItemRequest(validRequest)
+        ).not.toThrow();
       }
     });
 
@@ -795,7 +800,9 @@ describe("Inventory Item Validation", () => {
         unit_cost: 6.99,
       };
 
-      expect(() => validateUpdateInventoryItemRequest(validUpdate)).not.toThrow();
+      expect(() =>
+        validateUpdateInventoryItemRequest(validUpdate)
+      ).not.toThrow();
     });
 
     it("should accept single field update", () => {
@@ -803,7 +810,9 @@ describe("Inventory Item Validation", () => {
         quantity_on_hand: 50,
       };
 
-      expect(() => validateUpdateInventoryItemRequest(validUpdate)).not.toThrow();
+      expect(() =>
+        validateUpdateInventoryItemRequest(validUpdate)
+      ).not.toThrow();
     });
 
     it("should reject empty update", () => {
@@ -875,7 +884,9 @@ describe("Inventory Item Validation", () => {
           fsa_status: status,
         };
 
-        expect(() => validateUpdateInventoryItemRequest(validUpdate)).not.toThrow();
+        expect(() =>
+          validateUpdateInventoryItemRequest(validUpdate)
+        ).not.toThrow();
       }
     });
 
@@ -885,7 +896,9 @@ describe("Inventory Item Validation", () => {
         supplier_id: null,
       };
 
-      expect(() => validateUpdateInventoryItemRequest(validUpdate)).not.toThrow();
+      expect(() =>
+        validateUpdateInventoryItemRequest(validUpdate)
+      ).not.toThrow();
     });
 
     it("should reject non-array tags", () => {
@@ -1001,9 +1014,7 @@ describe("Inventory Item Validation", () => {
       expect(() =>
         validateNonNegativeNumber(99.99, "test_field")
       ).not.toThrow();
-      expect(() =>
-        validateNonNegativeNumber(1000, "test_field")
-      ).not.toThrow();
+      expect(() => validateNonNegativeNumber(1000, "test_field")).not.toThrow();
     });
 
     it("should reject negative numbers", () => {
@@ -1022,9 +1033,7 @@ describe("Inventory Item Validation", () => {
     });
 
     it("should accept null/undefined (optional)", () => {
-      expect(() =>
-        validateNonNegativeNumber(null, "test_field")
-      ).not.toThrow();
+      expect(() => validateNonNegativeNumber(null, "test_field")).not.toThrow();
       expect(() =>
         validateNonNegativeNumber(undefined, "test_field")
       ).not.toThrow();

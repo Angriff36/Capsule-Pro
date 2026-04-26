@@ -11,7 +11,7 @@ import {
 } from "@/lib/manifest-response";
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
@@ -28,7 +28,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const bulkOrderRule = await database.bulkOrderRule.findUnique({
+    const bulkOrderRule = await database.bulkOrderRule.findFirst({
       where: {
         id,
         tenantId,

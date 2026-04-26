@@ -4,15 +4,16 @@
  * Tests event budget validation and route handlers
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { Prisma } from "@repo/database";
 import { database } from "@repo/database";
 import { NextRequest } from "next/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { GET, POST } from "@/app/api/events/budgets/route";
 import {
+  CreateEventBudgetSchema,
   validateCreateEventBudget,
   validateUpdateEventBudget,
-  CreateEventBudgetSchema,
 } from "@/app/api/events/budgets/validation";
-import { GET, POST } from "@/app/api/events/budgets/route";
 
 // Mock dependencies
 vi.mock("@repo/database", () => ({
@@ -66,11 +67,31 @@ function createMockEvent(overrides = {}) {
   return {
     id: TEST_EVENT_ID,
     tenantId: TEST_TENANT_ID,
+    eventNumber: null,
     title: "Test Event",
+    clientId: null,
+    locationId: null,
+    venueId: null,
+    venueEntityId: null,
     eventType: "corporate",
     eventDate: new Date("2026-06-15"),
     guestCount: 100,
     status: "confirmed",
+    budget: null,
+    ticketPrice: null,
+    ticketTier: null,
+    eventFormat: null,
+    accessibilityOptions: [],
+    featuredMediaUrl: null,
+    assignedTo: null,
+    venueName: null,
+    venueAddress: null,
+    notes: null,
+    tags: [],
+    templateId: null,
+    createdAt: new Date("2026-01-01"),
+    updatedAt: new Date("2026-01-01"),
+    deletedAt: null,
     ...overrides,
   };
 }
@@ -80,11 +101,12 @@ function createMockBudget(overrides = {}) {
     id: "budget-001",
     tenantId: TEST_TENANT_ID,
     eventId: TEST_EVENT_ID,
+    version: 1,
     status: "draft",
-    totalBudgetAmount: 5000,
-    totalActualAmount: 0,
-    varianceAmount: 5000,
-    variancePercentage: 0,
+    totalBudgetAmount: new Prisma.Decimal(5000),
+    totalActualAmount: new Prisma.Decimal(0),
+    varianceAmount: new Prisma.Decimal(5000),
+    variancePercentage: new Prisma.Decimal(0),
     notes: null,
     createdAt: new Date("2026-01-01"),
     updatedAt: new Date("2026-01-01"),
@@ -102,9 +124,9 @@ function createMockLineItem(overrides = {}) {
     category: "food",
     name: "Catering",
     description: null,
-    budgetedAmount: 2000,
-    actualAmount: 0,
-    varianceAmount: 2000,
+    budgetedAmount: new Prisma.Decimal(2000),
+    actualAmount: new Prisma.Decimal(0),
+    varianceAmount: new Prisma.Decimal(2000),
     sortOrder: 0,
     notes: null,
     createdAt: new Date("2026-01-01"),
@@ -115,11 +137,17 @@ function createMockLineItem(overrides = {}) {
 }
 
 // Helper to create mock request
-function createMockRequest(url: string, options: RequestInit = {}): NextRequest {
+function createMockRequest(
+  url: string,
+  options: RequestInit = {}
+): NextRequest {
   if (options.body && !options.headers) {
     options.headers = { "Content-Type": "application/json" };
   }
-  return new NextRequest(new URL(url, "http://localhost:3000"), options);
+  return new NextRequest(
+    new URL(url, "http://localhost:3000"),
+    options as ConstructorParameters<typeof NextRequest>[1]
+  );
 }
 
 describe("Event Budget Validation", () => {
@@ -424,10 +452,12 @@ describe("Event Budget API", () => {
 
       vi.mocked(auth).mockResolvedValue({ orgId: TEST_USER_ORG } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.eventBudget.findMany).mockResolvedValue(mockBudgets);
+      vi.mocked(database.eventBudget.findMany).mockResolvedValue(mockBudgets as never);
       vi.mocked(database.eventBudget.count).mockResolvedValue(2);
 
-      const request = createMockRequest("http://localhost:3000/api/events/budgets");
+      const request = createMockRequest(
+        "http://localhost:3000/api/events/budgets"
+      );
       const response = await GET(request);
       const data = await response.json();
 
@@ -445,7 +475,7 @@ describe("Event Budget API", () => {
 
       vi.mocked(auth).mockResolvedValue({ orgId: TEST_USER_ORG } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.eventBudget.findMany).mockResolvedValue(mockBudgets);
+      vi.mocked(database.eventBudget.findMany).mockResolvedValue(mockBudgets as never);
       vi.mocked(database.eventBudget.count).mockResolvedValue(1);
 
       const request = createMockRequest(
@@ -474,7 +504,7 @@ describe("Event Budget API", () => {
 
       vi.mocked(auth).mockResolvedValue({ orgId: TEST_USER_ORG } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.eventBudget.findMany).mockResolvedValue(mockBudgets);
+      vi.mocked(database.eventBudget.findMany).mockResolvedValue(mockBudgets as never);
       vi.mocked(database.eventBudget.count).mockResolvedValue(1);
 
       const request = createMockRequest(
@@ -499,7 +529,9 @@ describe("Event Budget API", () => {
     it("should return 401 for unauthenticated requests", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
 
-      const request = createMockRequest("http://localhost:3000/api/events/budgets");
+      const request = createMockRequest(
+        "http://localhost:3000/api/events/budgets"
+      );
       const response = await GET(request);
       const data = await response.json();
 
@@ -512,7 +544,7 @@ describe("Event Budget API", () => {
 
       vi.mocked(auth).mockResolvedValue({ orgId: TEST_USER_ORG } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.eventBudget.findMany).mockResolvedValue(mockBudgets);
+      vi.mocked(database.eventBudget.findMany).mockResolvedValue(mockBudgets as never);
       vi.mocked(database.eventBudget.count).mockResolvedValue(50);
 
       const request = createMockRequest(
@@ -539,7 +571,9 @@ describe("Event Budget API", () => {
       vi.mocked(database.eventBudget.findMany).mockResolvedValue([]);
       vi.mocked(database.eventBudget.count).mockResolvedValue(0);
 
-      const request = createMockRequest("http://localhost:3000/api/events/budgets");
+      const request = createMockRequest(
+        "http://localhost:3000/api/events/budgets"
+      );
       const response = await GET(request);
       const data = await response.json();
 
@@ -593,9 +627,11 @@ describe("Event Budget API", () => {
 
       vi.mocked(auth).mockResolvedValue({ orgId: TEST_USER_ORG } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.event.findUnique).mockResolvedValue(createMockEvent());
+      vi.mocked(database.event.findUnique).mockResolvedValue(createMockEvent() as never);
       vi.mocked(database.eventBudget.findFirst).mockResolvedValue(null);
-      vi.mocked(database.$transaction).mockImplementation(async (fn: any) => fn(database));
+      vi.mocked(database.$transaction).mockImplementation(async (fn: any) =>
+        fn(database)
+      );
       vi.mocked(database.eventBudget.create).mockResolvedValue({
         id: "new-budget-001",
         tenantId: TEST_TENANT_ID,
@@ -613,12 +649,17 @@ describe("Event Budget API", () => {
       vi.mocked(database.budgetLineItem.createMany).mockResolvedValue({
         count: 2,
       } as any);
-      vi.mocked(database.eventBudget.findUnique).mockResolvedValue(createdBudget);
+      vi.mocked(database.eventBudget.findUnique).mockResolvedValue(
+        createdBudget as never
+      );
 
-      const request = createMockRequest("http://localhost:3000/api/events/budgets", {
-        method: "POST",
-        body: JSON.stringify(newBudgetData),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/events/budgets",
+        {
+          method: "POST",
+          body: JSON.stringify(newBudgetData),
+        }
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -641,10 +682,13 @@ describe("Event Budget API", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
       vi.mocked(database.event.findUnique).mockResolvedValue(null);
 
-      const request = createMockRequest("http://localhost:3000/api/events/budgets", {
-        method: "POST",
-        body: JSON.stringify(newBudgetData),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/events/budgets",
+        {
+          method: "POST",
+          body: JSON.stringify(newBudgetData),
+        }
+      );
 
       const response = await POST(request);
 
@@ -660,15 +704,18 @@ describe("Event Budget API", () => {
 
       vi.mocked(auth).mockResolvedValue({ orgId: TEST_USER_ORG } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.event.findUnique).mockResolvedValue(createMockEvent());
+      vi.mocked(database.event.findUnique).mockResolvedValue(createMockEvent() as never);
       vi.mocked(database.eventBudget.findFirst).mockResolvedValue(
-        createMockBudget()
+        createMockBudget() as never
       );
 
-      const request = createMockRequest("http://localhost:3000/api/events/budgets", {
-        method: "POST",
-        body: JSON.stringify(newBudgetData),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/events/budgets",
+        {
+          method: "POST",
+          body: JSON.stringify(newBudgetData),
+        }
+      );
 
       const response = await POST(request);
 
@@ -697,10 +744,13 @@ describe("Event Budget API", () => {
       vi.mocked(auth).mockResolvedValue({ orgId: TEST_USER_ORG } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
 
-      const request = createMockRequest("http://localhost:3000/api/events/budgets", {
-        method: "POST",
-        body: JSON.stringify(newBudgetData),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/events/budgets",
+        {
+          method: "POST",
+          body: JSON.stringify(newBudgetData),
+        }
+      );
 
       const response = await POST(request);
 
@@ -746,9 +796,11 @@ describe("Event Budget API", () => {
 
       vi.mocked(auth).mockResolvedValue({ orgId: TEST_USER_ORG } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.event.findUnique).mockResolvedValue(createMockEvent());
+      vi.mocked(database.event.findUnique).mockResolvedValue(createMockEvent() as never);
       vi.mocked(database.eventBudget.findFirst).mockResolvedValue(null);
-      vi.mocked(database.$transaction).mockImplementation(async (fn: any) => fn(database));
+      vi.mocked(database.$transaction).mockImplementation(async (fn: any) =>
+        fn(database)
+      );
       vi.mocked(database.eventBudget.create).mockResolvedValue({
         id: "new-budget-002",
         tenantId: TEST_TENANT_ID,
@@ -766,12 +818,17 @@ describe("Event Budget API", () => {
       vi.mocked(database.budgetLineItem.createMany).mockResolvedValue({
         count: 2,
       } as any);
-      vi.mocked(database.eventBudget.findUnique).mockResolvedValue(createdBudget);
+      vi.mocked(database.eventBudget.findUnique).mockResolvedValue(
+        createdBudget as never
+      );
 
-      const request = createMockRequest("http://localhost:3000/api/events/budgets", {
-        method: "POST",
-        body: JSON.stringify(newBudgetData),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/events/budgets",
+        {
+          method: "POST",
+          body: JSON.stringify(newBudgetData),
+        }
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -784,13 +841,16 @@ describe("Event Budget API", () => {
     it("should return 401 for unauthenticated requests", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
 
-      const request = createMockRequest("http://localhost:3000/api/events/budgets", {
-        method: "POST",
-        body: JSON.stringify({
-          eventId: TEST_EVENT_ID,
-          totalBudgetAmount: 1000,
-        }),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/events/budgets",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            eventId: TEST_EVENT_ID,
+            totalBudgetAmount: 1000,
+          }),
+        }
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -813,9 +873,11 @@ describe("Event Budget API", () => {
 
       vi.mocked(auth).mockResolvedValue({ orgId: TEST_USER_ORG } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.event.findUnique).mockResolvedValue(createMockEvent());
+      vi.mocked(database.event.findUnique).mockResolvedValue(createMockEvent() as never);
       vi.mocked(database.eventBudget.findFirst).mockResolvedValue(null);
-      vi.mocked(database.$transaction).mockImplementation(async (fn: any) => fn(database));
+      vi.mocked(database.$transaction).mockImplementation(async (fn: any) =>
+        fn(database)
+      );
       vi.mocked(database.eventBudget.create).mockResolvedValue({
         id: "new-budget-003",
         tenantId: TEST_TENANT_ID,
@@ -830,12 +892,17 @@ describe("Event Budget API", () => {
         updatedAt: new Date(),
         deletedAt: null,
       } as any);
-      vi.mocked(database.eventBudget.findUnique).mockResolvedValue(createdBudget);
+      vi.mocked(database.eventBudget.findUnique).mockResolvedValue(
+        createdBudget as never
+      );
 
-      const request = createMockRequest("http://localhost:3000/api/events/budgets", {
-        method: "POST",
-        body: JSON.stringify(newBudgetData),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/events/budgets",
+        {
+          method: "POST",
+          body: JSON.stringify(newBudgetData),
+        }
+      );
 
       const response = await POST(request);
       const data = await response.json();
@@ -851,10 +918,13 @@ describe("Event Budget API", () => {
       vi.mocked(auth).mockResolvedValue({ orgId: TEST_USER_ORG } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
 
-      const request = createMockRequest("http://localhost:3000/api/events/budgets", {
-        method: "POST",
-        body: "invalid-json",
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/events/budgets",
+        {
+          method: "POST",
+          body: "invalid-json",
+        }
+      );
 
       const response = await POST(request);
 
@@ -877,10 +947,13 @@ describe("Event Budget API", () => {
       vi.mocked(auth).mockResolvedValue({ orgId: TEST_USER_ORG } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
 
-      const request = createMockRequest("http://localhost:3000/api/events/budgets", {
-        method: "POST",
-        body: JSON.stringify(newBudgetData),
-      });
+      const request = createMockRequest(
+        "http://localhost:3000/api/events/budgets",
+        {
+          method: "POST",
+          body: JSON.stringify(newBudgetData),
+        }
+      );
 
       const response = await POST(request);
 

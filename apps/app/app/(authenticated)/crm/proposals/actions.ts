@@ -162,9 +162,8 @@ export async function getProposals(
       lead: {
         select: {
           id: true,
-          company_name: true,
-          first_name: true,
-          last_name: true,
+          companyName: true,
+          contactName: true,
         },
       },
     },

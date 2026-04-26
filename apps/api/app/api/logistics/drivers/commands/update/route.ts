@@ -1,5 +1,6 @@
 // Update driver (status, vehicle assignment)
 import { auth } from "@repo/auth/server";
+import { Prisma } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -8,6 +9,19 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+
+function buildVehicleAssignment(vehicleId: unknown) {
+  // Omitted from request: leave column unchanged.
+  if (vehicleId === undefined) {
+    return Prisma.sql`vehicle_id`;
+  }
+  // Explicit null/empty: clear assignment.
+  if (vehicleId === null || vehicleId === "") {
+    return Prisma.sql`NULL::uuid`;
+  }
+  // Explicit value: parameterized cast.
+  return Prisma.sql`${vehicleId}::uuid`;
+}
 
 export async function POST(request: NextRequest) {
   try {
@@ -30,6 +44,8 @@ export async function POST(request: NextRequest) {
     } = await request.json();
     if (!driverId) return manifestErrorResponse("driverId is required", 400);
 
+    const vehicleAssignment = buildVehicleAssignment(vehicleId);
+
     const result = await database.$queryRaw`
       UPDATE tenant_logistics.drivers
       SET
@@ -38,7 +54,7 @@ export async function POST(request: NextRequest) {
         email = COALESCE(${email || null}, email),
         license_number = COALESCE(${licenseNumber || null}, license_number),
         license_expiry = COALESCE(${licenseExpiry ? new Date(licenseExpiry) : null}::date, license_expiry),
-        vehicle_id = ${vehicleId !== undefined ? (vehicleId || null) + "::uuid" : "vehicle_id"}::uuid,
+        vehicle_id = ${vehicleAssignment},
         status = COALESCE(${status || null}, status),
         notes = COALESCE(${notes || null}, notes),
         updated_at = NOW()

@@ -43,9 +43,9 @@ const createPaymentPlanSchema = z.object({
   nextPaymentDue: z.string().datetime(),
 });
 
-type RouteContext = {
-  params: { id: string };
-};
+interface RouteContext {
+  params: Promise<{ id: string }>;
+}
 
 /**
  * GET /api/accounting/collections/cases/[id]
@@ -54,7 +54,7 @@ type RouteContext = {
 export async function GET(request: NextRequest, context: RouteContext) {
   try {
     const tenantId = await requireTenantId();
-    const { id } = context.params;
+    const { id } = await context.params;
 
     const collectionCase = await database.collectionCase.findFirst({
       where: {
@@ -109,7 +109,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
     const tenantId = await requireTenantId();
-    const { id } = context.params;
+    const { id } = await context.params;
     const body = await request.json();
 
     // Verify case exists

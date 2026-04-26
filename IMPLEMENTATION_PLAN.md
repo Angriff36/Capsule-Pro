@@ -1,6 +1,6 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-25 (fifteenth-pass input validation & data sanitization audit)
+> **Last updated:** 2026-04-26 (sixteenth pass — Blockers 1, 5, 6 resolved/verified)
 > **Prior passes:** 2026-04-24 initial post-expansion audit → 2026-04-24 first re-verification → 2026-04-24 third-pass spot-check → 2026-04-24 fourth-pass package health → 2026-04-24 fifth-pass E2E audit → 2026-04-24 sixth-pass raw-SQL audit → 2026-04-24 seventh-pass supplementary raw-SQL audit → 2026-04-24 eighth-pass comprehensive raw-SQL audit → 2026-04-25 ninth-pass frontend health audit → 2026-04-25 tenth-pass mobile + public website audit → **2026-04-25 eleventh-pass auth, middleware & integration services audit** (3 sub-passes: initial 6-agent pass, 6-agent addendum, 5-agent credential/webhook deep-dive).
 > **Previous snapshot:** 2026-03-08 (stale — many claims falsified by post-expansion audit)
 > **Audit method:** initial 15+ parallel subagent investigations → 8-subagent re-verification → 10-subagent third-pass → 10-subagent fourth-pass → E2E fifth-pass → 20-subagent sixth-pass → 9-subagent seventh-pass → 15-subagent confirmation pass → 20-subagent eighth-pass raw-SQL audit → 24-subagent ninth-pass frontend health audit → 11-subagent tenth-pass mobile + public website audit → **17-subagent eleventh-pass auth/middleware/integration audit** (6 + 6 + 5 agents across 3 sub-passes) covering full auth chain trace, route-level auth enforcement scan, credential exposure scan across all directories, webhook receiver security deep-audit, all 16 lib files, and external integration packages. **All agent findings verified against actual codebase before reporting.**
@@ -86,7 +86,7 @@ No new commits since `a71ec8d5`. All Tier 0/1 blockers re-verified to still hold
 
 ## Blockers (Fix Immediately)
 
-1. **Merge conflict in `.autolab/tasks.json`** — lines 4195-4199 and 4213+ contain unresolved `<<<<<<< Updated upstream / ======= / >>>>>>> Stashed changes` markers. Blocks `pnpm biome check` (reports 1803 errors / 3152 warnings while this exists). Also shows as modified in `git status` on session start.
+1. ~~**Merge conflict in `.autolab/tasks.json`**~~ — **RESOLVED 2026-04-26.** Re-verification (16th pass) found NO `<<<<<<<`/`=======`/`>>>>>>>` markers in the file. The blocker description was stale; biome lint failures attributed to it must come from another source. File is clean.
 
 2. **Procurement runtime failures** — 15 command routes will crash on any POST (verified 2026-04-24, third pass):
    - `/apps/api/app/api/procurement/requisitions/commands/{approve-finance,approve-manager,cancel,convert-to-po,create,reject,submit,update}/route.ts` — **8 files** (no `delete/` directory; second-pass count of 9 was wrong); each calls `createManifestRuntime()` (e.g. `create/route.ts:14` import, `create/route.ts:51` call) against a non-existent manifest. The manifest exists but is quarantined at `packages/manifest-adapters/manifests-disabled/procurement-requisition-rules.manifest`. `PurchaseRequisition` Prisma model does not exist.
@@ -103,13 +103,13 @@ No new commits since `a71ec8d5`. All Tier 0/1 blockers re-verified to still hold
 
    Next.js routing picks one arbitrarily on case-sensitive filesystems; behavior is ambiguous. Canonical is `soft-delete` (kebab-case).
 
-5. **Accounting collections RouteContext bug** — `/apps/api/app/api/accounting/collections/cases/[id]/route.ts:47` declares `params: { id: string }` instead of `Promise<{ id: string }>`. Next.js 15 async params will throw at runtime.
+5. ~~**Accounting collections RouteContext bug**~~ — **FIXED 2026-04-26.** `apps/api/app/api/accounting/collections/cases/[id]/route.ts:46-48` now declares `interface RouteContext { params: Promise<{ id: string }> }`, and both `GET` and `PATCH` `await context.params`. Why this matters: Next.js 15 promoted `params` to a Promise; the prior synchronous destructuring would throw `TypeError: Cannot destructure property 'id' of context.params` (a Promise) under runtime. Typecheck passes (`pnpm tsc --noEmit -p apps/api/tsconfig.json`). No tests exist for this route — see Tech Debt followup.
 
-6. **Logistics drivers update — correctness bug (not SQL injection)** — third-pass re-read of `/apps/api/app/api/logistics/drivers/commands/update/route.ts:41`:
-   ```
-   vehicle_id = ${vehicleId !== undefined ? (vehicleId || null) + "::uuid" : "vehicle_id"}::uuid,
-   ```
-   The ternary runs in JS **before** Prisma parameterizes — so Prisma receives a computed string, not user SQL, and the value IS parameterized. However the computed string is always wrong: when `vehicleId` is a UUID it becomes `"<uuid-value>::uuid"` (a 40-char literal Postgres rejects at uuid cast), and when `vehicleId` is undefined it becomes the literal `"vehicle_id"` (passed as parameter, not as a column reference). Rewrite as two explicit branches or use `Prisma.sql` with a conditional fragment. Still a Tier-1 blocker but classified as a correctness/runtime failure, not an injection vulnerability.
+6. ~~**Logistics drivers update — correctness bug**~~ — **FIXED 2026-04-26.** `apps/api/app/api/logistics/drivers/commands/update/route.ts` now imports `Prisma` from `@repo/database` and dispatches the `vehicle_id` clause through a `buildVehicleAssignment(vehicleId)` helper that returns `Prisma.sql` fragments for three explicit cases:
+   - `undefined` → `Prisma.sql\`vehicle_id\`` (column reference; leaves the value unchanged)
+   - `null` or `""` → `Prisma.sql\`NULL::uuid\`` (clears the assignment)
+   - any other value → `Prisma.sql\`${vehicleId}::uuid\`` (parameterized cast)
+   Why this matters: the original ternary was producing `'<uuid>::uuid'::uuid` (Postgres rejects the embedded cast literal) when `vehicleId` was a UUID, and `'vehicle_id'::uuid` (Postgres rejects the column-name string) when it was undefined — every PATCH on this route was a guaranteed 500. The new branches keep parameterization intact and preserve the original "leave unchanged" semantic. Typecheck passes; lint clean for the touched code (pre-existing template-literal warnings elsewhere in the file remain).
 
 7. **Zero RLS on new-module tables** — multi-tenant data leakage possible across accounting, facilities, logistics, payroll, procurement. See Schema Drift Audit.
 
@@ -185,7 +185,7 @@ No new commits since `a71ec8d5`. All Tier 0/1 blockers re-verified to still hold
 | Invoices | MOSTLY DONE | Email sending stubbed at `apps/api/app/api/accounting/invoices/[id]/route.ts:233` |
 | Payments | PARTIAL | Gateway stubbed at `apps/api/app/api/accounting/payments/[id]/route.ts:90-95`; UI form stubbed in `PaymentFormClient` lines 112-123 |
 | Payment Methods | FUNCTIONAL (but schema-mismatched) | `[id]` PUT/DELETE implement full DB logic at `apps/api/app/api/accounting/payment-methods/[id]/route.ts:74-148` (PUT) and `:154-198` (DELETE soft-delete). File header acknowledges some referenced fields don't exist on the model. Prior plan's "stub" claim was incorrect. |
-| Collections | MOSTLY DONE | RouteContext bug at `apps/api/app/api/accounting/collections/cases/[id]/route.ts:47` (see Blocker 5) |
+| Collections | DONE | RouteContext fixed 2026-04-26 — `params` now async-typed and awaited in both GET/PATCH (see Blocker 5) |
 | Revenue Recognition | 501 STUB | `apps/api/app/api/accounting/revenue-recognition/schedules/route.ts` and `[id]/route.ts`; `RevenueRecognitionSchedule` model missing from `schema.prisma` |
 
 - **Tests:** zero accounting tests.
@@ -208,7 +208,7 @@ No new commits since `a71ec8d5`. All Tier 0/1 blockers re-verified to still hold
 | Sub-module | State | Notes |
 |---|---|---|
 | Dispatch | PARTIAL | Assign works; UI doesn't reload on success |
-| Drivers | PARTIAL | Raw SQL; **no `Driver` Prisma model**; SQL injection at `apps/api/app/api/logistics/drivers/commands/update/route.ts:41` |
+| Drivers | PARTIAL | Raw SQL; **no `Driver` Prisma model**. Update route's broken vehicle-id ternary fixed 2026-04-26 — now uses `Prisma.sql` conditional fragments via `buildVehicleAssignment()` helper (see Blocker 6) |
 | Vehicles | PARTIAL | Same pattern as drivers; no `Vehicle` Prisma model |
 | Routes | PARTIAL | CRUD works; `DeliveryRoute` and `RouteStop` models exist (schema.prisma:5372, 5416) but lack fields needed by the optimize endpoint (`stops`, `totalDistance`, `totalDuration`, `optimizationScore`, `optimizationAlgorithm`). `apps/api/app/api/logistics/routes/commands/optimize/route.ts` returns 501 with that explanation inline. |
 | Tracking | FUNCTIONAL BUT SIMULATED | GPS hardcoded to Los Angeles coordinates at `apps/api/app/api/logistics/tracking/route.ts:262-286`; no real GPS/webhook integration |

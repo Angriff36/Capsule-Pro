@@ -498,6 +498,16 @@
       "comment": "Infrastructure: Logistics route commands (create, update-status)"
     },
     {
+      "prefix": "/api/logistics/drivers/commands",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Logistics driver commands (raw SQL pending Driver Prisma model + manifest)"
+    },
+    {
+      "prefix": "/api/logistics/vehicles/commands",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Logistics vehicle commands (raw SQL pending Vehicle Prisma model + manifest)"
+    },
+    {
       "prefix": "/api/staffing/recommendations",
       "methods": ["POST"],
       "comment": "Infrastructure: Staffing recommendations with direct DB access"
