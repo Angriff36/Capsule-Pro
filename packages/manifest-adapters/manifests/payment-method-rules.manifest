@@ -1,0 +1,147 @@
+// Payment Methods - Payment Method Rules
+// Manifest spec for payment method storage, tokenization, and lifecycle management
+
+entity PaymentMethod {
+  property required id: string
+  property required tenantId: string
+
+  // Client and reference
+  property required clientId: string
+  property externalMethodId: string = ""
+
+  // Method type
+  property required type: string
+
+  // Card details (tokenized)
+  property cardLastFour: string = ""
+  property cardNetwork: string = ""
+  property cardExpiryMonth: number = 0
+  property cardExpiryYear: number = 0
+  property cardHolderName: string = ""
+
+  // Bank account details (ACH/Wire)
+  property bankAccountLastFour: string = ""
+  property bankAccountType: string = ""
+  property bankRoutingNumber: string = ""
+
+  // Digital wallet
+  property walletProvider: string = ""
+  property walletEmail: string = ""
+
+  // Status
+  property status: string = "active"
+  property isDefault: boolean = false
+  property fraudFlagged: boolean = false
+
+  // Verification
+  property verifiedAt: number = 0
+  property verificationMethod: string = ""
+
+  // Metadata
+  property nickname: string = ""
+  property metadata: string = "{}"
+
+  // Timestamps
+  property expiresAt: number = 0
+
+  // Computed properties
+  computed isExpired: boolean = (self.type == "CREDIT_CARD" || self.type == "DEBIT_CARD") && self.cardExpiryYear != 0 && self.expiresAt != 0 && self.expiresAt < now()
+  computed isUsable: boolean = self.status == "active" && !self.isExpired && !self.fraudFlagged
+  computed displayInfo: string = (self.type == "CREDIT_CARD" || self.type == "DEBIT_CARD") ? (self.cardNetwork + " .... " + self.cardLastFour) : (self.type == "ACH" || self.type == "WIRE_TRANSFER") ? ("Bank .... " + self.bankAccountLastFour) : self.type == "DIGITAL_WALLET" ? (self.walletProvider + " (" + self.walletEmail + ")") : self.type
+
+  // Constraints
+  constraint validStatus: self.status in ["active", "expired", "invalid", "fraudulent"] "Invalid payment method status"
+  constraint validType: self.type in ["CREDIT_CARD", "DEBIT_CARD", "ACH", "CHECK", "CASH", "WIRE_TRANSFER", "DIGITAL_WALLET"] "Invalid payment method type"
+  constraint validCardNetwork: self.cardNetwork == "" || self.cardNetwork in ["VISA", "MASTERCARD", "AMEX", "DISCOVER", "DINERS_CLUB", "JCB"] "Invalid card network"
+  constraint card_details_for_card: (self.type != "CREDIT_CARD" && self.type != "DEBIT_CARD") || (self.cardLastFour != "" && self.cardNetwork != "") "Card details required for card payments"
+  constraint bank_details_for_ach: self.type != "ACH" || (self.bankAccountLastFour != "" && self.bankRoutingNumber != "") "Bank details required for ACH payments"
+  constraint default_for_active_only: self.isDefault == false || self.status == "active" "Only active payment methods can be default"
+
+  // Commands
+  command markAsDefault() {
+    guard self.isUsable "Payment method must be usable to be set as default"
+    guard !self.isExpired "Cannot set expired card as default"
+    mutate isDefault = true
+    emit PaymentMethodSetDefault
+  }
+
+  command markNotDefault() {
+    mutate isDefault = false
+    emit PaymentMethodUnsetDefault
+  }
+
+  command markExpired() {
+    guard self.type in ["CREDIT_CARD", "DEBIT_CARD"] "Only cards can expire"
+    mutate status = "expired"
+    mutate expiresAt = now()
+    emit PaymentMethodExpired
+  }
+
+  command markInvalid(reason: string) {
+    mutate status = "invalid"
+    mutate metadata = "{\"invalidReason\": \"" + reason + "\"}"
+    emit PaymentMethodInvalidated
+  }
+
+  command flagForFraud(reason: string) {
+    guard !self.fraudFlagged "Already flagged for fraud"
+    mutate fraudFlagged = true
+    mutate status = "fraudulent"
+    mutate metadata = "{\"fraudReason\": \"" + reason + "\"}"
+    emit PaymentMethodFraudFlagged
+  }
+
+  command verify(method: string) {
+    guard self.status == "active" "Can only verify active payment methods"
+    mutate verifiedAt = now()
+    mutate verificationMethod = method
+    emit PaymentMethodVerified
+  }
+
+  command updateToken(newToken: string) {
+    guard self.status == "active" "Can only update active payment methods"
+    mutate externalMethodId = newToken
+    emit PaymentMethodTokenUpdated
+  }
+
+  store PaymentMethod in memory
+}
+
+// Events
+event PaymentMethodSetDefault: "payment-methods.payment_method.set_default" {
+  paymentMethodId: string
+  clientId: string
+}
+
+event PaymentMethodUnsetDefault: "payment-methods.payment_method.unset_default" {
+  paymentMethodId: string
+  clientId: string
+}
+
+event PaymentMethodExpired: "payment-methods.payment_method.expired" {
+  paymentMethodId: string
+  clientId: string
+}
+
+event PaymentMethodInvalidated: "payment-methods.payment_method.invalidated" {
+  paymentMethodId: string
+  clientId: string
+  reason: string
+}
+
+event PaymentMethodFraudFlagged: "payment-methods.payment_method.fraud_flagged" {
+  paymentMethodId: string
+  clientId: string
+  reason: string
+}
+
+event PaymentMethodVerified: "payment-methods.payment_method.verified" {
+  paymentMethodId: string
+  clientId: string
+  method: string
+}
+
+event PaymentMethodTokenUpdated: "payment-methods.payment_method.token_updated" {
+  paymentMethodId: string
+  clientId: string
+}

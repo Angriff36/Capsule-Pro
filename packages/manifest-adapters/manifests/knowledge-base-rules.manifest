@@ -25,7 +25,7 @@ entity KnowledgeEntry {
 
   // Categorization
   property category: string = "general" // recipe, procedure, troubleshooting, best-practice, equipment, safety, general
-  property tags: string[] = []
+  property tags: string = "[]" // JSON-serialized string array
   property difficultyLevel: string = "" // beginner, intermediate, advanced
 
   // Related entities
@@ -41,7 +41,7 @@ entity KnowledgeEntry {
   // SEO and discovery
   property metaTitle: string = ""
   property metaDescription: string = ""
-  property searchKeywords: string[] = []
+  property searchKeywords: string = "[]" // JSON-serialized string array
 
   // Engagement metrics
   property viewCount: number = 0
@@ -70,20 +70,19 @@ entity KnowledgeEntry {
   // CREATE COMMAND
   // Creates a new knowledge base entry
   // ─────────────────────────────────────────────────────────────────────────
-  command create(authorId: string, title: string, slug: string, content: string, category: string, tags: string[]) {
+  command create(authorId: string, title: string, slug: string, content: string, category: string, tags: string) {
     guard authorId != null and authorId != "" "Author ID is required"
     guard title != null and title != "" "Title is required"
     guard slug != null and slug != "" "Slug is required"
     guard content != null "Content is required"
 
-    // Set initial state
     mutate tenantId = user.tenantId
     mutate authorId = authorId
     mutate title = title
     mutate slug = slug
     mutate content = content
-    mutate category = category ?? "general"
-    mutate tags = tags ?? []
+    mutate category = category != null ? category : "general"
+    mutate tags = tags != null ? tags : "[]"
     mutate status = "draft"
     mutate versionNumber = 1
     mutate createdAt = now()
@@ -96,33 +95,26 @@ entity KnowledgeEntry {
   // UPDATE COMMAND
   // Updates an existing knowledge base entry
   // ─────────────────────────────────────────────────────────────────────────
-  command update(authorId: string, title: string, content: string, category: string, tags: string[], changeReason: string) {
+  command update(authorId: string, title: string, content: string, category: string, tags: string, changeReason: string) {
     guard authorId != null and authorId != "" "Author ID is required"
     guard self.status != "published" or user.role in ["admin", "manager"] "Only admins can update published entries directly"
     guard title != null and title != "" "Title is required"
 
-    // Create version snapshot before updating
-    let previousVersion = self.versionNumber
-
     mutate title = title
-    mutate content = content ?? self.content
-    mutate category = category ?? self.category
-    mutate tags = tags ?? self.tags
+    mutate content = content != null ? content : self.content
+    mutate category = category != null ? category : self.category
+    mutate tags = tags != null ? tags : self.tags
     mutate versionNumber = self.versionNumber + 1
     mutate updatedAt = now()
 
-    emit KnowledgeEntryUpdated with {
-      previousVersion: previousVersion,
-      newVersion: self.versionNumber,
-      changeReason: changeReason ?? "Content update"
-    }
+    emit KnowledgeEntryUpdated
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // PUBLISH COMMAND
+  // PUBLISH ENTRY COMMAND
   // Publishes a knowledge base entry
   // ─────────────────────────────────────────────────────────────────────────
-  command publish(publishedBy: string) {
+  command publishEntry(publishedBy: string) {
     guard publishedBy != null and publishedBy != "" "Publisher ID is required"
     guard self.status != "published" "Entry is already published"
     guard self.status != "archived" "Cannot publish archived entries"
@@ -164,9 +156,7 @@ entity KnowledgeEntry {
     mutate publishedAt = now()
     mutate updatedAt = now()
 
-    emit KnowledgeEntryApproved with {
-      approverComments: comments ?? ""
-    }
+    emit KnowledgeEntryApproved
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -184,9 +174,7 @@ entity KnowledgeEntry {
     mutate reviewedAt = now()
     mutate updatedAt = now()
 
-    emit KnowledgeEntryChangesRequested with {
-      changeRequest: changeRequest
-    }
+    emit KnowledgeEntryChangesRequested
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -201,9 +189,7 @@ entity KnowledgeEntry {
     mutate status = "archived"
     mutate updatedAt = now()
 
-    emit KnowledgeEntryArchived with {
-      archiveReason: reason ?? "Archived by admin"
-    }
+    emit KnowledgeEntryArchived
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -215,13 +201,10 @@ entity KnowledgeEntry {
     guard versionNumber > 0 and versionNumber < self.versionNumber "Invalid version number"
     guard user.role in ["admin", "manager"] "Only admins and managers can restore versions"
 
-    // Version restore logic handled by effect handler
     mutate versionNumber = self.versionNumber + 1
     mutate updatedAt = now()
 
-    emit KnowledgeEntryVersionRestored with {
-      restoredVersion: versionNumber
-    }
+    emit KnowledgeEntryVersionRestored
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -244,17 +227,10 @@ entity KnowledgeEntry {
     guard userId != null and userId != "" "User ID is required"
     guard self.status == "published" "Can only provide feedback on published entries"
 
-    // Feedback counts updated by effect handler
-    if wasHelpful {
-      mutate helpfulCount = self.helpfulCount + 1
-    } else {
-      mutate notHelpfulCount = self.notHelpfulCount + 1
-    }
+    mutate helpfulCount = wasHelpful ? self.helpfulCount + 1 : self.helpfulCount
+    mutate notHelpfulCount = wasHelpful ? self.notHelpfulCount : self.notHelpfulCount + 1
 
-    emit KnowledgeEntryFeedbackReceived with {
-      wasHelpful: wasHelpful,
-      comment: comment ?? ""
-    }
+    emit KnowledgeEntryFeedbackReceived
   }
 
   // ─────────────────────────────────────────────────────────────────────────
@@ -268,18 +244,14 @@ entity KnowledgeEntry {
     mutate isFeatured = featured
     mutate updatedAt = now()
 
-    if featured and self.isFeatured == false {
-      emit KnowledgeEntryFeatured
-    } else if featured == false and self.isFeatured == true {
-      emit KnowledgeEntryUnfeatured
-    }
+    emit KnowledgeEntryFeaturedStatusChanged
   }
 
   // ─────────────────────────────────────────────────────────────────────────
-  // DELETE COMMAND (Soft Delete)
+  // SOFT DELETE COMMAND
   // Soft deletes a knowledge base entry
   // ─────────────────────────────────────────────────────────────────────────
-  command delete(deletedBy: string, reason: string) {
+  command softDelete(deletedBy: string, reason: string) {
     guard deletedBy != null and deletedBy != "" "Deleter ID is required"
     guard user.role in ["admin", "manager"] "Only admins and managers can delete entries"
 
@@ -287,9 +259,7 @@ entity KnowledgeEntry {
     mutate status = "archived"
     mutate updatedAt = now()
 
-    emit KnowledgeEntryDeleted with {
-      deletionReason: reason ?? "Deleted by admin"
-    }
+    emit KnowledgeEntryDeleted
   }
 
   store KnowledgeEntry in database
@@ -299,16 +269,12 @@ entity KnowledgeEntry {
 // POLICIES
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Only authenticated users can create knowledge entries
 policy AuthenticatedUsersCanCreateEntries execute: user.tenantId != null and user.tenantId != "" and user.id != null and user.id != "" "Must be authenticated to create knowledge entries"
 
-// Only admins and managers can approve knowledge entries
 policy AdminsCanApproveEntries execute: user.role in ["admin", "manager"] "Only admins and managers can approve knowledge entries"
 
-// Entry authors can edit their own draft entries
 policy AuthorsCanEditDrafts execute: self.authorId == user.id or user.role in ["admin", "manager"] "Only authors can edit their draft entries"
 
-// Published entries are read-only for non-admins
 policy PublishedEntriesReadOnly execute: self.status != "published" or user.role in ["admin", "manager"] "Published entries are read-only"
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -407,16 +373,10 @@ event KnowledgeEntryFeedbackReceived: "knowledge.entry.feedback" {
   notHelpfulCount: number
 }
 
-event KnowledgeEntryFeatured: "knowledge.entry.featured" {
+event KnowledgeEntryFeaturedStatusChanged: "knowledge.entry.featured-status-changed" {
   tenantId: string
   entryId: string
-  updatedBy: string
-  updatedAt: number
-}
-
-event KnowledgeEntryUnfeatured: "knowledge.entry.unfeatured" {
-  tenantId: string
-  entryId: string
+  isNowFeatured: boolean
   updatedBy: string
   updatedAt: number
 }

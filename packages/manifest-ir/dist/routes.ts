@@ -167,6 +167,36 @@ export function clientPreferenceDetailPath(id: string): string {
   return "/api/clientpreference/" + encodeURIComponent(id);
 }
 
+/** GET /api/collectionaction/list */
+export function collectionActionListPath(): string {
+  return "/api/collectionaction/list";
+}
+
+/** GET /api/collectionaction/:id */
+export function collectionActionDetailPath(id: string): string {
+  return "/api/collectionaction/" + encodeURIComponent(id);
+}
+
+/** GET /api/collectioncase/list */
+export function collectionCaseListPath(): string {
+  return "/api/collectioncase/list";
+}
+
+/** GET /api/collectioncase/:id */
+export function collectionCaseDetailPath(id: string): string {
+  return "/api/collectioncase/" + encodeURIComponent(id);
+}
+
+/** GET /api/collectionpaymentplan/list */
+export function collectionPaymentPlanListPath(): string {
+  return "/api/collectionpaymentplan/list";
+}
+
+/** GET /api/collectionpaymentplan/:id */
+export function collectionPaymentPlanDetailPath(id: string): string {
+  return "/api/collectionpaymentplan/" + encodeURIComponent(id);
+}
+
 /** GET /api/commandboard/list */
 export function commandBoardListPath(): string {
   return "/api/commandboard/list";
@@ -477,6 +507,16 @@ export function kitchenTaskDetailPath(id: string): string {
   return "/api/kitchentask/" + encodeURIComponent(id);
 }
 
+/** GET /api/knowledgeentry/list */
+export function knowledgeEntryListPath(): string {
+  return "/api/knowledgeentry/list";
+}
+
+/** GET /api/knowledgeentry/:id */
+export function knowledgeEntryDetailPath(id: string): string {
+  return "/api/knowledgeentry/" + encodeURIComponent(id);
+}
+
 /** GET /api/laborbudget/list */
 export function laborBudgetListPath(): string {
   return "/api/laborbudget/list";
@@ -545,6 +585,16 @@ export function paymentListPath(): string {
 /** GET /api/payment/:id */
 export function paymentDetailPath(id: string): string {
   return "/api/payment/" + encodeURIComponent(id);
+}
+
+/** GET /api/paymentmethod/list */
+export function paymentMethodListPath(): string {
+  return "/api/paymentmethod/list";
+}
+
+/** GET /api/paymentmethod/:id */
+export function paymentMethodDetailPath(id: string): string {
+  return "/api/paymentmethod/" + encodeURIComponent(id);
 }
 
 /** GET /api/payrollapprovalhistory/list */
@@ -715,6 +765,16 @@ export function purchaseRequisitionItemListPath(): string {
 /** GET /api/purchaserequisitionitem/:id */
 export function purchaseRequisitionItemDetailPath(id: string): string {
   return "/api/purchaserequisitionitem/" + encodeURIComponent(id);
+}
+
+/** GET /api/ratelimitconfig/list */
+export function rateLimitConfigListPath(): string {
+  return "/api/ratelimitconfig/list";
+}
+
+/** GET /api/ratelimitconfig/:id */
+export function rateLimitConfigDetailPath(id: string): string {
+  return "/api/ratelimitconfig/" + encodeURIComponent(id);
 }
 
 /** GET /api/recipe/list */
@@ -1324,6 +1384,136 @@ export function clientPreferenceRemovePath(): string {
 /** POST /api/clientpreference/update */
 export function clientPreferenceUpdatePath(): string {
   return "/api/clientpreference/update";
+}
+
+/** POST /api/collectionaction/complete */
+export function collectionActionCompletePath(): string {
+  return "/api/collectionaction/complete";
+}
+
+/** POST /api/collectionaction/fail */
+export function collectionActionFailPath(): string {
+  return "/api/collectionaction/fail";
+}
+
+/** POST /api/collectionaction/reschedule */
+export function collectionActionReschedulePath(): string {
+  return "/api/collectionaction/reschedule";
+}
+
+/** POST /api/collectionaction/skip */
+export function collectionActionSkipPath(): string {
+  return "/api/collectionaction/skip";
+}
+
+/** POST /api/collectioncase/assign-to */
+export function collectionCaseAssignToPath(): string {
+  return "/api/collectioncase/assign-to";
+}
+
+/** POST /api/collectioncase/close */
+export function collectionCaseClosePath(): string {
+  return "/api/collectioncase/close";
+}
+
+/** POST /api/collectioncase/create-payment-plan */
+export function collectionCaseCreatePaymentPlanPath(): string {
+  return "/api/collectioncase/create-payment-plan";
+}
+
+/** POST /api/collectioncase/escalate-dunning */
+export function collectionCaseEscalateDunningPath(): string {
+  return "/api/collectioncase/escalate-dunning";
+}
+
+/** POST /api/collectioncase/escalate-to-legal */
+export function collectionCaseEscalateToLegalPath(): string {
+  return "/api/collectioncase/escalate-to-legal";
+}
+
+/** POST /api/collectioncase/mark-disputed */
+export function collectionCaseMarkDisputedPath(): string {
+  return "/api/collectioncase/mark-disputed";
+}
+
+/** POST /api/collectioncase/mark-resolved */
+export function collectionCaseMarkResolvedPath(): string {
+  return "/api/collectioncase/mark-resolved";
+}
+
+/** POST /api/collectioncase/record-payment */
+export function collectionCaseRecordPaymentPath(): string {
+  return "/api/collectioncase/record-payment";
+}
+
+/** POST /api/collectioncase/reset-dunning */
+export function collectionCaseResetDunningPath(): string {
+  return "/api/collectioncase/reset-dunning";
+}
+
+/** POST /api/collectioncase/resolve */
+export function collectionCaseResolvePath(): string {
+  return "/api/collectioncase/resolve";
+}
+
+/** POST /api/collectioncase/resolve-dispute */
+export function collectionCaseResolveDisputePath(): string {
+  return "/api/collectioncase/resolve-dispute";
+}
+
+/** POST /api/collectioncase/set-high-priority */
+export function collectionCaseSetHighPriorityPath(): string {
+  return "/api/collectioncase/set-high-priority";
+}
+
+/** POST /api/collectioncase/set-priority */
+export function collectionCaseSetPriorityPath(): string {
+  return "/api/collectioncase/set-priority";
+}
+
+/** POST /api/collectioncase/set-urgent-priority */
+export function collectionCaseSetUrgentPriorityPath(): string {
+  return "/api/collectioncase/set-urgent-priority";
+}
+
+/** POST /api/collectioncase/update-aging */
+export function collectionCaseUpdateAgingPath(): string {
+  return "/api/collectioncase/update-aging";
+}
+
+/** POST /api/collectioncase/update-status */
+export function collectionCaseUpdateStatusPath(): string {
+  return "/api/collectioncase/update-status";
+}
+
+/** POST /api/collectioncase/write-off */
+export function collectionCaseWriteOffPath(): string {
+  return "/api/collectioncase/write-off";
+}
+
+/** POST /api/collectionpaymentplan/cancel */
+export function collectionPaymentPlanCancelPath(): string {
+  return "/api/collectionpaymentplan/cancel";
+}
+
+/** POST /api/collectionpaymentplan/mark-completed */
+export function collectionPaymentPlanMarkCompletedPath(): string {
+  return "/api/collectionpaymentplan/mark-completed";
+}
+
+/** POST /api/collectionpaymentplan/mark-defaulted */
+export function collectionPaymentPlanMarkDefaultedPath(): string {
+  return "/api/collectionpaymentplan/mark-defaulted";
+}
+
+/** POST /api/collectionpaymentplan/modify */
+export function collectionPaymentPlanModifyPath(): string {
+  return "/api/collectionpaymentplan/modify";
+}
+
+/** POST /api/collectionpaymentplan/record-installment */
+export function collectionPaymentPlanRecordInstallmentPath(): string {
+  return "/api/collectionpaymentplan/record-installment";
 }
 
 /** POST /api/commandboard/activate */
@@ -2036,6 +2226,66 @@ export function kitchenTaskUpdatePriorityPath(): string {
   return "/api/kitchentask/update-priority";
 }
 
+/** POST /api/knowledgeentry/approve */
+export function knowledgeEntryApprovePath(): string {
+  return "/api/knowledgeentry/approve";
+}
+
+/** POST /api/knowledgeentry/archive */
+export function knowledgeEntryArchivePath(): string {
+  return "/api/knowledgeentry/archive";
+}
+
+/** POST /api/knowledgeentry/create */
+export function knowledgeEntryCreatePath(): string {
+  return "/api/knowledgeentry/create";
+}
+
+/** POST /api/knowledgeentry/publish-entry */
+export function knowledgeEntryPublishEntryPath(): string {
+  return "/api/knowledgeentry/publish-entry";
+}
+
+/** POST /api/knowledgeentry/record-feedback */
+export function knowledgeEntryRecordFeedbackPath(): string {
+  return "/api/knowledgeentry/record-feedback";
+}
+
+/** POST /api/knowledgeentry/record-view */
+export function knowledgeEntryRecordViewPath(): string {
+  return "/api/knowledgeentry/record-view";
+}
+
+/** POST /api/knowledgeentry/request-changes */
+export function knowledgeEntryRequestChangesPath(): string {
+  return "/api/knowledgeentry/request-changes";
+}
+
+/** POST /api/knowledgeentry/restore-version */
+export function knowledgeEntryRestoreVersionPath(): string {
+  return "/api/knowledgeentry/restore-version";
+}
+
+/** POST /api/knowledgeentry/set-featured */
+export function knowledgeEntrySetFeaturedPath(): string {
+  return "/api/knowledgeentry/set-featured";
+}
+
+/** POST /api/knowledgeentry/soft-delete */
+export function knowledgeEntrySoftDeletePath(): string {
+  return "/api/knowledgeentry/soft-delete";
+}
+
+/** POST /api/knowledgeentry/submit-for-review */
+export function knowledgeEntrySubmitForReviewPath(): string {
+  return "/api/knowledgeentry/submit-for-review";
+}
+
+/** POST /api/knowledgeentry/update */
+export function knowledgeEntryUpdatePath(): string {
+  return "/api/knowledgeentry/update";
+}
+
 /** POST /api/laborbudget/create */
 export function laborBudgetCreatePath(): string {
   return "/api/laborbudget/create";
@@ -2164,6 +2414,41 @@ export function paymentRefundPath(): string {
 /** POST /api/payment/update-fraud-status */
 export function paymentUpdateFraudStatusPath(): string {
   return "/api/payment/update-fraud-status";
+}
+
+/** POST /api/paymentmethod/flag-for-fraud */
+export function paymentMethodFlagForFraudPath(): string {
+  return "/api/paymentmethod/flag-for-fraud";
+}
+
+/** POST /api/paymentmethod/mark-as-default */
+export function paymentMethodMarkAsDefaultPath(): string {
+  return "/api/paymentmethod/mark-as-default";
+}
+
+/** POST /api/paymentmethod/mark-expired */
+export function paymentMethodMarkExpiredPath(): string {
+  return "/api/paymentmethod/mark-expired";
+}
+
+/** POST /api/paymentmethod/mark-invalid */
+export function paymentMethodMarkInvalidPath(): string {
+  return "/api/paymentmethod/mark-invalid";
+}
+
+/** POST /api/paymentmethod/mark-not-default */
+export function paymentMethodMarkNotDefaultPath(): string {
+  return "/api/paymentmethod/mark-not-default";
+}
+
+/** POST /api/paymentmethod/update-token */
+export function paymentMethodUpdateTokenPath(): string {
+  return "/api/paymentmethod/update-token";
+}
+
+/** POST /api/paymentmethod/verify */
+export function paymentMethodVerifyPath(): string {
+  return "/api/paymentmethod/verify";
 }
 
 /** POST /api/payrollapprovalhistory/create */
@@ -2614,6 +2899,31 @@ export function purchaseRequisitionItemRemovePath(): string {
 /** POST /api/purchaserequisitionitem/update */
 export function purchaseRequisitionItemUpdatePath(): string {
   return "/api/purchaserequisitionitem/update";
+}
+
+/** POST /api/ratelimitconfig/activate */
+export function rateLimitConfigActivatePath(): string {
+  return "/api/ratelimitconfig/activate";
+}
+
+/** POST /api/ratelimitconfig/create */
+export function rateLimitConfigCreatePath(): string {
+  return "/api/ratelimitconfig/create";
+}
+
+/** POST /api/ratelimitconfig/deactivate */
+export function rateLimitConfigDeactivatePath(): string {
+  return "/api/ratelimitconfig/deactivate";
+}
+
+/** POST /api/ratelimitconfig/soft-delete */
+export function rateLimitConfigSoftDeletePath(): string {
+  return "/api/ratelimitconfig/soft-delete";
+}
+
+/** POST /api/ratelimitconfig/update */
+export function rateLimitConfigUpdatePath(): string {
+  return "/api/ratelimitconfig/update";
 }
 
 /** POST /api/recipe/activate */
@@ -3242,6 +3552,12 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "ClientInteraction.get.detail", path: "/api/clientinteraction/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "ClientPreference.get.list", path: "/api/clientpreference/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "ClientPreference.get.detail", path: "/api/clientpreference/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "CollectionAction.get.list", path: "/api/collectionaction/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "CollectionAction.get.detail", path: "/api/collectionaction/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "CollectionCase.get.list", path: "/api/collectioncase/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "CollectionCase.get.detail", path: "/api/collectioncase/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "CollectionPaymentPlan.get.list", path: "/api/collectionpaymentplan/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "CollectionPaymentPlan.get.detail", path: "/api/collectionpaymentplan/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "CommandBoard.get.list", path: "/api/commandboard/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "CommandBoard.get.detail", path: "/api/commandboard/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "CommandBoardCard.get.list", path: "/api/commandboardcard/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -3304,6 +3620,8 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "Invoice.get.detail", path: "/api/invoice/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "KitchenTask.get.list", path: "/api/kitchentask/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "KitchenTask.get.detail", path: "/api/kitchentask/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "KnowledgeEntry.get.list", path: "/api/knowledgeentry/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "KnowledgeEntry.get.detail", path: "/api/knowledgeentry/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "LaborBudget.get.list", path: "/api/laborbudget/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "LaborBudget.get.detail", path: "/api/laborbudget/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Lead.get.list", path: "/api/lead/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -3318,6 +3636,8 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "OverrideAudit.get.detail", path: "/api/overrideaudit/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Payment.get.list", path: "/api/payment/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Payment.get.detail", path: "/api/payment/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "PaymentMethod.get.list", path: "/api/paymentmethod/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "PaymentMethod.get.detail", path: "/api/paymentmethod/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "PayrollApprovalHistory.get.list", path: "/api/payrollapprovalhistory/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "PayrollApprovalHistory.get.detail", path: "/api/payrollapprovalhistory/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "PayrollPeriod.get.list", path: "/api/payrollperiod/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -3352,6 +3672,8 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "PurchaseRequisition.get.detail", path: "/api/purchaserequisition/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "PurchaseRequisitionItem.get.list", path: "/api/purchaserequisitionitem/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "PurchaseRequisitionItem.get.detail", path: "/api/purchaserequisitionitem/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "RateLimitConfig.get.list", path: "/api/ratelimitconfig/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "RateLimitConfig.get.detail", path: "/api/ratelimitconfig/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Recipe.get.list", path: "/api/recipe/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Recipe.get.detail", path: "/api/recipe/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "RecipeIngredient.get.list", path: "/api/recipeingredient/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -3473,6 +3795,32 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "ClientPreference.create", path: "/api/clientpreference/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "ClientPreference.remove", path: "/api/clientpreference/remove", method: "POST", source: "command", auth: true, tenant: true },
   { id: "ClientPreference.update", path: "/api/clientpreference/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CollectionAction.complete", path: "/api/collectionaction/complete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CollectionAction.fail", path: "/api/collectionaction/fail", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CollectionAction.reschedule", path: "/api/collectionaction/reschedule", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CollectionAction.skip", path: "/api/collectionaction/skip", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CollectionCase.assignTo", path: "/api/collectioncase/assign-to", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CollectionCase.close", path: "/api/collectioncase/close", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CollectionCase.createPaymentPlan", path: "/api/collectioncase/create-payment-plan", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CollectionCase.escalateDunning", path: "/api/collectioncase/escalate-dunning", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CollectionCase.escalateToLegal", path: "/api/collectioncase/escalate-to-legal", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CollectionCase.markDisputed", path: "/api/collectioncase/mark-disputed", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CollectionCase.markResolved", path: "/api/collectioncase/mark-resolved", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CollectionCase.recordPayment", path: "/api/collectioncase/record-payment", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CollectionCase.resetDunning", path: "/api/collectioncase/reset-dunning", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CollectionCase.resolve", path: "/api/collectioncase/resolve", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CollectionCase.resolveDispute", path: "/api/collectioncase/resolve-dispute", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CollectionCase.setHighPriority", path: "/api/collectioncase/set-high-priority", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CollectionCase.setPriority", path: "/api/collectioncase/set-priority", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CollectionCase.setUrgentPriority", path: "/api/collectioncase/set-urgent-priority", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CollectionCase.updateAging", path: "/api/collectioncase/update-aging", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CollectionCase.updateStatus", path: "/api/collectioncase/update-status", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CollectionCase.writeOff", path: "/api/collectioncase/write-off", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CollectionPaymentPlan.cancel", path: "/api/collectionpaymentplan/cancel", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CollectionPaymentPlan.markCompleted", path: "/api/collectionpaymentplan/mark-completed", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CollectionPaymentPlan.markDefaulted", path: "/api/collectionpaymentplan/mark-defaulted", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CollectionPaymentPlan.modify", path: "/api/collectionpaymentplan/modify", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "CollectionPaymentPlan.recordInstallment", path: "/api/collectionpaymentplan/record-installment", method: "POST", source: "command", auth: true, tenant: true },
   { id: "CommandBoard.activate", path: "/api/commandboard/activate", method: "POST", source: "command", auth: true, tenant: true },
   { id: "CommandBoard.create", path: "/api/commandboard/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "CommandBoard.deactivate", path: "/api/commandboard/deactivate", method: "POST", source: "command", auth: true, tenant: true },
@@ -3615,6 +3963,18 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "KitchenTask.start", path: "/api/kitchentask/start", method: "POST", source: "command", auth: true, tenant: true },
   { id: "KitchenTask.updateComplexity", path: "/api/kitchentask/update-complexity", method: "POST", source: "command", auth: true, tenant: true },
   { id: "KitchenTask.updatePriority", path: "/api/kitchentask/update-priority", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KnowledgeEntry.approve", path: "/api/knowledgeentry/approve", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KnowledgeEntry.archive", path: "/api/knowledgeentry/archive", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KnowledgeEntry.create", path: "/api/knowledgeentry/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KnowledgeEntry.publishEntry", path: "/api/knowledgeentry/publish-entry", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KnowledgeEntry.recordFeedback", path: "/api/knowledgeentry/record-feedback", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KnowledgeEntry.recordView", path: "/api/knowledgeentry/record-view", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KnowledgeEntry.requestChanges", path: "/api/knowledgeentry/request-changes", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KnowledgeEntry.restoreVersion", path: "/api/knowledgeentry/restore-version", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KnowledgeEntry.setFeatured", path: "/api/knowledgeentry/set-featured", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KnowledgeEntry.softDelete", path: "/api/knowledgeentry/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KnowledgeEntry.submitForReview", path: "/api/knowledgeentry/submit-for-review", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "KnowledgeEntry.update", path: "/api/knowledgeentry/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "LaborBudget.create", path: "/api/laborbudget/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "LaborBudget.softDelete", path: "/api/laborbudget/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
   { id: "LaborBudget.update", path: "/api/laborbudget/update", method: "POST", source: "command", auth: true, tenant: true },
@@ -3641,6 +4001,13 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "Payment.process", path: "/api/payment/process", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Payment.refund", path: "/api/payment/refund", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Payment.updateFraudStatus", path: "/api/payment/update-fraud-status", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PaymentMethod.flagForFraud", path: "/api/paymentmethod/flag-for-fraud", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PaymentMethod.markAsDefault", path: "/api/paymentmethod/mark-as-default", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PaymentMethod.markExpired", path: "/api/paymentmethod/mark-expired", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PaymentMethod.markInvalid", path: "/api/paymentmethod/mark-invalid", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PaymentMethod.markNotDefault", path: "/api/paymentmethod/mark-not-default", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PaymentMethod.updateToken", path: "/api/paymentmethod/update-token", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "PaymentMethod.verify", path: "/api/paymentmethod/verify", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PayrollApprovalHistory.create", path: "/api/payrollapprovalhistory/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PayrollPeriod.create", path: "/api/payrollperiod/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PayrollRun.updateStatus", path: "/api/payrollrun/update-status", method: "POST", source: "command", auth: true, tenant: true },
@@ -3731,6 +4098,11 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "PurchaseRequisitionItem.create", path: "/api/purchaserequisitionitem/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PurchaseRequisitionItem.remove", path: "/api/purchaserequisitionitem/remove", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PurchaseRequisitionItem.update", path: "/api/purchaserequisitionitem/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RateLimitConfig.activate", path: "/api/ratelimitconfig/activate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RateLimitConfig.create", path: "/api/ratelimitconfig/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RateLimitConfig.deactivate", path: "/api/ratelimitconfig/deactivate", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RateLimitConfig.softDelete", path: "/api/ratelimitconfig/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RateLimitConfig.update", path: "/api/ratelimitconfig/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Recipe.activate", path: "/api/recipe/activate", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Recipe.create", path: "/api/recipe/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Recipe.deactivate", path: "/api/recipe/deactivate", method: "POST", source: "command", auth: true, tenant: true },

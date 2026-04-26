@@ -335,6 +335,136 @@
     "commandId": "ClientPreference.update"
   },
   {
+    "entity": "CollectionAction",
+    "command": "complete",
+    "commandId": "CollectionAction.complete"
+  },
+  {
+    "entity": "CollectionAction",
+    "command": "fail",
+    "commandId": "CollectionAction.fail"
+  },
+  {
+    "entity": "CollectionAction",
+    "command": "reschedule",
+    "commandId": "CollectionAction.reschedule"
+  },
+  {
+    "entity": "CollectionAction",
+    "command": "skip",
+    "commandId": "CollectionAction.skip"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "assignTo",
+    "commandId": "CollectionCase.assignTo"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "close",
+    "commandId": "CollectionCase.close"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "createPaymentPlan",
+    "commandId": "CollectionCase.createPaymentPlan"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "escalateDunning",
+    "commandId": "CollectionCase.escalateDunning"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "escalateToLegal",
+    "commandId": "CollectionCase.escalateToLegal"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "markDisputed",
+    "commandId": "CollectionCase.markDisputed"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "markResolved",
+    "commandId": "CollectionCase.markResolved"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "recordPayment",
+    "commandId": "CollectionCase.recordPayment"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "resetDunning",
+    "commandId": "CollectionCase.resetDunning"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "resolve",
+    "commandId": "CollectionCase.resolve"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "resolveDispute",
+    "commandId": "CollectionCase.resolveDispute"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "setHighPriority",
+    "commandId": "CollectionCase.setHighPriority"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "setPriority",
+    "commandId": "CollectionCase.setPriority"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "setUrgentPriority",
+    "commandId": "CollectionCase.setUrgentPriority"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "updateAging",
+    "commandId": "CollectionCase.updateAging"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "updateStatus",
+    "commandId": "CollectionCase.updateStatus"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "writeOff",
+    "commandId": "CollectionCase.writeOff"
+  },
+  {
+    "entity": "CollectionPaymentPlan",
+    "command": "cancel",
+    "commandId": "CollectionPaymentPlan.cancel"
+  },
+  {
+    "entity": "CollectionPaymentPlan",
+    "command": "markCompleted",
+    "commandId": "CollectionPaymentPlan.markCompleted"
+  },
+  {
+    "entity": "CollectionPaymentPlan",
+    "command": "markDefaulted",
+    "commandId": "CollectionPaymentPlan.markDefaulted"
+  },
+  {
+    "entity": "CollectionPaymentPlan",
+    "command": "modify",
+    "commandId": "CollectionPaymentPlan.modify"
+  },
+  {
+    "entity": "CollectionPaymentPlan",
+    "command": "recordInstallment",
+    "commandId": "CollectionPaymentPlan.recordInstallment"
+  },
+  {
     "entity": "CommandBoard",
     "command": "activate",
     "commandId": "CommandBoard.activate"
@@ -1045,6 +1175,66 @@
     "commandId": "KitchenTask.updatePriority"
   },
   {
+    "entity": "KnowledgeEntry",
+    "command": "approve",
+    "commandId": "KnowledgeEntry.approve"
+  },
+  {
+    "entity": "KnowledgeEntry",
+    "command": "archive",
+    "commandId": "KnowledgeEntry.archive"
+  },
+  {
+    "entity": "KnowledgeEntry",
+    "command": "create",
+    "commandId": "KnowledgeEntry.create"
+  },
+  {
+    "entity": "KnowledgeEntry",
+    "command": "publishEntry",
+    "commandId": "KnowledgeEntry.publishEntry"
+  },
+  {
+    "entity": "KnowledgeEntry",
+    "command": "recordFeedback",
+    "commandId": "KnowledgeEntry.recordFeedback"
+  },
+  {
+    "entity": "KnowledgeEntry",
+    "command": "recordView",
+    "commandId": "KnowledgeEntry.recordView"
+  },
+  {
+    "entity": "KnowledgeEntry",
+    "command": "requestChanges",
+    "commandId": "KnowledgeEntry.requestChanges"
+  },
+  {
+    "entity": "KnowledgeEntry",
+    "command": "restoreVersion",
+    "commandId": "KnowledgeEntry.restoreVersion"
+  },
+  {
+    "entity": "KnowledgeEntry",
+    "command": "setFeatured",
+    "commandId": "KnowledgeEntry.setFeatured"
+  },
+  {
+    "entity": "KnowledgeEntry",
+    "command": "softDelete",
+    "commandId": "KnowledgeEntry.softDelete"
+  },
+  {
+    "entity": "KnowledgeEntry",
+    "command": "submitForReview",
+    "commandId": "KnowledgeEntry.submitForReview"
+  },
+  {
+    "entity": "KnowledgeEntry",
+    "command": "update",
+    "commandId": "KnowledgeEntry.update"
+  },
+  {
     "entity": "LaborBudget",
     "command": "create",
     "commandId": "LaborBudget.create"
@@ -1173,6 +1363,41 @@
     "entity": "Payment",
     "command": "updateFraudStatus",
     "commandId": "Payment.updateFraudStatus"
+  },
+  {
+    "entity": "PaymentMethod",
+    "command": "flagForFraud",
+    "commandId": "PaymentMethod.flagForFraud"
+  },
+  {
+    "entity": "PaymentMethod",
+    "command": "markAsDefault",
+    "commandId": "PaymentMethod.markAsDefault"
+  },
+  {
+    "entity": "PaymentMethod",
+    "command": "markExpired",
+    "commandId": "PaymentMethod.markExpired"
+  },
+  {
+    "entity": "PaymentMethod",
+    "command": "markInvalid",
+    "commandId": "PaymentMethod.markInvalid"
+  },
+  {
+    "entity": "PaymentMethod",
+    "command": "markNotDefault",
+    "commandId": "PaymentMethod.markNotDefault"
+  },
+  {
+    "entity": "PaymentMethod",
+    "command": "updateToken",
+    "commandId": "PaymentMethod.updateToken"
+  },
+  {
+    "entity": "PaymentMethod",
+    "command": "verify",
+    "commandId": "PaymentMethod.verify"
   },
   {
     "entity": "PayrollApprovalHistory",
@@ -1623,6 +1848,31 @@
     "entity": "PurchaseRequisitionItem",
     "command": "update",
     "commandId": "PurchaseRequisitionItem.update"
+  },
+  {
+    "entity": "RateLimitConfig",
+    "command": "activate",
+    "commandId": "RateLimitConfig.activate"
+  },
+  {
+    "entity": "RateLimitConfig",
+    "command": "create",
+    "commandId": "RateLimitConfig.create"
+  },
+  {
+    "entity": "RateLimitConfig",
+    "command": "deactivate",
+    "commandId": "RateLimitConfig.deactivate"
+  },
+  {
+    "entity": "RateLimitConfig",
+    "command": "softDelete",
+    "commandId": "RateLimitConfig.softDelete"
+  },
+  {
+    "entity": "RateLimitConfig",
+    "command": "update",
+    "commandId": "RateLimitConfig.update"
   },
   {
     "entity": "Recipe",

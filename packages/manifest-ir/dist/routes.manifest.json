@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-04-26T14:39:32.251Z",
+  "generatedAt": "2026-04-26T16:38:31.699Z",
   "basePath": "/api",
   "routes": [
     {
@@ -480,6 +480,96 @@
       "source": {
         "kind": "entity-read",
         "entity": "ClientPreference"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionAction.get.list",
+      "path": "/api/collectionaction/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "CollectionAction"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionAction.get.detail",
+      "path": "/api/collectionaction/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "CollectionAction"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionCase.get.list",
+      "path": "/api/collectioncase/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "CollectionCase"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionCase.get.detail",
+      "path": "/api/collectioncase/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "CollectionCase"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionPaymentPlan.get.list",
+      "path": "/api/collectionpaymentplan/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "CollectionPaymentPlan"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionPaymentPlan.get.detail",
+      "path": "/api/collectionpaymentplan/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "CollectionPaymentPlan"
       },
       "auth": true,
       "tenant": true
@@ -1415,6 +1505,36 @@
       "tenant": true
     },
     {
+      "id": "KnowledgeEntry.get.list",
+      "path": "/api/knowledgeentry/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "KnowledgeEntry"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "KnowledgeEntry.get.detail",
+      "path": "/api/knowledgeentry/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "KnowledgeEntry"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "LaborBudget.get.list",
       "path": "/api/laborbudget/list",
       "method": "GET",
@@ -1620,6 +1740,36 @@
       "source": {
         "kind": "entity-read",
         "entity": "Payment"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PaymentMethod.get.list",
+      "path": "/api/paymentmethod/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "PaymentMethod"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PaymentMethod.get.detail",
+      "path": "/api/paymentmethod/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "PaymentMethod"
       },
       "auth": true,
       "tenant": true
@@ -2130,6 +2280,36 @@
       "source": {
         "kind": "entity-read",
         "entity": "PurchaseRequisitionItem"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RateLimitConfig.get.list",
+      "path": "/api/ratelimitconfig/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "RateLimitConfig"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RateLimitConfig.get.detail",
+      "path": "/api/ratelimitconfig/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "RateLimitConfig"
       },
       "auth": true,
       "tenant": true
@@ -5336,6 +5516,599 @@
         "kind": "command",
         "entity": "ClientPreference",
         "command": "update"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionAction.complete",
+      "path": "/api/collectionaction/complete",
+      "method": "POST",
+      "params": [
+        {
+          "name": "outcome",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "promiseAmount",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "promiseDate",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "nextActionDate",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "CollectionAction",
+        "command": "complete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionAction.fail",
+      "path": "/api/collectionaction/fail",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "CollectionAction",
+        "command": "fail"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionAction.reschedule",
+      "path": "/api/collectionaction/reschedule",
+      "method": "POST",
+      "params": [
+        {
+          "name": "newScheduledFor",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "CollectionAction",
+        "command": "reschedule"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionAction.skip",
+      "path": "/api/collectionaction/skip",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "CollectionAction",
+        "command": "skip"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionCase.assignTo",
+      "path": "/api/collectioncase/assign-to",
+      "method": "POST",
+      "params": [
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "CollectionCase",
+        "command": "assignTo"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionCase.close",
+      "path": "/api/collectioncase/close",
+      "method": "POST",
+      "params": [
+        {
+          "name": "resolution",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "CollectionCase",
+        "command": "close"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionCase.createPaymentPlan",
+      "path": "/api/collectioncase/create-payment-plan",
+      "method": "POST",
+      "params": [
+        {
+          "name": "planId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "nextPaymentDue",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "CollectionCase",
+        "command": "createPaymentPlan"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionCase.escalateDunning",
+      "path": "/api/collectioncase/escalate-dunning",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "CollectionCase",
+        "command": "escalateDunning"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionCase.escalateToLegal",
+      "path": "/api/collectioncase/escalate-to-legal",
+      "method": "POST",
+      "params": [
+        {
+          "name": "legalCaseNumber",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "legalFirm",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "CollectionCase",
+        "command": "escalateToLegal"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionCase.markDisputed",
+      "path": "/api/collectioncase/mark-disputed",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "CollectionCase",
+        "command": "markDisputed"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionCase.markResolved",
+      "path": "/api/collectioncase/mark-resolved",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "CollectionCase",
+        "command": "markResolved"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionCase.recordPayment",
+      "path": "/api/collectioncase/record-payment",
+      "method": "POST",
+      "params": [
+        {
+          "name": "amount",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "paymentId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "paymentDate",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "CollectionCase",
+        "command": "recordPayment"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionCase.resetDunning",
+      "path": "/api/collectioncase/reset-dunning",
+      "method": "POST",
+      "params": [
+        {
+          "name": "stage",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "CollectionCase",
+        "command": "resetDunning"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionCase.resolve",
+      "path": "/api/collectioncase/resolve",
+      "method": "POST",
+      "params": [
+        {
+          "name": "notes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "CollectionCase",
+        "command": "resolve"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionCase.resolveDispute",
+      "path": "/api/collectioncase/resolve-dispute",
+      "method": "POST",
+      "params": [
+        {
+          "name": "resolutionNotes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "CollectionCase",
+        "command": "resolveDispute"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionCase.setHighPriority",
+      "path": "/api/collectioncase/set-high-priority",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "CollectionCase",
+        "command": "setHighPriority"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionCase.setPriority",
+      "path": "/api/collectioncase/set-priority",
+      "method": "POST",
+      "params": [
+        {
+          "name": "priority",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "CollectionCase",
+        "command": "setPriority"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionCase.setUrgentPriority",
+      "path": "/api/collectioncase/set-urgent-priority",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "CollectionCase",
+        "command": "setUrgentPriority"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionCase.updateAging",
+      "path": "/api/collectioncase/update-aging",
+      "method": "POST",
+      "params": [
+        {
+          "name": "daysOverdue",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "agingBucket",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "CollectionCase",
+        "command": "updateAging"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionCase.updateStatus",
+      "path": "/api/collectioncase/update-status",
+      "method": "POST",
+      "params": [
+        {
+          "name": "status",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "CollectionCase",
+        "command": "updateStatus"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionCase.writeOff",
+      "path": "/api/collectioncase/write-off",
+      "method": "POST",
+      "params": [
+        {
+          "name": "amount",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "approvedBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "CollectionCase",
+        "command": "writeOff"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionPaymentPlan.cancel",
+      "path": "/api/collectionpaymentplan/cancel",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "CollectionPaymentPlan",
+        "command": "cancel"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionPaymentPlan.markCompleted",
+      "path": "/api/collectionpaymentplan/mark-completed",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "CollectionPaymentPlan",
+        "command": "markCompleted"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionPaymentPlan.markDefaulted",
+      "path": "/api/collectionpaymentplan/mark-defaulted",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "CollectionPaymentPlan",
+        "command": "markDefaulted"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionPaymentPlan.modify",
+      "path": "/api/collectionpaymentplan/modify",
+      "method": "POST",
+      "params": [
+        {
+          "name": "newInstallmentAmount",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "newInstallmentCount",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "CollectionPaymentPlan",
+        "command": "modify"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "CollectionPaymentPlan.recordInstallment",
+      "path": "/api/collectionpaymentplan/record-installment",
+      "method": "POST",
+      "params": [
+        {
+          "name": "amount",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "paymentDate",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "nextPaymentDate",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "CollectionPaymentPlan",
+        "command": "recordInstallment"
       },
       "auth": true,
       "tenant": true
@@ -10117,6 +10890,354 @@
       "tenant": true
     },
     {
+      "id": "KnowledgeEntry.approve",
+      "path": "/api/knowledgeentry/approve",
+      "method": "POST",
+      "params": [
+        {
+          "name": "approvedBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "comments",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "KnowledgeEntry",
+        "command": "approve"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "KnowledgeEntry.archive",
+      "path": "/api/knowledgeentry/archive",
+      "method": "POST",
+      "params": [
+        {
+          "name": "archivedBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "KnowledgeEntry",
+        "command": "archive"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "KnowledgeEntry.create",
+      "path": "/api/knowledgeentry/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "authorId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "slug",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "content",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "KnowledgeEntry",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "KnowledgeEntry.publishEntry",
+      "path": "/api/knowledgeentry/publish-entry",
+      "method": "POST",
+      "params": [
+        {
+          "name": "publishedBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "KnowledgeEntry",
+        "command": "publishEntry"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "KnowledgeEntry.recordFeedback",
+      "path": "/api/knowledgeentry/record-feedback",
+      "method": "POST",
+      "params": [
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "wasHelpful",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "comment",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "KnowledgeEntry",
+        "command": "recordFeedback"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "KnowledgeEntry.recordView",
+      "path": "/api/knowledgeentry/record-view",
+      "method": "POST",
+      "params": [
+        {
+          "name": "viewedBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "KnowledgeEntry",
+        "command": "recordView"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "KnowledgeEntry.requestChanges",
+      "path": "/api/knowledgeentry/request-changes",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reviewedBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "changeRequest",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "KnowledgeEntry",
+        "command": "requestChanges"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "KnowledgeEntry.restoreVersion",
+      "path": "/api/knowledgeentry/restore-version",
+      "method": "POST",
+      "params": [
+        {
+          "name": "versionNumber",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "restoredBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "KnowledgeEntry",
+        "command": "restoreVersion"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "KnowledgeEntry.setFeatured",
+      "path": "/api/knowledgeentry/set-featured",
+      "method": "POST",
+      "params": [
+        {
+          "name": "featured",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "updatedBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "KnowledgeEntry",
+        "command": "setFeatured"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "KnowledgeEntry.softDelete",
+      "path": "/api/knowledgeentry/soft-delete",
+      "method": "POST",
+      "params": [
+        {
+          "name": "deletedBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "KnowledgeEntry",
+        "command": "softDelete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "KnowledgeEntry.submitForReview",
+      "path": "/api/knowledgeentry/submit-for-review",
+      "method": "POST",
+      "params": [
+        {
+          "name": "submittedBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "KnowledgeEntry",
+        "command": "submitForReview"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "KnowledgeEntry.update",
+      "path": "/api/knowledgeentry/update",
+      "method": "POST",
+      "params": [
+        {
+          "name": "authorId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "content",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "tags",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "changeReason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "KnowledgeEntry",
+        "command": "update"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
       "id": "LaborBudget.create",
       "path": "/api/payroll/labor-budgets/commands/create",
       "method": "POST",
@@ -11019,6 +12140,125 @@
         "kind": "command",
         "entity": "Payment",
         "command": "updateFraudStatus"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PaymentMethod.flagForFraud",
+      "path": "/api/paymentmethod/flag-for-fraud",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PaymentMethod",
+        "command": "flagForFraud"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PaymentMethod.markAsDefault",
+      "path": "/api/paymentmethod/mark-as-default",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "PaymentMethod",
+        "command": "markAsDefault"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PaymentMethod.markExpired",
+      "path": "/api/paymentmethod/mark-expired",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "PaymentMethod",
+        "command": "markExpired"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PaymentMethod.markInvalid",
+      "path": "/api/paymentmethod/mark-invalid",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PaymentMethod",
+        "command": "markInvalid"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PaymentMethod.markNotDefault",
+      "path": "/api/paymentmethod/mark-not-default",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "PaymentMethod",
+        "command": "markNotDefault"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PaymentMethod.updateToken",
+      "path": "/api/paymentmethod/update-token",
+      "method": "POST",
+      "params": [
+        {
+          "name": "newToken",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PaymentMethod",
+        "command": "updateToken"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "PaymentMethod.verify",
+      "path": "/api/paymentmethod/verify",
+      "method": "POST",
+      "params": [
+        {
+          "name": "method",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "PaymentMethod",
+        "command": "verify"
       },
       "auth": true,
       "tenant": true
@@ -13882,6 +15122,158 @@
       "source": {
         "kind": "command",
         "entity": "PurchaseRequisitionItem",
+        "command": "update"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RateLimitConfig.activate",
+      "path": "/api/ratelimitconfig/activate",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "RateLimitConfig",
+        "command": "activate"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RateLimitConfig.create",
+      "path": "/api/ratelimitconfig/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "endpointPattern",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "windowMs",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "maxRequests",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "burstAllowance",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "priority",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RateLimitConfig",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RateLimitConfig.deactivate",
+      "path": "/api/ratelimitconfig/deactivate",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "RateLimitConfig",
+        "command": "deactivate"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RateLimitConfig.softDelete",
+      "path": "/api/ratelimitconfig/soft-delete",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RateLimitConfig",
+        "command": "softDelete"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RateLimitConfig.update",
+      "path": "/api/ratelimitconfig/update",
+      "method": "POST",
+      "params": [
+        {
+          "name": "name",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "endpointPattern",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "windowMs",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "maxRequests",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "burstAllowance",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "priority",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "isActive",
+          "type": "boolean",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RateLimitConfig",
         "command": "update"
       },
       "auth": true,

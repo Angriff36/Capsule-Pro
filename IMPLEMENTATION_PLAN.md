@@ -80,7 +80,7 @@ Second pass corrected the following factual errors in the first 2026-04-24 audit
 8. **Dead code** — 17 orphan backup files (not 9): 11 `.bak`, 6 `.backup`, 3 `.new`, 1 `.tmp`.
 9. **`@ts-expect-error`/`@ts-ignore`** — 10 in committed source (not 12).
 10. **Console logging** — 449 `console.log` + 1,727 `console.error` + 16 `console.warn` in `apps/api/` (~2,192 total). Prior "~393" only counted `console.log`.
-11. **Quarantined manifests** — 17 live in `manifests-disabled/` (not just `facility-rules.manifest`). Full list now included in Manifest Coverage Audit.
+11. **Quarantined manifests** — 7 remain in `manifests-disabled/` (was 13; 5 promoted + 1 duplicate removed 2026-04-26). Full list now included in Manifest Coverage Audit.
 
 No new commits since `a71ec8d5`. All Tier 0/1 blockers re-verified to still hold at the exact file paths and line numbers cited.
 
@@ -384,10 +384,10 @@ Plus **raw-SQL-only tables** with no model: `facility_assets`, `drivers`, `vehic
 
 | Metric | Value | Source |
 |---|---|---|
-| Manifest files | 64 | glob `packages/manifest-adapters/manifests/**` (63 + shipment-rules promoted 2026-04-26) |
-| Quarantined manifests | 16 | `packages/manifest-adapters/manifests-disabled/` (was 17; shipment-rules promoted 2026-04-26) |
-| Entities (per IR) | **94** | `routes.manifest.json` (was 89; up 5 after shipment-rules + prior promotions) |
-| Commands (per IR) | **414** | `routes.manifest.json` (was 384; up 30 after shipment-rules + prior promotions) |
+| Manifest files | **68** | glob `packages/manifest-adapters/manifests/**` (64 + rate-limit-rules + collections-rules + payment-method-rules + knowledge-base-rules promoted 2026-04-26) |
+| Quarantined manifests | **7** | `packages/manifest-adapters/manifests-disabled/` (was 13; 5 promoted + 1 duplicate removed 2026-04-26) |
+| Entities (per IR) | **104** | `routes.manifest.json` (was 94; up 10 after 4 manifest promotions) |
+| Commands (per IR) | **491** | `routes.manifest.json` (was 414; up 77 after 4 manifest promotions) |
 | Events (per IR) | **0 reported** | `routes.manifest.json` `kind=event` — suspect; prior claim of 387 came from the `.manifest` sources, not the IR output |
 | Routes in `routes.manifest.json` | 562 (178 GET, 384 POST) | file inspection |
 | Total API write handlers | ~1,001 | count of POST/PUT/PATCH/DELETE handlers under `apps/api/app/api/**/route.ts` |
@@ -396,20 +396,34 @@ Plus **raw-SQL-only tables** with no model: `facility_assets`, `drivers`, `vehic
 | Routes lacking authentication | 115 (`planning/route-audit.md`) | same staleness caveat applies — re-verify before citing |
 
 ### Missing manifests by domain
-- **Accounting**: ~~invoice, payment, revenue-recognition~~ (promoted 2026-04-26). Remaining: collection, payment-method.
+- **Accounting**: ~~invoice, payment, revenue-recognition, collection, payment-method~~ (all promoted 2026-04-26).
 - **Facilities**: facility-area, asset, work-order (existing `facility-rules.manifest` lives in `manifests-disabled/`).
 - **Logistics**: driver, vehicle, route — none exist. ~~shipment~~ (promoted 2026-04-26).
 - **Procurement**: requisition, vendor, vendor-contract.
 - **Payroll**: partial coverage only.
 
-### Quarantined manifests in `packages/manifest-adapters/manifests-disabled/` (13 files)
+### Quarantined manifests in `packages/manifest-adapters/manifests-disabled/` (7 files)
 
 These manifests were authored but excluded from the active manifest build. Re-enabling each requires the matching Prisma model + policy review; many map directly to the missing-models list above.
 
 Active work to re-integrate:
-- `facility-rules.manifest`, ~~`invoice-rules.manifest`~~ (promoted 2026-04-26), ~~`payment-rules.manifest`~~ (promoted 2026-04-26), `payment-method-rules.manifest`, `collections-rules.manifest`, ~~`revenue-recognition-rules.manifest`~~ (promoted 2026-04-26), `procurement-requisition-rules.manifest`, `vendor-contract-rules.manifest`, `equipment-rules.manifest`, ~~`shipment-rules.manifest`~~ (promoted 2026-04-26), `knowledge-base-rules.manifest`, `quality-control-rules.manifest`, `rate-limit-rules.manifest`, `payment-reconciliation-rules.manifest`, `version-control-rules.manifest`, `digital-twin-rules.manifest`, `prep-task-dependency.manifest`.
+- `facility-rules.manifest` — Prisma model mismatch (manifest defines FacilitySpace/Booking/UtilityMeter but DB has FacilityArea/Asset/WorkOrder)
+- ~~`invoice-rules.manifest`~~ (promoted 2026-04-26)
+- ~~`payment-rules.manifest`~~ (promoted 2026-04-26)
+- ~~`payment-method-rules.manifest`~~ (promoted 2026-04-26)
+- ~~`collections-rules.manifest`~~ (promoted 2026-04-26)
+- ~~`revenue-recognition-rules.manifest`~~ (promoted 2026-04-26)
+- ~~`shipment-rules.manifest`~~ (promoted 2026-04-26)
+- ~~`rate-limit-rules.manifest`~~ (promoted 2026-04-26)
+- ~~`knowledge-base-rules.manifest`~~ (promoted 2026-04-26)
+- `equipment-rules.manifest` — no Prisma models
+- `quality-control-rules.manifest` — partial models, heavy imperative syntax
+- `payment-reconciliation-rules.manifest` — no Prisma models
+- `version-control-rules.manifest` — no Prisma models
+- `digital-twin-rules.manifest` — no Prisma models, Markdown/prose format
+- `prep-task-dependency.manifest` — no Prisma model
 
-A single pass to promote the remaining Accounting set (2 manifests: `payment-method-rules`, `collections-rules`) plus `facility-rules.manifest` and the two procurement ones (`procurement-requisition-rules`, `vendor-contract-rules`) would close the bulk of the Tier 1 crashes and the biggest manifest-coverage gaps at once.
+Remaining quarantined (7): facility-rules, equipment-rules, quality-control-rules, payment-reconciliation-rules, version-control-rules, digital-twin-rules, prep-task-dependency.
 
 ---
 
@@ -494,6 +508,7 @@ All 26 previously failing tests are now fixed (26→0):
 - **Conflict detection correlation tests (8)**: Fixed mock tenant ID to use valid UUID, added `x-correlation-id` header to error responses.
 - **Event Budget API tests (8)**: Removed `Prisma.Decimal` import from test, replaced with plain numbers in mock factories.
 - **Manifest compilation Phase 4 (7)**: Promoted `shipment-rules.manifest` from `manifests-disabled/` to active `manifests/`.
+- **Manifest compilation Phase 5 (4)**: Promoted `rate-limit-rules`, `collections-rules`, `payment-method-rules`, `knowledge-base-rules` from `manifests-disabled/`. Fixed DSL syntax (enum→constraints, flag→command, if/else→ternary, let removal, year()/month()→now() comparison). IR now 104 entities / 491 commands.
 - **Manifest build determinism (2)**: Already passing (commands.json was updated in prior commits).
 - **Manifest runtime factory (1)**: Updated test assertion from `id` to `authUserId` field.
 

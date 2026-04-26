@@ -69,14 +69,14 @@ entity RateLimitConfig {
     emit RateLimitConfigDeleted
   }
 
-  command activate {
+  command activate() {
     guard notDeleted
     mutate isActive = true
     mutate updatedAt = now()
     emit RateLimitConfigActivated
   }
 
-  command deactivate {
+  command deactivate() {
     guard notDeleted
     mutate isActive = false
     mutate updatedAt = now()
