@@ -3,7 +3,7 @@
   "irHash": "",
   "compilerVersion": "0.3.8",
   "schemaVersion": "1.0",
-  "compiledAt": "2026-04-26T09:03:27.974Z",
+  "compiledAt": "2026-04-26T13:40:31.663Z",
   "sources": [
     "admin-chat-participant-rules.manifest",
     "admin-task-rules.manifest",
@@ -57,6 +57,7 @@
     "role-policy-rules.manifest",
     "sample-data-rules.manifest",
     "schedule-rules.manifest",
+    "shipment-rules.manifest",
     "sms-automation-rules.manifest",
     "station-rules.manifest",
     "time-entry-rules.manifest",

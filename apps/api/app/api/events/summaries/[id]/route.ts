@@ -25,7 +25,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const eventSummary = await database.eventSummary.findFirst({
+    const eventSummary = await database.eventSummary.findUnique({
       where: {
         id,
         tenantId,

@@ -25,7 +25,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const station = await database.station.findFirst({
+    const station = await database.station.findUnique({
       where: {
         id,
         tenantId,

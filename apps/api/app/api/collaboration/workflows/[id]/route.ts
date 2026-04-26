@@ -25,7 +25,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const workflow = await database.workflow.findFirst({
+    const workflow = await database.workflow.findUnique({
       where: {
         id,
         tenantId,

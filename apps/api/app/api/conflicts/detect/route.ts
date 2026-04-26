@@ -83,7 +83,7 @@ function apiError(
   status = 400,
   correlationId?: string
 ): NextResponse<ConflictApiError> {
-  return NextResponse.json(
+  const response = NextResponse.json(
     {
       code,
       message,
@@ -92,6 +92,10 @@ function apiError(
     },
     { status }
   );
+  if (correlationId) {
+    response.headers.set(CORRELATION_ID_HEADER, correlationId);
+  }
+  return response;
 }
 
 /**

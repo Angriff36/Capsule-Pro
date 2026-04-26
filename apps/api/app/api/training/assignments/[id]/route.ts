@@ -25,10 +25,12 @@ export async function GET(
 
     const { id } = await params;
 
-    const trainingAssignment = await database.trainingAssignment.findFirst({
+    const trainingAssignment = await database.trainingAssignment.findUnique({
       where: {
-        id,
-        tenant_id: tenantId,
+        tenant_id_id: {
+          tenant_id: tenantId,
+          id
+        },
         deleted_at: null
       },
     });

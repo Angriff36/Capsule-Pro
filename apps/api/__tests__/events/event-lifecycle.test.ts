@@ -4,7 +4,6 @@
  * Tests event budget validation and route handlers
  */
 
-import { Prisma } from "@repo/database";
 import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -103,10 +102,10 @@ function createMockBudget(overrides = {}) {
     eventId: TEST_EVENT_ID,
     version: 1,
     status: "draft",
-    totalBudgetAmount: new Prisma.Decimal(5000),
-    totalActualAmount: new Prisma.Decimal(0),
-    varianceAmount: new Prisma.Decimal(5000),
-    variancePercentage: new Prisma.Decimal(0),
+    totalBudgetAmount: 5000,
+    totalActualAmount: 0,
+    varianceAmount: 5000,
+    variancePercentage: 0,
     notes: null,
     createdAt: new Date("2026-01-01"),
     updatedAt: new Date("2026-01-01"),
@@ -124,9 +123,9 @@ function createMockLineItem(overrides = {}) {
     category: "food",
     name: "Catering",
     description: null,
-    budgetedAmount: new Prisma.Decimal(2000),
-    actualAmount: new Prisma.Decimal(0),
-    varianceAmount: new Prisma.Decimal(2000),
+    budgetedAmount: 2000,
+    actualAmount: 0,
+    varianceAmount: 2000,
     sortOrder: 0,
     notes: null,
     createdAt: new Date("2026-01-01"),

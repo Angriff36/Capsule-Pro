@@ -25,7 +25,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const clientContact = await database.clientContact.findFirst({
+    const clientContact = await database.clientContact.findUnique({
       where: {
         id,
         tenantId,

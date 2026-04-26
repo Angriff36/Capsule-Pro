@@ -20,9 +20,10 @@ export async function GET(request: NextRequest) {
     return manifestErrorResponse("Tenant not found", 400);
   }
 
-const payrollApprovalHistorys = await database.approvalHistory.findMany({
+const payrollApprovalHistorys = await database.payrollApprovalHistory.findMany({
     where: {
         tenantId,
+        deletedAt: null
       },
     orderBy: {
       createdAt: "desc",

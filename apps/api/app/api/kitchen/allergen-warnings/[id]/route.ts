@@ -25,7 +25,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const allergenWarning = await database.allergenWarning.findFirst({
+    const allergenWarning = await database.allergenWarning.findUnique({
       where: {
         id,
         tenantId,

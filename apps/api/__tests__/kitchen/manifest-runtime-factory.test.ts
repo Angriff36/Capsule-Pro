@@ -216,11 +216,12 @@ describe("createManifestRuntime (shared factory)", () => {
       });
 
       // The factory should have called prisma.user.findFirst to resolve the role
+      // Since "user-1" is not a UUID, it should use authUserId instead of id
       const prisma = deps.prisma as unknown as {
         user: { findFirst: ReturnType<typeof vi.fn> };
       };
       expect(prisma.user.findFirst).toHaveBeenCalledWith({
-        where: { id: "user-1", tenantId: "tenant-1", deletedAt: null },
+        where: { authUserId: "user-1", tenantId: "tenant-1", deletedAt: null },
         select: { role: true },
       });
 

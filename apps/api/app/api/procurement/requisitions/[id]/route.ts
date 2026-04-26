@@ -25,7 +25,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const purchaseRequisition = await database.purchaseRequisition.findFirst({
+    const purchaseRequisition = await database.purchaseRequisition.findUnique({
       where: {
         id,
         tenantId,

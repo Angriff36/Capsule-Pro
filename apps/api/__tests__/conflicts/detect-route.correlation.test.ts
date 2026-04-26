@@ -63,7 +63,9 @@ describe("Conflict Detection API - Correlation ID", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockAuth.mockResolvedValue({ orgId: "org-123", userId: "user-123" });
-    mockGetTenantIdForOrg.mockResolvedValue("tenant-123");
+    mockGetTenantIdForOrg.mockResolvedValue(
+      "a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11"
+    );
   });
 
   afterEach(() => {

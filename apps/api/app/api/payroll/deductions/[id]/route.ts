@@ -25,11 +25,11 @@ export async function GET(
 
     const { id } = await params;
 
-    const employeeDeduction = await database.employeeDeduction.findFirst({
+    const employeeDeduction = await database.employeeDeduction.findUnique({
       where: {
         id,
-        tenant_id: tenantId,
-        deleted_at: null
+        tenantId,
+        deletedAt: null
       },
     });
 

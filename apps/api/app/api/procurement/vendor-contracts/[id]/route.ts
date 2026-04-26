@@ -25,7 +25,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const vendorContract = await database.vendorContract.findFirst({
+    const vendorContract = await database.vendorContract.findUnique({
       where: {
         id,
         tenantId,

@@ -1690,6 +1690,51 @@
     "commandId": "ScheduleShift.update"
   },
   {
+    "entity": "Shipment",
+    "command": "cancel",
+    "commandId": "Shipment.cancel"
+  },
+  {
+    "entity": "Shipment",
+    "command": "create",
+    "commandId": "Shipment.create"
+  },
+  {
+    "entity": "Shipment",
+    "command": "markDelivered",
+    "commandId": "Shipment.markDelivered"
+  },
+  {
+    "entity": "Shipment",
+    "command": "schedule",
+    "commandId": "Shipment.schedule"
+  },
+  {
+    "entity": "Shipment",
+    "command": "ship",
+    "commandId": "Shipment.ship"
+  },
+  {
+    "entity": "Shipment",
+    "command": "startPreparing",
+    "commandId": "Shipment.startPreparing"
+  },
+  {
+    "entity": "Shipment",
+    "command": "update",
+    "commandId": "Shipment.update"
+  },
+  {
+    "entity": "ShipmentItem",
+    "command": "create",
+    "commandId": "ShipmentItem.create"
+  },
+  {
+    "entity": "ShipmentItem",
+    "command": "updateReceived",
+    "commandId": "ShipmentItem.updateReceived"
+  },
+  {
     "entity": "SmsAutomationRule",
     "command": "activate",
     "commandId": "SmsAutomationRule.activate"

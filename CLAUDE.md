@@ -148,7 +148,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[Emergency bridge — running bridge was not updated]
-Files: IMPLEMENTATION_PLAN.md (edit)
+[auto-bridge snapshot @ 10 changes]
+Files: apps/api/app/api/command-board/simulations/[id]/route.ts (edit), apps/api/__tests__/command-board/simulations.test.ts (edit), apps/api/app/api/kitchen/prep-task-plan-workflows/[id]/route.ts (edit), packages/database/prisma/schema.prisma (edit), apps/api/app/webhooks/payments/route.ts (edit), apps/api/app/api/command-board/simulations/[id]/delta/route.ts (edit), apps/api/app/api/command-board/simulations/[id]/apply/route.ts (edit)
 
 # === END COGNILAYER ===
