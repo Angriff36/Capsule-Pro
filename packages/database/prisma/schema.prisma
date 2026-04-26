@@ -75,6 +75,8 @@ model Account {
   auditSchedules                 AuditSchedule[]
   purchaseOrders                 PurchaseOrder[]
   purchaseOrderItems             PurchaseOrderItem[]
+  purchaseRequisitions           PurchaseRequisition[]
+  purchaseRequisitionItems       PurchaseRequisitionItem[]
   shipments                      Shipment[]
   shipmentItems                  ShipmentItem[]
   wasteEntries                   WasteEntry[]
@@ -1961,6 +1963,77 @@ model PurchaseOrderItem {
   @@index([tenantId, purchaseOrderId], map: "purchase_order_items_tenant_po_idx")
   @@index([tenantId, itemId], map: "purchase_order_items_tenant_item_idx")
   @@map("purchase_order_items")
+  @@schema("tenant_inventory")
+}
+
+model PurchaseRequisition {
+  tenantId           String                    @map("tenant_id") @db.Uuid
+  id                 String                    @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  requisitionNumber  String                    @unique @map("requisition_number")
+  requestedBy        String                    @map("requested_by") @db.Uuid
+  requestDate        DateTime                  @default(now()) @map("request_date") @db.Date
+  requiredBy         DateTime?                 @map("required_by") @db.Date
+  locationId         String?                   @map("location_id") @db.Uuid
+  department         String?
+  justification      String?
+  status             String                    @default("draft")
+  subtotal           Decimal                   @default(0) @db.Decimal(12, 2)
+  estimatedTax       Decimal                   @default(0) @map("estimated_tax") @db.Decimal(12, 2)
+  estimatedShipping  Decimal                   @default(0) @map("estimated_shipping") @db.Decimal(12, 2)
+  estimatedTotal     Decimal                   @default(0) @map("estimated_total") @db.Decimal(12, 2)
+  approvedBy         String?                   @map("approved_by") @db.Uuid
+  approvedAt         DateTime?                 @map("approved_at") @db.Timestamptz(6)
+  managerApprovalBy  String?                   @map("manager_approval_by") @db.Uuid
+  managerApprovalAt  DateTime?                 @map("manager_approval_at") @db.Timestamptz(6)
+  financeApprovalBy  String?                   @map("finance_approval_by") @db.Uuid
+  financeApprovalAt  DateTime?                 @map("finance_approval_at") @db.Timestamptz(6)
+  convertedToPoId    String?                   @unique @map("converted_to_po_id") @db.Uuid
+  convertedAt        DateTime?                 @map("converted_at") @db.Timestamptz(6)
+  rejectionReason    String?                   @map("rejection_reason")
+  notes              String?
+  submittedAt        DateTime?                 @map("submitted_at") @db.Timestamptz(6)
+  itemCategory       String?                   @map("item_category")
+  priority           String                    @default("normal")
+  createdAt          DateTime                  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime                  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt          DateTime?                 @map("deleted_at") @db.Timestamptz(6)
+  tenant             Account                   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  items              PurchaseRequisitionItem[]
+
+  @@id([tenantId, id])
+  @@unique([tenantId, id])
+  @@index([tenantId, status], map: "purchase_requisitions_tenant_status_idx")
+  @@index([tenantId, requestedBy], map: "purchase_requisitions_tenant_requester_idx")
+  @@index([tenantId, department], map: "purchase_requisitions_tenant_department_idx")
+  @@index([tenantId, requestDate], map: "purchase_requisitions_tenant_date_idx")
+  @@map("purchase_requisitions")
+  @@schema("tenant_inventory")
+}
+
+model PurchaseRequisitionItem {
+  tenantId            String              @map("tenant_id") @db.Uuid
+  id                  String              @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  requisitionId       String              @map("requisition_id") @db.Uuid
+  itemId              String              @map("item_id") @db.Uuid
+  itemName            String?             @map("item_name")
+  quantityRequested   Decimal             @map("quantity_requested") @db.Decimal(10, 2)
+  unitId              Int?                @map("unit_id") @db.SmallInt
+  estimatedUnitCost   Decimal             @map("estimated_unit_cost") @db.Decimal(10, 4)
+  estimatedTotalCost  Decimal             @map("estimated_total_cost") @db.Decimal(12, 2)
+  suggestedVendorId   String?             @map("suggested_vendor_id") @db.Uuid
+  suggestedVendorName String?             @map("suggested_vendor_name")
+  specifications      String?
+  notes               String?
+  createdAt           DateTime            @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime            @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt           DateTime?           @map("deleted_at") @db.Timestamptz(6)
+  tenant              Account             @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  requisition         PurchaseRequisition @relation(fields: [tenantId, requisitionId], references: [tenantId, id], onDelete: Cascade)
+
+  @@id([tenantId, id])
+  @@index([tenantId, requisitionId], map: "purchase_requisition_items_tenant_req_idx")
+  @@index([tenantId, itemId], map: "purchase_requisition_items_tenant_item_idx")
+  @@map("purchase_requisition_items")
   @@schema("tenant_inventory")
 }
 

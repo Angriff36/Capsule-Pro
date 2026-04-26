@@ -1,13 +1,16 @@
-// Auto-generated Next.js API route for PurchaseRequisition
+// Auto-generated Next.js API detail route for PurchaseRequisition
 // Generated from Manifest IR - DO NOT EDIT
 
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { database } from "@/lib/database";
+import { database } from "@repo/database";
 import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
 import { auth } from "@repo/auth/server";
 
-export async function GET(request: NextRequest) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
   const { orgId, userId } = await auth();
   if (!(userId && orgId)) {
@@ -20,19 +23,23 @@ export async function GET(request: NextRequest) {
     return manifestErrorResponse("Tenant not found", 400);
   }
 
-const purchaseRequisitions = await database.purchaseRequisition.findMany({
-    where: {
+    const { id } = await params;
+
+    const purchaseRequisition = await database.purchaseRequisition.findUnique({
+      where: {
+        id,
         tenantId,
         deletedAt: null
       },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+    });
 
-    return manifestSuccessResponse({ purchaseRequisitions });
+    if (!purchaseRequisition) {
+      return manifestErrorResponse("PurchaseRequisition not found", 404);
+    }
+
+    return manifestSuccessResponse({ purchaseRequisition });
   } catch (error) {
-    console.error("Error fetching purchaseRequisitions:", error);
+    console.error("Error fetching purchaseRequisition:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

@@ -1,4 +1,4 @@
-// Auto-generated Next.js API route for PurchaseRequisition
+// Auto-generated Next.js API route for PurchaseRequisitionItem
 // Generated from Manifest IR - DO NOT EDIT
 
 import type { NextRequest } from "next/server";
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     return manifestErrorResponse("Tenant not found", 400);
   }
 
-const purchaseRequisitions = await database.purchaseRequisition.findMany({
+const purchaseRequisitionItems = await database.purchaseRequisitionItem.findMany({
     where: {
         tenantId,
         deletedAt: null
@@ -30,9 +30,9 @@ const purchaseRequisitions = await database.purchaseRequisition.findMany({
     },
   });
 
-    return manifestSuccessResponse({ purchaseRequisitions });
+    return manifestSuccessResponse({ purchaseRequisitionItems });
   } catch (error) {
-    console.error("Error fetching purchaseRequisitions:", error);
+    console.error("Error fetching purchaseRequisitionItems:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

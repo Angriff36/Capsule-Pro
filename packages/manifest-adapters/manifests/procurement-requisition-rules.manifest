@@ -50,7 +50,9 @@ entity PurchaseRequisition {
 
   constraint validStatus: self.status in ["draft", "pending_manager", "pending_finance", "approved", "rejected", "converted", "cancelled"] "Invalid requisition status"
   constraint validPriority: self.priority in ["low", "normal", "high", "urgent", "critical"] "Invalid priority level"
-  constraint blockEditAfterSubmit:block self.status != "draft" "Cannot edit requisition after submission"
+  constraint blockEditAfterSubmit:block self.status != "draft" {
+    messageTemplate: "Cannot edit requisition after submission"
+  }
 
   command create(requisitionNumber: string, locationId: string, department: string, requestedBy: string, requiredBy: number, justification: string, priority: string, itemCategory: string) {
     guard requisitionNumber != null and requisitionNumber != "" "Requisition number is required"
@@ -101,7 +103,6 @@ entity PurchaseRequisition {
     }
 
     mutate status = "pending_manager"
-    mutate submittedBy = userId
     mutate submittedAt = now()
     mutate updatedAt = now()
 
@@ -111,20 +112,13 @@ entity PurchaseRequisition {
   command approveManager(userId: string) {
     guard self.status == "pending_manager" "Can only approve requisitions pending manager approval"
 
-    // Check if finance approval is needed based on amount
-    if self.estimatedTotal >= 5000 {
-      mutate status = "pending_finance"
-      mutate managerApprovalBy = userId
-      mutate managerApprovalAt = now()
-      mutate updatedAt = now()
-    } else {
-      mutate status = "approved"
-      mutate managerApprovalBy = userId
-      mutate managerApprovalAt = now()
-      mutate approvedBy = userId
-      mutate approvedAt = now()
-      mutate updatedAt = now()
-    }
+    // Check if finance approval is needed based on amount (>= $5000 escalates to finance)
+    mutate status = self.estimatedTotal >= 5000 ? "pending_finance" : "approved"
+    mutate managerApprovalBy = userId
+    mutate managerApprovalAt = now()
+    mutate approvedBy = self.estimatedTotal >= 5000 ? "" : userId
+    mutate approvedAt = self.estimatedTotal >= 5000 ? 0 : now()
+    mutate updatedAt = now()
 
     emit PurchaseRequisitionManagerApproved
   }

@@ -71,6 +71,8 @@ const ENTITY_DOMAIN_MAP: Record<string, string> = {
   // ─── Purchasing & Inventory ───
   PurchaseOrder: "inventory/purchase-orders",
   PurchaseOrderItem: "inventory/purchase-order-items",
+  PurchaseRequisition: "procurement/requisitions",
+  PurchaseRequisitionItem: "procurement/requisition-items",
   Shipment: "shipments/shipment",
   ShipmentItem: "shipments/shipment-items",
   InventoryTransaction: "inventory/transactions",
