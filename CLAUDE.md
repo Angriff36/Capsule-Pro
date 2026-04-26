@@ -148,7 +148,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[Emergency bridge — running bridge was not updated]
-Files: IMPLEMENTATION_PLAN.md (edit)
+[auto-bridge snapshot @ 10 changes]
+Files: apps/api/app/api/kitchen/waste-entries/[id]/route.ts (edit), apps/api/app/api/kitchen/stations/[id]/route.ts (edit), apps/api/app/api/kitchen/recipes/[id]/route.ts (edit), apps/api/app/api/kitchen/recipe-versions/[id]/route.ts (edit), apps/api/app/api/kitchen/recipe-ingredients/[id]/route.ts (edit), apps/api/app/api/kitchen/prep-tasks/[id]/route.ts (edit), apps/api/app/api/kitchen/prep-task-plan-workflows/[id]/route.ts (edit), apps/api/app/api/kitchen/prep-methods/[id]/route.ts (edit), apps/api/app/api/kitchen/prep-list-items/[id]/route.ts (edit), apps/api/app/api/kitchen/prep-comments/[id]/route.ts (edit)
 
 # === END COGNILAYER ===

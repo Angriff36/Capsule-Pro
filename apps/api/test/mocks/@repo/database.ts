@@ -99,6 +99,23 @@ export const database: Record<string, unknown> = {
   inventoryTransaction: createMockModel(),
   // Event model for forecasting tests
   event: createMockModel(),
+  // Event budget models
+  eventBudget: createMockModel(),
+  budgetLineItem: createMockModel(),
+  // Procurement models
+  purchaseRequisition: createMockModel(),
+  purchaseRequisitionItem: createMockModel(),
+  purchaseOrder: createMockModel(),
+  purchaseOrderItem: createMockModel(),
+  inventorySupplier: createMockModel(),
+  vendorContact: createMockModel(),
+  vendorRating: createMockModel(),
+  vendorCatalog: createMockModel(),
+  vendorContract: createMockModel(),
+  // User model for auth resolution
+  user: createMockModel(),
+  // Tenant model
+  tenant: createMockModel(),
 };
 
 // Mock tenantDatabase function

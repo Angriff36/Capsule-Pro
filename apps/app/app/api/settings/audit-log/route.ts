@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
@@ -49,60 +50,43 @@ export async function GET(request: NextRequest): Promise<Response> {
   const filterStartDate = searchParams.get("startDate");
   const filterEndDate = searchParams.get("endDate");
 
-  // Build WHERE conditions
-  const conditions: string[] = ["tenant_id = $1"];
-  const params: unknown[] = [tenantId];
-  let paramIndex = 2;
+  // Build WHERE conditions using Prisma.sql fragments
+  const conditions: Prisma.Sql[] = [Prisma.sql`tenant_id = ${tenantId}`];
 
   if (filterUserId) {
-    conditions.push(`user_id = $${paramIndex}`);
-    params.push(filterUserId);
-    paramIndex++;
+    conditions.push(Prisma.sql`user_id = ${filterUserId}`);
   }
 
   if (filterAction) {
-    conditions.push(`action = $${paramIndex}`);
-    params.push(filterAction.toUpperCase());
-    paramIndex++;
+    conditions.push(Prisma.sql`action = ${filterAction.toUpperCase()}`);
   }
 
   if (filterEntityType) {
-    conditions.push(`entity_type = $${paramIndex}`);
-    params.push(filterEntityType);
-    paramIndex++;
+    conditions.push(Prisma.sql`entity_type = ${filterEntityType}`);
   }
 
   if (filterStartDate) {
-    conditions.push(`created_at >= $${paramIndex}`);
-    params.push(new Date(filterStartDate));
-    paramIndex++;
+    conditions.push(Prisma.sql`created_at >= ${new Date(filterStartDate)}`);
   }
 
   if (filterEndDate) {
-    conditions.push(`created_at <= $${paramIndex}`);
-    params.push(new Date(filterEndDate));
-    paramIndex++;
+    conditions.push(Prisma.sql`created_at <= ${new Date(filterEndDate)}`);
   }
 
-  const whereClause = conditions.join(" AND ");
+  const whereClause = Prisma.join(conditions, " AND ");
 
   // Execute count query
-  const countQuery = `
+  const countResult = await database.$queryRaw<CountRow[]>`
     SELECT COUNT(*)::text as count
     FROM "tenant_admin"."audit_log"
     WHERE ${whereClause}
   `;
 
-  const countResult = await database.$queryRawUnsafe<CountRow[]>(
-    countQuery,
-    ...params
-  );
-
   const total = Number.parseInt(countResult[0]?.count || "0", 10);
 
   // Execute data query
-  const dataQuery = `
-    SELECT 
+  const rows = await database.$queryRaw<AuditLogRow[]>`
+    SELECT
       id,
       user_id,
       user_email,
@@ -117,15 +101,8 @@ export async function GET(request: NextRequest): Promise<Response> {
     FROM "tenant_admin"."audit_log"
     WHERE ${whereClause}
     ORDER BY created_at DESC
-    LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+    LIMIT ${limit} OFFSET ${offset}
   `;
-
-  params.push(limit, offset);
-
-  const rows = await database.$queryRawUnsafe<AuditLogRow[]>(
-    dataQuery,
-    ...params
-  );
 
   return NextResponse.json({
     data: rows.map((row) => ({

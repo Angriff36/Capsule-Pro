@@ -156,7 +156,7 @@ export async function GET(
     const unitsResult = await database.$queryRaw<
       { id: number; name: string }[]
     >`
-      SELECT id, name FROM core.units WHERE id IN (${unitIds.join(",")}::int2)
+      SELECT id, name FROM core.units WHERE id = ANY(${unitIds}::int2[])
     `;
     const unitMap = new Map(unitsResult.map((u) => [u.id, u.name]));
 

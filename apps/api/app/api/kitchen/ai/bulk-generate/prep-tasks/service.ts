@@ -51,6 +51,7 @@ async function getGenerationContext(
     SELECT dish_id, course, quantity_servings
     FROM tenant_events.event_dishes
     WHERE event_id = ${eventId}::uuid
+      AND tenant_id = ${tenantId}::uuid
       AND deleted_at IS NULL
   `;
 

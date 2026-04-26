@@ -1,5 +1,6 @@
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { Prisma } from "@repo/database";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -127,35 +128,26 @@ const AuditLogPage = async ({
   const tenantId = await getTenantIdForOrg(orgId);
   const params = await searchParams;
 
-  // Build filter conditions
-  const conditions: string[] = ["tenant_id = $1"];
-  const queryParams: unknown[] = [tenantId];
-  let paramIndex = 2;
+  // Build filter conditions using Prisma.sql fragments
+  const conditions: Prisma.Sql[] = [Prisma.sql`tenant_id = ${tenantId}`];
 
   if (params.userId) {
-    conditions.push(`user_id = $${paramIndex}`);
-    queryParams.push(params.userId);
-    paramIndex++;
+    conditions.push(Prisma.sql`user_id = ${params.userId}`);
   }
 
   if (params.action) {
-    conditions.push(`action = $${paramIndex}`);
-    queryParams.push(params.action.toUpperCase());
-    paramIndex++;
+    conditions.push(Prisma.sql`action = ${params.action.toUpperCase()}`);
   }
 
   if (params.entityType) {
-    conditions.push(`entity_type = $${paramIndex}`);
-    queryParams.push(params.entityType);
-    paramIndex++;
+    conditions.push(Prisma.sql`entity_type = ${params.entityType}`);
   }
 
-  const whereClause = conditions.join(" AND ");
+  const whereClause = Prisma.join(conditions, " AND ");
 
   // Fetch audit logs
-  const auditLogs = await database.$queryRawUnsafe<AuditLogRow[]>(
-    `
-    SELECT 
+  const auditLogs = await database.$queryRaw<AuditLogRow[]>`
+    SELECT
       id,
       user_id,
       user_email,
@@ -171,21 +163,16 @@ const AuditLogPage = async ({
     WHERE ${whereClause}
     ORDER BY created_at DESC
     LIMIT 100
-    `,
-    ...queryParams
-  );
+  `;
 
   // Fetch users for filter dropdown
-  const users = await database.$queryRawUnsafe<UserRow[]>(
-    `
+  const users = await database.$queryRaw<UserRow[]>`
     SELECT DISTINCT u.id, u.email, u.first_name, u.last_name
     FROM "tenant"."employees" u
     INNER JOIN "tenant_admin"."audit_log" a ON a.user_id = u.id
-    WHERE a.tenant_id = $1
+    WHERE a.tenant_id = ${tenantId}
     ORDER BY u.email
-    `,
-    tenantId
-  );
+  `;
 
   // Get unique entity types for filter
   const entityTypes = [

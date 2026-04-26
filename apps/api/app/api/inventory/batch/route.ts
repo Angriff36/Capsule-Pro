@@ -10,6 +10,7 @@
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
+import { Prisma } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
@@ -150,30 +151,23 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Build dynamic SET clause via raw SQL
-      const setClauses: string[] = ["updated_at = NOW()"];
-      const params: unknown[] = [];
-      let paramIndex = 1;
+      // Build dynamic SET clause using Prisma.sql for safe parameterization
+      const setClauses: Prisma.Sql[] = [Prisma.sql`updated_at = NOW()`];
 
       if (updates.category !== undefined) {
-        setClauses.push(`category = $${paramIndex++}`);
-        params.push(updates.category);
+        setClauses.push(Prisma.sql`category = ${updates.category}`);
       }
       if (updates.fsa_status !== undefined) {
-        setClauses.push(`fsa_status = $${paramIndex++}`);
-        params.push(updates.fsa_status);
+        setClauses.push(Prisma.sql`fsa_status = ${updates.fsa_status}`);
       }
       if (updates.tags !== undefined) {
-        setClauses.push(`tags = $${paramIndex++}::jsonb`);
-        params.push(JSON.stringify(updates.tags));
+        setClauses.push(Prisma.sql`tags = ${JSON.stringify(updates.tags)}::jsonb`);
       }
       if (updates.unit_cost !== undefined) {
-        setClauses.push(`unit_cost = $${paramIndex++}::decimal(10,2)`);
-        params.push(updates.unit_cost.toString());
+        setClauses.push(Prisma.sql`unit_cost = ${updates.unit_cost}::decimal(10,2)`);
       }
       if (updates.reorder_level !== undefined) {
-        setClauses.push(`reorder_level = $${paramIndex++}::decimal(12,3)`);
-        params.push(updates.reorder_level.toString());
+        setClauses.push(Prisma.sql`reorder_level = ${updates.reorder_level}::decimal(12,3)`);
       }
 
       if (setClauses.length === 1) {
@@ -183,19 +177,16 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Append ids and tenantId as last params
-      params.push(ids);
-      params.push(tenantId);
+      // Join SET clauses with comma separation
+      const setClause = Prisma.join(setClauses, ", ");
 
-      const sql = `
+      await database.$executeRaw`
         UPDATE "tenant_inventory".inventory_items
-        SET ${setClauses.join(", ")}
-        WHERE tenant_id = $${paramIndex++}
-          AND id = ANY($${paramIndex++}::uuid[])
+        SET ${setClause}
+        WHERE tenant_id = ${tenantId}
+          AND id = ANY(${ids}::uuid[])
           AND deleted_at IS NULL
       `;
-
-      await database.$executeRawUnsafe(sql, ...params);
 
       return NextResponse.json({
         success: true,
