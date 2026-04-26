@@ -34,41 +34,45 @@ export async function POST(request: NextRequest) {
       );
 
     // Verify vendor exists
-    const existing = await database.$queryRaw`
-      SELECT id FROM tenant_inventory.inventory_suppliers
-      WHERE tenant_id = ${tenantId}::uuid AND id = ${vendorId}::uuid AND deleted_at IS NULL
-    `;
-    if (!(existing as any[]).length)
-      return manifestErrorResponse("Vendor not found", 404);
+    const existing = await database.inventorySupplier.findFirst({
+      where: { tenantId, id: vendorId, deletedAt: null },
+    });
+    if (!existing) return manifestErrorResponse("Vendor not found", 404);
 
     // If setting as primary, clear existing primary
     if (isPrimary) {
-      await database.$queryRaw`
-        UPDATE tenant_inventory.vendor_contacts
-        SET is_primary = false, updated_at = NOW()
-        WHERE tenant_id = ${tenantId}::uuid AND supplier_id = ${vendorId}::uuid AND is_primary = true
-      `;
+      await database.vendorContact.updateMany({
+        where: { tenantId, supplierId: vendorId, isPrimary: true },
+        data: { isPrimary: false, updatedAt: new Date() },
+      });
     }
 
-    const result = await database.$queryRaw`
-      INSERT INTO tenant_inventory.vendor_contacts (
-        tenant_id, supplier_id, contact_name, contact_email, contact_phone,
-        contact_role, is_primary, notes
-      ) VALUES (
-        ${tenantId}::uuid, ${vendorId}::uuid, ${contactName},
-        ${contactEmail || null}, ${contactPhone || null},
-        ${contactRole || null}, ${isPrimary}, ${notes || null}
-      )
-      RETURNING id, contact_name, contact_email, contact_phone, contact_role, is_primary, created_at
-    `;
+    const contact = await database.vendorContact.create({
+      data: {
+        tenantId,
+        supplierId: vendorId,
+        contactName,
+        contactEmail: contactEmail || null,
+        contactPhone: contactPhone || null,
+        contactRole: contactRole || null,
+        isPrimary: isPrimary ?? false,
+        notes: notes || null,
+      },
+    });
 
-    const contact = (result as any[])[0];
-    if (!contact) return manifestErrorResponse("Failed to create contact", 500);
-
-    return manifestSuccessResponse({ contact });
+    return manifestSuccessResponse({
+      contact: {
+        id: contact.id,
+        contact_name: contact.contactName,
+        contact_email: contact.contactEmail,
+        contact_phone: contact.contactPhone,
+        contact_role: contact.contactRole,
+        is_primary: contact.isPrimary,
+        created_at: contact.createdAt,
+      },
+    });
   } catch (error) {
     captureException(error);
-    console.error("Error adding vendor contact:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

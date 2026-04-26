@@ -25,10 +25,7 @@ export async function POST(request: NextRequest) {
       return manifestErrorResponse("At least one item is required", 400);
 
     // Generate PO number
-    const countResult = await database.$queryRaw`
-      SELECT COUNT(*)::int as count FROM tenant_inventory.purchase_orders WHERE tenant_id = ${tenantId}
-    `;
-    const count = (countResult as any[])[0]?.count || 0;
+    const count = await database.purchaseOrder.count({ where: { tenantId } });
     const poNumber = `PO-${new Date().getFullYear()}-${String(count + 1).padStart(4, "0")}`;
 
     // Calculate totals
@@ -38,41 +35,53 @@ export async function POST(request: NextRequest) {
     }
     const total = subtotal; // Tax/shipping can be added later
 
-    // Create PO
-    const poResult = await database.$queryRaw`
-      INSERT INTO tenant_inventory.purchase_orders (
-        tenant_id, po_number, vendor_id, location_id, status, subtotal, total,
-        notes, expected_delivery_date, submitted_by, submitted_at
-      ) VALUES (
-        ${tenantId}::uuid, ${poNumber}, ${vendorId}::uuid, ${locationId || null}::uuid,
-        'submitted', ${subtotal}::decimal(12,2), ${total}::decimal(12,2),
-        ${notes || null}, ${expectedDeliveryDate ? new Date(expectedDeliveryDate) : null}::date,
-        ${userId}::uuid, NOW()
-      )
-      RETURNING id, po_number, status, subtotal, total, created_at
-    `;
+    // Create PO with items in a transaction
+    const po = await database.purchaseOrder.create({
+      data: {
+        tenantId,
+        poNumber,
+        vendorId,
+        locationId: locationId || null,
+        status: "submitted",
+        subtotal,
+        total,
+        notes: notes || null,
+        expectedDeliveryDate: expectedDeliveryDate
+          ? new Date(expectedDeliveryDate)
+          : null,
+        submittedBy: userId,
+        submittedAt: new Date(),
+        items: {
+          create: items.map((item: Record<string, unknown>) => {
+            const itemTotal =
+              Number(item.quantityOrdered) * Number(item.unitCost);
+            return {
+              tenantId,
+              itemId: item.itemId as string,
+              quantityOrdered: Number(item.quantityOrdered),
+              unitId: (item.unitId as number) || 1,
+              unitCost: Number(item.unitCost),
+              totalCost: itemTotal,
+            };
+          }),
+        },
+      },
+    });
 
-    const po = (poResult as any[])[0];
     if (!po) return manifestErrorResponse("Failed to create PO", 500);
 
-    // Create line items
-    for (const item of items) {
-      const itemTotal = Number(item.quantityOrdered) * Number(item.unitCost);
-      await database.$queryRaw`
-        INSERT INTO tenant_inventory.purchase_order_items (
-          tenant_id, purchase_order_id, item_id, quantity_ordered, unit_id, unit_cost, total_cost
-        ) VALUES (
-          ${tenantId}::uuid, ${po.id}::uuid, ${item.itemId}::uuid,
-          ${item.quantityOrdered}::decimal(10,2), ${item.unitId || 1},
-          ${item.unitCost}::decimal(10,4), ${itemTotal}::decimal(12,2)
-        )
-      `;
-    }
-
-    return manifestSuccessResponse({ order: po });
+    return manifestSuccessResponse({
+      order: {
+        id: po.id,
+        po_number: po.poNumber,
+        status: po.status,
+        subtotal: po.subtotal.toNumber(),
+        total: po.total.toNumber(),
+        created_at: po.createdAt,
+      },
+    });
   } catch (error) {
     captureException(error);
-    console.error("Error creating purchase order:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

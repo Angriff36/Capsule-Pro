@@ -22,60 +22,100 @@ export async function GET(
 
     const { id } = await params;
 
-    const vendors = await database.$queryRawUnsafe(
-      `
-      SELECT * FROM tenant_inventory.inventory_suppliers
-      WHERE tenant_id = $1::uuid AND id = $2::uuid AND deleted_at IS NULL
-    `,
-      tenantId,
-      id
-    );
+    const vendor = await database.inventorySupplier.findFirst({
+      where: { tenantId, id, deletedAt: null },
+    });
 
-    if (!(vendors as any[]).length)
-      return manifestErrorResponse("Vendor not found", 404);
-    const vendor = (vendors as any[])[0];
+    if (!vendor) return manifestErrorResponse("Vendor not found", 404);
 
-    const contacts = await database.$queryRawUnsafe(
-      `
-      SELECT * FROM tenant_inventory.vendor_contacts
-      WHERE tenant_id = $1::uuid AND supplier_id = $2::uuid AND deleted_at IS NULL
-      ORDER BY is_primary DESC, contact_name
-    `,
-      tenantId,
-      id
-    );
+    const contacts = await database.vendorContact.findMany({
+      where: { tenantId, supplierId: id, deletedAt: null },
+      orderBy: [{ isPrimary: "desc" }, { contactName: "asc" }],
+    });
 
-    const ratings = await database.$queryRawUnsafe(
-      `
-      SELECT r.*, a.name as rated_by_name
-      FROM tenant_inventory.vendor_ratings r
-      LEFT JOIN platform.accounts a ON a.id = r.rated_by
-      WHERE r.tenant_id = $1::uuid AND r.supplier_id = $2::uuid AND r.deleted_at IS NULL
-      ORDER BY r.created_at DESC
-      LIMIT 20
-    `,
-      tenantId,
-      id
-    );
+    const ratings = await database.vendorRating.findMany({
+      where: { tenantId, supplierId: id, deletedAt: null },
+      orderBy: { createdAt: "desc" },
+      take: 20,
+      include: {
+        tenant: {
+          select: { name: true },
+        },
+      },
+    });
 
-    const catalogCount = await database.$queryRawUnsafe(
-      `
-      SELECT COUNT(*)::int as count FROM tenant_inventory.vendor_catalogs
-      WHERE tenant_id = $1::uuid AND supplier_id = $2::uuid AND deleted_at IS NULL AND is_active = true
-    `,
-      tenantId,
-      id
-    );
+    const catalogItemCount = await database.vendorCatalog.count({
+      where: {
+        tenantId,
+        supplierId: id,
+        deletedAt: null,
+        isActive: true,
+      },
+    });
+
+    // Map vendor to snake_case (all fields)
+    const vendorSnake = {
+      id: vendor.id,
+      supplier_number: vendor.supplier_number,
+      name: vendor.name,
+      contact_person: vendor.contact_person,
+      email: vendor.email,
+      phone: vendor.phone,
+      payment_terms: vendor.payment_terms,
+      address_line1: vendor.addressLine1,
+      address_line2: vendor.addressLine2,
+      city: vendor.city,
+      state: vendor.state,
+      postal_code: vendor.postalCode,
+      country: vendor.country,
+      tax_id: vendor.taxId,
+      website: vendor.website,
+      performance_rating: vendor.performanceRating?.toNumber?.() ?? null,
+      notes: vendor.notes,
+      tags: vendor.tags,
+      connector_type: vendor.connectorType,
+      connector_credentials: vendor.connectorCredentials,
+      created_at: vendor.createdAt,
+      updated_at: vendor.updatedAt,
+    };
+
+    // Map contacts to snake_case
+    const contactsSnake = contacts.map((c) => ({
+      id: c.id,
+      tenant_id: c.tenantId,
+      supplier_id: c.supplierId,
+      contact_name: c.contactName,
+      contact_email: c.contactEmail,
+      contact_phone: c.contactPhone,
+      contact_role: c.contactRole,
+      is_primary: c.isPrimary,
+      notes: c.notes,
+      created_at: c.createdAt,
+      updated_at: c.updatedAt,
+    }));
+
+    // Map ratings to snake_case with rated_by_name
+    const ratingsSnake = ratings.map((r) => ({
+      id: r.id,
+      tenant_id: r.tenantId,
+      supplier_id: r.supplierId,
+      category: r.category,
+      rating: r.rating,
+      comment: r.comment,
+      rated_by: r.ratedBy,
+      rated_by_name: r.tenant.name,
+      created_at: r.createdAt,
+      updated_at: r.updatedAt,
+    }));
 
     return manifestSuccessResponse({
-      vendor,
-      contacts,
-      ratings,
-      catalogItemCount: (catalogCount as any[])[0]?.count || 0,
+      vendor: vendorSnake,
+      contacts: contactsSnake,
+      ratings: ratingsSnake,
+      catalogItemCount,
     });
   } catch (error) {
     captureException(error);
-    console.error("Error fetching vendor:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

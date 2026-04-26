@@ -25,11 +25,11 @@ export async function GET(
 
     const { id } = await params;
 
-    const recipeStep = await database.recipeStep.findUnique({
+    const recipeStep = await database.recipe_steps.findFirst({
       where: {
         id,
-        tenantId,
-        deletedAt: null
+        tenant_id: tenantId,
+        deleted_at: null
       },
     });
 

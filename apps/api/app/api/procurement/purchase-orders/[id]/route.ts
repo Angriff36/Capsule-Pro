@@ -22,39 +22,88 @@ export async function GET(
 
     const { id } = await params;
 
-    const orders = await database.$queryRawUnsafe(
-      `
-      SELECT
-        po.*, v.name as vendor_name
-      FROM tenant_inventory.purchase_orders po
-      LEFT JOIN tenant_inventory.inventory_suppliers v ON v.id = po.vendor_id
-      WHERE po.tenant_id = $1::uuid AND po.id = $2::uuid AND po.deleted_at IS NULL
-    `,
-      tenantId,
-      id
-    );
+    const po = await database.purchaseOrder.findFirst({
+      where: { tenantId, id, deletedAt: null },
+    });
 
-    if (!(orders as any[]).length)
-      return manifestErrorResponse("PO not found", 404);
+    if (!po) return manifestErrorResponse("PO not found", 404);
 
-    const order = (orders as any[])[0];
+    // Get vendor name
+    const vendor = po.vendorId
+      ? await database.inventorySupplier.findFirst({
+          where: { id: po.vendorId },
+          select: { name: true },
+        })
+      : null;
 
-    const items = await database.$queryRawUnsafe(
-      `
-      SELECT poi.*, ii.name as item_name, ii.item_number, ii.unit_of_measure
-      FROM tenant_inventory.purchase_order_items poi
-      LEFT JOIN tenant_inventory.inventory_items ii ON ii.id = poi.item_id
-      WHERE poi.tenant_id = $1::uuid AND poi.purchase_order_id = $2::uuid AND poi.deleted_at IS NULL
-      ORDER BY poi.created_at
-    `,
-      tenantId,
-      id
-    );
+    // Get PO items with inventory item details
+    const items = await database.purchaseOrderItem.findMany({
+      where: { tenantId, purchaseOrderId: id, deletedAt: null },
+      orderBy: { createdAt: "asc" },
+    });
 
-    return manifestSuccessResponse({ order, items });
+    // Batch-fetch inventory item details for the PO items
+    const itemIds = items.map((i) => i.itemId);
+    const inventoryItems = await database.inventoryItem.findMany({
+      where: { id: { in: itemIds } },
+      select: {
+        id: true,
+        name: true,
+        item_number: true,
+        unitOfMeasure: true,
+      },
+    });
+    const inventoryMap = new Map(inventoryItems.map((ii) => [ii.id, ii]));
+
+    const order = {
+      id: po.id,
+      po_number: po.poNumber,
+      vendor_id: po.vendorId,
+      location_id: po.locationId,
+      order_date: po.orderDate,
+      expected_delivery_date: po.expectedDeliveryDate,
+      actual_delivery_date: po.actualDeliveryDate,
+      status: po.status,
+      subtotal: po.subtotal.toNumber(),
+      tax_amount: po.taxAmount.toNumber(),
+      shipping_amount: po.shippingAmount.toNumber(),
+      total: po.total.toNumber(),
+      notes: po.notes,
+      submitted_by: po.submittedBy,
+      submitted_at: po.submittedAt,
+      received_by: po.receivedBy,
+      received_at: po.receivedAt,
+      created_at: po.createdAt,
+      updated_at: po.updatedAt,
+      vendor_name: vendor?.name ?? null,
+    };
+
+    const itemsMapped = items.map((poi) => {
+      const ii = inventoryMap.get(poi.itemId);
+      return {
+        id: poi.id,
+        purchase_order_id: poi.purchaseOrderId,
+        item_id: poi.itemId,
+        quantity_ordered: poi.quantityOrdered.toNumber(),
+        quantity_received: poi.quantityReceived.toNumber(),
+        unit_id: poi.unitId,
+        unit_cost: poi.unitCost.toNumber(),
+        total_cost: poi.totalCost.toNumber(),
+        quality_status: poi.qualityStatus,
+        discrepancy_type: poi.discrepancyType,
+        discrepancy_amount: poi.discrepancyAmount?.toNumber() ?? null,
+        notes: poi.notes,
+        created_at: poi.createdAt,
+        updated_at: poi.updatedAt,
+        item_name: ii?.name ?? null,
+        item_number: ii?.item_number ?? null,
+        unit_of_measure: ii?.unitOfMeasure ?? null,
+      };
+    });
+
+    return manifestSuccessResponse({ order, items: itemsMapped });
   } catch (error) {
     captureException(error);
-    console.error("Error fetching purchase order:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

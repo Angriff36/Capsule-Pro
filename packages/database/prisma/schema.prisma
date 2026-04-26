@@ -1723,6 +1723,15 @@ model InventorySupplier {
   payment_terms        String            @default("NET_30")
   connectorType        String?           @map("connector_type")
   connectorCredentials Json              @default("{}") @map("connector_credentials") @db.JsonB
+  addressLine1         String?           @map("address_line1")
+  addressLine2         String?           @map("address_line2")
+  city                 String?
+  state                String?
+  postalCode           String?           @map("postal_code")
+  country              String            @default("US")
+  taxId                String?           @map("tax_id")
+  website              String?
+  performanceRating    Decimal?          @map("performance_rating") @db.Decimal(2, 1)
   notes                String?
   tags                 String[]          @default([])
   createdAt            DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
@@ -1734,6 +1743,7 @@ model InventorySupplier {
   syncLogs             SupplierSyncLog[]
   vendorContacts       VendorContact[]
   vendorRatings        VendorRating[]
+  vendorCatalogs       VendorCatalog[]
 
   @@id([tenantId, id])
   @@unique([tenantId, id])
@@ -5273,6 +5283,8 @@ model VendorCatalog {
   createdAt            DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt            DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt            DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  supplier InventorySupplier @relation(fields: [supplierId, tenantId], references: [id, tenantId], onDelete: Cascade)
 
   @@id([tenantId, id])
   @@unique([tenantId, supplierId, itemNumber])

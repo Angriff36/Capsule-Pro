@@ -38,50 +38,57 @@ export async function POST(request: NextRequest) {
       return manifestErrorResponse("rating must be 1-5", 400);
 
     // Verify vendor exists
-    const existing = await database.$queryRaw`
-      SELECT id FROM tenant_inventory.inventory_suppliers
-      WHERE tenant_id = ${tenantId}::uuid AND id = ${vendorId}::uuid AND deleted_at IS NULL
-    `;
-    if (!(existing as any[]).length)
-      return manifestErrorResponse("Vendor not found", 404);
+    const existing = await database.inventorySupplier.findFirst({
+      where: { tenantId, id: vendorId, deletedAt: null },
+    });
+    if (!existing) return manifestErrorResponse("Vendor not found", 404);
 
     // Insert rating
-    const result = await database.$queryRaw`
-      INSERT INTO tenant_inventory.vendor_ratings (
-        tenant_id, supplier_id, category, rating, comment, rated_by
-      ) VALUES (
-        ${tenantId}::uuid, ${vendorId}::uuid, ${category}, ${rating}::smallint,
-        ${comment || null}, ${userId}::uuid
-      )
-      RETURNING id, category, rating, comment, created_at
-    `;
-
-    const vendorRating = (result as any[])[0];
+    const vendorRating = await database.vendorRating.create({
+      data: {
+        tenantId,
+        supplierId: vendorId,
+        category,
+        rating,
+        comment: comment || null,
+        ratedBy: userId,
+      },
+    });
 
     // Update aggregate performance_rating on the vendor (average of all "overall" ratings)
-    const avgResult = await database.$queryRawUnsafe(
-      `
-      SELECT ROUND(AVG(rating)::decimal, 1) as avg_rating
-      FROM tenant_inventory.vendor_ratings
-      WHERE tenant_id = $1::uuid AND supplier_id = $2::uuid AND deleted_at IS NULL AND category = 'overall'
-    `,
-      tenantId,
-      vendorId
-    );
+    if (category === "overall") {
+      const overallRatings = await database.vendorRating.findMany({
+        where: {
+          tenantId,
+          supplierId: vendorId,
+          deletedAt: null,
+          category: "overall",
+        },
+        select: { rating: true },
+      });
 
-    const avgRating = (avgResult as any[])[0]?.avg_rating;
-    if (avgRating !== null) {
-      await database.$queryRaw`
-        UPDATE tenant_inventory.inventory_suppliers
-        SET performance_rating = ${avgRating}::decimal(2,1), updated_at = NOW()
-        WHERE tenant_id = ${tenantId}::uuid AND id = ${vendorId}::uuid
-      `;
+      if (overallRatings.length > 0) {
+        const avg =
+          overallRatings.reduce((sum, r) => sum + r.rating, 0) /
+          overallRatings.length;
+        await database.inventorySupplier.update({
+          where: { tenantId_id: { tenantId, id: vendorId } },
+          data: { performanceRating: Math.round(avg * 10) / 10 },
+        });
+      }
     }
 
-    return manifestSuccessResponse({ rating: vendorRating });
+    return manifestSuccessResponse({
+      rating: {
+        id: vendorRating.id,
+        category: vendorRating.category,
+        rating: vendorRating.rating,
+        comment: vendorRating.comment,
+        created_at: vendorRating.createdAt,
+      },
+    });
   } catch (error) {
     captureException(error);
-    console.error("Error adding vendor rating:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

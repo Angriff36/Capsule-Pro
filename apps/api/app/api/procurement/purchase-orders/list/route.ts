@@ -20,41 +20,66 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get("status");
 
-    let statusFilter = "";
-    const params: any[] = [tenantId];
+    const whereClause: Record<string, unknown> = {
+      tenantId,
+      deletedAt: null,
+    };
     if (status && status !== "all") {
-      statusFilter = "AND po.status = $2";
-      params.push(status);
+      whereClause.status = status;
     }
 
-    const orders = await database.$queryRawUnsafe(
-      `
-      SELECT
-        po.id, po.po_number, po.vendor_id, po.location_id, po.order_date,
-        po.expected_delivery_date, po.actual_delivery_date, po.status,
-        po.subtotal, po.tax_amount, po.shipping_amount, po.total,
-        po.notes, po.submitted_at, po.received_at, po.created_at,
-        v.name as vendor_name,
-        COUNT(poi.id)::int as item_count,
-        SUM(CASE WHEN poi.quantity_received < poi.quantity_ordered THEN 1 ELSE 0 END)::int as pending_items
-      FROM tenant_inventory.purchase_orders po
-      LEFT JOIN tenant_inventory.inventory_suppliers v ON v.id = po.vendor_id
-      LEFT JOIN tenant_inventory.purchase_order_items poi ON poi.purchase_order_id = po.id AND poi.deleted_at IS NULL
-      WHERE po.tenant_id = $1::uuid AND po.deleted_at IS NULL
-        ${statusFilter}
-      GROUP BY po.id, po.po_number, po.vendor_id, po.location_id, po.order_date,
-        po.expected_delivery_date, po.actual_delivery_date, po.status,
-        po.subtotal, po.tax_amount, po.shipping_amount, po.total,
-        po.notes, po.submitted_at, po.received_at, po.created_at, v.name
-      ORDER BY po.order_date DESC, po.created_at DESC
-    `,
-      ...params
-    );
+    const orders = await database.purchaseOrder.findMany({
+      where: whereClause,
+      orderBy: [{ orderDate: "desc" }, { createdAt: "desc" }],
+      include: {
+        items: {
+          where: { deletedAt: null },
+          select: {
+            id: true,
+            quantityReceived: true,
+            quantityOrdered: true,
+          },
+        },
+      },
+    });
 
-    return manifestSuccessResponse({ orders });
+    // Collect vendor IDs for batch lookup
+    const vendorIds = [
+      ...new Set(orders.map((o) => o.vendorId).filter(Boolean)),
+    ];
+    const vendors = await database.inventorySupplier.findMany({
+      where: { id: { in: vendorIds } },
+      select: { id: true, name: true },
+    });
+    const vendorMap = new Map(vendors.map((v) => [v.id, v.name]));
+
+    const ordersMapped = orders.map((po) => ({
+      id: po.id,
+      po_number: po.poNumber,
+      vendor_id: po.vendorId,
+      location_id: po.locationId,
+      order_date: po.orderDate,
+      expected_delivery_date: po.expectedDeliveryDate,
+      actual_delivery_date: po.actualDeliveryDate,
+      status: po.status,
+      subtotal: po.subtotal.toNumber(),
+      tax_amount: po.taxAmount.toNumber(),
+      shipping_amount: po.shippingAmount.toNumber(),
+      total: po.total.toNumber(),
+      notes: po.notes,
+      submitted_at: po.submittedAt,
+      received_at: po.receivedAt,
+      created_at: po.createdAt,
+      vendor_name: vendorMap.get(po.vendorId) ?? null,
+      item_count: po.items.length,
+      pending_items: po.items.filter(
+        (i) => i.quantityReceived.lessThan(i.quantityOrdered)
+      ).length,
+    }));
+
+    return manifestSuccessResponse({ orders: ordersMapped });
   } catch (error) {
     captureException(error);
-    console.error("Error listing purchase orders:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

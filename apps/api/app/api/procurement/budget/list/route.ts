@@ -9,6 +9,48 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 
+function mapBudgetToSnake(b: {
+  id: string;
+  name: string;
+  description: string | null;
+  category: string | null;
+  fiscalYear: number;
+  periodType: string;
+  periodStart: Date | null;
+  periodEnd: Date | null;
+  budgetAmount: { toNumber(): number };
+  spentAmount: { toNumber(): number };
+  committedAmount: { toNumber(): number };
+  thresholdWarningPct: number;
+  thresholdCriticalPct: number;
+  status: string;
+  notes: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt: Date | null;
+}) {
+  return {
+    id: b.id,
+    name: b.name,
+    description: b.description,
+    category: b.category,
+    fiscal_year: b.fiscalYear,
+    period_type: b.periodType,
+    period_start: b.periodStart,
+    period_end: b.periodEnd,
+    budget_amount: b.budgetAmount.toNumber(),
+    spent_amount: b.spentAmount.toNumber(),
+    committed_amount: b.committedAmount.toNumber(),
+    threshold_warning_pct: b.thresholdWarningPct,
+    threshold_critical_pct: b.thresholdCriticalPct,
+    status: b.status,
+    notes: b.notes,
+    created_at: b.createdAt,
+    updated_at: b.updatedAt,
+    deleted_at: b.deletedAt,
+  };
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { orgId, userId } = await auth();
@@ -21,36 +63,37 @@ export async function GET(request: NextRequest) {
     const fiscalYear = searchParams.get("fiscalYear");
     const status = searchParams.get("status") || "active";
 
-    const budgets = await database.$queryRawUnsafe(
-      `
-      SELECT
-        b.*,
-        COALESCE(a.unacknowledged_alerts, 0)::int as unacknowledged_alert_count
-      FROM tenant_inventory.procurement_budgets b
-      LEFT JOIN LATERAL (
-        SELECT COUNT(*) as unacknowledged_alerts
-        FROM tenant_inventory.procurement_budget_alerts ba
-        WHERE ba.budget_id = b.id AND ba.tenant_id = b.tenant_id
-          AND ba.is_acknowledged = false AND ba.deleted_at IS NULL
-      ) a ON true
-      WHERE b.tenant_id = $1::uuid AND b.deleted_at IS NULL
-        ${status !== "all" ? "AND b.status = $2" : ""}
-        ${fiscalYear ? (status !== "all" ? "AND b.fiscal_year = $3" : "AND b.fiscal_year = $2") : ""}
-      ORDER BY b.category NULLS LAST, b.name
-    `,
-      fiscalYear
-        ? status !== "all"
-          ? [tenantId, status, Number.parseInt(fiscalYear)]
-          : [tenantId, Number.parseInt(fiscalYear)]
-        : status !== "all"
-          ? [tenantId, status]
-          : [tenantId]
-    );
+    const whereClause: Record<string, unknown> = {
+      tenantId,
+      deletedAt: null,
+    };
 
-    return manifestSuccessResponse({ budgets });
+    if (status !== "all") {
+      whereClause.status = status;
+    }
+    if (fiscalYear) {
+      whereClause.fiscalYear = Number.parseInt(fiscalYear);
+    }
+
+    const budgets = await database.procurementBudget.findMany({
+      where: whereClause,
+      orderBy: [{ category: { sort: "asc", nulls: "last" } }, { name: "asc" }],
+      include: {
+        alerts: {
+          where: { isAcknowledged: false, deletedAt: null },
+          select: { id: true },
+        },
+      },
+    });
+
+    const budgetsMapped = budgets.map((b) => ({
+      ...mapBudgetToSnake(b),
+      unacknowledged_alert_count: b.alerts.length,
+    }));
+
+    return manifestSuccessResponse({ budgets: budgetsMapped });
   } catch (error) {
     captureException(error);
-    console.error("Error listing budgets:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

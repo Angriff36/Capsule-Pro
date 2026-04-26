@@ -148,7 +148,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[auto-bridge snapshot @ 10 changes]
-Files: apps/api/app/api/logistics/vehicles/commands/create/route.ts (create), apps/api/app/api/logistics/vehicles/list/route.ts (create), apps/api/app/api/logistics/drivers/commands/delete/route.ts (create), apps/api/app/api/logistics/dispatch/route.ts (edit), apps/api/app/api/logistics/drivers/commands/update/route.ts (create), apps/api/app/api/logistics/drivers/commands/create/route.ts (create), apps/api/app/api/logistics/drivers/list/route.ts (create)
+[Emergency bridge — running bridge was not updated]
+Files: IMPLEMENTATION_PLAN.md (edit)
 
 # === END COGNILAYER ===

@@ -36,37 +36,42 @@ export async function POST(request: NextRequest) {
 
     if (!budgetId) return manifestErrorResponse("budgetId is required", 400);
 
-    const existing = await database.$queryRaw`
-      SELECT id FROM tenant_inventory.procurement_budgets
-      WHERE tenant_id = ${tenantId}::uuid AND id = ${budgetId}::uuid AND deleted_at IS NULL
-    `;
-    if (!(existing as any[]).length)
-      return manifestErrorResponse("Budget not found", 404);
+    const existing = await database.procurementBudget.findFirst({
+      where: { tenantId, id: budgetId, deletedAt: null },
+    });
+    if (!existing) return manifestErrorResponse("Budget not found", 404);
 
-    const result = await database.$queryRaw`
-      UPDATE tenant_inventory.procurement_budgets
-      SET
-        name = ${name},
-        description = ${description !== undefined ? description : null},
-        category = ${category !== undefined ? category : null},
-        fiscal_year = ${fiscalYear ? fiscalYear : null}::int,
-        period_type = ${periodType || "annual"},
-        period_start = ${periodStart ? periodStart : null}::date,
-        period_end = ${periodEnd ? periodEnd : null}::date,
-        budget_amount = ${budgetAmount ? Number(budgetAmount) : null}::decimal(12,2),
-        threshold_warning_pct = ${thresholdWarningPct || 80}::smallint,
-        threshold_critical_pct = ${thresholdCriticalPct || 100}::smallint,
-        status = ${status || "active"},
-        notes = ${notes !== undefined ? notes : null},
-        updated_at = NOW()
-      WHERE tenant_id = ${tenantId}::uuid AND id = ${budgetId}::uuid
-      RETURNING id, name, category, fiscal_year, budget_amount, status, updated_at
-    `;
+    const budget = await database.procurementBudget.update({
+      where: { tenantId_id: { tenantId, id: budgetId } },
+      data: {
+        name,
+        description: description !== undefined ? description : null,
+        category: category !== undefined ? category : null,
+        fiscalYear: fiscalYear ? Number(fiscalYear) : existing.fiscalYear,
+        periodType: periodType || "annual",
+        periodStart: periodStart ? new Date(periodStart) : null,
+        periodEnd: periodEnd ? new Date(periodEnd) : null,
+        budgetAmount: budgetAmount ? Number(budgetAmount) : existing.budgetAmount,
+        thresholdWarningPct: thresholdWarningPct || 80,
+        thresholdCriticalPct: thresholdCriticalPct || 100,
+        status: status || "active",
+        notes: notes !== undefined ? notes : null,
+      },
+    });
 
-    return manifestSuccessResponse({ budget: (result as any[])[0] });
+    return manifestSuccessResponse({
+      budget: {
+        id: budget.id,
+        name: budget.name,
+        category: budget.category,
+        fiscal_year: budget.fiscalYear,
+        budget_amount: budget.budgetAmount.toNumber(),
+        status: budget.status,
+        updated_at: budget.updatedAt,
+      },
+    });
   } catch (error) {
     captureException(error);
-    console.error("Error updating budget:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

@@ -25,11 +25,10 @@ export async function GET(
 
     const { id } = await params;
 
-    const inventoryTransaction = await database.inventoryTransaction.findUnique({
+    const inventoryTransaction = await database.inventoryTransaction.findFirst({
       where: {
         id,
         tenantId,
-        deletedAt: null
       },
     });
 

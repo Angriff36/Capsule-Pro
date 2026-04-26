@@ -9,6 +9,28 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 
+function mapVendorToSnake(v: {
+  id: string;
+  supplier_number: string;
+  name: string;
+  contact_person: string | null;
+  email: string | null;
+  phone: string | null;
+  payment_terms: string;
+  createdAt: Date;
+}) {
+  return {
+    id: v.id,
+    supplier_number: v.supplier_number,
+    name: v.name,
+    contact_person: v.contact_person,
+    email: v.email,
+    phone: v.phone,
+    payment_terms: v.payment_terms,
+    created_at: v.createdAt,
+  };
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { orgId, userId } = await auth();
@@ -39,49 +61,50 @@ export async function POST(request: NextRequest) {
     if (!name) return manifestErrorResponse("name is required", 400);
 
     // Generate supplier number
-    const countResult = await database.$queryRaw`
-      SELECT COUNT(*)::int as count FROM tenant_inventory.inventory_suppliers WHERE tenant_id = ${tenantId}
-    `;
-    const count = (countResult as any[])[0]?.count || 0;
+    const count = await database.inventorySupplier.count({
+      where: { tenantId },
+    });
     const supplierNumber = `VND-${String(count + 1).padStart(4, "0")}`;
 
-    const result = await database.$queryRaw`
-      INSERT INTO tenant_inventory.inventory_suppliers (
-        tenant_id, supplier_number, name, contact_person, email, phone,
-        payment_terms, address_line1, address_line2, city, state, postal_code,
-        country, tax_id, website, notes, tags
-      ) VALUES (
-        ${tenantId}::uuid, ${supplierNumber}, ${name},
-        ${contactPerson || null}, ${email || null}, ${phone || null},
-        ${paymentTerms || "NET_30"},
-        ${addressLine1 || null}, ${addressLine2 || null},
-        ${city || null}, ${state || null}, ${postalCode || null},
-        ${country || "US"},
-        ${taxId || null}, ${website || null}, ${notes || null},
-        ${tags || null}::text[]
-      )
-      RETURNING id, supplier_number, name, contact_person, email, phone, payment_terms, created_at
-    `;
-
-    const vendor = (result as any[])[0];
-    if (!vendor) return manifestErrorResponse("Failed to create vendor", 500);
+    const vendor = await database.inventorySupplier.create({
+      data: {
+        tenantId,
+        supplier_number: supplierNumber,
+        name,
+        contact_person: contactPerson || null,
+        email: email || null,
+        phone: phone || null,
+        payment_terms: paymentTerms || "NET_30",
+        addressLine1: addressLine1 || null,
+        addressLine2: addressLine2 || null,
+        city: city || null,
+        state: state || null,
+        postalCode: postalCode || null,
+        country: country || "US",
+        taxId: taxId || null,
+        website: website || null,
+        notes: notes || null,
+        tags: tags || [],
+      },
+    });
 
     // If primary contact details provided, create a vendor_contact entry
     if (contactPerson && (email || phone)) {
-      await database.$queryRaw`
-        INSERT INTO tenant_inventory.vendor_contacts (
-          tenant_id, supplier_id, contact_name, contact_email, contact_phone, is_primary
-        ) VALUES (
-          ${tenantId}::uuid, ${vendor.id}::uuid, ${contactPerson},
-          ${email || null}, ${phone || null}, true
-        )
-      `;
+      await database.vendorContact.create({
+        data: {
+          tenantId,
+          supplierId: vendor.id,
+          contactName: contactPerson,
+          contactEmail: email || null,
+          contactPhone: phone || null,
+          isPrimary: true,
+        },
+      });
     }
 
-    return manifestSuccessResponse({ vendor });
+    return manifestSuccessResponse({ vendor: mapVendorToSnake(vendor) });
   } catch (error) {
     captureException(error);
-    console.error("Error creating vendor:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

@@ -20,106 +20,130 @@ export async function POST(request: NextRequest) {
     const { budgetId } = await request.json();
 
     // Get budgets to refresh
-    const budgets = await database.$queryRawUnsafe(
-      `
-      SELECT * FROM tenant_inventory.procurement_budgets
-      WHERE tenant_id = $1::uuid AND deleted_at IS NULL AND status = 'active'
-        ${budgetId ? "AND id = $2::uuid" : ""}
-    `,
-      ...(budgetId ? [tenantId, budgetId] : [tenantId])
-    );
+    const budgets = await database.procurementBudget.findMany({
+      where: {
+        tenantId,
+        deletedAt: null,
+        status: "active",
+        ...(budgetId ? { id: budgetId } : {}),
+      },
+    });
 
     let alertsGenerated = 0;
 
-    for (const budget of budgets as any[]) {
+    for (const budget of budgets) {
       if (!budget.category) continue;
 
-      // Calculate actual spend
-      const spendResult = await database.$queryRawUnsafe(
-        `
-        SELECT COALESCE(SUM(po.total), 0)::decimal(12,2) as total_spent
-        FROM tenant_inventory.purchase_orders po
-        JOIN tenant_inventory.purchase_order_items poi ON poi.purchase_order_id = po.id AND poi.tenant_id = po.tenant_id
-        JOIN tenant_inventory.inventory_items ii ON ii.id = poi.item_id AND ii.tenant_id = poi.tenant_id
-        WHERE po.tenant_id = $1::uuid AND po.deleted_at IS NULL
-          AND po.status NOT IN ('draft', 'cancelled')
-          AND ii.category = $2
-          ${budget.period_start ? "AND po.order_date >= $3" : ""}
-          ${budget.period_end ? "AND po.order_date <= $4" : ""}
-      `,
-        ...(budget.period_start && budget.period_end
-          ? [tenantId, budget.category, budget.period_start, budget.period_end]
-          : budget.period_start
-            ? [tenantId, budget.category, budget.period_start]
-            : [tenantId, budget.category])
-      );
+      // Build date filter for purchase orders
+      const poDateFilter: Record<string, unknown> = {};
+      if (budget.periodStart) {
+        poDateFilter.gte = budget.periodStart;
+      }
+      if (budget.periodEnd) {
+        poDateFilter.lte = budget.periodEnd;
+      }
 
-      const totalSpent = Number((spendResult as any[])[0]?.total_spent || 0);
-      const budgetAmount = Number(budget.budget_amount);
+      // Calculate actual spend via purchase orders in this category
+      const categoryItems = await database.inventoryItem.findMany({
+        where: { tenantId, category: budget.category, deletedAt: null },
+        select: { id: true },
+      });
+      const categoryItemIds = categoryItems.map((i) => i.id);
+
+      let totalSpent = 0;
+      if (categoryItemIds.length > 0) {
+        const spendAgg = await database.purchaseOrderItem.aggregate({
+          _sum: { totalCost: true },
+          where: {
+            tenantId,
+            deletedAt: null,
+            itemId: { in: categoryItemIds },
+            purchaseOrder: {
+              tenantId,
+              deletedAt: null,
+              status: { notIn: ["draft", "cancelled"] },
+              ...(Object.keys(poDateFilter).length > 0
+                ? { orderDate: poDateFilter }
+                : {}),
+            },
+          },
+        });
+        totalSpent = spendAgg._sum.totalCost?.toNumber() ?? 0;
+      }
+
+      const budgetAmount = budget.budgetAmount.toNumber();
       const utilizationPct =
         budgetAmount > 0
           ? Math.round((totalSpent / budgetAmount) * 10_000) / 100
           : 0;
 
       // Update budget with current spend
-      await database.$queryRaw`
-        UPDATE tenant_inventory.procurement_budgets
-        SET spent_amount = ${totalSpent}::decimal(12,2), updated_at = NOW()
-        WHERE tenant_id = ${tenantId}::uuid AND id = ${budget.id}::uuid
-      `;
+      await database.procurementBudget.update({
+        where: { tenantId_id: { tenantId, id: budget.id } },
+        data: { spentAmount: totalSpent },
+      });
 
       // Generate alerts if thresholds crossed
-      const warningPct = Number(budget.threshold_warning_pct);
-      const criticalPct = Number(budget.threshold_critical_pct);
+      const warningPct = budget.thresholdWarningPct;
+      const criticalPct = budget.thresholdCriticalPct;
 
       if (utilizationPct >= criticalPct) {
-        const existingCritical = await database.$queryRaw`
-          SELECT id FROM tenant_inventory.procurement_budget_alerts
-          WHERE tenant_id = ${tenantId}::uuid AND budget_id = ${budget.id}::uuid
-            AND alert_type = 'critical' AND utilization_pct = ${utilizationPct}::decimal(5,2)
-            AND is_acknowledged = false AND deleted_at IS NULL
-        `;
-        if (!(existingCritical as any[]).length) {
-          await database.$queryRaw`
-            INSERT INTO tenant_inventory.procurement_budget_alerts
-              (tenant_id, budget_id, alert_type, utilization_pct, message)
-            VALUES (
-              ${tenantId}::uuid, ${budget.id}::uuid, 'critical',
-              ${utilizationPct}::decimal(5,2),
-              ${`Budget "${budget.name}" has exceeded ${criticalPct}% (${utilizationPct}% utilized). Spent ${totalSpent.toFixed(2)} of ${budgetAmount.toFixed(2)}.`}
-            )
-          `;
+        const existingCritical =
+          await database.procurementBudgetAlert.findFirst({
+            where: {
+              tenantId,
+              budgetId: budget.id,
+              alertType: "critical",
+              utilizationPct: utilizationPct,
+              isAcknowledged: false,
+              deletedAt: null,
+            },
+          });
+        if (!existingCritical) {
+          await database.procurementBudgetAlert.create({
+            data: {
+              tenantId,
+              budgetId: budget.id,
+              alertType: "critical",
+              utilizationPct: utilizationPct,
+              message: `Budget "${budget.name}" has exceeded ${criticalPct}% (${utilizationPct}% utilized). Spent ${totalSpent.toFixed(2)} of ${budgetAmount.toFixed(2)}.`,
+            },
+          });
           alertsGenerated++;
         }
       } else if (utilizationPct >= warningPct) {
-        const existingWarning = await database.$queryRaw`
-          SELECT id FROM tenant_inventory.procurement_budget_alerts
-          WHERE tenant_id = ${tenantId}::uuid AND budget_id = ${budget.id}::uuid
-            AND alert_type = 'warning' AND utilization_pct = ${utilizationPct}::decimal(5,2)
-            AND is_acknowledged = false AND deleted_at IS NULL
-        `;
-        if (!(existingWarning as any[]).length) {
-          await database.$queryRaw`
-            INSERT INTO tenant_inventory.procurement_budget_alerts
-              (tenant_id, budget_id, alert_type, utilization_pct, message)
-            VALUES (
-              ${tenantId}::uuid, ${budget.id}::uuid, 'warning',
-              ${utilizationPct}::decimal(5,2),
-              ${`Budget "${budget.name}" has reached ${warningPct}% threshold (${utilizationPct}% utilized). Spent ${totalSpent.toFixed(2)} of ${budgetAmount.toFixed(2)}.`}
-            )
-          `;
+        const existingWarning =
+          await database.procurementBudgetAlert.findFirst({
+            where: {
+              tenantId,
+              budgetId: budget.id,
+              alertType: "warning",
+              utilizationPct: utilizationPct,
+              isAcknowledged: false,
+              deletedAt: null,
+            },
+          });
+        if (!existingWarning) {
+          await database.procurementBudgetAlert.create({
+            data: {
+              tenantId,
+              budgetId: budget.id,
+              alertType: "warning",
+              utilizationPct: utilizationPct,
+              message: `Budget "${budget.name}" has reached ${warningPct}% threshold (${utilizationPct}% utilized). Spent ${totalSpent.toFixed(2)} of ${budgetAmount.toFixed(2)}.`,
+            },
+          });
           alertsGenerated++;
         }
       }
     }
 
     return manifestSuccessResponse({
-      budgetsRefreshed: (budgets as any[]).length,
+      budgetsRefreshed: budgets.length,
       alertsGenerated,
     });
   } catch (error) {
     captureException(error);
-    console.error("Error refreshing budgets:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

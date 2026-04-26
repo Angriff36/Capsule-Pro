@@ -20,20 +20,21 @@ export async function POST(request: NextRequest) {
     const { budgetId } = await request.json();
     if (!budgetId) return manifestErrorResponse("budgetId is required", 400);
 
-    const result = await database.$queryRaw`
-      UPDATE tenant_inventory.procurement_budgets
-      SET deleted_at = NOW(), updated_at = NOW()
-      WHERE tenant_id = ${tenantId}::uuid AND id = ${budgetId}::uuid AND deleted_at IS NULL
-      RETURNING id, name
-    `;
+    const existing = await database.procurementBudget.findFirst({
+      where: { tenantId, id: budgetId, deletedAt: null },
+    });
+    if (!existing) return manifestErrorResponse("Budget not found", 404);
 
-    if (!(result as any[]).length)
-      return manifestErrorResponse("Budget not found", 404);
+    const budget = await database.procurementBudget.update({
+      where: { tenantId_id: { tenantId, id: budgetId } },
+      data: { deletedAt: new Date() },
+    });
 
-    return manifestSuccessResponse({ budget: (result as any[])[0] });
+    return manifestSuccessResponse({
+      budget: { id: budget.id, name: budget.name },
+    });
   } catch (error) {
     captureException(error);
-    console.error("Error deleting budget:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

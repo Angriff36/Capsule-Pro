@@ -20,13 +20,13 @@ export async function GET(request: NextRequest) {
     return manifestErrorResponse("Tenant not found", 400);
   }
 
-const emailTemplates = await database.emailTemplate.findMany({
+const emailTemplates = await database.email_templates.findMany({
     where: {
-        tenantId,
-        deletedAt: null
+        tenant_id: tenantId,
+        deleted_at: null
       },
     orderBy: {
-      createdAt: "desc",
+      created_at: "desc",
     },
   });
 

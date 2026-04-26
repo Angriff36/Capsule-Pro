@@ -32,33 +32,34 @@ export async function POST(request: NextRequest) {
       return manifestErrorResponse("orderId and status required", 400);
 
     // Verify current status allows transition
-    const current = await database.$queryRaw`
-      SELECT status FROM tenant_inventory.purchase_orders
-      WHERE tenant_id = ${tenantId}::uuid AND id = ${orderId}::uuid AND deleted_at IS NULL
-    `;
-    if (!(current as any[]).length)
-      return manifestErrorResponse("PO not found", 404);
+    const current = await database.purchaseOrder.findFirst({
+      where: { tenantId, id: orderId, deletedAt: null },
+      select: { status: true },
+    });
+    if (!current) return manifestErrorResponse("PO not found", 404);
 
-    const currentStatus = (current as any[])[0].status;
-    const allowed = VALID_TRANSITIONS[currentStatus] || [];
+    const allowed = VALID_TRANSITIONS[current.status] || [];
     if (!allowed.includes(status)) {
       return manifestErrorResponse(
-        `Cannot transition from ${currentStatus} to ${status}`,
+        `Cannot transition from ${current.status} to ${status}`,
         400
       );
     }
 
-    const result = await database.$queryRaw`
-      UPDATE tenant_inventory.purchase_orders
-      SET status = ${status}, updated_at = NOW()
-      WHERE tenant_id = ${tenantId}::uuid AND id = ${orderId}::uuid
-      RETURNING id, po_number, status
-    `;
+    const order = await database.purchaseOrder.update({
+      where: { tenantId_id: { tenantId, id: orderId } },
+      data: { status },
+    });
 
-    return manifestSuccessResponse({ order: (result as any[])[0] });
+    return manifestSuccessResponse({
+      order: {
+        id: order.id,
+        po_number: order.poNumber,
+        status: order.status,
+      },
+    });
   } catch (error) {
     captureException(error);
-    console.error("Error updating PO status:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

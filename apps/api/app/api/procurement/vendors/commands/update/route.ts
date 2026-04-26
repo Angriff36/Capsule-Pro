@@ -9,6 +9,28 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 
+function mapVendorToSnake(v: {
+  id: string;
+  supplier_number: string;
+  name: string;
+  contact_person: string | null;
+  email: string | null;
+  phone: string | null;
+  payment_terms: string;
+  updatedAt: Date;
+}) {
+  return {
+    id: v.id,
+    supplier_number: v.supplier_number,
+    name: v.name,
+    contact_person: v.contact_person,
+    email: v.email,
+    phone: v.phone,
+    payment_terms: v.payment_terms,
+    updated_at: v.updatedAt,
+  };
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { orgId, userId } = await auth();
@@ -41,41 +63,38 @@ export async function POST(request: NextRequest) {
     if (!vendorId) return manifestErrorResponse("vendorId is required", 400);
 
     // Verify vendor exists
-    const existing = await database.$queryRaw`
-      SELECT id FROM tenant_inventory.inventory_suppliers
-      WHERE tenant_id = ${tenantId}::uuid AND id = ${vendorId}::uuid AND deleted_at IS NULL
-    `;
-    if (!(existing as any[]).length)
-      return manifestErrorResponse("Vendor not found", 404);
+    const existing = await database.inventorySupplier.findFirst({
+      where: { tenantId, id: vendorId, deletedAt: null },
+    });
+    if (!existing) return manifestErrorResponse("Vendor not found", 404);
 
-    const result = await database.$queryRaw`
-      UPDATE tenant_inventory.inventory_suppliers
-      SET
-        name = ${name},
-        contact_person = ${contactPerson !== undefined ? contactPerson : null},
-        email = ${email !== undefined ? email : null},
-        phone = ${phone !== undefined ? phone : null},
-        payment_terms = ${paymentTerms || "NET_30"},
-        address_line1 = ${addressLine1 !== undefined ? addressLine1 : null},
-        address_line2 = ${addressLine2 !== undefined ? addressLine2 : null},
-        city = ${city !== undefined ? city : null},
-        state = ${state !== undefined ? state : null},
-        postal_code = ${postalCode !== undefined ? postalCode : null},
-        country = ${country || "US"},
-        tax_id = ${taxId !== undefined ? taxId : null},
-        website = ${website !== undefined ? website : null},
-        notes = ${notes !== undefined ? notes : null},
-        tags = ${tags !== undefined ? tags : null}::text[],
-        performance_rating = ${performanceRating !== undefined ? performanceRating : null}::decimal(2,1),
-        updated_at = NOW()
-      WHERE tenant_id = ${tenantId}::uuid AND id = ${vendorId}::uuid
-      RETURNING id, supplier_number, name, contact_person, email, phone, payment_terms, updated_at
-    `;
+    const vendor = await database.inventorySupplier.update({
+      where: { tenantId_id: { tenantId, id: vendorId } },
+      data: {
+        ...(name !== undefined && { name }),
+        contact_person: contactPerson !== undefined ? contactPerson : null,
+        email: email !== undefined ? email : null,
+        phone: phone !== undefined ? phone : null,
+        payment_terms: paymentTerms || "NET_30",
+        addressLine1: addressLine1 !== undefined ? addressLine1 : null,
+        addressLine2: addressLine2 !== undefined ? addressLine2 : null,
+        city: city !== undefined ? city : null,
+        state: state !== undefined ? state : null,
+        postalCode: postalCode !== undefined ? postalCode : null,
+        country: country || "US",
+        taxId: taxId !== undefined ? taxId : null,
+        website: website !== undefined ? website : null,
+        notes: notes !== undefined ? notes : null,
+        tags: tags !== undefined ? tags : [],
+        ...(performanceRating !== undefined && {
+          performanceRating: performanceRating,
+        }),
+      },
+    });
 
-    return manifestSuccessResponse({ vendor: (result as any[])[0] });
+    return manifestSuccessResponse({ vendor: mapVendorToSnake(vendor) });
   } catch (error) {
     captureException(error);
-    console.error("Error updating vendor:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }
