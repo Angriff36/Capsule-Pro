@@ -1,6 +1,5 @@
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -9,6 +8,13 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@repo/design-system/components/ui/empty";
 import {
   Select,
   SelectContent,
@@ -32,6 +38,7 @@ import {
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
+import { apiFetch } from "@/app/lib/api";
 import { Header } from "../components/header";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {
@@ -201,7 +208,27 @@ function SearchResults() {
     fetchResults();
   }, [fetchResults]);
 
-  if (!q) return null;
+  if (!q) {
+    return (
+      <>
+        <Header page="Search" pages={["Building Your Application"]} />
+        <div className="flex flex-1 flex-col gap-8 p-4 pt-0">
+          <Empty>
+            <EmptyMedia>
+              <BookOpen className="size-10 text-muted-foreground/50" />
+            </EmptyMedia>
+            <EmptyHeader>
+              <EmptyTitle>Search</EmptyTitle>
+              <EmptyDescription>
+                Use the search bar to enter a search term and browse results
+                across the app.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
@@ -313,32 +340,30 @@ function SearchResults() {
         {!loading &&
           data &&
           Object.values(data.groups).some((g) => g.total > ITEMS_PER_GROUP) && (
-          <div className="flex items-center justify-center gap-4">
-            <Button
-              disabled={page <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              size="sm"
-              variant="outline"
-            >
-              <ChevronLeft className="size-4 mr-1" />
-              Previous
-            </Button>
-            <span className="text-sm text-muted-foreground">
-              Page {data.page}
-            </span>
-            <Button
-              disabled={Object.values(data.groups).every(
-                (g) => page * ITEMS_PER_GROUP >= g.total
-              )}
-              onClick={() => setPage((p) => p + 1)}
-              size="sm"
-              variant="outline"
-            >
-              Next
-              <ChevronRight className="size-4 ml-1" />
-            </Button>
-          </div>
-        )}
+            <div className="flex items-center justify-center gap-4">
+              <Button
+                disabled={page <= 1}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                size="sm"
+                variant="outline"
+              >
+                <ChevronLeft className="size-4 mr-1" />
+                Previous
+              </Button>
+              <span className="text-sm text-muted-foreground">
+                Page {data.page}
+              </span>
+              <Button
+                disabled={page * data.limit >= data.total}
+                onClick={() => setPage((p) => p + 1)}
+                size="sm"
+                variant="outline"
+              >
+                Next
+                <ChevronRight className="size-4 ml-1" />
+              </Button>
+            </div>
+          )}
       </div>
     </>
   );
