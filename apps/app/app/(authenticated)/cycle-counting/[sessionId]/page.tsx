@@ -13,13 +13,23 @@ export default async function SessionPage({
 }) {
   const { sessionId } = await params;
 
-  const session = await getCycleCountSession(sessionId);
+  let session;
+  try {
+    session = await getCycleCountSession(sessionId);
+  } catch {
+    redirect("/cycle-counting");
+  }
 
   if (!session) {
     redirect("/cycle-counting");
   }
 
-  const records = await listCycleCountRecords(sessionId);
+  let records: CycleCountRecord[];
+  try {
+    records = await listCycleCountRecords(sessionId);
+  } catch {
+    records = [];
+  }
 
   async function handleSubmit(formData: FormData) {
     "use server";

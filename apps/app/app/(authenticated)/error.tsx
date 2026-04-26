@@ -1,6 +1,7 @@
 "use client";
 
 import { captureException } from "@sentry/nextjs";
+import { usePostHog } from "posthog-js/react";
 import { useEffect } from "react";
 
 // Match actual connection/infrastructure errors — NOT application-level messages
@@ -29,6 +30,7 @@ export default function AuthenticatedError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const posthog = usePostHog();
   const message = error?.message ?? "Something went wrong";
   const isDbError = DB_ERROR_PATTERN.test(message);
 
@@ -42,7 +44,12 @@ export default function AuthenticatedError({
       },
       extra: { digest: error.digest },
     });
-  }, [error, message, isDbError]);
+
+    // PostHog error tracking
+    posthog?.capture("error:boundary_triggered", {
+      error_message: message.slice(0, 200),
+    });
+  }, [error, message, isDbError, posthog]);
 
   return (
     <div className="flex min-h-[40vh] flex-col items-center justify-center gap-4 p-8">

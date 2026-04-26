@@ -35,8 +35,13 @@ const handleCheckoutSessionCompleted = async (
   }
 
   analytics.capture({
-    event: "User Subscribed",
     distinctId: user.id,
+    event: "billing:checkout_completed",
+    properties: {
+      plan: data.metadata?.plan ?? "unknown",
+      interval: data.metadata?.interval ?? "monthly",
+      amount_cents: data.amount_total,
+    },
   });
 };
 
@@ -56,8 +61,11 @@ const handleSubscriptionScheduleCanceled = async (
   }
 
   analytics.capture({
-    event: "User Unsubscribed",
     distinctId: user.id,
+    event: "billing:subscription_cancelled",
+    properties: {
+      plan: data.subscription?.metadata?.plan ?? "unknown",
+    },
   });
 };
 

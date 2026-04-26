@@ -31,34 +31,53 @@ const ContractDetailPage = async ({ params }: ContractDetailPageProps) => {
   const tenantId = await getTenantIdForOrg(orgId);
 
   // Fetch contract with related event and client data
-  const contract = await database.eventContract.findFirst({
-    where: {
-      tenantId,
-      id,
-    },
-  });
+  let contract;
+  try {
+    contract = await database.eventContract.findFirst({
+      where: {
+        tenantId,
+        id,
+      },
+    });
+  } catch {
+    notFound();
+  }
 
   if (!contract || contract.deletedAt) {
     notFound();
   }
 
   // Fetch related event
-  const event = await database.event.findFirst({
-    where: {
-      tenantId,
-      id: contract.eventId,
-    },
-    select: {
-      id: true,
-      title: true,
-      eventDate: true,
-      eventNumber: true,
-      venueName: true,
-    },
-  });
+  let event;
+  try {
+    event = await database.event.findFirst({
+      where: {
+        tenantId,
+        id: contract.eventId,
+      },
+      select: {
+        id: true,
+        title: true,
+        eventDate: true,
+        eventNumber: true,
+        venueName: true,
+      },
+    });
+  } catch {
+    event = null;
+  }
 
   // Fetch related client
-  const client = await database.$queryRaw<
+  let client: Array<{
+    id: string;
+    company_name: string | null;
+    first_name: string | null;
+    last_name: string | null;
+    email: string | null;
+    phone: string | null;
+  }>;
+  try {
+    client = await database.$queryRaw<
     Array<{
       id: string;
       company_name: string | null;
@@ -79,18 +98,26 @@ const ContractDetailPage = async ({ params }: ContractDetailPageProps) => {
       AND c.id = ${contract.clientId}
       AND c.deleted_at IS NULL
   `;
+  } catch {
+    client = [];
+  }
 
   // Fetch signatures for this contract
-  const signatures = await database.contractSignature.findMany({
-    where: {
-      tenantId,
-      contractId: id,
-      deletedAt: null,
-    },
-    orderBy: {
-      signedAt: "desc",
-    },
-  });
+  let signatures: Awaited<ReturnType<typeof database.contractSignature.findMany>>;
+  try {
+    signatures = await database.contractSignature.findMany({
+      where: {
+        tenantId,
+        contractId: id,
+        deletedAt: null,
+      },
+      orderBy: {
+        signedAt: "desc",
+      },
+    });
+  } catch {
+    signatures = [];
+  }
 
   return (
     <>

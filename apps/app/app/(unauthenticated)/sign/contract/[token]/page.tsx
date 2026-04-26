@@ -27,87 +27,122 @@ const PublicContractSigningPage = async ({
   }
 
   // Find contract by signing token
-  const contract = await database.eventContract.findFirst({
-    where: {
-      signingToken: token,
-      deletedAt: null,
-    },
-    select: {
-      id: true,
-      title: true,
-      status: true,
-      documentUrl: true,
-      documentType: true,
-      notes: true,
-      expiresAt: true,
-      createdAt: true,
-      contractNumber: true,
-      tenantId: true,
-      eventId: true,
-      clientId: true,
-    },
-  });
+  let contract;
+  try {
+    contract = await database.eventContract.findFirst({
+      where: {
+        signingToken: token,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        documentUrl: true,
+        documentType: true,
+        notes: true,
+        expiresAt: true,
+        createdAt: true,
+        contractNumber: true,
+        tenantId: true,
+        eventId: true,
+        clientId: true,
+      },
+    });
+  } catch {
+    notFound();
+  }
 
   if (!contract) {
     notFound();
   }
 
   // Get event details
-  const event = await database.event.findFirst({
-    where: {
-      tenantId: contract.tenantId,
-      id: contract.eventId,
-    },
-    select: {
-      title: true,
-      eventDate: true,
-      venueName: true,
-    },
-  });
+  let event;
+  try {
+    event = await database.event.findFirst({
+      where: {
+        tenantId: contract.tenantId,
+        id: contract.eventId,
+      },
+      select: {
+        title: true,
+        eventDate: true,
+        venueName: true,
+      },
+    });
+  } catch {
+    event = null;
+  }
 
   // Get client details
-  const client = await database.$queryRaw<
-    Array<{
-      company_name: string | null;
-      first_name: string | null;
-      last_name: string | null;
-      email: string | null;
-    }>
-  >`
-    SELECT company_name, first_name, last_name, email
-    FROM tenant_crm.clients
-    WHERE id = ${contract.clientId}
-      AND tenant_id = ${contract.tenantId}
-      AND deleted_at IS NULL
-  `;
+  let client: Array<{
+    company_name: string | null;
+    first_name: string | null;
+    last_name: string | null;
+    email: string | null;
+  }>;
+  try {
+    client = await database.$queryRaw<
+      Array<{
+        company_name: string | null;
+        first_name: string | null;
+        last_name: string | null;
+        email: string | null;
+      }>
+    >`
+      SELECT company_name, first_name, last_name, email
+      FROM tenant_crm.clients
+      WHERE id = ${contract.clientId}
+        AND tenant_id = ${contract.tenantId}
+        AND deleted_at IS NULL
+    `;
+  } catch {
+    client = [];
+  }
 
   // Get existing signatures
-  const signatures = await database.contractSignature.findMany({
-    where: {
-      contractId: contract.id,
-      tenantId: contract.tenantId,
-      deletedAt: null,
-    },
-    select: {
-      id: true,
-      signerName: true,
-      signerEmail: true,
-      signedAt: true,
-    },
-    orderBy: {
-      signedAt: "desc",
-    },
-  });
+  let signatures: Array<{
+    id: string;
+    signerName: string | null;
+    signerEmail: string | null;
+    signedAt: Date;
+  }>;
+  try {
+    signatures = await database.contractSignature.findMany({
+      where: {
+        contractId: contract.id,
+        tenantId: contract.tenantId,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        signerName: true,
+        signerEmail: true,
+        signedAt: true,
+      },
+      orderBy: {
+        signedAt: "desc",
+      },
+    });
+  } catch {
+    signatures = [];
+  }
 
   // Get tenant/organization info
-  const tenant = await database.account.findFirst({
-    where: {
-      id: contract.tenantId,
-    },
-    select: {
-      name: true,
-    },
-  });
+  let tenant: { name: string | null } | null;
+  try {
+    tenant = await database.account.findFirst({
+      where: {
+        id: contract.tenantId,
+      },
+      select: {
+        name: true,
+      },
+    });
+  } catch {
+    tenant = null;
+  }
 
   // Check if expired
   const isExpired =
@@ -139,7 +174,7 @@ const PublicContractSigningPage = async ({
         event
           ? {
               title: event.title,
-              eventDate: event.eventDate.toISOString(),
+              eventDate: event.eventDate?.toISOString() ?? null,
               venueName: event.venueName,
             }
           : null
@@ -148,7 +183,7 @@ const PublicContractSigningPage = async ({
       organization={tenant?.name || "Unknown Organization"}
       signatures={signatures.map((s) => ({
         id: s.id,
-        signerName: s.signerName,
+        signerName: s.signerName ?? "",
         signerEmail: s.signerEmail,
         signedAt: s.signedAt.toISOString(),
       }))}

@@ -19,13 +19,18 @@ const BattleBoardDetailPage = async ({ params }: PageProps) => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const board = await database.battleBoard.findFirst({
-    where: {
-      id: boardId,
-      tenantId,
-      deletedAt: null,
-    },
-  });
+  let board;
+  try {
+    board = await database.battleBoard.findFirst({
+      where: {
+        id: boardId,
+        tenantId,
+        deletedAt: null,
+      },
+    });
+  } catch {
+    notFound();
+  }
 
   if (!board) {
     notFound();
@@ -34,7 +39,8 @@ const BattleBoardDetailPage = async ({ params }: PageProps) => {
   // Fetch event data if linked
   let event = null;
   if (board.eventId) {
-    event = await database.event.findFirst({
+    try {
+      event = await database.event.findFirst({
       where: {
         id: board.eventId,
         tenantId,
@@ -50,6 +56,9 @@ const BattleBoardDetailPage = async ({ params }: PageProps) => {
         guestCount: true,
       },
     });
+    } catch {
+      event = null;
+    }
   }
 
   return (

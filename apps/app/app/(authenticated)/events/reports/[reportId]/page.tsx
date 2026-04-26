@@ -19,34 +19,44 @@ const EventReportDetailPage = async ({ params }: PageProps) => {
 
   const tenantId = await getTenantIdForOrg(orgId);
 
-  const report = await database.eventReport.findFirst({
-    where: {
-      id: reportId,
-      tenantId,
-      deletedAt: null,
-    },
-  });
+  let report;
+  try {
+    report = await database.eventReport.findFirst({
+      where: {
+        id: reportId,
+        tenantId,
+        deletedAt: null,
+      },
+    });
+  } catch {
+    notFound();
+  }
 
   if (!report) {
     notFound();
   }
 
-  const event = await database.event.findFirst({
-    where: {
-      tenantId,
-      id: report.eventId,
-      deletedAt: null,
-    },
-    select: {
-      id: true,
-      eventNumber: true,
-      title: true,
-      eventDate: true,
-      venueName: true,
-      venueAddress: true,
-      guestCount: true,
-    },
-  });
+  let event;
+  try {
+    event = await database.event.findFirst({
+      where: {
+        tenantId,
+        id: report.eventId,
+        deletedAt: null,
+      },
+      select: {
+        id: true,
+        eventNumber: true,
+        title: true,
+        eventDate: true,
+        venueName: true,
+        venueAddress: true,
+        guestCount: true,
+      },
+    });
+  } catch {
+    notFound();
+  }
 
   if (!event) {
     notFound();

@@ -1,6 +1,7 @@
 "use client";
 
-import { OrganizationSwitcher, UserButton } from "@repo/auth/client";
+import { OrganizationSwitcher } from "@repo/auth/client";
+import { TrackedUserButton } from "./tracked-user-button";
 import { ModeToggle } from "@repo/design-system/components/mode-toggle";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -208,16 +209,7 @@ export const GlobalSidebar = ({
               className="flex items-center gap-2"
               suppressHydrationWarning
             >
-              <UserButton
-                appearance={{
-                  elements: {
-                    rootBox: "flex overflow-hidden w-full",
-                    userButtonBox: "flex-row-reverse",
-                    userButtonOuterIdentifier: "truncate pl-0",
-                  },
-                }}
-                showName
-              />
+              <TrackedUserButton />
               <div className="flex shrink-0 items-center gap-px">
                 <ModeToggle />
                 {showNotifications ? (
