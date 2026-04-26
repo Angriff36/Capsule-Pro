@@ -192,7 +192,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
     validatePaymentBusinessRules(payment, "refund");
 
     const paymentAmount = Number(payment.amount);
-    const isFullRefund = body.amount >= paymentAmount;
+    // Clamp refund at payment amount to prevent invoice over-credit when a
+    // caller supplies an amount larger than what was actually charged.
+    const effectiveRefund = Math.min(Number(body.amount), paymentAmount);
+    const isFullRefund = effectiveRefund >= paymentAmount;
 
     // Update payment
     const updatedPayment = await database.payment.update({
@@ -221,6 +224,17 @@ export async function POST(request: NextRequest, context: RouteContext) {
       if (invoice) {
         const currentAmountPaid = Number(invoice.amountPaid);
         const currentAmountDue = Number(invoice.amountDue);
+        const newAmountPaid = currentAmountPaid - effectiveRefund;
+        const newAmountDue = currentAmountDue + effectiveRefund;
+
+        // Re-derive invoice payment status after the refund so a previously
+        // PAID invoice does not stay PAID once money has flowed back out.
+        // - newAmountPaid <= 0  → SENT (no payments remain on the invoice)
+        // - otherwise           → PARTIALLY_PAID
+        // We do NOT downgrade DRAFT/VOID/CANCELLED invoices here; refunds are
+        // only valid against COMPLETED payments which can only attach to
+        // invoices that were sent.
+        const invoiceStatus = newAmountPaid <= 0.01 ? "SENT" : "PARTIALLY_PAID";
 
         await database.invoice.update({
           where: {
@@ -230,8 +244,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
             },
           },
           data: {
-            amountPaid: currentAmountPaid - body.amount,
-            amountDue: currentAmountDue + body.amount,
+            amountPaid: newAmountPaid,
+            amountDue: newAmountDue,
+            status: invoiceStatus,
+            // Clear paidAt when the invoice is no longer fully paid.
+            paidAt: null,
           },
         });
       }
