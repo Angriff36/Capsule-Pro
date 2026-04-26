@@ -44,7 +44,7 @@ test.describe("Inventory: Full Workflow", () => {
     await goto(page, "/inventory/items");
     await expect(page).toHaveURL(/inventory\/items/);
     await expect(
-      page.getByRole("heading", { name: /inventory items/i })
+      page.getByRole("heading", { name: /inventory items/i }).first()
     ).toBeVisible({ timeout: 10_000 });
     await assertNoErrors(page, testInfo, errors, "items list");
   });
