@@ -48,10 +48,12 @@ export async function GET(_request: Request, context: RouteContext) {
       );
     }
 
-    const board = await database.commandBoard.findFirst({
+    const board = await database.commandBoard.findUnique({
       where: {
-        tenantId,
-        id,
+        tenantId_id: {
+          tenantId,
+          id,
+        },
       },
       include: {
         projections: true,
@@ -177,10 +179,12 @@ export async function DELETE(_request: Request, context: RouteContext) {
     }
 
     // Verify it's a simulation board
-    const board = await database.commandBoard.findFirst({
+    const board = await database.commandBoard.findUnique({
       where: {
-        tenantId,
-        id,
+        tenantId_id: {
+          tenantId,
+          id,
+        },
       },
     });
 

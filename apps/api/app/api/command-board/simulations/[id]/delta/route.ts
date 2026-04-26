@@ -175,7 +175,7 @@ export async function GET(_request: Request, context: RouteContext) {
     }
 
     // Get the simulation board
-    const simulationBoard = await database.commandBoard.findFirst({
+    const simulationBoard = await database.commandBoard.findUnique({
       where: {
         tenantId_id: {
           tenantId,
@@ -207,7 +207,7 @@ export async function GET(_request: Request, context: RouteContext) {
     const sourceBoardId = sourceTag.replace("source:", "");
 
     // Get the source board
-    const sourceBoard = await database.commandBoard.findFirst({
+    const sourceBoard = await database.commandBoard.findUnique({
       where: {
         tenantId_id: {
           tenantId,

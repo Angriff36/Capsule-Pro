@@ -32,6 +32,7 @@ model Account {
   prepLists                      PrepList[]
   prepListItems                  PrepListItem[]
   prepTasks                      PrepTask[]
+  prepTaskPlanWorkflows          PrepTaskPlanWorkflow[]
   stations                       Station[]
   taskClaims                     KitchenTaskClaim[]
   taskProgress                   KitchenTaskProgress[]
@@ -358,6 +359,45 @@ model PrepTask {
   @@index([methodId])
   @@index([recipeVersionId])
   @@map("prep_tasks")
+  @@schema("tenant_kitchen")
+}
+
+model PrepTaskPlanWorkflow {
+  tenantId           String    @map("tenant_id") @db.Uuid
+  id                 String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventId            String?   @map("event_id") @db.Uuid
+  idempotencyKey     String    @default("") @map("idempotency_key")
+  status             String    @default("created")
+  currentStep        Int       @default(0) @map("current_step")
+  totalSteps         Int       @default(5) @map("total_steps")
+  generationOptions  Json      @default("{}") @map("generation_options")
+  generatedTasks     Json      @default("[]") @map("generated_tasks")
+  reviewedTasks      Json      @default("[]") @map("reviewed_tasks")
+  approvedTaskIds    Json      @default("[]") @map("approved_task_ids")
+  rejectedTaskIds    Json      @default("[]") @map("rejected_task_ids")
+  instantiatedTaskIds Json     @default("[]") @map("instantiated_task_ids")
+  scheduledWindows   Json      @default("{}") @map("scheduled_windows")
+  constraintOutcomes Json      @default("[]") @map("constraint_outcomes")
+  errors             Json      @default("[]")
+  warnings           Json      @default("[]")
+  generatedCount     Int       @default(0) @map("generated_count")
+  approvedCount      Int       @default(0) @map("approved_count")
+  instantiatedCount  Int       @default(0) @map("instantiated_count")
+  reviewedBy         String?   @map("reviewed_by") @db.Uuid
+  reviewedAt         DateTime? @map("reviewed_at") @db.Timestamptz(6)
+  approvedBy         String?   @map("approved_by") @db.Uuid
+  approvedAt         DateTime? @map("approved_at") @db.Timestamptz(6)
+  startedAt          DateTime? @map("started_at") @db.Timestamptz(6)
+  completedAt        DateTime? @map("completed_at") @db.Timestamptz(6)
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt          DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt          DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenant             Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@index([eventId])
+  @@index([status])
+  @@map("prep_task_plan_workflows")
   @@schema("tenant_kitchen")
 }
 
