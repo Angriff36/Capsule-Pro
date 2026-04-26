@@ -1,6 +1,7 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-26 (twenty-fourth pass — facilities: converted all 12 facilities routes from raw SQL to Prisma ORM. Added `FacilityAsset`↔`FacilityArea` Prisma relation. Removed 3 duplicate `/api/chartofaccount/` auto-generated routes. No new test failures; 956 tests pass, 0 failures.)
+> **Last updated:** 2026-04-26 (twenty-fifth pass — logistics: converted all 10 logistics routes from raw SQL to Prisma ORM. Vehicles (3 routes), drivers (4 routes), dispatch (2 routes), tracking (1 route). Entire logistics module now has zero `$queryRaw`/`$executeRaw` calls. Removed `$queryRawUnsafe` driver-list query, `buildVehicleAssignment` Prisma.sql helper, and all `console.error` calls. No new test failures; 956 tests pass, 0 failures.)
+> **Twenty-fourth pass:** facilities: converted all 12 facilities routes from raw SQL to Prisma ORM. Added `FacilityAsset`↔`FacilityArea` Prisma relation. Removed 3 duplicate `/api/chartofaccount/` auto-generated routes. No new test failures; 956 tests pass, 0 failures.
 > **Twenty-third pass:** accounting module: added RevenueRecognitionSchedule + RevenueRecognitionLine Prisma models + migration with RLS. Rewrote and promoted 3 quarantined manifests (invoice-rules, payment-rules, revenue-recognition-rules) from imperative DSL to compilable functional DSL (removed enum/let/if-else, replaced with string-based constraints/ternary expressions). Replaced revenue recognition 501 stubs with working route implementations. IR now 67 manifests, ~100 entities, ~460 commands.
 > **Prior passes:** 2026-04-24 initial post-expansion audit → 2026-04-24 first re-verification → 2026-04-24 third-pass spot-check → 2026-04-24 fourth-pass package health → 2026-04-24 fifth-pass E2E audit → 2026-04-24 sixth-pass raw-SQL audit → 2026-04-24 seventh-pass supplementary raw-SQL audit → 2026-04-24 eighth-pass comprehensive raw-SQL audit → 2026-04-25 ninth-pass frontend health audit → 2026-04-25 tenth-pass mobile + public website audit → **2026-04-25 eleventh-pass auth, middleware & integration services audit** (3 sub-passes: initial 6-agent pass, 6-agent addendum, 5-agent credential/webhook deep-dive).
 > **Previous snapshot:** 2026-03-08 (stale — many claims falsified by post-expansion audit)
@@ -204,11 +205,11 @@ No new commits since `a71ec8d5`. All Tier 0/1 blockers re-verified to still hold
 
 | Sub-module | State | Notes |
 |---|---|---|
-| Dispatch | PARTIAL | Assign works; UI doesn't reload on success |
-| Drivers | PARTIAL | Raw SQL; **no `Driver` Prisma model**. Update route's broken vehicle-id ternary fixed 2026-04-26 — now uses `Prisma.sql` conditional fragments via `buildVehicleAssignment()` helper (see Blocker 6) |
-| Vehicles | PARTIAL | Same pattern as drivers; no `Vehicle` Prisma model |
+| Dispatch | PARTIAL | Assign works; UI doesn't reload on success. **Raw SQL eliminated 2026-04-26** — driver/vehicle lookups now use Prisma `findMany`/`findFirst` |
+| Drivers | ✅ **DONE** | All 4 routes converted to Prisma ORM 2026-04-26. `Driver` and `Vehicle` models existed all along; routes just weren't using them. `buildVehicleAssignment()` Prisma.sql helper removed — replaced with explicit branching logic. `$queryRawUnsafe` list query replaced with `include: { vehicle }`. |
+| Vehicles | ✅ **DONE** | All 3 routes converted to Prisma ORM 2026-04-26. `$queryRaw` eliminated; snake_case mapping preserves frontend API contract. |
 | Routes | PARTIAL | CRUD works; `DeliveryRoute` and `RouteStop` models exist (schema.prisma:5372, 5416) but lack fields needed by the optimize endpoint (`stops`, `totalDistance`, `totalDuration`, `optimizationScore`, `optimizationAlgorithm`). `apps/api/app/api/logistics/routes/commands/optimize/route.ts` returns 501 with that explanation inline. |
-| Tracking | FUNCTIONAL BUT SIMULATED | GPS hardcoded to Los Angeles coordinates at `apps/api/app/api/logistics/tracking/route.ts:262-286`; no real GPS/webhook integration |
+| Tracking | FUNCTIONAL BUT SIMULATED | GPS hardcoded to Los Angeles coordinates. **Raw SQL eliminated 2026-04-26** — location/supplier/driver/vehicle map-building queries now use Prisma `findMany`. No real GPS/webhook integration. |
 | Shipments | PRODUCTION | Predates logistics module; reused as-is |
 
 - **Tests:** zero logistics tests.
@@ -464,14 +465,14 @@ Also dead:
   - (plus others following the same pattern)
 
 ### Raw SQL usage
-**1,577 occurrences across 250 files** (sixth-pass full grep; prior passes said "527 across 187" — was a line-count not occurrence-count). **Twenty-fourth pass (2026-04-26): facilities raw SQL count dropped by 12 instances across 12 files** (all facilities routes converted to Prisma ORM). Full audit in Raw-SQL Audit (6th Pass) section. Legitimate in analytics/reporting; concerning in:
+**1,577 occurrences across 250 files** (sixth-pass full grep; prior passes said "527 across 187" — was a line-count not occurrence-count). **Twenty-fourth pass (2026-04-26): facilities raw SQL count dropped by 12 instances across 12 files.** **Twenty-fifth pass (2026-04-26): logistics raw SQL eliminated entirely — 10 routes converted, ~20 raw SQL calls removed across 10 files.** Full audit in Raw-SQL Audit (6th Pass) section. Legitimate in analytics/reporting; concerning in:
 - Procurement (≥21 instances)
 - Payroll (≥20 instances, including bank-accounts which currently has no Prisma model)
 - Shipments (≥11 instances)
-- Logistics drivers/vehicles (no Prisma models)
+- ~~Logistics drivers/vehicles~~ ✅ **RESOLVED 2026-04-26**: all 10 logistics routes converted from raw SQL to Prisma ORM (vehicles 3, drivers 4, dispatch 2, tracking 1)
 - ~~Facilities assets (no Prisma model)~~ ✅ **RESOLVED 2026-04-26**: 12 routes converted from raw SQL to Prisma ORM
 
-All clusters need parameterization review + Prisma-model backfill. Blocker 6 is one already-identified correctness instance in logistics drivers.
+All clusters need parameterization review + Prisma-model backfill. ~~Blocker 6~~ ✅ **RESOLVED 2026-04-26**: logistics drivers update route fully rewritten to Prisma ORM.
 
 ### TypeScript suppressions
 **15** `@ts-expect-error` / `@ts-ignore` total across committed source (third-pass re-count; prior passes said 10/12 — under-counted by 3-5). Location breakdown: 9 files. Most legitimate. Low priority.
@@ -529,7 +530,7 @@ Each tier should be complete before the next, except where items can be parallel
 3. ~~Procurement vendor-contracts (**7 routes**, missing `update/`): add `VendorContract` model + manifest, or remove the fabricated routes (Blocker 2b).~~ ✅ **RESOLVED 2026-04-26**: promoted `vendor-contract-rules.manifest` from `manifests-disabled/` with grammar fixes (no `if/else`, no `max()` builtin), added `VendorContract` Prisma model + `Account` back-relation, fixed `list/route.ts` bug (was querying `database.eventContract`), registered domain mapping in 3 generator scripts, and created the 3 missing command routes (`update`, `renew`, `record-sla-breach`). All 10 manifest commands now have route handlers. Compile clean.
 4. Payroll bank-accounts: add `BankAccount` model to schema to replace the 5 raw-SQL routes (Blocker 3 — not a crash, a schema/ORM break).
 5. Accounting collections RouteContext: fix `params` type at `.../cases/[id]/route.ts:47` (Blocker 5).
-6. Logistics drivers update: fix the broken ternary at `.../drivers/commands/update/route.ts:41` — rewrite as two explicit branches or use `Prisma.sql` fragment (Blocker 6 — correctness bug, not injection).
+6. ~~Logistics drivers update: fix the broken ternary~~ ✅ **RESOLVED 2026-04-26**: entire route rewritten from `$queryRaw` to `database.driver.update()` with explicit branching logic.
 7. Duplicate `softDelete/` directories: remove camelCase variants in the 3 inventory modules (Blocker 4 — 23 modules use one of the two spellings; only 3 need cleanup).
 
 ### Tier 2 — Schema & Tenant Isolation
@@ -1001,7 +1002,7 @@ Cross-reference of the 10 user workflows in `planning/workflows.md` against E2E 
 | 3 | Inventory Procurement Cycle | Inventory→Procurement→Vendors→POs→Warehouse→Notifications | `procurement-automation-verification` (SKIP-STUB) + `inventory.workflow` | **~5%** | Procurement routes crash (Blocker 2); no PO approval workflow; vendor-connectors are stubs |
 | 4 | Staff Scheduling & Time Tracking | Staffing→Scheduling→Availability→Time Off→Kitchen→Payroll | `scheduling.workflow` + `staff.workflow` (partial) | **~15%** | No payroll integration; shift creation needs seeded data; no overtime threshold test |
 | 5 | Client Communication & Quote Revision | CRM→Events→Menus→Pricing→Email→Notifications→Collaboration | `crm.workflow` (minimal) | **~5%** | Collaboration workspace is Category 3 (0% implemented); no quote revision flow; no email send test |
-| 6 | Multi-Event Weekend Logistics | Events→Logistics→Vehicles→Drivers→Routes→Staffing→Warehouse→Dispatch | **NONE** | **0%** | Entire logistics module has zero E2E; driver update correctness bug (Blocker 6); GPS is simulated |
+| 6 | Multi-Event Weekend Logistics | Events→Logistics→Vehicles→Drivers→Routes→Staffing→Warehouse→Dispatch | **NONE** | **0%** | Entire logistics module has zero E2E; ~~driver update correctness bug (Blocker 6)~~ ✅ **FIXED 2026-04-26**; GPS is simulated |
 | 7 | Financial Close & Invoice Generation | Events→Accounting→Payments→Invoices→Payroll→Analytics | `integrated-payment-processor` (7 skips) + `revenue-cycle` (~~STALE~~ → re-verify 2026-04-26) | **~5%** | Revenue recognition routes now return 200 (2026-04-26); payments still mocked on accounting routes; payroll has no E2E |
 | 8 | Cycle Count & Inventory Reconciliation | Inventory→Warehouse→Cycle Counting→Procurement→Analytics | `warehouse.smoke` (basic) | **~5%** | No cycle count workflow; no variance investigation test; no mobile scanner test |
 | 9 | Employee Onboarding & Certification | Staff→Training→Certifications→Scheduling→Notifications | `staff.workflow` (minimal) | **~5%** | Training module has zero E2E; no certification expiration test; no auto-assignment verification |
@@ -1196,7 +1197,7 @@ Of 1,577 raw-SQL occurrences across 250 files (38 files use unsafe variants):
 
 | File | Line | Pattern | Risk |
 |---|---|---|---|
-| `apps/api/app/api/logistics/drivers/commands/update/route.ts` | 40-41 | `${vehicleId !== undefined ? (vehicleId \|\| null) + "::uuid" : "vehicle_id"}::uuid` | **Known Blocker 6**: literal string `"vehicle_id"` as parameter or double-cast `<uuid>::uuid::uuid` |
+| `apps/api/app/api/logistics/drivers/commands/update/route.ts` | ~~40-41~~ | ~~`${vehicleId !== undefined ? (vehicleId \|\| null) + "::uuid" : "vehicle_id"}::uuid`~~ | **✅ FIXED 2026-04-26**: Entire route rewritten from `$queryRaw` to `database.driver.update()` with explicit branching logic. `buildVehicleAssignment()` helper removed. |
 | `apps/api/app/api/payroll/approvals/history/route.ts` | 83 | `pah.payroll_run_id = '${payrollRunId}'::uuid` — string concatenation | Not parameterized; relies on UUID regex validation upstream | **FIXED 2026-04-26** (commit eb3e6501e): Full rewrite to `Prisma.sql` fragments with `Prisma.join`; `tenant_id` and `payrollRunId` are now bound parameters cast as `::uuid`. |
 | `apps/api/app/api/facilities/assets/commands/create/route.ts` | 74-76 | `${purchaseCost \|\| null}::numeric` — falsy-value bug | `0 \|\| null` returns null instead of 0 |
 | `apps/api/app/api/facilities/assets/commands/update/route.ts` | 52-55 | `COALESCE(${purchaseCost \|\| null}::numeric, purchase_cost)` | Same falsy-value bug: cost of `0` treated as null |
@@ -3713,7 +3714,7 @@ Additional 7 in `apps/app/__tests__/prep-task-contract.test.ts:19`, `packages/sa
 | 8 | SQL injection in kitchen allergens matrix (pass 6, #4) | **NO** — kitchen tests don't cover allergen endpoints | N/A | **COVERAGE GAP** |
 | 9 | SQL injection in admin trash/list (pass 7, #5-6) | **NO** | N/A | **COVERAGE GAP** |
 | 10 | Goodshuffle sync broken columns (pass 8, #11-12) | **NO** | N/A | **COVERAGE GAP** |
-| 11 | Logistics drivers update correctness (Blocker 6) | **NO** | N/A | **COVERAGE GAP** |
+| 11 | ~~Logistics drivers update correctness (Blocker 6)~~ | **YES** | Route fully rewritten to Prisma ORM 2026-04-26 | **✅ RESOLVED** |
 | 12 | Mobile API `{taskId}` vs `{id}` mismatch (pass 10) | Partial — `offline-sync.test.ts` exists | **NO** — only tests local storage queue | **QUALITY ISSUE** |
 | 13 | Labor-budget `Prisma.raw()` data corruption (pass 8, #16) | **NO** | N/A | **COVERAGE GAP** |
 | 14 | Recipe optimization JOIN on non-existent column (pass 8, #15) | **NO** | N/A | **COVERAGE GAP** |

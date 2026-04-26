@@ -9,6 +9,42 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 
+type VehicleRow = {
+  id: string;
+  make: string;
+  model: string;
+  year: number | null;
+  plateNumber: string | null;
+  vin: string | null;
+  capacityWeight: { toNumber(): number } | null;
+  capacityVolume: { toNumber(): number } | null;
+  fuelType: string | null;
+  mileage: { toNumber(): number } | null;
+  status: string;
+  notes: string | null;
+  createdAt: Date;
+  _count?: { drivers: number };
+};
+
+function mapVehicleToSnake(v: VehicleRow) {
+  return {
+    id: v.id,
+    make: v.make,
+    model: v.model,
+    year: v.year,
+    plate_number: v.plateNumber,
+    vin: v.vin,
+    capacity_weight: v.capacityWeight?.toNumber?.() ?? null,
+    capacity_volume: v.capacityVolume?.toNumber?.() ?? null,
+    fuel_type: v.fuelType,
+    mileage: v.mileage?.toNumber?.() ?? null,
+    status: v.status,
+    notes: v.notes,
+    created_at: v.createdAt,
+    assigned_drivers: v._count?.drivers ?? 0,
+  };
+}
+
 export async function GET(request: NextRequest) {
   try {
     const { orgId, userId } = await auth();
@@ -17,22 +53,31 @@ export async function GET(request: NextRequest) {
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) return manifestErrorResponse("Tenant not found", 400);
 
-    const vehicles = await database.$queryRaw`
-      SELECT
-        v.id, v.make, v.model, v.year, v.plate_number, v.vin,
-        v.capacity_weight, v.capacity_volume, v.fuel_type, v.mileage,
-        v.status, v.notes, v.created_at,
-        (SELECT COUNT(*)::int FROM tenant_logistics.drivers d
-         WHERE d.vehicle_id = v.id AND d.deleted_at IS NULL AND d.status != 'inactive') as assigned_drivers
-      FROM tenant_logistics.vehicles v
-      WHERE v.tenant_id = ${tenantId}::uuid AND v.deleted_at IS NULL
-      ORDER BY v.make, v.model
-    `;
+    const vehicles = await database.vehicle.findMany({
+      where: {
+        tenantId,
+        deletedAt: null,
+      },
+      include: {
+        _count: {
+          select: {
+            drivers: {
+              where: {
+                deletedAt: null,
+                status: { not: "inactive" },
+              },
+            },
+          },
+        },
+      },
+      orderBy: [{ make: "asc" }, { model: "asc" }],
+    });
 
-    return manifestSuccessResponse({ vehicles });
+    return manifestSuccessResponse({
+      vehicles: vehicles.map(mapVehicleToSnake),
+    });
   } catch (error) {
     captureException(error);
-    console.error("Error listing vehicles:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

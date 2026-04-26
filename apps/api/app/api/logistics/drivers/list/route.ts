@@ -20,32 +20,40 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get("status");
 
-    let statusFilter = "";
-    const params: any[] = [tenantId];
-    if (status && status !== "all") {
-      statusFilter = " AND d.status = $2";
-      params.push(status);
-    }
+    const drivers = await database.driver.findMany({
+      include: {
+        vehicle: {
+          select: { make: true, model: true, plateNumber: true },
+        },
+      },
+      where: {
+        tenantId,
+        deletedAt: null,
+        ...(status && status !== "all" && { status }),
+      },
+      orderBy: { name: "asc" },
+    });
 
-    const drivers = await database.$queryRawUnsafe(
-      `
-      SELECT
-        d.id, d.name, d.phone, d.email, d.license_number, d.license_expiry,
-        d.status, d.vehicle_id, d.notes, d.created_at,
-        v.make || ' ' || v.model as vehicle_name, v.plate_number
-      FROM tenant_logistics.drivers d
-      LEFT JOIN tenant_logistics.vehicles v ON v.id = d.vehicle_id
-      WHERE d.tenant_id = $1::uuid AND d.deleted_at IS NULL
-        ${statusFilter}
-      ORDER BY d.name
-    `,
-      ...params
-    );
+    const mapped = drivers.map((d) => ({
+      id: d.id,
+      name: d.name,
+      phone: d.phone,
+      email: d.email,
+      license_number: d.licenseNumber,
+      license_expiry: d.licenseExpiry,
+      status: d.status,
+      vehicle_id: d.vehicleId,
+      notes: d.notes,
+      created_at: d.createdAt,
+      vehicle_name: d.vehicle
+        ? `${d.vehicle.make} ${d.vehicle.model}`
+        : null,
+      plate_number: d.vehicle?.plateNumber ?? null,
+    }));
 
-    return manifestSuccessResponse({ drivers });
+    return manifestSuccessResponse({ drivers: mapped });
   } catch (error) {
     captureException(error);
-    console.error("Error listing drivers:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

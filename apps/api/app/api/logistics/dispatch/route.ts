@@ -50,28 +50,20 @@ export async function GET(request: NextRequest) {
     });
 
     // Fetch available drivers
-    const availableDrivers = await database.$queryRaw<{
-      rows: Array<{
-        id: string;
-        name: string;
-        phone: string | null;
-        vehicle_id: string | null;
-        vehicle_name: string | null;
-      }>;
-    }>`
-      SELECT
-        d.id,
-        d.name,
-        d.phone,
-        d.vehicle_id,
-        v.make || ' ' || v.model as vehicle_name
-      FROM tenant_logistics.drivers d
-      LEFT JOIN tenant_logistics.vehicles v ON v.id = d.vehicle_id
-      WHERE d.tenant_id = ${tenantId}::uuid
-        AND d.deleted_at IS NULL
-        AND d.status = 'available'
-      ORDER BY d.name
-    `;
+    const driverRecords = await database.driver.findMany({
+      where: { tenantId, deletedAt: null, status: "available" },
+      include: { vehicle: { select: { make: true, model: true } } },
+      orderBy: { name: "asc" },
+    });
+    const availableDrivers = driverRecords.map((d) => ({
+      id: d.id,
+      name: d.name,
+      phone: d.phone,
+      vehicle_id: d.vehicleId,
+      vehicle_name: d.vehicle
+        ? `${d.vehicle.make} ${d.vehicle.model}`
+        : null,
+    }));
 
     // Build driver map for route lookups
     const driverIds = routes.map((r) => r.driverId).filter(Boolean) as string[];
@@ -79,14 +71,10 @@ export async function GET(request: NextRequest) {
     let driverMap: Record<string, { name: string; phone: string | null }> = {};
 
     if (driverIds.length > 0) {
-      const drivers = await database.$queryRaw<
-        Array<{ id: string; name: string; phone: string | null }>
-      >`
-        SELECT id, name, phone
-        FROM tenant_logistics.drivers
-        WHERE tenant_id = ${tenantId}::uuid
-          AND id = ANY(${driverIds}::uuid[])
-      `;
+      const drivers = await database.driver.findMany({
+        where: { tenantId, id: { in: driverIds } },
+        select: { id: true, name: true, phone: true },
+      });
       driverMap = Object.fromEntries(drivers.map((d) => [d.id, d]));
     }
 
@@ -98,14 +86,10 @@ export async function GET(request: NextRequest) {
     let vehicleMap: Record<string, { make: string; model: string }> = {};
 
     if (vehicleIds.length > 0) {
-      const vehicles = await database.$queryRaw<
-        Array<{ id: string; make: string; model: string }>
-      >`
-        SELECT id, make, model
-        FROM tenant_logistics.vehicles
-        WHERE tenant_id = ${tenantId}::uuid
-          AND id = ANY(${vehicleIds}::uuid[])
-      `;
+      const vehicles = await database.vehicle.findMany({
+        where: { tenantId, id: { in: vehicleIds } },
+        select: { id: true, make: true, model: true },
+      });
       vehicleMap = Object.fromEntries(vehicles.map((v) => [v.id, v]));
     }
 
@@ -173,7 +157,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
-    console.error("Error loading dispatch board:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

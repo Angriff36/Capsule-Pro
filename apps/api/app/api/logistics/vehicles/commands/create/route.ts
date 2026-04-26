@@ -9,6 +9,40 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 
+type VehicleRow = {
+  id: string;
+  make: string;
+  model: string;
+  year: number | null;
+  plateNumber: string | null;
+  vin: string | null;
+  capacityWeight: { toNumber(): number } | null;
+  capacityVolume: { toNumber(): number } | null;
+  fuelType: string | null;
+  mileage: { toNumber(): number } | null;
+  status: string;
+  notes: string | null;
+  createdAt: Date;
+};
+
+function mapVehicleToSnake(v: VehicleRow) {
+  return {
+    id: v.id,
+    make: v.make,
+    model: v.model,
+    year: v.year,
+    plate_number: v.plateNumber,
+    vin: v.vin,
+    capacity_weight: v.capacityWeight?.toNumber?.() ?? null,
+    capacity_volume: v.capacityVolume?.toNumber?.() ?? null,
+    fuel_type: v.fuelType,
+    mileage: v.mileage?.toNumber?.() ?? null,
+    status: v.status,
+    notes: v.notes,
+    created_at: v.createdAt,
+  };
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { orgId, userId } = await auth();
@@ -33,23 +67,25 @@ export async function POST(request: NextRequest) {
     if (!(make && model))
       return manifestErrorResponse("make and model are required", 400);
 
-    const result = await database.$queryRaw`
-      INSERT INTO tenant_logistics.vehicles (
-        tenant_id, make, model, year, plate_number, vin,
-        capacity_weight, capacity_volume, fuel_type, status, notes
-      ) VALUES (
-        ${tenantId}::uuid, ${make}, ${model}, ${year ?? null},
-        ${plateNumber ?? null}, ${vin ?? null},
-        ${capacityWeight ?? null}, ${capacityVolume ?? null},
-        ${fuelType ?? null}, 'available', ${notes ?? null}
-      )
-      RETURNING id, make, model, status, created_at
-    `;
+    const vehicle = await database.vehicle.create({
+      data: {
+        tenantId,
+        make,
+        model,
+        year: year ?? null,
+        plateNumber: plateNumber ?? null,
+        vin: vin ?? null,
+        capacityWeight: capacityWeight ?? null,
+        capacityVolume: capacityVolume ?? null,
+        fuelType: fuelType ?? null,
+        status: "available",
+        notes: notes ?? null,
+      },
+    });
 
-    return manifestSuccessResponse({ vehicle: (result as any[])[0] });
+    return manifestSuccessResponse({ vehicle: mapVehicleToSnake(vehicle) });
   } catch (error) {
     captureException(error);
-    console.error("Error creating vehicle:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

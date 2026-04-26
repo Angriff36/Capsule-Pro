@@ -69,15 +69,30 @@ export async function GET(request: NextRequest) {
 
     let locationMap: Record<string, { name: string; address?: string }> = {};
     if (locationIds.length > 0) {
-      const locations = await database.$queryRaw<
-        Array<{ id: string; name: string; address?: string }>
-      >`
-        SELECT id, name, address
-        FROM tenant_inventory.locations
-        WHERE tenant_id = ${tenantId}::uuid
-          AND id = ANY(${locationIds}::uuid[])
-      `;
-      locationMap = Object.fromEntries(locations.map((l) => [l.id, l]));
+      const locations = await database.location.findMany({
+        where: { tenantId, id: { in: locationIds } },
+        select: {
+          id: true,
+          name: true,
+          addressLine1: true,
+          addressLine2: true,
+          city: true,
+          stateProvince: true,
+          postalCode: true,
+        },
+      });
+      locationMap = Object.fromEntries(
+        locations.map((l) => {
+          const parts = [
+            l.addressLine1,
+            l.addressLine2,
+            l.city,
+            l.stateProvince,
+            l.postalCode,
+          ].filter(Boolean);
+          return [l.id, { name: l.name, address: parts.join(", ") || undefined }];
+        })
+      );
     }
 
     // Get supplier info
@@ -89,14 +104,10 @@ export async function GET(request: NextRequest) {
 
     let supplierMap: Record<string, string> = {};
     if (supplierIds.length > 0) {
-      const suppliers = await database.$queryRaw<
-        Array<{ id: string; name: string }>
-      >`
-        SELECT id, name
-        FROM tenant_inventory.suppliers
-        WHERE tenant_id = ${tenantId}::uuid
-          AND id = ANY(${supplierIds}::uuid[])
-      `;
+      const suppliers = await database.inventorySupplier.findMany({
+        where: { tenantId, id: { in: supplierIds } },
+        select: { id: true, name: true },
+      });
       supplierMap = Object.fromEntries(suppliers.map((s) => [s.id, s.name]));
     }
 
@@ -130,38 +141,25 @@ export async function GET(request: NextRequest) {
     > = {};
 
     if (driverIds.length > 0) {
-      const drivers = await database.$queryRaw<
-        Array<{ id: string; name: string; phone: string | null }>
-      >`
-        SELECT id, name, phone
-        FROM tenant_logistics.drivers
-        WHERE tenant_id = ${tenantId}::uuid
-          AND id = ANY(${driverIds}::uuid[])
-      `;
+      const drivers = await database.driver.findMany({
+        where: { tenantId, id: { in: driverIds } },
+        select: { id: true, name: true, phone: true },
+      });
       driverMap = Object.fromEntries(drivers.map((d) => [d.id, d]));
     }
 
     if (vehicleIds.length > 0) {
-      const vehicles = await database.$queryRaw<
-        Array<{
-          id: string;
-          make: string;
-          model: string;
-          plate_number?: string;
-        }>
-      >`
-        SELECT id, make, model, plate_number
-        FROM tenant_logistics.vehicles
-        WHERE tenant_id = ${tenantId}::uuid
-          AND id = ANY(${vehicleIds}::uuid[])
-      `;
+      const vehicles = await database.vehicle.findMany({
+        where: { tenantId, id: { in: vehicleIds } },
+        select: { id: true, make: true, model: true, plateNumber: true },
+      });
       vehicleMap = Object.fromEntries(
         vehicles.map((v) => [
           v.id,
           {
             make: v.make,
             model: v.model,
-            plateNumber: v.plate_number,
+            plateNumber: v.plateNumber ?? undefined,
           },
         ])
       );
@@ -303,7 +301,6 @@ export async function GET(request: NextRequest) {
     return manifestSuccessResponse({ deliveries, stats });
   } catch (error) {
     captureException(error);
-    console.error("Error loading tracking data:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

@@ -41,22 +41,17 @@ export async function POST(request: NextRequest) {
 
     // Verify driver exists and is available (if driverId provided)
     if (driverId) {
-      const driver = await database.$queryRaw<
-        Array<{ id: string; status: string; vehicle_id: string | null }>
-      >`
-        SELECT id, status, vehicle_id
-        FROM tenant_logistics.drivers
-        WHERE tenant_id = ${tenantId}::uuid
-          AND id = ${driverId}::uuid
-          AND deleted_at IS NULL
-      `;
+      const driver = await database.driver.findFirst({
+        where: { tenantId, id: driverId, deletedAt: null },
+        select: { id: true, status: true, vehicleId: true },
+      });
 
-      if (!driver.length) {
+      if (!driver) {
         return manifestErrorResponse("Driver not found", 404);
       }
 
       // If driver has a default vehicle and no vehicle specified, use driver's vehicle
-      const effectiveVehicleId = vehicleId || driver[0].vehicle_id;
+      const effectiveVehicleId = vehicleId || driver.vehicleId;
 
       // Update route with driver and vehicle
       const updatedRoute = await database.deliveryRoute.update({
@@ -67,16 +62,12 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // If route is in_progress, update driver status to on_route. The
-      // tenant_id filter prevents a cross-tenant write if a UUID happens to
-      // collide across tenants.
+      // If route is in_progress, update driver status to on_route
       if (existingRoute.status === "in_progress") {
-        await database.$executeRaw`
-          UPDATE tenant_logistics.drivers
-          SET status = 'on_route', updated_at = NOW()
-          WHERE tenant_id = ${tenantId}::uuid
-            AND id = ${driverId}::uuid
-        `;
+        await database.driver.update({
+          where: { tenantId_id: { tenantId, id: driverId } },
+          data: { status: "on_route" },
+        });
       }
 
       return manifestSuccessResponse({ route: updatedRoute });
@@ -94,7 +85,6 @@ export async function POST(request: NextRequest) {
     return manifestSuccessResponse({ route: updatedRoute });
   } catch (error) {
     captureException(error);
-    console.error("Error assigning driver:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

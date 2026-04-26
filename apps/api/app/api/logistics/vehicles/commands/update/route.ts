@@ -9,6 +9,40 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 
+type VehicleRow = {
+  id: string;
+  make: string;
+  model: string;
+  year: number | null;
+  plateNumber: string | null;
+  vin: string | null;
+  capacityWeight: { toNumber(): number } | null;
+  capacityVolume: { toNumber(): number } | null;
+  fuelType: string | null;
+  mileage: { toNumber(): number } | null;
+  status: string;
+  notes: string | null;
+  createdAt: Date;
+};
+
+function mapVehicleToSnake(v: VehicleRow) {
+  return {
+    id: v.id,
+    make: v.make,
+    model: v.model,
+    year: v.year,
+    plate_number: v.plateNumber,
+    vin: v.vin,
+    capacity_weight: v.capacityWeight?.toNumber?.() ?? null,
+    capacity_volume: v.capacityVolume?.toNumber?.() ?? null,
+    fuel_type: v.fuelType,
+    mileage: v.mileage?.toNumber?.() ?? null,
+    status: v.status,
+    notes: v.notes,
+    created_at: v.createdAt,
+  };
+}
+
 export async function POST(request: NextRequest) {
   try {
     const { orgId, userId } = await auth();
@@ -33,32 +67,36 @@ export async function POST(request: NextRequest) {
     } = await request.json();
     if (!vehicleId) return manifestErrorResponse("vehicleId is required", 400);
 
-    const result = await database.$queryRaw`
-      UPDATE tenant_logistics.vehicles
-      SET
-        make = COALESCE(${make ?? null}, make),
-        model = COALESCE(${model ?? null}, model),
-        year = COALESCE(${year ?? null}, year),
-        plate_number = COALESCE(${plateNumber ?? null}, plate_number),
-        vin = COALESCE(${vin ?? null}, vin),
-        capacity_weight = COALESCE(${capacityWeight ?? null}, capacity_weight),
-        capacity_volume = COALESCE(${capacityVolume ?? null}, capacity_volume),
-        fuel_type = COALESCE(${fuelType ?? null}, fuel_type),
-        mileage = COALESCE(${mileage ?? null}, mileage),
-        status = COALESCE(${status ?? null}, status),
-        notes = COALESCE(${notes ?? null}, notes),
-        updated_at = NOW()
-      WHERE tenant_id = ${tenantId}::uuid AND id = ${vehicleId}::uuid AND deleted_at IS NULL
-      RETURNING id, make, model, status
-    `;
+    const existing = await database.vehicle.findFirst({
+      where: {
+        tenantId,
+        id: vehicleId,
+        deletedAt: null,
+      },
+    });
 
-    if (!(result as any[]).length)
-      return manifestErrorResponse("Vehicle not found", 404);
+    if (!existing) return manifestErrorResponse("Vehicle not found", 404);
 
-    return manifestSuccessResponse({ vehicle: (result as any[])[0] });
+    const vehicle = await database.vehicle.update({
+      where: { tenantId_id: { tenantId, id: vehicleId } },
+      data: {
+        ...(make !== undefined && { make }),
+        ...(model !== undefined && { model }),
+        ...(year !== undefined && { year }),
+        ...(plateNumber !== undefined && { plateNumber }),
+        ...(vin !== undefined && { vin }),
+        ...(capacityWeight !== undefined && { capacityWeight }),
+        ...(capacityVolume !== undefined && { capacityVolume }),
+        ...(fuelType !== undefined && { fuelType }),
+        ...(mileage !== undefined && { mileage }),
+        ...(status !== undefined && { status }),
+        ...(notes !== undefined && { notes }),
+      },
+    });
+
+    return manifestSuccessResponse({ vehicle: mapVehicleToSnake(vehicle) });
   } catch (error) {
     captureException(error);
-    console.error("Error updating vehicle:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }
