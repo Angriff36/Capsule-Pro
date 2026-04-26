@@ -10,6 +10,9 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 
+import { checkPublicRateLimit } from "@/lib/public-rate-limit";
+import { sanitizeEmail, sanitizeText } from "@/lib/sanitize";
+
 type Params = Promise<{ token: string }>;
 
 interface SignContractBody {
@@ -27,6 +30,12 @@ export async function POST(
   { params }: { params: Params }
 ) {
   try {
+    // Rate limit by IP
+    const rateLimitResponse = await checkPublicRateLimit(request);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+
     const { token } = await params;
 
     if (!token) {
@@ -39,10 +48,21 @@ export async function POST(
     const body = (await request.json()) as SignContractBody;
     const { signatureData, signerName, signerEmail } = body;
 
-    // Validate required fields
-    if (!(signatureData && signerName)) {
+    // Sanitize user inputs to prevent stored XSS
+    const safeSignerName = sanitizeText(signerName, 200);
+    const safeSignerEmail = signerEmail ? sanitizeEmail(signerEmail) : null;
+
+    if (!safeSignerName) {
       return NextResponse.json(
-        { message: "Signature data and signer name are required" },
+        { message: "Valid signer name is required" },
+        { status: 400 }
+      );
+    }
+
+    // Validate required fields
+    if (!signatureData) {
+      return NextResponse.json(
+        { message: "Signature data is required" },
         { status: 400 }
       );
     }
@@ -97,8 +117,8 @@ export async function POST(
         tenantId: contract.tenantId,
         contractId: contract.id,
         signatureData,
-        signerName,
-        signerEmail: signerEmail || null,
+        signerName: safeSignerName,
+        signerEmail: safeSignerEmail,
         ipAddress,
       },
     });

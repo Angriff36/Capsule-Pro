@@ -10,6 +10,9 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 
+import { checkPublicRateLimit } from "@/lib/public-rate-limit";
+import { sanitizeEmail, sanitizeText } from "@/lib/sanitize";
+
 type Params = Promise<{ token: string }>;
 
 interface RespondRequest {
@@ -25,6 +28,12 @@ interface RespondRequest {
  */
 export async function POST(request: Request, { params }: { params: Params }) {
   try {
+    // Rate limit by IP
+    const rateLimitResponse = await checkPublicRateLimit(request);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+
     const { token } = await params;
 
     if (!token) {
@@ -44,9 +53,21 @@ export async function POST(request: Request, { params }: { params: Params }) {
       );
     }
 
-    if (!(responderName && responderEmail)) {
+    // Sanitize user inputs to prevent stored XSS
+    const safeName = sanitizeText(responderName, 200);
+    const safeEmail = sanitizeEmail(responderEmail);
+    const safeNotes = notes ? sanitizeText(notes, 5000) : null;
+
+    if (!safeName) {
       return NextResponse.json(
-        { message: "Responder name and email are required" },
+        { message: "Valid responder name is required" },
+        { status: 400 }
+      );
+    }
+
+    if (!safeEmail) {
+      return NextResponse.json(
+        { message: "Valid responder email is required" },
         { status: 400 }
       );
     }
@@ -129,13 +150,13 @@ export async function POST(request: Request, { params }: { params: Params }) {
         'proposal',
         ${proposal.id},
         ${action === "accept" ? "proposal_accepted" : "proposal_rejected"},
-        ${responderEmail},
+        ${safeEmail},
         ${JSON.stringify({ status: proposal.status })},
         ${JSON.stringify({
           status: action === "accept" ? "accepted" : "rejected",
-          responderName,
-          responderEmail,
-          notes: notes || null,
+          responderName: safeName,
+          responderEmail: safeEmail,
+          notes: safeNotes,
         })},
         NOW()
       )
