@@ -17,19 +17,38 @@
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-// vi.mock factories are hoisted above all imports, so the mock object must be
-// declared via vi.hoisted to be available when the factory runs.
-const { mockRateLimiter } = vi.hoisted(() => ({
-  mockRateLimiter: { limit: vi.fn() },
-}));
+// vi.mock factories are hoisted above all imports. We capture both the public
+// and webhook limiter instances so the assertions below can verify which
+// limiter (and which sliding-window threshold) each helper uses.
+const { mockPublicLimiter, mockWebhookLimiter, slidingWindowSpy } = vi.hoisted(
+  () => ({
+    mockPublicLimiter: { limit: vi.fn() },
+    mockWebhookLimiter: { limit: vi.fn() },
+    slidingWindowSpy: vi.fn((limit: number, window: string) => ({
+      limit,
+      window,
+    })),
+  })
+);
 
 vi.mock("@repo/rate-limit", () => ({
-  createRateLimiter: vi.fn(() => mockRateLimiter),
-  slidingWindow: vi.fn((limit: number, window: string) => ({ limit, window })),
+  createRateLimiter: vi.fn(({ prefix }: { prefix: string }) =>
+    prefix === "webhook_rate_limit" ? mockWebhookLimiter : mockPublicLimiter
+  ),
+  slidingWindow: slidingWindowSpy,
 }));
 
 // Import AFTER vi.mock is registered so the module receives the mocked dependency.
-import { checkPublicRateLimit } from "../../lib/public-rate-limit";
+import {
+  checkPublicRateLimit,
+  checkWebhookRateLimit,
+} from "../../lib/public-rate-limit";
+
+// Snapshot the slidingWindow construction calls now: each test's beforeEach
+// runs vi.clearAllMocks(), but the limiters were already built at module load.
+const slidingWindowConstructionCalls = slidingWindowSpy.mock.calls.map(
+  ([limit, window]) => `${limit}/${window}`
+);
 
 const SIGN_URL =
   "http://localhost:3000/api/public/contracts/abcdef12-3456-7890-abcd-ef1234567890/sign";
@@ -51,7 +70,7 @@ describe("checkPublicRateLimit", () => {
   });
 
   it("returns null when the request is under the limit", async () => {
-    mockRateLimiter.limit.mockResolvedValue({
+    mockPublicLimiter.limit.mockResolvedValue({
       success: true,
       limit: 10,
       remaining: 9,
@@ -60,12 +79,12 @@ describe("checkPublicRateLimit", () => {
 
     const response = await checkPublicRateLimit(makeRequest());
     expect(response).toBeNull();
-    expect(mockRateLimiter.limit).toHaveBeenCalledTimes(1);
+    expect(mockPublicLimiter.limit).toHaveBeenCalledTimes(1);
   });
 
   it("returns a 429 response when throttled", async () => {
     const reset = Date.now() + 60_000;
-    mockRateLimiter.limit.mockResolvedValue({
+    mockPublicLimiter.limit.mockResolvedValue({
       success: false,
       limit: 10,
       remaining: 0,
@@ -92,14 +111,14 @@ describe("checkPublicRateLimit", () => {
 
   it("fails open (returns null) when the limiter throws", async () => {
     // Redis outage must NOT block legitimate signers/responders.
-    mockRateLimiter.limit.mockRejectedValue(new Error("redis down"));
+    mockPublicLimiter.limit.mockRejectedValue(new Error("redis down"));
 
     const response = await checkPublicRateLimit(makeRequest());
     expect(response).toBeNull();
   });
 
   it("uses x-forwarded-for first IP as the bucket identity", async () => {
-    mockRateLimiter.limit.mockResolvedValue({
+    mockPublicLimiter.limit.mockResolvedValue({
       success: true,
       limit: 10,
       remaining: 9,
@@ -110,12 +129,12 @@ describe("checkPublicRateLimit", () => {
       makeRequest({ "x-forwarded-for": "203.0.113.5, 10.0.0.1" })
     );
 
-    const key = mockRateLimiter.limit.mock.calls[0]?.[0] as string;
+    const key = mockPublicLimiter.limit.mock.calls[0]?.[0] as string;
     expect(key.startsWith("203.0.113.5:")).toBe(true);
   });
 
   it("falls back to x-real-ip when x-forwarded-for is missing", async () => {
-    mockRateLimiter.limit.mockResolvedValue({
+    mockPublicLimiter.limit.mockResolvedValue({
       success: true,
       limit: 10,
       remaining: 9,
@@ -124,12 +143,12 @@ describe("checkPublicRateLimit", () => {
 
     await checkPublicRateLimit(makeRequest({ "x-real-ip": "198.51.100.7" }));
 
-    const key = mockRateLimiter.limit.mock.calls[0]?.[0] as string;
+    const key = mockPublicLimiter.limit.mock.calls[0]?.[0] as string;
     expect(key.startsWith("198.51.100.7:")).toBe(true);
   });
 
   it("falls back to 'unknown' when no proxy headers are present", async () => {
-    mockRateLimiter.limit.mockResolvedValue({
+    mockPublicLimiter.limit.mockResolvedValue({
       success: true,
       limit: 10,
       remaining: 9,
@@ -138,14 +157,14 @@ describe("checkPublicRateLimit", () => {
 
     await checkPublicRateLimit(makeRequest());
 
-    const key = mockRateLimiter.limit.mock.calls[0]?.[0] as string;
+    const key = mockPublicLimiter.limit.mock.calls[0]?.[0] as string;
     expect(key.startsWith("unknown:")).toBe(true);
   });
 
   it("normalizes dynamic URL segments to share a bucket across IDs", async () => {
     // Two different signing tokens must hit the same bucket per IP, otherwise
     // an attacker could cycle tokens to evade the limit.
-    mockRateLimiter.limit.mockResolvedValue({
+    mockPublicLimiter.limit.mockResolvedValue({
       success: true,
       limit: 10,
       remaining: 9,
@@ -166,13 +185,13 @@ describe("checkPublicRateLimit", () => {
     await checkPublicRateLimit(reqA);
     await checkPublicRateLimit(reqB);
 
-    const keyA = mockRateLimiter.limit.mock.calls[0]?.[0] as string;
-    const keyB = mockRateLimiter.limit.mock.calls[1]?.[0] as string;
+    const keyA = mockPublicLimiter.limit.mock.calls[0]?.[0] as string;
+    const keyB = mockPublicLimiter.limit.mock.calls[1]?.[0] as string;
     expect(keyA).toBe(keyB);
   });
 
   it("includes the HTTP method in the bucket so GET vs POST do not share a bucket", async () => {
-    mockRateLimiter.limit.mockResolvedValue({
+    mockPublicLimiter.limit.mockResolvedValue({
       success: true,
       limit: 10,
       remaining: 9,
@@ -186,10 +205,91 @@ describe("checkPublicRateLimit", () => {
     await checkPublicRateLimit(reqGet);
     await checkPublicRateLimit(reqPost);
 
-    const keyGet = mockRateLimiter.limit.mock.calls[0]?.[0] as string;
-    const keyPost = mockRateLimiter.limit.mock.calls[1]?.[0] as string;
+    const keyGet = mockPublicLimiter.limit.mock.calls[0]?.[0] as string;
+    const keyPost = mockPublicLimiter.limit.mock.calls[1]?.[0] as string;
     expect(keyGet).not.toBe(keyPost);
     expect(keyGet).toContain("GET:");
     expect(keyPost).toContain("POST:");
+  });
+});
+
+describe("checkWebhookRateLimit", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  const WEBHOOK_URL =
+    "http://localhost:3000/api/collaboration/notifications/email/webhook";
+
+  function makeWebhookRequest(headers: Record<string, string> = {}): Request {
+    return new Request(WEBHOOK_URL, { method: "POST", headers });
+  }
+
+  it("uses a 60/min sliding window (higher than the 10/min public limit)", () => {
+    // The slidingWindow factory is invoked once per limiter at module load.
+    // We need to know that the webhook profile got the 60-event ceiling, not
+    // the public 10-event one — otherwise legitimate Resend bursts will 429.
+    expect(slidingWindowConstructionCalls).toContain("10/60 s");
+    expect(slidingWindowConstructionCalls).toContain("60/60 s");
+  });
+
+  it("uses the webhook limiter, not the public limiter", async () => {
+    mockWebhookLimiter.limit.mockResolvedValue({
+      success: true,
+      limit: 60,
+      remaining: 59,
+      reset: Date.now() + 60_000,
+    });
+
+    const response = await checkWebhookRateLimit(makeWebhookRequest());
+    expect(response).toBeNull();
+    expect(mockWebhookLimiter.limit).toHaveBeenCalledTimes(1);
+    // Crucial: webhook traffic must NOT consume the public mutation budget,
+    // otherwise a noisy webhook source could starve contract signers.
+    expect(mockPublicLimiter.limit).not.toHaveBeenCalled();
+  });
+
+  it("returns a 429 response when throttled", async () => {
+    const reset = Date.now() + 60_000;
+    mockWebhookLimiter.limit.mockResolvedValue({
+      success: false,
+      limit: 60,
+      remaining: 0,
+      reset,
+    });
+
+    const response = await checkWebhookRateLimit(makeWebhookRequest());
+    expect(response?.status).toBe(429);
+    expect(response?.headers.get("X-RateLimit-Limit")).toBe("60");
+    expect(response?.headers.get("Retry-After")).toBe("60");
+  });
+
+  it("fails open when the limiter throws so a Redis outage does not drop webhook events", async () => {
+    mockWebhookLimiter.limit.mockRejectedValue(new Error("redis down"));
+
+    const response = await checkWebhookRateLimit(makeWebhookRequest());
+    expect(response).toBeNull();
+  });
+
+  it("buckets per-IP using x-forwarded-for", async () => {
+    mockWebhookLimiter.limit.mockResolvedValue({
+      success: true,
+      limit: 60,
+      remaining: 59,
+      reset: Date.now() + 60_000,
+    });
+
+    await checkWebhookRateLimit(
+      makeWebhookRequest({ "x-forwarded-for": "203.0.113.5, 10.0.0.1" })
+    );
+
+    const key = mockWebhookLimiter.limit.mock.calls[0]?.[0] as string;
+    expect(key.startsWith("203.0.113.5:")).toBe(true);
+    expect(key).toContain("POST:");
+    expect(key).toContain("/api/collaboration/notifications/email/webhook");
   });
 });

@@ -16,6 +16,8 @@ import { captureException } from "@sentry/nextjs";
 
 import { type NextRequest, NextResponse } from "next/server";
 
+import { checkWebhookRateLimit } from "@/lib/public-rate-limit";
+
 /**
  * Resend webhook event types
  */
@@ -95,6 +97,14 @@ function verifyResendSignature(
  */
 export async function POST(request: NextRequest) {
   try {
+    // Rate limit before doing any cryptographic work or DB lookups so a flood
+    // of unsigned/forged requests cannot exhaust webhook resources. HMAC
+    // verification below remains the primary authentication mechanism.
+    const rateLimitResponse = await checkWebhookRateLimit(request);
+    if (rateLimitResponse) {
+      return rateLimitResponse;
+    }
+
     const rawBody = await request.text();
     const signatureHeader = request.headers.get("resend-signature") ?? "";
 

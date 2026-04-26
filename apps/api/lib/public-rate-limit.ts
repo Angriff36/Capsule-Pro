@@ -1,12 +1,20 @@
 /**
  * Public Endpoint Rate Limiting
  *
- * IP-based rate limiting for public mutation endpoints that are exempt from
- * the global rate limiter. These endpoints don't require authentication, so
- * we rate limit by client IP instead of tenant/user identity.
+ * IP-based rate limiting for unauthenticated endpoints that bypass the global
+ * tenant/user-scoped limiter. Two profiles are exposed:
  *
- * Limit: 10 requests per minute per IP per endpoint
- * Fail-open: if Redis is unavailable, requests are allowed through
+ *  - `checkPublicRateLimit` — 10 requests / 60s. For human-driven public
+ *    mutations (contract signing, proposal responses) where realistic traffic
+ *    is at most a handful of submissions per minute per signer.
+ *
+ *  - `checkWebhookRateLimit` — 60 requests / 60s. For machine-driven webhook
+ *    receivers (e.g. Resend email delivery callbacks) where legitimate bursts
+ *    from a single source IP can exceed the human threshold but still need
+ *    abuse protection beyond HMAC signature verification.
+ *
+ * Both fail open: if the rate limit store is unavailable, requests are
+ * allowed through so a Redis outage cannot break legitimate flows.
  */
 
 import { createRateLimiter, slidingWindow } from "@repo/rate-limit";
@@ -15,6 +23,11 @@ import { NextResponse } from "next/server";
 const publicLimiter = createRateLimiter({
   limiter: slidingWindow(10, "60 s"),
   prefix: "public_rate_limit",
+});
+
+const webhookLimiter = createRateLimiter({
+  limiter: slidingWindow(60, "60 s"),
+  prefix: "webhook_rate_limit",
 });
 
 /**
@@ -47,20 +60,18 @@ function getEndpointKey(request: Request): string {
   return `${request.method}:${normalized}`;
 }
 
-/**
- * Checks whether the incoming request should be rate-limited.
- *
- * @returns A 429 NextResponse if rate limited, or null if the request is allowed.
- */
-export async function checkPublicRateLimit(
-  request: Request
+type Limiter = typeof publicLimiter;
+
+async function applyLimit(
+  request: Request,
+  limiter: Limiter
 ): Promise<NextResponse | null> {
   try {
     const ip = getClientIp(request);
     const endpoint = getEndpointKey(request);
     const key = `${ip}:${endpoint}`;
 
-    const result = await publicLimiter.limit(key);
+    const result = await limiter.limit(key);
 
     if (!result.success) {
       return NextResponse.json(
@@ -82,4 +93,32 @@ export async function checkPublicRateLimit(
     // Fail open -- don't block requests if rate limiter is down
     return null;
   }
+}
+
+/**
+ * Checks whether a public-mutation request should be rate-limited (10/min/IP).
+ *
+ * @returns A 429 NextResponse if rate limited, or null if the request is allowed.
+ */
+export function checkPublicRateLimit(
+  request: Request
+): Promise<NextResponse | null> {
+  return applyLimit(request, publicLimiter);
+}
+
+/**
+ * Checks whether a webhook receiver request should be rate-limited (60/min/IP).
+ *
+ * Webhook senders (Resend, Stripe, etc.) can legitimately deliver dozens of
+ * events per minute from a single source IP for a busy tenant; the human
+ * 10/min ceiling would drop legitimate events. Defense in depth still applies:
+ * HMAC signature verification remains the primary auth, and this limiter
+ * caps the impact of a leaked secret or a misbehaving sender.
+ *
+ * @returns A 429 NextResponse if rate limited, or null if the request is allowed.
+ */
+export function checkWebhookRateLimit(
+  request: Request
+): Promise<NextResponse | null> {
+  return applyLimit(request, webhookLimiter);
 }
