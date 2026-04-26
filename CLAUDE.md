@@ -149,6 +149,6 @@ Last: [first session]
 
 ## Last Session Bridge
 [Emergency bridge — running bridge was not updated]
-Files: apps/api/app/api/staff/schedules/route.ts (create), apps/api/app/api/staff/shifts/available-employees/route.ts (create), apps/api/app/api/staff/employees/route.ts (create), apps/api/app/api/staff/employees/[id]/route.ts (create), apps/api/app/api/staff/shifts/route.ts (create), apps/api/app/api/staff/shifts/bulk-assignment/helpers.ts (create), apps/api/app/api/staff/performance/list/route.ts (create), apps/api/app/api/staff/performance/commands/create/route.ts (create), apps/api/app/api/staff/performance/commands/complete/route.ts (create)
+Files: apps/api/__tests__/lib/sanitize.test.ts (create), apps/api/__tests__/lib/public-rate-limit.test.ts (create), apps/api/__tests__/lib/public-rate-limit.test.ts (edit), IMPLEMENTATION_PLAN.md (edit)
 
 # === END COGNILAYER ===
