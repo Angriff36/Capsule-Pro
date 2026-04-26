@@ -35,21 +35,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await database.$queryRaw`
-      INSERT INTO tenant_staff.performance_reviews (
-        tenant_id, employee_id, reviewer_id, review_type, scheduled_date, status
-      ) VALUES (
-        ${tenantId}::uuid,
-        ${employeeId}::uuid,
-        ${userId}::uuid,
-        ${reviewType},
-        ${new Date(scheduledDate)}::timestamptz,
-        'scheduled'
-      )
-      RETURNING id, employee_id, reviewer_id, review_type, scheduled_date, status, created_at
-    `;
+    const review = await database.performanceReview.create({
+      data: {
+        tenant_id: tenantId,
+        employee_id: employeeId,
+        reviewer_id: userId,
+        review_type: reviewType,
+        scheduled_date: new Date(scheduledDate),
+        status: "scheduled",
+      },
+    });
 
-    return manifestSuccessResponse({ review: (result as any[])[0] });
+    return manifestSuccessResponse({ review });
   } catch (error) {
     captureException(error);
     console.error("Error creating performance review:", error);

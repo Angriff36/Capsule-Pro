@@ -3,7 +3,7 @@
  * Extracted to reduce cognitive complexity of the main route handler
  */
 
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import {
   autoAssignShift,
   getAssignmentSuggestionsForMultipleShifts,
@@ -42,60 +42,40 @@ export async function fetchShiftsForAutoAssignment(
 ) {
   const shiftIds = shiftsToAutoAssign.map((s) => s.shiftId);
 
-  const shiftsFromDb = await database.$queryRaw<
-    Array<{
-      tenant_id: string;
-      id: string;
-      schedule_id: string;
-      location_id: string;
-      shift_start: Date;
-      shift_end: Date;
-      role_during_shift: string | null;
-    }>
-  >(
-    Prisma.sql`
-      SELECT
-        tenant_id,
-        id,
-        schedule_id,
-        location_id,
-        shift_start,
-        shift_end,
-        role_during_shift
-      FROM tenant_staff.schedule_shifts
-      WHERE tenant_id = ${tenantId}
-        AND id = ANY(${shiftIds})
-        AND deleted_at IS NULL
-    `
-  );
-
-  return shiftsFromDb;
+  return database.scheduleShift.findMany({
+    where: {
+      tenantId,
+      id: { in: shiftIds },
+      deletedAt: null,
+    },
+    select: {
+      tenantId: true,
+      id: true,
+      scheduleId: true,
+      locationId: true,
+      shift_start: true,
+      shift_end: true,
+      role_during_shift: true,
+    },
+  });
 }
 
 /**
  * Build shift requirements for auto-assignment from database records
  */
 export function buildShiftRequirements(
-  shiftsFromDb: Array<{
-    tenant_id: string;
-    id: string;
-    schedule_id: string;
-    location_id: string;
-    shift_start: Date;
-    shift_end: Date;
-    role_during_shift: string | null;
-  }>,
+  shiftsFromDb: Awaited<ReturnType<typeof fetchShiftsForAutoAssignment>>,
   shiftsToAutoAssign: ShiftAssignmentInput[]
 ): ShiftRequirement[] {
   return shiftsFromDb.map((shift) => {
     const requestShift = shiftsToAutoAssign.find((s) => s.shiftId === shift.id);
     return {
       shiftId: shift.id,
-      scheduleId: shift.schedule_id,
-      locationId: shift.location_id,
+      scheduleId: shift.scheduleId,
+      locationId: shift.locationId,
       shiftStart: shift.shift_start,
       shiftEnd: shift.shift_end,
-      roleDuringShift: shift.role_during_shift || undefined,
+      roleDuringShift: shift.role_during_shift ?? undefined,
       requiredSkills: requestShift?.requiredSkills || [],
     };
   });
@@ -127,31 +107,28 @@ async function validateEmployeeForDryRun(
   firstName: string | null;
   lastName: string | null;
 }> {
-  const employee = await database.$queryRaw<
-    Array<{
-      id: string;
-      first_name: string | null;
-      last_name: string | null;
-    }>
-  >(
-    Prisma.sql`
-      SELECT id, first_name, last_name
-      FROM tenant_staff.employees
-      WHERE tenant_id = ${tenantId}
-        AND id = ${employeeId}
-        AND deleted_at IS NULL
-        AND is_active = true
-    `
-  );
+  const employee = await database.user.findFirst({
+    where: {
+      tenantId,
+      id: employeeId,
+      deletedAt: null,
+      isActive: true,
+    },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+    },
+  });
 
-  if (!employee || employee.length === 0) {
+  if (!employee) {
     return { valid: false, firstName: null, lastName: null };
   }
 
   return {
     valid: true,
-    firstName: employee[0].first_name,
-    lastName: employee[0].last_name,
+    firstName: employee.firstName,
+    lastName: employee.lastName,
   };
 }
 
@@ -287,7 +264,6 @@ export function buildAutoAssignmentResult(
 ): AssignmentResult {
   const { bestMatch, canAutoAssign, laborBudgetWarning } = suggestion;
 
-  // Skip if no suggestions
   if (!bestMatch) {
     return {
       shiftId,
@@ -299,7 +275,6 @@ export function buildAutoAssignmentResult(
 
   const employeeName = `${bestMatch.employee.firstName} ${bestMatch.employee.lastName}`;
 
-  // Skip if only high confidence and this isn't high confidence
   const confidenceCheck = shouldSkipForConfidence(
     onlyHighConfidence,
     canAutoAssign,
@@ -317,7 +292,6 @@ export function buildAutoAssignmentResult(
     };
   }
 
-  // Skip if labor budget warning
   const budgetCheck = shouldSkipForBudget(laborBudgetWarning);
   if (budgetCheck.skip && budgetCheck.reason) {
     return {
@@ -331,7 +305,6 @@ export function buildAutoAssignmentResult(
     };
   }
 
-  // Dry run mode - just return what would be assigned
   if (dryRun) {
     return {
       shiftId,
@@ -344,7 +317,6 @@ export function buildAutoAssignmentResult(
     };
   }
 
-  // Actually assigned the employee
   if (assignResult) {
     return {
       shiftId,
@@ -359,7 +331,6 @@ export function buildAutoAssignmentResult(
     };
   }
 
-  // Fallback - shouldn't reach here
   return {
     shiftId,
     success: false,
@@ -383,22 +354,18 @@ export async function processAutoAssignShifts(
     return results;
   }
 
-  // Get shift details from database
   const shiftsFromDb = await fetchShiftsForAutoAssignment(
     tenantId,
     shiftsToAutoAssign
   );
 
-  // Build requirements for auto-assignment
   const requirements = buildShiftRequirements(shiftsFromDb, shiftsToAutoAssign);
 
-  // Get assignment suggestions
   const suggestions = await getAssignmentSuggestionsForMultipleShifts(
     tenantId,
     requirements
   );
 
-  // Execute assignments based on suggestions
   for (const suggestion of suggestions) {
     let assignResult: { success: boolean; message: string } | undefined;
 

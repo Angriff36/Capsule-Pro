@@ -35,26 +35,36 @@ export async function POST(request: NextRequest) {
       return manifestErrorResponse("Rating must be between 1 and 5", 400);
     }
 
-    const result = await database.$queryRaw`
-      UPDATE tenant_staff.performance_reviews
-      SET
-        status = 'completed',
-        completed_date = NOW(),
-        rating = ${rating}::decimal(3,2),
-        strengths = ${strengths || null}::text,
-        areas_for_improvement = ${areasForImprovement || null}::text,
-        goals_next_period = ${goalsNextPeriod || null}::text,
-        manager_comments = ${managerComments || null}::text,
-        updated_at = NOW()
-      WHERE tenant_id = ${tenantId}::uuid AND id = ${reviewId}::uuid AND deleted_at IS NULL
-      RETURNING id, status, rating, completed_date
-    `;
+    const review = await database.performanceReview.updateMany({
+      where: {
+        tenant_id: tenantId,
+        id: reviewId,
+        deleted_at: null,
+      },
+      data: {
+        status: "completed",
+        completed_date: new Date(),
+        rating,
+        strengths: strengths ?? null,
+        areas_for_improvement: areasForImprovement ?? null,
+        goals_next_period: goalsNextPeriod ?? null,
+        manager_comments: managerComments ?? null,
+        updated_at: new Date(),
+      },
+    });
 
-    if (!(result as any[]).length) {
+    if (review.count === 0) {
       return manifestErrorResponse("Review not found", 404);
     }
 
-    return manifestSuccessResponse({ review: (result as any[])[0] });
+    return manifestSuccessResponse({
+      review: {
+        id: reviewId,
+        status: "completed",
+        rating,
+        completed_date: new Date(),
+      },
+    });
   } catch (error) {
     captureException(error);
     console.error("Error completing performance review:", error);

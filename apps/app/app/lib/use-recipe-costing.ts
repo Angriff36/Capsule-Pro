@@ -1,3 +1,5 @@
+"use client";
+
 /**
  * Recipe Costing Client API Functions
  *

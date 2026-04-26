@@ -21,42 +21,41 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status");
     const employeeId = searchParams.get("employeeId");
 
-    let whereClause = "WHERE pr.tenant_id = $1::uuid AND pr.deleted_at IS NULL";
-    const params: any[] = [tenantId];
-    let paramIndex = 2;
+    const where = {
+      tenant_id: tenantId,
+      deleted_at: null,
+      ...(status && status !== "all" ? { status } : {}),
+      ...(employeeId ? { employee_id: employeeId } : {}),
+    };
 
-    if (status && status !== "all") {
-      whereClause += ` AND pr.status = $${paramIndex}::text`;
-      params.push(status);
-      paramIndex++;
-    }
+    const reviews = await database.performanceReview.findMany({
+      where,
+      orderBy: { scheduled_date: "desc" },
+    });
 
-    if (employeeId) {
-      whereClause += ` AND pr.employee_id = $${paramIndex}::uuid`;
-      params.push(employeeId);
-      paramIndex++;
-    }
+    // Fetch employee and reviewer names
+    const employeeIds = [...new Set(reviews.map((r) => r.employee_id))];
+    const reviewerIds = [...new Set(reviews.map((r) => r.reviewer_id))];
+    const allUserIds = [...new Set([...employeeIds, ...reviewerIds])];
 
-    const reviews = await database.$queryRawUnsafe(
-      `
-      SELECT
-        pr.id, pr.employee_id, pr.reviewer_id, pr.review_type,
-        pr.scheduled_date, pr.completed_date, pr.status,
-        pr.rating, pr.strengths, pr.areas_for_improvement,
-        pr.goals_next_period, pr.manager_comments, pr.employee_comments,
-        pr.created_at,
-        e.first_name || ' ' || e.last_name as employee_name,
-        r.first_name || ' ' || r.last_name as reviewer_name
-      FROM tenant_staff.performance_reviews pr
-      LEFT JOIN accounts.users e ON e.id = pr.employee_id
-      LEFT JOIN accounts.users r ON r.id = pr.reviewer_id
-      ${whereClause}
-      ORDER BY pr.scheduled_date DESC
-    `,
-      ...params
+    const users =
+      allUserIds.length > 0
+        ? await database.user.findMany({
+            where: { id: { in: allUserIds } },
+            select: { id: true, firstName: true, lastName: true },
+          })
+        : [];
+    const userMap = new Map(
+      users.map((u) => [u.id, `${u.firstName} ${u.lastName}`])
     );
 
-    return manifestSuccessResponse({ reviews });
+    const enrichedReviews = reviews.map((review) => ({
+      ...review,
+      employee_name: userMap.get(review.employee_id) ?? "Unknown",
+      reviewer_name: userMap.get(review.reviewer_id) ?? "Unknown",
+    }));
+
+    return manifestSuccessResponse({ reviews: enrichedReviews });
   } catch (error) {
     captureException(error);
     console.error("Error listing performance reviews:", error);

@@ -1,5 +1,5 @@
 import { auth } from "@repo/auth/server";
-import { database, Prisma } from "@repo/database";
+import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -40,7 +40,6 @@ export async function GET(request: Request) {
   const startDate = new Date(shiftStart);
   const endDate = new Date(shiftEnd);
 
-  // Validate shift end is after start
   if (endDate <= startDate) {
     return NextResponse.json(
       { message: "Shift end time must be after start time" },
@@ -49,83 +48,92 @@ export async function GET(request: Request) {
   }
 
   try {
-    const employees = await database.$queryRaw<
+    // Step 1: Find conflicting shifts in the time range
+    const conflictingShifts = await database.scheduleShift.findMany({
+      where: {
+        tenantId,
+        deletedAt: null,
+        ...(excludeShiftId ? { id: { not: excludeShiftId } } : {}),
+        shift_start: { lt: endDate },
+        shift_end: { gt: startDate },
+      },
+      select: {
+        id: true,
+        employeeId: true,
+        locationId: true,
+        shift_start: true,
+        shift_end: true,
+      },
+    });
+
+    // Step 2: Get location names for conflicting shifts
+    const conflictLocationIds = [
+      ...new Set(conflictingShifts.map((s) => s.locationId)),
+    ];
+    const conflictLocations =
+      conflictLocationIds.length > 0
+        ? await database.location.findMany({
+            where: { id: { in: conflictLocationIds } },
+            select: { id: true, name: true },
+          })
+        : [];
+    const locationMap = new Map(conflictLocations.map((l) => [l.id, l.name]));
+
+    // Step 3: Group conflicts by employee
+    const conflictsByEmployee = new Map<
+      string,
       Array<{
         id: string;
-        first_name: string | null;
-        last_name: string | null;
-        email: string;
-        role: string;
-        is_active: boolean;
-        has_conflicting_shift: boolean;
-        conflicting_shifts: Array<{
-          id: string;
-          shift_start: Date;
-          shift_end: Date;
-          location_name: string;
-        }>;
+        shift_start: Date;
+        shift_end: Date;
+        location_name: string;
       }>
-    >(
-      Prisma.sql`
-        WITH employee_conflicts AS (
-          SELECT DISTINCT
-            ss.employee_id,
-            jsonb_agg(
-              jsonb_build_object(
-                'id', ss.id,
-                'shift_start', ss.shift_start,
-                'shift_end', ss.shift_end,
-                'location_name', l.name
-              )
-            ) AS conflicting_shifts
-          FROM tenant_staff.schedule_shifts ss
-          JOIN tenant.locations l ON l.tenant_id = ss.tenant_id AND l.id = ss.location_id
-          WHERE ss.tenant_id = ${tenantId}
-            AND ss.deleted_at IS NULL
-            ${excludeShiftId ? Prisma.sql`AND ss.id != ${excludeShiftId}` : Prisma.empty}
-            AND (ss.shift_start < ${endDate}) AND (ss.shift_end > ${startDate})
-          GROUP BY ss.employee_id
-        )
-        SELECT
-          e.id,
-          e.first_name,
-          e.last_name,
-          e.email,
-          e.role,
-          e.is_active,
-          COALESCE(ec.has_conflicting_shift, false) AS has_conflicting_shift,
-          COALESCE(ec.conflicting_shifts, '[]'::jsonb) AS conflicting_shifts
-        FROM tenant_staff.employees e
-        LEFT JOIN (
-          SELECT
-            employee_id,
-            true AS has_conflicting_shift,
-            conflicting_shifts
-          FROM employee_conflicts
-        ) ec ON ec.employee_id = e.id
-        WHERE e.tenant_id = ${tenantId}
-          AND e.deleted_at IS NULL
-          AND e.is_active = true
-          ${requiredRole ? Prisma.sql`AND e.role = ${requiredRole}` : Prisma.empty}
-        ORDER BY
-          has_conflicting_shift ASC,
-          e.last_name ASC,
-          e.first_name ASC
-      `
-    );
+    >();
+    for (const shift of conflictingShifts) {
+      const conflicts = conflictsByEmployee.get(shift.employeeId) ?? [];
+      conflicts.push({
+        id: shift.id,
+        shift_start: shift.shift_start,
+        shift_end: shift.shift_end,
+        location_name: locationMap.get(shift.locationId) ?? "Unknown",
+      });
+      conflictsByEmployee.set(shift.employeeId, conflicts);
+    }
 
-    return NextResponse.json({
-      employees: employees.map((e) => ({
-        id: e.id,
-        firstName: e.first_name,
-        lastName: e.last_name,
-        email: e.email,
-        role: e.role,
-        isActive: e.is_active,
-        hasConflictingShift: e.has_conflicting_shift,
-        conflictingShifts: e.conflicting_shifts,
-      })),
+    // Step 4: Get all active employees
+    const employees = await database.user.findMany({
+      where: {
+        tenantId,
+        deletedAt: null,
+        isActive: true,
+        ...(requiredRole ? { role: requiredRole } : {}),
+      },
+      orderBy: [{ lastName: "asc" }, { firstName: "asc" }],
     });
+
+    // Step 5: Merge and sort (non-conflicting first)
+    const result = employees
+      .map((emp) => ({
+        id: emp.id,
+        firstName: emp.firstName,
+        lastName: emp.lastName,
+        email: emp.email,
+        role: emp.role,
+        isActive: emp.isActive,
+        hasConflictingShift: conflictsByEmployee.has(emp.id),
+        conflictingShifts: conflictsByEmployee.get(emp.id) ?? [],
+      }))
+      .sort((a, b) => {
+        if (a.hasConflictingShift !== b.hasConflictingShift) {
+          return a.hasConflictingShift ? 1 : -1;
+        }
+        return (
+          (a.lastName ?? "").localeCompare(b.lastName ?? "") ||
+          (a.firstName ?? "").localeCompare(b.firstName ?? "")
+        );
+      });
+
+    return NextResponse.json({ employees: result });
   } catch (error) {
     captureException(error);
     console.error("Error fetching available employees:", error);

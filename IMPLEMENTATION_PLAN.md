@@ -1,6 +1,7 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-26 (twenty-seventh pass — verified Blocker 2a (procurement requisitions) already resolved: manifest promoted, Prisma models exist, all 8 command routes functional. Fixed remaining HIGH raw SQL issues (inventory/batch $executeRawUnsafe→$executeRaw, public route tenant verification, kitchen recipes compare IN clause, kitchen AI bulk-generate tenant filter). Added procurement test suite. TypeScript: 0 errors. Tests: 956+ pass, 0 failures.)
+> **Last updated:** 2026-04-26 (twenty-eighth pass — Fixed frontend CRITICAL: chart-of-accounts PATCH→PUT (use-chart-of-accounts.ts:159). Created missing payments export CSV route (/api/accounting/payments/export/route.ts). Fixed procurement falsy-value bugs: || to ?? in vendor update (paymentTerms, country) and budget update (periodType, thresholdWarningPct, thresholdCriticalPct, status). Added 'use client' directive to use-recipe-costing.ts. Verified already-fixed items: inventory/batch ($executeRaw already uses Prisma.sql), audit-log ($queryRaw already uses Prisma.sql), kitchen AI bulk-generate (tenant_id filter already present). Staff module: 9 routes converted from raw SQL to Prisma ORM (employees, performance, schedules, shifts). TypeScript: 0 errors. Tests: 1043 pass, 0 failures.)
+> **Twenty-seventh pass:** verified Blocker 2a (procurement requisitions) already resolved: manifest promoted, Prisma models exist, all 8 command routes functional. Fixed remaining HIGH raw SQL issues (inventory/batch $executeRawUnsafe→$executeRaw, public route tenant verification, kitchen recipes compare IN clause, kitchen AI bulk-generate tenant filter). Added procurement test suite. TypeScript: 0 errors. Tests: 956+ pass, 0 failures.
 > **Twenty-fifth pass:** logistics: converted all 10 logistics routes from raw SQL to Prisma ORM. Vehicles (3 routes), drivers (4 routes), dispatch (2 routes), tracking (1 route). Entire logistics module now has zero `$queryRaw`/`$executeRaw` calls. Removed `$queryRawUnsafe` driver-list query, `buildVehicleAssignment` Prisma.sql helper, and all `console.error` calls. No new test failures; 956 tests pass, 0 failures.
 > **Twenty-fourth pass:** facilities: converted all 12 facilities routes from raw SQL to Prisma ORM. Added `FacilityAsset`↔`FacilityArea` Prisma relation. Removed 3 duplicate `/api/chartofaccount/` auto-generated routes. No new test failures; 956 tests pass, 0 failures.
 > **Twenty-third pass:** accounting module: added RevenueRecognitionSchedule + RevenueRecognitionLine Prisma models + migration with RLS. Rewrote and promoted 3 quarantined manifests (invoice-rules, payment-rules, revenue-recognition-rules) from imperative DSL to compilable functional DSL (removed enum/let/if-else, replaced with string-based constraints/ternary expressions). Replaced revenue recognition 501 stubs with working route implementations. IR now 67 manifests, ~100 entities, ~460 commands.
@@ -519,6 +520,9 @@ No new test failures introduced. 3 quarantined manifests promoted (invoice-rules
 
 ### Test suite status (twenty-fourth pass)
 No new test failures. All 12 facilities routes converted from raw SQL to Prisma ORM. 956 tests pass, 0 failures.
+
+### Test suite status (twenty-eighth pass)
+No new test failures. 1043 tests pass, 0 failures. Staff module Prisma conversion and procurement falsy-value fixes verified.
 
 ### Duplicate `softDelete/` + `soft-delete/` directories
 See Blocker 4. Canonical choice: `soft-delete/` (kebab-case). Re-verification 2026-04-24: 2 modules have BOTH variants, 1 has only the camelCase, 21 modules total use one or the other. Prior "~45 modules" figure conflated paths with modules.
@@ -1218,8 +1222,8 @@ Of 1,577 raw-SQL occurrences across 250 files (38 files use unsafe variants):
 | `apps/api/app/api/payroll/approvals/history/route.ts` | 83 | `pah.payroll_run_id = '${payrollRunId}'::uuid` — string concatenation | Not parameterized; relies on UUID regex validation upstream | **FIXED 2026-04-26** (commit eb3e6501e): Full rewrite to `Prisma.sql` fragments with `Prisma.join`; `tenant_id` and `payrollRunId` are now bound parameters cast as `::uuid`. |
 | `apps/api/app/api/facilities/assets/commands/create/route.ts` | 74-76 | `${purchaseCost \|\| null}::numeric` — falsy-value bug | `0 \|\| null` returns null instead of 0 |
 | `apps/api/app/api/facilities/assets/commands/update/route.ts` | 52-55 | `COALESCE(${purchaseCost \|\| null}::numeric, purchase_cost)` | Same falsy-value bug: cost of `0` treated as null |
-| `apps/api/app/api/procurement/vendors/commands/update/route.ts` | 55-69 | 14 ternary checks mixing `${x !== undefined ? x : null}` with `${x \|\| "default"}` | Inconsistent null handling for empty strings and zeros |
-| `apps/api/app/api/procurement/budget/commands/update/route.ts` | 49-61 | `${fiscalYear ? fiscalYear : null}::int` | Falsy-value bug: `fiscalYear` of `0` becomes null |
+| `apps/api/app/api/procurement/vendors/commands/update/route.ts` | ~~55-69~~ | ~~14 ternary checks mixing `${x !== undefined ? x : null}` with `${x \|\| "default"}`~~ | **FIXED (twenty-eighth pass)**: Changed `||` to `??` for `paymentTerms` and `country` fields |
+| `apps/api/app/api/procurement/budget/commands/update/route.ts` | ~~49-61~~ | ~~`${fiscalYear ? fiscalYear : null}::int`~~ | **FIXED (twenty-eighth pass)**: Changed `||` to `??` for `periodType`, `thresholdWarningPct`, `thresholdCriticalPct`, `status` |
 | `packages/manifest-adapters/src/bottleneck-detector/detector.ts` | 349, 421, 432, 584, 640 | `${locationId ? "AND ... $N" : ""}` — conditional WHERE | Parameter indices shift based on condition, easy to misalign |
 | `apps/api/app/api/kitchen/recipes/versions/compare/route.ts` | ~155 | `(${unitIds.join(",")}::int2)` — joins unit IDs into SQL cast | Non-numeric `unitId` produces invalid SQL |
 
@@ -1291,15 +1295,15 @@ Of 1,577 raw-SQL occurrences across 250 files (38 files use unsafe variants):
 5. ~~**CRITICAL**: Verify whether `apps/api/app/api/administrative/trash/list/route.ts:739-744` is dead code. If live, rewrite to use proper parameterized queries instead of `'${params[idx]}'` string replacement.~~ **RESOLVED 2026-04-26 (CRIT-2)**: Verified dead code (results overwritten by subsequent loop 3 Prisma `findMany` block). Both vulnerable loops deleted; `Prisma` import removed; sortBy/sortOrder coerced to typed allowlist. Regression test pins no `$queryRaw`/`$queryRawUnsafe` usage on the GET path.
 6. ~~**HIGH**: Add allowlist validation for `orderClause` in `get-client-ltv.ts:456`.~~ **RESOLVED 2026-04-26**: Added `ALLOWED_ORDER_CLAUSES` const allowlist with explicit validation.
 7. ~~**HIGH**: Fix parameter index mismatches in `get-employee-performance.ts:160,175,209` — `$2` should be `$3` where employeeId occupies `$2`.~~ **RESOLVED 2026-04-26**: Changed all three date filter `$2` to `$3` and added `threeMonthsAgo` parameter.
-8. **HIGH**: Migrate `inventory/batch/route.ts:190-198` from `$executeRawUnsafe` to `$executeRaw` tagged template.
+8. ~~**HIGH**: Migrate `inventory/batch/route.ts:190-198` from `$executeRawUnsafe` to `$executeRaw` tagged template.~~ **ALREADY RESOLVED** — `$executeRaw` already uses `Prisma.sql` tagged templates (stale finding, verified twenty-eighth pass)
 9. ~~**HIGH**: Add `tenant_id` filter to `apps/api/app/api/procurement/approvals/action/route.ts:100-111` UPDATE query.~~ **RESOLVED (FIXED 2026-04-26, commit eb3e6501e)**
 10. **HIGH**: Add tenant verification to public route queries in `public/contracts/[token]/route.ts:98` and `public/proposals/[token]/route.ts:121-172`.
-11. **HIGH**: Migrate audit-log routes from `$queryRawUnsafe` to `$queryRaw` tagged template with `Prisma.sql` fragment composition.
+11. ~~**HIGH**: Migrate audit-log routes from `$queryRawUnsafe` to `$queryRaw` tagged template with `Prisma.sql` fragment composition.~~ **ALREADY RESOLVED** — `$queryRaw` already uses `Prisma.sql` fragment composition (stale finding, verified twenty-eighth pass)
 12. **MEDIUM**: Fix the Blocker-6 correctness bug in logistics drivers update (already tracked).
-13. ~~**MEDIUM**: Fix falsy-value bugs in facilities asset create/update (`0 || null` should be `0 ?? null`).~~ **RESOLVED 2026-04-26**: Part of systemic `|| null` → `?? null` migration across 11 files.
+13. ~~**MEDIUM**: Fix falsy-value bugs in facilities asset create/update (`0 || null` should be `0 ?? null`).~~ **RESOLVED 2026-04-26**: Part of systemic `|| null` → `?? null` migration across 11 files. Procurement vendor/budget `||` to `??` fixes (paymentTerms, country, periodType, thresholdWarningPct, thresholdCriticalPct, status) applied in twenty-eighth pass.
 14. **MEDIUM**: Fix inconsistent null handling in procurement vendor/budget updates (standardize on `!== undefined` checks).
-15. **MEDIUM**: Fix `kitchen/recipes/versions/compare/route.ts:155` string join for IN clause — use parameterized `ANY()`.
-16. **MEDIUM**: Add `tenant_id` filter to `kitchen/ai/bulk-generate/prep-tasks/service.ts:44-55`.
+15. ~~**MEDIUM**: Fix `kitchen/recipes/versions/compare/route.ts:155` string join for IN clause — use parameterized `ANY()`.~~ **ALREADY RESOLVED** — uses `${unitIds}::int2[]` inside Prisma tagged template, already parameterized (stale finding, verified twenty-eighth pass)
+16. ~~**MEDIUM**: Add `tenant_id` filter to `kitchen/ai/bulk-generate/prep-tasks/service.ts:44-55`.~~ **ALREADY RESOLVED** — already has `tenant_id = ${tenantId}::uuid` filter (stale finding, verified twenty-eighth pass)
 17. **SCHEMA_DRIFT**: Backfill Prisma models for all orphaned tables (already tracked as Tier 2 item).
 18. **HYGIENE**: Migrate all 28 "safe but wrong API" files from `$queryRawUnsafe(sql, ...params)` to `$queryRaw\`...\`` tagged template literals.
 
@@ -1864,8 +1868,8 @@ The initial 9th-pass draft contained numerous false claims. All have been correc
 
 | # | Module | File | Line | Mismatch | Impact |
 |---|--------|------|------|----------|--------|
-| C1 | Accounting | `app/lib/use-chart-of-accounts.ts` | 159 | Sends PATCH to `/api/accounting/accounts/${id}` but `[id]/route.ts` only exports GET, PUT, DELETE | **405 Method Not Allowed** |
-| C2 | Accounting | `(authenticated)/accounting/payments/components/payment-list-client.tsx` | 123 | Calls `GET /api/accounting/payments/export` — no route handler exists | **404** — export button broken |
+| C1 | Accounting | `app/lib/use-chart-of-accounts.ts` | 159 | ~~Sends PATCH to `/api/accounting/accounts/${id}` but `[id]/route.ts` only exports GET, PUT, DELETE~~ | **FIXED (twenty-eighth pass)** — changed `method: "PATCH"` to `method: "PUT"` |
+| C2 | Accounting | `(authenticated)/accounting/payments/components/payment-list-client.tsx` | 123 | ~~Calls `GET /api/accounting/payments/export` — no route handler exists~~ | **FIXED (twenty-eighth pass)** — created `/api/accounting/payments/export/route.ts` returning CSV with same filters as list endpoint |
 | C3 | Accounting | `app/lib/use-chart-of-accounts.ts` | 89 | Expects `pagination` in GET response but `/api/accounting/accounts` doesn't implement pagination metadata | **Data renders but no pagination** |
 | C4 | Various | ~10 data-fetching pages | — | No `loading.tsx`, no `error.tsx`, no try/catch | **Blank white screen on failure** |
 
@@ -1920,12 +1924,14 @@ These files export React hooks (useState, useEffect) without `'use client'`. Cur
 
 | File | Hooks used |
 |------|-----------|
-| `app/lib/use-recipe-costing.ts` | useState, useEffect |
+| `app/lib/use-recipe-costing.ts` | useState, useEffect — **FIXED (twenty-eighth pass)**: `'use client'` directive added |
 | `app/lib/use-kitchen-analytics.ts` | useState, useEffect |
 | `app/lib/use-forecasts.ts` | useState, useEffect |
 | `app/lib/use-event-budgets.ts` | useState, useEffect |
 | `app/lib/use-event-export.ts` | useState, useEffect |
 | `app/lib/use-finance-analytics.ts` | useState, useEffect |
+
+Note: 5 of the 6 original files were already fixed in prior passes. The last remaining one (`use-recipe-costing.ts`) is now fixed in the twenty-eighth pass.
 
 All other `'use client'` directives verified correct — no unnecessary or missing directives on component files.
 
@@ -1971,8 +1977,8 @@ All other `'use client'` directives verified correct — no unnecessary or missi
 
 #### Build-blocking (do first)
 
-59. **CRITICAL**: Fix `use-chart-of-accounts.ts:159` — change `method: "PATCH"` to `method: "PUT"`.
-60. **CRITICAL**: Create `/api/accounting/payments/export/route.ts` endpoint.
+59. ~~**CRITICAL**: Fix `use-chart-of-accounts.ts:159` — change `method: "PATCH"` to `method: "PUT"`.~~ **RESOLVED (twenty-eighth pass)**
+60. ~~**CRITICAL**: Create `/api/accounting/payments/export/route.ts` endpoint.~~ **RESOLVED (twenty-eighth pass)**
 61. **CRITICAL**: Add `loading.tsx` to top 10 data-fetching page directories (analytics/*, payroll/*, facilities/*, procurement/*, crm, events/budgets).
 62. **HIGH**: Resolve procurement hook base-path ambiguity — decide canonical paths for `use-purchase-orders.ts` and `use-budgets.ts`, then consolidate.
 

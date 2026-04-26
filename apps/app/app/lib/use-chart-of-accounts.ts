@@ -156,7 +156,7 @@ export async function updateChartOfAccount(
   data: UpdateChartOfAccountRequest
 ): Promise<ChartOfAccount> {
   const response = await apiFetch(`/api/accounting/accounts/${id}`, {
-    method: "PATCH",
+    method: "PUT",
     headers: {
       "Content-Type": "application/json",
     },
