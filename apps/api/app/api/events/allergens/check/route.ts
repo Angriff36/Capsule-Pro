@@ -4,6 +4,9 @@ import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "../../../../lib/tenant";
 
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 // Define types
 interface CheckAllergensRequest {
   eventId: string;
@@ -289,6 +292,14 @@ async function getSpecificDishes(
   tenantId: string,
   dishIds: readonly string[]
 ): Promise<{ dishes: DishDietaryInfo[]; missingIds: string[] }> {
+  // Build a parameterized UUID array — each id flows in as its own bound
+  // parameter so SQL injection is impossible even if dishIds came from a
+  // request body. UUIDs are also format-validated upstream.
+  const idParams = Prisma.join(
+    dishIds.map((id) => Prisma.sql`${id}::uuid`),
+    ", "
+  );
+
   const linkedDishes = await database.$queryRaw<
     Array<{
       dish_id: string;
@@ -305,7 +316,7 @@ async function getSpecificDishes(
         d.dietary_tags
       FROM tenant_kitchen.dishes d
       WHERE d.tenant_id = ${tenantId}
-        AND d.id IN (SELECT UNNEST(ARRAY[${Prisma.raw(dishIds.map((id) => `'${id}'`).join(","))}]::uuid[]))
+        AND d.id IN (${idParams})
         AND d.deleted_at IS NULL
     `
   );
@@ -356,6 +367,31 @@ export async function POST(request: Request) {
         { message: "eventId is required" },
         { status: 400 }
       );
+    }
+
+    if (!UUID_REGEX.test(body.eventId)) {
+      return NextResponse.json(
+        { message: "eventId must be a valid UUID" },
+        { status: 400 }
+      );
+    }
+
+    if (body.dishIds) {
+      if (!Array.isArray(body.dishIds)) {
+        return NextResponse.json(
+          { message: "dishIds must be an array of UUIDs" },
+          { status: 400 }
+        );
+      }
+      const invalid = body.dishIds.find(
+        (id) => typeof id !== "string" || !UUID_REGEX.test(id)
+      );
+      if (invalid !== undefined) {
+        return NextResponse.json(
+          { message: "dishIds must contain only valid UUIDs" },
+          { status: 400 }
+        );
+      }
     }
 
     // Get authentication and tenant context

@@ -27,36 +27,60 @@ const FIELD_COLUMN_MAP: Record<string, string> = {
   eventDate: "event_date",
 };
 
-// Build SQL condition expression for a single rule
+// Allowlist of valid comparison conditions. Anything else is rejected as a
+// no-op so attacker-controlled rule rows cannot inject arbitrary SQL.
+const VALID_CONDITIONS = new Set([
+  "equals",
+  "not_equals",
+  "gt",
+  "lt",
+  "gte",
+  "lte",
+  "contains",
+  "exists",
+  "not_exists",
+]);
+
+// Build a parameterized SQL condition for a single rule. The column is
+// resolved through an allowlist (FIELD_COLUMN_MAP) so the identifier is never
+// taken from user input. The value is bound as a Prisma parameter.
 function buildRuleCondition(
   field: string,
   condition: string,
   value: string
-): string {
-  const column = FIELD_COLUMN_MAP[field] ?? field;
-  const colRef = `"${column}"`;
+): Prisma.Sql | null {
+  const column = FIELD_COLUMN_MAP[field];
+  if (!column) {
+    return null;
+  }
+
+  const colRef = Prisma.raw(`"${column}"`);
+
+  if (!VALID_CONDITIONS.has(condition)) {
+    return null;
+  }
 
   switch (condition) {
     case "equals":
-      return `${colRef} = '${value.replace(/'/g, "''")}'`;
+      return Prisma.sql`${colRef} = ${value}`;
     case "not_equals":
-      return `${colRef} != '${value.replace(/'/g, "''")}'`;
+      return Prisma.sql`${colRef} != ${value}`;
     case "gt":
-      return `${colRef} > '${value.replace(/'/g, "''")}'`;
+      return Prisma.sql`${colRef} > ${value}`;
     case "lt":
-      return `${colRef} < '${value.replace(/'/g, "''")}'`;
+      return Prisma.sql`${colRef} < ${value}`;
     case "gte":
-      return `${colRef} >= '${value.replace(/'/g, "''")}'`;
+      return Prisma.sql`${colRef} >= ${value}`;
     case "lte":
-      return `${colRef} <= '${value.replace(/'/g, "''")}'`;
+      return Prisma.sql`${colRef} <= ${value}`;
     case "contains":
-      return `${colRef} ILIKE '%${value.replace(/'/g, "''")}%'`;
+      return Prisma.sql`${colRef} ILIKE ${`%${value}%`}`;
     case "exists":
-      return `${colRef} IS NOT NULL AND ${colRef} != ''`;
+      return Prisma.sql`${colRef} IS NOT NULL AND ${colRef} != ''`;
     case "not_exists":
-      return `(${colRef} IS NULL OR ${colRef} = '')`;
+      return Prisma.sql`(${colRef} IS NULL OR ${colRef} = '')`;
     default:
-      return "false";
+      return null;
   }
 }
 
@@ -111,50 +135,37 @@ export async function POST(_request: NextRequest) {
       });
     }
 
-    // Build a single SQL expression that computes the score per lead
-    // We'll use a PL/pgSQL block for atomicity
-    const ruleExpressions = rules.map((rule) => {
-      const cond = buildRuleCondition(rule.field, rule.condition, rule.value);
-      return `  IF ${cond} THEN total_score := total_score + ${rule.points}; breakdown['${rule.id}'] := '${rule.points}'; END IF;`;
-    });
-
-    // Build dynamic SQL for the update
-    // We need to evaluate all rules per lead and compute the total
-    const updateSql = `
+    // Reset all leads to score 0 so a rerun produces a deterministic result
+    // (otherwise repeated calls would keep adding to the prior score).
+    await database.$executeRaw`
       UPDATE tenant_crm.leads
-      SET
-        score = CASE
-          ${rules
-            .map((rule) => {
-              const cond = buildRuleCondition(
-                rule.field,
-                rule.condition,
-                rule.value
-              );
-              return `WHEN ${cond} THEN score + ${rule.points}`;
-            })
-            .join("\n          ")}
-          ELSE score
-        END,
-        updated_at = NOW()
-      WHERE tenant_id = '${tenantId}'::uuid AND deleted_at IS NULL;
+      SET score = 0, score_breakdown = '{}'::jsonb, updated_at = NOW()
+      WHERE tenant_id = ${tenantId}::uuid AND deleted_at IS NULL
     `;
 
-    // Execute the update for each rule's condition by running a single update per rule
-    // This is safer than a complex PL/pgSQL block
+    // Apply each rule with a parameterized UPDATE. The condition fragment is
+    // built via Prisma.sql with an allowlisted column reference and bound
+    // value parameters, so user-supplied rule values cannot inject SQL.
+    // jsonb_build_object is used instead of string concatenation so rule
+    // names containing quotes/backslashes can never break the JSONB literal.
     for (const rule of rules) {
       const cond = buildRuleCondition(rule.field, rule.condition, rule.value);
-      const sql = `
+      if (!cond) {
+        continue;
+      }
+      await database.$executeRaw(Prisma.sql`
         UPDATE tenant_crm.leads
         SET
           score = score + ${rule.points},
-          score_breakdown = score_breakdown || '{"${rule.id}": "${rule.points}", "rule_name_${rule.id}": "${rule.rule_name.replace(/"/g, '\\"')}"}'::jsonb,
+          score_breakdown = score_breakdown || jsonb_build_object(
+            ${rule.id}::text, ${rule.points}::text,
+            ${`rule_name_${rule.id}`}::text, ${rule.rule_name}::text
+          ),
           updated_at = NOW()
-        WHERE tenant_id = '${tenantId}'::uuid
+        WHERE tenant_id = ${tenantId}::uuid
           AND deleted_at IS NULL
           AND ${cond}
-      `;
-      await database.$executeRawUnsafe(sql);
+      `);
     }
 
     // Get updated distribution

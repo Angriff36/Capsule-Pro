@@ -67,12 +67,15 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // If route is in_progress, update driver status to on_route
+      // If route is in_progress, update driver status to on_route. The
+      // tenant_id filter prevents a cross-tenant write if a UUID happens to
+      // collide across tenants.
       if (existingRoute.status === "in_progress") {
         await database.$executeRaw`
           UPDATE tenant_logistics.drivers
           SET status = 'on_route', updated_at = NOW()
-          WHERE id = ${driverId}::uuid
+          WHERE tenant_id = ${tenantId}::uuid
+            AND id = ${driverId}::uuid
         `;
       }
 

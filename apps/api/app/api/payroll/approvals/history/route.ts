@@ -14,6 +14,13 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
 const UUID_REGEX =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
+const ALLOWED_ACTIONS = new Set([
+  "approved",
+  "rejected",
+  "finalized",
+  "approval_requested",
+]);
+
 interface PaginationParams {
   page: number;
   limit: number;
@@ -72,29 +79,43 @@ export async function GET(request: Request) {
       );
     }
 
-    // Build where conditions
-    const conditions: string[] = [`pah.tenant_id = ${tenantId}`];
-
     if (payrollRunId) {
       invariant(
         UUID_REGEX.test(payrollRunId),
         "payrollRunId must be a valid UUID"
       );
-      conditions.push(`pah.payroll_run_id = '${payrollRunId}'::uuid`);
     }
 
     if (action) {
-      conditions.push(`pah.action = '${action}'`);
+      invariant(
+        ALLOWED_ACTIONS.has(action),
+        "action must be one of: approved, rejected, finalized, approval_requested"
+      );
     }
 
-    const whereClause = conditions.join(" AND ");
+    // Compose WHERE filters with parameterized Prisma.sql fragments to prevent
+    // SQL injection. tenant_id is cast explicitly because Prisma cannot infer
+    // the column type from a string parameter.
+    const filters: Prisma.Sql[] = [
+      Prisma.sql`pah.tenant_id = ${tenantId}::uuid`,
+    ];
+
+    if (payrollRunId) {
+      filters.push(Prisma.sql`pah.payroll_run_id = ${payrollRunId}::uuid`);
+    }
+
+    if (action) {
+      filters.push(Prisma.sql`pah.action = ${action}`);
+    }
+
+    const whereSql = Prisma.join(filters, " AND ");
 
     // Get total count for pagination
     const total = await database.$queryRaw<{ count: bigint }[]>(
       Prisma.sql`
         SELECT COUNT(*) as count
         FROM tenant_staff.payroll_approval_history pah
-        WHERE ${Prisma.raw(whereClause)}
+        WHERE ${whereSql}
       `
     );
 
@@ -136,7 +157,7 @@ export async function GET(request: Request) {
           ON pah.tenant_id = u.tenant_id
           AND pah.performed_by = u.id
           AND u.deleted_at IS NULL
-        WHERE ${Prisma.raw(whereClause)}
+        WHERE ${whereSql}
         ORDER BY pah.performed_at DESC
         LIMIT ${limit}
         OFFSET ${offset}

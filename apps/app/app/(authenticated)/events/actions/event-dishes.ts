@@ -244,9 +244,13 @@ export async function getAvailableDishes(eventId: string) {
 
   // If there are linked dishes, filter them out; otherwise return all dishes
   if (linkedIds.size > 0) {
-    // Build proper UUID array with correct quoting for PostgreSQL
+    // Parameterize the UUID list — each id binds as its own SQL parameter so
+    // raw string interpolation cannot leak into the query.
     const linkedIdArray = Array.from(linkedIds);
-    const uuidArraySql = linkedIdArray.map((id) => `'${id}'`).join(",");
+    const idParams = Prisma.join(
+      linkedIdArray.map((id) => Prisma.sql`${id}::uuid`),
+      ", "
+    );
 
     const dishes = await database.$queryRaw<
       Array<{
@@ -269,7 +273,7 @@ export async function getAvailableDishes(eventId: string) {
           AND r.deleted_at IS NULL
         WHERE d.tenant_id = ${tenantId}
           AND d.deleted_at IS NULL
-          AND d.id NOT IN (SELECT UNNEST(ARRAY[${Prisma.raw(uuidArraySql)}]::uuid[]))
+          AND d.id NOT IN (${idParams})
         ORDER BY d.name ASC
       `
     );

@@ -541,6 +541,26 @@
       "prefix": "/api/procurement/budget/commands/refresh",
       "methods": ["POST"],
       "comment": "Infrastructure: Budget spend refresh and alert generation"
+    },
+    {
+      "prefix": "/api/crm/scoring/calculate",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Lead score recomputation across all leads (rule engine, no single domain command)"
+    },
+    {
+      "prefix": "/api/events/allergens/check",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Read-only allergen/dietary conflict detection across guests and dishes (no domain mutation)"
+    },
+    {
+      "prefix": "/api/logistics/dispatch/commands/assign",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Driver/vehicle assignment to delivery route (raw SQL pending Driver/Vehicle Prisma models + manifests)"
+    },
+    {
+      "prefix": "/api/procurement/approvals/action",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Approve/reject purchase order with approval history side-effect (legacy direct DB access)"
     }
   ]
 }

@@ -96,7 +96,8 @@ export async function POST(request: NextRequest) {
       tenantId
     );
 
-    // Return updated PO with vendor info
+    // Return updated PO with vendor info. tenant_id is included so the
+    // SELECT cannot return a row from another tenant if PO ids ever collide.
     const updatedPOs = await database.$queryRawUnsafe(
       `
       SELECT
@@ -104,10 +105,13 @@ export async function POST(request: NextRequest) {
         po.submitted_by, po.submitted_at, po.updated_at,
         v.name as vendor_name
       FROM tenant_inventory.purchase_orders po
-      LEFT JOIN tenant_inventory.inventory_suppliers v ON v.id = po.vendor_id
-      WHERE po.id = $1::uuid
+      LEFT JOIN tenant_inventory.inventory_suppliers v
+        ON v.id = po.vendor_id
+        AND v.tenant_id = po.tenant_id
+      WHERE po.id = $1::uuid AND po.tenant_id = $2::uuid
     `,
-      orderId
+      orderId,
+      tenantId
     );
 
     return manifestSuccessResponse({

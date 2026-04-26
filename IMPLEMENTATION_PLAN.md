@@ -1143,9 +1143,9 @@ Of 1,577 raw-SQL occurrences across 250 files (38 files use unsafe variants):
 
 | # | File | Line | Pattern | Risk |
 |---|---|---|---|---|
-| 1 | `apps/api/app/api/crm/scoring/calculate/route.ts` | 145-157 | `$executeRawUnsafe` with SQL built by `buildRuleCondition()` which interpolates `rule.value` with only `'`→`''` escaping | **SQL injection**: rule values originate from user input stored in `crm_scoring_rules` table; single-quote escaping is insufficient for PostgreSQL. Also `FIELD_COLUMN_MAP[field] ?? field` at line 36 allows unvalidated column names. |
+| 1 | `apps/api/app/api/crm/scoring/calculate/route.ts` | 145-157 | `$executeRawUnsafe` with SQL built by `buildRuleCondition()` which interpolates `rule.value` with only `'`→`''` escaping | **SQL injection**: rule values originate from user input stored in `crm_scoring_rules` table; single-quote escaping is insufficient for PostgreSQL. Also `FIELD_COLUMN_MAP[field] ?? field` at line 36 allows unvalidated column names. | **FIXED 2026-04-26** (commit eb3e6501e): Refactored `buildRuleCondition` to return `Prisma.Sql` fragment with bound parameters and allowlisted column reference; replaced `$executeRawUnsafe` loop with parameterized `$executeRaw(Prisma.sql\`...\`)` using `jsonb_build_object`; added `VALID_CONDITIONS` allowlist that returns null for unknown conditions; added deterministic reset-to-zero step before applying rules. |
 | 2 | `apps/api/app/api/staffing/coverage/route.ts` | 67, 90, 114, 130, 149 | `locationFilter = \`AND ss.location_id = '${locationId.replace(/'/g, "''")}'\`` injected into 5 `$queryRawUnsafe` calls | **SQL injection**: `locationId` from `searchParams.get("locationId")` — fully user-controlled. Quote-escaping insufficient. |
-| 3 | `apps/api/app/api/payroll/approvals/history/route.ts` | 87 | `conditions.push(\`pah.action = '${action}'\`)` where `action` = `searchParams.get("action")` with NO validation. Injected via `Prisma.raw(whereClause)`. | **SQL injection**: `action` neither validated nor parameterized. `payrollRunId` IS UUID-validated at line 80 but `action` at line 87 is not. |
+| 3 | `apps/api/app/api/payroll/approvals/history/route.ts` | 87 | `conditions.push(\`pah.action = '${action}'\`)` where `action` = `searchParams.get("action")` with NO validation. Injected via `Prisma.raw(whereClause)`. | **SQL injection**: `action` neither validated nor parameterized. `payrollRunId` IS UUID-validated at line 80 but `action` at line 87 is not. | **FIXED 2026-04-26** (commit eb3e6501e): Replaced raw string concatenation with parameterized `Prisma.sql` fragments via `Prisma.join`; added `ALLOWED_ACTIONS` allowlist for the `action` query param; `tenant_id` is now bound and cast as `${tenantId}::uuid`. |
 | 4 | `apps/api/app/api/kitchen/allergens/matrix/route.ts` | 115-116, 271-273 | `dishIds.map((id) => \`'\${id}'\`).join(", ")` — user-controlled `ids` query param directly interpolated into `$queryRawUnsafe` SQL string | **SQL injection**: `ids` comes from `searchParams.get("ids").split(",")` at line 415-418 with zero validation. Occurs in both `buildDishMatrix` and `buildRecipeMatrix`. An attacker can inject via `?ids='),('DROP TABLE`. |
 | 5 | `apps/api/app/api/administrative/trash/list/route.ts` | 739-744 | `Prisma.raw(dataSql.replace(/\$\d+/g, (match) => { return \`'\${params[idx]}'\` }))` — manual parameter binding via string replacement | **SQL injection**: Replaces all `$N` placeholders with `'${paramValue}'` without escaping. If any param contains `'`, injection is trivial. Code at line 748+ uses Prisma findMany instead, suggesting this block may be dead code — verify before deprioritizing. |
 
@@ -1153,7 +1153,7 @@ Of 1,577 raw-SQL occurrences across 250 files (38 files use unsafe variants):
 
 | File | Line | Pattern | Risk |
 |---|---|---|---|
-| `apps/api/app/api/crm/scoring/calculate/route.ts` | 36 | `FIELD_COLUMN_MAP[field] ?? field` — fallback uses raw field value as column name | Column-name injection; 10 fields allowlisted but any other passes through |
+| `apps/api/app/api/crm/scoring/calculate/route.ts` | 36 | `FIELD_COLUMN_MAP[field] ?? field` — fallback uses raw field value as column name | Column-name injection; 10 fields allowlisted but any other passes through | **FIXED 2026-04-26** (commit eb3e6501e): `buildRuleCondition` now returns null for unknown conditions (via `VALID_CONDITIONS` allowlist); fallback-to-raw-column eliminated. |
 | `apps/app/app/(authenticated)/analytics/clients/actions/get-client-ltv.ts` | 456 | `ORDER BY ${orderClause}` — dynamic ORDER BY from user `sortBy` | Arbitrary SQL after ORDER BY if not validated |
 | `apps/api/app/api/inventory/batch/route.ts` | 190-198 | Dynamic SET clause: `SET ${setClauses.join(", ")}` in `$executeRawUnsafe` | Complex dynamic SQL; column names hardcoded but structure is fully dynamic |
 | `apps/app/app/api/settings/audit-log/route.ts` | 87-128 | Dynamic WHERE clause from user filters, passed to `$queryRawUnsafe` | Individual values use `$N` params but WHERE structure is string-concatenated |
@@ -1165,7 +1165,7 @@ Of 1,577 raw-SQL occurrences across 250 files (38 files use unsafe variants):
 | File | Line | Pattern | Risk |
 |---|---|---|---|
 | `apps/api/app/api/logistics/drivers/commands/update/route.ts` | 40-41 | `${vehicleId !== undefined ? (vehicleId \|\| null) + "::uuid" : "vehicle_id"}::uuid` | **Known Blocker 6**: literal string `"vehicle_id"` as parameter or double-cast `<uuid>::uuid::uuid` |
-| `apps/api/app/api/payroll/approvals/history/route.ts` | 83 | `pah.payroll_run_id = '${payrollRunId}'::uuid` — string concatenation | Not parameterized; relies on UUID regex validation upstream |
+| `apps/api/app/api/payroll/approvals/history/route.ts` | 83 | `pah.payroll_run_id = '${payrollRunId}'::uuid` — string concatenation | Not parameterized; relies on UUID regex validation upstream | **FIXED 2026-04-26** (commit eb3e6501e): Full rewrite to `Prisma.sql` fragments with `Prisma.join`; `tenant_id` and `payrollRunId` are now bound parameters cast as `::uuid`. |
 | `apps/api/app/api/facilities/assets/commands/create/route.ts` | 74-76 | `${purchaseCost \|\| null}::numeric` — falsy-value bug | `0 \|\| null` returns null instead of 0 |
 | `apps/api/app/api/facilities/assets/commands/update/route.ts` | 52-55 | `COALESCE(${purchaseCost \|\| null}::numeric, purchase_cost)` | Same falsy-value bug: cost of `0` treated as null |
 | `apps/api/app/api/procurement/vendors/commands/update/route.ts` | 55-69 | 14 ternary checks mixing `${x !== undefined ? x : null}` with `${x \|\| "default"}` | Inconsistent null handling for empty strings and zeros |
@@ -1177,7 +1177,7 @@ Of 1,577 raw-SQL occurrences across 250 files (38 files use unsafe variants):
 
 | File | Line | Query | Missing Filter |
 |---|---|---|---|
-| `apps/api/app/api/procurement/approvals/action/route.ts` | 100-111 | UPDATE `tenant_inventory.purchase_orders` | Missing `tenant_id` in WHERE — UPDATE could affect cross-tenant rows |
+| `apps/api/app/api/procurement/approvals/action/route.ts` | 100-111 | UPDATE `tenant_inventory.purchase_orders` | Missing `tenant_id` in WHERE — UPDATE could affect cross-tenant rows | **FIXED 2026-04-26** (commit eb3e6501e): Final SELECT now filters by both `po.id = $1::uuid AND po.tenant_id = $2::uuid`; LEFT JOIN to `inventory_suppliers` also includes `v.tenant_id = po.tenant_id` to prevent vendor name leakage across tenants. |
 | `apps/api/app/api/kitchen/waste/units/route.ts` | 18-31 | SELECT from `core.units` | No tenant filter (acceptable if `core.units` is a shared system table) |
 | `apps/api/app/api/kitchen/ai/bulk-generate/prep-tasks/service.ts` | 44-55 | SELECT event dishes | Missing `tenant_id` — could access events from other tenants |
 | `apps/api/app/api/public/contracts/[token]/route.ts` | 98-103 | SELECT client by `clientId` only | Public route queries client without tenant verification — cross-tenant data access possible |
@@ -1234,15 +1234,15 @@ Of 1,577 raw-SQL occurrences across 250 files (38 files use unsafe variants):
 
 ### Recommended Actions (priority order)
 
-1. **CRITICAL**: Rewrite `apps/api/app/api/crm/scoring/calculate/route.ts:145-157` to use `Prisma.sql` or `$N` parameterized queries. Replace `buildRuleCondition()` with a parameterized approach. Fix `FIELD_COLUMN_MAP` fallback to reject unknown fields.
+1. ~~**CRITICAL**: Rewrite `apps/api/app/api/crm/scoring/calculate/route.ts:145-157` to use `Prisma.sql` or `$N` parameterized queries. Replace `buildRuleCondition()` with a parameterized approach. Fix `FIELD_COLUMN_MAP` fallback to reject unknown fields.~~ **RESOLVED (FIXED 2026-04-26, commit eb3e6501e)**
 2. **CRITICAL**: Fix `apps/api/app/api/staffing/coverage/route.ts:67,90,114,130,149` — replace string-concatenated `locationFilter` with `$N` parameterized placeholder.
-3. **CRITICAL**: Fix `apps/api/app/api/payroll/approvals/history/route.ts:87` — validate `action` against an allowlist or parameterize it.
+3. ~~**CRITICAL**: Fix `apps/api/app/api/payroll/approvals/history/route.ts:87` — validate `action` against an allowlist or parameterize it.~~ **RESOLVED (FIXED 2026-04-26, commit eb3e6501e)**
 4. **CRITICAL**: Rewrite `apps/api/app/api/kitchen/allergens/matrix/route.ts:115-116,271-273` — replace `dishIds.map(id => \`'\${id}'\`).join(",")` with `Prisma.join(dishIds)` or validate all IDs as UUIDs before interpolation.
 5. **CRITICAL**: Verify whether `apps/api/app/api/administrative/trash/list/route.ts:739-744` is dead code. If live, rewrite to use proper parameterized queries instead of `'${params[idx]}'` string replacement.
 6. **HIGH**: Add allowlist validation for `orderClause` in `get-client-ltv.ts:456`.
 7. **HIGH**: Fix parameter index mismatches in `get-employee-performance.ts:160,175,209` — `$2` should be `$3` where employeeId occupies `$2`.
 8. **HIGH**: Migrate `inventory/batch/route.ts:190-198` from `$executeRawUnsafe` to `$executeRaw` tagged template.
-9. **HIGH**: Add `tenant_id` filter to `apps/api/app/api/procurement/approvals/action/route.ts:100-111` UPDATE query.
+9. ~~**HIGH**: Add `tenant_id` filter to `apps/api/app/api/procurement/approvals/action/route.ts:100-111` UPDATE query.~~ **RESOLVED (FIXED 2026-04-26, commit eb3e6501e)**
 10. **HIGH**: Add tenant verification to public route queries in `public/contracts/[token]/route.ts:98` and `public/proposals/[token]/route.ts:121-172`.
 11. **HIGH**: Migrate audit-log routes from `$queryRawUnsafe` to `$queryRaw` tagged template with `Prisma.sql` fragment composition.
 12. **MEDIUM**: Fix the Blocker-6 correctness bug in logistics drivers update (already tracked).
@@ -1284,8 +1284,8 @@ Key areas the 6th pass under-covered:
 | File | Line | Pattern | Risk |
 |---|---|---|---|
 | `apps/api/app/api/administrative/trash/list/route.ts` | 718 | `ORDER BY ${query.displayNameColumn} ${sortOrder.toUpperCase()}` — `sortOrder` from `searchParams.get("sortOrder")` | `sortOrder` only uppercased, never validated against `ASC`/`DESC` allowlist. Arbitrary SQL after column name. Also applies to line 664 (`ORDER BY ${sortColumn} ${sortOrder.toUpperCase()}`) where `sortColumn` is derived from `sortBy` — though `sortColumn` maps to hardcoded values, `sortOrder` does not. |
-| `apps/api/app/api/logistics/dispatch/commands/assign/route.ts` | 72-76 | `UPDATE tenant_logistics.drivers SET status = 'on_route' WHERE id = ${driverId}::uuid` — missing `tenant_id` | No tenant filter on UPDATE. `driverId` IS validated against tenant in a prior SELECT (line 44-52), but defense-in-depth is missing. If the prior check is bypassed (race condition, schema change), this modifies cross-tenant data. |
-| `apps/api/app/api/payroll/approvals/history/route.ts` | 76 | `conditions.push(\`pah.tenant_id = ${tenantId}\`)` — unquoted tenantId in `Prisma.raw()` | The 6th pass flagged line 87 (`action`) but missed line 76: `tenantId` interpolated without quotes into `Prisma.raw()`. For a UUID like `550e8400-e29b-41d4...`, PostgreSQL interprets `=` comparison against the unquoted hyphenated value as arithmetic subtraction, causing a runtime error. Not injection, but a correctness bug that breaks the endpoint for any UUID tenant_id. |
+| `apps/api/app/api/logistics/dispatch/commands/assign/route.ts` | 72-76 | `UPDATE tenant_logistics.drivers SET status = 'on_route' WHERE id = ${driverId}::uuid` — missing `tenant_id` | No tenant filter on UPDATE. `driverId` IS validated against tenant in a prior SELECT (line 44-52), but defense-in-depth is missing. If the prior check is bypassed (race condition, schema change), this modifies cross-tenant data. | **FIXED 2026-04-26** (commit eb3e6501e): UPDATE now filters by `tenant_id = ${tenantId}::uuid AND id = ${driverId}::uuid`. |
+| `apps/api/app/api/payroll/approvals/history/route.ts` | 76 | `conditions.push(\`pah.tenant_id = ${tenantId}\`)` — unquoted tenantId in `Prisma.raw()` | The 6th pass flagged line 87 (`action`) but missed line 76: `tenantId` interpolated without quotes into `Prisma.raw()`. For a UUID like `550e8400-e29b-41d4...`, PostgreSQL interprets `=` comparison against the unquoted hyphenated value as arithmetic subtraction, causing a runtime error. Not injection, but a correctness bug that breaks the endpoint for any UUID tenant_id. | **FIXED 2026-04-26** (commit eb3e6501e): Full rewrite to `Prisma.sql` fragments with `Prisma.join`; `tenant_id` bound and cast as `${tenantId}::uuid`. |
 | `apps/api/app/api/administrative/trash/list/route.ts` | 681 | `Prisma.sql\`${Prisma.raw(sql.replace(/\$/g, "\\\\"))}\`` — escapes all `$` signs | All `$N` parameter placeholders become literal `\\$1` etc. The query likely fails or returns unexpected results. Part of dead code loop (see CRITICAL #9). |
 
 ### MEDIUM — New Findings (not in 6th pass)
@@ -1299,7 +1299,7 @@ Key areas the 6th pass under-covered:
 
 | File | Line | Query | Missing Filter |
 |---|---|---|---|
-| `apps/api/app/api/logistics/dispatch/commands/assign/route.ts` | 72-76 | UPDATE `tenant_logistics.drivers` SET status | Missing `tenant_id` in WHERE — only filters by `id` |
+| `apps/api/app/api/logistics/dispatch/commands/assign/route.ts` | 72-76 | UPDATE `tenant_logistics.drivers` SET status | Missing `tenant_id` in WHERE — only filters by `id` | **FIXED 2026-04-26** (commit eb3e6501e) |
 | `apps/api/app/api/collaboration/notifications/email/webhook/route.ts` | ~30-40 | SELECT from `email_logs` by `resend_id` | No auth; no tenant filter — searches across ALL tenants |
 | `apps/api/app/outbox/publish/route.ts` | ~100-116 | SELECT from `OutboxEvent` by `status` | No tenant filter — returns events from ALL tenants |
 
@@ -1323,12 +1323,12 @@ Key areas the 6th pass under-covered:
 | `apps/api/app/api/administrative/trash/list/route.ts` | 681 | Escaped SQL string | Broken (escaped `$`) — dead code |
 | `apps/api/app/api/administrative/trash/list/route.ts` | 707 | User `search` in WHERE | **CRITICAL** — SQL injection |
 | `apps/api/app/api/administrative/trash/list/route.ts` | 739 | User `search`/pagination via manual `$N`→string replacement | **CRITICAL** — SQL injection |
-| `apps/api/app/api/payroll/approvals/history/route.ts` | 97, 139 | `whereClause` with unquoted `tenantId` and unsanitized `action` | **CRITICAL** — injection + correctness |
+| `apps/api/app/api/payroll/approvals/history/route.ts` | 97, 139 | `whereClause` with unquoted `tenantId` and unsanitized `action` | ~~**CRITICAL** — injection + correctness~~ **FIXED 2026-04-26** (commit eb3e6501e) |
 | `apps/api/app/api/staff/availability/[id]/helpers.ts` | 331 | Dynamic UPDATE SET fields | AT_RISK — column names from validated input |
 | `apps/api/app/api/timecards/route.ts` | 163, 179 | Static SQL strings for status filter | SAFE — hardcoded conditions |
-| `apps/app/app/(authenticated)/events/actions/event-dishes.ts` | 272 | UUID array | SAFE — validated UUIDs |
+| `apps/app/app/(authenticated)/events/actions/event-dishes.ts` | 272 | UUID array | ~~SAFE — validated UUIDs~~ **FIXED 2026-04-26** (commit eb3e6501e): Replaced `linkedIdArray.map(id => \`'\${id}'\`).join(",")` with `Prisma.join` of parameterized `${id}::uuid` fragments. |
 | `apps/app/app/(authenticated)/kitchen/recipes/actions.ts` | 308, 1008 | UUID array, table name from type map | SAFE — validated/derived |
-| `apps/api/app/api/events/allergens/check/route.ts` | 308 | UUID array | SAFE — validated UUIDs |
+| `apps/api/app/api/events/allergens/check/route.ts` | 308 | UUID array | ~~SAFE — validated UUIDs~~ **FIXED 2026-04-26** (commit eb3e6501e): Replaced `dishIds.map(id => \`'\${id}'\`).join(",")` inside `Prisma.raw` with `Prisma.join` of parameterized `${id}::uuid` fragments; added UUID format validation in POST handler for `eventId` and all `dishIds` entries. |
 | `apps/api/app/api/crm/scoring/[id]/route.ts` | 118 | Dynamic update fields | AT_RISK — fields from request body |
 | `apps/api/lib/staff/labor-budget.ts` | 337 | Dynamic SET fields from validated input | AT_RISK — column names validated |
 | `packages/manifest-adapters/src/bottleneck-detector/detector.ts` | 349+ | Conditional WHERE fragments | SAFE — server-side booleans |
@@ -1338,9 +1338,9 @@ Key areas the 6th pass under-covered:
 19. **CRITICAL**: Add webhook signature verification to `apps/api/app/api/collaboration/notifications/email/webhook/route.ts` — validate Resend signing secret before processing. Add tenant scoping to initial email_logs query.
 20. **CRITICAL**: Add `tenantId` filter to `apps/api/app/outbox/publish/route.ts` outbox event SELECT. Require tenant context alongside bearer token.
 21. **CRITICAL**: Delete dead code loops 1 and 2 in `apps/api/app/api/administrative/trash/list/route.ts:644-745`. These execute vulnerable SQL queries (including the CRITICAL injection at lines 707 and 739-744) whose results are never used. Only loop 3 (Prisma findMany, lines 748-794) produces actual output.
-22. **HIGH**: Add `tenant_id` filter to `apps/api/app/api/logistics/dispatch/commands/assign/route.ts:72-76` UPDATE query — add `AND tenant_id = ${tenantId}::uuid` to WHERE clause.
+22. ~~**HIGH**: Add `tenant_id` filter to `apps/api/app/api/logistics/dispatch/commands/assign/route.ts:72-76` UPDATE query — add `AND tenant_id = ${tenantId}::uuid` to WHERE clause.~~ **RESOLVED (FIXED 2026-04-26, commit eb3e6501e)**
 23. **HIGH**: Add allowlist validation for `sortOrder` in `apps/api/app/api/administrative/trash/list/route.ts:718` — reject anything other than `ASC` or `DESC`.
-24. **HIGH**: Fix `apps/api/app/api/payroll/approvals/history/route.ts:76` — wrap `tenantId` in quotes: `pah.tenant_id = '${tenantId}'::uuid` or better, use `Prisma.sql` parameterization for the entire `whereClause` instead of `Prisma.raw()`.
+24. ~~**HIGH**: Fix `apps/api/app/api/payroll/approvals/history/route.ts:76` — wrap `tenantId` in quotes: `pah.tenant_id = '${tenantId}'::uuid` or better, use `Prisma.sql` parameterization for the entire `whereClause` instead of `Prisma.raw()`.~~ **RESOLVED (FIXED 2026-04-26, commit eb3e6501e)**
 25. **MEDIUM**: Audit all 12 `Prisma.raw()` call sites quarterly — any new addition must be reviewed for injection risk.
 
 ### Coverage Gaps
@@ -1440,7 +1440,7 @@ Key areas the 6th/7th passes under-covered that this pass filled:
 | 14 | `apps/api/app/api/timecards/me/route.ts` | 47 | `JOIN tenant.users u ON u.id = e.user_id` — `tenant.users` table does not exist | **Route returns 500 on every call** |
 | 15 | `packages/manifest-adapters/src/recipe-optimization-engine.ts` | 215-218 | `LEFT JOIN tenant_inventory.inventory_items ii ON ii.ingredient_id = i.id` — `ingredient_id` column does not exist on `inventory_items` | **Recipe optimization crashes** for any ingredient with potential substitutions |
 | 16 | `apps/api/lib/staff/labor-budget.ts` | 336-338 | `Prisma.raw()` with `$N` positional params in SET clauses — `values[]` array is built but never bound; `$2` references `${tenantId}` parameter, causing data corruption | **Data corruption on every labor budget update** — columns set to wrong values |
-| 17 | `apps/api/app/api/procurement/approvals/action/route.ts` | 100-111 | Final SELECT returns updated PO without `tenant_id` filter — `WHERE po.id = $1::uuid` only | **Cross-tenant PO data exposure** — any authenticated user who knows a PO ID can read any tenant's purchase order |
+| 17 | `apps/api/app/api/procurement/approvals/action/route.ts` | 100-111 | Final SELECT returns updated PO without `tenant_id` filter — `WHERE po.id = $1::uuid` only | **Cross-tenant PO data exposure** — any authenticated user who knows a PO ID can read any tenant's purchase order | **FIXED 2026-04-26** (commit eb3e6501e) |
 | 18 | `apps/api/app/api/administrative/trash/list/route.ts` | 664, 724 | `ORDER BY ${sortColumn} ${sortOrder.toUpperCase()}` — `sortOrder` from `searchParams.get("sortOrder")` with zero validation, injected via `Prisma.raw()` into executed SQL | **SQL injection** — attacker can pass arbitrary SQL in `sortOrder` query parameter. Occurs in two separate code blocks |
 | 19 | `apps/app/app/(authenticated)/events/actions.ts` | 430-451 | `INSERT INTO tenant_events.event_imports (..., eventId, ...)` — `eventId` is a Prisma field name; actual DB column is `event_id` | **Runtime failure** on event import attachment |
 
@@ -1492,7 +1492,7 @@ Key areas the 6th/7th passes under-covered that this pass filled:
 
 | File | Line(s) | Query | Missing Filter |
 |---|---|---|---|
-| `procurement/approvals/action/route.ts` | 100-111 | SELECT from `purchase_orders` by `id` only | **No `tenant_id` filter** — cross-tenant PO data exposure |
+| `procurement/approvals/action/route.ts` | 100-111 | SELECT from `purchase_orders` by `id` only | **No `tenant_id` filter** — cross-tenant PO data exposure | **FIXED 2026-04-26** (commit eb3e6501e) |
 | `procurement/purchase-orders/list/route.ts` | 42 | LEFT JOIN `purchase_order_items` | Missing `poi.tenant_id = po.tenant_id` |
 | `procurement/approvals/list/route.ts` | 65 | LEFT JOIN `purchase_order_items` | Same |
 | `procurement/purchase-orders/[id]/route.ts` | 46 | LEFT JOIN `inventory_items` | Missing `ii.tenant_id = poi.tenant_id` |
@@ -1561,7 +1561,7 @@ Payroll routes correctly use `parsePaginationParams` which clamps to `[1, 100]`.
 30. **CRITICAL**: Fix `timecards/me/route.ts` — replace `tenant.users` JOIN with `tenant_staff.employees` and `auth_user_id`.
 31. **CRITICAL**: Fix `recipe-optimization-engine.ts` — remove JOIN on non-existent `ingredient_id`; redesign substitution matching.
 32. **CRITICAL**: Fix `lib/staff/labor-budget.ts` — rewrite `Prisma.raw()` with proper `Prisma.sql` parameterized SET clauses; bind values correctly.
-33. **CRITICAL**: Add `tenant_id` filter to `procurement/approvals/action/route.ts:100-111` final SELECT.
+33. ~~**CRITICAL**: Add `tenant_id` filter to `procurement/approvals/action/route.ts:100-111` final SELECT.~~ **RESOLVED (FIXED 2026-04-26, commit eb3e6501e)**
 34. **CRITICAL**: Add `sortOrder` allowlist validation (`ASC`/`DESC` only) to `administrative/trash/list/route.ts:664,724`.
 35. **CRITICAL**: Fix `events/actions.ts:430-451` — `eventId` → `event_id`.
 36. **HIGH**: Fix `workforce-ai-optimizer.ts` — `e.seniority_rank` → join through `employee_seniority` table.
@@ -1606,11 +1606,11 @@ Of 233 source files with raw SQL, 13 domain subagents classified every call. The
 
 | # | File | Line | Pattern | Risk |
 |---|---|---|---|---|
-| 1 | `apps/api/app/api/payroll/approvals/history/route.ts` | 87 | `action` query param from `searchParams.get("action")` directly interpolated: `pah.action = '${action}'` then passed via `Prisma.raw(whereClause)` | **Exploitable SQL injection** — attacker passes `action=' OR 1=1 --` to bypass all filters and read cross-tenant payroll data. No validation on `action` parameter. |
-| 2 | `apps/api/app/api/crm/scoring/calculate/route.ts` | 147-157 | `$executeRawUnsafe(sql)` where `sql` is built with string interpolation: `score = score + ${rule.points}`, rule name and condition from DB rules table injected via `${cond}` | **Second-order SQL injection** — if malicious data is inserted into CRM scoring rules, it executes arbitrary SQL. `tenantId` also interpolated as `'${tenantId}'::uuid` instead of parameterized. |
-| 3 | `apps/api/app/api/events/allergens/check/route.ts` | 308 | `Prisma.raw(dishIds.map((id) => \`'\${id}'\`).join(","))` — UUID values manually quoted and concatenated | **UUID array injection** — if `dishIds` array contains non-UUID strings (e.g. from manipulated request), arbitrary SQL can be injected inside the `UNNEST(ARRAY[...])::uuid[]` expression. |
-| 4 | `apps/app/app/(authenticated)/events/actions/event-dishes.ts` | 249 | Same pattern: `linkedIdArray.map((id) => \`'\${id}'\`).join(",")` passed to SQL | Same UUID array injection risk. Should use `Prisma.join()` or `Prisma.sql` with `${Prisma.join(ids)}`. |
-| 5 | `apps/api/app/api/payroll/approvals/history/route.ts` | 76, 83 | `tenantId` interpolated as `pah.tenant_id = ${tenantId}` (raw JS number/string) and `payrollRunId` as `'${payrollRunId}'::uuid` — both inside `Prisma.raw()` | While `payrollRunId` has UUID_REGEX validation (line 80), `tenantId` at line 76 is not validated and flows directly into `Prisma.raw()`. |
+| 1 | `apps/api/app/api/payroll/approvals/history/route.ts` | 87 | `action` query param from `searchParams.get("action")` directly interpolated: `pah.action = '${action}'` then passed via `Prisma.raw(whereClause)` | **Exploitable SQL injection** — attacker passes `action=' OR 1=1 --` to bypass all filters and read cross-tenant payroll data. No validation on `action` parameter. | **FIXED 2026-04-26** (commit eb3e6501e) |
+| 2 | `apps/api/app/api/crm/scoring/calculate/route.ts` | 147-157 | `$executeRawUnsafe(sql)` where `sql` is built with string interpolation: `score = score + ${rule.points}`, rule name and condition from DB rules table injected via `${cond}` | **Second-order SQL injection** — if malicious data is inserted into CRM scoring rules, it executes arbitrary SQL. `tenantId` also interpolated as `'${tenantId}'::uuid` instead of parameterized. | **FIXED 2026-04-26** (commit eb3e6501e) |
+| 3 | `apps/api/app/api/events/allergens/check/route.ts` | 308 | `Prisma.raw(dishIds.map((id) => \`'\${id}'\`).join(","))` — UUID values manually quoted and concatenated | **UUID array injection** — if `dishIds` array contains non-UUID strings (e.g. from manipulated request), arbitrary SQL can be injected inside the `UNNEST(ARRAY[...])::uuid[]` expression. | **FIXED 2026-04-26** (commit eb3e6501e) |
+| 4 | `apps/app/app/(authenticated)/events/actions/event-dishes.ts` | 249 | Same pattern: `linkedIdArray.map((id) => \`'\${id}'\`).join(",")` passed to SQL | Same UUID array injection risk. Should use `Prisma.join()` or `Prisma.sql` with `${Prisma.join(ids)}`. | **FIXED 2026-04-26** (commit eb3e6501e) |
+| 5 | `apps/api/app/api/payroll/approvals/history/route.ts` | 76, 83 | `tenantId` interpolated as `pah.tenant_id = ${tenantId}` (raw JS number/string) and `payrollRunId` as `'${payrollRunId}'::uuid` — both inside `Prisma.raw()` | While `payrollRunId` has UUID_REGEX validation (line 80), `tenantId` at line 76 is not validated and flows directly into `Prisma.raw()`. | **FIXED 2026-04-26** (commit eb3e6501e) |
 
 ### HIGH — Dynamic Identifiers Without Allowlist (new findings)
 
@@ -1631,11 +1631,11 @@ Of 233 source files with raw SQL, 13 domain subagents classified every call. The
 
 | File | Line | Query | Missing Filter |
 |---|---|---|---|
-| `apps/api/app/api/logistics/dispatch/commands/assign/route.ts` | 72-77 | UPDATE driver status to `in_progress` | Missing `tenant_id` in WHERE — could update cross-tenant driver status |
-| `apps/api/app/api/payroll/tax/list/route.ts` | 32, 52 | SELECT tax configurations | Missing `tenant_id` filter — returns all tenants' tax configs |
+| `apps/api/app/api/logistics/dispatch/commands/assign/route.ts` | 72-77 | UPDATE driver status to `in_progress` | Missing `tenant_id` in WHERE — could update cross-tenant driver status | **FIXED 2026-04-26** (commit eb3e6501e) |
+| ~~`apps/api/app/api/payroll/tax/list/route.ts`~~ | ~~32, 52~~ | ~~SELECT tax configurations~~ | ~~Missing `tenant_id` filter — returns all tenants' tax configs~~ **AUDIT ERROR (2026-04-26)**: Source code at lines 32 and 52 already had parameterized tenant filters at time of audit. This entry was a false positive. |
 | `apps/api/app/api/collaboration/notifications/email/webhook/route.ts` | 81-88 | SELECT from `email_logs` by message ID | Missing `tenant_id` — webhook has no tenant context, could match any tenant's logs |
 | `apps/api/app/outbox/publish/route.ts` | 110-118 | SELECT from outbox events | Missing `tenant_id` — outbox processor could process cross-tenant events |
-| `apps/api/app/api/procurement/approvals/action/route.ts` | 100 | Final SELECT of updated POs | Missing `tenant_id` — already flagged in 8th pass as cross-tenant exposure |
+| `apps/api/app/api/procurement/approvals/action/route.ts` | 100 | Final SELECT of updated POs | Missing `tenant_id` — already flagged in 8th pass as cross-tenant exposure | **FIXED 2026-04-26** (commit eb3e6501e) |
 | `apps/api/app/lib/recipe-costing.ts` | 44-49 | SELECT from `core.unit_conversions` | Intentional — `core` schema is shared reference data, not tenant-scoped |
 | Various kitchen/recipe files | Multiple | SELECT from `core.units` | Intentional — units are global reference data |
 
@@ -1664,10 +1664,10 @@ Of 233 source files with raw SQL, 13 domain subagents classified every call. The
 
 | File | Line | Input Source | Risk Level |
 |---|---|---|---|
-| `apps/api/app/api/events/allergens/check/route.ts` | 308 | `dishIds` array (user-derived) | **CRITICAL** |
-| `apps/app/app/(authenticated)/events/actions/event-dishes.ts` | 272 | `linkedIdArray` (user-derived) | **CRITICAL** |
+| `apps/api/app/api/events/allergens/check/route.ts` | 308 | `dishIds` array (user-derived) | ~~**CRITICAL**~~ **FIXED 2026-04-26** (commit eb3e6501e) |
+| `apps/app/app/(authenticated)/events/actions/event-dishes.ts` | 272 | `linkedIdArray` (user-derived) | ~~**CRITICAL**~~ **FIXED 2026-04-26** (commit eb3e6501e) |
 | `apps/app/app/(authenticated)/kitchen/recipes/actions.ts` | 1008 | `table` variable (constant) | HIGH (verify source) |
-| `apps/api/app/api/payroll/approvals/history/route.ts` | 97, 139 | `whereClause` with `action` param | **CRITICAL** |
+| `apps/api/app/api/payroll/approvals/history/route.ts` | 97, 139 | `whereClause` with `action` param | ~~**CRITICAL**~~ **FIXED 2026-04-26** (commit eb3e6501e) |
 | `apps/api/app/api/administrative/trash/list/route.ts` | 681, 706, 739 | Dynamic SQL with regex escape | HIGH |
 | `apps/api/app/api/staff/availability/[id]/helpers.ts` | 331 | Manual `$N` param building | MEDIUM |
 | `apps/api/app/api/timecards/route.ts` | 163, 179 | `statusFilter` (conditional) | SAFE (internal logic) |
@@ -1699,15 +1699,15 @@ This pass confirms the 8th pass's orphaned table references. Queries referencing
 
 ### Recommended Actions — Injection Fixes (priority order)
 
-47. **CRITICAL**: Fix `payroll/approvals/history/route.ts:87` — validate `action` against an allowlist (`['approved', 'rejected', 'submitted', 'cancelled']`) BEFORE interpolating into SQL. Better: rewrite entire function to use `Prisma.sql` tagged template.
-48. **CRITICAL**: Fix `crm/scoring/calculate/route.ts:147-157` — replace `$executeRawUnsafe` with `$executeRaw` using `Prisma.sql` tagged template. Parameterize `tenantId`, `rule.points`, `rule.id`, and `rule.rule_name`.
-49. **CRITICAL**: Fix `events/allergens/check/route.ts:308` — replace `Prisma.raw(dishIds.map(...))` with `Prisma.sql` + `${Prisma.join(dishIds)}` using proper UUID array binding.
-50. **CRITICAL**: Fix `events/actions/event-dishes.ts:249` — same UUID array pattern, use `Prisma.join()`.
-51. **CRITICAL**: Fix `payroll/approvals/history/route.ts:76,83` — use `Prisma.sql` tagged template instead of `Prisma.raw(whereClause)` with JS-interpolated `tenantId`.
+47. ~~**CRITICAL**: Fix `payroll/approvals/history/route.ts:87` — validate `action` against an allowlist (`['approved', 'rejected', 'submitted', 'cancelled']`) BEFORE interpolating into SQL. Better: rewrite entire function to use `Prisma.sql` tagged template.~~ **RESOLVED (FIXED 2026-04-26, commit eb3e6501e)**
+48. ~~**CRITICAL**: Fix `crm/scoring/calculate/route.ts:147-157` — replace `$executeRawUnsafe` with `$executeRaw` using `Prisma.sql` tagged template. Parameterize `tenantId`, `rule.points`, `rule.id`, and `rule.rule_name`.~~ **RESOLVED (FIXED 2026-04-26, commit eb3e6501e)**
+49. ~~**CRITICAL**: Fix `events/allergens/check/route.ts:308` — replace `Prisma.raw(dishIds.map(...))` with `Prisma.sql` + `${Prisma.join(dishIds)}` using proper UUID array binding.~~ **RESOLVED (FIXED 2026-04-26, commit eb3e6501e)**
+50. ~~**CRITICAL**: Fix `events/actions/event-dishes.ts:249` — same UUID array pattern, use `Prisma.join()`.~~ **RESOLVED (FIXED 2026-04-26, commit eb3e6501e)**
+51. ~~**CRITICAL**: Fix `payroll/approvals/history/route.ts:76,83` — use `Prisma.sql` tagged template instead of `Prisma.raw(whereClause)` with JS-interpolated `tenantId`.~~ **RESOLVED (FIXED 2026-04-26, commit eb3e6501e)**
 52. **HIGH**: Verify `kitchen/recipes/actions.ts:1008` — confirm `table` variable is a constant from allowlist, not user-controlled.
 53. **HIGH**: Add ORDER BY allowlist in `analytics/clients/actions/get-client-ltv.ts:456`.
-54. **HIGH**: Add `tenant_id` filter to `logistics/dispatch/commands/assign/route.ts:72-77` UPDATE query.
-55. **HIGH**: Add `tenant_id` filter to `payroll/tax/list/route.ts:32,52` SELECT queries.
+54. ~~**HIGH**: Add `tenant_id` filter to `logistics/dispatch/commands/assign/route.ts:72-77` UPDATE query.~~ **RESOLVED (FIXED 2026-04-26, commit eb3e6501e)**
+55. ~~**HIGH**: Add `tenant_id` filter to `payroll/tax/list/route.ts:32,52` SELECT queries.~~ **AUDIT ERROR (2026-04-26)**: Lines 32 and 52 already had parameterized tenant filters; this was a false positive in the original audit.
 56. **MEDIUM**: Add tenant context to `collaboration/notifications/email/webhook/route.ts` and `outbox/publish/route.ts`.
 57. **MEDIUM**: Validate `status` parameter in `logistics/drivers/list/route.ts` against allowlist before interpolation.
 58. **LOW**: Consider migrating all ~85 parameterized `$queryRawUnsafe` calls to `Prisma.sql` tagged templates for defense-in-depth.
