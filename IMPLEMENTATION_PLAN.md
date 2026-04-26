@@ -1,6 +1,6 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-26 (sixteenth pass — Blockers 1, 5, 6 resolved/verified)
+> **Last updated:** 2026-04-26 (seventeenth pass — Blockers 1, 4, 5, 6 resolved/verified)
 > **Prior passes:** 2026-04-24 initial post-expansion audit → 2026-04-24 first re-verification → 2026-04-24 third-pass spot-check → 2026-04-24 fourth-pass package health → 2026-04-24 fifth-pass E2E audit → 2026-04-24 sixth-pass raw-SQL audit → 2026-04-24 seventh-pass supplementary raw-SQL audit → 2026-04-24 eighth-pass comprehensive raw-SQL audit → 2026-04-25 ninth-pass frontend health audit → 2026-04-25 tenth-pass mobile + public website audit → **2026-04-25 eleventh-pass auth, middleware & integration services audit** (3 sub-passes: initial 6-agent pass, 6-agent addendum, 5-agent credential/webhook deep-dive).
 > **Previous snapshot:** 2026-03-08 (stale — many claims falsified by post-expansion audit)
 > **Audit method:** initial 15+ parallel subagent investigations → 8-subagent re-verification → 10-subagent third-pass → 10-subagent fourth-pass → E2E fifth-pass → 20-subagent sixth-pass → 9-subagent seventh-pass → 15-subagent confirmation pass → 20-subagent eighth-pass raw-SQL audit → 24-subagent ninth-pass frontend health audit → 11-subagent tenth-pass mobile + public website audit → **17-subagent eleventh-pass auth/middleware/integration audit** (6 + 6 + 5 agents across 3 sub-passes) covering full auth chain trace, route-level auth enforcement scan, credential exposure scan across all directories, webhook receiver security deep-audit, all 16 lib files, and external integration packages. **All agent findings verified against actual codebase before reporting.**
@@ -94,14 +94,7 @@ No new commits since `a71ec8d5`. All Tier 0/1 blockers re-verified to still hold
 
 3. **Payroll bank-accounts broken scaffold** (downgraded from "runtime crash" to "architectural break" per third-pass verification) — `/apps/api/app/api/payroll/bank-accounts/commands/{create,update,delete,verify,set-default}/route.ts` all execute **raw SQL** against `tenant_staff.employee_bank_accounts` instead of using Prisma. They do NOT crash — they bypass the missing `BankAccount` model entirely. Migration `20260327020000` created the table; no Prisma model was ever added. The prior-pass "will crash" claim was wrong; the routes return data but leave the schema drift unresolved and sit outside the ORM / RLS enforcement layer.
 
-4. **Duplicate route conflicts (`softDelete/` vs `soft-delete/`)** — re-verification 2026-04-24 (third pass):
-   - **2 modules have BOTH** variants side-by-side (true routing ambiguity):
-     - `apps/api/app/api/inventory/pricing-tiers/commands/`
-     - `apps/api/app/api/inventory/bulk-order-rules/commands/`
-   - **1 additional module has ONLY the camelCase variant** (should be renamed): `apps/api/app/api/inventory/supplier-catalogs/commands/softDelete/`.
-   - **23 modules total** use one of the two spellings (third pass corrected second pass's "21"); the original "~45 modules" figure over-counted paths as modules.
-
-   Next.js routing picks one arbitrarily on case-sensitive filesystems; behavior is ambiguous. Canonical is `soft-delete` (kebab-case).
+4. ~~**Duplicate route conflicts (`softDelete/` vs `soft-delete/`)**~~ — **FIXED 2026-04-26.** Removed `apps/api/app/api/inventory/pricing-tiers/commands/softDelete/` and `apps/api/app/api/inventory/bulk-order-rules/commands/softDelete/` (kebab-case canonical siblings remain and are the ones registered in `routes.manifest.json`). Removed the entire stale `apps/api/app/api/inventory/supplier-catalogs/` tree (4 routes: `list/`, `commands/{create,update,softDelete}`) — every route in it targeted `entityName: "VendorCatalog"` and was a duplicate of the canonical `apps/api/app/api/inventory/vendor-catalogs/` tree (which already exposes `list`, `[id]`, and `commands/{create,deactivate,soft-delete,update,update-cost}`). Also dropped the matching `/api/inventory/supplier-catalogs` entry from `scripts/manifest/write-route-infra-allowlist.json` so the route allowlist no longer dispenses bypass authorization to a non-existent surface. Why this matters: on case-sensitive filesystems Next.js arbitrarily resolves one of the two duplicate directories, so PATCH/POST traffic to either spelling could reach a non-canonical handler that diverges (different logging, no `result.events` envelope, etc.); deletion guarantees a single dispatch path. No frontend code referenced `supplier-catalogs/` (verified by `grep -r supplier-catalogs apps/app packages` → only `module-nav.ts` referenced `vendor-catalogs`). `pnpm tsc --noEmit -p apps/api/tsconfig.json` passes after the deletions. Outstanding tech debt (not blocker-grade): the remaining ~20 modules still using one or the other spelling consistently are NOT routing-ambiguous because they only have one variant, but should be normalized to `soft-delete` in a follow-up sweep.
 
 5. ~~**Accounting collections RouteContext bug**~~ — **FIXED 2026-04-26.** `apps/api/app/api/accounting/collections/cases/[id]/route.ts:46-48` now declares `interface RouteContext { params: Promise<{ id: string }> }`, and both `GET` and `PATCH` `await context.params`. Why this matters: Next.js 15 promoted `params` to a Promise; the prior synchronous destructuring would throw `TypeError: Cannot destructure property 'id' of context.params` (a Promise) under runtime. Typecheck passes (`pnpm tsc --noEmit -p apps/api/tsconfig.json`). No tests exist for this route — see Tech Debt followup.
 
@@ -160,8 +153,8 @@ No new commits since `a71ec8d5`. All Tier 0/1 blockers re-verified to still hold
 
 ### L1.7 — P2.1 Supplier Catalog "100% complete"
 - **Plan claimed:** 100% done.
-- **Actual:** Core routes exist and function, but duplicate `softDelete/` and `soft-delete/` directories in `pricing-tiers` and `bulk-order-rules` create Next.js routing conflicts.
-- **Resolution:** Delete the camelCase variants. Downgrade to ~95% until duplicates are removed.
+- **Actual:** Core routes exist and function. Duplicate `softDelete/` directories in `pricing-tiers`, `bulk-order-rules`, and the entire stale `supplier-catalogs/` tree (mirroring the canonical `vendor-catalogs/`) were **REMOVED 2026-04-26** (see Blocker 4).
+- **Resolution:** ✅ Resolved. Single canonical surface remains.
 
 ### L1.8 — Procurement Automation "0% FABRICATED"
 - **Plan claimed:** No implementation at all.

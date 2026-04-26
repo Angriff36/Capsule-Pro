@@ -338,11 +338,6 @@
       "comment": "Uses database directly with manifest pattern \u2014 PricingTier.create/update/softDelete"
     },
     {
-      "prefix": "/api/inventory/supplier-catalogs",
-      "methods": ["POST", "PUT", "DELETE"],
-      "comment": "Uses database directly with manifest pattern \u2014 VendorCatalog.create/update/softDelete"
-    },
-    {
       "prefix": "/api/settings/rate-limits",
       "methods": ["POST", "PATCH", "DELETE"],
       "comment": "Infrastructure: Rate limit configuration CRUD for tenant-specific limits"
