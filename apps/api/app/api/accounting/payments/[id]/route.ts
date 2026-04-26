@@ -15,7 +15,7 @@ import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
 import { checkSensitiveTenantRateLimit } from "@/lib/sensitive-rate-limit";
-import { processPaymentGateway } from "../gateway";
+import { processPaymentGateway, refundPaymentGateway } from "../gateway";
 import {
   captureException,
   type PaymentResponse,
@@ -215,6 +215,39 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // caller supplies an amount larger than what was actually charged.
     const effectiveRefund = Math.min(Number(body.amount), paymentAmount);
     const isFullRefund = effectiveRefund >= paymentAmount;
+
+    // Server-side gateway dispatch. The gateway result is the system of
+    // record for whether money actually moved back to the cardholder.
+    // Trusting the request body here would let any tenant caller flip an
+    // arbitrary COMPLETED payment to REFUNDED and cascade a phantom debit
+    // out of the invoice ledger. See `gateway.ts` for the security
+    // invariant. Replace the body of `refundPaymentGateway` with a real
+    // Stripe refund call from `packages/payments` once the integration is
+    // wired up; the route does not need to change.
+    const refundResult = await refundPaymentGateway({
+      paymentId: payment.id,
+      tenantId,
+      amount: effectiveRefund,
+      currency: payment.currency,
+      reason: body.reason,
+      originalGatewayTransactionId: payment.gatewayTransactionId,
+    });
+
+    if (!refundResult.success) {
+      // Money did NOT move on the processor side. Do not mutate the local
+      // payment / invoice state — leaving the payment as COMPLETED is the
+      // correct ledger position. 502 Bad Gateway signals the upstream
+      // failure to the caller; the audit trail still records the gateway-
+      // side refund attempt ID for reconciliation.
+      return NextResponse.json(
+        {
+          error: "Refund declined by payment gateway",
+          failureReason: refundResult.failureReason ?? "unknown",
+          refundTransactionId: refundResult.refundTransactionId,
+        },
+        { status: 502 }
+      );
+    }
 
     // Update payment
     const updatedPayment = await database.payment.update({

@@ -39,6 +39,7 @@ const mocks = vi.hoisted(() => ({
   requireTenantIdMock: vi.fn(),
   checkSensitiveTenantRateLimitMock: vi.fn(),
   processPaymentGatewayMock: vi.fn(),
+  refundPaymentGatewayMock: vi.fn(),
 }));
 
 vi.mock("@repo/database", () => ({
@@ -64,6 +65,7 @@ vi.mock("@/lib/sensitive-rate-limit", () => ({
 
 vi.mock("@/app/api/accounting/payments/gateway", () => ({
   processPaymentGateway: mocks.processPaymentGatewayMock,
+  refundPaymentGateway: mocks.refundPaymentGatewayMock,
 }));
 
 vi.mock("@sentry/nextjs", () => ({
@@ -159,6 +161,17 @@ beforeEach(() => {
   mocks.processPaymentGatewayMock.mockResolvedValue({
     success: true,
     transactionId: "txn_test",
+  });
+  // Default: refund gateway dispatch succeeds with a deterministic refund
+  // transaction ID. Tests that exercise the failure path (gateway-side
+  // decline → 502, no DB mutation) override per-call. Note: tests must NOT
+  // rely on the request body to drive POST refund outcome — the gateway
+  // adapter is the single source of truth for whether money actually moved
+  // back to the cardholder.
+  mocks.refundPaymentGatewayMock.mockReset();
+  mocks.refundPaymentGatewayMock.mockResolvedValue({
+    success: true,
+    refundTransactionId: "re_test",
   });
 });
 
@@ -568,6 +581,157 @@ describe("POST /api/accounting/payments/[id] — refund payment", () => {
 
     expect(res.status).toBe(500);
     expect(mocks.paymentUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("calls refund gateway with server-side metadata, not the request body", async () => {
+    // SECURITY: the gateway adapter must receive the server-known payment
+    // metadata (paymentId, tenantId, currency, originalGatewayTransactionId)
+    // not values from the request body. Only `amount` and `reason` come
+    // from the body, and `amount` is clamped to the actual payment amount.
+    mocks.paymentFindFirstMock.mockResolvedValue(completedPayment);
+    mocks.paymentUpdateMock.mockResolvedValue({
+      ...completedPayment,
+      status: "REFUNDED",
+      refundedAt: new Date(),
+    });
+    mocks.invoiceFindFirstMock.mockResolvedValue(paidInvoice);
+    mocks.invoiceUpdateMock.mockResolvedValue({
+      ...paidInvoice,
+      status: "SENT",
+      amountPaid: 0,
+      amountDue: 100,
+    });
+
+    const res = await POST(
+      makeRequest({ amount: 100, reason: "Customer requested" }, "POST"),
+      { params: Promise.resolve({ id: PAYMENT_ID }) }
+    );
+
+    expect(res.status).toBe(200);
+    expect(mocks.refundPaymentGatewayMock).toHaveBeenCalledTimes(1);
+    expect(mocks.refundPaymentGatewayMock.mock.calls[0][0]).toMatchObject({
+      paymentId: PAYMENT_ID,
+      tenantId: TENANT_ID,
+      amount: 100,
+      currency: "USD",
+      reason: "Customer requested",
+      // The original charge transaction ID comes from the persisted payment
+      // record, not from the caller — Stripe correlates the refund back to
+      // the original charge via this ID.
+      originalGatewayTransactionId: "txn_existing",
+    });
+  });
+
+  it("on gateway failure: returns 502 and does NOT mutate payment or invoice", async () => {
+    // SECURITY / LEDGER INTEGRITY: when the upstream gateway declines the
+    // refund, money has not moved on the processor side. Flipping the
+    // local payment to REFUNDED would create a phantom debit on the
+    // invoice ledger that reconciliation cannot recover. The route MUST
+    // leave the payment as COMPLETED and signal upstream failure to the
+    // caller via 502.
+    mocks.refundPaymentGatewayMock.mockResolvedValueOnce({
+      success: false,
+      refundTransactionId: "re_failed_attempt",
+      failureReason: "charge_already_refunded",
+    });
+    mocks.paymentFindFirstMock.mockResolvedValue(completedPayment);
+
+    const res = await POST(
+      makeRequest({ amount: 100, reason: "Customer requested" }, "POST"),
+      { params: Promise.resolve({ id: PAYMENT_ID }) }
+    );
+
+    expect(res.status).toBe(502);
+    const body = await res.json();
+    expect(body.error).toBe("Refund declined by payment gateway");
+    expect(body.failureReason).toBe("charge_already_refunded");
+    // Audit trail still records the gateway-side refund attempt ID for
+    // reconciliation, even though no local state changed.
+    expect(body.refundTransactionId).toBe("re_failed_attempt");
+
+    // Critical: payment record MUST NOT be flipped to REFUNDED.
+    expect(mocks.paymentUpdateMock).not.toHaveBeenCalled();
+    // Critical: invoice ledger MUST NOT be debited.
+    expect(mocks.invoiceFindFirstMock).not.toHaveBeenCalled();
+    expect(mocks.invoiceUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("ignores caller-supplied refund transaction ID — gateway is sole source", async () => {
+    // SECURITY: prior to the gateway adapter, a caller could plausibly
+    // attempt to forge a `refundTransactionId` in the request body. The
+    // route now ignores any such field; the persisted refund correlation
+    // comes only from the gateway adapter result.
+    mocks.refundPaymentGatewayMock.mockResolvedValueOnce({
+      success: true,
+      refundTransactionId: "re_server_generated",
+    });
+    mocks.paymentFindFirstMock.mockResolvedValue(completedPayment);
+    mocks.paymentUpdateMock.mockResolvedValue({
+      ...completedPayment,
+      status: "REFUNDED",
+      refundedAt: new Date(),
+    });
+    mocks.invoiceFindFirstMock.mockResolvedValue(paidInvoice);
+    mocks.invoiceUpdateMock.mockResolvedValue({
+      ...paidInvoice,
+      status: "SENT",
+      amountPaid: 0,
+      amountDue: 100,
+    });
+
+    const res = await POST(
+      makeRequest(
+        {
+          amount: 100,
+          reason: "Customer requested",
+          // Attacker-controlled fields that MUST be ignored:
+          refundTransactionId: "re_attacker_controlled",
+          gatewayResponse: { code: "200", refundId: "re_attacker_controlled" },
+        },
+        "POST"
+      ),
+      { params: Promise.resolve({ id: PAYMENT_ID }) }
+    );
+
+    expect(res.status).toBe(200);
+    // The gateway was called with server-side metadata only — none of the
+    // attacker-controlled keys leaked into the gateway invocation.
+    const gatewayCall = mocks.refundPaymentGatewayMock.mock.calls[0][0];
+    expect(gatewayCall).not.toHaveProperty("refundTransactionId");
+    expect(gatewayCall).not.toHaveProperty("gatewayResponse");
+  });
+
+  it("calls refund gateway BEFORE mutating payment or invoice", async () => {
+    // Ordering invariant: the gateway dispatch MUST happen before any
+    // local DB mutation, so a gateway failure cannot leave the local
+    // ledger in an inconsistent state.
+    const callOrder: string[] = [];
+    mocks.refundPaymentGatewayMock.mockImplementationOnce(async () => {
+      callOrder.push("gateway");
+      return { success: true, refundTransactionId: "re_test" };
+    });
+    mocks.paymentFindFirstMock.mockResolvedValue(completedPayment);
+    mocks.paymentUpdateMock.mockImplementationOnce(async (args) => {
+      callOrder.push("payment.update");
+      return {
+        ...completedPayment,
+        status: "REFUNDED",
+        refundedAt: new Date(),
+      };
+    });
+    mocks.invoiceFindFirstMock.mockResolvedValue(paidInvoice);
+    mocks.invoiceUpdateMock.mockImplementationOnce(async () => {
+      callOrder.push("invoice.update");
+      return { ...paidInvoice, status: "SENT", amountPaid: 0, amountDue: 100 };
+    });
+
+    const res = await POST(
+      makeRequest({ amount: 100, reason: "x" }, "POST"),
+      { params: Promise.resolve({ id: PAYMENT_ID }) }
+    );
+
+    expect(res.status).toBe(200);
+    expect(callOrder).toEqual(["gateway", "payment.update", "invoice.update"]);
   });
 });
 
