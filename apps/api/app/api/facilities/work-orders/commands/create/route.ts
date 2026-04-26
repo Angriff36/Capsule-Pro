@@ -1,4 +1,4 @@
-// API route for creating a maintenance work order
+// Create maintenance work order
 import { auth } from "@repo/auth/server";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
@@ -8,6 +8,9 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+
+const VALID_TYPES = ["preventive", "corrective", "emergency", "inspection"];
+const VALID_PRIORITIES = ["critical", "high", "medium", "low"];
 
 export async function POST(request: NextRequest) {
   try {
@@ -38,60 +41,61 @@ export async function POST(request: NextRequest) {
       return manifestErrorResponse("title is required", 400);
     }
 
-    const validTypes = ["preventive", "corrective", "emergency", "inspection"];
-    const validPriorities = ["critical", "high", "medium", "low"];
-
-    if (!validTypes.includes(workOrderType)) {
+    if (!VALID_TYPES.includes(workOrderType)) {
       return manifestErrorResponse(
-        `Invalid work order type. Must be one of: ${validTypes.join(", ")}`,
+        `Invalid work order type. Must be one of: ${VALID_TYPES.join(", ")}`,
         400
       );
     }
 
-    if (!validPriorities.includes(priority)) {
+    if (!VALID_PRIORITIES.includes(priority)) {
       return manifestErrorResponse(
-        `Invalid priority. Must be one of: ${validPriorities.join(", ")}`,
+        `Invalid priority. Must be one of: ${VALID_PRIORITIES.join(", ")}`,
         400
       );
     }
 
-    // Generate work order number
-    const countResult = await database.$queryRaw`
-      SELECT COUNT(*)::int as count FROM tenant_facilities.maintenance_work_orders
-      WHERE tenant_id = ${tenantId}::uuid
-    `;
-    const count = (countResult as any[])[0]?.count || 0;
+    const count = await database.maintenanceWorkOrder.count({
+      where: { tenantId },
+    });
     const workOrderNumber = `WO-${new Date().getFullYear()}-${String(count + 1).padStart(5, "0")}`;
 
-    const result = await database.$queryRaw`
-      INSERT INTO tenant_facilities.maintenance_work_orders (
-        tenant_id, work_order_number, area_id, equipment_id, work_order_type,
-        priority, status, title, description, reported_by, reported_at,
-        assigned_to, assigned_vendor, scheduled_date
-      ) VALUES (
-        ${tenantId}::uuid,
-        ${workOrderNumber},
-        ${areaId || null}::uuid,
-        ${equipmentId || null}::uuid,
-        ${workOrderType},
-        ${priority},
-        'open',
-        ${title},
-        ${description || null},
-        ${userId}::uuid,
-        NOW(),
-        ${assignedTo || null}::uuid,
-        ${assignedVendor || null},
-        ${scheduledDate ? new Date(scheduledDate) : null}
-      )
-      RETURNING id, work_order_number, area_id, equipment_id, work_order_type,
-        priority, status, title, description, reported_at, scheduled_date, created_at
-    `;
+    const workOrder = await database.maintenanceWorkOrder.create({
+      data: {
+        tenantId,
+        workOrderNumber,
+        areaId: areaId || null,
+        equipmentId: equipmentId || null,
+        workOrderType,
+        priority,
+        status: "open",
+        title,
+        description: description || null,
+        reportedBy: userId,
+        assignedTo: assignedTo || null,
+        assignedVendor: assignedVendor || null,
+        scheduledDate: scheduledDate ? new Date(scheduledDate) : null,
+      },
+    });
 
-    return manifestSuccessResponse({ workOrder: (result as any[])[0] });
+    const result = {
+      id: workOrder.id,
+      work_order_number: workOrder.workOrderNumber,
+      area_id: workOrder.areaId,
+      equipment_id: workOrder.equipmentId,
+      work_order_type: workOrder.workOrderType,
+      priority: workOrder.priority,
+      status: workOrder.status,
+      title: workOrder.title,
+      description: workOrder.description,
+      reported_at: workOrder.reportedAt,
+      scheduled_date: workOrder.scheduledDate,
+      created_at: workOrder.createdAt,
+    };
+
+    return manifestSuccessResponse({ workOrder: result });
   } catch (error) {
     captureException(error);
-    console.error("Error creating work order:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

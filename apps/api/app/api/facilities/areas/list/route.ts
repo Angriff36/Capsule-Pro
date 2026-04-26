@@ -1,7 +1,5 @@
-// API route for listing facility areas
-
+// List facility areas
 import { auth } from "@repo/auth/server";
-import { Prisma } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -10,6 +8,34 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+
+function mapAreaToSnake(a: {
+  id: string;
+  venueId: string | null;
+  name: string;
+  code: string | null;
+  areaType: string;
+  floor: string | null;
+  description: string | null;
+  squareFeet: number | null;
+  status: string;
+  createdAt: Date;
+  updatedAt: Date;
+}) {
+  return {
+    id: a.id,
+    venue_id: a.venueId,
+    name: a.name,
+    code: a.code,
+    area_type: a.areaType,
+    floor: a.floor,
+    description: a.description,
+    square_feet: a.squareFeet,
+    status: a.status,
+    created_at: a.createdAt,
+    updated_at: a.updatedAt,
+  };
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -28,23 +54,20 @@ export async function GET(request: NextRequest) {
     const areaType = searchParams.get("areaType");
     const status = searchParams.get("status") || "active";
 
-    const areas = await database.$queryRaw`
-      SELECT 
-        id, venue_id, name, code, area_type, floor, description,
-        square_feet, status, created_at, updated_at
-      FROM tenant_facilities.facility_areas
-      WHERE tenant_id = ${tenantId}::uuid
-        AND deleted_at IS NULL
-        ${venueId ? Prisma.sql`AND venue_id = ${venueId}::uuid` : Prisma.empty}
-        ${areaType ? Prisma.sql`AND area_type = ${areaType}` : Prisma.empty}
-        ${status !== "all" ? Prisma.sql`AND status = ${status}` : Prisma.empty}
-      ORDER BY name
-    `;
+    const areas = await database.facilityArea.findMany({
+      where: {
+        tenantId,
+        deletedAt: null,
+        ...(venueId && { venueId }),
+        ...(areaType && { areaType }),
+        ...(status !== "all" && { status }),
+      },
+      orderBy: { name: "asc" },
+    });
 
-    return manifestSuccessResponse({ areas });
+    return manifestSuccessResponse({ areas: areas.map(mapAreaToSnake) });
   } catch (error) {
     captureException(error);
-    console.error("Error listing facility areas:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

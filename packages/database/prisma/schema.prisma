@@ -5675,7 +5675,8 @@ model FacilityArea {
   updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(6)
 
-  tenant Account @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  assets FacilityAsset[]
+  tenant Account     @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
   @@id([tenantId, id])
   @@unique([tenantId, code])
@@ -5703,7 +5704,8 @@ model FacilityAsset {
   updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt      DateTime? @map("deleted_at") @db.Timestamptz(6)
 
-  tenant Account @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+  area    FacilityArea? @relation(fields: [tenantId, areaId], references: [tenantId, id])
+  tenant  Account       @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
   @@id([tenantId, id])
   @@index([tenantId, status])

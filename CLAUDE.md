@@ -149,6 +149,6 @@ Last: [first session]
 
 ## Last Session Bridge
 [auto-bridge snapshot @ 10 changes]
-Files: apps/api/app/api/command-board/simulations/[id]/route.ts (edit), apps/api/__tests__/command-board/simulations.test.ts (edit), apps/api/app/api/kitchen/prep-task-plan-workflows/[id]/route.ts (edit), packages/database/prisma/schema.prisma (edit), apps/api/app/webhooks/payments/route.ts (edit), apps/api/app/api/command-board/simulations/[id]/delta/route.ts (edit), apps/api/app/api/command-board/simulations/[id]/apply/route.ts (edit)
+Files: apps/api/app/api/accounting/revenue-recognition/schedules/route.ts (edit), apps/api/app/api/accounting/revenue-recognition/schedules/[id]/route.ts (edit), apps/api/app/api/accounting/revenue-recognition/schedules/[id]/route.ts (create), apps/api/app/api/accounting/revenue-recognition/schedules/route.ts (create), packages/database/prisma/migrations/20260426000000_add_revenue_recognition/migration.sql (create), packages/manifest-adapters/manifests-disabled/revenue-recognition-rules.manifest (create), packages/manifest-adapters/manifests-disabled/payment-rules.manifest (create), packages/manifest-adapters/manifests-disabled/invoice-rules.manifest (create), packages/database/prisma/schema.prisma (edit)
 
 # === END COGNILAYER ===

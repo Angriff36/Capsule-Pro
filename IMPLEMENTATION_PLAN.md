@@ -1,6 +1,7 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-26 (twenty-third pass — accounting module: added RevenueRecognitionSchedule + RevenueRecognitionLine Prisma models + migration with RLS. Rewrote and promoted 3 quarantined manifests (invoice-rules, payment-rules, revenue-recognition-rules) from imperative DSL to compilable functional DSL (removed enum/let/if-else, replaced with string-based constraints/ternary expressions). Replaced revenue recognition 501 stubs with working route implementations. IR now 67 manifests, ~100 entities, ~460 commands.)
+> **Last updated:** 2026-04-26 (twenty-fourth pass — facilities: converted all 12 facilities routes from raw SQL to Prisma ORM. Added `FacilityAsset`↔`FacilityArea` Prisma relation. Removed 3 duplicate `/api/chartofaccount/` auto-generated routes. No new test failures; 956 tests pass, 0 failures.)
+> **Twenty-third pass:** accounting module: added RevenueRecognitionSchedule + RevenueRecognitionLine Prisma models + migration with RLS. Rewrote and promoted 3 quarantined manifests (invoice-rules, payment-rules, revenue-recognition-rules) from imperative DSL to compilable functional DSL (removed enum/let/if-else, replaced with string-based constraints/ternary expressions). Replaced revenue recognition 501 stubs with working route implementations. IR now 67 manifests, ~100 entities, ~460 commands.
 > **Prior passes:** 2026-04-24 initial post-expansion audit → 2026-04-24 first re-verification → 2026-04-24 third-pass spot-check → 2026-04-24 fourth-pass package health → 2026-04-24 fifth-pass E2E audit → 2026-04-24 sixth-pass raw-SQL audit → 2026-04-24 seventh-pass supplementary raw-SQL audit → 2026-04-24 eighth-pass comprehensive raw-SQL audit → 2026-04-25 ninth-pass frontend health audit → 2026-04-25 tenth-pass mobile + public website audit → **2026-04-25 eleventh-pass auth, middleware & integration services audit** (3 sub-passes: initial 6-agent pass, 6-agent addendum, 5-agent credential/webhook deep-dive).
 > **Previous snapshot:** 2026-03-08 (stale — many claims falsified by post-expansion audit)
 > **Audit method:** initial 15+ parallel subagent investigations → 8-subagent re-verification → 10-subagent third-pass → 10-subagent fourth-pass → E2E fifth-pass → 20-subagent sixth-pass → 9-subagent seventh-pass → 15-subagent confirmation pass → 20-subagent eighth-pass raw-SQL audit → 24-subagent ninth-pass frontend health audit → 11-subagent tenth-pass mobile + public website audit → **17-subagent eleventh-pass auth/middleware/integration audit** (6 + 6 + 5 agents across 3 sub-passes) covering full auth chain trace, route-level auth enforcement scan, credential exposure scan across all directories, webhook receiver security deep-audit, all 16 lib files, and external integration packages. **All agent findings verified against actual codebase before reporting.**
@@ -177,7 +178,7 @@ No new commits since `a71ec8d5`. All Tier 0/1 blockers re-verified to still hold
 
 | Sub-module | State | Key files |
 |---|---|---|
-| Chart of Accounts | DONE (but duplicate routes) | `/api/accounting/chart-of-accounts/` canonical; `/api/chartofaccount/` auto-generated duplicate |
+| Chart of Accounts | DONE | `/api/accounting/chart-of-accounts/` canonical; `/api/chartofaccount/` auto-generated duplicates **REMOVED 2026-04-26** (twenty-fourth pass — 3 routes deleted) |
 | Invoices | MOSTLY DONE | Email sending stubbed at `apps/api/app/api/accounting/invoices/[id]/route.ts:233` |
 | Payments | PARTIAL | Gateway stubbed at `apps/api/app/api/accounting/payments/[id]/route.ts:90-95`; UI form stubbed in `PaymentFormClient` lines 112-123 |
 | Payment Methods | FUNCTIONAL (but schema-mismatched) | `[id]` PUT/DELETE implement full DB logic at `apps/api/app/api/accounting/payment-methods/[id]/route.ts:74-148` (PUT) and `:154-198` (DELETE soft-delete). File header acknowledges some referenced fields don't exist on the model. Prior plan's "stub" claim was incorrect. |
@@ -192,7 +193,7 @@ No new commits since `a71ec8d5`. All Tier 0/1 blockers re-verified to still hold
 | Sub-module | State | Notes |
 |---|---|---|
 | Areas | DONE | `FacilityArea` Prisma model present |
-| Assets | BROKEN | Raw SQL against `tenant_facilities.facility_assets`; **NO Prisma model** |
+| Assets | DONE (converted to Prisma ORM 2026-04-26) | `FacilityAsset` Prisma model present; all 12 facilities routes now use Prisma ORM instead of raw SQL |
 | Preventive Maintenance Schedules | DONE | `PreventiveMaintenanceSchedule` model present |
 | Work Orders | PARTIAL | UI is view-only; no status/cost update UI at `apps/app/app/(authenticated)/facilities/work-orders/page.tsx:231-236` |
 
@@ -364,7 +365,7 @@ Preserved from prior plan; spot-verified where cited, not individually re-tested
 | `procurement_budget_alerts` | 20260327010000 | Procurement budget |
 | ~~`supplier_sync_logs`~~ | 20260328080000 | Supplier sync status — **has a `SupplierSyncLog` Prisma model; NOT orphaned**. Prior pass was wrong. |
 
-Plus **raw-SQL-only tables** with no model: `facility_assets`, `drivers`, `vehicles`.
+Plus **raw-SQL-only tables** with no model: `facility_assets`, `drivers`, `vehicles`. *(Note: `facility_assets` has a `FacilityAsset` Prisma model since 2026-04-26, and as of the twenty-fourth pass all facilities routes use Prisma ORM. The `FacilityAsset`↔`FacilityArea` relation was also added.)*
 
 ### Missing models referenced by code
 - ~~`PurchaseRequisition`, `VendorContract` (Blocker 2)~~ ✅ RESOLVED 2026-04-26
@@ -463,12 +464,12 @@ Also dead:
   - (plus others following the same pattern)
 
 ### Raw SQL usage
-**1,577 occurrences across 250 files** (sixth-pass full grep; prior passes said "527 across 187" — was a line-count not occurrence-count). Full audit in Raw-SQL Audit (6th Pass) section. Legitimate in analytics/reporting; concerning in:
+**1,577 occurrences across 250 files** (sixth-pass full grep; prior passes said "527 across 187" — was a line-count not occurrence-count). **Twenty-fourth pass (2026-04-26): facilities raw SQL count dropped by 12 instances across 12 files** (all facilities routes converted to Prisma ORM). Full audit in Raw-SQL Audit (6th Pass) section. Legitimate in analytics/reporting; concerning in:
 - Procurement (≥21 instances)
 - Payroll (≥20 instances, including bank-accounts which currently has no Prisma model)
 - Shipments (≥11 instances)
 - Logistics drivers/vehicles (no Prisma models)
-- Facilities assets (no Prisma model)
+- ~~Facilities assets (no Prisma model)~~ ✅ **RESOLVED 2026-04-26**: 12 routes converted from raw SQL to Prisma ORM
 
 All clusters need parameterization review + Prisma-model backfill. Blocker 6 is one already-identified correctness instance in logistics drivers.
 
@@ -497,6 +498,9 @@ All 26 previously failing tests are now fixed (26→0):
 
 ### Test suite status (twenty-third pass)
 No new test failures introduced. 3 quarantined manifests promoted (invoice-rules, payment-rules, revenue-recognition-rules) all compile cleanly under functional DSL. Revenue recognition routes now return 200; `revenue-cycle-verification.spec.ts` should be re-run to confirm it passes against real data.
+
+### Test suite status (twenty-fourth pass)
+No new test failures. All 12 facilities routes converted from raw SQL to Prisma ORM. 956 tests pass, 0 failures.
 
 ### Duplicate `softDelete/` + `soft-delete/` directories
 See Blocker 4. Canonical choice: `soft-delete/` (kebab-case). Re-verification 2026-04-24: 2 modules have BOTH variants, 1 has only the camelCase, 21 modules total use one or the other. Prior "~45 modules" figure conflated paths with modules.
@@ -533,7 +537,7 @@ Each tier should be complete before the next, except where items can be parallel
 9. ~~Add `ENABLE ROW LEVEL SECURITY` + policies to all post-March-8 tables~~ ✅ **RESOLVED 2026-04-26**: Migration `20260427000000_add_rls_post_expansion_tables` adds RLS to 14 tables; migration `20260427010000_add_logistics_facilities_tables` creates 3 phantom tables with RLS baked in. All post-March-8 tenant-scoped tables now have RLS.
 10. ~~Fix 85 TypeScript errors in auto-generated API routes.~~ ✅ **RESOLVED 2026-04-26**: Systematic fix across ~97 auto-generated route files. Three categories of errors fixed: (a) 11 wrong Prisma model names (`emailTemplate`→`email_templates`, `eventDish`→`event_dishes`, `eventImportWorkflow`→`eventImport`, `eventStaff`→`eventStaffAssignment`, `recipeStep`→`recipe_steps`, `payrollApprovalHistory`→`approvalHistory`, `payrollPeriod`→`payroll_periods`, `payrollRun`→`payroll_runs`, `employeeAvailability`→`employee_availability`, `employeeCertification`→`employee_certifications`, `timeOffRequest`→`employeeTimeOffRequest`); (b) 11 snake_case field model conversions (`tenantId`→`tenant_id`, `deletedAt`→`deleted_at`, `createdAt`→`created_at` for models that use raw snake_case without `@map`); (c) `findUnique`→`findFirst` where `deletedAt`/`deleted_at` is in the where clause (not part of unique constraint), plus removed `deletedAt: null` from 6 models that have no soft-delete field (`chartOfAccount`, `notification`, `inventoryTransaction`, `alertsConfig`, `overrideAudit`, `timecardEditRequest`, `approvalHistory`). Result: 85→0 errors remaining (down from 85→2 after first pass, then 2→0 after twenty-first pass). The 2 remaining `prepTaskPlanWorkflow` errors resolved by adding the Prisma model. Test delta: 33→26→0 (7 simulation tests fixed after aligning route handlers to use `findUnique`; remaining 26 fixed in twenty-second pass). Fix script at `scripts/fix-auto-generated-routes.mjs`.
 11. ~~Dedup duplicate `audit_log` migration.~~ ✅ **RESOLVED 2026-04-26**: Removed inferior migration `20260327030000_add_audit_log` (used TEXT types), kept `20260327100000_add_audit_log` (UUID types, FK constraint, user_agent column, comments).
-12. Remove auto-generated route aliases (`/api/chartofaccount/` etc.) after confirming no callers.
+12. ~~Remove auto-generated route aliases (`/api/chartofaccount/` etc.) after confirming no callers.~~ ✅ **RESOLVED 2026-04-26** (twenty-fourth pass): Removed 3 duplicate `/api/chartofaccount/` routes (`list`, `[id]` GET, `[id]` PUT). Canonical `/api/accounting/chart-of-accounts/` routes remain as sole surface.
 
 ### Tier 3 — Incomplete Modules
 13. ~~Accounting: complete payment gateway integration, invoice email, revenue recognition model + routes.~~ ✅ **PARTIALLY RESOLVED 2026-04-26**: Revenue recognition model + routes done. Remaining: payment gateway integration (still mocked at `payments/[id]/route.ts:90-95`), invoice email sending.

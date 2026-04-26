@@ -26,18 +26,22 @@ export async function POST(request: NextRequest) {
       return manifestErrorResponse("assetId is required", 400);
     }
 
-    await database.$queryRaw`
-      UPDATE tenant_facilities.facility_assets
-      SET deleted_at = NOW(), status = 'disposed'
-      WHERE tenant_id = ${tenantId}::uuid
-        AND id = ${assetId}::uuid
-        AND deleted_at IS NULL
-    `;
+    const existing = await database.facilityAsset.findFirst({
+      where: { tenantId, id: assetId, deletedAt: null },
+    });
+
+    if (!existing) {
+      return manifestErrorResponse("Asset not found", 404);
+    }
+
+    await database.facilityAsset.update({
+      where: { tenantId_id: { tenantId, id: assetId } },
+      data: { deletedAt: new Date(), status: "disposed" },
+    });
 
     return manifestSuccessResponse({ success: true });
   } catch (error) {
     captureException(error);
-    console.error("Error deleting facility asset:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

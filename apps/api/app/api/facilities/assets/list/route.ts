@@ -1,7 +1,5 @@
 // List facility assets
-
 import { auth } from "@repo/auth/server";
-import { Prisma } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -10,6 +8,45 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+
+function mapAssetToSnake(
+  a: {
+    id: string;
+    name: string;
+    assetType: string;
+    serialNumber: string | null;
+    manufacturer: string | null;
+    model: string | null;
+    purchaseDate: Date | null;
+    purchaseCost: { toNumber: () => number } | null;
+    warrantyExpiry: Date | null;
+    status: string;
+    areaId: string | null;
+    notes: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+  },
+  area?: { name: string; code: string | null } | null
+) {
+  return {
+    id: a.id,
+    name: a.name,
+    asset_type: a.assetType,
+    serial_number: a.serialNumber,
+    manufacturer: a.manufacturer,
+    model: a.model,
+    purchase_date: a.purchaseDate?.toISOString() ?? null,
+    purchase_cost: a.purchaseCost?.toNumber?.() ?? null,
+    warranty_expiry: a.warrantyExpiry?.toISOString() ?? null,
+    status: a.status,
+    area_id: a.areaId,
+    area_name: area?.name ?? null,
+    area_code: area?.code ?? null,
+    notes: a.notes,
+    created_at: a.createdAt,
+    updated_at: a.updatedAt,
+  };
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -28,27 +65,25 @@ export async function GET(request: NextRequest) {
     const assetType = searchParams.get("assetType");
     const areaId = searchParams.get("areaId");
 
-    const assets = await database.$queryRaw`
-      SELECT
-        a.id, a.name, a.asset_type, a.serial_number, a.manufacturer,
-        a.model, a.purchase_date, a.purchase_cost, a.warranty_expiry,
-        a.status, a.area_id, a.notes, a.created_at, a.updated_at,
-        fa.name AS area_name, fa.code AS area_code
-      FROM tenant_facilities.facility_assets a
-      LEFT JOIN tenant_facilities.facility_areas fa
-        ON fa.id = a.area_id AND fa.tenant_id = a.tenant_id AND fa.deleted_at IS NULL
-      WHERE a.tenant_id = ${tenantId}::uuid
-        AND a.deleted_at IS NULL
-        ${status !== "all" ? Prisma.sql`AND a.status = ${status}` : Prisma.empty}
-        ${assetType ? Prisma.sql`AND a.asset_type = ${assetType}` : Prisma.empty}
-        ${areaId ? Prisma.sql`AND a.area_id = ${areaId}::uuid` : Prisma.empty}
-      ORDER BY a.name
-    `;
+    const assets = await database.facilityAsset.findMany({
+      where: {
+        tenantId,
+        deletedAt: null,
+        ...(status !== "all" && { status }),
+        ...(assetType && { assetType }),
+        ...(areaId && { areaId }),
+      },
+      include: {
+        area: { select: { name: true, code: true } },
+      },
+      orderBy: { name: "asc" },
+    });
 
-    return manifestSuccessResponse({ assets });
+    return manifestSuccessResponse({
+      assets: assets.map((a) => mapAssetToSnake(a, a.area)),
+    });
   } catch (error) {
     captureException(error);
-    console.error("Error listing facility assets:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

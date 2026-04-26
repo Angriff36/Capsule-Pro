@@ -1,4 +1,4 @@
-// API route for updating work order status
+// Update work order status
 import { auth } from "@repo/auth/server";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
@@ -8,6 +8,15 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+
+const VALID_STATUSES = [
+  "open",
+  "assigned",
+  "in_progress",
+  "parts_ordered",
+  "completed",
+  "cancelled",
+];
 
 export async function POST(request: NextRequest) {
   try {
@@ -29,56 +38,57 @@ export async function POST(request: NextRequest) {
       return manifestErrorResponse("workOrderId is required", 400);
     }
 
-    const validStatuses = [
-      "open",
-      "assigned",
-      "in_progress",
-      "parts_ordered",
-      "completed",
-      "cancelled",
-    ];
-    if (!validStatuses.includes(status)) {
+    if (!VALID_STATUSES.includes(status)) {
       return manifestErrorResponse(
-        `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
+        `Invalid status. Must be one of: ${VALID_STATUSES.join(", ")}`,
         400
       );
     }
 
-    // Verify work order exists and belongs to tenant
-    const existing = await database.$queryRaw`
-      SELECT id, status FROM tenant_facilities.maintenance_work_orders
-      WHERE tenant_id = ${tenantId}::uuid AND id = ${workOrderId}::uuid AND deleted_at IS NULL
-    `;
+    const existing = await database.maintenanceWorkOrder.findFirst({
+      where: { tenantId, id: workOrderId, deletedAt: null },
+    });
 
-    if (!existing || (existing as any[]).length === 0) {
+    if (!existing) {
       return manifestErrorResponse("Work order not found", 404);
     }
 
-    const totalCost = (partsCost || 0) + (laborCost || 0);
     const completedAt = status === "completed" ? new Date() : null;
-    const startedAt = status === "in_progress" ? new Date() : null;
+    const startedAt =
+      status === "in_progress" && !existing.startedAt
+        ? new Date()
+        : undefined;
+    const totalCost =
+      partsCost || laborCost ? (partsCost || 0) + (laborCost || 0) : undefined;
 
-    const result = await database.$queryRaw`
-      UPDATE tenant_facilities.maintenance_work_orders
-      SET 
-        status = ${status},
-        started_at = COALESCE(started_at, ${startedAt}),
-        completed_at = ${completedAt},
-        completed_by = CASE WHEN ${status} = 'completed' THEN ${userId}::uuid ELSE completed_by END,
-        labor_hours = COALESCE(${laborHours ?? null}, labor_hours),
-        parts_cost = COALESCE(${partsCost ?? null}, parts_cost),
-        labor_cost = COALESCE(${laborCost ?? null}, labor_cost),
-        total_cost = CASE WHEN ${totalCost > 0} THEN ${totalCost} ELSE total_cost END,
-        notes = COALESCE(${notes ?? null}, notes),
-        updated_at = NOW()
-      WHERE tenant_id = ${tenantId}::uuid AND id = ${workOrderId}::uuid
-      RETURNING id, work_order_number, status, completed_at, total_cost
-    `;
+    const workOrder = await database.maintenanceWorkOrder.update({
+      where: { tenantId_id: { tenantId, id: workOrderId } },
+      data: {
+        status,
+        ...(startedAt !== undefined && { startedAt }),
+        ...(completedAt && { completedAt, completedBy: userId }),
+        ...(laborHours !== undefined &&
+          laborHours !== null && { laborHours }),
+        ...(partsCost !== undefined &&
+          partsCost !== null && { partsCost }),
+        ...(laborCost !== undefined &&
+          laborCost !== null && { laborCost }),
+        ...(totalCost !== undefined && totalCost > 0 && { totalCost }),
+        ...(notes !== undefined && notes !== null && { notes }),
+      },
+    });
 
-    return manifestSuccessResponse({ workOrder: (result as any[])[0] });
+    const result = {
+      id: workOrder.id,
+      work_order_number: workOrder.workOrderNumber,
+      status: workOrder.status,
+      completed_at: workOrder.completedAt,
+      total_cost: workOrder.totalCost?.toNumber?.() ?? null,
+    };
+
+    return manifestSuccessResponse({ workOrder: result });
   } catch (error) {
     captureException(error);
-    console.error("Error updating work order:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

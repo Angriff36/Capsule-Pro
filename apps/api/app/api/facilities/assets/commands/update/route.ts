@@ -40,36 +40,53 @@ export async function POST(request: NextRequest) {
       return manifestErrorResponse("assetId is required", 400);
     }
 
-    const result = await database.$queryRaw`
-      UPDATE tenant_facilities.facility_assets
-      SET
-        name = COALESCE(${name ?? null}, name),
-        asset_type = COALESCE(${assetType ?? null}, asset_type),
-        serial_number = COALESCE(${serialNumber ?? null}, serial_number),
-        manufacturer = COALESCE(${manufacturer ?? null}, manufacturer),
-        model = COALESCE(${model ?? null}, model),
-        purchase_date = COALESCE(${purchaseDate ? new Date(purchaseDate) : null}::date, purchase_date),
-        purchase_cost = COALESCE(${purchaseCost ?? null}::numeric, purchase_cost),
-        warranty_expiry = COALESCE(${warrantyExpiry ? new Date(warrantyExpiry) : null}::date, warranty_expiry),
-        status = COALESCE(${status ?? null}, status),
-        area_id = COALESCE(${areaId ?? null}::uuid, area_id),
-        notes = COALESCE(${notes ?? null}, notes),
-        updated_at = NOW()
-      WHERE tenant_id = ${tenantId}::uuid
-        AND id = ${assetId}::uuid
-        AND deleted_at IS NULL
-      RETURNING id, name, asset_type, serial_number, manufacturer, model,
-        purchase_date, purchase_cost, warranty_expiry, status, area_id, notes
-    `;
+    const existing = await database.facilityAsset.findFirst({
+      where: { tenantId, id: assetId, deletedAt: null },
+    });
 
-    if (!(result as any[]).length) {
+    if (!existing) {
       return manifestErrorResponse("Asset not found", 404);
     }
 
-    return manifestSuccessResponse({ asset: (result as any[])[0] });
+    const asset = await database.facilityAsset.update({
+      where: { tenantId_id: { tenantId, id: assetId } },
+      data: {
+        ...(name !== undefined && { name }),
+        ...(assetType !== undefined && { assetType }),
+        ...(serialNumber !== undefined && { serialNumber: serialNumber || null }),
+        ...(manufacturer !== undefined && { manufacturer: manufacturer || null }),
+        ...(model !== undefined && { model: model || null }),
+        ...(purchaseDate !== undefined && {
+          purchaseDate: purchaseDate ? new Date(purchaseDate) : null,
+        }),
+        ...(purchaseCost !== undefined && { purchaseCost: purchaseCost ?? null }),
+        ...(warrantyExpiry !== undefined && {
+          warrantyExpiry: warrantyExpiry ? new Date(warrantyExpiry) : null,
+        }),
+        ...(status !== undefined && { status }),
+        ...(areaId !== undefined && { areaId: areaId || null }),
+        ...(notes !== undefined && { notes: notes || null }),
+      },
+    });
+
+    const result = {
+      id: asset.id,
+      name: asset.name,
+      asset_type: asset.assetType,
+      serial_number: asset.serialNumber,
+      manufacturer: asset.manufacturer,
+      model: asset.model,
+      purchase_date: asset.purchaseDate?.toISOString() ?? null,
+      purchase_cost: asset.purchaseCost?.toNumber?.() ?? null,
+      warranty_expiry: asset.warrantyExpiry?.toISOString() ?? null,
+      status: asset.status,
+      area_id: asset.areaId,
+      notes: asset.notes,
+    };
+
+    return manifestSuccessResponse({ asset: result });
   } catch (error) {
     captureException(error);
-    console.error("Error updating facility asset:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

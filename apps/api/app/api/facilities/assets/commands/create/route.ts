@@ -24,8 +24,6 @@ const VALID_TYPES = [
   "other",
 ];
 
-const VALID_STATUSES = ["active", "maintenance", "retired", "disposed"];
-
 export async function POST(request: NextRequest) {
   try {
     const { orgId, userId } = await auth();
@@ -58,33 +56,41 @@ export async function POST(request: NextRequest) {
 
     const type = VALID_TYPES.includes(assetType) ? assetType : "other";
 
-    const result = await database.$queryRaw`
-      INSERT INTO tenant_facilities.facility_assets (
-        tenant_id, name, asset_type, serial_number, manufacturer,
-        model, purchase_date, purchase_cost, warranty_expiry,
-        area_id, status, notes
-      ) VALUES (
-        ${tenantId}::uuid,
-        ${name},
-        ${type},
-        ${serialNumber || null},
-        ${manufacturer || null},
-        ${model || null},
-        ${purchaseDate ? new Date(purchaseDate) : null}::date,
-        ${purchaseCost ?? null}::numeric,
-        ${warrantyExpiry ? new Date(warrantyExpiry) : null}::date,
-        ${areaId || null}::uuid,
-        'active',
-        ${notes || null}
-      )
-      RETURNING id, name, asset_type, serial_number, manufacturer, model,
-        purchase_date, purchase_cost, warranty_expiry, status, area_id, notes, created_at
-    `;
+    const asset = await database.facilityAsset.create({
+      data: {
+        tenantId,
+        name,
+        assetType: type,
+        serialNumber: serialNumber || null,
+        manufacturer: manufacturer || null,
+        model: model || null,
+        purchaseDate: purchaseDate ? new Date(purchaseDate) : null,
+        purchaseCost: purchaseCost ?? null,
+        warrantyExpiry: warrantyExpiry ? new Date(warrantyExpiry) : null,
+        areaId: areaId || null,
+        notes: notes || null,
+      },
+    });
 
-    return manifestSuccessResponse({ asset: (result as any[])[0] });
+    const result = {
+      id: asset.id,
+      name: asset.name,
+      asset_type: asset.assetType,
+      serial_number: asset.serialNumber,
+      manufacturer: asset.manufacturer,
+      model: asset.model,
+      purchase_date: asset.purchaseDate?.toISOString() ?? null,
+      purchase_cost: asset.purchaseCost?.toNumber?.() ?? null,
+      warranty_expiry: asset.warrantyExpiry?.toISOString() ?? null,
+      status: asset.status,
+      area_id: asset.areaId,
+      notes: asset.notes,
+      created_at: asset.createdAt,
+    };
+
+    return manifestSuccessResponse({ asset: result });
   } catch (error) {
     captureException(error);
-    console.error("Error creating facility asset:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

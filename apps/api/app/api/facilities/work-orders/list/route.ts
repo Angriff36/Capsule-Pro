@@ -1,7 +1,5 @@
-// API route for listing maintenance work orders
-
+// List maintenance work orders
 import { auth } from "@repo/auth/server";
-import { Prisma } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -10,6 +8,67 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+
+const PRIORITY_ORDER: Record<string, number> = {
+  critical: 1,
+  high: 2,
+  medium: 3,
+  low: 4,
+};
+
+function mapWorkOrderToSnake(w: {
+  id: string;
+  workOrderNumber: string;
+  areaId: string | null;
+  equipmentId: string | null;
+  workOrderType: string;
+  priority: string;
+  status: string;
+  title: string;
+  description: string | null;
+  reportedBy: string | null;
+  reportedAt: Date;
+  assignedTo: string | null;
+  assignedVendor: string | null;
+  scheduledDate: Date | null;
+  startedAt: Date | null;
+  completedAt: Date | null;
+  completedBy: string | null;
+  laborHours: { toNumber: () => number } | null;
+  partsCost: { toNumber: () => number } | null;
+  laborCost: { toNumber: () => number } | null;
+  totalCost: { toNumber: () => number } | null;
+  notes: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}) {
+  return {
+    id: w.id,
+    work_order_number: w.workOrderNumber,
+    area_id: w.areaId,
+    equipment_id: w.equipmentId,
+    work_order_type: w.workOrderType,
+    priority: w.priority,
+    status: w.status,
+    title: w.title,
+    description: w.description,
+    reported_by: w.reportedBy,
+    reported_at: w.reportedAt,
+    assigned_to: w.assignedTo,
+    assigned_vendor: w.assignedVendor,
+    scheduled_date: w.scheduledDate,
+    started_at: w.startedAt,
+    completed_at: w.completedAt,
+    completed_by: w.completedBy,
+    labor_hours: w.laborHours?.toNumber?.() ?? null,
+    parts_cost: w.partsCost?.toNumber?.() ?? null,
+    labor_cost: w.laborCost?.toNumber?.() ?? null,
+    total_cost: w.totalCost?.toNumber?.() ?? null,
+    notes: w.notes,
+    created_at: w.createdAt,
+    updated_at: w.updatedAt,
+  };
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -29,34 +88,30 @@ export async function GET(request: NextRequest) {
     const areaId = searchParams.get("areaId");
     const workOrderType = searchParams.get("workOrderType");
 
-    const workOrders = await database.$queryRaw`
-      SELECT 
-        id, work_order_number, area_id, equipment_id, work_order_type,
-        priority, status, title, description, reported_by, reported_at,
-        assigned_to, assigned_vendor, scheduled_date, started_at,
-        completed_at, completed_by, labor_hours, parts_cost, labor_cost,
-        total_cost, notes, created_at, updated_at
-      FROM tenant_facilities.maintenance_work_orders
-      WHERE tenant_id = ${tenantId}::uuid
-        AND deleted_at IS NULL
-        ${status !== "all" ? Prisma.sql`AND status = ${status}` : Prisma.empty}
-        ${priority ? Prisma.sql`AND priority = ${priority}` : Prisma.empty}
-        ${areaId ? Prisma.sql`AND area_id = ${areaId}::uuid` : Prisma.empty}
-        ${workOrderType ? Prisma.sql`AND work_order_type = ${workOrderType}` : Prisma.empty}
-      ORDER BY 
-        CASE priority 
-          WHEN 'critical' THEN 1 
-          WHEN 'high' THEN 2 
-          WHEN 'medium' THEN 3 
-          WHEN 'low' THEN 4 
-        END,
-        reported_at DESC
-    `;
+    const workOrders = await database.maintenanceWorkOrder.findMany({
+      where: {
+        tenantId,
+        deletedAt: null,
+        ...(status !== "all" && { status }),
+        ...(priority && { priority }),
+        ...(areaId && { areaId }),
+        ...(workOrderType && { workOrderType }),
+      },
+      orderBy: [{ priority: "asc" }, { reportedAt: "desc" }],
+    });
 
-    return manifestSuccessResponse({ workOrders });
+    const sorted = workOrders.sort((a, b) => {
+      const pa = PRIORITY_ORDER[a.priority] ?? 99;
+      const pb = PRIORITY_ORDER[b.priority] ?? 99;
+      if (pa !== pb) return pa - pb;
+      return b.reportedAt.getTime() - a.reportedAt.getTime();
+    });
+
+    return manifestSuccessResponse({
+      workOrders: sorted.map(mapWorkOrderToSnake),
+    });
   } catch (error) {
     captureException(error);
-    console.error("Error listing work orders:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

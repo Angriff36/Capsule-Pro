@@ -1,7 +1,5 @@
-// API route for listing preventive maintenance schedules
-
+// List preventive maintenance schedules
 import { auth } from "@repo/auth/server";
-import { Prisma } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
@@ -10,6 +8,42 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+
+function mapScheduleToSnake(s: {
+  id: string;
+  scheduleNumber: string;
+  areaId: string | null;
+  equipmentId: string | null;
+  title: string;
+  description: string | null;
+  frequency: string;
+  intervalDays: number;
+  lastCompletedAt: Date | null;
+  nextDueAt: Date;
+  assignedTo: string | null;
+  estimatedHours: { toNumber: () => number } | null;
+  estimatedCost: { toNumber: () => number } | null;
+  status: string;
+  createdAt: Date;
+}) {
+  return {
+    id: s.id,
+    schedule_number: s.scheduleNumber,
+    area_id: s.areaId,
+    equipment_id: s.equipmentId,
+    title: s.title,
+    description: s.description,
+    frequency: s.frequency,
+    interval_days: s.intervalDays,
+    last_completed_at: s.lastCompletedAt,
+    next_due_at: s.nextDueAt,
+    assigned_to: s.assignedTo,
+    estimated_hours: s.estimatedHours?.toNumber?.() ?? null,
+    estimated_cost: s.estimatedCost?.toNumber?.() ?? null,
+    status: s.status,
+    created_at: s.createdAt,
+  };
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,23 +61,21 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status") || "active";
     const overdue = searchParams.get("overdue") === "true";
 
-    const schedules = await database.$queryRaw`
-      SELECT 
-        id, schedule_number, area_id, equipment_id, title, description,
-        frequency, interval_days, last_completed_at, next_due_at,
-        assigned_to, estimated_hours, estimated_cost, status, created_at
-      FROM tenant_facilities.preventive_maintenance_schedules
-      WHERE tenant_id = ${tenantId}::uuid
-        AND deleted_at IS NULL
-        ${status !== "all" ? Prisma.sql`AND status = ${status}` : Prisma.empty}
-        ${overdue ? Prisma.sql`AND next_due_at < NOW()` : Prisma.empty}
-      ORDER BY next_due_at ASC
-    `;
+    const schedules = await database.preventiveMaintenanceSchedule.findMany({
+      where: {
+        tenantId,
+        deletedAt: null,
+        ...(status !== "all" && { status }),
+        ...(overdue && { nextDueAt: { lt: new Date() } }),
+      },
+      orderBy: { nextDueAt: "asc" },
+    });
 
-    return manifestSuccessResponse({ schedules });
+    return manifestSuccessResponse({
+      schedules: schedules.map(mapScheduleToSnake),
+    });
   } catch (error) {
     captureException(error);
-    console.error("Error listing preventive maintenance schedules:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }
