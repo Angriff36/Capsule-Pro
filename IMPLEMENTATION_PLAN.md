@@ -1,6 +1,40 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-27 (fifty-sixth pass — manifest generator findFirst migration; 84 type errors → 0)
+> **Last updated:** 2026-04-27 (fifty-seventh pass — generator-level test for findFirst pattern locks in 56th-pass fix)
+
+## 57th audit pass — generator-level test for findFirst pattern (2026-04-27)
+
+**Problem solved**: The 56th pass fixed the manifest detail-route generator to emit `findFirst` instead of `findUnique` (closing 84 TS errors), but no test asserted that contract. A future refactor could silently regress to `findUnique` and break ~40 routes whose Prisma models use compound unique keys `(tenantId, id)`. The 56th pass left this followup explicit: "A generator-level test asserting the `findFirst` pattern (no test currently fails if the pattern regresses to `findUnique`)."
+
+**What shipped this pass**:
+
+1. **Five new tests** in `packages/manifest-runtime/src/manifest/projections/nextjs/generator.test.ts` under a new `describe("nextjs.detail surface", ...)` block:
+   - `emits findFirst (not findUnique) for detail route` — primary contract assertion. Compiles a `Recipe` IR, generates the `nextjs.detail` surface, and asserts the emitted code contains `database.recipe.findFirst` and does NOT contain `findUnique` anywhere. Also re-asserts the surrounding contract (tenant filter, soft-delete filter, 404 path, try/catch, auth check) so the test fails loudly if any of those drift.
+   - `emits findFirst regardless of entity name (lowerCamelCase delegate)` — uses `PrepTaskPlanWorkflow` to confirm the pattern holds for multi-word entity names whose Prisma delegate name is `prepTaskPlanWorkflow`. The 56th pass uncovered that camelCase models also need findFirst, so the rule must not depend on entity-name shape.
+   - `returns error diagnostic if entity not found in IR` — symmetry with the equivalent `nextjs.route` test; ensures the detail surface validates entity presence in IR.
+   - `returns error diagnostic if entity not provided` — asserts the `MISSING_ENTITY` diagnostic code is emitted when the request omits `entity`.
+   - `respects custom tenantIdProperty and deletedAtProperty options` — verifies findFirst flows through to the where clause when callers override the defaults; the generator must NOT hardcode `tenantId`/`deletedAt` anywhere in the detail path.
+
+**Why each line exists**:
+- The primary test's `expect(code).not.toContain("findUnique")` is the regression guard. If a refactor accidentally restores `findUnique`, this test fails immediately during `pnpm test`.
+- Including the `lowerCamelCase delegate` test prevents a partial fix: a future change might preserve `findFirst` for single-word entities but regress for multi-word ones via incorrect template branching.
+- Re-asserting the auth/error/404 contract in the new tests gives `nextjs.detail` the same level of guard as `nextjs.route` — previously the detail surface had **zero** test coverage despite emitting auth-sensitive code.
+- The custom-property test mirrors the equivalent `nextjs.route` test so both surfaces evolve together.
+
+**Verification evidence**:
+- `pnpm --filter @angriff36/manifest test src/manifest/projections/nextjs/generator.test.ts` — 26 passed (was 21; +5 new).
+- `pnpm --filter @angriff36/manifest test` — 712 passed (16 test files). Was 707 before; delta is exactly +5 as expected.
+
+**Files touched**:
+- Modified: `packages/manifest-runtime/src/manifest/projections/nextjs/generator.test.ts` (added new `describe("nextjs.detail surface", ...)` block with 5 tests, ~140 lines).
+- Modified: `IMPLEMENTATION_PLAN.md` (this entry).
+
+**Why this matters**: The 56th pass fix was a one-line generator change that closed 84 type errors across the codebase, but the change had no test guard. Any subsequent refactor — including the still-pending generator-level Prisma-schema-introspection work — risks reverting the `findFirst` choice while restructuring the where-clause logic. With these 5 tests in place, the contract is enforceable. The cost is small (140 lines, 19ms test runtime) and the leverage is high (prevents silent loss of the most impactful fix in the recent audit cycle).
+
+**Followups still open** (carried from 56th pass, unchanged):
+- Generator should introspect the Prisma schema (or accept a per-entity field-mapping configuration) to emit the right `tenant_id`/`tenantId` and `deleted_at`/`deletedAt` per model. Until then, every regeneration of a Category B/C/D route reintroduces type errors.
+- The 14 quarantined manifests still need DSL-compatibility fixes.
+- Republish `@angriff36/manifest` so `pnpm manifest:generate` produces the corrected `findFirst` pattern (currently the local generator is correct but the published CLI is not).
 
 ## 56th audit pass — manifest generator findFirst migration; apps/api typecheck restored to 0 errors (2026-04-27)
 

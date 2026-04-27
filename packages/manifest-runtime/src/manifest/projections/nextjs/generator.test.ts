@@ -251,6 +251,151 @@ describe("NextJsProjection", () => {
     });
   });
 
+  describe("nextjs.detail surface", () => {
+    // These tests lock in the contract established by the 56th audit pass:
+    // detail routes MUST emit `findFirst` (not `findUnique`) so the
+    // soft-delete and tenant filters can coexist with the primary-key
+    // filter without triggering Prisma's WhereUniqueInput type errors.
+    // A regression to `findUnique` would silently break ~40 routes whose
+    // models use compound unique keys like (tenantId, id).
+    it("emits findFirst (not findUnique) for detail route", async () => {
+      const source = `
+        entity Recipe {
+          property id: string
+          property name: string
+        }
+      `;
+
+      const result = await compileToIR(source);
+      expect(result.diagnostics).toHaveLength(0);
+      expect(result.ir).not.toBeNull();
+
+      const detailResult = projection.generate(result.ir!, {
+        surface: "nextjs.detail",
+        entity: "Recipe",
+      });
+
+      const code = firstCode(detailResult);
+
+      // Contract: Must use findFirst, not findUnique.
+      // findUnique cannot accept arbitrary filters (deletedAt: null,
+      // tenantId) alongside the unique key — Prisma's WhereUniqueInput
+      // is strict. findFirst is the only call that lets the generator
+      // stay schema-agnostic across all 97+ entities.
+      expect(code).toContain("database.recipe.findFirst");
+      expect(code).not.toContain("database.recipe.findUnique");
+      expect(code).not.toContain("findUnique");
+
+      // Contract: Must filter by id (primary key) inside the where.
+      expect(code).toContain("id");
+
+      // Contract: Must filter by tenant + soft-delete by default.
+      expect(code).toContain("tenantId");
+      expect(code).toContain("deletedAt: null");
+
+      // Contract: Must handle not-found with a 404 response.
+      expect(code).toContain("not found");
+      expect(code).toContain("404");
+
+      // Contract: Must have proper error handling.
+      expect(code).toContain("try {");
+      expect(code).toContain("} catch (error)");
+      expect(code).toContain("manifestErrorResponse");
+
+      // Contract: Must have auth check.
+      expect(code).toContain("Unauthorized");
+
+      expect(detailResult.diagnostics).toHaveLength(0);
+    });
+
+    it("emits findFirst regardless of entity name (lowerCamelCase delegate)", async () => {
+      // Verifies the pattern holds when the Prisma delegate name is
+      // derived from a multi-word entity name. The 56th pass uncovered
+      // that camelCase model names also need findFirst — the rule must
+      // not depend on entity-name shape.
+      const source = `
+        entity PrepTaskPlanWorkflow {
+          property id: string
+          property status: string
+        }
+      `;
+
+      const result = await compileToIR(source);
+      expect(result.diagnostics).toHaveLength(0);
+
+      const detailResult = projection.generate(result.ir!, {
+        surface: "nextjs.detail",
+        entity: "PrepTaskPlanWorkflow",
+      });
+
+      const code = firstCode(detailResult);
+
+      expect(code).toContain("database.prepTaskPlanWorkflow.findFirst");
+      expect(code).not.toContain("findUnique");
+    });
+
+    it("returns error diagnostic if entity not found in IR", async () => {
+      const source = "entity Recipe { property id: string }";
+      const result = await compileToIR(source);
+
+      const detailResult = projection.generate(result.ir!, {
+        surface: "nextjs.detail",
+        entity: "NonExistent",
+      });
+
+      expect(detailResult.artifacts).toHaveLength(0);
+      expect(detailResult.diagnostics.length).toBeGreaterThanOrEqual(1);
+      expect(
+        detailResult.diagnostics.some((d) => d.severity === "error")
+      ).toBe(true);
+    });
+
+    it("returns error diagnostic if entity not provided", async () => {
+      const source = "entity Recipe { property id: string }";
+      const result = await compileToIR(source);
+
+      const detailResult = projection.generate(result.ir!, {
+        surface: "nextjs.detail",
+      });
+
+      expect(detailResult.artifacts).toHaveLength(0);
+      expect(detailResult.diagnostics).toHaveLength(1);
+      expect(detailResult.diagnostics[0].severity).toBe("error");
+      expect(detailResult.diagnostics[0].code).toBe("MISSING_ENTITY");
+    });
+
+    it("respects custom tenantIdProperty and deletedAtProperty options", async () => {
+      // Mirrors the equivalent nextjs.route test. Custom property names
+      // must flow through to the findFirst where clause too — the
+      // generator must NOT hardcode tenantId/deletedAt anywhere in the
+      // detail path.
+      const source = `
+        entity Recipe {
+          property id: string
+          property name: string
+        }
+      `;
+
+      const result = await compileToIR(source);
+
+      const detailResult = projection.generate(result.ir!, {
+        surface: "nextjs.detail",
+        entity: "Recipe",
+        options: {
+          tenantIdProperty: "orgId",
+          deletedAtProperty: "removedAt",
+        },
+      });
+
+      const code = firstCode(detailResult);
+      expect(code).toContain("findFirst");
+      expect(code).toContain("orgId");
+      expect(code).toContain("removedAt: null");
+      expect(code).not.toContain("tenantId");
+      expect(code).not.toContain("deletedAt");
+    });
+  });
+
   describe("ts.types surface", () => {
     it("generates TypeScript types from IR entities", async () => {
       const source = `
