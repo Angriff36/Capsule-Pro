@@ -4,6 +4,9 @@
   "installCommand": "corepack enable && corepack prepare pnpm@10.24.0 --activate && bash ../../scripts/ensure-github-packages-npmrc.sh && pnpm install",
   "ignoreCommand": "node scripts/skip-ci.js",
   "framework": "nextjs",
+  "github": {
+    "silent": true
+  },
   "outputDirectory": ".next",
   "functions": {
     "app/api/**/*.ts": {
