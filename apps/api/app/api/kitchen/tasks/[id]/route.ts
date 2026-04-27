@@ -135,11 +135,12 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
   );
   return NextResponse.json(
     {
+      error: "Not implemented",
       message:
-        "Update not supported: no manifest command available for the requested fields",
+        "Update not supported: no manifest command available for the requested fields. Tracked as capsule-pro/TODO:kitchen-task-field-commands",
       fields: Object.keys(body),
     },
-    { status: 400 }
+    { status: 501 }
   );
 }
 

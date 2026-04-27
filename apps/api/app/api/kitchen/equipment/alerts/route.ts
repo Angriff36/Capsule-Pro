@@ -7,12 +7,9 @@
 
 import { auth } from "@repo/auth/server";
 import { captureException } from "@sentry/nextjs";
-import type { NextRequest } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import {
-  manifestErrorResponse,
-  manifestSuccessResponse,
-} from "@/lib/manifest-response";
+import { manifestErrorResponse } from "@/lib/manifest-response";
 
 export async function GET(request: NextRequest) {
   try {
@@ -31,27 +28,14 @@ export async function GET(request: NextRequest) {
   // requires equipment lifecycle data, maintenance records, and usage metrics.
   // Tracked as capsule-pro/TODO:equipment-model-implementation
 
-    return manifestSuccessResponse({
-      alerts: [],
-      summary: {
-        total: 0,
-        bySeverity: {
-          critical: 0,
-          high: 0,
-          medium: 0,
-          low: 0,
-        },
-        byType: {
-          maintenance_overdue: 0,
-          high_usage: 0,
-          poor_condition: 0,
-          warranty_expiring: 0,
-          predicted_failure: 0,
-        },
+    return NextResponse.json(
+      {
+        error: "Not implemented",
+        message:
+          "Equipment alerts feature not yet implemented. Equipment model and predictive failure analysis are pending. Tracked as capsule-pro/TODO:equipment-model-implementation",
       },
-      message:
-        "Equipment alerts feature not yet implemented - Equipment model pending",
-    });
+      { status: 501 }
+    );
   } catch (error) {
     captureException(error);
     console.error("Error fetching equipment alerts:", error);
