@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-04-26T09:03:29.900Z",
+  "generatedAt": "2026-04-27T02:17:47.153Z",
   "basePath": "/api",
   "routes": [
     {
@@ -2310,6 +2310,66 @@
       "source": {
         "kind": "entity-read",
         "entity": "ScheduleShift"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Shipment.get.list",
+      "path": "/api/shipment/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "Shipment"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Shipment.get.detail",
+      "path": "/api/shipment/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "Shipment"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "ShipmentItem.get.list",
+      "path": "/api/shipmentitem/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "ShipmentItem"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "ShipmentItem.get.detail",
+      "path": "/api/shipmentitem/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "ShipmentItem"
       },
       "auth": true,
       "tenant": true
@@ -14265,6 +14325,348 @@
         "kind": "command",
         "entity": "ScheduleShift",
         "command": "update"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Shipment.cancel",
+      "path": "/api/shipments/shipment/commands/cancel",
+      "method": "POST",
+      "params": [
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Shipment",
+        "command": "cancel"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Shipment.create",
+      "path": "/api/shipments/shipment/commands/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "shipmentNumber",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "supplierId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "locationId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "eventId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "scheduledDate",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "carrier",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "shippingMethod",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Shipment",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Shipment.markDelivered",
+      "path": "/api/shipments/shipment/commands/mark-delivered",
+      "method": "POST",
+      "params": [
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "receivedBy",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "signature",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Shipment",
+        "command": "markDelivered"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Shipment.schedule",
+      "path": "/api/shipments/shipment/commands/schedule",
+      "method": "POST",
+      "params": [
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "scheduledDate",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Shipment",
+        "command": "schedule"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Shipment.ship",
+      "path": "/api/shipments/shipment/commands/ship",
+      "method": "POST",
+      "params": [
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "trackingNumber",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Shipment",
+        "command": "ship"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Shipment.startPreparing",
+      "path": "/api/shipments/shipment/commands/start-preparing",
+      "method": "POST",
+      "params": [
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Shipment",
+        "command": "startPreparing"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "Shipment.update",
+      "path": "/api/shipments/shipment/commands/update",
+      "method": "POST",
+      "params": [
+        {
+          "name": "trackingNumber",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "carrier",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "shippingMethod",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "estimatedDeliveryDate",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "shippingCost",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "Shipment",
+        "command": "update"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "ShipmentItem.create",
+      "path": "/api/shipments/shipment-items/commands/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "shipmentId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "itemId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "quantityShipped",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "unitId",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "unitCost",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "lotNumber",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "expirationDate",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "ShipmentItem",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "ShipmentItem.updateReceived",
+      "path": "/api/shipments/shipment-items/commands/update-received",
+      "method": "POST",
+      "params": [
+        {
+          "name": "quantityReceived",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "quantityDamaged",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "condition",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "conditionNotes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "userId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "ShipmentItem",
+        "command": "updateReceived"
       },
       "auth": true,
       "tenant": true

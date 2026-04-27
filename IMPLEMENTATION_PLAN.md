@@ -246,7 +246,7 @@ No new commits since `a71ec8d5`. All Tier 0/1 blockers re-verified to still hold
 | Sub-module | State | Key files |
 |---|---|---|
 | Chart of Accounts | DONE (but duplicate routes) | `/api/accounting/chart-of-accounts/` canonical; `/api/chartofaccount/` auto-generated duplicate |
-| Invoices | MOSTLY DONE | Email sending stubbed at `apps/api/app/api/accounting/invoices/[id]/route.ts:233` |
+| Invoices | DONE | Email dispatch wired (Resend, best-effort, fail-open); `InvoiceTemplate` in `packages/email/templates/invoice.tsx`; 11-test suite at `apps/api/__tests__/accounting/invoice-send-email.test.ts` |
 | Payments | PARTIAL | Gateway stubbed at `apps/api/app/api/accounting/payments/[id]/route.ts:90-95`; UI form stubbed in `PaymentFormClient` lines 112-123 |
 | Payment Methods | FUNCTIONAL (but schema-mismatched) | `[id]` PUT/DELETE implement full DB logic at `apps/api/app/api/accounting/payment-methods/[id]/route.ts:74-148` (PUT) and `:154-198` (DELETE soft-delete). File header acknowledges some referenced fields don't exist on the model. Prior plan's "stub" claim was incorrect. |
 | Collections | DONE | RouteContext fixed 2026-04-26 — `params` now async-typed and awaited in both GET/PATCH (see Blocker 5) |

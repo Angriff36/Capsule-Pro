@@ -64,7 +64,10 @@ const handleSubscriptionScheduleCanceled = async (
     distinctId: user.id,
     event: "billing:subscription_cancelled",
     properties: {
-      plan: data.subscription?.metadata?.plan ?? "unknown",
+      plan:
+        (typeof data.subscription === "object" && data.subscription !== null
+          ? data.subscription.metadata?.plan
+          : undefined) ?? "unknown",
     },
   });
 };

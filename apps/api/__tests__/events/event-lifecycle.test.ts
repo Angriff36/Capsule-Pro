@@ -15,25 +15,33 @@ import {
   validateUpdateEventBudget,
 } from "@/app/api/events/budgets/validation";
 
-// Mock dependencies
-vi.mock("@repo/database", () => ({
-  database: {
-    event: {
-      findUnique: vi.fn(),
+// Mock dependencies.
+// We provide a minimal `Prisma.Decimal` (backed by decimal.js, the same lib Prisma
+// uses at runtime) so test fixtures like `new Prisma.Decimal(5000)` work without
+// pulling in the real "@repo/database" entry point — its `import "server-only"`
+// and live Neon adapter both fail to load in vitest.
+vi.mock("@repo/database", async () => {
+  const { default: Decimal } = await import("decimal.js");
+  return {
+    Prisma: { Decimal },
+    database: {
+      event: {
+        findUnique: vi.fn(),
+      },
+      eventBudget: {
+        findMany: vi.fn(),
+        count: vi.fn(),
+        findFirst: vi.fn(),
+        findUnique: vi.fn(),
+        create: vi.fn(),
+      },
+      budgetLineItem: {
+        createMany: vi.fn(),
+      },
+      $transaction: vi.fn(),
     },
-    eventBudget: {
-      findMany: vi.fn(),
-      count: vi.fn(),
-      findFirst: vi.fn(),
-      findUnique: vi.fn(),
-      create: vi.fn(),
-    },
-    budgetLineItem: {
-      createMany: vi.fn(),
-    },
-    $transaction: vi.fn(),
-  },
-}));
+  };
+});
 
 vi.mock("@repo/auth/server", () => ({
   auth: vi.fn(),

@@ -16,11 +16,18 @@
 import type { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// Mock the database before importing
+// Mock the database before importing.
+// Some handlers use findUnique (composite-PK lookup) and others use findFirst
+// (multi-tenant lookup with where clauses). We share a single mock fn between
+// both so existing tests written against findUnique work for either pattern.
+const { sharedCommandBoardLookup } = vi.hoisted(() => ({
+  sharedCommandBoardLookup: vi.fn(),
+}));
 vi.mock("@repo/database", () => ({
   database: {
     commandBoard: {
-      findUnique: vi.fn(),
+      findUnique: sharedCommandBoardLookup,
+      findFirst: sharedCommandBoardLookup,
       findMany: vi.fn(),
       count: vi.fn(),
       create: vi.fn(),

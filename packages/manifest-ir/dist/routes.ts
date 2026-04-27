@@ -777,6 +777,26 @@ export function scheduleShiftDetailPath(id: string): string {
   return "/api/scheduleshift/" + encodeURIComponent(id);
 }
 
+/** GET /api/shipment/list */
+export function shipmentListPath(): string {
+  return "/api/shipment/list";
+}
+
+/** GET /api/shipment/:id */
+export function shipmentDetailPath(id: string): string {
+  return "/api/shipment/" + encodeURIComponent(id);
+}
+
+/** GET /api/shipmentitem/list */
+export function shipmentItemListPath(): string {
+  return "/api/shipmentitem/list";
+}
+
+/** GET /api/shipmentitem/:id */
+export function shipmentItemDetailPath(id: string): string {
+  return "/api/shipmentitem/" + encodeURIComponent(id);
+}
+
 /** GET /api/smsautomationrule/list */
 export function smsAutomationRuleListPath(): string {
   return "/api/smsautomationrule/list";
@@ -2621,6 +2641,51 @@ export function scheduleShiftUpdatePath(): string {
   return "/api/scheduleshift/update";
 }
 
+/** POST /api/shipment/cancel */
+export function shipmentCancelPath(): string {
+  return "/api/shipment/cancel";
+}
+
+/** POST /api/shipment/create */
+export function shipmentCreatePath(): string {
+  return "/api/shipment/create";
+}
+
+/** POST /api/shipment/mark-delivered */
+export function shipmentMarkDeliveredPath(): string {
+  return "/api/shipment/mark-delivered";
+}
+
+/** POST /api/shipment/schedule */
+export function shipmentSchedulePath(): string {
+  return "/api/shipment/schedule";
+}
+
+/** POST /api/shipment/ship */
+export function shipmentShipPath(): string {
+  return "/api/shipment/ship";
+}
+
+/** POST /api/shipment/start-preparing */
+export function shipmentStartPreparingPath(): string {
+  return "/api/shipment/start-preparing";
+}
+
+/** POST /api/shipment/update */
+export function shipmentUpdatePath(): string {
+  return "/api/shipment/update";
+}
+
+/** POST /api/shipmentitem/create */
+export function shipmentItemCreatePath(): string {
+  return "/api/shipmentitem/create";
+}
+
+/** POST /api/shipmentitem/update-received */
+export function shipmentItemUpdateReceivedPath(): string {
+  return "/api/shipmentitem/update-received";
+}
+
 /** POST /api/smsautomationrule/activate */
 export function smsAutomationRuleActivatePath(): string {
   return "/api/smsautomationrule/activate";
@@ -3124,6 +3189,10 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "Schedule.get.detail", path: "/api/schedule/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "ScheduleShift.get.list", path: "/api/scheduleshift/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "ScheduleShift.get.detail", path: "/api/scheduleshift/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Shipment.get.list", path: "/api/shipment/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "Shipment.get.detail", path: "/api/shipment/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "ShipmentItem.get.list", path: "/api/shipmentitem/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "ShipmentItem.get.detail", path: "/api/shipmentitem/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "SmsAutomationRule.get.list", path: "/api/smsautomationrule/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "SmsAutomationRule.get.detail", path: "/api/smsautomationrule/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Station.get.list", path: "/api/station/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -3492,6 +3561,15 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "ScheduleShift.create", path: "/api/scheduleshift/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "ScheduleShift.remove", path: "/api/scheduleshift/remove", method: "POST", source: "command", auth: true, tenant: true },
   { id: "ScheduleShift.update", path: "/api/scheduleshift/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Shipment.cancel", path: "/api/shipment/cancel", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Shipment.create", path: "/api/shipment/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Shipment.markDelivered", path: "/api/shipment/mark-delivered", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Shipment.schedule", path: "/api/shipment/schedule", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Shipment.ship", path: "/api/shipment/ship", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Shipment.startPreparing", path: "/api/shipment/start-preparing", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "Shipment.update", path: "/api/shipment/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ShipmentItem.create", path: "/api/shipmentitem/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "ShipmentItem.updateReceived", path: "/api/shipmentitem/update-received", method: "POST", source: "command", auth: true, tenant: true },
   { id: "SmsAutomationRule.activate", path: "/api/smsautomationrule/activate", method: "POST", source: "command", auth: true, tenant: true },
   { id: "SmsAutomationRule.create", path: "/api/smsautomationrule/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "SmsAutomationRule.deactivate", path: "/api/smsautomationrule/deactivate", method: "POST", source: "command", auth: true, tenant: true },

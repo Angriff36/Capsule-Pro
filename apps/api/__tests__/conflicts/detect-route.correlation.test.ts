@@ -63,7 +63,10 @@ describe("Conflict Detection API - Correlation ID", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockAuth.mockResolvedValue({ orgId: "org-123", userId: "user-123" });
-    mockGetTenantIdForOrg.mockResolvedValue("tenant-123");
+    // Route validates tenantId as a UUID via UUID_REGEX, so use a valid UUID
+    mockGetTenantIdForOrg.mockResolvedValue(
+      "67a4af48-114e-4e45-89d7-6ae36da6ff71"
+    );
   });
 
   afterEach(() => {

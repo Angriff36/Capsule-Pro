@@ -5,6 +5,7 @@
  */
 
 import { database } from "@repo/database";
+import { InvoiceTemplate, resend } from "@repo/email";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
@@ -230,8 +231,54 @@ export async function POST(request: NextRequest, context: RouteContext) {
       },
     });
 
-    // In a real implementation, this would send an email to the client
-    // with invoice details and payment link
+    // Send notification email (best-effort — failure does not roll back send).
+    // Mirrors EventContract.send: status transition is the source of truth;
+    // the email is a side-effect that should eventually move into a manifest
+    // event handler. Failing OPEN preserves invoice send semantics during a
+    // transient Resend/SMTP outage.
+    const clientEmail = updatedInvoice.client?.email;
+    if (clientEmail) {
+      const appUrl = process.env.APP_URL || "https://app.convoy.com";
+      const paymentUrl = `${appUrl}/invoices/${updatedInvoice.id}`;
+      const clientName =
+        updatedInvoice.client?.first_name ||
+        updatedInvoice.client?.company_name ||
+        "Valued Client";
+      const dueDate = updatedInvoice.dueDate
+        ? new Date(updatedInvoice.dueDate).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })
+        : undefined;
+
+      // Invoice amounts are stored as Postgres `money` (single tenant currency,
+      // USD by default). When a per-tenant currency setting lands, replace this
+      // literal with that value.
+      const currency = "USD";
+      const amountDue = updatedInvoice.amountDue.toString();
+
+      try {
+        await resend.emails.send({
+          from: process.env.RESEND_FROM || "noreply@convoy.com",
+          to: clientEmail,
+          subject: `Invoice ${updatedInvoice.invoiceNumber} — ${amountDue} ${currency} due`,
+          react: InvoiceTemplate({
+            clientName,
+            invoiceNumber: updatedInvoice.invoiceNumber,
+            amountDue,
+            currency,
+            dueDate,
+            paymentUrl,
+            notes: updatedInvoice.notes ?? undefined,
+          }),
+        });
+      } catch (emailError) {
+        // Non-fatal: status transition already committed.
+        captureException(emailError);
+        console.error("Failed to send invoice email:", emailError);
+      }
+    }
 
     return NextResponse.json<InvoiceResponse>({
       ...updatedInvoice,

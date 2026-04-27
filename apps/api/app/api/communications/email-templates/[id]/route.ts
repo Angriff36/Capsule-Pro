@@ -27,6 +27,7 @@ export async function GET(
 
     const emailTemplate = await database.email_templates.findFirst({
       where: {
+        id,
         tenant_id: tenantId,
         deleted_at: null
       },

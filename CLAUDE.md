@@ -148,7 +148,11 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[auto-bridge snapshot @ 10 changes]
-Files: apps/api/app/api/facilities/work-orders/commands/update-status/route.ts (edit), apps/api/app/api/collaboration/notifications/email/webhook/route.ts (edit), apps/api/app/lib/goodshuffle-invoice-sync-service.ts (edit), apps/api/app/lib/goodshuffle-event-sync-service.ts (edit), apps/api/app/api/kitchen/recipes/[recipeId]/update-budgets/route.ts (edit), apps/api/app/api/inventory/forecasts/batch/route.ts (edit)
+[pre-compact bridge — saved before context compaction]
+Files (4):
+  CLAUDE.md (edit)
+  apps/api/__tests__/kitchen/manifest-runtime-factory.test.ts (edit)
+  apps/api/__tests__/command-board/simulations.test.ts (edit)
+  apps/api/__tests__/conflicts/detect-route.correlation.test.ts (edit)
 
 # === END COGNILAYER ===

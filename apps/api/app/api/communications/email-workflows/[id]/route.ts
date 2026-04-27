@@ -25,11 +25,11 @@ export async function GET(
 
     const { id } = await params;
 
-    const emailWorkflow = await database.emailWorkflow.findUnique({
+    const emailWorkflow = await database.emailWorkflow.findFirst({
       where: {
         id,
         tenantId,
-        deletedAt: null
+        deletedAt: null,
       },
     });
 

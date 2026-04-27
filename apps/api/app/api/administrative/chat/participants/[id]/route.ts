@@ -25,11 +25,11 @@ export async function GET(
 
     const { id } = await params;
 
-    const adminChatParticipant = await database.adminChatParticipant.findUnique({
+    const adminChatParticipant = await database.adminChatParticipant.findFirst({
       where: {
         id,
         tenantId,
-        deletedAt: null
+        deletedAt: null,
       },
     });
 

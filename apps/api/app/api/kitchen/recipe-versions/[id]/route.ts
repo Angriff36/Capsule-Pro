@@ -25,7 +25,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const recipeVersion = await database.recipeVersion.findUnique({
+    const recipeVersion = await database.recipeVersion.findFirst({
       where: {
         id,
         tenantId,
