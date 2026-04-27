@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { formatDelta } from "../../app/(authenticated)/scheduling/page";
+import { formatDelta } from "../../app/(authenticated)/scheduling/format-delta";
 
 describe("formatDelta", () => {
   it("handles string aggregate values without producing NaN", () => {

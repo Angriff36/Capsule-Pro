@@ -777,7 +777,7 @@ async function identifyTurnoverRisks(
           locationId
             ? Prisma.sql`AND EXISTS (
           SELECT 1 FROM tenant_staff.employee_locations el
-          WHERE el.employee_id = e.id AND el.location_id = ${locationId}
+          WHERE el.employee_id = e.id AND el.tenant_id = ${tenantId} AND el.location_id = ${locationId}
         )`
             : Prisma.empty
         }
@@ -857,7 +857,7 @@ async function identifyTopPerformers(
           locationId
             ? Prisma.sql`AND EXISTS (
           SELECT 1 FROM tenant_staff.employee_locations el
-          WHERE el.employee_id = e.id AND el.location_id = ${locationId}
+          WHERE el.employee_id = e.id AND el.tenant_id = ${tenantId} AND el.location_id = ${locationId}
         )`
             : Prisma.empty
         }
@@ -928,7 +928,7 @@ async function identifySkillGaps(
           locationId
             ? Prisma.sql`AND EXISTS (
           SELECT 1 FROM tenant_staff.employee_locations el
-          WHERE el.employee_id = e.id AND el.location_id = ${locationId}
+          WHERE el.employee_id = e.id AND el.tenant_id = ${tenantId} AND el.location_id = ${locationId}
         )`
             : Prisma.empty
         }

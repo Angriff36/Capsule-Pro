@@ -253,7 +253,7 @@ function fetchEmployeesForShift(
       FROM tenant_staff.employees e
       LEFT JOIN employee_seniority_current esc ON esc.employee_id = e.id
       LEFT JOIN employee_skills_with_names esw ON esw.employee_id = e.id
-      LEFT JOIN tenant_staff.employee_availability ea ON ea.employee_id = e.id AND ea.deleted_at IS NULL
+      LEFT JOIN tenant_staff.employee_availability ea ON ea.employee_id = e.id AND ea.tenant_id = e.tenant_id AND ea.deleted_at IS NULL
       LEFT JOIN employee_conflicts ec ON ec.employee_id = e.id
       WHERE e.tenant_id = ${tenantId}
         AND e.deleted_at IS NULL

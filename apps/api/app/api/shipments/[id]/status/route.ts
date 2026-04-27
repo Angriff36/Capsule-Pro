@@ -253,7 +253,7 @@ function mapShipmentToResponse(shipment: Shipment) {
 /**
  * Fetches shipment items for inventory processing
  */
-async function fetchShipmentItems(shipmentId: string): Promise<ShipmentItem[]> {
+async function fetchShipmentItems(tenantId: string, shipmentId: string): Promise<ShipmentItem[]> {
   return await database.$queryRaw<ShipmentItem[]>`
     SELECT si.id,
            si.item_id,
@@ -264,7 +264,8 @@ async function fetchShipmentItems(shipmentId: string): Promise<ShipmentItem[]> {
            si.lot_number,
            si.expiration_date
     FROM "tenant_inventory"."shipment_items" AS si
-    WHERE si.shipment_id = ${shipmentId}::uuid
+    WHERE si.tenant_id = ${tenantId}::uuid
+      AND si.shipment_id = ${shipmentId}::uuid
       AND si.deleted_at IS NULL
   `;
 }
@@ -397,7 +398,7 @@ async function processPreparationInventory(
   locationId: string | null,
   userId: string | null
 ): Promise<void> {
-  const shipmentItems = await fetchShipmentItems(shipmentId);
+  const shipmentItems = await fetchShipmentItems(tenantId, shipmentId);
 
   for (const item of shipmentItems) {
     const quantityToReserve = Number(item.quantity_shipped);
@@ -467,7 +468,7 @@ async function processCancellationInventory(
   locationId: string | null,
   userId: string | null
 ): Promise<void> {
-  const shipmentItems = await fetchShipmentItems(shipmentId);
+  const shipmentItems = await fetchShipmentItems(tenantId, shipmentId);
 
   for (const item of shipmentItems) {
     const quantityToRestore = Number(item.quantity_shipped);
@@ -500,7 +501,7 @@ async function processDeliveryInventory(
   locationId: string | null,
   userId: string | null
 ): Promise<void> {
-  const shipmentItems = await fetchShipmentItems(shipmentId);
+  const shipmentItems = await fetchShipmentItems(tenantId, shipmentId);
 
   for (const item of shipmentItems) {
     const receivedQuantity =

@@ -238,11 +238,15 @@ export async function PUT(request: NextRequest, context: RouteContext) {
  *    file). paidAt MUST be cleared when the invoice is no longer paid.
  *  - Refund gateway is authoritative. `refundPaymentGateway` is called
  *    BEFORE any payment/invoice mutation; on `success: false` the handler
- *    returns 502 and performs NO writes. This keeps local ledger state in
- *    sync with the processor — a payment that is still COMPLETED on Stripe
- *    must remain COMPLETED here. The persisted refund transaction ID and
- *    the original charge transaction ID come from the database, NEVER from
- *    the request body.
+ *    returns 502 and performs NO mutations to payment or invoice rows. This
+ *    keeps local ledger state in sync with the processor — a payment that
+ *    is still COMPLETED on Stripe must remain COMPLETED here. The persisted
+ *    refund transaction ID and the original charge transaction ID come
+ *    from the database, NEVER from the request body.
+ *  - Every refund gateway call (success OR failure) writes one row to
+ *    `payment_refund_attempts`. This is an append-only forensic trail that
+ *    captures the gateway-side `refundTransactionId` and `failureReason`
+ *    that would otherwise be lost when the 502 closes the connection.
  */
 export async function POST(request: NextRequest, context: RouteContext) {
   try {
@@ -302,6 +306,38 @@ export async function POST(request: NextRequest, context: RouteContext) {
       reason: String(body.reason),
       originalGatewayTransactionId: payment.gatewayTransactionId,
     });
+
+    // Persist a permanent audit row for EVERY refund gateway call — success
+    // or failure. This is the forensic record that survives the 502 closing
+    // the user's connection on failure, and the only ledger of partial
+    // refunds against a single payment over time.
+    //
+    // The write is best-effort: if the audit insert fails (DB outage, RLS
+    // misconfiguration), we log via Sentry and continue. We do NOT roll back
+    // the gateway-side money movement because the audit row was unavailable.
+    // The append-only RLS policy ensures these rows can never be tampered
+    // with after the fact.
+    try {
+      await database.paymentRefundAttempt.create({
+        data: {
+          tenantId,
+          paymentId: payment.id,
+          requestedAmount: Number(body.amount),
+          effectiveAmount: effectiveRefund,
+          refundReason: String(body.reason),
+          originalGatewayTransactionId: payment.gatewayTransactionId,
+          refundTransactionId: gatewayResult.refundTransactionId,
+          success: gatewayResult.success,
+          failureReason: gatewayResult.failureReason ?? null,
+        },
+      });
+    } catch (auditError) {
+      captureException(auditError);
+      console.error(
+        "Failed to persist payment refund audit row (continuing):",
+        auditError
+      );
+    }
 
     if (!gatewayResult.success) {
       return NextResponse.json(

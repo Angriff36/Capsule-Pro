@@ -1,6 +1,93 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-26 (forty-second pass — sensitive-mutation rate limit wired into PUT process + POST refund handlers; 20/min/payments_sensitive bucket isolated from global cap)
+> **Last updated:** 2026-04-27 (forty-fourth pass — tenant isolation gaps closed in shipments, auto-assignment, workforce-ai-optimizer + column-name drift fix in events/actions.ts)
+
+## 44th audit pass — tenant isolation gaps closed + column-name drift fix (2026-04-27)
+
+**Problem solved**: Verification of remaining CRITICAL/HIGH items from the implementation plan found that most were already resolved in prior passes. However, five genuine tenant isolation gaps and one column-name drift bug remained.
+
+**What shipped this pass**:
+
+1. **CRITICAL #35 fixed — `events/actions.ts:445` column-name drift**: The `attachEventImport` function's INSERT INTO `tenant_events.event_imports` used `eventId` (camelCase) as a SQL column name where the database schema requires `event_id` (snake_case). This caused a PostgreSQL column-not-found error at runtime when attaching an import file to an event. The same INSERT in `events/importer.ts` (lines 1231, 1293) already used the correct `event_id`. Fixed by changing `eventId` to `event_id` in the column list only (the VALUES reference `${eventId}` correctly references the TypeScript variable).
+
+2. **HIGH — `shipments/[id]/status/route.ts` `fetchShipmentItems` missing tenant_id**: The `fetchShipmentItems` function queried `tenant_inventory.shipment_items` filtered only by `shipment_id` and `deleted_at`, with no `tenant_id` constraint. A guessed or leaked shipment_id could return another tenant's shipment items. Fixed by adding `tenantId` parameter and `AND si.tenant_id = ${tenantId}::uuid` to the WHERE clause. All 3 call sites (`processPreparationInventory`, `processCancellationInventory`, `processDeliveryInventory`) updated to pass `tenantId`. Note: the two `UPDATE` queries in the same file (`updateInventoryQuantity` at line 326, `reduceInventoryQuantity` at line 383) were verified to ALREADY have `tenant_id` filters — the original audit flagged the wrong lines.
+
+3. **HIGH — `lib/staff/auto-assignment.ts:256` employee_availability JOIN missing tenant_id**: The `employee_availability` LEFT JOIN matched only on `ea.employee_id = e.id`, without verifying `ea.tenant_id = e.tenant_id`. If an employee_id value existed in another tenant's availability data (UUID collision or data migration), cross-tenant records could leak. Fixed by adding `AND ea.tenant_id = e.tenant_id` to the JOIN condition.
+
+4. **HIGH — `lib/staff/workforce-ai-optimizer.ts` EXISTS subqueries missing tenant_id (3 instances)**: The `identifyTurnoverRisks` (line 779), `identifyTopPerformers` (line 859), and `identifySkillGaps` (line 930) functions each had `EXISTS (SELECT 1 FROM tenant_staff.employee_locations el WHERE el.employee_id = e.id AND el.location_id = ${locationId})` without `el.tenant_id` verification. All three fixed by adding `AND el.tenant_id = ${tenantId}` to the EXISTS subquery.
+
+**Verified as already fixed/false positives** (items from prior audit passes that no longer need action):
+- CRITICAL #26 (`events/importer.ts` camelCase columns) — all SQL already uses snake_case
+- CRITICAL #29 (`waste/entries/[id]/route.ts`) — already uses `inventory_item_id` and `logged_by`
+- CRITICAL #30 (`timecards/me/route.ts`) — already uses `tenant_staff.employees`
+- CRITICAL #31 (`recipe-optimization-engine.ts`) — JOIN on `ingredient_id` matches schema
+- CRITICAL #32 (`lib/staff/labor-budget.ts`) — already uses `Prisma.sql` parameterization
+- CRITICAL #19 (webhook signature verification) — already implemented with HMAC-SHA256 + timing-safe comparison
+- CRITICAL #20 (outbox tenantId filter) — by design: singleton worker publishes for all tenants
+- Tenant isolation in `shipments/status` UPDATE queries (lines 322-330, 379-387) — already have `tenant_id` filters
+- Tenant isolation in `shipments/helpers.ts` (lines 143-185) — pure TypeScript, no SQL at those lines
+- Tenant isolation in `time-off/requests/[id]` JOINs — already include `tenant_id` matching
+- Tenant isolation in `auto-assignment.ts` locations JOIN (line 213) — already has `l.tenant_id = ss.tenant_id`
+
+**Tests**: Full api suite: **1019 passing, 1 skipped, 8 todo, 0 failures** (unchanged — no regression). TypeScript: 0 errors (`tsc --noEmit -p apps/api/tsconfig.json`).
+
+**Files touched**:
+- Modified: `apps/app/app/(authenticated)/events/actions.ts` (line 445: `eventId` → `event_id`)
+- Modified: `apps/api/app/api/shipments/[id]/status/route.ts` (fetchShipmentItems: added tenantId param + tenant_id filter, 3 call sites updated)
+- Modified: `apps/api/lib/staff/auto-assignment.ts` (line 256: added `ea.tenant_id = e.tenant_id` to JOIN)
+- Modified: `apps/api/lib/staff/workforce-ai-optimizer.ts` (3 EXISTS subqueries: added `el.tenant_id = ${tenantId}`)
+
+**Followups still open** (carried forward):
+- The 16 lifecycle command routes for `PrepTaskPlanWorkflow` exist as auto-generated scaffolds but the manifest runtime command handlers and constraint definitions are not yet implemented.
+- HIGH #36: `workforce-ai-optimizer.ts` uses `e.seniority_rank` column that may not exist (should join through `employee_seniority` table).
+- HIGH #37: `staff/availability/validation.ts:155-159` has duplicate `AND` in overlap check SQL.
+- MEDIUM items: unbounded pagination routes, ILIKE wildcard escaping, LIMIT bounds.
+
+## 43rd audit pass — payment refund attempt audit trail (2026-04-27)
+
+**Problem solved**: The 41st pass wired `refundPaymentGateway` into the POST refund handler with a 502-on-failure contract that performs zero DB writes. That correctness invariant is critical (a processor-side decline must not corrupt the local ledger), but it had a forensic blind spot: the failure response carries `refundTransactionId` and `failureReason` in the body, then the connection closes. After the response stream ends those values are gone — there is no on-disk record that the call was ever made, no way to correlate a Stripe-side `re_…` ID back to a tenant attempt, and no way to detect a tenant making 19 refund attempts/min that all fail at the processor (still under the 20/min sensitive bucket from the 42nd pass, but a fraud signal nonetheless). This was the explicit "still open" item carried forward from the 42nd pass.
+
+**What shipped this pass**:
+- Added `model PaymentRefundAttempt` to `packages/database/prisma/schema.prisma` adjacent to `Payment`. Schema: `tenantId` + `id` composite PK (matches the rest of `tenant_accounting`), `paymentId` (no FK relation — denormalized audit row that survives payment deletion), `requestedAmount` + `effectiveAmount` (both `Decimal @db.Money` so a forensic reviewer can see what the caller asked for AND what the clamp produced — abuse attempts look different from legitimate full refunds), `refundReason`, `originalGatewayTransactionId`, `refundTransactionId`, `success` boolean, `failureReason` nullable, `createdAt`. No `updatedAt`, no `deletedAt` — audit rows are immutable. Indexes: `[tenantId, paymentId]` for "all attempts against this payment" lookups and `[tenantId, createdAt(sort: Desc)]` for the recent-failures dashboard.
+- Created migration `packages/database/prisma/migrations/20260427020000_add_payment_refund_attempts/migration.sql`:
+  - `CREATE TABLE` in `tenant_accounting` schema with the field set above.
+  - RLS enabled + forced. SELECT and INSERT scoped to `auth.jwt() ->> 'tenant_id'`. **UPDATE policy: `USING (false)`. DELETE policy: `USING (false)`.** Append-only by RLS — even if a future bug let a tenant role attempt to mutate or delete a row, RLS rejects it. `service_role` retains full bypass for back-office tooling.
+  - `fn_prevent_tenant_mutation` trigger on UPDATE as belt-and-suspenders: even if the RLS UPDATE policy were ever loosened, the `tenant_id` column itself cannot be changed. No `fn_update_timestamp` trigger because there is no `updated_at` column.
+- Modified `apps/api/app/api/accounting/payments/[id]/route.ts`:
+  - Inserted `database.paymentRefundAttempt.create(...)` immediately after the `refundPaymentGateway` call, BEFORE the `success === false` branch returns 502 and BEFORE the `success === true` payment + invoice cascade. One write per gateway call, regardless of outcome. Captures both `requestedAmount: Number(body.amount)` (raw caller input) AND `effectiveAmount: effectiveRefund` (post-clamp).
+  - Wrapped in `try/catch (auditError)` → `captureException(auditError)` + `console.error`. The audit write is **best-effort**: if the audit table is offline (DB outage, RLS misconfig, migration not applied yet), the route still returns the gateway-decided outcome. Rationale: the processor has already moved money on the success path; refusing to acknowledge that to the caller because the audit row failed would be worse than a missing audit row. On the failure path, the user-facing 502 (gateway said no) is more important to communicate than the audit gap. Sentry catches the audit failure so on-call notices the forensic blind spot.
+  - Updated the `SECURITY / LEDGER INVARIANTS` doc-comment block with a fifth bullet documenting the audit row contract and the "no mutations" wording on the failure path adjusted to "no mutations to payment or invoice rows" (the audit row IS a write, but it cannot affect ledger state).
+- Updated `apps/api/__tests__/accounting/payment-refund-clamp.test.ts`:
+  - Added `paymentRefundAttemptCreateMock` to the `vi.hoisted` factory and to the `@repo/database` mock surface.
+  - Default `mockResolvedValue({})` in `beforeEach` so existing 17 ledger-correctness tests keep passing.
+  - New `describe("refund attempt audit trail")` block with **6 tests**:
+    1. **Success path persists full audit shape** — gateway returns `re_audit_success`; asserts the audit row contains tenantId, paymentId, requestedAmount=75, effectiveAmount=75, refundReason, originalGatewayTransactionId="txn_existing" (server-side, not body), refundTransactionId="re_audit_success", success=true, failureReason=null.
+    2. **Failure path persists audit BEFORE returning 502** — gateway returns `success: false, refundTransactionId: "re_audit_failed", failureReason: "charge_already_refunded"`; asserts the audit row captures the gateway-side `refundTransactionId` and `failureReason` even though the user-facing response is 502 (the values would otherwise be lost when the response stream closes).
+    3. **Both amounts captured under clamp** — caller asks for $250 against $100 payment; audit row stores `requestedAmount: 250` AND `effectiveAmount: 100`. Without both, abuse attempts are indistinguishable from legitimate full refunds in the audit log.
+    4. **Best-effort write on success** — `paymentRefundAttemptCreateMock.mockRejectedValueOnce(new Error("audit table offline"))`; asserts the response is still 200, payment + invoice mutations still happen, and `captureException` was called once so on-call gets paged.
+    5. **Best-effort write on failure** — same audit-table outage, but on the gateway-failure path; asserts the response is still 502 (NOT promoted to 500 — that would cause ops to misdiagnose as a server crash instead of a processor reject). `captureException` called once.
+    6. **404 short-circuit skips audit** — payment not found ⇒ no gateway call ⇒ no audit row.
+
+**Tests**: 6/6 pass in the new audit describe. Full `payment-refund-clamp.test.ts`: **23/23 pass** (was 17). Full `__tests__/accounting/` suite: **63/63 pass** (was 57). Full api suite: **1019 passing, 1 skipped, 8 todo, 0 failures** (was 1013). TypeScript: clean — the two pre-existing `prepTaskPlanWorkflow` errors at `app/api/kitchen/prep-task-plan-workflows/[id]/route.ts:28` and `list/route.ts:23` are now resolved by the companion fix below.
+
+**Companion fix — `PrepTaskPlanWorkflow` Prisma model + migration**: While landing the audit-trail work, the pre-commit hook surfaced two pre-existing `TS2339: Property 'prepTaskPlanWorkflow' does not exist on type 'PrismaClient'` errors. Per `CLAUDE.md` ("a preexisting bug or error unrelated to my changes is NOT justification to ignore it. FIX IT AT THE END OF YOUR CURRENT TASK"), this was fixed inline rather than skipped with `--no-verify`. Root cause: the Manifest IR (`packages/manifest-ir/dist/routes.manifest.json`) has 18 routes registered for the `PrepTaskPlanWorkflow` entity (1 detail GET, 1 list GET, 16 lifecycle commands: create, fail, retry, cancel, start/complete-{generating, instantiating, reviewing, scheduling, approving}, approvePlan, rejectPlan, quickApprove). The auto-generated route scaffolds were checked in but the Prisma model was never added — so `database.prepTaskPlanWorkflow.findFirst(...)` and `findMany(...)` both failed typecheck, and the routes would have thrown at runtime if hit. Added a minimal-but-correct `PrepTaskPlanWorkflow` model to `packages/database/prisma/schema.prisma` (composite `[tenantId, id]` PK matching the rest of `tenant_kitchen`, `eventId`, `status` default `pending`, `currentStep`, `idempotencyKey` with a `[tenantId, idempotencyKey]` unique index for replay-safety, `generationOptions` (matches IR `string` type), `errorList` (Json?), standard `createdAt/updatedAt/deletedAt`). Created migration `20260427030000_add_prep_task_plan_workflows/migration.sql` with full RLS (SELECT/INSERT/UPDATE/DELETE all tenant-scoped via `auth.jwt()->>'tenant_id'`, `service_role` bypass, `fn_prevent_tenant_mutation` trigger). The model has no `tenant` Prisma relation field on purpose — matching the simpler pattern used by `PaymentRefundAttempt` this same pass — to avoid forcing a back-relation edit on the central `Account` model. Mutations still flow through `runtime.runCommand()` per the manifest contract; this model only backs the read-side `findFirst`/`findMany` calls in the auto-generated `[id]/route.ts` and `list/route.ts`.
+
+**Files touched**:
+- Modified: `packages/database/prisma/schema.prisma` (new `PaymentRefundAttempt` model + new `PrepTaskPlanWorkflow` model)
+- Created: `packages/database/prisma/migrations/20260427020000_add_payment_refund_attempts/migration.sql` (DDL + RLS + tenant immutability trigger)
+- Created: `packages/database/prisma/migrations/20260427030000_add_prep_task_plan_workflows/migration.sql` (DDL + tenant-scoped RLS + tenant immutability trigger)
+- Modified: `apps/api/app/api/accounting/payments/[id]/route.ts` (audit `create` call + try/catch + extended invariant doc-comment)
+- Modified: `apps/api/__tests__/accounting/payment-refund-clamp.test.ts` (audit mock surface + 6 new tests)
+
+**Why this matters**: every refund gateway call now leaves a permanent, tenant-scoped, RLS-protected, append-only forensic record. Reconciliation against Stripe is now a `SELECT * FROM payment_refund_attempts WHERE tenant_id = ? AND created_at > ?` instead of "scan Sentry breadcrumbs and pray." Detecting fraud patterns ("19 refund attempts in 60s, all `failureReason='card_declined'`, all under the 20/min sensitive bucket cap") is now a single query against a single table. The "audit write does not block the user-facing flow" contract is test-pinned, so a future regression that swallows audit failures into 500s would fail tests 4-5 — meaning ops won't get false "service down" pages from a database hiccup on a non-critical write path. The append-only RLS policy means no tenant role can ever doctor or delete an audit row after the fact; only `service_role` (back-office tooling, migrations) can mutate.
+
+**Followups still open** (carried forward from 42nd pass with this item closed):
+- ~~Refund failure path returns `refundTransactionId` in the 502 body but does not persist it~~ — **CLOSED this pass**.
+- `payment-process-refund.test.ts` (referenced in 35th-37th pass entries as a single canonical suite) does NOT exist on `main`. Coverage is now split across `payment-process-gateway.test.ts` (PUT), `payment-refund-clamp.test.ts` (POST + gateway + audit trail), and `payment-rate-limit.test.ts` (rate limit on both). Consolidation would match the original naming if desired, but the split is functional and each file has a clear, narrow charter.
+- ~~`prepTaskPlanWorkflow` is referenced in two auto-generated route stubs but the Prisma model was never added~~ — **CLOSED this pass** via the companion fix above (model + migration added; typecheck clean).
+- The 16 lifecycle command routes for `PrepTaskPlanWorkflow` exist as auto-generated scaffolds that delegate to `runtime.runCommand()`, but the manifest runtime command handlers and constraint definitions for this entity are not yet implemented. The routes will return a "Command failed" or runtime error if invoked. Future pass: implement the workflow state machine in the manifest runtime, then add integration tests that exercise the generate → review → approve → instantiate → schedule pipeline against the new table.
+
+---
 
 ## 42nd audit pass — sensitive-mutation rate limit on payment PUT/POST (2026-04-26)
 
