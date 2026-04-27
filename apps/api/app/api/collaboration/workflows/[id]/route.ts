@@ -29,7 +29,7 @@ export async function GET(
       where: {
         id,
         tenantId,
-        deletedAt: null,
+        deletedAt: null
       },
     });
 

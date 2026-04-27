@@ -27,9 +27,9 @@ export async function GET(
 
     const payrollPeriod = await database.payroll_periods.findFirst({
       where: {
-        id,
         tenant_id: tenantId,
-        deleted_at: null,
+        id,
+        deleted_at: null
       },
     });
 

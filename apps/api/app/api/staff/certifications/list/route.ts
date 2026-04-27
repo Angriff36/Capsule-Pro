@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
 const employeeCertifications = await database.employee_certifications.findMany({
     where: {
         tenant_id: tenantId,
-        deleted_at: null,
+        deleted_at: null
       },
     orderBy: {
       created_at: "desc",
@@ -32,7 +32,7 @@ const employeeCertifications = await database.employee_certifications.findMany({
 
     return manifestSuccessResponse({ employeeCertifications });
   } catch (error) {
-    console.error("Error fetching employeeCertifications:", error);
+    console.error("Error fetching employee_certifications records:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

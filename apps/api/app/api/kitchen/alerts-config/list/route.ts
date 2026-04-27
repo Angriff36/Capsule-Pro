@@ -24,6 +24,7 @@ const alertsConfigs = await database.alertsConfig.findMany({
     where: {
         tenantId,
       },
+    orderBy: { id: "desc" },
   });
 
     return manifestSuccessResponse({ alertsConfigs });

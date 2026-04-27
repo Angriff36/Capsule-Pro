@@ -25,11 +25,12 @@ export async function GET(
 
     const { id } = await params;
 
-    const rolePolicy = await database.rolePolicy.findFirst({
+    const rolePolicy = await database.rolePolicy.findUnique({
       where: {
-        id,
-        tenantId,
-        deletedAt: null
+        tenantId_id: {
+          tenantId,
+          id,
+        },
       },
     });
 

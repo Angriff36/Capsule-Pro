@@ -1,7 +1,7 @@
 {
   "$schema": "https://manifest.lang/spec/routes-v1.schema.json",
   "version": "1.0",
-  "generatedAt": "2026-04-27T02:17:47.153Z",
+  "generatedAt": "2026-04-27T05:14:46.620Z",
   "basePath": "/api",
   "routes": [
     {
@@ -2190,6 +2190,66 @@
       "source": {
         "kind": "entity-read",
         "entity": "RecipeVersion"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionLine.get.list",
+      "path": "/api/revenuerecognitionline/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "RevenueRecognitionLine"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionLine.get.detail",
+      "path": "/api/revenuerecognitionline/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "RevenueRecognitionLine"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionSchedule.get.list",
+      "path": "/api/revenuerecognitionschedule/list",
+      "method": "GET",
+      "params": [],
+      "source": {
+        "kind": "entity-read",
+        "entity": "RevenueRecognitionSchedule"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionSchedule.get.detail",
+      "path": "/api/revenuerecognitionschedule/:id",
+      "method": "GET",
+      "params": [
+        {
+          "name": "id",
+          "type": "string",
+          "location": "path"
+        }
+      ],
+      "source": {
+        "kind": "entity-read",
+        "entity": "RevenueRecognitionSchedule"
       },
       "auth": true,
       "tenant": true
@@ -13939,6 +13999,403 @@
         "kind": "command",
         "entity": "RecipeVersion",
         "command": "updateCosts"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionLine.cancel",
+      "path": "/api/revenuerecognitionline/cancel",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionLine",
+        "command": "cancel"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionLine.create",
+      "path": "/api/revenuerecognitionline/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "scheduleId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "sequence",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "amount",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "dueDate",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "milestoneId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "milestoneName",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionLine",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionLine.recognize",
+      "path": "/api/revenuerecognitionline/recognize",
+      "method": "POST",
+      "params": [
+        {
+          "name": "amount",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "recognizedAt",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionLine",
+        "command": "recognize"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionLine.skip",
+      "path": "/api/revenuerecognitionline/skip",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionLine",
+        "command": "skip"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionSchedule.adjustSchedule",
+      "path": "/api/revenuerecognitionschedule/adjust-schedule",
+      "method": "POST",
+      "params": [
+        {
+          "name": "newEndDate",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "newTotalAmount",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionSchedule",
+        "command": "adjustSchedule"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionSchedule.cancel",
+      "path": "/api/revenuerecognitionschedule/cancel",
+      "method": "POST",
+      "params": [
+        {
+          "name": "reason",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionSchedule",
+        "command": "cancel"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionSchedule.completeIfAllMilestones",
+      "path": "/api/revenuerecognitionschedule/complete-if-all-milestones",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionSchedule",
+        "command": "completeIfAllMilestones"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionSchedule.completeIfFullyRecognized",
+      "path": "/api/revenuerecognitionschedule/complete-if-fully-recognized",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionSchedule",
+        "command": "completeIfFullyRecognized"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionSchedule.completeIfPercentageFull",
+      "path": "/api/revenuerecognitionschedule/complete-if-percentage-full",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionSchedule",
+        "command": "completeIfPercentageFull"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionSchedule.create",
+      "path": "/api/revenuerecognitionschedule/create",
+      "method": "POST",
+      "params": [
+        {
+          "name": "invoiceId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "eventId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "contractId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "clientId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "totalAmount",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "method",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "startDate",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "endDate",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "recognitionPeriod",
+          "type": "number",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "notes",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionSchedule",
+        "command": "create"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionSchedule.pause",
+      "path": "/api/revenuerecognitionschedule/pause",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionSchedule",
+        "command": "pause"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionSchedule.recognizeAmount",
+      "path": "/api/revenuerecognitionschedule/recognize-amount",
+      "method": "POST",
+      "params": [
+        {
+          "name": "amount",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "recognizedAt",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionSchedule",
+        "command": "recognizeAmount"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionSchedule.recognizeMilestone",
+      "path": "/api/revenuerecognitionschedule/recognize-milestone",
+      "method": "POST",
+      "params": [
+        {
+          "name": "milestoneId",
+          "type": "string",
+          "location": "body",
+          "required": true
+        },
+        {
+          "name": "amount",
+          "type": "string",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionSchedule",
+        "command": "recognizeMilestone"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionSchedule.recognizePercentage",
+      "path": "/api/revenuerecognitionschedule/recognize-percentage",
+      "method": "POST",
+      "params": [
+        {
+          "name": "percentage",
+          "type": "number",
+          "location": "body",
+          "required": true
+        }
+      ],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionSchedule",
+        "command": "recognizePercentage"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionSchedule.resume",
+      "path": "/api/revenuerecognitionschedule/resume",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionSchedule",
+        "command": "resume"
+      },
+      "auth": true,
+      "tenant": true
+    },
+    {
+      "id": "RevenueRecognitionSchedule.startRecognition",
+      "path": "/api/revenuerecognitionschedule/start-recognition",
+      "method": "POST",
+      "params": [],
+      "source": {
+        "kind": "command",
+        "entity": "RevenueRecognitionSchedule",
+        "command": "startRecognition"
       },
       "auth": true,
       "tenant": true

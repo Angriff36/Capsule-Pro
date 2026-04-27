@@ -10,10 +10,14 @@
 
 ## Validation
 Run these after implementing to get immediate feedback:
-- Tests (targeted): `pnpm --filter @capsule/app test [specific-test]`
-- Typecheck: `pnpm tsc --noEmit`
+- API typecheck: `pnpm --filter api typecheck`
+- API tests: `pnpm --filter api test`
+- Frontend tests: `pnpm --filter app test`
+- E2E/product-flow tests: `pnpm test:e2e`
 - Lint: `pnpm biome check`
-- Build: `pnpm turbo build --filter=@capsule/app`
+- App build: `pnpm turbo build --filter=app`
+
+Create/edit/delete UI work is incomplete unless an E2E test proves: UI submit → persisted record through API/database → visible UI update after refetch or reload.
 
 ## Manifest Commands
 

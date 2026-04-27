@@ -25,7 +25,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const chartOfAccount = await database.chartOfAccount.findFirst({
+    const chartOfAccount = await database.chartOfAccount.findUnique({
       where: {
         id,
         tenantId,

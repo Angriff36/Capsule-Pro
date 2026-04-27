@@ -27,8 +27,8 @@ export async function GET(
 
     const station = await database.station.findFirst({
       where: {
-        id,
         tenantId,
+        id,
         deletedAt: null
       },
     });

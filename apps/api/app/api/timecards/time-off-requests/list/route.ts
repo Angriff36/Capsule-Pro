@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
 const timeOffRequests = await database.employeeTimeOffRequest.findMany({
     where: {
         tenant_id: tenantId,
-        deleted_at: null
+        deleted_at: null,
       },
     orderBy: {
       created_at: "desc",

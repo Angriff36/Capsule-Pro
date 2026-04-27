@@ -21,15 +21,21 @@ reference, the application source code is in `apps/app/app/*` and api routes are
    `git commit` with a message describing the changes. After the commit,
    `git push`.
 
-5. Important: When authoring documentation, capture the why — tests and
+5. HIGH PRIORITY: Any task touching user-facing create/edit/delete buttons must
+   add or update an E2E/product-flow test. The test must prove persistence, not
+   just mocked success, visual presence, or route existence. It must click the
+   real UI control, submit data, verify API/database persistence, then verify
+   the saved record is visible in the UI after refetch or reload.
+
+6. Important: When authoring documentation, capture the why — tests and
    implementation importance.
-6. Important: Single sources of truth, no migrations/adapters. If tests
+7. Important: Single sources of truth, no migrations/adapters. If tests
    unrelated to your work fail, resolve them as part of the increment.
-7. As soon as there are no build or test errors create a git tag. If there are
+8. As soon as there are no build or test errors create a git tag. If there are
    no git tags start at 0.0.0 and increment patch by 1 for example 0.0.1 if
    0.0.0 does not exist.
-8. You may add extra logging if required to debug issues.
-9. Keep @IMPLEMENTATION_PLAN.md current with learnings using a
+9. You may add extra logging if required to debug issues.
+10. Keep @IMPLEMENTATION_PLAN.md current with learnings using a
    subagent_type='sonnet' — future work depends on this to avoid duplicating
    efforts. Update especially after finishing your turn. 9999999999. When you
    learn something new about how to run the application, update @AGENTS.md using

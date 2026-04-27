@@ -1,0 +1,403 @@
+// Finance - Revenue Recognition Rules
+// Manifest spec for revenue recognition schedules and accrual accounting
+
+entity RevenueRecognitionSchedule {
+  property required id: string
+  property required tenantId: string
+
+  // Reference information
+  property required invoiceId: string
+  property required eventId: string
+  property required contractId: string
+  property required clientId: string
+
+  // Revenue details
+  property required totalAmount: number = 0
+  property required recognizedAmount: number = 0
+  property required remainingAmount: number = 0
+
+  // Recognition configuration
+  property required method: string = "IMMEDIATE"
+  property required status: string = "PENDING"
+
+  // Timing
+  property required startDate: number = 0
+  property required endDate: number = 0
+  property recognitionPeriod: number = 0
+
+  // Service period (for SERVICE_PERIOD method)
+  property serviceStartDate: number = 0
+  property serviceEndDate: number = 0
+
+  // Milestone tracking (for MILESTONE_BASED method)
+  property totalMilestones: number = 0
+  property completedMilestones: number = 0
+
+  // Metadata
+  property description: string = ""
+  property notes: string = ""
+  property metadata: string = ""
+
+  // Timestamps
+  property required createdAt: number = 0
+  property required updatedAt: number = 0
+  property completedAt: number = 0
+
+  // Computed properties
+  computed recognitionPercentage: number = self.totalAmount > 0 ? (self.recognizedAmount / self.totalAmount) * 100 : 0
+  computed isFullyRecognized: boolean = self.recognizedAmount >= self.totalAmount - 0.01
+  computed milestonePercentage: number = self.totalMilestones > 0 ? (self.completedMilestones / self.totalMilestones) * 100 : 0
+  computed daysRemaining: number = self.endDate > now() ? self.endDate - now() : 0
+  computed totalDays: number = self.endDate - self.startDate
+
+  // Constraints
+  constraint amount_positive: self.totalAmount > 0 "Total amount must be positive"
+  constraint amount_consistent: self.totalAmount == self.recognizedAmount + self.remainingAmount "Total must equal recognized plus remaining"
+  constraint dates_valid: self.endDate >= self.startDate "End date must be after start date"
+  constraint validStatus: self.status in ["PENDING", "IN_PROGRESS", "COMPLETED", "PAUSED", "CANCELLED"] "Status must be valid"
+  constraint validMethod: self.method in ["IMMEDIATE", "PROPORTIONAL", "MILESTONE_BASED", "PERCENTAGE_COMPLETE", "STRAIGHT_LINE", "SERVICE_PERIOD"] "Method must be valid"
+
+  // Commands
+  command create(invoiceId: string, eventId: string, contractId: string, clientId: string, totalAmount: number, method: string, startDate: number, endDate: number, recognitionPeriod: number, description: string, notes: string) {
+    guard invoiceId != null and invoiceId != "" "Invoice ID is required"
+    guard eventId != null and eventId != "" "Event ID is required"
+    guard contractId != null and contractId != "" "Contract ID is required"
+    guard clientId != null and clientId != "" "Client ID is required"
+    guard totalAmount > 0 "Total amount must be positive"
+    guard endDate >= startDate "End date must be after start date"
+
+    mutate invoiceId = invoiceId
+    mutate eventId = eventId
+    mutate contractId = contractId
+    mutate clientId = clientId
+    mutate totalAmount = totalAmount
+    mutate recognizedAmount = 0
+    mutate remainingAmount = totalAmount
+    mutate method = method != null and method != "" ? method : "IMMEDIATE"
+    mutate status = "PENDING"
+    mutate startDate = startDate
+    mutate endDate = endDate
+    mutate recognitionPeriod = recognitionPeriod
+    mutate description = description
+    mutate notes = notes
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit RecognitionStarted
+  }
+
+  command startRecognition() {
+    guard self.status == "PENDING" "Can only start pending recognition"
+    guard now() >= self.startDate "Cannot start before start date"
+    mutate status = "IN_PROGRESS"
+    mutate updatedAt = now()
+    emit RecognitionStarted
+  }
+
+  command recognizeAmount(amount: decimal, recognizedAt: timestamp) {
+    guard self.status in ["IN_PROGRESS", "PENDING"] "Recognition must be in progress"
+    guard amount > 0 "Recognition amount must be positive"
+    guard amount <= self.remainingAmount "Cannot recognize more than remaining amount"
+    mutate recognizedAmount = self.recognizedAmount + amount
+    mutate remainingAmount = self.remainingAmount - amount
+    mutate updatedAt = now()
+    emit RevenueRecognized
+  }
+
+  command completeIfFullyRecognized() {
+    guard self.status in ["IN_PROGRESS", "PENDING"] "Can only complete in-progress recognition"
+    guard self.remainingAmount <= 0.01 "Not fully recognized yet"
+    mutate status = "COMPLETED"
+    mutate completedAt = now()
+    mutate updatedAt = now()
+    emit RecognitionCompleted
+  }
+
+  command recognizeMilestone(milestoneId: string, amount: decimal) {
+    guard self.method == "MILESTONE_BASED" "Can only recognize milestones for milestone-based schedules"
+    guard self.status in ["IN_PROGRESS", "PENDING"] "Recognition must be in progress"
+    guard self.completedMilestones < self.totalMilestones "All milestones already completed"
+    mutate completedMilestones = self.completedMilestones + 1
+    mutate recognizedAmount = self.recognizedAmount + amount
+    mutate remainingAmount = self.remainingAmount - amount
+    mutate updatedAt = now()
+    emit MilestoneRecognized
+  }
+
+  command completeIfAllMilestones() {
+    guard self.method == "MILESTONE_BASED" "Can only complete milestone-based schedules"
+    guard self.status in ["IN_PROGRESS", "PENDING"] "Can only complete in-progress recognition"
+    guard self.completedMilestones >= self.totalMilestones or self.remainingAmount <= 0.01 "Not all milestones completed"
+    mutate status = "COMPLETED"
+    mutate completedAt = now()
+    mutate updatedAt = now()
+    emit RecognitionCompleted
+  }
+
+  command recognizePercentage(percentage: number) {
+    guard self.method in ["PERCENTAGE_COMPLETE", "PROPORTIONAL"] "Percentage recognition only for percentage-based methods"
+    guard percentage >= 0 and percentage <= 100 "Percentage must be between 0 and 100"
+    guard self.status in ["IN_PROGRESS", "PENDING"] "Recognition must be in progress"
+    guard (self.totalAmount * percentage) / 100 > self.recognizedAmount "Target percentage already reached"
+    mutate recognizedAmount = (self.totalAmount * percentage) / 100
+    mutate remainingAmount = self.totalAmount - (self.totalAmount * percentage) / 100
+    mutate updatedAt = now()
+    emit PercentageRecognized
+  }
+
+  command completeIfPercentageFull() {
+    guard self.method in ["PERCENTAGE_COMPLETE", "PROPORTIONAL"] "Only for percentage-based methods"
+    guard self.status in ["IN_PROGRESS", "PENDING"] "Can only complete in-progress recognition"
+    guard self.remainingAmount <= 0.01 "Not fully recognized yet"
+    mutate status = "COMPLETED"
+    mutate completedAt = now()
+    mutate updatedAt = now()
+    emit RecognitionCompleted
+  }
+
+  command pause() {
+    guard self.status == "IN_PROGRESS" "Can only pause in-progress recognition"
+    mutate status = "PAUSED"
+    mutate updatedAt = now()
+    emit RecognitionPaused
+  }
+
+  command resume() {
+    guard self.status == "PAUSED" "Can only resume paused recognition"
+    mutate status = "IN_PROGRESS"
+    mutate updatedAt = now()
+    emit RecognitionResumed
+  }
+
+  command cancel(reason: string) {
+    guard self.status in ["PENDING", "IN_PROGRESS", "PAUSED"] "Cannot cancel completed recognition"
+    mutate status = "CANCELLED"
+    mutate notes = self.notes + "\nCancelled: " + reason
+    mutate updatedAt = now()
+    emit RecognitionCancelled
+  }
+
+  command adjustSchedule(newEndDate: timestamp, newTotalAmount: decimal) {
+    guard self.status in ["PENDING", "IN_PROGRESS", "PAUSED"] "Cannot adjust completed recognition"
+    guard newEndDate > now() "New end date must be in the future"
+    mutate endDate = newEndDate
+    mutate remainingAmount = self.remainingAmount + (newTotalAmount - self.totalAmount)
+    mutate totalAmount = newTotalAmount
+    mutate updatedAt = now()
+    emit ScheduleAdjusted
+  }
+
+  store RevenueRecognitionSchedule in memory
+}
+
+entity RevenueRecognitionLine {
+  property required id: string
+  property required tenantId: string
+  property required scheduleId: string
+
+  // Line details
+  property required sequence: number = 0
+  property required amount: number = 0
+  property required recognizedAmount: number = 0
+  property required status: string = "PENDING"
+
+  // Timing
+  property required dueDate: number = 0
+  property recognizedAt: number = 0
+
+  // Milestone info (for milestone-based recognition)
+  property milestoneId: string = ""
+  property milestoneName: string = ""
+  property milestoneDescription: string = ""
+
+  // Metadata
+  property description: string = ""
+  property notes: string = ""
+  property metadata: string = ""
+
+  // Timestamps
+  property required createdAt: number = 0
+  property required updatedAt: number = 0
+
+  // Computed properties
+  computed isRecognized: boolean = self.status == "RECOGNIZED"
+  computed isOverdue: boolean = self.status == "PENDING" and self.dueDate < now()
+  computed daysUntilDue: number = self.dueDate - now()
+  computed recognitionPercentage: number = self.amount > 0 ? (self.recognizedAmount / self.amount) * 100 : 0
+
+  // Constraints
+  constraint amount_positive: self.amount > 0 "Line amount must be positive"
+  constraint recognized_not_exceed: self.recognizedAmount <= self.amount "Recognized amount cannot exceed line amount"
+  constraint sequence_positive: self.sequence >= 0 "Sequence must be non-negative"
+  constraint validStatus: self.status in ["PENDING", "RECOGNIZED", "SKIPPED", "CANCELLED"] "Status must be valid"
+
+  // Commands
+  command create(scheduleId: string, sequence: number, amount: number, dueDate: number, milestoneId: string, milestoneName: string, description: string, notes: string) {
+    guard scheduleId != null and scheduleId != "" "Schedule ID is required"
+    guard amount > 0 "Line amount must be positive"
+    guard sequence >= 0 "Sequence must be non-negative"
+
+    mutate scheduleId = scheduleId
+    mutate sequence = sequence
+    mutate amount = amount
+    mutate recognizedAmount = 0
+    mutate status = "PENDING"
+    mutate dueDate = dueDate
+    mutate milestoneId = milestoneId
+    mutate milestoneName = milestoneName
+    mutate description = description
+    mutate notes = notes
+    mutate createdAt = now()
+    mutate updatedAt = now()
+
+    emit LineCreated
+  }
+
+  command recognize(amount: decimal, recognizedAt: timestamp) {
+    guard self.status == "PENDING" "Can only recognize pending lines"
+    guard amount > 0 "Recognition amount must be positive"
+    guard amount <= self.amount "Cannot recognize more than line amount"
+    mutate recognizedAmount = amount
+    mutate status = "RECOGNIZED"
+    mutate recognizedAt = recognizedAt != null and recognizedAt > 0 ? recognizedAt : now()
+    mutate updatedAt = now()
+    emit LineRecognized
+  }
+
+  command skip(reason: string) {
+    guard self.status == "PENDING" "Can only skip pending lines"
+    mutate status = "SKIPPED"
+    mutate notes = self.notes + "\nSkipped: " + reason
+    mutate updatedAt = now()
+    emit LineSkipped
+  }
+
+  command cancel() {
+    guard self.status == "PENDING" "Can only cancel pending lines"
+    mutate status = "CANCELLED"
+    mutate updatedAt = now()
+    emit LineCancelled
+  }
+
+  store RevenueRecognitionLine in memory
+}
+
+// Policy definitions
+policy RevenueRecognitionManagement execute: user.role in ["finance", "manager", "admin"] "Finance and managers can manage revenue recognition"
+policy RevenueRecognitionComplete execute: user.role in ["finance", "admin"] "Only finance and admins can complete recognition"
+policy RevenueLineManagement execute: user.role in ["finance", "manager", "admin"] "Finance and managers can manage recognition lines"
+
+// Events
+event RecognitionStarted: "finance.revenue-recognition.started" {
+  scheduleId: string
+  tenantId: string
+  invoiceId: string
+  totalAmount: number
+  method: string
+  createdAt: number
+}
+
+event RevenueRecognized: "finance.revenue-recognition.amount_recognized" {
+  scheduleId: string
+  tenantId: string
+  invoiceId: string
+  amount: number
+  recognizedAmount: number
+  remainingAmount: number
+  updatedAt: number
+}
+
+event RecognitionCompleted: "finance.revenue-recognition.completed" {
+  scheduleId: string
+  tenantId: string
+  invoiceId: string
+  recognizedAmount: number
+  totalAmount: number
+  completedAt: number
+}
+
+event MilestoneRecognized: "finance.revenue-recognition.milestone_recognized" {
+  scheduleId: string
+  tenantId: string
+  invoiceId: string
+  milestoneId: string
+  amount: number
+  completedMilestones: number
+  totalMilestones: number
+  updatedAt: number
+}
+
+event PercentageRecognized: "finance.revenue-recognition.percentage_recognized" {
+  scheduleId: string
+  tenantId: string
+  invoiceId: string
+  percentage: number
+  recognizedAmount: number
+  totalAmount: number
+  updatedAt: number
+}
+
+event RecognitionPaused: "finance.revenue-recognition.paused" {
+  scheduleId: string
+  tenantId: string
+  invoiceId: string
+  recognizedAmount: number
+  updatedAt: number
+}
+
+event RecognitionResumed: "finance.revenue-recognition.resumed" {
+  scheduleId: string
+  tenantId: string
+  invoiceId: string
+  updatedAt: number
+}
+
+event RecognitionCancelled: "finance.revenue-recognition.cancelled" {
+  scheduleId: string
+  tenantId: string
+  invoiceId: string
+  reason: string
+  recognizedAmount: number
+  updatedAt: number
+}
+
+event ScheduleAdjusted: "finance.revenue-recognition.schedule_adjusted" {
+  scheduleId: string
+  tenantId: string
+  invoiceId: string
+  newEndDate: number
+  newAmount: number
+  updatedAt: number
+}
+
+event LineCreated: "finance.revenue-recognition.line_created" {
+  lineId: string
+  tenantId: string
+  scheduleId: string
+  sequence: number
+  amount: number
+  createdAt: number
+}
+
+event LineRecognized: "finance.revenue-recognition.line_recognized" {
+  lineId: string
+  tenantId: string
+  scheduleId: string
+  amount: number
+  recognizedAt: number
+}
+
+event LineSkipped: "finance.revenue-recognition.line_skipped" {
+  lineId: string
+  tenantId: string
+  scheduleId: string
+  reason: string
+  updatedAt: number
+}
+
+event LineCancelled: "finance.revenue-recognition.line_cancelled" {
+  lineId: string
+  tenantId: string
+  scheduleId: string
+  updatedAt: number
+}

@@ -27,8 +27,8 @@ export async function GET(
 
     const payrollApprovalHistory = await database.approvalHistory.findFirst({
       where: {
-        id,
         tenantId,
+        id,
       },
     });
 

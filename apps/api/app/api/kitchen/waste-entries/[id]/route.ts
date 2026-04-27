@@ -27,8 +27,8 @@ export async function GET(
 
     const wasteEntry = await database.wasteEntry.findFirst({
       where: {
-        id,
         tenantId,
+        id,
         deletedAt: null
       },
     });

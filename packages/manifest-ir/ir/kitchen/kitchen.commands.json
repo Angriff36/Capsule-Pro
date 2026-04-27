@@ -1625,6 +1625,86 @@
     "commandId": "RecipeVersion.updateCosts"
   },
   {
+    "entity": "RevenueRecognitionLine",
+    "command": "cancel",
+    "commandId": "RevenueRecognitionLine.cancel"
+  },
+  {
+    "entity": "RevenueRecognitionLine",
+    "command": "create",
+    "commandId": "RevenueRecognitionLine.create"
+  },
+  {
+    "entity": "RevenueRecognitionLine",
+    "command": "recognize",
+    "commandId": "RevenueRecognitionLine.recognize"
+  },
+  {
+    "entity": "RevenueRecognitionLine",
+    "command": "skip",
+    "commandId": "RevenueRecognitionLine.skip"
+  },
+  {
+    "entity": "RevenueRecognitionSchedule",
+    "command": "adjustSchedule",
+    "commandId": "RevenueRecognitionSchedule.adjustSchedule"
+  },
+  {
+    "entity": "RevenueRecognitionSchedule",
+    "command": "cancel",
+    "commandId": "RevenueRecognitionSchedule.cancel"
+  },
+  {
+    "entity": "RevenueRecognitionSchedule",
+    "command": "completeIfAllMilestones",
+    "commandId": "RevenueRecognitionSchedule.completeIfAllMilestones"
+  },
+  {
+    "entity": "RevenueRecognitionSchedule",
+    "command": "completeIfFullyRecognized",
+    "commandId": "RevenueRecognitionSchedule.completeIfFullyRecognized"
+  },
+  {
+    "entity": "RevenueRecognitionSchedule",
+    "command": "completeIfPercentageFull",
+    "commandId": "RevenueRecognitionSchedule.completeIfPercentageFull"
+  },
+  {
+    "entity": "RevenueRecognitionSchedule",
+    "command": "create",
+    "commandId": "RevenueRecognitionSchedule.create"
+  },
+  {
+    "entity": "RevenueRecognitionSchedule",
+    "command": "pause",
+    "commandId": "RevenueRecognitionSchedule.pause"
+  },
+  {
+    "entity": "RevenueRecognitionSchedule",
+    "command": "recognizeAmount",
+    "commandId": "RevenueRecognitionSchedule.recognizeAmount"
+  },
+  {
+    "entity": "RevenueRecognitionSchedule",
+    "command": "recognizeMilestone",
+    "commandId": "RevenueRecognitionSchedule.recognizeMilestone"
+  },
+  {
+    "entity": "RevenueRecognitionSchedule",
+    "command": "recognizePercentage",
+    "commandId": "RevenueRecognitionSchedule.recognizePercentage"
+  },
+  {
+    "entity": "RevenueRecognitionSchedule",
+    "command": "resume",
+    "commandId": "RevenueRecognitionSchedule.resume"
+  },
+  {
+    "entity": "RevenueRecognitionSchedule",
+    "command": "startRecognition",
+    "commandId": "RevenueRecognitionSchedule.startRecognition"
+  },
+  {
     "entity": "RolePolicy",
     "command": "grant",
     "commandId": "RolePolicy.grant"

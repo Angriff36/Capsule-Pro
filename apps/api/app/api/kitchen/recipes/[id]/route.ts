@@ -1,4 +1,4 @@
-// Auto-generated Next.js API detail route for TimecardEditRequest
+// Auto-generated Next.js API detail route for Recipe
 // Generated from Manifest IR - DO NOT EDIT
 
 import type { NextRequest } from "next/server";
@@ -25,19 +25,21 @@ export async function GET(
 
     const { id } = await params;
 
-    const timecardEditRequest = await database.timecardEditRequest.findUnique({
+    const recipe = await database.recipe.findFirst({
       where: {
-        tenantId_id: { tenantId, id },
+        id,
+        tenantId,
+        deletedAt: null
       },
     });
 
-    if (!timecardEditRequest) {
-      return manifestErrorResponse("TimecardEditRequest not found", 404);
+    if (!recipe) {
+      return manifestErrorResponse("Recipe not found", 404);
     }
 
-    return manifestSuccessResponse({ timecardEditRequest });
+    return manifestSuccessResponse({ recipe });
   } catch (error) {
-    console.error("Error fetching timecardEditRequest:", error);
+    console.error("Error fetching recipe:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

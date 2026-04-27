@@ -148,7 +148,16 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[auto-bridge snapshot @ 10 changes]
-Files: IMPLEMENTATION_PLAN.md (edit), apps/api/lib/staff/workforce-ai-optimizer.ts (edit), apps/api/lib/staff/auto-assignment.ts (edit), apps/api/app/api/shipments/[id]/status/route.ts (edit), apps/app/app/(authenticated)/events/actions.ts (edit)
+[pre-compact bridge — saved before context compaction]
+Files (3):
+  e2e/workflows/logistics.workflow.spec.ts (create)
+  e2e/workflows/logistics.workflow.spec.ts (edit)
+  IMPLEMENTATION_PLAN.md (edit)
+Manual bridge:
+[proactive bridge @ 76% context — saved before compacting]
+Files (3):
+  e2e/workflows/logistics.workflow.spec.ts (create)
+  e2e/workflows/logistics.workflow.spec.ts (edit)
+  IMPLEMENTATION_PLAN.md (edit)
 
 # === END COGNILAYER ===

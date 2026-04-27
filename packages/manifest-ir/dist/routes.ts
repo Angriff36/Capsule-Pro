@@ -737,6 +737,26 @@ export function recipeVersionDetailPath(id: string): string {
   return "/api/recipeversion/" + encodeURIComponent(id);
 }
 
+/** GET /api/revenuerecognitionline/list */
+export function revenueRecognitionLineListPath(): string {
+  return "/api/revenuerecognitionline/list";
+}
+
+/** GET /api/revenuerecognitionline/:id */
+export function revenueRecognitionLineDetailPath(id: string): string {
+  return "/api/revenuerecognitionline/" + encodeURIComponent(id);
+}
+
+/** GET /api/revenuerecognitionschedule/list */
+export function revenueRecognitionScheduleListPath(): string {
+  return "/api/revenuerecognitionschedule/list";
+}
+
+/** GET /api/revenuerecognitionschedule/:id */
+export function revenueRecognitionScheduleDetailPath(id: string): string {
+  return "/api/revenuerecognitionschedule/" + encodeURIComponent(id);
+}
+
 /** GET /api/rolepolicy/list */
 export function rolePolicyListPath(): string {
   return "/api/rolepolicy/list";
@@ -2576,6 +2596,86 @@ export function recipeVersionUpdateCostsPath(): string {
   return "/api/recipeversion/update-costs";
 }
 
+/** POST /api/revenuerecognitionline/cancel */
+export function revenueRecognitionLineCancelPath(): string {
+  return "/api/revenuerecognitionline/cancel";
+}
+
+/** POST /api/revenuerecognitionline/create */
+export function revenueRecognitionLineCreatePath(): string {
+  return "/api/revenuerecognitionline/create";
+}
+
+/** POST /api/revenuerecognitionline/recognize */
+export function revenueRecognitionLineRecognizePath(): string {
+  return "/api/revenuerecognitionline/recognize";
+}
+
+/** POST /api/revenuerecognitionline/skip */
+export function revenueRecognitionLineSkipPath(): string {
+  return "/api/revenuerecognitionline/skip";
+}
+
+/** POST /api/revenuerecognitionschedule/adjust-schedule */
+export function revenueRecognitionScheduleAdjustSchedulePath(): string {
+  return "/api/revenuerecognitionschedule/adjust-schedule";
+}
+
+/** POST /api/revenuerecognitionschedule/cancel */
+export function revenueRecognitionScheduleCancelPath(): string {
+  return "/api/revenuerecognitionschedule/cancel";
+}
+
+/** POST /api/revenuerecognitionschedule/complete-if-all-milestones */
+export function revenueRecognitionScheduleCompleteIfAllMilestonesPath(): string {
+  return "/api/revenuerecognitionschedule/complete-if-all-milestones";
+}
+
+/** POST /api/revenuerecognitionschedule/complete-if-fully-recognized */
+export function revenueRecognitionScheduleCompleteIfFullyRecognizedPath(): string {
+  return "/api/revenuerecognitionschedule/complete-if-fully-recognized";
+}
+
+/** POST /api/revenuerecognitionschedule/complete-if-percentage-full */
+export function revenueRecognitionScheduleCompleteIfPercentageFullPath(): string {
+  return "/api/revenuerecognitionschedule/complete-if-percentage-full";
+}
+
+/** POST /api/revenuerecognitionschedule/create */
+export function revenueRecognitionScheduleCreatePath(): string {
+  return "/api/revenuerecognitionschedule/create";
+}
+
+/** POST /api/revenuerecognitionschedule/pause */
+export function revenueRecognitionSchedulePausePath(): string {
+  return "/api/revenuerecognitionschedule/pause";
+}
+
+/** POST /api/revenuerecognitionschedule/recognize-amount */
+export function revenueRecognitionScheduleRecognizeAmountPath(): string {
+  return "/api/revenuerecognitionschedule/recognize-amount";
+}
+
+/** POST /api/revenuerecognitionschedule/recognize-milestone */
+export function revenueRecognitionScheduleRecognizeMilestonePath(): string {
+  return "/api/revenuerecognitionschedule/recognize-milestone";
+}
+
+/** POST /api/revenuerecognitionschedule/recognize-percentage */
+export function revenueRecognitionScheduleRecognizePercentagePath(): string {
+  return "/api/revenuerecognitionschedule/recognize-percentage";
+}
+
+/** POST /api/revenuerecognitionschedule/resume */
+export function revenueRecognitionScheduleResumePath(): string {
+  return "/api/revenuerecognitionschedule/resume";
+}
+
+/** POST /api/revenuerecognitionschedule/start-recognition */
+export function revenueRecognitionScheduleStartRecognitionPath(): string {
+  return "/api/revenuerecognitionschedule/start-recognition";
+}
+
 /** POST /api/rolepolicy/grant */
 export function rolePolicyGrantPath(): string {
   return "/api/rolepolicy/grant";
@@ -3181,6 +3281,10 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "RecipeStep.get.detail", path: "/api/recipestep/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "RecipeVersion.get.list", path: "/api/recipeversion/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "RecipeVersion.get.detail", path: "/api/recipeversion/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "RevenueRecognitionLine.get.list", path: "/api/revenuerecognitionline/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "RevenueRecognitionLine.get.detail", path: "/api/revenuerecognitionline/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "RevenueRecognitionSchedule.get.list", path: "/api/revenuerecognitionschedule/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "RevenueRecognitionSchedule.get.detail", path: "/api/revenuerecognitionschedule/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "RolePolicy.get.list", path: "/api/rolepolicy/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "RolePolicy.get.detail", path: "/api/rolepolicy/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "SampleData.get.list", path: "/api/sampledata/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -3548,6 +3652,22 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "RecipeVersion.create", path: "/api/recipeversion/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RecipeVersion.restore", path: "/api/recipeversion/restore", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RecipeVersion.updateCosts", path: "/api/recipeversion/update-costs", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RevenueRecognitionLine.cancel", path: "/api/revenuerecognitionline/cancel", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RevenueRecognitionLine.create", path: "/api/revenuerecognitionline/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RevenueRecognitionLine.recognize", path: "/api/revenuerecognitionline/recognize", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RevenueRecognitionLine.skip", path: "/api/revenuerecognitionline/skip", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RevenueRecognitionSchedule.adjustSchedule", path: "/api/revenuerecognitionschedule/adjust-schedule", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RevenueRecognitionSchedule.cancel", path: "/api/revenuerecognitionschedule/cancel", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RevenueRecognitionSchedule.completeIfAllMilestones", path: "/api/revenuerecognitionschedule/complete-if-all-milestones", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RevenueRecognitionSchedule.completeIfFullyRecognized", path: "/api/revenuerecognitionschedule/complete-if-fully-recognized", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RevenueRecognitionSchedule.completeIfPercentageFull", path: "/api/revenuerecognitionschedule/complete-if-percentage-full", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RevenueRecognitionSchedule.create", path: "/api/revenuerecognitionschedule/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RevenueRecognitionSchedule.pause", path: "/api/revenuerecognitionschedule/pause", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RevenueRecognitionSchedule.recognizeAmount", path: "/api/revenuerecognitionschedule/recognize-amount", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RevenueRecognitionSchedule.recognizeMilestone", path: "/api/revenuerecognitionschedule/recognize-milestone", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RevenueRecognitionSchedule.recognizePercentage", path: "/api/revenuerecognitionschedule/recognize-percentage", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RevenueRecognitionSchedule.resume", path: "/api/revenuerecognitionschedule/resume", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RevenueRecognitionSchedule.startRecognition", path: "/api/revenuerecognitionschedule/start-recognition", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RolePolicy.grant", path: "/api/rolepolicy/grant", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RolePolicy.revoke", path: "/api/rolepolicy/revoke", method: "POST", source: "command", auth: true, tenant: true },
   { id: "RolePolicy.update", path: "/api/rolepolicy/update", method: "POST", source: "command", auth: true, tenant: true },

@@ -1,37 +1,52 @@
 /**
  * Revenue Recognition Schedule Detail API Routes
  *
- * NOTE: RevenueRecognitionSchedule model is not yet implemented in the database schema.
- * These routes return 501 Not Implemented until the model is added.
- * BLOCKER: RevenueRecognitionSchedule model does not exist in schema.
- * Tracked as capsule-pro/TODO:revenue-recognition-schedule-model
+ * GET   /api/accounting/revenue-recognition/schedules/[id]  - Get schedule with lines
+ * PATCH /api/accounting/revenue-recognition/schedules/[id]  - Update schedule
  */
 
+import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
 
+export const runtime = "nodejs";
+
 type RouteContext = {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 };
 
 /**
  * GET /api/accounting/revenue-recognition/schedules/[id]
- * Get a single revenue recognition schedule
+ * Get a single revenue recognition schedule with its lines
  */
 export async function GET(request: NextRequest, context: RouteContext) {
   try {
-    await requireTenantId();
-    const { id } = context.params;
+    const tenantId = await requireTenantId();
+    const { id } = await context.params;
 
-    // BLOCKER: RevenueRecognitionSchedule model does not exist in schema.
-    // Tracked as capsule-pro/TODO:revenue-recognition-schedule-model
-    return NextResponse.json(
-      {
-        error: `Revenue recognition schedule ${id} not found - feature not yet implemented`,
+    const schedule = await database.revenueRecognitionSchedule.findFirst({
+      where: {
+        tenantId,
+        id,
+        deletedAt: null,
       },
-      { status: 501 }
-    );
+      include: {
+        lines: {
+          where: { deletedAt: null },
+          orderBy: { sequence: "asc" },
+        },
+      },
+    });
+
+    if (!schedule) {
+      return NextResponse.json(
+        { error: "Revenue recognition schedule not found" },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({ data: schedule });
   } catch (error) {
     captureException(error);
     console.error("Error getting revenue recognition schedule:", error);
@@ -44,21 +59,52 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
 /**
  * PATCH /api/accounting/revenue-recognition/schedules/[id]
- * Update a revenue recognition schedule
+ * Update mutable fields on a revenue recognition schedule
  */
 export async function PATCH(request: NextRequest, context: RouteContext) {
   try {
-    await requireTenantId();
-    const { id } = context.params;
+    const tenantId = await requireTenantId();
+    const { id } = await context.params;
+    const body = await request.json();
 
-    // BLOCKER: RevenueRecognitionSchedule model does not exist in schema.
-    // Tracked as capsule-pro/TODO:revenue-recognition-schedule-model
-    return NextResponse.json(
-      {
-        error: `Revenue recognition schedule ${id} not found - feature not yet implemented`,
+    // Verify schedule exists and belongs to tenant
+    const existing = await database.revenueRecognitionSchedule.findFirst({
+      where: { tenantId, id, deletedAt: null },
+    });
+
+    if (!existing) {
+      return NextResponse.json(
+        { error: "Revenue recognition schedule not found" },
+        { status: 404 }
+      );
+    }
+
+    // Build updates object from mutable fields only
+    const updates: Record<string, unknown> = {};
+
+    if (body.description !== undefined) {
+      updates.description = body.description;
+    }
+
+    if (body.notes !== undefined) {
+      updates.notes = body.notes;
+    }
+
+    if (body.status !== undefined) {
+      updates.status = body.status;
+    }
+
+    const updated = await database.revenueRecognitionSchedule.update({
+      where: {
+        tenantId_id: { tenantId, id },
       },
-      { status: 501 }
-    );
+      data: {
+        ...updates,
+        updatedAt: new Date(),
+      },
+    });
+
+    return NextResponse.json({ data: updated });
   } catch (error) {
     captureException(error);
     console.error("Error updating revenue recognition schedule:", error);

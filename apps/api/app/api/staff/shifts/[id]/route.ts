@@ -27,8 +27,8 @@ export async function GET(
 
     const scheduleShift = await database.scheduleShift.findFirst({
       where: {
-        id,
         tenantId,
+        id,
         deletedAt: null
       },
     });

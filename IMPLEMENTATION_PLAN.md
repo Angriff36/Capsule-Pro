@@ -1,6 +1,74 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-27 (forty-fifth pass — two HIGH SQL bugs fixed + PrepTaskPlanWorkflow investigation)
+> **Last updated:** 2026-04-27 (forty-seventh pass — New Asset E2E backpressure shipped)
+
+## P0 — Product-flow backpressure for creation UI
+
+- [x] ~~Add E2E/product-flow backpressure for `New Route` creation~~ — **CLOSED 46th pass** (`e2e/workflows/logistics.workflow.spec.ts`).
+- [ ] Add E2E/product-flow backpressure for `New Facility` creation — **BLOCKED**: no `Facility` Prisma model exists; the `/facilities` page is a hub with no creation flow. Schema work (Facility model + migration + create API + create dialog UI) must land before an E2E test can pass.
+- [x] ~~Add E2E/product-flow backpressure for `New Asset` creation~~ — **CLOSED 47th pass** (`e2e/workflows/facilities-assets.workflow.spec.ts`).
+
+## 47th audit pass — New Asset E2E backpressure shipped (2026-04-27)
+
+**Problem solved**: P0.3 (E2E backpressure for `New Asset` creation) was open. Prior to this pass, nothing pinned the contract that the "Add Asset" dialog at `/facilities/assets` actually persists a row to `tenant_facilities.facility_assets`. The create handler is a raw `INSERT … RETURNING` (`apps/api/app/api/facilities/assets/commands/create/route.ts:61-82`) and the UI calls `loadData()` to refetch the canonical list after a 200 — so a future regression that wrapped the response in `.data`, dropped `RETURNING`, or removed `status` from the projection would still return 200 but quietly leave the UI empty without any error surfacing to the user.
+
+**What shipped this pass**:
+- Created `e2e/workflows/facilities-assets.workflow.spec.ts` (Playwright) with two tests:
+  1. **page-loads test** — `/facilities/assets` renders the `Assets` heading and the "Add Asset" CTA button. Pins the entry point so a future regression that renames the route or accidentally deletes the button is caught immediately.
+  2. **create-survives-reload test** — clicks "Add Asset" (toolbar), fills name/manufacturer/model/serial, captures the POST response to `/api/facilities/assets/commands/create` via `page.waitForResponse()`, asserts (a) HTTP 200, (b) `body.success === true`, (c) `body.asset.id` is a UUID, (d) `body.asset.name === ASSET_NAME`, (e) `body.asset.status === "active"` (the create handler hard-codes `'active'`; if a future refactor reads from request body, this fails), (f) `body.asset.serial_number === ASSET_SERIAL`, (g) the dialog closes, (h) the new card is visible in the UI, (i) **after `page.reload()`** the card is still visible (this is the actual persistence check — `loadData()` re-fetches from the DB), (j) an independent `GET /api/facilities/assets/list?status=all` call returns the created `id` with matching `name`, `status`, and `serial_number`.
+- Test gated to the authenticated `chromium` Playwright project via `test.skip(!storageState)` in `beforeEach` — same pattern as `authentication.workflow.spec.ts` and `logistics.workflow.spec.ts`. The `chromium-unauth` project would otherwise hit the Clerk redirect to `/sign-in` and fail every assertion for unrelated reasons.
+- Added `attachErrorCollector` + `assertNoErrors` checkpoint at end of test — any console error, 4xx/5xx network response, or request failure during the create flow fails the test with a screenshot and JSON report dropped to `e2e/reports/`.
+- Used the existing `unique()` helper from `e2e/helpers/workflow.ts` so every test run gets a fresh `Asset E2E-{TS}` name + a fresh `SN-E2E-{TS}` serial — no cross-run interference, no manual cleanup needed.
+
+**Selector contract (documented in the spec header)**: the asset dialog's `<Input>` controls do NOT have `id`/`htmlFor` pairs (verified at `apps/app/app/(authenticated)/facilities/assets/page.tsx:475-538`), so `getByLabel()` cannot locate them. The spec uses (a) the dialog-scoped first `textbox` for the Name field (which has no placeholder) and (b) placeholder text (`"Vulcan"`, `"VSH96E"`, `"SN-12345"`) for the optional fields. This is the actual DOM contract — a future refactor that adds `htmlFor`/`id` pairs would not break the test, but a refactor that changes a placeholder would; the test header documents this so the next reader doesn't waste time hunting for `getByLabel()`.
+
+**Verification evidence**:
+- `npx playwright test e2e/workflows/facilities-assets.workflow.spec.ts --list` reports 5 tests across `setup`, `chromium-unauth`, and `chromium` projects (the 2 facilities-assets tests + the auth setup).
+- `pnpm biome check e2e/workflows/facilities-assets.workflow.spec.ts` — 0 errors, 1 stylistic warning (`async` `beforeEach` hook without `await` — same warning every other workflow spec emits, e.g. `crm.workflow.spec.ts:35`, `logistics.workflow.spec.ts:43`).
+- The actual test execution is deferred to the `loop.sh` downstream gate (E2E suites need a running dev server + seeded DB + Clerk test session — they don't run in pre-commit).
+
+**Files touched**:
+- Created: `e2e/workflows/facilities-assets.workflow.spec.ts` (~190 lines, 2 tests + 1 describe block, follows the established shape of `logistics.workflow.spec.ts`).
+- Modified: `IMPLEMENTATION_PLAN.md` (closed P0.3, added this pass entry).
+
+**Why this matters**: the P0 list at the top of this file was three TODOs at the start of the 46th pass. Two are now CLOSED. The remaining one (`New Facility`) is correctly classified as BLOCKED on schema work that must land first — no UI test can pass against a hub page that has no creation flow. The product-flow-backpressure backstop now covers all currently-shippable creation UIs.
+
+**Followups still open** (carried forward from 46th pass):
+- The 16 lifecycle command routes for `PrepTaskPlanWorkflow` have a storage mismatch (PrismaJsonStore writes vs Prisma model reads) that needs architecture work.
+- MEDIUM items: unbounded pagination routes, ILIKE wildcard escaping, LIMIT bounds.
+- No tests exist for `apps/api/app/api/staff/availability/validation.ts` — safety-critical module with zero coverage.
+- P0.2 `New Facility` E2E: still blocked on Facility Prisma model + create API + create dialog UI.
+
+## 46th audit pass — New Route E2E backpressure shipped (2026-04-27)
+
+**Problem solved**: P0.1 (E2E backpressure for `New Route` creation) was open with no automated coverage. Prior to this pass, nothing pinned the contract that the "New Route" dialog at `/logistics/routes` actually persists a row to `tenant_logistics.delivery_routes`. A regression that broke `database.deliveryRoute.create(...)` (Prisma rename, missing tenantId, silent 500) would leave the dialog appearing to work because `routes-view.tsx:130` does an optimistic `setRoutes((prev) => [data.route, ...prev])` on the response — meaning a malformed `data.route` would only be visible until the next page reload.
+
+**What shipped this pass**:
+- Created `e2e/workflows/logistics.workflow.spec.ts` (Playwright) with two tests:
+  1. **page-loads test** — `/logistics/routes` renders the heading and the "New Route" CTA button. Pins the entry point so a future regression that renames the route or accidentally deletes the button is caught immediately.
+  2. **create-survives-reload test** — clicks "New Route", fills `routeName`/`scheduledDate`/`description`, captures the POST response to `/api/logistics/routes/commands/create` via `page.waitForResponse()`, asserts (a) HTTP 200, (b) `body.route.id` exists, (c) `body.route.name === ROUTE_NAME`, (d) `routeNumber` matches `^RT-\d{6}$`, (e) the dialog closes, (f) the new card is visible in the optimistic UI state, (g) **after `page.reload()`** the card is still visible (this is the actual persistence check — the optimistic in-memory state is wiped by the reload, so visibility after reload requires a row in the database that survived the round-trip), (h) an independent `GET /api/logistics/routes/list` call returns the created `id` with matching `name` and `routeNumber`.
+- Test gated to the authenticated `chromium` Playwright project via `test.skip(!storageState)` in `beforeEach` — same pattern as `authentication.workflow.spec.ts`. The `chromium-unauth` project would otherwise hit the Clerk redirect to `/sign-in` and fail every assertion for unrelated reasons.
+- Added `attachErrorCollector` + `assertNoErrors` checkpoint at end of test — any console error, 4xx/5xx network response, or request failure during the create flow fails the test with a screenshot and JSON report dropped to `e2e/reports/`.
+- Used the existing `unique()` helper from `e2e/helpers/workflow.ts` so every test run gets a fresh `LogisticsRoute E2E-{TS}` name — no cross-run interference, no manual cleanup needed.
+
+**Verification evidence**:
+- `npx playwright test e2e/workflows/logistics.workflow.spec.ts --list` reports 5 tests across the `setup`, `chromium-unauth`, and `chromium` projects (the 2 logistics tests + auth setup).
+- `pnpm biome check e2e/workflows/logistics.workflow.spec.ts` — 0 errors, 1 stylistic warning (`async` hook without `await` — same warning every other workflow spec emits, e.g. `crm.workflow.spec.ts:35`).
+- The actual test execution is deferred to the `loop.sh` downstream gate (E2E suites need a running dev server + seeded DB + Clerk test session — they don't run in pre-commit).
+
+**Files touched**:
+- Created: `e2e/workflows/logistics.workflow.spec.ts` (~140 lines, 2 tests + 1 describe block, follows the established shape of `crm.workflow.spec.ts` and `events.workflow.spec.ts`)
+
+**Why this matters**: the P0 list at the top of this file was three TODOs. One is now CLOSED. The other two are now classified by readiness — `New Asset` is shippable with the same template (UI + API + Prisma model all exist, this E2E spec is the reusable shape), and `New Facility` is correctly flagged as blocked on schema work that must land first.
+
+**Followups still open** (carried forward from 45th pass):
+- The 16 lifecycle command routes for `PrepTaskPlanWorkflow` have a storage mismatch (PrismaJsonStore writes vs Prisma model reads) that needs architecture work.
+- MEDIUM items: unbounded pagination routes, ILIKE wildcard escaping, LIMIT bounds.
+- No tests exist for `apps/api/app/api/staff/availability/validation.ts` — safety-critical module with zero coverage.
+- P0.2 `New Facility` E2E: blocked on Facility Prisma model + create API + create dialog UI.
+- P0.3 `New Asset` E2E: ready to ship with the `logistics.workflow.spec.ts` template.
+
+---
 
 ## 45th audit pass — two HIGH SQL bugs fixed + PrepTaskPlanWorkflow investigation (2026-04-27)
 
