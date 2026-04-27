@@ -153,8 +153,8 @@ export async function checkOverlappingAvailability(
         -- Check for date range overlap
         AND (
           -- New range overlaps with existing if:
-          -- effective_from is before or on the existing effective_until (or no effective_until)
-          AND (effective_until IS NULL OR effective_from <= ${effectiveUntil || effectiveFrom})
+          -- existing start is before new end (or existing has no end), AND new start is before existing end (or existing has no end)
+          (effective_until IS NULL OR effective_from <= ${effectiveUntil || effectiveFrom})
           AND (effective_until IS NULL OR ${effectiveFrom} <= effective_until)
         )
     `

@@ -755,7 +755,7 @@ async function identifyTurnoverRisks(
         e.last_name,
         -- Risk factors
         CASE WHEN COUNT(ss.id) FILTER (WHERE ss.shift_start >= CURRENT_DATE - INTERVAL '30 days') = 0 THEN 30 ELSE 0 END +
-        CASE WHEN e.seniority_rank < 3 THEN 20 ELSE 0 END +
+        CASE WHEN es.seniority_rank < 3 THEN 20 ELSE 0 END +
         CASE WHEN e.hourly_rate < 15 THEN 10 ELSE 0 END as risk_score
       FROM tenant_staff.employees e
       LEFT JOIN tenant_staff.schedule_shifts ss ON ss.employee_id = e.id
@@ -781,8 +781,8 @@ async function identifyTurnoverRisks(
         )`
             : Prisma.empty
         }
-      GROUP BY e.id, e.first_name, e.last_name, e.seniority_rank, e.hourly_rate
-      HAVING COUNT(ss.id) < 5 OR e.seniority_rank < 3
+      GROUP BY e.id, e.first_name, e.last_name, es.seniority_rank, e.hourly_rate
+      HAVING COUNT(ss.id) < 5 OR es.seniority_rank < 3
       ORDER BY risk_score DESC
       LIMIT 10
     )

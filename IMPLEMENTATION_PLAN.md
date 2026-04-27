@@ -1,6 +1,31 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-27 (forty-fourth pass — tenant isolation gaps closed in shipments, auto-assignment, workforce-ai-optimizer + column-name drift fix in events/actions.ts)
+> **Last updated:** 2026-04-27 (forty-fifth pass — two HIGH SQL bugs fixed + PrepTaskPlanWorkflow investigation)
+
+## 45th audit pass — two HIGH SQL bugs fixed + PrepTaskPlanWorkflow investigation (2026-04-27)
+
+**Problem solved**: Two HIGH-severity SQL correctness bugs were fixed, and the PrepTaskPlanWorkflow manifest runtime state was fully investigated.
+
+**What shipped this pass**:
+
+1. **HIGH #36 fixed — `workforce-ai-optimizer.ts:758,784,785` `e.seniority_rank` references non-existent column**: The `identifyTurnoverRisks` function referenced `e.seniority_rank` in three places (SELECT CASE, GROUP BY, HAVING), but the `seniority_rank` column does not exist on `tenant_staff.employees`. The data lives on `tenant_staff.employee_seniority` (a separate table with `rank` column), which the query already JOINs as alias `es` via a subquery at lines 765-772. The fix was purely a prefix change: `e.` → `es.` in all three locations. At runtime, PostgreSQL would throw `column e.seniority_rank does not exist` when this query executes. Two other queries in the same file (`fetchEmployeePerformanceData`, `identifyTopPerformers`) were already correct and use `es.seniority_rank`.
+
+2. **HIGH #37 fixed — `apps/api/app/api/staff/availability/validation.ts:157` duplicate `AND` in SQL overlap check**: The `checkOverlappingAvailability` function's date-range overlap SQL had a duplicate `AND` inside a parenthesized group: `AND ( AND (...) AND (...) )`. The inner leading `AND` on line 157 was the first element after the opening parenthesis, making it invalid SQL that would cause a syntax error at runtime. Fixed by removing the stray `AND` so the parenthesized group contains two conditions joined by a single `AND` between them. No tests exist for this validation module — this is a significant gap.
+
+3. **PrepTaskPlanWorkflow investigation (documented, not yet fixed)**: The manifest file (`prep-task-plan-workflow.manifest`), IR compilation, 16 command routes, and Prisma model all exist. However, there is a storage mismatch: commands write through `PrismaJsonStore` (generic JSON blob) while reads query the dedicated `PrepTaskPlanWorkflow` Prisma model. To make these routes fully functional, `PrepTaskPlanWorkflow` needs to be added to the `ENTITIES_WITH_SPECIFIC_STORES` set in the manifest-runtime-factory, and a `PrismaStore` field-mapping adapter needs to be created. This is Tier 3 architecture work, not a quick fix.
+
+**Tests**: Full api suite: **1019 passing, 1 skipped, 8 todo, 0 failures** (unchanged — no regression). TypeScript: 0 errors (`tsc --noEmit -p apps/api/tsconfig.json`).
+
+**Files touched**:
+- Modified: `apps/api/lib/staff/workforce-ai-optimizer.ts` (3 instances: `e.seniority_rank` → `es.seniority_rank` in SELECT, GROUP BY, HAVING of `identifyTurnoverRisks`)
+- Modified: `apps/api/app/api/staff/availability/validation.ts` (removed duplicate `AND` in overlap check SQL)
+
+**Followups still open** (carried forward):
+- The 16 lifecycle command routes for `PrepTaskPlanWorkflow` have a storage mismatch (PrismaJsonStore writes vs Prisma model reads) that needs architecture work.
+- HIGH #36 confirmed: `e.seniority_rank` → `es.seniority_rank` — **CLOSED this pass**.
+- HIGH #37 confirmed: duplicate `AND` in overlap check SQL — **CLOSED this pass**.
+- MEDIUM items: unbounded pagination routes, ILIKE wildcard escaping, LIMIT bounds.
+- No tests exist for `apps/api/app/api/staff/availability/validation.ts` — safety-critical module with zero coverage.
 
 ## 44th audit pass — tenant isolation gaps closed + column-name drift fix (2026-04-27)
 

@@ -148,7 +148,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[Emergency bridge — running bridge was not updated]
-Files: apps/api/app/api/accounting/payments/[id]/route.ts (edit), apps/api/__tests__/accounting/payment-refund-clamp.test.ts (edit), IMPLEMENTATION_PLAN.md (edit)
+[auto-bridge snapshot @ 10 changes]
+Files: IMPLEMENTATION_PLAN.md (edit), apps/api/lib/staff/workforce-ai-optimizer.ts (edit), apps/api/lib/staff/auto-assignment.ts (edit), apps/api/app/api/shipments/[id]/status/route.ts (edit), apps/app/app/(authenticated)/events/actions.ts (edit)
 
 # === END COGNILAYER ===
