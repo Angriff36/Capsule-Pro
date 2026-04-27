@@ -1,12 +1,55 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-27 (forty-eighth pass — staff availability validation conformance suite)
+> **Last updated:** 2026-04-27 (forty-ninth pass — Facility schema + create API + create dialog + E2E backpressure shipped)
 
 ## P0 — Product-flow backpressure for creation UI
 
 - [x] ~~Add E2E/product-flow backpressure for `New Route` creation~~ — **CLOSED 46th pass** (`e2e/workflows/logistics.workflow.spec.ts`).
-- [ ] Add E2E/product-flow backpressure for `New Facility` creation — **BLOCKED**: no `Facility` Prisma model exists; the `/facilities` page is a hub with no creation flow. Schema work (Facility model + migration + create API + create dialog UI) must land before an E2E test can pass.
+- [x] ~~Add E2E/product-flow backpressure for `New Facility` creation~~ — **CLOSED 49th pass** (`e2e/workflows/facilities.workflow.spec.ts`). Required first creating the `Facility` Prisma model + `tenant_facilities.facilities` migration + `POST /api/facilities/commands/create` + `GET /api/facilities/list` + an "Add Facility" dialog on the `/facilities` hub page so the E2E test had a real round-trip to verify.
 - [x] ~~Add E2E/product-flow backpressure for `New Asset` creation~~ — **CLOSED 47th pass** (`e2e/workflows/facilities-assets.workflow.spec.ts`).
+
+## 49th audit pass — New Facility full-stack shipped, P0.2 closed (2026-04-27)
+
+**Problem solved**: P0.2 (`New Facility` E2E backpressure) was the last open P0 item, classified as BLOCKED because none of the prerequisites existed: no `Facility` Prisma model, no `tenant_facilities.facilities` table, no create/list APIs, and the `/facilities` hub page was a static 4-card link grid with no creation flow. This pass unblocked and closed it in one round trip — schema → migration → APIs → dialog UI → E2E spec — so the product-flow-backpressure backstop now covers every shippable creation UI in the app.
+
+**What shipped this pass**:
+1. **Prisma model `Facility`** in `packages/database/prisma/schema.prisma` (mapped to `tenant_facilities.facilities`): composite PK `(tenantId, id)`, unique `(tenantId, code)`, indexes on `(tenantId, status)` and `(tenantId, facilityType)`, snake_case `@map`s for every column, `tenant Account @relation(... onDelete: Restrict)`, and a back-relation `facilities Facility[]` added to `Account`. Deliberately mirrors the shape of `FacilityArea` / `FacilityAsset` (same schema, same tenant-scoping pattern, same soft-delete via `deletedAt`).
+2. **Migration `20260427030000_add_facilities_table/migration.sql`**: `CREATE TABLE IF NOT EXISTS tenant_facilities.facilities` with FK to `platform.accounts(id)` (RESTRICT), RLS enabled + forced, policies `facilities_select` / `facilities_insert` / `facilities_update` keyed on `auth.jwt() ->> 'tenant_id'`, `facilities_delete USING (false)` (hard-delete disabled — soft-delete via `deleted_at` only, matches the assets policy contract), `service_role` bypass, `core.fn_update_timestamp` and `core.fn_prevent_tenant_mutation` triggers, and `REPLICA IDENTITY FULL` for real-time. Idempotent — uses `IF NOT EXISTS` and `DO $$ ... pg_constraint ...` guards so re-running on a partially-applied DB doesn't error.
+3. **POST `/api/facilities/commands/create`** at `apps/api/app/api/facilities/commands/create/route.ts`: auth → `getTenantIdForOrg` → raw `INSERT … RETURNING` via `database.$queryRaw` with `Prisma.sql` parameterization → `manifestSuccessResponse({ facility: row })`. Hard-codes `status='active'` (so a future regression that wires status into the request body fails the E2E test). Allow-lists `facilityType ∈ {kitchen, warehouse, commissary, office, other}` and falls back to `other` for unknown values — matches the `assets/commands/create` pattern.
+4. **GET `/api/facilities/list`** at `apps/api/app/api/facilities/list/route.ts`: auth → raw `SELECT` with optional status + facilityType filters via conditional `Prisma.sql` fragments. Defaults `status=active`; pass `?status=all` to bypass the filter (the E2E spec uses this so it can read its own row regardless of status drift). Returns `{ success: true, facilities: [...] }`.
+5. **Hub page rewrite** at `apps/app/app/(authenticated)/facilities/page.tsx`: was a static 4-card link grid; now a client component with state (`facilities`, `loading`, `showDialog`, `saving`, `form`), a `loadFacilities()` fetcher hitting `/api/facilities/list?status=all`, an "Add Facility" CTA in the header, a "Your Facilities" list (loading / empty / populated states) above the original 4 navigation cards (Work Orders, PM Schedules, Areas, Assets — all preserved), and a Radix dialog with form fields: name (required), facilityType (Select, default `kitchen`), code, phone, addressLine1, city, state, postalCode, notes. `handleSave()` POSTs to `/api/facilities/commands/create`, and on `res.ok` re-runs `loadFacilities()` then closes the dialog — the same refetch-not-prepend pattern as the assets page, so the E2E test exercises the canonical read path on every create.
+6. **E2E spec `e2e/workflows/facilities.workflow.spec.ts`** (~250 lines, 2 tests, mirrors `facilities-assets.workflow.spec.ts`):
+   - **page-loads test** — `/facilities` renders the heading and the toolbar "Add Facility" button. Pins the entry point.
+   - **create-survives-reload test** — clicks the toolbar CTA, fills name/code/phone/address/city/state/postal via dialog-scoped first-textbox + placeholder selectors (no `htmlFor` pairs exist on the Inputs), captures the POST via `page.waitForResponse()`, asserts (a) HTTP 200, (b) `body.success === true`, (c) `body.facility.id` matches the UUID regex, (d) `body.facility.name === FACILITY_NAME`, (e) `body.facility.status === 'active'` (the create handler hard-codes it; if a future refactor reads from request body, this fails), (f) `body.facility.facility_type === 'kitchen'` (the form default; pins the allow-list contract), (g) `body.facility.code === FACILITY_CODE`, (h) `body.facility.city === FACILITY_CITY`, (i) the dialog closes, (j) the new card is visible in the UI, (k) **after `page.reload()`** the card is still visible (proves DB persistence — the React state is wiped by the reload, so visibility requires a row that survived the round-trip), (l) an independent `GET /api/facilities/list?status=all` call returns the created `id` with matching `name`, `status`, `facility_type`, `code`, and `city`.
+   - Gated to the authenticated `chromium` Playwright project via `test.skip(!storageState)` in `beforeEach` — same pattern as the other workflow specs.
+   - `attachErrorCollector` + `assertNoErrors` checkpoint at end of test.
+
+**Selector contract (documented in the spec header)**: the dialog's `<Input>` controls don't have `id`/`htmlFor` pairs (verified at `apps/app/app/(authenticated)/facilities/page.tsx:319-415`), so `getByLabel()` cannot reach them. The spec uses (a) the dialog-scoped first `textbox` for the Name field (which has no placeholder) and (b) placeholder text (`"MAIN-KIT"`, `"+1 555 123 4567"`, `"123 Main Street"`, `"Austin"`, `"TX"`, `"78701"`) for the optional fields. A future refactor that adds `htmlFor` pairs would not break the test, but a refactor that changes a placeholder would; the test header documents this so the next reader doesn't waste time hunting for `getByLabel()`.
+
+**Manifest compliance**: `/api/facilities/` is already infrastructure-allowlisted in `scripts/manifest/write-route-infra-allowlist.json` ("Uses executeManifestCommand — Facilities commands (areas, assets, schedules, work-orders)"), so the new `commands/create` and `list` routes are covered by the existing allowlist entry without modification.
+
+**Verification evidence**:
+- `cd packages/database && pnpm exec prisma generate` → success; `Facility.ts` now exists in `packages/database/generated/models/`.
+- `pnpm --filter api typecheck` → clean (no errors).
+- `pnpm --filter app typecheck` → clean (no errors).
+- `pnpm dlx ultracite check apps/api/app/api/facilities/commands/create/route.ts apps/api/app/api/facilities/list/route.ts apps/app/app/(authenticated)/facilities/page.tsx e2e/workflows/facilities.workflow.spec.ts` → 0 errors, 4 stylistic warnings (all the same `async beforeEach without await` pattern every other workflow spec emits — matches existing precedent).
+- The actual E2E execution is deferred to the `loop.sh` downstream gate (E2E suites need a running dev server + seeded DB + Clerk test session — they don't run in pre-commit).
+
+**Files touched**:
+- Modified: `packages/database/prisma/schema.prisma` (added `Facility` model + `Account.facilities` back-relation).
+- Created: `packages/database/prisma/migrations/20260427030000_add_facilities_table/migration.sql`.
+- Created: `apps/api/app/api/facilities/commands/create/route.ts`.
+- Created: `apps/api/app/api/facilities/list/route.ts`.
+- Rewrote: `apps/app/app/(authenticated)/facilities/page.tsx` (was static link grid; now a full client component with list + dialog).
+- Created: `e2e/workflows/facilities.workflow.spec.ts` (~250 lines, 2 tests).
+- Modified: `IMPLEMENTATION_PLAN.md` (this entry; closed P0.2; updated header date).
+
+**Why this matters**: the P0 list at the top of this file was three TODOs at the start of the 46th pass. All three are now CLOSED. Every shippable creation UI in the app — `New Route`, `New Asset`, `New Facility` — has product-flow backpressure that exercises the full UI → API → DB → reload → independent /list-verification chain, so a regression at any layer fails the test rather than silently shipping. The Facility table, RLS, and trigger contracts mirror the existing `facility_assets` migration exactly, so the same correctness invariants (composite PK, tenant isolation via JWT, soft-delete only, prevent_tenant_mutation, replica identity full) apply.
+
+**Followups still open** (carried forward from 48th pass):
+- The 16 lifecycle command routes for `PrepTaskPlanWorkflow` have a storage mismatch (PrismaJsonStore writes vs Prisma model reads) that needs architecture work.
+- MEDIUM items: unbounded pagination routes, ILIKE wildcard escaping, LIMIT bounds.
+- The new `/api/facilities/list` and `/api/facilities/commands/create` routes deliberately mirror the existing assets routes' conventions; if/when the project introduces a uniform pagination policy, both sets need to be retrofitted.
 
 ## 48th audit pass — staff availability validation conformance suite (2026-04-27)
 

@@ -145,6 +145,7 @@ model Account {
   temperatureProbes              TemperatureProbe[]
   temperatureReadings            TemperatureReading[]
   iotAlerts                      IoTAlert[]
+  facilities                     Facility[]
   facilityAreas                  FacilityArea[]
   facilityAssets                 FacilityAsset[]
   maintenanceWorkOrders          MaintenanceWorkOrder[]
@@ -5676,6 +5677,41 @@ model IoTAlert {
   @@index([tenantId, triggeredAt])
   @@map("iot_alerts")
   @@schema("tenant_kitchen")
+}
+
+/// Top-level facility (a building/site used for catering operations).
+/// Examples: a main commissary kitchen, a satellite warehouse, a corporate
+/// office. Areas/Assets/WorkOrders/PMSchedules can reference a facility by
+/// its (tenant_id, id) composite key as catering ops grow into multi-site
+/// orgs, but the back-references are added incrementally — this model only
+/// has to stand up "list + create" today to satisfy the P0.2 backpressure.
+model Facility {
+  tenantId     String    @map("tenant_id") @db.Uuid
+  id           String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name         String
+  code         String? // Short identifier like "MAIN-KIT", "WH-NORTH"
+  facilityType String    @default("kitchen") @map("facility_type") // kitchen, warehouse, commissary, office, other
+  addressLine1 String?   @map("address_line1")
+  addressLine2 String?   @map("address_line2")
+  city         String?
+  state        String?
+  postalCode   String?   @map("postal_code")
+  country      String?
+  phone        String?
+  status       String    @default("active") // active, inactive, archived
+  notes        String?   @db.Text
+  createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt    DateTime? @map("deleted_at") @db.Timestamptz(6)
+
+  tenant Account @relation(fields: [tenantId], references: [id], onDelete: Restrict)
+
+  @@id([tenantId, id])
+  @@unique([tenantId, code])
+  @@index([tenantId, status])
+  @@index([tenantId, facilityType])
+  @@map("facilities")
+  @@schema("tenant_facilities")
 }
 
 /// Facility area within a venue (kitchen, storage, dining, etc.)
