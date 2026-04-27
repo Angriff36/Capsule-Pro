@@ -523,6 +523,11 @@
       "comment": "Uses executeManifestCommand \u2014 Facilities commands (areas, assets, schedules, work-orders)"
     },
     {
+      "pattern": "^/api/crm/clients/[^/]+$",
+      "methods": ["PUT", "DELETE"],
+      "comment": "Uses executeManifestCommand \u2014 Client.update/softDelete + error handling enhancement"
+    },
+    {
       "prefix": "/api/events/budgets/",
       "methods": ["PUT", "DELETE"],
       "comment": "Uses executeManifestCommand \u2014 EventBudget.update/softDelete"

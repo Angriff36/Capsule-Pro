@@ -13,6 +13,7 @@ import { NextResponse } from "next/server";
 import { InvariantError, invariant } from "@/app/lib/invariant";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { translatePrismaError } from "@/lib/prisma-error";
 
 /**
  * GET /api/crm/clients/[id]
@@ -102,6 +103,13 @@ export async function GET(
   } catch (error) {
     if (error instanceof InvariantError) {
       return NextResponse.json({ message: error.message }, { status: 400 });
+    }
+    const prismaResult = translatePrismaError(error);
+    if (prismaResult.mapped) {
+      return NextResponse.json(
+        { message: prismaResult.message },
+        { status: prismaResult.status }
+      );
     }
     console.error("Error getting client:", error);
     return NextResponse.json(

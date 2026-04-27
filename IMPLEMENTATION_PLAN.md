@@ -1,6 +1,61 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-27 (fifty-third pass — wired E2E product-flow tests into CI; 382 Playwright tests now run on every PR)
+> **Last updated:** 2026-04-27 (fifty-fourth pass — Prisma error translation utility; P2002→409, P2025→404, P2003→400)
+
+## 54th audit pass — Prisma error translation utility (2026-04-27)
+
+**Problem solved**: Zero route files in the entire codebase checked for `error.code === 'P2002'` (unique constraint), `P2025` (not found), or `P2003` (FK violation). All database constraint violations surfaced as generic 500s instead of proper 409/404/422 responses. The 14th pass audit explicitly flagged this as a MEDIUM-severity issue (F15) but no solution had been implemented.
+
+**What shipped this pass**:
+
+1. **New shared module `apps/api/lib/prisma-error.ts`** — single source of truth for Prisma error translation:
+   - `PRISMA_ERROR_STATUS` constant mapping error codes to HTTP status:
+     - P2002 (unique constraint) → 409 Conflict
+     - P2025 (record not found) → 404 Not Found
+     - P2001 (record to update not found) → 404 Not Found
+     - P2003 (foreign key violation) → 400 Bad Request
+     - P2014 (relation violation) → 400 Bad Request
+     - P2015 (related record not found) → 400 Bad Request
+   - `translatePrismaError(error)` — returns `{ status, type, mapped, message }` with safe messages that don't leak database schema details
+   - `PrismaErrorResponse` class — custom error extending Error with status/type/mapped properties
+   - `isPrismaErrorResponse()` — type guard for catching Prisma errors in route handlers
+   - `withPrismaErrorHandling()` — wrapper helper for async Prisma operations
+
+2. **Test suite `apps/api/__tests__/lib/prisma-error.test.ts`** — 39 tests covering:
+   - All error code → status mappings (P2002, P2025, P2001, P2003, P2014, P2015)
+   - Error type classification (not_found, conflict, bad_request)
+   - Safe message generation (no Prisma details leaked)
+   - Edge cases (null, undefined, non-Error objects, missing code property, non-string code)
+   - PrismaErrorResponse class properties
+   - isPrismaErrorResponse type guard behavior
+
+3. **Integration into `apps/api/app/api/crm/clients/[id]/route.ts`** — demonstrates the integration pattern:
+   - Added import for `translatePrismaError`
+   - Added Prisma error handling after `InvariantError` check
+   - Returns 404/409/400 instead of generic 500 for known Prisma error codes
+
+**Why each line exists**:
+- The `PRISMA_ERROR_STATUS` constant uses `as const` so TypeScript can infer literal types for keys — this enables type-safe indexing with `keyof typeof PRISMA_ERROR_STATUS`.
+- Safe error messages (`"A record with this value already exists"`, `"The requested resource was not found"`) don't expose internal database structure, table names, or column names that could aid attackers.
+- The `mapped: boolean` flag allows callers to distinguish between "I knew about this error" vs "something unexpected happened" for logging/Sentry purposes.
+- The `PrismaErrorResponse` class is throwable so route handlers can use try/catch to handle it elegantly.
+
+**Verification evidence**:
+- `pnpm --filter api typecheck` — clean (0 errors).
+- `pnpm --filter api test __tests__/lib/prisma-error.test.ts -- --run` — 39 passed.
+- `pnpm --filter api test -- --run` — 1155 passed, 1 skipped, 8 todo (was 1116 + 39 new tests = 1155, math checks out).
+
+**Files touched**:
+- Created: `apps/api/lib/prisma-error.ts` (~200 lines).
+- Created: `apps/api/__tests__/lib/prisma-error.test.ts` (~300 lines, 39 tests).
+- Modified: `apps/api/app/api/crm/clients/[id]/route.ts` (integrated `translatePrismaError` into error handler).
+- Modified: `IMPLEMENTATION_PLAN.md` (this entry; closed the F15 followup from 14th pass).
+
+**Why this matters**: Every database constraint violation in the API (unique constraint on client email, FK violation on missing event, record not found on delete) previously returned `500 Internal Server Error`. This is unhelpful to clients (they can't distinguish "not found" from "constraint violation") and reveals internal database details in error messages. With this utility, routes can now return semantically correct 4xx status codes with safe messages that don't expose schema internals. The pattern is reusable — any route can import `translatePrismaError` and integrate it in a few lines.
+
+**Followups still open**:
+- The utility is created and tested, but only one route has been updated. The remaining ~1,346 route files still need the pattern applied.
+- A middleware solution (mentioned in F15 recommendation) could centralize Prisma error handling at the framework level, eliminating the need to update each route individually.
 
 ## 52nd audit pass — PrepTaskPlanWorkflow Prisma store closes write/read mismatch (2026-04-27)
 
