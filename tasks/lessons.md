@@ -71,3 +71,11 @@ Rules agents have written for themselves after being corrected. Read this at ses
 - **(B) Tool behavior changed** — audit logic modified to classify differently
 
 Both can be legitimate, but they must be reported separately. Never present B as if it were A. If a session is mostly B, say so. The question is always: "Did the number drop because routes were converted, or because the audit decided certain things are no longer errors?" If it's mostly B, that's tool-surface churn, not progress on the burn-down.
+
+## Lesson 9: Manifest DSL reserved words apply inside test fixtures
+
+**Date:** 2026-04-27
+**Agent:** 60th audit pass (manifest input validation)
+**What happened:** Wrote 17 new validation tests using `command write(...)` as the test fixture name. 5 tests failed with `Reserved word 'write' cannot be used as an identifier` because `write` is in the lexer's KEYWORDS set (it's a policy action verb alongside `read`, `delete`, `execute`, `all`, `override`, `optional`). Renaming to `command save(...)` fixed all 5.
+**Root cause:** The Manifest DSL has its own keyword list distinct from JS/TS. `write` looks like a perfectly innocuous test command name from a JavaScript-author perspective.
+**Rule:** When authoring `*.manifest` content (including in test fixtures), avoid these reserved words as identifiers: `entity`, `command`, `event`, `query`, `state`, `field`, `relation`, `policy`, `constraint`, `guard`, `effect`, `read`, `write`, `delete`, `execute`, `all`, `override`, `optional`, `required`, `nullable`, `string`, `number`, `boolean`, `list`, `map`, `date`, `datetime`, `any`. Cross-reference `packages/manifest-runtime/src/manifest/lexer.ts` KEYWORDS Set before naming a test command. Safe alternatives for "write" semantics: `save`, `store`, `persist`, `record`.

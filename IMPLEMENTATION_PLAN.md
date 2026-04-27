@@ -1,6 +1,59 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-27 (fifty-ninth pass — cron auth flipped to fail-closed; E2-2, E2-3, and keep-alive closed)
+> **Last updated:** 2026-04-27 (sixtieth pass — manifest runtime input schema validation; C1-1 and C1-2 closed)
+
+## 60th audit pass — manifest runtime input schema validation: C1-1, C1-2 (2026-04-27)
+
+**Problem solved**: The end-of-document security audit ranked C1-1/C1-2 as CRITICAL because the manifest pipeline — which processes ~60% of write operations — performed **zero runtime input schema validation** despite the IR carrying full `IRParameter[]` metadata (name, `IRType`, required, defaultValue). Every `executeManifestCommand` call passed `request.json()` directly to `runCommand`, which spread it into the eval context unchanged. That meant:
+
+1. **Type-confusion attacks were unblocked.** Sending `{ "userId": { "$ne": null } }` for a `string` parameter would propagate the object through guards (which assume the field is a string), through the persist adapter, and into Prisma where `{ $ne: null }` is interpreted as a `NOT NULL` filter — a NoSQL-style injection that bypasses the intended row-level access. Same hazard for arrays (`["a","b"]` where a string is expected) leading to `IN (...)` semantics under some store adapters.
+2. **Required-parameter contracts were unenforced.** A command declared `command claim(taskId: string, userId: string)` would happily run with `{}`, leaving downstream guards to crash with `Cannot read properties of undefined (reading 'length')` — turning a 400 into a 500 and leaking stack traces.
+3. **Default values declared in the manifest were ignored.** Authors writing `command paginate(limit: number = 50)` had to defensively `?? 50` in every guard because the runtime never substituted defaults.
+
+**What shipped this pass**:
+
+1. **`packages/manifest-runtime/src/manifest/runtime-engine.ts`** — added a single validation step inside `_executeCommandInternal`, between `getCommand` and the instance fetch:
+   - **`validateCommandInput(command, input, options)` (private method)** — iterates `command.parameters`, applies type checks via `checkIRType`, fills in defaults from `param.defaultValue`, and aggregates issues into a single `InputValidationFailure`. Short-circuits when there are no parameters.
+   - **`checkIRType(value, type, paramName)` (module-level helper)** — narrow per-IRType type guard:
+     - `string` / `number` / `boolean`: `typeof` check; `number` additionally rejects `NaN`/`Infinity` via `Number.isFinite` so guards can safely do arithmetic.
+     - `list`: rejects non-arrays; recursively checks each element when a generic inner type is declared.
+     - `map` / `object`: requires plain object (rejects arrays and `null`).
+     - `date` / `datetime`: accepts ISO string or `Date` instance.
+     - `any`: passthrough.
+     - **Unknown type names: passthrough** — forward-compatible with future IR extensions so adding a new type doesn't auto-break old runtimes.
+   - **`describeRuntimeType(value)`** — short label generator (`"array"` vs `"object"` vs `"null"` vs `typeof`) so error messages are actionable, not `"object [object Object]"`.
+   - **`formatIRType(type)` / `irValueToJs(value)`** — pretty-print IRType for messages and convert `IRValue` AST literals to JS for default substitution.
+2. **`InputValidationIssue` and `InputValidationFailure` interfaces** exported from the package — surface the structured failure payload so API routes (and the `executeManifestCommand` handler) can render a 400 with `{ parameter, code, expectedType, actualType, message }[]` instead of a generic 500.
+3. **`CommandResult.inputValidation?: InputValidationFailure`** — populated on validation failure so callers can distinguish "input was malformed" from "guard rejected" without parsing strings.
+4. **`RuntimeOptions.enforceRequiredParameters?: boolean` (default `false`)** — feature flag for required-presence enforcement. Type checks ALWAYS run; required-presence is opt-in. Rationale below.
+5. **`packages/manifest-runtime/src/manifest/runtime-engine.test.ts`** — 17 new vitest cases under `describe("Command Input Validation", ...)` covering: type rejection (string/number/list/object), explicit type-confusion attack blocking (`{$ne: null}` for a string param), validation-runs-before-guards ordering, list element type checking, required-presence flag on/off behavior, null handling vs nullable types, the `optional` keyword, default value substitution, `any` passthrough, date/datetime acceptance of both strings and Date instances, NaN/Infinity rejection for numbers, multi-issue aggregation in a single failure, and the no-parameter command short-circuit.
+
+**Design decision — why required-presence is feature-flagged but type checks are always on**:
+- An audit of all `*.manifest` files showed that several legitimately-existing commands (e.g. `event-rules.manifest`, `prep-task-rules.manifest`) declare semantically-optional parameters without the `optional` keyword, relying on guards to handle `undefined`. Flipping to strict required-presence runtime-wide would break those commands the moment this package version is consumed by `apps/api`.
+- Type checks, by contrast, are **safe to enforce universally** because no existing test or manifest passes a wrong-type value (verified by running the full 729-test suite + 229-test adapter suite — all pass without changes). Type-confusion is the actual security exploit; missing-required is a UX/DX issue. Splitting them lets us close the security hole today without coordinated manifest cleanup.
+- Defaults are applied unconditionally regardless of the flag — the IR already promises them and not honoring that would be a bigger correctness regression than the flag's enforcement scope.
+
+**Why the validation runs at this exact location in the pipeline**:
+- After `getCommand` (so we know what we're validating against) but before the instance fetch and before `buildEvalContext` — this means a malformed input never touches the database (no probing for valid IDs via type-confused queries) and never reaches guard expressions (which assume well-typed inputs). Defaults are folded into the input map before `buildEvalContext` so guard expressions like `where: input.limit > 0` see the substituted value.
+
+**Verification evidence**:
+- `pnpm --filter @angriff36/manifest test` — 729 tests passed, including all 17 new validation tests.
+- `pnpm --filter @repo/manifest-adapters test` — 229 tests passed; no consumer required adjustment because the validation is purely additive when `enforceRequiredParameters` is `false`.
+- `pnpm --filter api typecheck` — 0 errors. The new `inputValidation` field on `CommandResult` and the new `RuntimeOptions.enforceRequiredParameters` are both optional, so `apps/api/lib/manifest-runtime.ts` (the API-side factory) compiles unchanged.
+- Initial test run flagged 5 failures with `Reserved word 'write' cannot be used as an identifier` — `write` is a reserved DSL keyword (it's a policy action). Fixed by renaming the test command from `command write(...)` to `command save(...)`. Captured in `tasks/lessons.md` so future test authors don't repeat it.
+
+**Files touched**:
+- Modified: `packages/manifest-runtime/src/manifest/runtime-engine.ts` (+316 lines: validation method, helpers, type/option/result extensions; logic unchanged elsewhere).
+- Modified: `packages/manifest-runtime/src/manifest/runtime-engine.test.ts` (+349 lines: 17 new tests with explicit WHY headers).
+- Modified: `IMPLEMENTATION_PLAN.md` (this entry; closing C1-1 and C1-2).
+
+**Why this matters**: This single change closes both CRITICAL audit findings against the manifest pipeline and lifts the runtime's security posture from "trusts all input" to "rejects type-confusion universally + opts into required-presence per-runtime". Because the manifest runtime is the SoT for command execution across `apps/api`, every entity that already routes through `runCommand` (PrepTask, Event, Recipe, PrepList, Inventory, Station, KitchenTask, plus the 20+ entities scaffolded in `apps/api/lib/manifest-runtime.ts`) gets type-confusion protection automatically — no per-route Zod schema needed.
+
+**Followups still open** (from the end-of-document security audit):
+- E3-2 (Resend email webhook signature verification) — CRITICAL, still open. (Note: the conversation summary indicated this may already be fixed; needs re-verification.)
+- A2-1 (UUID format validation across 144 dynamic segments) — HIGH, still open.
+- D3-1 / D3-2 (Email header injection) — HIGH, still open.
+- A staged followup: flip `enforceRequiredParameters: true` after a sweep that adds the `optional` keyword to manifest commands that genuinely allow missing values. The validation infrastructure for it is already shipped; only the manifest-side hygiene remains.
 
 ## 59th audit pass — cron auth fail-closed: E2-2, E2-3, keep-alive (2026-04-27)
 

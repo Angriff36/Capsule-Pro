@@ -35,6 +35,150 @@ function isProductionMode(): boolean {
   return false;
 }
 
+/**
+ * Format an IRType for human-readable diagnostics, e.g. "list<string>" or "string?".
+ */
+function formatIRType(type: IRType): string {
+  const base = type.generic
+    ? `${type.name}<${formatIRType(type.generic)}>`
+    : type.name;
+  return type.nullable ? `${base}?` : base;
+}
+
+/**
+ * Materialize an IRValue (literal AST) into a plain JS value. Used to apply parameter
+ * default values declared in the manifest.
+ */
+function irValueToJs(value: IRValue): unknown {
+  switch (value.kind) {
+    case "string":
+      return value.value;
+    case "number":
+      return value.value;
+    case "boolean":
+      return value.value;
+    case "null":
+      return null;
+    case "array":
+      return value.elements.map(irValueToJs);
+    case "object": {
+      const out: Record<string, unknown> = {};
+      for (const [k, v] of Object.entries(value.properties)) {
+        out[k] = irValueToJs(v);
+      }
+      return out;
+    }
+    default: {
+      // Exhaustiveness guard
+      const _exhaustive: never = value;
+      return _exhaustive;
+    }
+  }
+}
+
+/**
+ * Type-check a single non-null value against an IRType. Returns null when the value
+ * matches, or an InputValidationIssue describing the mismatch otherwise.
+ *
+ * Unknown type names are accepted (forward-compatible with future IR extensions).
+ */
+function checkIRType(
+  value: unknown,
+  type: IRType,
+  paramName: string
+): InputValidationIssue | null {
+  switch (type.name) {
+    case "string": {
+      if (typeof value === "string") {
+        return null;
+      }
+      break;
+    }
+    case "number": {
+      if (typeof value === "number" && Number.isFinite(value)) {
+        return null;
+      }
+      break;
+    }
+    case "boolean": {
+      if (typeof value === "boolean") {
+        return null;
+      }
+      break;
+    }
+    case "list": {
+      if (!Array.isArray(value)) {
+        break;
+      }
+      if (type.generic) {
+        for (let i = 0; i < value.length; i += 1) {
+          const element = value[i];
+          if (element === null || element === undefined) {
+            // Null/undefined elements within a list are tolerated unless the inner
+            // generic type explicitly disallows them; without per-element nullability
+            // metadata, defer to upstream guards for stricter rules.
+            continue;
+          }
+          const inner = checkIRType(
+            element,
+            type.generic,
+            `${paramName}[${i}]`
+          );
+          if (inner) {
+            return inner;
+          }
+        }
+      }
+      return null;
+    }
+    case "map":
+    case "object": {
+      if (
+        typeof value === "object" &&
+        value !== null &&
+        !Array.isArray(value)
+      ) {
+        return null;
+      }
+      break;
+    }
+    case "date":
+    case "datetime": {
+      if (typeof value === "string" || value instanceof Date) {
+        return null;
+      }
+      break;
+    }
+    case "any":
+      return null;
+    default:
+      // Unknown IR type: do not block. Future-compatible.
+      return null;
+  }
+
+  return {
+    parameter: paramName,
+    code: "type",
+    expectedType: formatIRType(type),
+    actualType: describeRuntimeType(value),
+    message: `Parameter '${paramName}' has wrong type (expected ${formatIRType(type)}, got ${describeRuntimeType(value)})`,
+  };
+}
+
+/**
+ * Produce a short, diagnostic-friendly label for the runtime type of a value.
+ * Distinguishes arrays and null from plain objects to make error messages actionable.
+ */
+function describeRuntimeType(value: unknown): string {
+  if (value === null) {
+    return "null";
+  }
+  if (Array.isArray(value)) {
+    return "array";
+  }
+  return typeof value;
+}
+
 export interface RuntimeContext {
   user?: { id: string; role?: string; [key: string]: unknown };
   [key: string]: unknown;
@@ -96,6 +240,23 @@ export interface RuntimeOptions {
   deterministicMode?: boolean;
   /** Optional complexity limits for expression evaluation */
   evaluationLimits?: EvaluationLimits;
+  /**
+   * If true, command input parameters declared `required` (and not nullable, with no default value)
+   * must be supplied by the caller. Missing or null values are rejected with `success: false`
+   * before policies, constraints, or guards are evaluated.
+   *
+   * Type validation against {@link IRType} ALWAYS runs for present, non-null values regardless of
+   * this flag — it catches type-confusion attacks (e.g., passing `{$ne: null}` where a string is
+   * expected) without breaking callers that legitimately omit semantically optional params.
+   *
+   * Default: `false`. Many existing manifests declare semantically-optional params without the
+   * `optional` keyword and rely on guards (`guard prepListId != null …`) to handle absence. Strict
+   * required enforcement is opt-in until those manifests adopt `optional`. New code paths that
+   * want defense-in-depth should set this to `true`.
+   *
+   * @default false
+   */
+  enforceRequiredParameters?: boolean;
 }
 
 export interface EntityInstance {
@@ -124,7 +285,30 @@ export interface CommandResult {
   correlationId?: string;
   /** Caller-supplied ID of the event/command that caused this command execution */
   causationId?: string;
+  /** Input validation failures detected before guard/policy evaluation (C1-1, C1-2). */
+  inputValidation?: InputValidationFailure;
   emittedEvents: EmittedEvent[];
+}
+
+/**
+ * Reason a single command input parameter failed validation.
+ */
+export interface InputValidationIssue {
+  parameter: string;
+  /** "missing" — required value omitted; "null" — nullability violation; "type" — typeof mismatch. */
+  code: "missing" | "null" | "type";
+  expectedType: string;
+  actualType: string;
+  message: string;
+}
+
+/**
+ * Aggregate input validation outcome attached to CommandResult.
+ */
+export interface InputValidationFailure {
+  command: string;
+  entity?: string;
+  issues: InputValidationIssue[];
 }
 
 export interface GuardFailure {
@@ -1171,13 +1355,40 @@ export class RuntimeEngine {
         };
       }
 
+      // C1-1, C1-2: Validate input parameters against the command's IRParameter[]
+      // before any policies, constraints, guards, or actions execute. Type-checks always
+      // run for present values; required-presence enforcement is gated by
+      // RuntimeOptions.enforceRequiredParameters to preserve compatibility with existing
+      // manifests that declare semantically-optional params without the `optional` keyword.
+      const validation = this.validateCommandInput(command, input, {
+        entityName: options.entityName,
+      });
+      if (!validation.ok) {
+        return {
+          success: false,
+          error: validation.failure.issues[0]?.message
+            ? `Input validation failed: ${validation.failure.issues[0].message}`
+            : `Input validation failed for command '${commandName}'`,
+          inputValidation: validation.failure,
+          ...(options.correlationId !== undefined
+            ? { correlationId: options.correlationId }
+            : {}),
+          ...(options.causationId !== undefined
+            ? { causationId: options.causationId }
+            : {}),
+          emittedEvents: [],
+        };
+      }
+      // Use the (possibly default-enriched) input for downstream evaluation.
+      const validatedInput = validation.input;
+
       const instance =
         options.instanceId && options.entityName
           ? await this.getInstance(options.entityName, options.instanceId)
           : undefined;
 
       const evalContext = this.buildEvalContext(
-        input,
+        validatedInput,
         instance,
         options.entityName
       );
@@ -1415,6 +1626,109 @@ export class RuntimeEngine {
         this.clearEvalBudget();
       }
     }
+  }
+
+  /**
+   * Validate command input against the IRParameter[] declared on the command.
+   *
+   * Returns either `{ ok: true, input }` (with default values applied) or
+   * `{ ok: false, failure }`.
+   *
+   * Type checks (always on, even when `enforceRequiredParameters` is false):
+   *   string   → typeof === "string"
+   *   number   → typeof === "number" && Number.isFinite(value)
+   *   boolean  → typeof === "boolean"
+   *   list     → Array.isArray(value); generic element type is recursively type-checked
+   *   map      → typeof === "object" && !Array.isArray && value !== null
+   *   date|datetime → typeof === "string" or value instanceof Date
+   *   any      → no check
+   *   unknown type names → no check (forward-compatible)
+   *
+   * Required-presence checks (gated by `enforceRequiredParameters`):
+   *   - undefined → "missing" issue if required && no defaultValue && !nullable
+   *   - null      → "null" issue if required && !nullable
+   *
+   * Defaults: if value is undefined and `defaultValue` is set, the default is materialized
+   * into the returned input map regardless of the `enforceRequiredParameters` flag.
+   */
+  private validateCommandInput(
+    command: IRCommand,
+    input: Record<string, unknown>,
+    options: { entityName?: string }
+  ):
+    | { ok: true; input: Record<string, unknown> }
+    | { ok: false; failure: InputValidationFailure } {
+    if (!command.parameters || command.parameters.length === 0) {
+      return { ok: true, input };
+    }
+    const enforceRequired = this.options.enforceRequiredParameters === true;
+    const issues: InputValidationIssue[] = [];
+    let enriched: Record<string, unknown> | null = null;
+
+    for (const param of command.parameters) {
+      const value = input[param.name];
+
+      if (value === undefined) {
+        // Apply default if declared.
+        if (param.defaultValue !== undefined) {
+          if (enriched === null) {
+            enriched = { ...input };
+          }
+          enriched[param.name] = irValueToJs(param.defaultValue);
+          continue;
+        }
+        if (
+          enforceRequired &&
+          param.required &&
+          !param.type.nullable
+        ) {
+          issues.push({
+            parameter: param.name,
+            code: "missing",
+            expectedType: formatIRType(param.type),
+            actualType: "undefined",
+            message: `Missing required parameter '${param.name}' (expected ${formatIRType(param.type)})`,
+          });
+        }
+        continue;
+      }
+
+      if (value === null) {
+        if (param.type.nullable) {
+          continue;
+        }
+        if (enforceRequired && param.required) {
+          issues.push({
+            parameter: param.name,
+            code: "null",
+            expectedType: formatIRType(param.type),
+            actualType: "null",
+            message: `Parameter '${param.name}' cannot be null (expected ${formatIRType(param.type)})`,
+          });
+        }
+        continue;
+      }
+
+      // Value is present and non-null: always type-check.
+      const typeIssue = checkIRType(value, param.type, param.name);
+      if (typeIssue) {
+        issues.push(typeIssue);
+      }
+    }
+
+    if (issues.length > 0) {
+      return {
+        ok: false,
+        failure: {
+          command: command.name,
+          ...(options.entityName !== undefined
+            ? { entity: options.entityName }
+            : {}),
+          issues,
+        },
+      };
+    }
+    return { ok: true, input: enriched ?? input };
   }
 
   private buildEvalContext(

@@ -704,6 +704,355 @@ describe("RuntimeEngine", () => {
     });
   });
 
+  // C1-1, C1-2: Input validation against IRParameter[].
+  // Why these tests matter:
+  //   - Without runtime validation, type-confusion payloads (e.g. `{ name: { $ne: null } }`
+  //     instead of a string) flow into guard/policy expressions and can short-circuit
+  //     authorization checks or crash actions in unpredictable ways.
+  //   - Type-checks fire ALWAYS for present, non-null values — they catch attacker payloads
+  //     even when manifests omit the `optional` keyword for semantically optional params.
+  //   - Required-presence checks are gated by `enforceRequiredParameters` so the existing
+  //     fleet of manifests that rely on guards (`guard x != null`) for absence does not
+  //     regress; new code paths can opt-in for strict enforcement.
+  //   - Defaults are materialized into the eval context so manifest-declared defaults work
+  //     end-to-end without each command duplicating the fallback in guards/actions.
+  describe("Command Input Validation", () => {
+    it("rejects a string param when caller supplies a number", async () => {
+      const ir = await compileToIR(`
+        entity User {
+          property name: string
+          command greet(name: string) {
+            mutate result = "Hello, " + name
+          }
+        }
+      `);
+      const runtime = new RuntimeEngine(ir);
+      const result = await runtime.runCommand("greet", {
+        name: 42 as unknown as string,
+      });
+      expect(result.success).toBe(false);
+      expect(result.inputValidation).toBeDefined();
+      expect(result.inputValidation?.command).toBe("greet");
+      expect(result.inputValidation?.issues[0]).toMatchObject({
+        parameter: "name",
+        code: "type",
+        expectedType: "string",
+        actualType: "number",
+      });
+    });
+
+    it("rejects a number param given a string", async () => {
+      const ir = await compileToIR(`
+        entity Task {
+          property priority: number
+          command setPriority(priority: number) {
+            mutate result = priority
+          }
+        }
+      `);
+      const runtime = new RuntimeEngine(ir);
+      const result = await runtime.runCommand("setPriority", {
+        priority: "high" as unknown as number,
+      });
+      expect(result.success).toBe(false);
+      expect(result.inputValidation?.issues[0]).toMatchObject({
+        parameter: "priority",
+        code: "type",
+        expectedType: "number",
+        actualType: "string",
+      });
+    });
+
+    it("blocks type-confusion attacks (object where string expected)", async () => {
+      const ir = await compileToIR(`
+        entity User {
+          property email: string
+          command setEmail(email: string) {
+            guard email != ""
+            mutate result = email
+          }
+        }
+      `);
+      const runtime = new RuntimeEngine(ir);
+      // Classic NoSQL-style injection payload — caller tries to pass an object.
+      const result = await runtime.runCommand("setEmail", {
+        email: { $ne: null } as unknown as string,
+      });
+      expect(result.success).toBe(false);
+      expect(result.inputValidation?.issues[0]).toMatchObject({
+        parameter: "email",
+        code: "type",
+        expectedType: "string",
+        actualType: "object",
+      });
+      // Validation runs BEFORE guards so the guard never sees the malicious value.
+      expect(result.guardFailure).toBeUndefined();
+    });
+
+    it("validation precedes guard evaluation", async () => {
+      const ir = await compileToIR(`
+        entity Item {
+          property qty: number
+          command stock(qty: number) {
+            guard qty > 0
+            mutate result = qty
+          }
+        }
+      `);
+      const runtime = new RuntimeEngine(ir);
+      const result = await runtime.runCommand("stock", {
+        qty: "many" as unknown as number,
+      });
+      // Type validation fires; guard never runs.
+      expect(result.success).toBe(false);
+      expect(result.inputValidation).toBeDefined();
+      expect(result.guardFailure).toBeUndefined();
+    });
+
+    it("accepts well-typed list parameters", async () => {
+      const ir = await compileToIR(`
+        entity Doc {
+          property tags: list<string>
+          command tag(tags: list<string>) {
+            mutate result = tags
+          }
+        }
+      `);
+      const runtime = new RuntimeEngine(ir);
+      const result = await runtime.runCommand("tag", { tags: ["a", "b"] });
+      expect(result.success).toBe(true);
+      expect(result.result).toEqual(["a", "b"]);
+    });
+
+    it("rejects a list parameter given a non-array", async () => {
+      const ir = await compileToIR(`
+        entity Doc {
+          property tags: list<string>
+          command tag(tags: list<string>) {
+            mutate result = tags
+          }
+        }
+      `);
+      const runtime = new RuntimeEngine(ir);
+      const result = await runtime.runCommand("tag", {
+        tags: "a,b" as unknown as string[],
+      });
+      expect(result.success).toBe(false);
+      expect(result.inputValidation?.issues[0]).toMatchObject({
+        parameter: "tags",
+        code: "type",
+        expectedType: "list<string>",
+        actualType: "string",
+      });
+    });
+
+    it("rejects mismatched element type inside a list", async () => {
+      const ir = await compileToIR(`
+        entity Doc {
+          property tags: list<string>
+          command tag(tags: list<string>) {
+            mutate result = tags
+          }
+        }
+      `);
+      const runtime = new RuntimeEngine(ir);
+      const result = await runtime.runCommand("tag", {
+        tags: ["a", 99 as unknown as string, "c"],
+      });
+      expect(result.success).toBe(false);
+      expect(result.inputValidation?.issues[0]).toMatchObject({
+        parameter: "tags[1]",
+        code: "type",
+        expectedType: "string",
+        actualType: "number",
+      });
+    });
+
+    it("does NOT enforce required-presence by default (back-compat)", async () => {
+      const ir = await compileToIR(`
+        entity Note {
+          property text: string
+          command save(text: string) {
+            mutate result = text
+          }
+        }
+      `);
+      // No enforceRequiredParameters flag → omission of "text" should reach the guard layer.
+      const runtime = new RuntimeEngine(ir);
+      const result = await runtime.runCommand("save", {});
+      // Validation does not block; the action runs (text is undefined in eval context).
+      expect(result.inputValidation).toBeUndefined();
+    });
+
+    it("enforces required-presence when enforceRequiredParameters is true", async () => {
+      const ir = await compileToIR(`
+        entity Note {
+          property text: string
+          command save(text: string) {
+            mutate result = text
+          }
+        }
+      `);
+      const runtime = new RuntimeEngine(ir, undefined, {
+        enforceRequiredParameters: true,
+      });
+      const result = await runtime.runCommand("save", {});
+      expect(result.success).toBe(false);
+      expect(result.inputValidation?.issues[0]).toMatchObject({
+        parameter: "text",
+        code: "missing",
+        expectedType: "string",
+        actualType: "undefined",
+      });
+    });
+
+    it("rejects null for non-nullable required param under strict mode", async () => {
+      const ir = await compileToIR(`
+        entity Note {
+          property text: string
+          command save(text: string) {
+            mutate result = text
+          }
+        }
+      `);
+      const runtime = new RuntimeEngine(ir, undefined, {
+        enforceRequiredParameters: true,
+      });
+      const result = await runtime.runCommand("save", {
+        text: null as unknown as string,
+      });
+      expect(result.success).toBe(false);
+      expect(result.inputValidation?.issues[0]).toMatchObject({
+        parameter: "text",
+        code: "null",
+        actualType: "null",
+      });
+    });
+
+    it("allows omission for params declared `optional`", async () => {
+      const ir = await compileToIR(`
+        entity Note {
+          property body: string
+          command save(optional body: string) {
+            mutate result = body
+          }
+        }
+      `);
+      const runtime = new RuntimeEngine(ir, undefined, {
+        enforceRequiredParameters: true,
+      });
+      const result = await runtime.runCommand("save", {});
+      expect(result.success).toBe(true);
+      // Optional, no value provided → eval context value is undefined.
+      expect(result.result).toBeUndefined();
+    });
+
+    it("materializes parameter default values into the action context", async () => {
+      const ir = await compileToIR(`
+        entity Note {
+          property body: string
+          command save(optional body: string = "hello") {
+            mutate result = body
+          }
+        }
+      `);
+      // Default values apply regardless of enforceRequiredParameters flag.
+      const runtime = new RuntimeEngine(ir);
+      const result = await runtime.runCommand("save", {});
+      expect(result.success).toBe(true);
+      expect(result.result).toBe("hello");
+    });
+
+    it("`any` type accepts any non-null value (used by event-import-runtime)", async () => {
+      const ir = await compileToIR(`
+        entity Job {
+          property data: any
+          command process(data: any) {
+            mutate result = data
+          }
+        }
+      `);
+      const runtime = new RuntimeEngine(ir);
+      const result = await runtime.runCommand("process", {
+        data: { nested: { stuff: 1 } },
+      });
+      expect(result.success).toBe(true);
+      expect(result.result).toEqual({ nested: { stuff: 1 } });
+    });
+
+    it("date param accepts ISO string", async () => {
+      const ir = await compileToIR(`
+        entity Event {
+          property at: datetime
+          command schedule(at: datetime) {
+            mutate result = at
+          }
+        }
+      `);
+      const runtime = new RuntimeEngine(ir);
+      const result = await runtime.runCommand("schedule", {
+        at: "2026-01-01T00:00:00Z",
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it("number param rejects NaN and Infinity (Number.isFinite)", async () => {
+      const ir = await compileToIR(`
+        entity M {
+          property n: number
+          command set(n: number) {
+            mutate result = n
+          }
+        }
+      `);
+      const runtime = new RuntimeEngine(ir);
+      const nanResult = await runtime.runCommand("set", { n: Number.NaN });
+      expect(nanResult.success).toBe(false);
+      expect(nanResult.inputValidation?.issues[0].code).toBe("type");
+      const infResult = await runtime.runCommand("set", {
+        n: Number.POSITIVE_INFINITY,
+      });
+      expect(infResult.success).toBe(false);
+      expect(infResult.inputValidation?.issues[0].code).toBe("type");
+    });
+
+    it("aggregates multiple issues from a single payload", async () => {
+      const ir = await compileToIR(`
+        entity Order {
+          property qty: number
+          property note: string
+          command place(qty: number, note: string) {
+            mutate result = true
+          }
+        }
+      `);
+      const runtime = new RuntimeEngine(ir);
+      const result = await runtime.runCommand("place", {
+        qty: "two" as unknown as number,
+        note: 7 as unknown as string,
+      });
+      expect(result.success).toBe(false);
+      expect(result.inputValidation?.issues).toHaveLength(2);
+      const params = result.inputValidation?.issues.map((i) => i.parameter);
+      expect(params).toEqual(expect.arrayContaining(["qty", "note"]));
+    });
+
+    it("commands with no parameters always pass validation", async () => {
+      const ir = await compileToIR(`
+        entity Counter {
+          property n: number
+          command tick() {
+            mutate result = true
+          }
+        }
+      `);
+      const runtime = new RuntimeEngine(ir);
+      const result = await runtime.runCommand("tick", {});
+      expect(result.success).toBe(true);
+      expect(result.inputValidation).toBeUndefined();
+    });
+  });
+
   describe("Event System", () => {
     it("should register event listener", async () => {
       const ir = await compileToIR(`
