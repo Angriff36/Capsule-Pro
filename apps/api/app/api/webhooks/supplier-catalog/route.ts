@@ -39,11 +39,11 @@
  * - Secret is stored in the supplier's connectorCredentials.webhookSecret field
  */
 
+import { createHmac, timingSafeEqual } from "node:crypto";
 import { database } from "@repo/database";
 import type { SupplierProduct } from "@repo/supplier-connectors";
 import { connectorRegistry } from "@repo/supplier-connectors";
 import { captureException } from "@sentry/nextjs";
-import { createHmac, timingSafeEqual } from "crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -120,29 +120,37 @@ export async function POST(request: Request) {
     );
   }
 
-  // Verify webhook signature if present
+  // Verify webhook signature - REQUIRED for all requests
   const signature = request.headers.get("x-supplier-signature");
-  if (signature) {
-    const webhookSecret =
-      process.env[
-        `SUPPLIER_${payload.connectorId.toUpperCase().replace(/-/g, "_")}_WEBHOOK_SECRET`
-      ];
 
-    if (!webhookSecret) {
-      console.warn(
-        `[webhook/supplier-catalog] Signature present but no webhook secret configured for ${payload.connectorId}`
-      );
-      return NextResponse.json(
-        { error: "Webhook secret not configured" },
-        { status: 500 }
-      );
-    }
+  if (!signature) {
+    return NextResponse.json(
+      { error: "Missing X-Supplier-Signature header" },
+      { status: 401 }
+    );
+  }
 
-    const expectedSignature = createHmac("sha256", webhookSecret)
-      .update(rawBody)
-      .digest("hex");
+  const webhookSecret =
+    process.env[
+      `SUPPLIER_${payload.connectorId.toUpperCase().replace(/-/g, "_")}_WEBHOOK_SECRET`
+    ];
 
-    // Timing-safe comparison to prevent timing attacks
+  if (!webhookSecret) {
+    console.error(
+      `[webhook/supplier-catalog] No webhook secret configured for ${payload.connectorId} — rejecting request`
+    );
+    return NextResponse.json(
+      { error: "Webhook secret not configured" },
+      { status: 500 }
+    );
+  }
+
+  const expectedSignature = createHmac("sha256", webhookSecret)
+    .update(rawBody)
+    .digest("hex");
+
+  // Timing-safe comparison to prevent timing attacks
+  try {
     if (
       !timingSafeEqual(
         Buffer.from(signature, "hex"),
@@ -154,6 +162,11 @@ export async function POST(request: Request) {
       );
       return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid signature format" },
+      { status: 401 }
+    );
   }
 
   // Look up supplier to get tenant ID
@@ -276,7 +289,7 @@ export async function POST(request: Request) {
 // GET Handler — Health check for webhook endpoint
 // ============================================================================
 
-export async function GET() {
+export function GET() {
   return NextResponse.json({
     status: "ok",
     connectors: connectorRegistry.listMetadata(),

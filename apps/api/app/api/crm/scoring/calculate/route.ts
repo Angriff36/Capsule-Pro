@@ -43,7 +43,8 @@ const VALID_CONDITIONS = new Set([
 
 // Build a parameterized SQL condition for a single rule. The column is
 // resolved through an allowlist (FIELD_COLUMN_MAP) so the identifier is never
-// taken from user input. The value is bound as a Prisma parameter.
+// taken from user input. Prisma.raw is used within Prisma.sql template to
+// safely embed the column identifier without SQL injection risk.
 function buildRuleCondition(
   field: string,
   condition: string,
@@ -54,7 +55,8 @@ function buildRuleCondition(
     return null;
   }
 
-  const colRef = Prisma.raw(`"${column}"`);
+  // Use Prisma.sql identifier to safely quote the column name
+  const colRef = Prisma.sql`${Prisma.raw(column)}`;
 
   if (!VALID_CONDITIONS.has(condition)) {
     return null;
