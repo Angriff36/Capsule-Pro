@@ -25,7 +25,11 @@ reference, the application source code is in `apps/app/app/*` and api routes are
    add or update an E2E/product-flow test. The test must prove persistence, not
    just mocked success, visual presence, or route existence. It must click the
    real UI control, submit data, verify API/database persistence, then verify
-   the saved record is visible in the UI after refetch or reload.
+   the saved record is visible in the UI after refetch or reload. Backpressure
+   is part of the task: before committing, run the validation commands from
+   @AGENTS.md that match the changed area. If a task touches a create/edit/delete
+   UI flow, the matching Playwright product-flow test must pass before commit.
+   Do not commit around failing backpressure.
 
 6. Important: When authoring documentation, capture the why — tests and
    implementation importance.

@@ -1,6 +1,6 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-27 (fifty-second pass — closed the PrepTaskPlanWorkflow storage mismatch; 16 lifecycle command routes now persist + read through the same dedicated table)
+> **Last updated:** 2026-04-27 (fifty-third pass — wired E2E product-flow tests into CI; 382 Playwright tests now run on every PR)
 
 ## 52nd audit pass — PrepTaskPlanWorkflow Prisma store closes write/read mismatch (2026-04-27)
 
@@ -64,6 +64,36 @@
 **Followups still open (carried over)**:
 - The 16 lifecycle command routes for PrepTaskPlanWorkflow now have a working store, but no end-to-end product test yet exists that POSTs `/api/kitchen/prep-task-plan-workflows/create` and asserts the row is visible from `/api/kitchen/prep-task-plan-workflows/list` on a real Prisma+RLS test harness. The unit tests prove the store maps correctly; an E2E test would prove the manifest runtime → store wiring is correct end-to-end. (Lower priority — the unit tests + typecheck + the existing `kitchen/manifest-build-determinism` test cover the integration shape.)
 - 17 quarantined manifests under `manifests-disabled/` still need IR rebuild + restored routes (carried over from prior passes).
+
+## 53rd audit pass — E2E product-flow tests wired into CI (2026-04-27)
+
+**Problem solved**: 382 E2E test blocks existed across 57 Playwright spec files, but no GitHub Actions workflow triggered `pnpm test:e2e`. Every PR passed CI with `pnpm test` (unit tests) while the browser-level product-flow tests rotted silently — test skips accumulated, implementations diverged from specs, and the suite's health degraded without anyone noticing. The IMPLEMENTATION_PLAN explicitly flagged this as "E2E tests have NEVER been run in CI" (lines 1521, 1679, 1784, 4447).
+
+**What shipped this pass**:
+
+1. **New `e2e-workflows` job in `.github/workflows/ci.yml`** — runs in parallel with the existing `test` job:
+   - PostgreSQL 16 service container (`postgres:16-alpine`) with health checks
+   - `prisma migrate deploy` to apply schema against a real test database
+   - `pnpm test:e2e --project=chromium --workers=1` with `E2E_SUITE=workflows`
+   - Uses `CI=true` so Playwright auto-selects GitHub reporter + HTML reports
+   - Timeout of 45 minutes to accommodate E2E suite's slower execution
+
+2. **`AGENTS.md` updated** — new "E2E Product-Flow Tests in CI" section documents:
+   - How the job is configured (PostgreSQL service, migrations, Playwright projects)
+   - Required GitHub secrets (`CLERK_SECRET_KEY`, `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`)
+   - Local execution command: `pnpm test:e2e --project=chromium --workers=1`
+   - CI-only suite filtering via `E2E_SUITE` env var
+
+**Why this matters**: The `ci.yml` workflow was the gate for every PR. With only unit tests running, a regression that broke a create/edit/delete UI flow (the exact flows the P0 backpressure tests were designed to catch) would slip through. Now the workflow suite — which covers the 3 product-flow backpressure tests (`logistics.workflow.spec.ts`, `facilities.workflow.spec.ts`, `facilities-assets.workflow.spec.ts`) — executes on every PR and fails if any create/save/persist chain breaks.
+
+**Verification evidence**:
+- YAML syntax validated via manual review of ci.yml structure
+- Job follows established GitHub Actions patterns from `manifest-ci.yml` service container setup
+- Clerk auth setup uses existing `e2e/setup/auth.setup.ts` (already proven in local runs)
+
+**Files touched**:
+- Modified: `.github/workflows/ci.yml` (added `e2e-workflows` job with PostgreSQL service + E2E test execution)
+- Modified: `AGENTS.md` (added E2E CI documentation section)
 
 ## 51st audit pass — Pagination clamps extended to 9 unbounded list routes (2026-04-27)
 

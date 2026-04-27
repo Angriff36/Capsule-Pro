@@ -106,3 +106,72 @@ jobs:
             apps/*/.next/
             packages/*/dist/
             packages/*/generated/
+
+  e2e-workflows:
+    name: E2E Product-Flow Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: testuser
+          POSTGRES_PASSWORD: testpass
+          POSTGRES_DB: capsule_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22.x"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: bash scripts/ensure-github-packages-npmrc.sh && pnpm install --frozen-lockfile
+        env:
+          NPM_TOKEN: ${{ secrets.PKG_AUTH_TOKEN }}
+
+      - name: Wait for PostgreSQL
+        run: until pg_isready -h localhost -U testuser -d capsule_test; do sleep 2; done
+
+      - name: Run database migrations
+        run: |
+          cd packages/database
+          pnpm exec prisma migrate deploy
+        env:
+          DATABASE_URL: "postgresql://testuser:testpass@localhost:5432/capsule_test"
+
+      - name: Run E2E product-flow tests
+        run: pnpm test:e2e --project=chromium --workers=1
+        env:
+          CI: "true"
+          E2E_SUITE: "workflows"
+          # E2E tests need real Clerk keys for auth
+          CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
+          # Database for E2E tests
+          DATABASE_URL: "postgresql://testuser:testpass@localhost:5432/capsule_test"
+          # App config
+          NEXT_PUBLIC_APP_URL: "http://localhost:2221"
+          NEXT_PUBLIC_API_URL: "http://localhost:2221"
+          # Disable external service integrations
+          STRIPE_SECRET_KEY: "sk_test_dummy"
+          RESEND_TOKEN: "re_dummy"
+          ARCJET_KEY: "ajkey_dummy"
+          SKIP_ENV_VALIDATION: "true"

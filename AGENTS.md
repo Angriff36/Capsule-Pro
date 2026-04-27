@@ -17,7 +17,14 @@ Run these after implementing to get immediate feedback:
 - Lint: `pnpm biome check`
 - App build: `pnpm turbo build --filter=app`
 
-Create/edit/delete UI work is incomplete unless an E2E test proves: UI submit → persisted record through API/database → visible UI update after refetch or reload.
+For any task touching create/edit/delete UI flows, run the matching product-flow E2E test before committing. Create/edit/delete UI work is incomplete unless an E2E test proves: UI submit → persisted record through API/database → visible UI update after refetch or reload.
+
+Product-flow tests:
+- New Route: `pnpm exec playwright test e2e/workflows/logistics.workflow.spec.ts --project=chromium --workers=1`
+- New Facility: `pnpm exec playwright test e2e/workflows/facilities.workflow.spec.ts --project=chromium --workers=1`
+- New Asset: `pnpm exec playwright test e2e/workflows/facilities-assets.workflow.spec.ts --project=chromium --workers=1`
+
+Do not commit if the relevant product-flow test fails. Fix the failure or document the blocker in `IMPLEMENTATION_PLAN.md`.
 
 ## Manifest Commands
 
@@ -92,6 +99,23 @@ Vercel runs only what's in `apps/api/vercel.json` — adding a file under `apps/
 | `cron/idempotency-cleanup` | — | ❌ missing |
 
 When you add a new cron endpoint, add the matching entry to `vercel.json` in the same PR, otherwise it never runs in production.
+
+## E2E Product-Flow Tests in CI
+
+E2E tests run in the `e2e-workflows` job of `.github/workflows/ci.yml`. The job:
+- Spins up a PostgreSQL 16 service container
+- Runs `prisma migrate deploy` to apply schema
+- Executes Playwright with `E2E_SUITE=workflows` (runs `e2e/workflows/*.spec.ts`)
+- Uses `chromium` project (authenticated via Clerk setup project)
+
+**Required GitHub secrets:**
+- `CLERK_SECRET_KEY` — Clerk backend secret for auth
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` — Clerk publishable key
+
+**GitHub Actions workflow (ci.yml) job:** `e2e-workflows`
+
+**Local execution:** `pnpm test:e2e --project=chromium --workers=1`
+**CI-only suites:** Set `E2E_SUITE=workflows` for product-flow tests, `E2E_SUITE=spider` for smoke tests.
 
 ## Test & Logging Hygiene
 
