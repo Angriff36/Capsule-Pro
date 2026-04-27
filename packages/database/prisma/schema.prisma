@@ -432,19 +432,43 @@ model PrepList {
 
 /// Workflow tracking entity for the prep-task plan pipeline:
 /// generate -> review -> approve -> instantiate tasks -> schedule windows.
-/// Mutations flow through manifest runtime commands, not direct Prisma writes.
+/// Mutations flow through manifest runtime commands via PrepTaskPlanWorkflowPrismaStore
+/// (registered in `packages/manifest-adapters/src/manifest-runtime-factory.ts`
+/// `ENTITIES_WITH_SPECIFIC_STORES`). Field names align 1:1 with the manifest
+/// properties at `packages/manifest-adapters/manifests/prep-task-plan-workflow.manifest`
+/// so the store layer needs no name translation. JSON arrays/objects are
+/// stored as TEXT (manifest contract — properties typed as `string`); the
+/// columns hold serialized payloads (e.g. `[]`, `{}`).
 model PrepTaskPlanWorkflow {
-  tenantId          String    @map("tenant_id") @db.Uuid
-  id                String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  eventId           String    @map("event_id") @db.Uuid
-  status            String    @default("pending")
-  currentStep       Int       @default(0) @map("current_step")
-  idempotencyKey    String    @map("idempotency_key")
-  generationOptions String?   @map("generation_options")
-  errorList         Json?     @map("error_list")
-  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-  deletedAt         DateTime? @map("deleted_at") @db.Timestamptz(6)
+  tenantId            String    @map("tenant_id") @db.Uuid
+  id                  String    @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  eventId             String    @map("event_id") @db.Uuid
+  idempotencyKey      String    @map("idempotency_key")
+  status              String    @default("created")
+  currentStep         Int       @default(0) @map("current_step")
+  totalSteps          Int       @default(5) @map("total_steps")
+  generationOptions   String?   @map("generation_options") @db.Text
+  generatedTasks      String?   @map("generated_tasks") @db.Text
+  reviewedTasks       String?   @map("reviewed_tasks") @db.Text
+  approvedTaskIds     String?   @map("approved_task_ids") @db.Text
+  rejectedTaskIds     String?   @map("rejected_task_ids") @db.Text
+  instantiatedTaskIds String?   @map("instantiated_task_ids") @db.Text
+  scheduledWindows    String?   @map("scheduled_windows") @db.Text
+  constraintOutcomes  String?   @map("constraint_outcomes") @db.Text
+  errors              String?   @map("errors") @db.Text
+  warnings            String?   @map("warnings") @db.Text
+  generatedCount      Int       @default(0) @map("generated_count")
+  approvedCount       Int       @default(0) @map("approved_count")
+  instantiatedCount   Int       @default(0) @map("instantiated_count")
+  reviewedBy          String?   @map("reviewed_by")
+  reviewedAt          DateTime? @map("reviewed_at") @db.Timestamptz(6)
+  approvedBy          String?   @map("approved_by")
+  approvedAt          DateTime? @map("approved_at") @db.Timestamptz(6)
+  startedAt           DateTime? @map("started_at") @db.Timestamptz(6)
+  completedAt         DateTime? @map("completed_at") @db.Timestamptz(6)
+  createdAt           DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt           DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+  deletedAt           DateTime? @map("deleted_at") @db.Timestamptz(6)
 
   @@id([tenantId, id])
   @@unique([tenantId, idempotencyKey], map: "prep_task_plan_workflows_tenant_idempotency_key")

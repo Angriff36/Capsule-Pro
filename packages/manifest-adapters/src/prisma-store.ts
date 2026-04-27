@@ -20,6 +20,7 @@ import type {
   PrepList,
   PrepListItem,
   PrepTask,
+  PrepTaskPlanWorkflow,
   PrismaClient,
   Recipe,
   RecipeIngredient,
@@ -1714,6 +1715,232 @@ export class EmailTemplatePrismaStore implements Store<EntityInstance> {
 }
 
 /**
+ * Prisma-backed store for PrepTaskPlanWorkflow entities
+ *
+ * Backs the 16 lifecycle command routes for the prep-task plan pipeline
+ * (generate -> review -> approve -> instantiate tasks -> schedule windows).
+ *
+ * Why this exists: prior to this store, command routes wrote workflow state
+ * via `PrismaJsonStore` (the generic `manifest_entities` JSON blob table),
+ * but read routes (`/api/kitchen/prep-task-plan-workflows/*`) queried the
+ * dedicated `tenant_kitchen.prep_task_plan_workflows` table. Writes and
+ * reads never connected — every workflow created via a command was invisible
+ * to the UI. This store closes that mismatch.
+ *
+ * Field mapping: every manifest property is stored 1:1 (same name) in the
+ * dedicated table; JSON-shaped properties (generatedTasks, scheduledWindows,
+ * errors, etc.) are typed as `string` in the manifest and stored as TEXT in
+ * Postgres holding serialized JSON payloads (e.g. `"[]"`, `"{}"`).
+ */
+export class PrepTaskPlanWorkflowPrismaStore implements Store<EntityInstance> {
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly tenantId: string
+  ) {}
+
+  async getAll(): Promise<EntityInstance[]> {
+    const rows = await this.prisma.prepTaskPlanWorkflow.findMany({
+      where: { tenantId: this.tenantId, deletedAt: null },
+    });
+    return rows.map((r) => this.mapToManifestEntity(r));
+  }
+
+  async getById(id: string): Promise<EntityInstance | undefined> {
+    const row = await this.prisma.prepTaskPlanWorkflow.findFirst({
+      where: { tenantId: this.tenantId, id, deletedAt: null },
+    });
+    return row ? this.mapToManifestEntity(row) : undefined;
+  }
+
+  async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
+    const id = (data.id as string | undefined) ?? crypto.randomUUID();
+    const now = new Date();
+    const created = await this.prisma.prepTaskPlanWorkflow.create({
+      data: {
+        tenantId: this.tenantId,
+        id,
+        eventId: (data.eventId as string) ?? "",
+        idempotencyKey: (data.idempotencyKey as string) ?? id,
+        status: (data.status as string) ?? "created",
+        currentStep: (data.currentStep as number) ?? 0,
+        totalSteps: (data.totalSteps as number) ?? 5,
+        generationOptions: (data.generationOptions as string) ?? "{}",
+        generatedTasks: (data.generatedTasks as string) ?? "[]",
+        reviewedTasks: (data.reviewedTasks as string) ?? "[]",
+        approvedTaskIds: (data.approvedTaskIds as string) ?? "[]",
+        rejectedTaskIds: (data.rejectedTaskIds as string) ?? "[]",
+        instantiatedTaskIds: (data.instantiatedTaskIds as string) ?? "[]",
+        scheduledWindows: (data.scheduledWindows as string) ?? "{}",
+        constraintOutcomes: (data.constraintOutcomes as string) ?? "[]",
+        errors: (data.errors as string) ?? "[]",
+        warnings: (data.warnings as string) ?? "[]",
+        generatedCount: (data.generatedCount as number) ?? 0,
+        approvedCount: (data.approvedCount as number) ?? 0,
+        instantiatedCount: (data.instantiatedCount as number) ?? 0,
+        reviewedBy: (data.reviewedBy as string) || null,
+        reviewedAt: timestampToDate(data.reviewedAt),
+        approvedBy: (data.approvedBy as string) || null,
+        approvedAt: timestampToDate(data.approvedAt),
+        startedAt: timestampToDate(data.startedAt),
+        completedAt: timestampToDate(data.completedAt),
+        createdAt: timestampToDate(data.createdAt) ?? now,
+        updatedAt: timestampToDate(data.updatedAt) ?? now,
+      },
+    });
+    return this.mapToManifestEntity(created);
+  }
+
+  async update(
+    id: string,
+    data: Partial<EntityInstance>
+  ): Promise<EntityInstance | undefined> {
+    try {
+      // Build update payload — only set fields the caller actually provided
+      // so we never clobber existing workflow state with stale defaults.
+      const updateData: Record<string, unknown> = {
+        updatedAt: new Date(),
+      };
+      const stringFields = [
+        "eventId",
+        "idempotencyKey",
+        "status",
+        "generationOptions",
+        "generatedTasks",
+        "reviewedTasks",
+        "approvedTaskIds",
+        "rejectedTaskIds",
+        "instantiatedTaskIds",
+        "scheduledWindows",
+        "constraintOutcomes",
+        "errors",
+        "warnings",
+        "reviewedBy",
+        "approvedBy",
+      ] as const;
+      for (const f of stringFields) {
+        if (data[f] !== undefined) {
+          // reviewedBy / approvedBy are nullable strings — empty string -> null
+          if ((f === "reviewedBy" || f === "approvedBy") && data[f] === "") {
+            updateData[f] = null;
+          } else {
+            updateData[f] = data[f] as string;
+          }
+        }
+      }
+      const numberFields = [
+        "currentStep",
+        "totalSteps",
+        "generatedCount",
+        "approvedCount",
+        "instantiatedCount",
+      ] as const;
+      for (const f of numberFields) {
+        if (data[f] !== undefined) {
+          updateData[f] = data[f] as number;
+        }
+      }
+      const dateFields = [
+        "reviewedAt",
+        "approvedAt",
+        "startedAt",
+        "completedAt",
+      ] as const;
+      for (const f of dateFields) {
+        if (data[f] !== undefined) {
+          updateData[f] = timestampToDate(data[f]);
+        }
+      }
+
+      const updated = await this.prisma.prepTaskPlanWorkflow.update({
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
+        data: updateData,
+      });
+      return this.mapToManifestEntity(updated);
+    } catch (error) {
+      reportOp(this, "update", error);
+      return undefined;
+    }
+  }
+
+  async delete(id: string): Promise<boolean> {
+    try {
+      await this.prisma.prepTaskPlanWorkflow.update({
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
+        data: { deletedAt: new Date() },
+      });
+      return true;
+    } catch (error) {
+      reportOp(this, "delete", error);
+      return false;
+    }
+  }
+
+  async clear(): Promise<void> {
+    await this.prisma.prepTaskPlanWorkflow.updateMany({
+      where: { tenantId: this.tenantId, deletedAt: null },
+      data: { deletedAt: new Date() },
+    });
+  }
+
+  /**
+   * Map the Prisma row to a Manifest EntityInstance.
+   * Timestamps become epoch-millis numbers (manifest contract); nullable
+   * scalars get manifest-default empty strings/zero numbers so guards like
+   * `self.status == ""` behave consistently.
+   */
+  private mapToManifestEntity(w: PrepTaskPlanWorkflow): EntityInstance {
+    return {
+      id: w.id,
+      tenantId: w.tenantId,
+      eventId: w.eventId ?? "",
+      idempotencyKey: w.idempotencyKey ?? "",
+      status: w.status ?? "created",
+      currentStep: w.currentStep ?? 0,
+      totalSteps: w.totalSteps ?? 5,
+      generationOptions: w.generationOptions ?? "{}",
+      generatedTasks: w.generatedTasks ?? "[]",
+      reviewedTasks: w.reviewedTasks ?? "[]",
+      approvedTaskIds: w.approvedTaskIds ?? "[]",
+      rejectedTaskIds: w.rejectedTaskIds ?? "[]",
+      instantiatedTaskIds: w.instantiatedTaskIds ?? "[]",
+      scheduledWindows: w.scheduledWindows ?? "{}",
+      constraintOutcomes: w.constraintOutcomes ?? "[]",
+      errors: w.errors ?? "[]",
+      warnings: w.warnings ?? "[]",
+      generatedCount: w.generatedCount ?? 0,
+      approvedCount: w.approvedCount ?? 0,
+      instantiatedCount: w.instantiatedCount ?? 0,
+      reviewedBy: w.reviewedBy ?? "",
+      reviewedAt: w.reviewedAt ? w.reviewedAt.getTime() : 0,
+      approvedBy: w.approvedBy ?? "",
+      approvedAt: w.approvedAt ? w.approvedAt.getTime() : 0,
+      startedAt: w.startedAt ? w.startedAt.getTime() : 0,
+      completedAt: w.completedAt ? w.completedAt.getTime() : 0,
+      createdAt: w.createdAt ? w.createdAt.getTime() : 0,
+      updatedAt: w.updatedAt ? w.updatedAt.getTime() : 0,
+      deletedAt: w.deletedAt ? w.deletedAt.getTime() : 0,
+      isDeleted: w.deletedAt !== null,
+    };
+  }
+}
+
+/**
+ * Convert a manifest timestamp (epoch millis number) to a Prisma `Date | null`.
+ * Treats `0`, `undefined`, and `null` as "no value" since the manifest uses
+ * `0` as the default for unset timestamps.
+ */
+function timestampToDate(value: unknown): Date | null {
+  if (value === undefined || value === null) {
+    return null;
+  }
+  const n = typeof value === "number" ? value : Number(value);
+  if (!Number.isFinite(n) || n <= 0) {
+    return null;
+  }
+  return new Date(n);
+}
+
+/**
  * Create a Prisma store provider for Kitchen-Ops entities
  *
  * This returns a function that provides the appropriate Store implementation
@@ -1759,6 +1986,8 @@ export function createPrismaStoreProvider(
         return new EventPrismaStore(prisma, tenantId);
       case "EmailTemplate":
         return new EmailTemplatePrismaStore(prisma, tenantId);
+      case "PrepTaskPlanWorkflow":
+        return new PrepTaskPlanWorkflowPrismaStore(prisma, tenantId);
       default:
         console.error(
           `[createPrismaStoreProvider] No store for entity "${entityName}" — commands will fail`

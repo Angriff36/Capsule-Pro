@@ -149,6 +149,7 @@ const ENTITIES_WITH_SPECIFIC_STORES = new Set([
   "KitchenTask",
   "Event",
   "EmailTemplate",
+  "PrepTaskPlanWorkflow",
 ]);
 
 /** Default precompiled IR path (relative to monorepo root). */

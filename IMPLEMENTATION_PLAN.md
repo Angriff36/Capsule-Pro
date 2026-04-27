@@ -1,6 +1,69 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-27 (fifty-first pass — pagination clamps extended to 9 unbounded list routes via shared `apps/api/lib/pagination.ts`; matching projection update in the manifest generator)
+> **Last updated:** 2026-04-27 (fifty-second pass — closed the PrepTaskPlanWorkflow storage mismatch; 16 lifecycle command routes now persist + read through the same dedicated table)
+
+## 52nd audit pass — PrepTaskPlanWorkflow Prisma store closes write/read mismatch (2026-04-27)
+
+**Problem solved**: `PrepTaskPlanWorkflow` exposes 16 lifecycle command routes (create, startGenerating, completeGeneration, startReviewing, completeReview, startApproving, approvePlan, rejectPlan, startInstantiating, completeInstantiation, startScheduling, completeScheduling, fail, cancel, retry, quickApprove) plus list/detail read routes. All command routes call `runtime.runCommand()` and rely on a `Store` registered in the manifest runtime factory. The entity was *not* in `ENTITIES_WITH_SPECIFIC_STORES` (`packages/manifest-adapters/src/manifest-runtime-factory.ts:135`), so writes fell back to the generic `PrismaJsonStore` (the `manifest_entities` JSON-blob table). Read routes (`apps/api/app/api/kitchen/prep-task-plan-workflows/[list|[id]]/route.ts`) ran `database.prepTaskPlanWorkflow.findFirst({ where: { tenantId, deletedAt: null } })` against the dedicated `tenant_kitchen.prep_task_plan_workflows` table. Writes and reads never connected — every workflow created via a command was invisible to the UI, and every list query came back empty even after a successful POST. Compounding this: the Prisma model only had 11 of the 27 manifest properties, so even if the table had been wired in, no store could persist the full workflow state (`generatedTasks`, `scheduledWindows`, `approvedTaskIds`, `reviewedAt`, `approvedAt`, etc.).
+
+**Why this matters**: every "prep plan generation" interaction in the AI-assisted task-planning UI was either silently dropped or silently fabricated. The route returned `200 OK` with the manifest's in-memory snapshot, the read route returned `[]`, and the user saw "no plans" no matter what they did. This is the textbook architecture-mismatch bug class — both halves work in isolation, the system fails only when they have to talk.
+
+**What shipped this pass**:
+
+1. **Prisma schema expanded** (`packages/database/prisma/schema.prisma`, `PrepTaskPlanWorkflow` model). Field count: 11 → 28. Added `totalSteps`, `generatedTasks`, `reviewedTasks`, `approvedTaskIds`, `rejectedTaskIds`, `instantiatedTaskIds`, `scheduledWindows`, `constraintOutcomes`, `warnings`, `generatedCount`, `approvedCount`, `instantiatedCount`, `reviewedBy`, `reviewedAt`, `approvedBy`, `approvedAt`, `startedAt`, `completedAt`. Renamed `errorList Json?` → `errors String? @db.Text` to match the manifest contract (errors is typed as a JSON-serialized `string`, not a structured JSON column — keeping it as TEXT lets the manifest runtime round-trip the value verbatim instead of fighting Prisma's `JsonValue | null` type). Status default changed from `"pending"` → `"created"` to match the manifest spec. The doc-comment on the model names the store class and the `ENTITIES_WITH_SPECIFIC_STORES` set so a future reader can trace why this table looks different from the others.
+
+2. **Migration** `packages/database/prisma/migrations/20260427040000_extend_prep_task_plan_workflows/migration.sql`. Drops `error_list JSONB`, adds `errors TEXT`, alters the `status` default, and `ADD COLUMN IF NOT EXISTS` for the 17 new columns. Every operation is idempotent so the migration is safe to re-run on environments where the previous (`20260427030000_add_prep_task_plan_workflows`) migration has or hasn't been applied yet. RLS policies and the tenant-immutability trigger from the prior migration cover the new columns automatically — no policy changes needed.
+
+3. **`PrepTaskPlanWorkflowPrismaStore` class** (`packages/manifest-adapters/src/prisma-store.ts:1735`). Implements `Store<EntityInstance>` with `getAll`, `getById`, `create`, `update`, `delete` (soft), `clear` (soft, scoped to tenant), and `mapToManifestEntity`. Mapping rules:
+   - **Property names align 1:1** with the manifest, so the store needs zero name translation. (Compare with `PrepTaskPrismaStore` which has to invent `claimedBy/claimedAt` projections from a separate `KitchenTaskClaim` table.)
+   - **Timestamps**: manifest uses epoch-millis numbers (`startedAt: number = 0`); DB uses `TIMESTAMPTZ NULL`. The `timestampToDate` helper at the bottom of the file converts `0`/`null`/`undefined`/non-finite numbers to `null` (the manifest sentinel for "not set" must not become `Date(0)` aka 1970) and otherwise produces a `Date`. The reverse direction (`getTime() ?? 0`) lives inline in `mapToManifestEntity`.
+   - **Nullable strings (`reviewedBy`, `approvedBy`)**: empty string from the manifest serializes to `null` in the DB so query filters like `WHERE reviewed_by IS NULL` continue to work.
+   - **`update` is field-selective**: only writes fields the caller actually supplied. This is critical for command routes where a single `runCommand("startReviewing", { reviewerId })` only mutates `status`, `reviewedBy`, `updatedAt` and must not clobber `generatedTasks` or `scheduledWindows` with empty defaults.
+   - **`updatedAt: new Date()`** is always set regardless of caller input (matches the `mutate updatedAt = now()` in every manifest command).
+
+4. **Wired into `ENTITIES_WITH_SPECIFIC_STORES`** (`packages/manifest-adapters/src/manifest-runtime-factory.ts:152`) and **`createPrismaStoreProvider` switch** (`packages/manifest-adapters/src/prisma-store.ts:1989`). With both wired, the runtime factory will hand command handlers the dedicated Prisma store instead of the JSON-blob fallback.
+
+5. **Test suite** `packages/manifest-adapters/__tests__/prisma-store-prep-task-plan-workflow.test.ts` (17 tests):
+   - `getAll` filters by tenant and excludes soft-deleted rows
+   - `getAll` is tenant-scoped (a second store with `TENANT_B` queries by that tenant id)
+   - `getById` returns the manifest entity when present, `undefined` when missing
+   - `create` defaults all 27 manifest properties; tenant id always set; empty reviewer/approver → `null` in DB
+   - `create` converts millis timestamps to Date and treats `0` as "not set"
+   - `create` auto-generates a UUID when no id is supplied
+   - `update` only writes fields the caller supplied — never clobbers existing workflow state
+   - `update` converts `reviewedAt`/`approvedAt` millis → Date
+   - `update` treats empty `reviewedBy`/`approvedBy` as null
+   - `update` returns `undefined` (not throws) when the row is missing — matches existing store contract
+   - `delete` performs a soft delete by setting `deletedAt`
+   - `delete` returns `false` on Prisma errors instead of throwing
+   - `clear` soft-deletes every active row for this tenant only
+   - `mapToManifestEntity` converts Date columns to epoch millis
+   - `mapToManifestEntity` returns `isDeleted=false`/`deletedAt=0` for live rows
+   - `mapToManifestEntity` preserves JSON-shape strings verbatim (so `'[{"id":"task-1"}]'` round-trips)
+
+   Tests use **`vi.resetAllMocks()`** in `beforeEach` (not `clearAllMocks`) — `clearAllMocks` only clears call history, leaving `mockResolvedValueOnce` queued returns to leak between tests. That cost me one debugging cycle and is now documented in the test setup comment.
+
+6. **Pre-existing bug fixed**: `packages/manifest-adapters/__tests__/rbac-permission-checker.test.ts` was missing `beforeEach` from its `vitest` import, which made the whole file fail to load (`ReferenceError: beforeEach is not defined`). Added the import. The full `manifest-adapters` test suite now reports `229 passed (229)` — was `195 passed (195)` + 1 failing suite.
+
+**Verification evidence**:
+- `pnpm exec vitest run __tests__/prisma-store-prep-task-plan-workflow.test.ts` — 17 passed.
+- `pnpm exec vitest run` (full `manifest-adapters` package) — 229 passed (11 files), 0 failures.
+- `pnpm exec tsc --noEmit` (manifest-adapters package) — clean.
+- `pnpm --filter api typecheck` — clean (the API package compiles against the new store and the regenerated Prisma client).
+- `pnpm --filter @repo/database exec prisma generate` — clean; the regenerated client exposes all 28 fields with correct nullability.
+
+**Files touched**:
+- Modified: `packages/database/prisma/schema.prisma` (`PrepTaskPlanWorkflow` model expanded 11→28 fields, `errorList` → `errors`, status default `pending` → `created`).
+- Created: `packages/database/prisma/migrations/20260427040000_extend_prep_task_plan_workflows/migration.sql` (idempotent ALTER TABLE adding 17 new columns; replaces `error_list JSONB` with `errors TEXT`).
+- Modified: `packages/manifest-adapters/src/prisma-store.ts` (added `PrepTaskPlanWorkflow` import; added `PrepTaskPlanWorkflowPrismaStore` class + `timestampToDate` helper; added new `case "PrepTaskPlanWorkflow"` to `createPrismaStoreProvider`).
+- Modified: `packages/manifest-adapters/src/manifest-runtime-factory.ts` (`PrepTaskPlanWorkflow` added to `ENTITIES_WITH_SPECIFIC_STORES`).
+- Created: `packages/manifest-adapters/__tests__/prisma-store-prep-task-plan-workflow.test.ts` (17 tests covering CRUD lifecycle, tenant isolation, JSON-shape preservation, timestamp conversions, soft delete, partial-update semantics).
+- Modified: `packages/manifest-adapters/__tests__/rbac-permission-checker.test.ts` (added missing `beforeEach` import — pre-existing bug that masked the entire test file).
+- Modified: `IMPLEMENTATION_PLAN.md` (this entry; closes the longstanding "PrepTaskPlanWorkflow storage mismatch" followup).
+
+**Followups still open (carried over)**:
+- The 16 lifecycle command routes for PrepTaskPlanWorkflow now have a working store, but no end-to-end product test yet exists that POSTs `/api/kitchen/prep-task-plan-workflows/create` and asserts the row is visible from `/api/kitchen/prep-task-plan-workflows/list` on a real Prisma+RLS test harness. The unit tests prove the store maps correctly; an E2E test would prove the manifest runtime → store wiring is correct end-to-end. (Lower priority — the unit tests + typecheck + the existing `kitchen/manifest-build-determinism` test cover the integration shape.)
+- 17 quarantined manifests under `manifests-disabled/` still need IR rebuild + restored routes (carried over from prior passes).
 
 ## 51st audit pass — Pagination clamps extended to 9 unbounded list routes (2026-04-27)
 
