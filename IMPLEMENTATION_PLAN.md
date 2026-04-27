@@ -1,12 +1,48 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-27 (forty-seventh pass — New Asset E2E backpressure shipped)
+> **Last updated:** 2026-04-27 (forty-eighth pass — staff availability validation conformance suite)
 
 ## P0 — Product-flow backpressure for creation UI
 
 - [x] ~~Add E2E/product-flow backpressure for `New Route` creation~~ — **CLOSED 46th pass** (`e2e/workflows/logistics.workflow.spec.ts`).
 - [ ] Add E2E/product-flow backpressure for `New Facility` creation — **BLOCKED**: no `Facility` Prisma model exists; the `/facilities` page is a hub with no creation flow. Schema work (Facility model + migration + create API + create dialog UI) must land before an E2E test can pass.
 - [x] ~~Add E2E/product-flow backpressure for `New Asset` creation~~ — **CLOSED 47th pass** (`e2e/workflows/facilities-assets.workflow.spec.ts`).
+
+## 48th audit pass — staff availability validation conformance suite (2026-04-27)
+
+**Problem solved**: `apps/api/app/api/staff/availability/validation.ts` is a safety-critical module — every staff availability create/update/batch route funnels through its 8 exported validators (`validateTimeFormat`, `validateDayOfWeek`, `validateTimeRange`, `validateEffectiveDates`, `checkOverlappingAvailability`, `verifyEmployee`, `verifyAvailability`, `validateBatchAvailabilityInput`). The 45th pass had to fix a duplicate `AND` token on line 157 of `checkOverlappingAvailability`'s date-range overlap predicate (a HIGH-severity SQL bug), and the audit footnote explicitly flagged "no tests exist" as the root cause that allowed the bug to ship in the first place. Without coverage, the recently fixed semantics are free to silently regress on the next refactor.
+
+**What shipped this pass**:
+- Created `apps/api/__tests__/staff/availability-validation.test.ts` — 74 tests across 8 `describe` blocks, one per exported function. Every test pins an exact behavioral contract (status code, error message body, SQL parameter binding, or boundary condition).
+- **Time format coverage**: HH:MM regex boundaries — accepts `00:00`, `23:59`, `12:30`; rejects `24:00` (out of hour range), `9:30` (no leading zero), `12:60` (out of minute range), and empty string. Pins the `^([01]\d|2[0-3]):([0-5]\d)$` contract.
+- **Day-of-week coverage**: integer-only 0..6 — accepts each of `0..6` individually; rejects `-1`, `7`, `1.5` (non-integer). Pins both range and `Number.isInteger` checks.
+- **Time-range coverage**: end-after-start; rejects equal times (boundary is `<=`, not `<`); rejects malformed start AND malformed end with the start error winning when both are bad.
+- **Effective-date coverage**: rejects past `effectiveFrom`; accepts today's local date (uses local-time `Date(year, monthIndex, day)` constructor — UTC strings shift the day on a PST/PDT runner because the validator calls `setHours(0,0,0,0)` for local midnight, so UTC dates would silently flake based on TZ); rejects `effectiveUntil < effectiveFrom`; accepts equal `effectiveUntil === effectiveFrom`; accepts `null` `effectiveUntil`.
+- **Overlap coverage** (the function whose duplicate-AND bug triggered this work): touching boundaries do NOT overlap (e.g. `09:00-12:00` vs `12:00-15:00` returns `hasOverlap: false`); strictly-overlapping ranges do; different days do not overlap even at the same time; the `excludeAvailabilityId` parameter is bound into the SQL `WHERE id != $N` fragment when provided and absent when not (verified via a recursive `flattenSqlValues` helper that walks nested `Prisma.sql` template-tag results, since the conditional `Prisma.sql` fragment becomes a nested object that the mock stringifies as `[object Object]`); NULL `effective_until` ranges are still detected as overlapping.
+- **Employee verification coverage**: 404 when missing; 400 with `"Cannot set availability for inactive employee"` when `is_active=false`; passes through when active; SQL filters on `tenant_id`, `id`, and `deleted_at IS NULL`.
+- **Availability verification coverage**: 404 when missing; happy path returns the full record; SQL filters on `tenant_id`, `id`, and `deleted_at IS NULL`.
+- **Batch input coverage**: rejects empty array, `null`, undefined; rejects duplicate days (e.g. two patterns for `dayOfWeek=1`); per-pattern day-of-week + time-range validation runs and surfaces the first failure.
+
+**Test infrastructure note** (the why behind the helper): the `apps/api/test/mocks/@repo/database.ts` mock implements `Prisma.sql` as a template tag returning `{strings, values, sql}`. When the production code uses a conditional fragment — `${excludeAvailabilityId ? Prisma.sql\`AND id != ${id}\` : Prisma.empty}` — the resulting outer `.values` array contains nested `Prisma.sql` result objects, not flattened parameters. The naive `.sql` getter stringifies these as `[object Object]`. The `flattenSqlValues(arg, acc)` recursive walker descends into any object with a `.values` property and pushes only primitives onto the accumulator; this lets the test assert `expect(bound).toContain(AVAILABILITY_ID)` regardless of nesting depth, which is the only way to safely test the conditional binding without coupling to the mock's stringification.
+
+**Date-construction note** (the why behind local-time dates): every test in the `validateEffectiveDates` block uses `new Date(year, monthIndex, day, hour, ...)` (local time) instead of ISO strings (`"2026-06-15T00:00:00Z"`). The validator does `today.setHours(0,0,0,0)` and `effectiveFromDate.setHours(0,0,0,0)` to normalize to local midnight before comparison; on a PDT runner, a UTC midnight date becomes the prior local day after `setHours`, which would make an "accepts today" test fail spuriously. Using local-time constructors guarantees the test is TZ-stable.
+
+**Verification evidence**:
+- `pnpm --filter api test __tests__/staff/availability-validation.test.ts` → **74 tests, all passing**.
+- `pnpm --filter api test __tests__/staff/` → **87 tests, all passing** (13 auto-assignment + 74 availability validation).
+- `pnpm --filter api typecheck` → clean (no errors).
+- `pnpm dlx ultracite check apps/api/__tests__/staff/availability-validation.test.ts` → clean (no warnings).
+
+**Files touched**:
+- Created: `apps/api/__tests__/staff/availability-validation.test.ts` (~590 lines, 74 tests).
+- Modified: `IMPLEMENTATION_PLAN.md` (this entry; closed the followup).
+
+**Why this matters**: the 45th pass fixed a HIGH SQL bug (duplicate `AND` token) in this module. The followup said "no tests exist". Now they do, with the exact boundary semantics pinned: touching time windows ARE NOT overlapping, equal effective dates ARE acceptable, NULL `effective_until` IS still subject to overlap detection, the `excludeAvailabilityId` parameter IS bound into the SQL only when provided. Any future refactor that breaks one of these contracts will fail loudly before merge instead of silently in production.
+
+**Followups still open** (carried forward from 47th pass, minus the one closed this pass):
+- The 16 lifecycle command routes for `PrepTaskPlanWorkflow` have a storage mismatch (PrismaJsonStore writes vs Prisma model reads) that needs architecture work.
+- MEDIUM items: unbounded pagination routes, ILIKE wildcard escaping, LIMIT bounds.
+- P0.2 `New Facility` E2E: still blocked on Facility Prisma model + create API + create dialog UI.
 
 ## 47th audit pass — New Asset E2E backpressure shipped (2026-04-27)
 

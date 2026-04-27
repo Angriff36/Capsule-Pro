@@ -148,16 +148,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[pre-compact bridge — saved before context compaction]
-Files (3):
-  e2e/workflows/logistics.workflow.spec.ts (create)
-  e2e/workflows/logistics.workflow.spec.ts (edit)
-  IMPLEMENTATION_PLAN.md (edit)
-Manual bridge:
-[proactive bridge @ 76% context — saved before compacting]
-Files (3):
-  e2e/workflows/logistics.workflow.spec.ts (create)
-  e2e/workflows/logistics.workflow.spec.ts (edit)
-  IMPLEMENTATION_PLAN.md (edit)
+[Emergency bridge — running bridge was not updated]
+No changes or facts in this session.
 
 # === END COGNILAYER ===
