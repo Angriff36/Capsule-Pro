@@ -1,4 +1,4 @@
-// Auto-generated Next.js API route for EmployeeAvailability
+// Auto-generated Next.js API route for RateLimitConfig
 // Generated from Manifest IR - DO NOT EDIT
 
 import type { NextRequest } from "next/server";
@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
     return manifestErrorResponse("Tenant not found", 400);
   }
 
-const employeeAvailabilitys = await database.employeeAvailability.findMany({
+const rateLimitConfigs = await database.rateLimitConfig.findMany({
     where: {
         tenantId,
         deletedAt: null
@@ -30,9 +30,9 @@ const employeeAvailabilitys = await database.employeeAvailability.findMany({
     },
   });
 
-    return manifestSuccessResponse({ employeeAvailabilitys });
+    return manifestSuccessResponse({ rateLimitConfigs });
   } catch (error) {
-    console.error("Error fetching employeeAvailabilitys:", error);
+    console.error("Error fetching rateLimitConfigs:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

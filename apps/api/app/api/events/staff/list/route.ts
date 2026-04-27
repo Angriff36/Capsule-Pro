@@ -20,10 +20,10 @@ export async function GET(request: NextRequest) {
     return manifestErrorResponse("Tenant not found", 400);
   }
 
-const eventStaffs = await database.eventStaffAssignment.findMany({
+const eventStaffs = await database.eventStaff.findMany({
     where: {
         tenantId,
-        deletedAt: null,
+        deletedAt: null
       },
     orderBy: {
       createdAt: "desc",

@@ -25,10 +25,10 @@ export async function GET(
 
     const { id } = await params;
 
-    const laborBudget = await database.laborBudget.findFirst({
+    const laborBudget = await database.laborBudget.findUnique({
       where: {
-        tenantId,
         id,
+        tenantId,
         deletedAt: null
       },
     });

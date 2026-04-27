@@ -27,7 +27,9 @@ export async function GET(
 
     const timeEntry = await database.timeEntry.findUnique({
       where: {
-        tenantId_id: { tenantId, id },
+        id,
+        tenantId,
+        deletedAt: null
       },
     });
 

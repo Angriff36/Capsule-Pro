@@ -25,10 +25,10 @@ export async function GET(
 
     const { id } = await params;
 
-    const scheduleShift = await database.scheduleShift.findFirst({
+    const scheduleShift = await database.scheduleShift.findUnique({
       where: {
-        tenantId,
         id,
+        tenantId,
         deletedAt: null
       },
     });

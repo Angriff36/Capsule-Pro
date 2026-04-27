@@ -20,19 +20,19 @@ export async function GET(request: NextRequest) {
     return manifestErrorResponse("Tenant not found", 400);
   }
 
-const employeeCertifications = await database.employee_certifications.findMany({
+const employeeCertifications = await database.employeeCertification.findMany({
     where: {
-        tenant_id: tenantId,
-        deleted_at: null
+        tenantId,
+        deletedAt: null
       },
     orderBy: {
-      created_at: "desc",
+      createdAt: "desc",
     },
   });
 
     return manifestSuccessResponse({ employeeCertifications });
   } catch (error) {
-    console.error("Error fetching employee_certifications records:", error);
+    console.error("Error fetching employeeCertifications:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

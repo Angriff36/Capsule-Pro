@@ -20,13 +20,13 @@ export async function GET(request: NextRequest) {
     return manifestErrorResponse("Tenant not found", 400);
   }
 
-const recipeSteps = await database.recipe_steps.findMany({
+const recipeSteps = await database.recipeStep.findMany({
     where: {
-        tenant_id: tenantId,
-        deleted_at: null
+        tenantId,
+        deletedAt: null
       },
     orderBy: {
-      created_at: "desc",
+      createdAt: "desc",
     },
   });
 

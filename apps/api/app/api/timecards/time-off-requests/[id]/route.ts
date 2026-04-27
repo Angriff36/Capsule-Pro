@@ -25,9 +25,11 @@ export async function GET(
 
     const { id } = await params;
 
-    const timeOffRequest = await database.employeeTimeOffRequest.findUnique({
+    const timeOffRequest = await database.timeOffRequest.findUnique({
       where: {
-        tenant_id_id: { tenant_id: tenantId, id },
+        id,
+        tenantId,
+        deletedAt: null
       },
     });
 

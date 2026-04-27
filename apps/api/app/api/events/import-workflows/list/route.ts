@@ -20,10 +20,10 @@ export async function GET(request: NextRequest) {
     return manifestErrorResponse("Tenant not found", 400);
   }
 
-const eventImportWorkflows = await database.eventImport.findMany({
+const eventImportWorkflows = await database.eventImportWorkflow.findMany({
     where: {
         tenantId,
-        deletedAt: null,
+        deletedAt: null
       },
     orderBy: {
       createdAt: "desc",

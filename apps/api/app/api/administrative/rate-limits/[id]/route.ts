@@ -1,13 +1,16 @@
-// Auto-generated Next.js API route for EmployeeAvailability
+// Auto-generated Next.js API detail route for RateLimitConfig
 // Generated from Manifest IR - DO NOT EDIT
 
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { database } from "@/lib/database";
+import { database } from "@repo/database";
 import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
 import { auth } from "@repo/auth/server";
 
-export async function GET(request: NextRequest) {
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
   const { orgId, userId } = await auth();
   if (!(userId && orgId)) {
@@ -20,19 +23,23 @@ export async function GET(request: NextRequest) {
     return manifestErrorResponse("Tenant not found", 400);
   }
 
-const employeeAvailabilitys = await database.employeeAvailability.findMany({
-    where: {
+    const { id } = await params;
+
+    const rateLimitConfig = await database.rateLimitConfig.findUnique({
+      where: {
+        id,
         tenantId,
         deletedAt: null
       },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+    });
 
-    return manifestSuccessResponse({ employeeAvailabilitys });
+    if (!rateLimitConfig) {
+      return manifestErrorResponse("RateLimitConfig not found", 404);
+    }
+
+    return manifestSuccessResponse({ rateLimitConfig });
   } catch (error) {
-    console.error("Error fetching employeeAvailabilitys:", error);
+    console.error("Error fetching rateLimitConfig:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

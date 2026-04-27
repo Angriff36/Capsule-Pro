@@ -25,7 +25,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const adminChatParticipant = await database.adminChatParticipant.findFirst({
+    const adminChatParticipant = await database.adminChatParticipant.findUnique({
       where: {
         id,
         tenantId,

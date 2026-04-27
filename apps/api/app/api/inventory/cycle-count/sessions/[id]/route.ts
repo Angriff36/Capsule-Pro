@@ -25,7 +25,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const cycleCountSession = await database.cycleCountSession.findFirst({
+    const cycleCountSession = await database.cycleCountSession.findUnique({
       where: {
         id,
         tenantId,

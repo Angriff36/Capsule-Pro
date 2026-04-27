@@ -25,7 +25,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const kitchenTask = await database.kitchenTask.findFirst({
+    const kitchenTask = await database.kitchenTask.findUnique({
       where: {
         id,
         tenantId,

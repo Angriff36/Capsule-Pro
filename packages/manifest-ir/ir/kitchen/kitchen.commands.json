@@ -1555,6 +1555,31 @@
     "commandId": "PurchaseRequisitionItem.update"
   },
   {
+    "entity": "RateLimitConfig",
+    "command": "create",
+    "commandId": "RateLimitConfig.create"
+  },
+  {
+    "entity": "RateLimitConfig",
+    "command": "softDelete",
+    "commandId": "RateLimitConfig.softDelete"
+  },
+  {
+    "entity": "RateLimitConfig",
+    "command": "turnOff",
+    "commandId": "RateLimitConfig.turnOff"
+  },
+  {
+    "entity": "RateLimitConfig",
+    "command": "turnOn",
+    "commandId": "RateLimitConfig.turnOn"
+  },
+  {
+    "entity": "RateLimitConfig",
+    "command": "update",
+    "commandId": "RateLimitConfig.update"
+  },
+  {
     "entity": "Recipe",
     "command": "activate",
     "commandId": "Recipe.activate"

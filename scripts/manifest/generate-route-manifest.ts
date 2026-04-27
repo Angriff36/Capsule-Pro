@@ -118,6 +118,8 @@ const ENTITY_DOMAIN_MAP: Record<string, string> = {
   AdminChatParticipant: "administrative/chat/participants",
   // ─── Settings ───
   ApiKey: "settings/api-keys",
+  // ─── Rate Limiting ───
+  RateLimitConfig: "administrative/rate-limits",
   // ─── Accounting ───
   ChartOfAccount: "accounting/chart-of-accounts",
   // ─── Role Policy ───

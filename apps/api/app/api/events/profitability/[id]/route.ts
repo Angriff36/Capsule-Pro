@@ -25,7 +25,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const eventProfitability = await database.eventProfitability.findFirst({
+    const eventProfitability = await database.eventProfitability.findUnique({
       where: {
         id,
         tenantId,

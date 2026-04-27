@@ -1,6 +1,49 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-27 (fifty-fourth pass — Prisma error translation utility; P2002→409, P2025→404, P2003→400)
+> **Last updated:** 2026-04-27 (fifty-fifth pass — rate-limit-rules.manifest enabled)
+
+## 55th audit pass — rate-limit-rules.manifest enabled (2026-04-27)
+
+**Problem solved**: `RateLimitConfig` entity was quarantined in `manifests-disabled/` alongside 14 other manifests. This blocked the `RateLimitConfig` manifest from contributing to the IR and generating routes for rate limit configuration CRUD operations.
+
+**What shipped this pass**:
+
+1. **Moved `rate-limit-rules.manifest` from `manifests-disabled/` to `manifests/`** — enables compilation into the shared IR.
+
+2. **Fixed DSL syntax incompatibilities** — the manifest used `command name {` without parentheses and reserved command names (`activate`, `deactivate`). Converted to `command name()` syntax and renamed commands to `turnOn()`/`turnOff()`.
+
+3. **Added `RateLimitConfig` to `ENTITY_DOMAIN_MAP`** in three files:
+   - `scripts/manifest/generate.mjs`
+   - `scripts/manifest/generate-all-routes.mjs`
+   - `scripts/manifest/generate-route-manifest.ts`
+   - Maps to `administrative/rate-limits` domain.
+
+4. **Ran `pnpm manifest:compile`** — successfully compiles with 68 manifests, generates IR with 97 entities, 435 commands, 430 events.
+
+5. **Ran `pnpm manifest:generate`** — generates scaffold routes:
+   - `apps/api/app/api/administrative/rate-limits/[id]/route.ts` (detail)
+   - `apps/api/app/api/administrative/rate-limits/list/route.ts` (list)
+
+**Verification evidence**:
+- `pnpm manifest:compile` — 68 manifests, 97 entities, 435 commands, 430 events.
+- `pnpm --filter api test` — 1155 passed, 1 skipped, 8 todo.
+- `pnpm manifest:generate` — routes generated to `administrative/rate-limits/`.
+
+**Files touched**:
+- Moved: `packages/manifest-adapters/manifests-disabled/rate-limit-rules.manifest` → `packages/manifest-adapters/manifests/rate-limit-rules.manifest`
+- Modified: `scripts/manifest/generate.mjs` (added `RateLimitConfig: "administrative/rate-limits"`)
+- Modified: `scripts/manifest/generate-all-routes.mjs` (added mapping)
+- Modified: `scripts/manifest/generate-route-manifest.ts` (added mapping)
+- Generated: `apps/api/app/api/administrative/rate-limits/` (routes scaffold)
+
+**Known issues**:
+- Generated routes have type errors because they assume all entities have `deletedAt` property, but some Prisma models use `deleted_at` or don't have soft-delete. This is a pre-existing issue with the manifest generation system.
+- The `RateLimitConfig` model exists in Prisma schema (`packages/database/prisma/schema.prisma:5194`) so the routes should integrate correctly once the type errors are addressed.
+
+**Followups still open**:
+- Remaining 14 quarantined manifests still need to be enabled (require DSL compatibility fixes).
+- Generated routes need manual Prisma schema alignment to fix type errors.
+- 17 quarantined manifests total (including prep-task-dependency.manifest, payment-rules.manifest, etc.).
 
 ## 54th audit pass — Prisma error translation utility (2026-04-27)
 

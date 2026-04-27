@@ -25,11 +25,11 @@ export async function GET(
 
     const { id } = await params;
 
-    const eventImportWorkflow = await database.eventImport.findFirst({
+    const eventImportWorkflow = await database.eventImportWorkflow.findUnique({
       where: {
         id,
         tenantId,
-        deletedAt: null,
+        deletedAt: null
       },
     });
 

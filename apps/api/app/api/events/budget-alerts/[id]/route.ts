@@ -25,7 +25,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const budgetAlert = await database.budgetAlert.findFirst({
+    const budgetAlert = await database.budgetAlert.findUnique({
       where: {
         id,
         tenantId,

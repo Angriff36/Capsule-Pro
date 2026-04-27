@@ -1,6 +1,5 @@
 // Administration - Rate Limit Rules
 // Manifest spec for rate limit configuration management
-// SECURITY: All commands require admin role. Rate limits are per-tenant.
 
 entity RateLimitConfig {
   property required id: string
@@ -16,24 +15,16 @@ entity RateLimitConfig {
   property updatedAt: number = 0
   property deletedAt: number = 0
 
-  computed isDeleted: boolean = self.deletedAt > 0
-  computed isActiveConfig: boolean = self.isActive and self.deletedAt == 0
-  computed hasBurstAllowance: boolean = self.burstAllowance > 0
-  computed windowSeconds: number = self.windowMs / 1000
-  computed windowMinutes: number = self.windowMs / 60000
-
-  constraint requireName: self.name != null and self.name != "" "Rate limit name is required"
-  constraint requireEndpointPattern: self.endpointPattern != null and self.endpointPattern != "" "Endpoint pattern is required"
-  constraint validWindowMs: self.windowMs > 0 "Window duration must be positive"
-  constraint validMaxRequests: self.maxRequests > 0 "Maximum requests must be positive"
-  constraint validBurstAllowance: self.burstAllowance >= 0 "Burst allowance cannot be negative"
-  constraint validPriority: self.priority >= 0 and self.priority <= 100 "Priority must be between 0 and 100"
+  constraint requireName: self.name != "" "Rate limit name is required"
+  constraint requireEndpointPattern: self.endpointPattern != "" "Endpoint pattern is required"
 
   command create(name: string, endpointPattern: string, windowMs: number, maxRequests: number, burstAllowance: number = 0, priority: number = 0) {
-    guard validWindowMs
-    guard validMaxRequests
-    guard validBurstAllowance
-    guard validPriority
+    guard name != "" "Rate limit name is required"
+    guard endpointPattern != "" "Endpoint pattern is required"
+    guard windowMs > 0 "Window duration must be positive"
+    guard maxRequests > 0 "Maximum requests must be positive"
+    guard burstAllowance >= 0 "Burst allowance cannot be negative"
+    guard priority >= 0 and priority <= 100 "Priority must be between 0 and 100"
     mutate name = name
     mutate endpointPattern = endpointPattern
     mutate windowMs = windowMs
@@ -47,10 +38,7 @@ entity RateLimitConfig {
   }
 
   command update(name: string, endpointPattern: string, windowMs: number, maxRequests: number, burstAllowance: number = 0, priority: number = 0, isActive: boolean = true) {
-    guard validWindowMs
-    guard validMaxRequests
-    guard validBurstAllowance
-    guard validPriority
+    guard self.deletedAt == 0 "Cannot update deleted rate limit configuration"
     mutate name = name
     mutate endpointPattern = endpointPattern
     mutate windowMs = windowMs
@@ -63,33 +51,29 @@ entity RateLimitConfig {
   }
 
   command softDelete(reason: string = "") {
-    guard notDeleted
+    guard self.deletedAt == 0 "Cannot modify deleted rate limit configuration"
     mutate deletedAt = now()
     mutate updatedAt = now()
     emit RateLimitConfigDeleted
   }
 
-  command activate {
-    guard notDeleted
+  command turnOn() {
+    guard self.deletedAt == 0 "Cannot modify deleted rate limit configuration"
     mutate isActive = true
     mutate updatedAt = now()
     emit RateLimitConfigActivated
   }
 
-  command deactivate {
-    guard notDeleted
+  command turnOff() {
+    guard self.deletedAt == 0 "Cannot modify deleted rate limit configuration"
     mutate isActive = false
     mutate updatedAt = now()
     emit RateLimitConfigDeactivated
   }
 
-  guard notDeleted: self.deletedAt == 0 "Cannot modify deleted rate limit configuration"
-
   store RateLimitConfig in memory
 }
 
-// SECURITY REQUIREMENT: All rate limit management commands require admin role.
-// This ensures only authorized personnel can configure rate limits.
 policy AdminCanManageRateLimits execute: user.role in ["admin"] "Only admins can manage rate limit configurations"
 
 event RateLimitConfigCreated: "admin.rate_limit.created" {

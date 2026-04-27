@@ -25,7 +25,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const prepComment = await database.prepComment.findFirst({
+    const prepComment = await database.prepComment.findUnique({
       where: {
         id,
         tenantId,

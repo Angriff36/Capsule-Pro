@@ -25,7 +25,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const varianceReport = await database.varianceReport.findFirst({
+    const varianceReport = await database.varianceReport.findUnique({
       where: {
         id,
         tenantId,

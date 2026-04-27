@@ -25,7 +25,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const clientPreference = await database.clientPreference.findFirst({
+    const clientPreference = await database.clientPreference.findUnique({
       where: {
         id,
         tenantId,

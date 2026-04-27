@@ -25,7 +25,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const pricingTier = await database.pricingTier.findFirst({
+    const pricingTier = await database.pricingTier.findUnique({
       where: {
         id,
         tenantId,
