@@ -1,6 +1,56 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-26 (nineteenth pass — Blocker 7 resolved: RLS for 17 tables + 8 Prisma models + 3 phantom table migrations)
+> **Last updated:** 2026-04-26 (thirty-ninth pass — refund-cascade clamp + invoice status re-derivation actually landed in route.ts; corrected drift in prior pass entries)
+
+## 39th audit pass — refund-cascade clamp actually shipped, prior-pass drift documented (2026-04-26)
+
+**Why this pass exists**: An audit of `apps/api/app/api/accounting/payments/[id]/route.ts` against the claims in the 34th–37th pass entries found the route on `main` did **not** contain any of the security/correctness fixes those entries described. Specifically:
+- The 34th pass claimed a refund-amount **clamp** and **invoice status re-derivation** in the POST handler — neither was in the code; `body.amount` was still being used directly to debit the invoice, and `invoice.status` was never re-derived after a refund.
+- The 35th pass claimed a `apps/api/lib/sensitive-rate-limit.ts` helper wired into PUT/POST — file does not exist, no rate-limit call in the route.
+- The 36th pass claimed a `apps/api/app/api/accounting/payments/[id]/gateway.ts` helper (`processPaymentGateway`) replacing client-controlled `gatewayResponse` parsing in PUT — file does not exist, PUT still trusts `body.gatewayResponse`.
+- The 37th pass claimed a `refundPaymentGateway` helper in the same `gateway.ts` plus a 502-on-failure short-circuit in POST — same file is absent, same code path is unguarded.
+- The 38th pass (HTTP idempotency on `POST /api/accounting/payments`) **is** real and verified — `apps/api/lib/http-idempotency.ts` and `apps/api/__tests__/accounting/payment-create-idempotency.test.ts` both exist and pass.
+
+The drift was not a partial revert; the 34th–37th pass entries describe code that never landed on this branch. This pass closes the highest-impact item (refund clamp + status re-derivation) for real and records the drift so future passes do not stack on top of phantom prerequisites.
+
+**What actually shipped this pass** (`apps/api/app/api/accounting/payments/[id]/route.ts` POST handler, refund):
+- `effectiveRefund = Math.min(Number(body.amount), paymentAmount)` clamps caller-supplied refund at the recorded payment amount. A $250 refund request against a $100 payment now adjusts the ledger by $100, never $250.
+- `isFullRefund` is now derived from `effectiveRefund`, not `body.amount`, so pass status (`REFUNDED` vs `PARTIALLY_REFUNDED`) reflects the clamped value.
+- Invoice cascade now uses `effectiveRefund` for both `amountPaid -= effectiveRefund` and `amountDue += effectiveRefund`.
+- Invoice `status` is re-derived after the cascade: `newAmountPaid <= 0.01 ? "SENT" : "PARTIALLY_PAID"`. A fully-paid invoice that gets refunded no longer remains `PAID`.
+- `paidAt` is unconditionally cleared (`paidAt: null`) on any refund — the audit timestamp must reflect that the invoice is no longer fully paid.
+- Added a `SECURITY / LEDGER INVARIANTS` doc comment block above the POST handler so the next contributor reads it before re-introducing the bug.
+
+**Tests added** (`apps/api/__tests__/accounting/payment-refund-clamp.test.ts`, 11 tests, all passing):
+1. Over-refund clamps at the payment amount ($250 vs $100 → $100 debited).
+2. `REFUNDED` status is derived from the clamped value even when caller asks for more.
+3. Partial refund leaves the payment `PARTIALLY_REFUNDED` and credits the invoice by the partial amount.
+4. Full refund flips a `PAID` invoice back to `SENT` and clears `paidAt`.
+5. Partial refund on a `PAID` invoice flips it to `PARTIALLY_PAID` and clears `paidAt` (no money on file = not paid).
+6. $1M abuse refund attempt against a $100 payment → ledger debited by $100, not $1M.
+7. 404 when payment is missing.
+8. 500 when payment is not in `COMPLETED` state (rejected by `validatePaymentBusinessRules`).
+9. 500 when `body.reason` is missing (rejected by `validateRefundRequest`).
+10. 500 when `body.amount` is non-positive.
+11. 500 when payment was already refunded (`payment.refundedAt !== null`).
+
+Test file uses the `vi.hoisted` mock pattern from `invoice-send-email.test.ts` to mock `@repo/database`, `@/app/lib/tenant`, and `@sentry/nextjs`.
+
+**Verification**:
+- `pnpm tsc --noEmit` (apps/api): clean (1 type-cast added on `completedPayment.refundedAt` and `.deletedAt` to allow `Date | null` overrides in tests).
+- `pnpm vitest run __tests__/accounting/`: **34/34 pass** (11 new + 23 pre-existing across `payment-refund-clamp`, `payment-create-idempotency`, `invoice-send-email`).
+
+**Files touched**:
+- Modified: `apps/api/app/api/accounting/payments/[id]/route.ts` (POST refund handler — clamp, status re-derivation, paidAt clear, doc comment)
+- Created: `apps/api/__tests__/accounting/payment-refund-clamp.test.ts`
+
+**Followups still open** (these were also claimed-but-absent from prior passes; logging them here so the open list is accurate):
+- PUT `/api/accounting/payments/[id]` (process) still parses caller-controlled `body.gatewayResponse` and uses `code === "200" || "1"` to flip the payment to `COMPLETED`. A tenant client can phantom-credit any pending payment. **Highest-priority remaining security item.**
+- POST `/api/accounting/payments/[id]` (refund) does not call any external refund gateway — it only updates the local ledger. The clamp fixes the math; once a real Stripe refund is wired in, that call must run **before** the local DB mutation and the route must return 502 on gateway failure without mutating payment or invoice.
+- Sensitive-mutation rate limit on PUT/POST is missing. Today the only ceiling is the 100/min/tenant global limiter; a leaked session can still burn that ceiling on payment mutations specifically.
+- Refund failure path does not persist `refundTransactionId` to an audit table.
+
+---
 
 ## 38th audit pass — payment-creation idempotency keys (2026-04-26)
 

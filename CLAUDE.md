@@ -148,11 +148,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[pre-compact bridge — saved before context compaction]
-Files (4):
-  CLAUDE.md (edit)
-  apps/api/__tests__/kitchen/manifest-runtime-factory.test.ts (edit)
-  apps/api/__tests__/command-board/simulations.test.ts (edit)
-  apps/api/__tests__/conflicts/detect-route.correlation.test.ts (edit)
+[Emergency bridge — running bridge was not updated]
+No changes or facts in this session.
 
 # === END COGNILAYER ===

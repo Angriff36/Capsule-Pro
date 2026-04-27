@@ -167,6 +167,18 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 /**
  * POST /api/accounting/payments/[id]/refund
  * Refund a payment
+ *
+ * SECURITY / LEDGER INVARIANTS:
+ *  - The refund amount applied to the ledger MUST be clamped at payment.amount.
+ *    A caller-supplied refund of $250 against a $100 payment MUST adjust the
+ *    invoice by $100, not $250 — otherwise invoice.amountPaid goes negative
+ *    and amountDue inflates beyond the contract total.
+ *  - Pass status (REFUNDED vs PARTIALLY_REFUNDED) MUST be derived from the
+ *    *clamped* effectiveRefund, never from the caller's body.amount.
+ *  - Invoice.status MUST be re-derived after a refund. A fully-paid invoice
+ *    that gets refunded must NOT remain "PAID" — it should fall back to
+ *    "SENT" (no money on file) or "PARTIALLY_PAID" (some money still on
+ *    file). paidAt MUST be cleared when the invoice is no longer paid.
  */
 export async function POST(request: NextRequest, context: RouteContext) {
   try {
@@ -192,7 +204,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
     validatePaymentBusinessRules(payment, "refund");
 
     const paymentAmount = Number(payment.amount);
-    const isFullRefund = body.amount >= paymentAmount;
+    // Clamp the refund at the payment amount. Callers can request larger
+    // numbers (typo, double-click, abuse) but the ledger only ever sees the
+    // capped value.
+    const effectiveRefund = Math.min(Number(body.amount), paymentAmount);
+    const isFullRefund = effectiveRefund >= paymentAmount - 0.005;
 
     // Update payment
     const updatedPayment = await database.payment.update({
@@ -208,7 +224,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
       },
     });
 
-    // Update invoice to reflect refund
+    // Update invoice to reflect refund — re-derive status + paidAt from the
+    // post-refund balance so a refunded invoice never stays marked PAID.
     if (payment.invoiceId) {
       const invoice = await database.invoice.findFirst({
         where: {
@@ -222,6 +239,15 @@ export async function POST(request: NextRequest, context: RouteContext) {
         const currentAmountPaid = Number(invoice.amountPaid);
         const currentAmountDue = Number(invoice.amountDue);
 
+        const newAmountPaid = currentAmountPaid - effectiveRefund;
+        const newAmountDue = currentAmountDue + effectiveRefund;
+
+        // Re-derive invoice status. If no money is left on file, fall back
+        // to SENT (the pre-payment receivable state). If some money still
+        // remains, the invoice is PARTIALLY_PAID. paidAt is cleared in both
+        // cases because the invoice is no longer fully paid.
+        const newStatus = newAmountPaid <= 0.01 ? "SENT" : "PARTIALLY_PAID";
+
         await database.invoice.update({
           where: {
             tenantId_id: {
@@ -230,8 +256,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
             },
           },
           data: {
-            amountPaid: currentAmountPaid - body.amount,
-            amountDue: currentAmountDue + body.amount,
+            amountPaid: newAmountPaid,
+            amountDue: newAmountDue,
+            status: newStatus,
+            paidAt: null,
           },
         });
       }
