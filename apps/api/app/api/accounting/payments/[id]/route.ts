@@ -21,6 +21,7 @@ import {
   validatePaymentBusinessRules,
   validateRefundRequest,
 } from "../validation";
+import { processPaymentGateway } from "./gateway";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -63,13 +64,26 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
 /**
  * PUT /api/accounting/payments/[id]/process
- * Process a payment through gateway
+ * Process a payment through gateway.
+ *
+ * SECURITY INVARIANT — DO NOT REMOVE
+ *
+ * The outcome of this charge (COMPLETED vs FAILED) and the persisted
+ * `gatewayTransactionId` are decided EXCLUSIVELY by `processPaymentGateway`.
+ * The HTTP request body is intentionally NOT parsed in this handler.
+ *
+ * Historical bug: this handler used to read `body.gatewayResponse.code`
+ * and treat `"200" || "1"` as a success signal, which let any
+ * authenticated tenant client phantom-credit a PENDING payment and
+ * cascade `invoice.amountPaid += payment.amount` to flip the invoice to
+ * PAID with no real money moving. If you find yourself adding
+ * `request.json()` back to this function, stop and read
+ * `./gateway.ts` first.
  */
-export async function PUT(request: NextRequest, context: RouteContext) {
+export async function PUT(_request: NextRequest, context: RouteContext) {
   try {
     const tenantId = await requireTenantId();
     const { id } = await context.params;
-    const body = await request.json();
 
     // Get payment
     const payment = await database.payment.findFirst({
@@ -87,15 +101,17 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     validatePaymentAccess(payment, tenantId);
     validatePaymentBusinessRules(payment, "process");
 
-    // Process payment (in real implementation, this would call the payment gateway)
-    const gatewayResponse = body.gatewayResponse || {
-      code: "200",
-      message: "Success",
-      transactionId: `txn_${Date.now()}`,
-    };
+    // Server-side gateway call. The result is authoritative — the body of
+    // the request is NEVER consulted to decide success/failure or to
+    // generate the transaction ID.
+    const gatewayResult = await processPaymentGateway({
+      paymentId: payment.id,
+      tenantId,
+      amount: Number(payment.amount),
+      currency: payment.currency,
+    });
 
-    const isCompleted =
-      gatewayResponse.code === "200" || gatewayResponse.code === "1";
+    const isCompleted = gatewayResult.success;
 
     // Update payment status
     const updatedPayment = await database.payment.update({
@@ -109,7 +125,7 @@ export async function PUT(request: NextRequest, context: RouteContext) {
         status: isCompleted ? "COMPLETED" : "FAILED",
         processedAt: new Date(),
         completedAt: isCompleted ? new Date() : null,
-        gatewayTransactionId: gatewayResponse.transactionId,
+        gatewayTransactionId: gatewayResult.transactionId,
       },
     });
 

@@ -149,6 +149,6 @@ Last: [first session]
 
 ## Last Session Bridge
 [Emergency bridge — running bridge was not updated]
-No changes or facts in this session.
+Files: apps/api/__tests__/accounting/payment-refund-clamp.test.ts (edit), IMPLEMENTATION_PLAN.md (edit)
 
 # === END COGNILAYER ===

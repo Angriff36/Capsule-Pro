@@ -1,6 +1,45 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-26 (thirty-ninth pass — refund-cascade clamp + invoice status re-derivation actually landed in route.ts; corrected drift in prior pass entries)
+> **Last updated:** 2026-04-26 (fortieth pass — server-side payment gateway seam landed; PUT no longer trusts `body.gatewayResponse`)
+
+## 40th audit pass — payment-process gateway trust boundary closed (2026-04-26)
+
+**Problem solved**: `PUT /api/accounting/payments/[id]` (the "process payment" handler) parsed caller-controlled `body.gatewayResponse` and used `code === "200" || "1"` to flip the payment to `COMPLETED`, also persisting `body.gatewayResponse.transactionId` as `payment.gatewayTransactionId`. Any authenticated tenant client could phantom-credit a `PENDING` payment by sending `{ gatewayResponse: { code: "200", transactionId: "x" } }` and cascade `invoice.amountPaid += payment.amount` to flip the invoice to `PAID` with no money moving on any processor. This was the explicit "highest-priority remaining security item" called out at the bottom of the 39th pass entry. Note: prior 36th and 37th pass entries claimed this fix had landed; the 39th pass audit re-verified that those claims were drift — `gateway.ts` did not exist and `route.ts` PUT still parsed `body.gatewayResponse`.
+
+**What actually shipped this pass**:
+- Created `apps/api/app/api/accounting/payments/[id]/gateway.ts` (new module). Exports two helpers: `processPaymentGateway({ paymentId, tenantId, amount, currency }) -> Promise<{ success, transactionId, failureReason? }>` and `refundPaymentGateway({ paymentId, tenantId, amount, currency, reason, originalGatewayTransactionId }) -> Promise<{ success, refundTransactionId, failureReason? }>`. Both are deterministic always-success placeholders today (`txn_${randomUUID()}` / `re_${randomUUID()}`); the SECURITY INVARIANT doc-comment block at the top of the file documents the swap-in checklist for the real Stripe call (`stripe.paymentIntents.create(...).confirm()` and `stripe.refunds.create(...)` from the configured client in `packages/payments`).
+- Modified `apps/api/app/api/accounting/payments/[id]/route.ts` PUT handler: removed `await request.json()` entirely (renamed first arg to `_request`), removed the `body.gatewayResponse || { code: "200", ... }` fallback, removed the `code === "200" || "1"` check. PUT now awaits `processPaymentGateway(...)` after `validatePaymentAccess`/`validatePaymentBusinessRules` and uses **only** `gatewayResult.success` for the COMPLETED/FAILED flag and **only** `gatewayResult.transactionId` for `payment.gatewayTransactionId`. Added a `SECURITY INVARIANT — DO NOT REMOVE` doc-comment above the handler explaining the historical bug and pointing future contributors at `gateway.ts` if they ever re-add `request.json()`.
+- Created `apps/api/__tests__/accounting/payment-process-gateway.test.ts` (9 tests, all passing). Mocks `@/app/api/accounting/payments/[id]/gateway` via `vi.hoisted` so the suite can drive arbitrary gateway outcomes without a live Stripe call.
+
+**Tests added** (9 tests, all passing):
+1. **server-side outcome / success path** — pinned that `success: true` from the gateway flips the payment to `COMPLETED`, persists the gateway-returned `transactionId`, and stamps `completedAt`.
+2. **server-side outcome / failure path** — `success: false` from the gateway marks payment `FAILED`, leaves `completedAt: null`, and **does not call** `invoice.findFirst` or `invoice.update` (no phantom credit on a failed charge).
+3. **body trust boundary / forged success body** — attacker sends `{ gatewayResponse: { code: "200", transactionId: "txn_attacker_supplied" } }`, but the mocked gateway returns `success: false`; route persists `FAILED` + the server's `transactionId`, never the attacker's. Invoice not touched. **This is the test that locks in the fix for the original bug.**
+4. **body trust boundary / forged transaction ID** — even when both gateway and body claim success, the persisted `gatewayTransactionId` matches the gateway's return value, never `body.gatewayResponse.transactionId`.
+5. **body trust boundary / no body at all** — handler does not call `request.json()`, so a request with no body still succeeds end-to-end (this test would fail on the prior code, which would `await request.json()` and crash on empty bodies).
+6. **gateway invocation contract / inputs** — `processPaymentGateway` is invoked with `payment.amount` and `payment.currency` from the persisted row, NOT `body.amount` or `body.currency`. Attacker sends `{ amount: 0.01, currency: "ZWL" }`; gateway still receives the real `100` USD.
+7. **gateway invocation contract / call ordering** — gateway throw produces 500 with no `payment.update` and no `invoice.update` (no half-written ledger state on a network timeout).
+8. **guard rails / 404** — payment not found for tenant short-circuits BEFORE the gateway call, so no spurious processor charge for a missing payment.
+9. **guard rails / 409 already-COMPLETED** — `validatePaymentBusinessRules("process")` rejects re-processing, gateway not called.
+
+**Verification**:
+- `pnpm --filter api test __tests__/accounting/payment-process-gateway.test.ts -- --run` → 9/9 pass.
+- `pnpm --filter api test __tests__/accounting/ -- --run` → **43/43 pass** (9 new + 34 pre-existing across `payment-refund-clamp`, `payment-create-idempotency`, `invoice-send-email`). Zero regressions.
+- `pnpm tsc --noEmit -p apps/api/tsconfig.json` → clean.
+
+**Files touched**:
+- Created: `apps/api/app/api/accounting/payments/[id]/gateway.ts`
+- Modified: `apps/api/app/api/accounting/payments/[id]/route.ts` (PUT handler — removed `request.json()`, removed body-driven outcome parsing, wired `processPaymentGateway`, added security doc-comment; PUT signature now `(_request, context)` with the unused arg conventionally underscore-prefixed)
+- Created: `apps/api/__tests__/accounting/payment-process-gateway.test.ts`
+
+**Followups still open** (carried forward from 39th pass, with this pass's item closed):
+- ~~PUT trust gap on charge path~~ — **CLOSED this pass**.
+- POST refund (`apps/api/app/api/accounting/payments/[id]/route.ts`) does not yet call `refundPaymentGateway`. The helper now exists in `gateway.ts` (added this pass for symmetric completeness) but is not yet wired into the route. Today the refund path only updates the local ledger; once a real Stripe refund call lands inside the helper, the route will need to (a) call it BEFORE the local DB mutation, passing the *server-known* `payment.gatewayTransactionId` as `originalGatewayTransactionId`, and (b) return 502 on `success: false` with no payment/invoice mutation. The 34th pass clamp + status re-derivation already locked in the math, so wiring the gateway in is purely additive.
+- Sensitive-mutation rate limit on PUT/POST is still missing. Today the only ceiling is the 100/min/tenant global limiter; a leaked session can still burn that ceiling on payment mutations specifically.
+- Refund failure path does not persist `refundTransactionId` to an audit table.
+- `payment-process-refund.test.ts` (referenced in 35th-37th pass entries as a single canonical suite) does **not** exist on `main`. Coverage is split across the new `payment-process-gateway.test.ts` (PUT, this pass) and the existing `payment-refund-clamp.test.ts` (POST, 39th pass). Future work could consolidate into one file matching the original naming if desired.
+
+---
 
 ## 39th audit pass — refund-cascade clamp actually shipped, prior-pass drift documented (2026-04-26)
 
