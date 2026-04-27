@@ -8,6 +8,7 @@ import { database, type Prisma } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
+import { translatePrismaError } from "@/lib/prisma-error";
 import {
   calculateInvoiceTotals,
   generateInvoiceNumber,
@@ -153,6 +154,13 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
+    const prismaResult = translatePrismaError(error);
+    if (prismaResult.mapped) {
+      return NextResponse.json(
+        { error: prismaResult.message },
+        { status: prismaResult.status }
+      );
+    }
     console.error("Error listing invoices:", error);
     return NextResponse.json(
       { error: "Failed to list invoices" },
@@ -301,6 +309,13 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     captureException(error);
+    const prismaResult = translatePrismaError(error);
+    if (prismaResult.mapped) {
+      return NextResponse.json(
+        { error: prismaResult.message },
+        { status: prismaResult.status }
+      );
+    }
     console.error("Error creating invoice:", error);
     return NextResponse.json(
       { error: "Failed to create invoice" },

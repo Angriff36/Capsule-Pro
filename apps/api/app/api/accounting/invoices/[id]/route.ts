@@ -9,6 +9,7 @@ import { InvoiceTemplate, resend } from "@repo/email";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
+import { translatePrismaError } from "@/lib/prisma-error";
 import {
   calculateInvoiceTotals,
   type InvoiceResponse,
@@ -76,6 +77,13 @@ export async function GET(request: NextRequest, context: RouteContext) {
     });
   } catch (error) {
     captureException(error);
+    const prismaResult = translatePrismaError(error);
+    if (prismaResult.mapped) {
+      return NextResponse.json(
+        { error: prismaResult.message },
+        { status: prismaResult.status }
+      );
+    }
     console.error("Error fetching invoice:", error);
     return NextResponse.json(
       { error: "Failed to fetch invoice" },
@@ -174,6 +182,13 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     });
   } catch (error) {
     captureException(error);
+    const prismaResult = translatePrismaError(error);
+    if (prismaResult.mapped) {
+      return NextResponse.json(
+        { error: prismaResult.message },
+        { status: prismaResult.status }
+      );
+    }
     console.error("Error updating invoice:", error);
     return NextResponse.json(
       { error: "Failed to update invoice" },
@@ -296,6 +311,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
     });
   } catch (error) {
     captureException(error);
+    const prismaResult = translatePrismaError(error);
+    if (prismaResult.mapped) {
+      return NextResponse.json(
+        { error: prismaResult.message },
+        { status: prismaResult.status }
+      );
+    }
     console.error("Error sending invoice:", error);
     return NextResponse.json(
       { error: "Failed to send invoice" },
@@ -364,6 +386,13 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
     });
   } catch (error) {
     captureException(error);
+    const prismaResult = translatePrismaError(error);
+    if (prismaResult.mapped) {
+      return NextResponse.json(
+        { error: prismaResult.message },
+        { status: prismaResult.status }
+      );
+    }
     console.error("Error voiding invoice:", error);
     return NextResponse.json(
       { error: "Failed to void invoice" },

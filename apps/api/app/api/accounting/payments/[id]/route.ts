@@ -15,6 +15,7 @@ import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
 import { checkRateLimit } from "@/middleware/rate-limiter";
+import { translatePrismaError } from "@/lib/prisma-error";
 import {
   captureException,
   type PaymentResponse,
@@ -82,6 +83,13 @@ export async function GET(request: NextRequest, context: RouteContext) {
     });
   } catch (error) {
     captureException(error);
+    const prismaResult = translatePrismaError(error);
+    if (prismaResult.mapped) {
+      return NextResponse.json(
+        { error: prismaResult.message },
+        { status: prismaResult.status }
+      );
+    }
     console.error("Error fetching payment:", error);
     return NextResponse.json(
       { error: "Failed to fetch payment" },
@@ -213,6 +221,13 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     });
   } catch (error) {
     captureException(error);
+    const prismaResult = translatePrismaError(error);
+    if (prismaResult.mapped) {
+      return NextResponse.json(
+        { error: prismaResult.message },
+        { status: prismaResult.status }
+      );
+    }
     console.error("Error processing payment:", error);
     return NextResponse.json(
       { error: "Failed to process payment" },
@@ -411,6 +426,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
     });
   } catch (error) {
     captureException(error);
+    const prismaResult = translatePrismaError(error);
+    if (prismaResult.mapped) {
+      return NextResponse.json(
+        { error: prismaResult.message },
+        { status: prismaResult.status }
+      );
+    }
     console.error("Error refunding payment:", error);
     return NextResponse.json(
       { error: "Failed to refund payment" },

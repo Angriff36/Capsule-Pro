@@ -19,6 +19,7 @@ import {
   storeIdempotentResponse,
 } from "@/lib/http-idempotency";
 import { requireTenantId } from "@/app/lib/tenant";
+import { translatePrismaError } from "@/lib/prisma-error";
 import {
   captureException,
   generatePaymentNumber,
@@ -130,6 +131,13 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     captureException(error);
+    const prismaResult = translatePrismaError(error);
+    if (prismaResult.mapped) {
+      return NextResponse.json(
+        { error: prismaResult.message },
+        { status: prismaResult.status }
+      );
+    }
     console.error("Error listing payments:", error);
     return NextResponse.json(
       { error: "Failed to list payments" },
@@ -255,6 +263,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json<PaymentResponse>(responseBody, { status: 201 });
   } catch (error) {
     captureException(error);
+    const prismaResult = translatePrismaError(error);
+    if (prismaResult.mapped) {
+      return NextResponse.json(
+        { error: prismaResult.message },
+        { status: prismaResult.status }
+      );
+    }
     console.error("Error creating payment:", error);
     return NextResponse.json(
       { error: "Failed to create payment" },
