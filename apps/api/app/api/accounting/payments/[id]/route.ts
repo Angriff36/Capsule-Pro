@@ -21,7 +21,7 @@ import {
   validatePaymentBusinessRules,
   validateRefundRequest,
 } from "../validation";
-import { processPaymentGateway } from "./gateway";
+import { processPaymentGateway, refundPaymentGateway } from "./gateway";
 
 type RouteContext = {
   params: Promise<{ id: string }>;
@@ -195,6 +195,13 @@ export async function PUT(_request: NextRequest, context: RouteContext) {
  *    that gets refunded must NOT remain "PAID" — it should fall back to
  *    "SENT" (no money on file) or "PARTIALLY_PAID" (some money still on
  *    file). paidAt MUST be cleared when the invoice is no longer paid.
+ *  - Refund gateway is authoritative. `refundPaymentGateway` is called
+ *    BEFORE any payment/invoice mutation; on `success: false` the handler
+ *    returns 502 and performs NO writes. This keeps local ledger state in
+ *    sync with the processor — a payment that is still COMPLETED on Stripe
+ *    must remain COMPLETED here. The persisted refund transaction ID and
+ *    the original charge transaction ID come from the database, NEVER from
+ *    the request body.
  */
 export async function POST(request: NextRequest, context: RouteContext) {
   try {
@@ -225,6 +232,32 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // capped value.
     const effectiveRefund = Math.min(Number(body.amount), paymentAmount);
     const isFullRefund = effectiveRefund >= paymentAmount - 0.005;
+
+    // Server-side refund gateway call. Runs BEFORE any DB mutation. The
+    // original charge transaction ID is sourced from the persisted payment
+    // row (NEVER `body.refundTransactionId` or any other caller field) so
+    // the processor can correlate the refund back to its charge. On gateway
+    // failure we 502 and write nothing — the local payment must remain
+    // COMPLETED to mirror the processor's state.
+    const gatewayResult = await refundPaymentGateway({
+      paymentId: payment.id,
+      tenantId,
+      amount: effectiveRefund,
+      currency: payment.currency,
+      reason: String(body.reason),
+      originalGatewayTransactionId: payment.gatewayTransactionId,
+    });
+
+    if (!gatewayResult.success) {
+      return NextResponse.json(
+        {
+          error: "Refund gateway rejected the refund",
+          failureReason: gatewayResult.failureReason,
+          refundTransactionId: gatewayResult.refundTransactionId,
+        },
+        { status: 502 }
+      );
+    }
 
     // Update payment
     const updatedPayment = await database.payment.update({

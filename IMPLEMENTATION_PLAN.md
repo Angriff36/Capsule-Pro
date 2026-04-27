@@ -1,6 +1,44 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-26 (fortieth pass — server-side payment gateway seam landed; PUT no longer trusts `body.gatewayResponse`)
+> **Last updated:** 2026-04-26 (forty-first pass — refund gateway seam wired into POST refund handler; 502-on-failure with no DB writes)
+
+## 41st audit pass — refund gateway wired into POST handler (2026-04-26)
+
+**Problem solved**: The 40th pass added the `refundPaymentGateway` helper to `apps/api/app/api/accounting/payments/[id]/gateway.ts` for symmetric completeness with `processPaymentGateway`, but the POST refund route handler did NOT call it. The route was still purely-local-ledger: it would clamp, mark the payment `REFUNDED`/`PARTIALLY_REFUNDED`, and credit the invoice **without ever asking a real processor whether the refund was accepted**. Once a real Stripe call lands inside the helper, this gap means a tenant could mark a payment refunded locally while the customer never got their money back (because `stripe.refunds.create` would silently never be invoked) — or, conversely, a Stripe-side decline (charge already refunded, dispute open, etc.) would still flip the local payment to `REFUNDED` and over-credit the invoice. This was the explicit "highest-priority remaining followup" called out at the bottom of the 40th pass entry.
+
+**What shipped this pass**:
+- Modified `apps/api/app/api/accounting/payments/[id]/route.ts`:
+  - Added `refundPaymentGateway` to the gateway import (alongside the existing `processPaymentGateway`).
+  - In the POST handler, after `validatePaymentBusinessRules(payment, "refund")` and after computing `effectiveRefund` (preserving the 34th-pass clamp invariant), the handler now `await refundPaymentGateway({ paymentId, tenantId, amount: effectiveRefund, currency, reason: String(body.reason), originalGatewayTransactionId: payment.gatewayTransactionId })` **before any DB mutation**. The gateway gets the *clamped* refund amount, not `body.amount`, so we never ask the processor to refund more than was charged. The original charge transaction ID is sourced from the persisted `payment.gatewayTransactionId`, NEVER from request body fields like `body.refundTransactionId` or `body.originalGatewayTransactionId`.
+  - On `gatewayResult.success === false`, the route returns **502 Bad Gateway** with `{ error: "Refund gateway rejected the refund", failureReason, refundTransactionId }`. **Zero DB writes** — no `payment.update`, no `invoice.findFirst`, no `invoice.update`. The local payment remains `COMPLETED` to mirror the processor's state. This is the critical correctness invariant: a Stripe-side decline must NOT corrupt the local ledger.
+  - On success, the existing payment + invoice cascade runs as before (clamp, status re-derivation, paidAt clear from 34th pass; all preserved).
+  - Extended the existing `SECURITY / LEDGER INVARIANTS` doc-comment block with a fourth bullet documenting the gateway-before-DB + 502-on-failure invariants and the body-trust boundary on `refundTransactionId` / `originalGatewayTransactionId`.
+- Updated `apps/api/__tests__/accounting/payment-refund-clamp.test.ts`:
+  - Added `refundPaymentGatewayMock` and `processPaymentGatewayMock` to the `vi.hoisted` mock factory and a `vi.mock("@/app/api/accounting/payments/[id]/gateway", ...)` factory.
+  - `beforeEach` resets both mocks and seeds `refundPaymentGatewayMock` with a default `success: true` resolution so the existing 9 ledger-correctness tests continue to pass against the new code path (they would otherwise fail with `gatewayResult.success` being `undefined`).
+  - Added a new `describe("refund gateway trust boundary")` block with 6 tests:
+    1. **Server-side metadata only** — caller forges `refundTransactionId`, `originalGatewayTransactionId`, and a fake `gatewayResponse` body; gateway is invoked with the server-known `payment.gatewayTransactionId="txn_existing"`, never the attacker's values. Locks in the body trust boundary.
+    2. **Clamped amount to gateway** — caller asks to refund $1M against a $100 payment; the gateway sees `amount: 100`, not 1M. Prevents over-refund requests on the processor side.
+    3. **502 on failure + no DB writes** — `mockResolvedValueOnce({ success: false, refundTransactionId, failureReason })` drives the failure path; asserts `res.status === 502`, body shape includes failure reason and gateway-side ID for reconciliation, AND that `payment.update`, `invoice.findFirst`, `invoice.update` were ALL not called.
+    4. **Call ordering** — uses `mockImplementationOnce` callbacks to record the order of `gateway`, `payment.update`, `invoice.update` and asserts the gateway runs first. Locks in the invariant that the gateway must be queried BEFORE the local ledger is mutated.
+    5. **404 short-circuit** — gateway is not called for a missing payment.
+    6. **Validation short-circuit** — gateway is not called when `validatePaymentBusinessRules` rejects an already-refunded payment.
+
+**Tests**: 17/17 pass in `payment-refund-clamp.test.ts` (was 11; +6 new gateway tests). Full `__tests__/accounting/` suite: **49/49 pass** (was 43; +6 new). Full api suite: **1005 passing, 1 skipped, 8 todo, 0 failures**. TypeScript: 0 errors (`tsc --noEmit -p apps/api/tsconfig.json`).
+
+**Files touched**:
+- Modified: `apps/api/app/api/accounting/payments/[id]/route.ts` (added `refundPaymentGateway` import + invocation + 502 short-circuit + extended doc-comment)
+- Modified: `apps/api/__tests__/accounting/payment-refund-clamp.test.ts` (added gateway mock + 6 new tests)
+
+**Why this matters**: with this pass, BOTH halves of the gateway adapter (charge in PUT from 40th pass, refund in POST from this pass) are wired into their respective handlers with the same defensive shape: server-side authoritative outcome, body trust boundary, gateway-before-DB ordering, fail-closed (502 with no writes) on processor decline. The Stripe integration now becomes a one-file swap inside `gateway.ts` — neither route handler changes. None of the four cascade-corruption vectors on the payments endpoint (over-refund leak, stale invoice status, forged charge outcome, forged refund outcome) are reachable from a tenant client.
+
+**Followups still open** (carried forward from 40th pass with this item closed):
+- ~~POST refund does not call `refundPaymentGateway`~~ — **CLOSED this pass**.
+- Sensitive-mutation rate limit on PUT/POST is missing. Today the only ceiling is the 100/min/tenant global limiter; a leaked session can still burn that ceiling on payment mutations specifically.
+- Refund failure path returns `refundTransactionId` in the 502 body but does not persist it to a `Payment.refundAttempts` audit table for full forensic trail.
+- `payment-process-refund.test.ts` (referenced in 35th-37th pass entries as a single canonical suite) does NOT exist on `main`. Coverage is split across `payment-process-gateway.test.ts` (PUT) and `payment-refund-clamp.test.ts` (POST + gateway). Consolidation into one file would match the original naming if desired, but the split is functional.
+
+---
 
 ## 40th audit pass — payment-process gateway trust boundary closed (2026-04-26)
 

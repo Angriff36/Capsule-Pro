@@ -149,6 +149,6 @@ Last: [first session]
 
 ## Last Session Bridge
 [Emergency bridge — running bridge was not updated]
-Files: apps/api/__tests__/accounting/payment-refund-clamp.test.ts (edit), IMPLEMENTATION_PLAN.md (edit)
+Files: apps/api/app/api/accounting/payments/[id]/gateway.ts (create), apps/api/app/api/accounting/payments/[id]/route.ts (edit), apps/api/__tests__/accounting/payment-process-gateway.test.ts (create), IMPLEMENTATION_PLAN.md (edit)
 
 # === END COGNILAYER ===
