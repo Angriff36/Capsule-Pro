@@ -49,6 +49,7 @@ const IGNORE_URL_PATTERNS = [
   /\/_next\/webpack-hmr/,
   /\/_next\/static\/chunks\//, // Stale chunk 404s after Next.js dev server recompile
   /\/_next\/static\/css\//, // Stale CSS 404s after recompile
+  /\/_vercel\//, // Vercel analytics/insights not available in local dev
 ];
 
 const IGNORE_PATTERNS = [
@@ -75,6 +76,8 @@ const IGNORE_PATTERNS = [
   /Refused to load the script.*posthog/i,
   /Refused to connect.*ably/i,
   /Failed to connect to.*ably/i,
+  /Refused to execute script.*MIME type/i, // Vercel analytics script returns HTML in local dev
+  /Refused to load.*_vercel/i,
   // ── Generic browser CSP messages (Chrome/Chromium) ─────────────────────
   /Loading the script.*violates the following Content Security Policy/i,
   /Connecting to .* violates the following Content Security Policy/i,

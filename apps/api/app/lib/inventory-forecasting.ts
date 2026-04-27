@@ -60,13 +60,27 @@ export async function calculateDepletionForecast(
 
   // Get current stock level from InventoryItem
   // Note: SKU maps to item_number in the database
-  const stockLevel = await database.inventoryItem.findFirst({
-    where: {
-      tenantId,
-      item_number: sku,
-      deletedAt: null,
-    },
-  });
+  let stockLevel;
+  try {
+    stockLevel = await database.inventoryItem.findFirst({
+      where: {
+        tenantId,
+        item_number: sku,
+        deletedAt: null,
+      },
+    });
+  } catch (dbError) {
+    console.error(`[calculateDepletionForecast] DB error looking up SKU ${sku}:`, dbError);
+    // Return a safe zero-stock forecast rather than crashing
+    return {
+      sku,
+      currentStock: 0,
+      depletionDate: null,
+      daysUntilDepletion: null,
+      confidence: "low",
+      forecast: [],
+    };
+  }
 
   const currentStock = stockLevel?.quantityOnHand
     ? Number(stockLevel.quantityOnHand)
@@ -76,9 +90,23 @@ export async function calculateDepletionForecast(
   const itemId = stockLevel?.id ?? "";
 
   // Get projected usage combining historical data and upcoming events
-  const projectedUsage = itemId
-    ? await getProjectedUsage(tenantId, itemId, horizonDays)
-    : await getProjectedUsageFromEventsOnly(tenantId, sku, horizonDays);
+  let projectedUsage;
+  try {
+    projectedUsage = itemId
+      ? await getProjectedUsage(tenantId, itemId, horizonDays)
+      : await getProjectedUsageFromEventsOnly(tenantId, sku, horizonDays);
+  } catch (usageError) {
+    console.error(`[calculateDepletionForecast] Error getting projected usage for SKU ${sku}:`, usageError);
+    // Return forecast with current stock but no usage projection
+    return {
+      sku,
+      currentStock,
+      depletionDate: currentStock > 0 ? null : new Date(),
+      daysUntilDepletion: currentStock > 0 ? null : 0,
+      confidence: "low",
+      forecast: [],
+    };
+  }
 
   // Generate forecast points
   const forecast: Array<{
@@ -151,39 +179,55 @@ export async function generateReorderSuggestions(
   let skusToCheck: string[] = [];
 
   if (sku) {
-    skusToCheck = [sku];
+    if (!sku.trim()) {
+      return suggestions;
+    }
+    skusToCheck = [sku.trim()];
   } else {
-    // Get all items below reorder point
-    // Note: SKU maps to item_number, reorderLevel maps to reorder_level
-    const lowStockItems = await database.inventoryItem.findMany({
-      where: {
-        tenantId,
-        deletedAt: null,
-      },
-      select: {
-        item_number: true,
-        quantityOnHand: true,
-        reorder_level: true,
-      },
-    });
+    try {
+      // Get all items below reorder point
+      // Note: SKU maps to item_number, reorderLevel maps to reorder_level
+      const lowStockItems = await database.inventoryItem.findMany({
+        where: {
+          tenantId,
+          deletedAt: null,
+        },
+        select: {
+          item_number: true,
+          quantityOnHand: true,
+          reorder_level: true,
+        },
+      });
 
-    skusToCheck = lowStockItems
-      .filter(
-        (item) => Number(item.quantityOnHand) <= Number(item.reorder_level)
-      )
-      .map((item) => item.item_number);
+      skusToCheck = lowStockItems
+        .filter(
+          (item) =>
+            item.item_number &&
+            item.item_number.trim().length > 0 &&
+            Number(item.quantityOnHand) <= Number(item.reorder_level)
+        )
+        .map((item) => item.item_number);
+    } catch (error) {
+      console.error("[generateReorderSuggestions] Failed to query inventory items:", error);
+      return suggestions;
+    }
   }
 
   for (const itemSku of skusToCheck) {
-    const suggestion = await calculateReorderSuggestion({
-      tenantId,
-      sku: itemSku,
-      leadTimeDays,
-      safetyStockDays,
-    });
+    try {
+      const suggestion = await calculateReorderSuggestion({
+        tenantId,
+        sku: itemSku,
+        leadTimeDays,
+        safetyStockDays,
+      });
 
-    if (suggestion) {
-      suggestions.push(suggestion);
+      if (suggestion) {
+        suggestions.push(suggestion);
+      }
+    } catch (error) {
+      console.error(`[generateReorderSuggestions] Failed for SKU ${itemSku}:`, error);
+      // Continue with other SKUs
     }
   }
 
@@ -474,13 +518,19 @@ async function calculateReorderSuggestion(
 
   // Get current stock and item info from InventoryItem
   // Note: SKU maps to item_number
-  const stockLevel = await database.inventoryItem.findFirst({
-    where: {
-      tenantId,
-      item_number: sku,
-      deletedAt: null,
-    },
-  });
+  let stockLevel;
+  try {
+    stockLevel = await database.inventoryItem.findFirst({
+      where: {
+        tenantId,
+        item_number: sku,
+        deletedAt: null,
+      },
+    });
+  } catch (dbError) {
+    console.error(`[calculateReorderSuggestion] DB error looking up SKU ${sku}:`, dbError);
+    return null;
+  }
 
   if (!stockLevel) {
     return null;
@@ -490,17 +540,26 @@ async function calculateReorderSuggestion(
   const reorderLevel = Number(stockLevel.reorder_level || 0);
 
   // Get forecast to determine depletion
-  const forecast = await calculateDepletionForecast({
-    tenantId,
-    sku,
-    horizonDays: leadTimeDays + safetyStockDays,
-  });
+  let forecast;
+  try {
+    forecast = await calculateDepletionForecast({
+      tenantId,
+      sku,
+      horizonDays: leadTimeDays + safetyStockDays,
+    });
+  } catch (forecastError) {
+    console.error(`[calculateReorderSuggestion] Forecast failed for SKU ${sku}:`, forecastError);
+    // Return null — we can't make a suggestion without forecast data
+    return null;
+  }
 
   // Calculate recommended order quantity
   const daysUntilDepletion = forecast.daysUntilDepletion ?? 999;
   const avgDailyUsage =
-    forecast.forecast.reduce((sum, f) => sum + f.usage, 0) /
-    forecast.forecast.length;
+    forecast.forecast.length > 0
+      ? forecast.forecast.reduce((sum, f) => sum + f.usage, 0) /
+        forecast.forecast.length
+      : 0;
 
   let recommendedOrderQty = 0;
   let justification = "";
@@ -555,20 +614,30 @@ export async function batchCalculateForecasts(
   horizonDays = 30
 ): Promise<Map<string, ForecastResult>> {
   invariant(tenantId, "tenantId is required");
-  invariant(skus?.length, "skus is required");
+
+  if (!skus || skus.length === 0) {
+    return new Map();
+  }
+
   const results = new Map<string, ForecastResult>();
 
   for (const sku of skus) {
+    // Skip empty/null SKUs
+    if (!sku || sku.trim().length === 0) {
+      console.warn("[batchCalculateForecasts] Skipping empty SKU");
+      continue;
+    }
+
     try {
       const forecast = await calculateDepletionForecast({
         tenantId,
-        sku,
+        sku: sku.trim(),
         horizonDays,
       });
       results.set(sku, forecast);
     } catch (error) {
       console.error(`Failed to calculate forecast for SKU ${sku}:`, error);
-      // Continue with other SKUs
+      // Continue with other SKUs — don't let one failure crash the batch
     }
   }
 
