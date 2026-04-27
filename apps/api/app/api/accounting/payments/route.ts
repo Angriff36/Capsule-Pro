@@ -12,6 +12,12 @@
 
 import { database, type Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
+import {
+  IdempotencyKeyError,
+  extractIdempotencyKey,
+  lookupIdempotentResponse,
+  storeIdempotentResponse,
+} from "@/lib/http-idempotency";
 import { requireTenantId } from "@/app/lib/tenant";
 import {
   captureException,
@@ -22,6 +28,12 @@ import {
   parsePaymentFilters,
   validateCreatePaymentRequest,
 } from "./validation";
+
+/**
+ * Cache scope for `Idempotency-Key`-protected payment creation.
+ * Stored as `http:accounting:payments:create:<key>` in `manifest_idempotency`.
+ */
+const PAYMENT_CREATE_IDEMPOTENCY_SCOPE = "accounting:payments:create";
 
 /**
  * GET /api/accounting/payments
@@ -128,11 +140,53 @@ export async function GET(request: NextRequest) {
 
 /**
  * POST /api/accounting/payments
- * Create a new payment
+ * Create a new payment.
+ *
+ * SECURITY INVARIANT (idempotency)
+ * --------------------------------
+ * If the caller supplies an `Idempotency-Key` (or `X-Idempotency-Key`) header,
+ * the route guarantees AT MOST ONE Payment row will be created for that
+ * (tenantId, key) pair within the cache TTL (24h). A retry of the same
+ * request — same body or different — receives the cached 201 response with
+ * `X-Idempotent-Replay: true` instead of creating a duplicate row. Without
+ * this protection, a network retry that succeeded on the first attempt but
+ * never reached the client would silently create a SECOND payment, and once a
+ * real Stripe charge call lands inside this handler that would be a duplicate
+ * charge.
+ *
+ * Cache lookup happens AFTER tenant resolution and BEFORE body parsing so a
+ * confirmed cache hit short-circuits all expensive work. Only successful
+ * (status 201) responses are cached — validation errors stay un-cached so the
+ * client may correct the body and retry under the same key.
  */
 export async function POST(request: NextRequest) {
   try {
     const tenantId = await requireTenantId();
+
+    let idempotencyKey: string | undefined;
+    try {
+      idempotencyKey = extractIdempotencyKey(request);
+    } catch (error) {
+      if (error instanceof IdempotencyKeyError) {
+        return NextResponse.json({ error: error.message }, { status: 400 });
+      }
+      throw error;
+    }
+
+    if (idempotencyKey !== undefined) {
+      const cached = await lookupIdempotentResponse(
+        tenantId,
+        PAYMENT_CREATE_IDEMPOTENCY_SCOPE,
+        idempotencyKey
+      );
+      if (cached !== null) {
+        return NextResponse.json(cached.body, {
+          status: cached.status,
+          headers: { "X-Idempotent-Replay": "true" },
+        });
+      }
+    }
+
     const body = await request.json();
 
     validateCreatePaymentRequest(body);
@@ -184,13 +238,21 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    return NextResponse.json<PaymentResponse>(
-      {
-        ...payment,
-        amount: payment.amount.toString(),
-      },
-      { status: 201 }
-    );
+    const responseBody: PaymentResponse = {
+      ...payment,
+      amount: payment.amount.toString(),
+    };
+
+    if (idempotencyKey !== undefined) {
+      await storeIdempotentResponse(
+        tenantId,
+        PAYMENT_CREATE_IDEMPOTENCY_SCOPE,
+        idempotencyKey,
+        { status: 201, body: responseBody }
+      );
+    }
+
+    return NextResponse.json<PaymentResponse>(responseBody, { status: 201 });
   } catch (error) {
     captureException(error);
     console.error("Error creating payment:", error);
