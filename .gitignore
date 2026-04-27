@@ -331,6 +331,7 @@ scripts/*
 !scripts/check-staged-write-routes.mjs
 !scripts/test-route-conformance.mjs
 !scripts/sync-manifest-runtime.mjs
+!scripts/ensure-github-packages-npmrc.sh
 
 # Local Netlify folder
 .netlify
