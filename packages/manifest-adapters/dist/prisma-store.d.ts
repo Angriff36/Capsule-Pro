@@ -224,6 +224,11 @@ export declare class EmailTemplatePrismaStore implements Store<EntityInstance> {
     update(id: string, data: Partial<EntityInstance>): Promise<EntityInstance | undefined>;
     delete(id: string): Promise<boolean>;
     clear(): Promise<void>;
+    /**
+     * Normalize mergeFields to a valid Prisma Json value.
+     * Accepts string (parsed), array/object (passed through), or null (defaults to []).
+     */
+    private normalizeMergeFields;
     private mapToManifestEntity;
 }
 /**

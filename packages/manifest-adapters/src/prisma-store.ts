@@ -1631,7 +1631,8 @@ export class EmailTemplatePrismaStore implements Store<EntityInstance> {
   }
 
   async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
-    const id = (data.id as string | undefined) ?? crypto.randomUUID();
+    const id = (data.id as string) || crypto.randomUUID();
+    const mergeFields = this.normalizeMergeFields(data.mergeFields);
     const template = await this.prisma.email_templates.create({
       data: {
         tenant_id: this.tenantId,
@@ -1640,7 +1641,7 @@ export class EmailTemplatePrismaStore implements Store<EntityInstance> {
         template_type: ((data.templateType as string) || "custom") as any,
         subject: (data.subject as string) || "",
         body: (data.body as string) || "",
-        merge_fields: (data.mergeFields as string) || "[]",
+        merge_fields: mergeFields,
         is_active: data.isActive !== undefined ? Boolean(data.isActive) : true,
         is_default: data.isDefault !== undefined ? Boolean(data.isDefault) : false,
       },
@@ -1662,7 +1663,7 @@ export class EmailTemplatePrismaStore implements Store<EntityInstance> {
             : undefined,
           subject: data.subject as string | undefined,
           body: data.body as string | undefined,
-          merge_fields: data.mergeFields as string | undefined,
+          merge_fields: data.mergeFields != null ? this.normalizeMergeFields(data.mergeFields) : undefined,
           is_active: data.isActive !== undefined ? Boolean(data.isActive) : undefined,
           is_default: data.isDefault !== undefined ? Boolean(data.isDefault) : undefined,
           updated_at: new Date(),
@@ -1693,6 +1694,25 @@ export class EmailTemplatePrismaStore implements Store<EntityInstance> {
       where: { tenant_id: this.tenantId, deleted_at: null },
       data: { deleted_at: new Date() },
     });
+  }
+
+  /**
+   * Normalize mergeFields to a valid Prisma Json value.
+   * Accepts string (parsed), array/object (passed through), or null (defaults to []).
+   */
+  private normalizeMergeFields(value: unknown): Prisma.InputJsonValue {
+    if (value == null) return [];
+    if (typeof value === "string") {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) || (parsed && typeof parsed === "object")
+          ? (parsed as Prisma.InputJsonValue)
+          : [];
+      } catch {
+        return [];
+      }
+    }
+    return value as Prisma.InputJsonValue;
   }
 
   private mapToManifestEntity(t: email_templates): EntityInstance {

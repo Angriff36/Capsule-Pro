@@ -1444,7 +1444,8 @@ export class EmailTemplatePrismaStore {
         return template ? this.mapToManifestEntity(template) : undefined;
     }
     async create(data) {
-        const id = data.id ?? crypto.randomUUID();
+        const id = data.id || crypto.randomUUID();
+        const mergeFields = this.normalizeMergeFields(data.mergeFields);
         const template = await this.prisma.email_templates.create({
             data: {
                 tenant_id: this.tenantId,
@@ -1453,7 +1454,7 @@ export class EmailTemplatePrismaStore {
                 template_type: (data.templateType || "custom"),
                 subject: data.subject || "",
                 body: data.body || "",
-                merge_fields: data.mergeFields || "[]",
+                merge_fields: mergeFields,
                 is_active: data.isActive !== undefined ? Boolean(data.isActive) : true,
                 is_default: data.isDefault !== undefined ? Boolean(data.isDefault) : false,
             },
@@ -1471,7 +1472,7 @@ export class EmailTemplatePrismaStore {
                         : undefined,
                     subject: data.subject,
                     body: data.body,
-                    merge_fields: data.mergeFields,
+                    merge_fields: data.mergeFields != null ? this.normalizeMergeFields(data.mergeFields) : undefined,
                     is_active: data.isActive !== undefined ? Boolean(data.isActive) : undefined,
                     is_default: data.isDefault !== undefined ? Boolean(data.isDefault) : undefined,
                     updated_at: new Date(),
@@ -1502,6 +1503,26 @@ export class EmailTemplatePrismaStore {
             where: { tenant_id: this.tenantId, deleted_at: null },
             data: { deleted_at: new Date() },
         });
+    }
+    /**
+     * Normalize mergeFields to a valid Prisma Json value.
+     * Accepts string (parsed), array/object (passed through), or null (defaults to []).
+     */
+    normalizeMergeFields(value) {
+        if (value == null)
+            return [];
+        if (typeof value === "string") {
+            try {
+                const parsed = JSON.parse(value);
+                return Array.isArray(parsed) || (parsed && typeof parsed === "object")
+                    ? parsed
+                    : [];
+            }
+            catch {
+                return [];
+            }
+        }
+        return value;
     }
     mapToManifestEntity(t) {
         return {
