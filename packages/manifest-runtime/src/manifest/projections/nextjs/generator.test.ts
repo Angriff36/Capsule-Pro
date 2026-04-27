@@ -57,6 +57,17 @@ describe("NextJsProjection", () => {
       // Contract: Must have auth check
       expect(code).toContain("Unauthorized");
 
+      // Contract: Must clamp pagination so a single hostile or buggy client
+      // cannot request the entire table in one round trip. The generator owns
+      // this — list routes are auto-generated from the Manifest IR, so the
+      // bound has to live in the template (not in each route).
+      expect(code).toContain("clampLimit");
+      expect(code).toContain("clampOffset");
+      expect(code).toContain("MAX_LIMIT = 200");
+      expect(code).toContain("take: limit");
+      expect(code).toContain("skip: offset");
+      expect(code).toContain("limit, offset");
+
       expect(routeResult.diagnostics).toHaveLength(0);
     });
 

@@ -247,6 +247,8 @@ function generatePrismaQuery(
     orderBy: {
       createdAt: "desc",
     },
+    take: limit,
+    skip: offset,
   });`;
 }
 
@@ -733,14 +735,41 @@ export class NextJsProjection implements ProjectionTarget {
       lines.push(authImport);
     }
     lines.push("");
+    lines.push("// Pagination bounds. DEFAULT_LIMIT keeps a single page small");
+    lines.push("// enough to render without blowing the wire / memory on large");
+    lines.push("// tenants. MAX_LIMIT caps the worst case so a hostile or buggy");
+    lines.push("// client cannot request the entire table in one round trip.");
+    lines.push("const DEFAULT_LIMIT = 50;");
+    lines.push("const MAX_LIMIT = 200;");
+    lines.push("");
+    lines.push("function clampLimit(raw: string | null): number {");
+    lines.push('  const parsed = Number.parseInt(raw ?? "", 10);');
+    lines.push(
+      "  if (!Number.isFinite(parsed) || parsed <= 0) return DEFAULT_LIMIT;"
+    );
+    lines.push("  return Math.min(parsed, MAX_LIMIT);");
+    lines.push("}");
+    lines.push("");
+    lines.push("function clampOffset(raw: string | null): number {");
+    lines.push('  const parsed = Number.parseInt(raw ?? "", 10);');
+    lines.push("  if (!Number.isFinite(parsed) || parsed < 0) return 0;");
+    lines.push("  return parsed;");
+    lines.push("}");
+    lines.push("");
     lines.push("export async function GET(request: NextRequest) {");
     lines.push("  try {");
     lines.push(generateAuthBody(options));
     lines.push(generateTenantLookup(options));
     lines.push("");
+    lines.push("  const searchParams = request.nextUrl.searchParams;");
+    lines.push('  const limit = clampLimit(searchParams.get("limit"));');
+    lines.push('  const offset = clampOffset(searchParams.get("offset"));');
+    lines.push("");
     lines.push(generatePrismaQuery(entity.name, options));
     lines.push("");
-    lines.push(`    return manifestSuccessResponse({ ${variableName} });`);
+    lines.push(
+      `    return manifestSuccessResponse({ ${variableName}, limit, offset });`
+    );
     lines.push("  } catch (error) {");
     lines.push(`    console.error("Error fetching ${variableName}:", error);`);
     lines.push(

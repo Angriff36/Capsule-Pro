@@ -175,10 +175,39 @@ describe("Test A: commands.json determinism", () => {
 // ---------------------------------------------------------------------------
 // Test B — generated route content determinism
 // ---------------------------------------------------------------------------
+/**
+ * Explicit allowlist of entities whose list/route.ts is intentionally
+ * hand-maintained, not generator output. Each entry is a deliberate
+ * divergence from the manifest projection — usually because the route
+ * needs runtime safety controls (pagination clamps, ILIKE wildcard
+ * escapes, status filters) that the published @angriff36/manifest CLI
+ * does not yet emit. Future generator runs (after the package is
+ * republished with the matching projection change in
+ * packages/manifest-runtime/src/manifest/projections/nextjs/generator.ts)
+ * will produce these patterns automatically and entries can be removed
+ * from this list.
+ *
+ * Adding to this list is auditable: any new hand-maintained route MUST
+ * be named here, with a comment explaining why.
+ */
+const HAND_MAINTAINED_LIST_ROUTES: ReadonlySet<string> = new Set([
+  // pagination clamps (apps/api/lib/pagination.ts) prevent unbounded reads
+  "PrepTask",
+  "Recipe",
+  "Ingredient",
+  "Client",
+  "Lead",
+  "InventorySupplier",
+  "Schedule",
+  "AdminTask",
+]);
+
 describe("Test B: generated route content determinism", () => {
-  it("all generated list routes contain the expected marker", () => {
-    // Every entity with a domain mapping should have a list/route.ts with
-    // the generated marker. This proves the generator ran and produced output.
+  it("all generated list routes contain the expected marker (or are explicitly hand-maintained)", () => {
+    // Every entity with a domain mapping should EITHER carry the generator
+    // marker OR appear in HAND_MAINTAINED_LIST_ROUTES. This pins the
+    // contract that divergence from the manifest projection is always
+    // explicit and auditable.
     const entities = Object.keys(ENTITY_DOMAIN_MAP);
     const missing: string[] = [];
 
@@ -190,9 +219,12 @@ describe("Test B: generated route content determinism", () => {
         continue;
       }
       const content = readFileSync(listRoute, "utf8");
-      if (!hasGeneratedMarker(content)) {
+      if (
+        !hasGeneratedMarker(content) &&
+        !HAND_MAINTAINED_LIST_ROUTES.has(entity)
+      ) {
         missing.push(
-          `${domain}/list/route.ts (entity: ${entity}) — exists but missing generated marker`
+          `${domain}/list/route.ts (entity: ${entity}) — exists but missing generated marker (and not in HAND_MAINTAINED_LIST_ROUTES)`
         );
       }
     }

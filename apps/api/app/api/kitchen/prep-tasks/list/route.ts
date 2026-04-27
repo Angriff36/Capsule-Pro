@@ -1,36 +1,49 @@
-// Auto-generated Next.js API route for PrepTask
-// Generated from Manifest IR - DO NOT EDIT
+// List prepTasks with pagination clamps to prevent unbounded reads.
+// Hand-maintained derivation of the manifest projection — pagination policy
+// is centralized in `@/lib/pagination`. The matching change in
+// packages/manifest-runtime/src/manifest/projections/nextjs/generator.ts
+// will produce this pattern automatically the next time the
+// @angriff36/manifest CLI is republished.
 
 import type { NextRequest } from "next/server";
+import { auth } from "@repo/auth/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
-import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
-import { auth } from "@repo/auth/server";
+import {
+  manifestErrorResponse,
+  manifestSuccessResponse,
+} from "@/lib/manifest-response";
+import { clampLimit, clampOffset } from "@/lib/pagination";
 
 export async function GET(request: NextRequest) {
   try {
-  const { orgId, userId } = await auth();
-  if (!(userId && orgId)) {
-    return manifestErrorResponse("Unauthorized", 401);
-  }
+    const { orgId, userId } = await auth();
+    if (!(userId && orgId)) {
+      return manifestErrorResponse("Unauthorized", 401);
+    }
 
-  const tenantId = await getTenantIdForOrg(orgId);
+    const tenantId = await getTenantIdForOrg(orgId);
+    if (!tenantId) {
+      return manifestErrorResponse("Tenant not found", 400);
+    }
 
-  if (!tenantId) {
-    return manifestErrorResponse("Tenant not found", 400);
-  }
+    const searchParams = request.nextUrl.searchParams;
+    const limit = clampLimit(searchParams.get("limit"));
+    const offset = clampOffset(searchParams.get("offset"));
 
-const prepTasks = await database.prepTask.findMany({
-    where: {
+    const prepTasks = await database.prepTask.findMany({
+      where: {
         tenantId,
-        deletedAt: null
+        deletedAt: null,
       },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
+      orderBy: {
+        createdAt: "desc",
+      },
+      take: limit,
+      skip: offset,
+    });
 
-    return manifestSuccessResponse({ prepTasks });
+    return manifestSuccessResponse({ prepTasks, limit, offset });
   } catch (error) {
     console.error("Error fetching prepTasks:", error);
     return manifestErrorResponse("Internal server error", 500);

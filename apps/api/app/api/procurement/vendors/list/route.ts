@@ -8,27 +8,8 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { clampLimit, clampOffset } from "@/lib/pagination";
 import { likeContains } from "@/lib/sql-like";
-
-// Pagination bounds.
-//   DEFAULT_LIMIT keeps a single page small enough to render without
-//   blowing the wire / memory on large tenants.
-//   MAX_LIMIT caps the worst case so a hostile or buggy client cannot
-//   request the entire table in one round trip.
-const DEFAULT_LIMIT = 50;
-const MAX_LIMIT = 200;
-
-function clampLimit(raw: string | null): number {
-  const parsed = Number.parseInt(raw ?? "", 10);
-  if (!Number.isFinite(parsed) || parsed <= 0) return DEFAULT_LIMIT;
-  return Math.min(parsed, MAX_LIMIT);
-}
-
-function clampOffset(raw: string | null): number {
-  const parsed = Number.parseInt(raw ?? "", 10);
-  if (!Number.isFinite(parsed) || parsed < 0) return 0;
-  return parsed;
-}
 
 export async function GET(request: NextRequest) {
   try {

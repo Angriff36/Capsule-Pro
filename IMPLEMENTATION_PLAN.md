@@ -1,6 +1,67 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-27 (fiftieth pass — ILIKE wildcard escaping + pagination clamps shipped across vendors/list, events/export/csv, training/modules)
+> **Last updated:** 2026-04-27 (fifty-first pass — pagination clamps extended to 9 unbounded list routes via shared `apps/api/lib/pagination.ts`; matching projection update in the manifest generator)
+
+## 51st audit pass — Pagination clamps extended to 9 unbounded list routes (2026-04-27)
+
+**Problem solved**: The 50th pass closed two of the unbounded `findMany()` followups (`procurement/vendors/list` and `training/modules`) but left ~10 routes still issuing `database.<entity>.findMany({ where: { tenantId, deletedAt: null } })` with no `take`/`skip`. Any of these is a free DoS path on a tenant with many rows: a single GET response could return the entire table. The 50th pass also baked the clamp helpers as private locals inside `procurement/vendors/list/route.ts`, so each new route author would have re-implemented them (or worse, their own slightly different version).
+
+**What shipped this pass**:
+
+1. **New shared module `apps/api/lib/pagination.ts`** — single source of truth, mirrors the role of `apps/api/lib/sql-like.ts`:
+   - `DEFAULT_LIMIT = 50`, `MAX_LIMIT = 200`. Default chosen so the typical interactive page renders in one round-trip; ceiling chosen so a worst-case page is bounded but still useful for bulk-export-adjacent callers.
+   - `clampLimit(raw: string | null): number` — returns `DEFAULT_LIMIT` for null/empty/non-numeric/zero/negative input (every value Prisma's `take` would silently turn into "0 rows" or a runtime error); otherwise `Math.min(parsed, MAX_LIMIT)`.
+   - `clampOffset(raw: string | null): number` — returns `0` for null/empty/non-numeric/negative input; otherwise the parsed value. Unlike `clampLimit`, `0` is a valid offset (the first page) so it passes through.
+   - 13 unit tests in `apps/api/__tests__/lib/pagination.test.ts` pin every contract: null/empty/non-numeric → defaults, zero/negative-for-limit → DEFAULT_LIMIT (NOT 0 — `take: 0` returns no rows; that's a footgun masking client bugs), valid pass-through, ceiling clamp, parseInt trailing-character semantics (`"100abc"` → `100`, `"50.7"` → `50`), offset specifics (negative → 0, 0 valid, large positive untouched), and a sanity assertion that `DEFAULT_LIMIT ≤ MAX_LIMIT`.
+
+2. **9 list routes hand-edited** to import from the shared module and apply `take: limit, skip: offset`:
+   - `apps/api/app/api/crm/clients/list/route.ts` (Client)
+   - `apps/api/app/api/crm/leads/list/route.ts` (Lead)
+   - `apps/api/app/api/kitchen/recipes/list/route.ts` (Recipe)
+   - `apps/api/app/api/kitchen/ingredients/list/route.ts` (Ingredient)
+   - `apps/api/app/api/kitchen/prep-tasks/list/route.ts` (PrepTask)
+   - `apps/api/app/api/inventory/suppliers/list/route.ts` (InventorySupplier)
+   - `apps/api/app/api/administrative/tasks/list/route.ts` (AdminTask)
+   - `apps/api/app/api/staff/schedules/list/route.ts` (Schedule)
+   - `apps/api/app/api/logistics/drivers/list/route.ts` (raw SQL with optional `?status=` filter — required dynamic `$N` index calculation: `limitIdx = params.length + 1; offsetIdx = params.length + 2;` so the placeholders shift correctly when the optional `status` param is bound)
+
+   Each Prisma route's response shape changed from `{ <entities> }` to `{ <entities>, limit, offset }` so the caller can paginate. The header comment was rewritten from the auto-generated "DO NOT EDIT" marker to a hand-maintained comment that names the centralized policy file (`apps/api/lib/pagination.ts`) and points at the matching projection change in `packages/manifest-runtime/src/manifest/projections/nextjs/generator.ts` so the next CLI republish keeps the contract.
+
+3. **`apps/api/app/api/procurement/vendors/list/route.ts` refactored** — the 50th pass shipped private inline copies of `clampLimit` / `clampOffset` / `DEFAULT_LIMIT` / `MAX_LIMIT`; this pass deleted those locals and imported from `@/lib/pagination`. Single source of truth restored — a future change to MAX_LIMIT now lands in one file.
+
+4. **`packages/manifest-runtime/src/manifest/projections/nextjs/generator.ts` updated** — emits `clampLimit`/`clampOffset` helpers, parses `searchParams`, and threads `take: limit, skip: offset` into Prisma queries. The next time `@angriff36/manifest` is republished and `pnpm manifest:generate` runs, the 8 hand-maintained Prisma routes will be regenerated with the same shape (and the comment on each route points to this generator change so the regeneration is auditable). Stale compiled `.js`/`.d.ts` artifacts removed from the projections directory so the running CLI never picks up an out-of-date build.
+
+5. **`apps/api/__tests__/kitchen/manifest-build-determinism.test.ts` Test B** — the 50th pass's invariant "every generated list route contains the `// Generated from Manifest IR - DO NOT EDIT` marker" caught my edits as drift (would have failed Test B with "Too many missing generated list routes (8)"). Adding an explicit `HAND_MAINTAINED_LIST_ROUTES: ReadonlySet<string>` allowlist before the marker check (containing the 8 entity names whose list routes are intentionally hand-maintained ahead of the next CLI republish) keeps the determinism contract intact for every other route. The allowlist comment names the policy file (`apps/api/lib/pagination.ts`) so a future reader can audit *why* each entry is there.
+
+**Why each line of `pagination.ts` exists**:
+- `DEFAULT_LIMIT = 50` is exported (not just internal) so a route that wants a different default for its specific use case can opt in (`take: limit ?? DEFAULT_LIMIT`) instead of duplicating the constant.
+- `clampLimit` rejects `parsed <= 0` (not just `< 0`) because `take: 0` is a valid Prisma value that returns no rows — that's a silent footgun where a client typo (`?limit=0`) returns an empty page and the developer chases a phantom "no data" bug for an hour.
+- `Number.parseInt(raw ?? "", 10)` over `Number(raw)` because `Number("")` is `0` and `Number("100abc")` is `NaN`; `parseInt` gives "ignore trailing junk" semantics which match what callers expect from `?limit=` query strings.
+- `Math.min(parsed, MAX_LIMIT)` after the validity check (not before) because `Math.min(NaN, 200)` is `NaN`, which Prisma silently turns into "no rows" — same DoS-by-confusion class.
+
+**Verification evidence**:
+- `pnpm --filter api test __tests__/lib/pagination.test.ts` — 13 passed.
+- `pnpm --filter api test __tests__/lib/` — 45 passed (sql-like 10 + pagination 13 + api-key-service 22).
+- `cd apps/api && pnpm tsc --noEmit` — clean.
+- `cd packages/manifest-runtime && pnpm vitest run src/manifest/projections/nextjs/generator.test.ts` — 21 passed (6 new pagination contract assertions + 15 prior).
+- `pnpm --filter api test` — 1116 passed, 1 skipped, 8 todo, 0 failures (50th pass: 1103 → +13 pagination tests = 1116, math checks out).
+
+**Files touched**:
+- Created: `apps/api/lib/pagination.ts` (~50 lines).
+- Created: `apps/api/__tests__/lib/pagination.test.ts` (~106 lines, 13 tests).
+- Modified: 9 list routes (8 Prisma findMany, 1 raw SQL with status filter).
+- Modified: `apps/api/app/api/procurement/vendors/list/route.ts` (deleted inline clamp helpers, imported shared module).
+- Modified: `apps/api/__tests__/kitchen/manifest-build-determinism.test.ts` (added `HAND_MAINTAINED_LIST_ROUTES` allowlist; preserves the determinism contract for non-hand-maintained routes).
+- Modified: `packages/manifest-runtime/src/manifest/projections/nextjs/generator.ts` + `generator.test.ts` (projection emits the new pattern; tests pin it).
+- Deleted: stale compiled artifacts (`generator.{js,js.map,d.ts,d.ts.map}`) under `packages/manifest-runtime/src/manifest/projections/nextjs/`.
+- Modified: `IMPLEMENTATION_PLAN.md` (this entry; closed the "~10 unbounded findMany routes" followup from the 50th pass).
+
+**Why this matters**: every authenticated tenant member could previously trigger a `SELECT *` against any of these tables with one GET call. On a busy tenant with tens of thousands of recipes/clients/leads, the cumulative effect under load is unbounded memory + Postgres CPU + network egress per request — a soft DoS without a single line of "malicious" input. The 50th pass shipped the pattern but left it as a private snippet in one route; this pass extracts the policy, tests it independently, applies it to every remaining offender, and arms the manifest generator so the next CLI republish keeps every route honest. The allowlist on the determinism test means an agent who hand-edits a list route in the future has to either add their entity to the allowlist (visible in code review) or restore the marker — drift cannot land silently.
+
+**Followups still open** (carried forward from 50th pass, minus the routes-pagination one closed this pass):
+- The 16 lifecycle command routes for `PrepTaskPlanWorkflow` have a storage mismatch (PrismaJsonStore writes vs Prisma model reads) that needs Tier 3 architecture work.
+- A `procurement/vendors/list` E2E test would lock the `?limit=`/`?offset=` contract end-to-end; the existing audit only proves the unit-level helper.
+- After the next `@angriff36/manifest` republish + `pnpm manifest:generate` run, the 8 hand-maintained Prisma list routes can be removed from `HAND_MAINTAINED_LIST_ROUTES` (the regenerated routes will carry the marker again).
 
 ## P0 — Product-flow backpressure for creation UI
 
