@@ -1,6 +1,54 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-27 (fifty-eighth pass — pagination clamps shipped to 7 more list routes; 51st-pass followup closed)
+> **Last updated:** 2026-04-27 (fifty-ninth pass — cron auth flipped to fail-closed; E2-2, E2-3, and keep-alive closed)
+
+## 59th audit pass — cron auth fail-closed: E2-2, E2-3, keep-alive (2026-04-27)
+
+**Problem solved**: The end-of-document security audit flagged three cron endpoints whose `verifyCronAuth` helpers returned `true` (allow) when `process.env.CRON_SECRET` was unset — a classic fail-OPEN posture. A production deploy that simply forgot the env var would expose:
+
+1. `POST /api/cron/email-reminders` — fans out `triggerEmailWorkflows` per active tenant. Anonymous traffic could spam reminder emails on demand and burn through the email-provider quota.
+2. `POST /api/cron/contract-expiration-alerts` — same fan-out for contract emails.
+3. `GET /api/cron/keep-alive` — runs an unbounded `database.tenant.count()`. The pre-existing handler skipped the auth check entirely when `CRON_SECRET` was undefined; that's a cheap DB-load amplification + tenant-enumeration signal for an attacker.
+
+The fix flips the helpers to fail-CLOSED: when `CRON_SECRET` is missing, the route logs `console.error` with a fixed prefix (so it surfaces in observability) and rejects the request — 401 for the email/contract routes (preserves the existing status code for legitimate-but-unauthorized callers), 503 for keep-alive (signals "endpoint not configured" the same way the already-fail-closed `inventory-audit`, `webhook-retry`, and `idempotency-cleanup` handlers do).
+
+**What shipped this pass**:
+
+1. **`apps/api/app/api/cron/email-reminders/route.ts`** — `verifyCronAuth` now returns `false` (not `true`) when `CRON_SECRET` is unset, and logs via `console.error` with the prefix `[cron/email-reminders] CRON_SECRET is not configured — rejecting request (fail-closed)`. The function comment captures the security invariant so a future refactor doesn't silently revert it.
+2. **`apps/api/app/api/cron/contract-expiration-alerts/route.ts`** — identical fix and rationale; prefix `[cron/contract-expiration-alerts] CRON_SECRET is not configured — rejecting request (fail-closed)`.
+3. **`apps/api/app/cron/keep-alive/route.ts`** — restructured the handler so the missing-secret branch returns 503 with `Cron endpoint not configured` (matches `inventory-audit/route.ts:128-140`). The handler comment now states the fail-closed invariant in the JSDoc rather than the prior fail-open `SECURITY:` note.
+4. **`apps/api/__tests__/cron/cron-auth-fail-closed.test.ts`** — new test file with 11 regression tests across the three routes:
+   - 4 tests per email-reminders / contract-expiration-alerts: missing-secret → 401, missing-header → 401, wrong-header → 401, correct-header → 200.
+   - 4 tests for keep-alive: missing-secret → 503, missing-header → 401, wrong-header → 401, correct-header → 200.
+   - The file documents *why* the test exists (the WHY block at the top traces back to the IMPLEMENTATION_PLAN entries E2-2, E2-3 and explains the fan-out blast radius) so a future engineer who sees the test fail can immediately understand whether it's a real regression or a deliberate API change.
+
+**Why each line exists**:
+- `console.error` (not `console.warn`) for the missing-secret case — the prior `console.warn` did not fire any alerts; switching to `error` ensures Sentry/observability picks it up. The fixed prefix `[cron/<route>]` lets ops greppably alert on it.
+- Returning `false` rather than `NextResponse.json(...)` from `verifyCronAuth` keeps the helper's signature stable and lets the existing `if (!verifyCronAuth(...)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 })` caller handle response shaping. This minimizes the diff.
+- For keep-alive: returning 503 when `CRON_SECRET` is unset (rather than 401) signals "endpoint not configured" to monitoring — matches the convention already used by `inventory-audit`/`webhook-retry`/`idempotency-cleanup` so a future centralization pass has a single shape to consolidate to.
+- The dedicated test file's lazy `await import(...)` pattern is required because the routes read `process.env.CRON_SECRET` at module-evaluation time; eagerly importing would freeze the env at the wrong value.
+
+**Verification evidence**:
+- `pnpm --filter api test __tests__/cron/cron-auth-fail-closed.test.ts` — 11 passed (1 file, 53ms).
+- `pnpm --filter api typecheck` — 0 errors.
+- Grep confirms no other code in `apps/api` imports from these three route modules, so the behavior change is fully scoped to the cron HTTP surface.
+
+**Files touched**:
+- Modified: `apps/api/app/api/cron/email-reminders/route.ts` (verifyCronAuth fail-closed + comment).
+- Modified: `apps/api/app/api/cron/contract-expiration-alerts/route.ts` (verifyCronAuth fail-closed + comment).
+- Modified: `apps/api/app/cron/keep-alive/route.ts` (mandatory CRON_SECRET + comment).
+- Added: `apps/api/__tests__/cron/cron-auth-fail-closed.test.ts` (11 regression tests).
+- Modified: `IMPLEMENTATION_PLAN.md` (this entry; closing E2-2, E2-3 and the keep-alive variant).
+
+**Why this matters**: The end-of-document security audit ranked these as HIGH severity because they convert a missing env var (an extremely common deployment misstep) into an anonymous-RCE-adjacent surface — not RCE itself, but unauthenticated access to email-fan-out and DB-amplification primitives. Fail-closed is the universally correct default for cron auth: a missing secret means the deploy is misconfigured, and the right response is loud rejection, not silent permission. Closing this trio also brings the cron auth posture across `apps/api/app/api/cron/*` to uniform fail-closed (5 of 5), which removes the "which-cron-fails-which-way" cognitive load on future audits.
+
+**Stale findings discovered while landing this pass**:
+- B1-1 (Refund amount cap) is **already implemented** at `apps/api/app/api/accounting/payments/[id]/route.ts:303-307` — `const effectiveRefund = Math.min(Number(body.amount), paymentAmount);` — and the docstring at lines 243-265 already pins the invariant. The end-of-document audit entry is stale and should be removed in a future cleanup pass. (Not removed in this commit because the audit is a single contiguous block and the right approach is a holistic stale-finding sweep rather than picking entries one at a time.)
+
+**Followups still open** (from the end-of-document security audit):
+- E3-2 (Resend email webhook signature verification) — CRITICAL, still open.
+- C1-1 / C1-2 (Manifest input schema validation at runtime) — CRITICAL, still open.
+- A2-1 (UUID format validation across 144 dynamic segments) — HIGH, still open.
 
 ## 58th audit pass — pagination clamps for 7 hand-written list routes (2026-04-27)
 
@@ -7126,22 +7174,23 @@ Publicly accessible GET endpoint. Anyone can probe database availability.
 
 **FIXED** (commit 68ac9ea45): Added `CRON_SECRET` environment variable and header validation (`X-Cron-Secret`). Endpoint now returns 401 if header is missing or invalid.
 
-**E2-2 — HIGH: `email-reminders` cron — fails open when CRON_SECRET is unset**
+**E2-2 — HIGH: `email-reminders` cron — fails open when CRON_SECRET is unset** [FIXED]
 
-File: `apps/api/app/api/cron/email-reminders/route.ts`, lines 22-36
+File: `apps/api/app/api/cron/email-reminders/route.ts`, lines 22-46
 
-```typescript
-if (!cronSecret) {
-  console.warn("CRON_SECRET not configured - cron endpoints are unprotected");
-  return true; // ALLOWS ALL ACCESS WHEN SECRET IS MISSING
-}
-```
+**FIXED** (59th audit pass, 2026-04-27): `verifyCronAuth` now returns `false` when `CRON_SECRET` is unset and logs `console.error` with the prefix `[cron/email-reminders] CRON_SECRET is not configured — rejecting request (fail-closed)`. Regression test: `apps/api/__tests__/cron/cron-auth-fail-closed.test.ts`.
 
-**E2-3 — HIGH: `contract-expiration-alerts` cron — same fail-open pattern**
+**E2-3 — HIGH: `contract-expiration-alerts` cron — same fail-open pattern** [FIXED]
 
-File: `apps/api/app/api/cron/contract-expiration-alerts/route.ts`, lines 37-47
+File: `apps/api/app/api/cron/contract-expiration-alerts/route.ts`, lines 36-57
 
-Identical fail-open when `CRON_SECRET` not set.
+**FIXED** (59th audit pass, 2026-04-27): Same fail-closed flip as E2-2. Prefix `[cron/contract-expiration-alerts] CRON_SECRET is not configured — rejecting request (fail-closed)`. Regression test in same file.
+
+**E2-2b — HIGH: `keep-alive` cron — fails open when CRON_SECRET is unset** [FIXED in 59th pass]
+
+File: `apps/api/app/cron/keep-alive/route.ts`, lines 14-36
+
+The earlier E2-1 fix (commit 68ac9ea45) added `CRON_SECRET` enforcement only when the env var was present; if `CRON_SECRET` was undefined the handler skipped the auth check entirely. The 59th audit pass closed the residual gap: the handler now returns 503 with `Cron endpoint not configured` when the secret is missing (matches the `inventory-audit`/`webhook-retry`/`idempotency-cleanup` convention) and 401 for wrong/missing headers when it is present.
 
 **E2-4 — MEDIUM: `webhook-retry` cron — accepts spoofable `x-vercel-cron` header**
 
@@ -7281,8 +7330,8 @@ Payload includes `timestamp` validated as `z.string().datetime()` but never chec
 | E1-6 | LOW | Package | `triggerEmailWorkflows` no context validation | `email-workflow-triggers.ts:39` |
 | E1-7 | LOW | Package | `calculateCriticalPath` only validates empty | `critical-path.ts:56` |
 | E2-1 | ~~CRITICAL~~ | ~~Cron~~ | ~~`keep-alive` has zero authentication~~ **FIXED** | `keep-alive/route.ts:1-8` |
-| E2-2 | HIGH | Cron | `email-reminders` fails open without CRON_SECRET | `email-reminders/route.ts:22` |
-| E2-3 | HIGH | Cron | `contract-expiration-alerts` same fail-open | `contract-expiration-alerts/route.ts:37` |
+| E2-2 | ~~HIGH~~ | ~~Cron~~ | ~~`email-reminders` fails open without CRON_SECRET~~ **FIXED** (59th pass) | `email-reminders/route.ts:22` |
+| E2-3 | ~~HIGH~~ | ~~Cron~~ | ~~`contract-expiration-alerts` same fail-open~~ **FIXED** (59th pass) | `contract-expiration-alerts/route.ts:37` |
 | E2-4 | MEDIUM | Cron | Spoofable `x-vercel-cron` header | `webhook-retry/route.ts:59` |
 | E2-5 | HIGH | Cron | No idempotency on any cron endpoint | All 7 crons |
 | E2-6 | MEDIUM | Cron | No concurrency protection | All 7 crons |
@@ -7308,8 +7357,8 @@ Payload includes `timestamp` validated as `z.string().datetime()` but never chec
 2. **IMMEDIATE ~~— Fix Clerk webhook parsing-before-verification~~** ~~(E3-1)~~**: ~~Read raw body first, verify signature, then parse.~~ FALSE POSITIVE — Clerk webhook is correctly implemented (verifies before parsing).**
 3. **IMMEDIATE ~~— Authenticate keep-alive cron~~** ~~(E2-1)~~**: ~~Add CRON_SECRET check or remove from public routes.~~ FIXED — Added CRON_SECRET environment variable and X-Cron-Secret header validation.**
 4. **URGENT ~~— Fix 2 SQL injection vectors~~** ~~(B1-2, B1-3)~~**: B1-2 CRM scoring FIXED — now uses Prisma.sql template. B1-3 trash list still needs fix.**
-5. **URGENT — Cap refund amount to payment amount** (B1-1): Prevents negative invoice balances.
-6. **URGENT — Fix fail-open CRON_SECRET behavior** (E2-2, E2-3): Return false when secret is unset, not true.
+5. **URGENT ~~— Cap refund amount to payment amount~~** ~~(B1-1)~~**: ~~Prevents negative invoice balances.~~ ALREADY IMPLEMENTED — verified at `apps/api/app/api/accounting/payments/[id]/route.ts:303-307` (`Math.min(Number(body.amount), paymentAmount)` clamp + invariant docstring at lines 243-265). Audit entry was stale.**
+6. **URGENT ~~— Fix fail-open CRON_SECRET behavior~~** ~~(E2-2, E2-3)~~**: ~~Return false when secret is unset, not true.~~ FIXED (59th audit pass) — `verifyCronAuth` now logs `console.error` and returns `false` when `CRON_SECRET` is unset; `keep-alive` returns 503 in the same condition. Regression tests in `apps/api/__tests__/cron/cron-auth-fail-closed.test.ts`.**
 7. **HIGH — Add input schema validation to manifest pipeline** (C1-1, C1-2): The IR already has `IRParameter[]` with types and required flags. Enforce them at runtime in `runCommand`.
 8. **HIGH — Add file size limits to upload routes** (A4-2): 3 routes buffer entire files into memory.
 9. **HIGH — Add CRLF validation to email subject/recipient name** (D3-1, D3-2, D3-3): Prevent email header injection.

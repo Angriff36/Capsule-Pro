@@ -33,14 +33,24 @@ const DEFAULT_CONFIG: AlertConfig = {
   reminderIntervals: [30, 14, 7, 3, 1],
 };
 
-// Verify cron secret to prevent unauthorized access
+// Verify cron secret to prevent unauthorized access.
+//
+// SECURITY: Fail-closed. A missing CRON_SECRET is a misconfiguration, not a
+// permission grant — returning `true` here would let any anonymous caller
+// fan out contract-expiration emails to every active workflow tenant on a
+// production deploy that simply forgot to set the env var. The endpoint must
+// reject the request and surface the misconfiguration via the error log so
+// it can be detected and fixed, rather than silently exposing the cron
+// surface to the public internet.
 function verifyCronAuth(request: NextRequest): boolean {
   const authHeader = request.headers.get("authorization");
   const cronSecret = process.env.CRON_SECRET;
 
   if (!cronSecret) {
-    console.warn("CRON_SECRET not configured - cron endpoints are unprotected");
-    return true;
+    console.error(
+      "[cron/contract-expiration-alerts] CRON_SECRET is not configured — rejecting request (fail-closed)"
+    );
+    return false;
   }
 
   return authHeader === `Bearer ${cronSecret}`;
