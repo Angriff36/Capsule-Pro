@@ -25,7 +25,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const eventImportWorkflow = await database.eventImportWorkflow.findUnique({
+    const eventImportWorkflow = await database.eventImport.findUnique({
       where: {
         id,
         tenantId,

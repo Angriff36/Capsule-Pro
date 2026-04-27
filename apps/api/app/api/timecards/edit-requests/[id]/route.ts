@@ -25,11 +25,10 @@ export async function GET(
 
     const { id } = await params;
 
-    const timecardEditRequest = await database.timecardEditRequest.findUnique({
+    const timecardEditRequest = await database.timecardEditRequest.findFirst({
       where: {
         id,
         tenantId,
-        deletedAt: null
       },
     });
 

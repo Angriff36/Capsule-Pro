@@ -697,6 +697,16 @@ export function purchaseRequisitionItemDetailPath(id: string): string {
   return "/api/purchaserequisitionitem/" + encodeURIComponent(id);
 }
 
+/** GET /api/ratelimitconfig/list */
+export function rateLimitConfigListPath(): string {
+  return "/api/ratelimitconfig/list";
+}
+
+/** GET /api/ratelimitconfig/:id */
+export function rateLimitConfigDetailPath(id: string): string {
+  return "/api/ratelimitconfig/" + encodeURIComponent(id);
+}
+
 /** GET /api/recipe/list */
 export function recipeListPath(): string {
   return "/api/recipe/list";
@@ -2526,6 +2536,31 @@ export function purchaseRequisitionItemUpdatePath(): string {
   return "/api/purchaserequisitionitem/update";
 }
 
+/** POST /api/ratelimitconfig/create */
+export function rateLimitConfigCreatePath(): string {
+  return "/api/ratelimitconfig/create";
+}
+
+/** POST /api/ratelimitconfig/soft-delete */
+export function rateLimitConfigSoftDeletePath(): string {
+  return "/api/ratelimitconfig/soft-delete";
+}
+
+/** POST /api/ratelimitconfig/turn-off */
+export function rateLimitConfigTurnOffPath(): string {
+  return "/api/ratelimitconfig/turn-off";
+}
+
+/** POST /api/ratelimitconfig/turn-on */
+export function rateLimitConfigTurnOnPath(): string {
+  return "/api/ratelimitconfig/turn-on";
+}
+
+/** POST /api/ratelimitconfig/update */
+export function rateLimitConfigUpdatePath(): string {
+  return "/api/ratelimitconfig/update";
+}
+
 /** POST /api/recipe/activate */
 export function recipeActivatePath(): string {
   return "/api/recipe/activate";
@@ -3273,6 +3308,8 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "PurchaseRequisition.get.detail", path: "/api/purchaserequisition/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "PurchaseRequisitionItem.get.list", path: "/api/purchaserequisitionitem/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "PurchaseRequisitionItem.get.detail", path: "/api/purchaserequisitionitem/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "RateLimitConfig.get.list", path: "/api/ratelimitconfig/list", method: "GET", source: "entity-read", auth: true, tenant: true },
+  { id: "RateLimitConfig.get.detail", path: "/api/ratelimitconfig/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Recipe.get.list", path: "/api/recipe/list", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "Recipe.get.detail", path: "/api/recipe/:id", method: "GET", source: "entity-read", auth: true, tenant: true },
   { id: "RecipeIngredient.get.list", path: "/api/recipeingredient/list", method: "GET", source: "entity-read", auth: true, tenant: true },
@@ -3638,6 +3675,11 @@ export const ROUTE_MANIFEST: readonly RouteMetadata[] = [
   { id: "PurchaseRequisitionItem.create", path: "/api/purchaserequisitionitem/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PurchaseRequisitionItem.remove", path: "/api/purchaserequisitionitem/remove", method: "POST", source: "command", auth: true, tenant: true },
   { id: "PurchaseRequisitionItem.update", path: "/api/purchaserequisitionitem/update", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RateLimitConfig.create", path: "/api/ratelimitconfig/create", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RateLimitConfig.softDelete", path: "/api/ratelimitconfig/soft-delete", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RateLimitConfig.turnOff", path: "/api/ratelimitconfig/turn-off", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RateLimitConfig.turnOn", path: "/api/ratelimitconfig/turn-on", method: "POST", source: "command", auth: true, tenant: true },
+  { id: "RateLimitConfig.update", path: "/api/ratelimitconfig/update", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Recipe.activate", path: "/api/recipe/activate", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Recipe.create", path: "/api/recipe/create", method: "POST", source: "command", auth: true, tenant: true },
   { id: "Recipe.deactivate", path: "/api/recipe/deactivate", method: "POST", source: "command", auth: true, tenant: true },

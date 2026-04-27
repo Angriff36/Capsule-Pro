@@ -784,7 +784,18 @@ export class NextJsProjection implements ProjectionTarget {
 
   /**
    * Generate GET detail route for a single entity instance.
-   * Uses direct Prisma findUnique (bypassing runtime) for efficiency.
+   *
+   * Uses Prisma `findFirst` (not `findUnique`) so the soft-delete filter
+   * (`deletedAt: null`) and tenant filter (`tenantId`) can live alongside
+   * the primary-key filter. Prisma's `WhereUniqueInput` only accepts
+   * unique-key fields, so a `findUnique` call with `{ id, tenantId,
+   * deletedAt: null }` triggers TS2322 / TS2353 type errors for every
+   * model whose unique key is the composite `(tenantId, id)` rather than a
+   * standalone `id`. `findFirst` avoids the schema-introspection burden
+   * (the generator does not parse Prisma to learn each model's actual
+   * compound key name) while still letting Postgres pick the
+   * `(tenant_id, id)` composite index because both fields are present in
+   * the WHERE.
    */
   private _generateDetailRoute(
     entity: IREntity,
@@ -832,7 +843,9 @@ export class NextJsProjection implements ProjectionTarget {
     lines.push("    const { id } = await params;");
     lines.push("");
 
-    // Build the findUnique where clause
+    // Build the findFirst where clause. findFirst accepts arbitrary
+    // filters (unlike findUnique, which is restricted to unique-key
+    // fields), so id + tenantId + deletedAt filtering all coexist.
     const whereConditions: string[] = ["id"];
     if (options.includeTenantFilter) {
       whereConditions.push(options.tenantIdProperty);
@@ -849,7 +862,7 @@ export class NextJsProjection implements ProjectionTarget {
         : "where: { id },";
 
     lines.push(
-      `    const ${delegateName} = await database.${delegateName}.findUnique({`
+      `    const ${delegateName} = await database.${delegateName}.findFirst({`
     );
     lines.push(`      ${whereClause}`);
     lines.push("    });");

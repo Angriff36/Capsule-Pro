@@ -31,6 +31,13 @@ reference, the application source code is in `apps/app/app/*` and api routes are
    UI flow, the matching Playwright product-flow test must pass before commit.
    Do not commit around failing backpressure.
 
+998. For any command route implementation (`POST /commands/*`), validate
+   persistence by calling the corresponding read API after execution. If the
+   entity is not returned by the list/detail API, the implementation is invalid
+   even if the command returns success. Do not trust command response payloads
+   as persistence proof; fix storage wiring or write to the same database model
+   the read API uses.
+
 6. Important: When authoring documentation, capture the why — tests and
    implementation importance.
 7. Important: Single sources of truth, no migrations/adapters. If tests

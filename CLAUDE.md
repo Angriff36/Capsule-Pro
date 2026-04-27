@@ -148,7 +148,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[auto-bridge snapshot @ 10 changes]
-Files: apps/api/app/api/crm/scoring/calculate/route.ts (edit), apps/api/env.ts (edit), apps/api/app/cron/keep-alive/route.ts (edit), apps/api/app/api/webhooks/supplier-catalog/route.ts (edit), apps/api/app/api/collaboration/notifications/sms/webhook/route.ts (create), apps/api/app/api/collaboration/notifications/sms/webhook/route.ts (edit)
+[Emergency bridge — running bridge was not updated]
+Files: C:/Users/Ryan/.claude/plans/tranquil-frolicking-comet.md (create)
 
 # === END COGNILAYER ===

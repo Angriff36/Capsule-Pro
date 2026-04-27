@@ -25,11 +25,10 @@ export async function GET(
 
     const { id } = await params;
 
-    const notification = await database.notification.findUnique({
+    const notification = await database.notification.findFirst({
       where: {
         id,
         tenantId,
-        deletedAt: null
       },
     });
 

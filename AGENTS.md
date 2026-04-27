@@ -26,6 +26,16 @@ Product-flow tests:
 
 Do not commit if the relevant product-flow test fails. Fix the failure or document the blocker in `IMPLEMENTATION_PLAN.md`.
 
+## Critical Write Validation
+
+For any command route (`POST /commands/*`), do not trust the command response payload as proof of persistence. After executing the command:
+- Query the corresponding list or detail API.
+- Verify the created or updated entity exists in the read model.
+- If the entity is not returned, the write path is incorrect, usually because `runtime.runCommand()` wrote to a Manifest/JSON store while the read API queries a Prisma table.
+- Fix the storage wiring or replace the command implementation with a direct database write that persists to the same model the read API uses.
+
+Only read APIs are source of truth. Do not commit command-route work unless command execution is proven through the read path.
+
 ## Manifest Commands
 
 - Routes from IR: `pnpm manifest:routes:ir -- --format summary`
