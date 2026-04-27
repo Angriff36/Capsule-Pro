@@ -2,7 +2,10 @@ import { PrismaNeon } from "@prisma/adapter-neon";
 import ws from "ws";
 import { PrismaClient } from "./generated/client";
 
-const DATABASE_URL = "postgresql://neondb_owner:npg_4xRiAGLCaT7s@ep-divine-math-ah5lmxku.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require";
+const DATABASE_URL = process.env.DATABASE_URL;
+if (!DATABASE_URL) {
+  throw new Error("DATABASE_URL env var is required");
+}
 
 async function test() {
   const neonConfig = { webSocketConstructor: ws, poolQueryViaFetch: true };

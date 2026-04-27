@@ -11,8 +11,11 @@ import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const BASE = "https://capsule-pro-app.vercel.app";
+if (!process.env.CLERK_SECRET_KEY) {
+  throw new Error("CLERK_SECRET_KEY env var is required");
+}
 const clerkB = createClerkClient({
-  secretKey: "sk_test_8hldxeqOyMCZV62r6ves3vMapWwko8Qfl1qa2FOGHr",
+  secretKey: process.env.CLERK_SECRET_KEY,
 });
 
 // Use Mangia Catering org (has platform data)

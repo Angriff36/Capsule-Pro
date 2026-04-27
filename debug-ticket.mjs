@@ -3,8 +3,11 @@ import { clerkSetup } from "@clerk/testing/playwright";
 import { chromium } from "@playwright/test";
 
 const BASE = "https://capsule-pro-app.vercel.app";
+if (!process.env.CLERK_SECRET_KEY) {
+  throw new Error("CLERK_SECRET_KEY env var is required");
+}
 const clerk = createClerkClient({
-  secretKey: "sk_test_8hldxeqOyMCZV62r6ves3vMapWwko8Qfl1qa2FOGHr",
+  secretKey: process.env.CLERK_SECRET_KEY,
 });
 
 async function main() {

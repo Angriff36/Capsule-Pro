@@ -4030,18 +4030,18 @@ The "115 routes lack authentication" claim in prior sections of this document is
   - `test-cp031-cp048-cp049.mjs:15`
   - `test-final.mjs:16`
   - `debug-ticket.mjs:7`
-- All three tracked-in-git scripts contain an identical hardcoded Clerk `secretKey`: `sk_test_8hldxeqOyMCZV62r6ves3vMapWwko8Qfl1qa2FOGHr`. This key grants full backend API access to the Clerk instance — user impersonation, org management, session creation. Anyone with repository read access can extract it.
-- **Exploitable:** YES — key is in git history even if files are removed.
-- **Action:** Rotate the Clerk secret key immediately. Refactor scripts to use `process.env.CLERK_SECRET_KEY` or `git rm --cached` them. If key was ever pushed to a public remote, treat as a credential breach.
+- All four tracked-in-git scripts contained an identical hardcoded Clerk `secretKey` (value redacted, prefix `sk_test_8hl...FOGHr`). This key grants full backend API access to the Clerk instance — user impersonation, org management, session creation. Anyone with repository read access could extract it from git history.
+- **Exploitable:** YES — key is in git history even though source has been refactored.
+- **UPDATE 2026-04-27:** PARTIALLY FIXED. All four scripts (`test-final.mjs`, `test-cp031-cp048-cp049.mjs`, `e2e-prod-test.mjs`, `debug-ticket.mjs`) refactored to read from `process.env.CLERK_SECRET_KEY` with fail-fast guard. **STILL REQUIRED:** Rotate the Clerk secret key — git history still contains the literal value. Treat as a credential breach if ever pushed to a public remote.
 
 #### AE2-A02 | CRITICAL | Hardcoded Database Connection String in Tracked Scripts
 
 - **Files:**
   - `check-new-event.mjs:4`
   - `test-cp086.mjs:119-120`
-- Both contain a real Neon PostgreSQL connection string: `postgresql://neondb_owner:npg_4xRiAGLCaT7s@ep-divine-math-ah5lmxku[...].us-east-1.aws.neon.tech/neondb`. Credentials (`neondb_owner` / `npg_4xRiAGLCaT7s`) are embedded in the URL.
-- **Exploitable:** YES — direct database access with owner-level credentials.
-- **Action:** Rotate the Neon database password immediately. Refactor scripts to use `process.env.DATABASE_URL`.
+- Three tracked scripts (`check-new-event.mjs`, `test-cp086.mjs`, `packages/database/test-query.ts`) contained a real Neon PostgreSQL connection string with owner-level credentials (host: `ep-divine-math-ah5lmxku.*.aws.neon.tech`, password redacted, prefix `npg_4xR...`).
+- **Exploitable:** YES — direct database access with owner-level credentials. Value remains in git history.
+- **UPDATE 2026-04-27:** PARTIALLY FIXED. All three scripts refactored to read from `process.env.DATABASE_URL` with fail-fast guard. **STILL REQUIRED:** Rotate the Neon database password — git history still contains the literal value.
 
 #### AE2-A03 | CRITICAL | Clerk Webhook Body Round-Trip Breaks Signature Verification
 
@@ -4175,8 +4175,8 @@ These patterns are correctly implemented and should be preserved:
 
 | # | Finding | Priority | Action |
 |---|---------|----------|--------|
-| A11-44 | AE2-A01: Clerk secret in scripts | **TIER 0** | Rotate Clerk `sk_test_8hldxeqOy...` key immediately. `git rm --cached` the 3 scripts, refactor to use `process.env`. |
-| A11-45 | AE2-A02: DB creds in scripts | **TIER 0** | Rotate Neon `neondb_owner:npg_4xRiAGLCaT7s` password immediately. `git rm --cached` the 2 scripts, refactor to use `process.env`. |
+| A11-44 | AE2-A01: Clerk secret in scripts | **TIER 0** | Source refactored 2026-04-27 (`process.env.CLERK_SECRET_KEY`, 4 scripts). **STILL REQUIRED:** Rotate the Clerk secret key — git history retains the literal. |
+| A11-45 | AE2-A02: DB creds in scripts | **TIER 0** | Source refactored 2026-04-27 (`process.env.DATABASE_URL`). **STILL REQUIRED:** Rotate Neon owner password — git history retains the literal. |
 | A11-46 | AE2-A03: Webhook body round-trip | **TIER 0** | Replace `request.json()` + `JSON.stringify(payload)` with `request.text()` in `apps/api/app/webhooks/auth/route.ts:166`. |
 | A11-47 | AE2-A04: Supplier sig bypass | **TIER 1** | Make `x-supplier-signature` header required in `supplier-catalog/route.ts:125`. Reject with 401 if absent. |
 | A11-48 | AE2-A05: PII in webhook log | **TIER 1** | Remove `body` from `log.info("Webhook", ...)` at `webhooks/auth/route.ts:192`. Log only `id`, `eventType`, `timestamp`. |

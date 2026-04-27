@@ -115,9 +115,11 @@ async function dbPoolQuery(sql) {
     "/home/oc/src/openclaw/projects/capsule-pro/node_modules/.pnpm/pg@8.18.0/node_modules/pg/lib/index.js"
   );
   const Pool = pgModule.default.Pool;
+  if (!process.env.DATABASE_URL) {
+    throw new Error("DATABASE_URL env var is required");
+  }
   const pool = new Pool({
-    connectionString:
-      "postgresql://neondb_owner:npg_4xRiAGLCaT7s@ep-divine-math-ah5lmxku.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require",
+    connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false },
   });
   try {

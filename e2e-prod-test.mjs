@@ -17,7 +17,10 @@ import { writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
 
 const BASE_URL = "https://capsule-pro-app.vercel.app";
-const CLERK_SECRET = "sk_test_8hldxeqOyMCZV62r6ves3vMapWwko8Qfl1qa2FOGHr";
+if (!process.env.CLERK_SECRET_KEY) {
+  throw new Error("CLERK_SECRET_KEY env var is required");
+}
+const CLERK_SECRET = process.env.CLERK_SECRET_KEY;
 const REPORT_DIR = "/home/oc/.openclaw/workspace-forge/e2e-reports";
 const TS = new Date().toISOString().replace(/[:.]/g, "-");
 mkdirSync(REPORT_DIR, { recursive: true });
