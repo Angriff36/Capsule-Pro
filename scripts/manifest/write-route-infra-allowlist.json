@@ -571,6 +571,11 @@
       "prefix": "/api/kitchen/iot/alerts",
       "methods": ["POST", "PUT", "PATCH", "DELETE"],
       "comment": "Infrastructure: IoT alert management with direct DB access (pending manifest)"
+    },
+    {
+      "pattern": "^/api/shipments/[^/]+/status$",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Shipment status transition with inventory reservation/cancellation/delivery side-effects"
     }
   ]
 }

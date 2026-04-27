@@ -442,7 +442,7 @@ export const attachEventImport = async (formData: FormData): Promise<void> => {
       INSERT INTO tenant_events.event_imports (
         tenant_id,
         id,
-        eventId,
+        event_id,
         file_name,
         mime_type,
         file_size,

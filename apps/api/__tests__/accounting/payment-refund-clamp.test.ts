@@ -34,6 +34,7 @@ const mocks = vi.hoisted(() => ({
   paymentUpdateMock: vi.fn(),
   invoiceFindFirstMock: vi.fn(),
   invoiceUpdateMock: vi.fn(),
+  paymentRefundAttemptCreateMock: vi.fn(),
   requireTenantIdMock: vi.fn(),
   captureExceptionMock: vi.fn(),
   refundPaymentGatewayMock: vi.fn(),
@@ -50,6 +51,9 @@ vi.mock("@repo/database", () => ({
     invoice: {
       findFirst: mocks.invoiceFindFirstMock,
       update: mocks.invoiceUpdateMock,
+    },
+    paymentRefundAttempt: {
+      create: mocks.paymentRefundAttemptCreateMock,
     },
   },
 }));
@@ -132,6 +136,7 @@ beforeEach(() => {
   mocks.paymentUpdateMock.mockReset();
   mocks.invoiceFindFirstMock.mockReset();
   mocks.invoiceUpdateMock.mockReset();
+  mocks.paymentRefundAttemptCreateMock.mockReset();
   mocks.requireTenantIdMock.mockReset();
   mocks.captureExceptionMock.mockReset();
   mocks.refundPaymentGatewayMock.mockReset();
@@ -163,6 +168,9 @@ beforeEach(() => {
     success: true,
     refundTransactionId: "re_default_success",
   });
+  // Default: audit row insert succeeds. Tests that need to assert
+  // best-effort fallback override with mockRejectedValueOnce.
+  mocks.paymentRefundAttemptCreateMock.mockResolvedValue({});
 });
 
 afterEach(() => {
@@ -497,6 +505,153 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
 
       expect(res.status).toBe(500);
       expect(mocks.refundPaymentGatewayMock).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("refund attempt audit trail", () => {
+    it("on gateway SUCCESS: writes one audit row with success=true, clamped amounts, and gateway txn id", async () => {
+      mocks.paymentFindFirstMock.mockResolvedValue(makePayment());
+      mocks.invoiceFindFirstMock.mockResolvedValue(
+        makeInvoice(100, 0, "PAID")
+      );
+      mocks.refundPaymentGatewayMock.mockResolvedValueOnce({
+        success: true,
+        refundTransactionId: "re_audit_success",
+      });
+
+      await POST(
+        buildRequest({ amount: 75, reason: "customer cancellation" }),
+        { params: Promise.resolve({ id: PAYMENT_ID }) }
+      );
+
+      expect(mocks.paymentRefundAttemptCreateMock).toHaveBeenCalledTimes(1);
+      const auditArgs = mocks.paymentRefundAttemptCreateMock.mock.calls[0][0];
+      expect(auditArgs.data).toMatchObject({
+        tenantId: TENANT_ID,
+        paymentId: PAYMENT_ID,
+        requestedAmount: 75,
+        effectiveAmount: 75,
+        refundReason: "customer cancellation",
+        originalGatewayTransactionId: "txn_existing",
+        refundTransactionId: "re_audit_success",
+        success: true,
+        failureReason: null,
+      });
+    });
+
+    it("on gateway FAILURE: writes audit row with success=false, failureReason, and the gateway-side refundTransactionId BEFORE 502", async () => {
+      mocks.paymentFindFirstMock.mockResolvedValue(makePayment());
+      mocks.refundPaymentGatewayMock.mockResolvedValueOnce({
+        success: false,
+        refundTransactionId: "re_audit_failed",
+        failureReason: "charge_already_refunded",
+      });
+
+      const res = await POST(
+        buildRequest({ amount: 50, reason: "duplicate" }),
+        { params: Promise.resolve({ id: PAYMENT_ID }) }
+      );
+
+      // The 502 is the user-facing surface, but the forensic record
+      // (failureReason, gateway-side refundTransactionId) MUST be persisted.
+      // Without this row, every gateway failure is invisible after the
+      // response stream closes.
+      expect(res.status).toBe(502);
+      expect(mocks.paymentRefundAttemptCreateMock).toHaveBeenCalledTimes(1);
+      const auditArgs = mocks.paymentRefundAttemptCreateMock.mock.calls[0][0];
+      expect(auditArgs.data).toMatchObject({
+        tenantId: TENANT_ID,
+        paymentId: PAYMENT_ID,
+        requestedAmount: 50,
+        effectiveAmount: 50,
+        refundReason: "duplicate",
+        originalGatewayTransactionId: "txn_existing",
+        refundTransactionId: "re_audit_failed",
+        success: false,
+        failureReason: "charge_already_refunded",
+      });
+    });
+
+    it("audit row records BOTH the requested AND clamped amounts when caller over-refunds", async () => {
+      mocks.paymentFindFirstMock.mockResolvedValue(makePayment());
+      mocks.invoiceFindFirstMock.mockResolvedValue(
+        makeInvoice(100, 0, "PAID")
+      );
+
+      await POST(
+        buildRequest({ amount: 250, reason: "customer typo" }),
+        { params: Promise.resolve({ id: PAYMENT_ID }) }
+      );
+
+      // The audit needs both numbers so a forensic reviewer can see (a)
+      // what the caller asked for and (b) what was actually applied. If we
+      // only stored the clamped value, abuse attempts would look identical
+      // to legitimate full refunds.
+      const auditArgs = mocks.paymentRefundAttemptCreateMock.mock.calls[0][0];
+      expect(auditArgs.data.requestedAmount).toBe(250);
+      expect(auditArgs.data.effectiveAmount).toBe(100);
+    });
+
+    it("audit insert failure does NOT block the user-facing success response (best-effort write)", async () => {
+      mocks.paymentFindFirstMock.mockResolvedValue(makePayment());
+      mocks.invoiceFindFirstMock.mockResolvedValue(
+        makeInvoice(100, 0, "PAID")
+      );
+      // Simulate audit table being unreachable (DB outage, RLS misconfig).
+      // The processor has already moved money — refusing to acknowledge the
+      // refund to the caller would be worse than a missing audit row.
+      mocks.paymentRefundAttemptCreateMock.mockRejectedValueOnce(
+        new Error("audit table offline")
+      );
+
+      const res = await POST(
+        buildRequest({ amount: 100, reason: "customer cancellation" }),
+        { params: Promise.resolve({ id: PAYMENT_ID }) }
+      );
+
+      expect(res.status).toBe(200);
+      // Audit failure must surface to Sentry so on-call notices the
+      // forensic gap.
+      expect(mocks.captureExceptionMock).toHaveBeenCalledTimes(1);
+      // Payment + invoice mutations still happen.
+      expect(mocks.paymentUpdateMock).toHaveBeenCalledTimes(1);
+      expect(mocks.invoiceUpdateMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("audit insert failure on a gateway-failure call still returns 502 (does not promote to 500)", async () => {
+      mocks.paymentFindFirstMock.mockResolvedValue(makePayment());
+      mocks.refundPaymentGatewayMock.mockResolvedValueOnce({
+        success: false,
+        refundTransactionId: "re_double_failure",
+        failureReason: "insufficient_funds_at_processor",
+      });
+      mocks.paymentRefundAttemptCreateMock.mockRejectedValueOnce(
+        new Error("audit table offline")
+      );
+
+      const res = await POST(
+        buildRequest({ amount: 50, reason: "test" }),
+        { params: Promise.resolve({ id: PAYMENT_ID }) }
+      );
+
+      // The user-facing failure mode (gateway said no) is more important
+      // to communicate than the audit gap. Surfacing 500 here would cause
+      // ops to misdiagnose as a server crash instead of a processor reject.
+      expect(res.status).toBe(502);
+      expect(mocks.captureExceptionMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("does not write audit row when gateway is never called (404 short-circuit)", async () => {
+      mocks.paymentFindFirstMock.mockResolvedValue(null);
+
+      await POST(
+        buildRequest({ amount: 50, reason: "test" }),
+        { params: Promise.resolve({ id: PAYMENT_ID }) }
+      );
+
+      // No gateway call -> nothing to audit.
+      expect(mocks.refundPaymentGatewayMock).not.toHaveBeenCalled();
+      expect(mocks.paymentRefundAttemptCreateMock).not.toHaveBeenCalled();
     });
   });
 });
