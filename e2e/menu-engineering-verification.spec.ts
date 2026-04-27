@@ -12,7 +12,7 @@ test.describe("Menu Engineering Analytics Verification", () => {
 
     // Check that page title is visible
     await expect(
-      page.getByRole("heading", { name: "Menu Engineering", level: 1 })
+      page.getByRole("heading", { name: "Menu Engineering", level: 1 }).first()
     ).toBeVisible();
 
     // Check that description is visible

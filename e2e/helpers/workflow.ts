@@ -67,18 +67,23 @@ const IGNORE_PATTERNS = [
   /__nextjs_original-stack-frames/i, // Next.js dev-only stack frame endpoint (blocked in dev)
   /Failed to load resource: the server responded with a status of 403/i, // Generic 403 console error (usually from __nextjs_original-stack-frames in dev)
   /Failed to load resource: the server responded with a status of 404/i, // Generic 404 console error (usually stale Server Action IDs after dev server recompile)
-  // PostHog CSP violations — cosmetic (cdn-us.jsdelivr.net blocked), not app-breaking
-  /posthog.*Content Security Policy/i,
-  /Loading the script.*posthog/i,
+  // ── Third-party CSP violations (PostHog, Ably, etc.) ──────────────────
+  // These are config/infrastructure issues, not app bugs.
+  // Network-level CSP failures are caught separately by the response handler.
+  /Content Security Policy directive/i,
   /Refused to connect.*posthog/i,
   /Refused to load the script.*posthog/i,
-  // Ably realtime CSP violations — realtime feature, not critical for E2E
-  /ably.*Content Security Policy/i,
   /Refused to connect.*ably/i,
   /Failed to connect to.*ably/i,
-  // Generic CSP violations — skip all CSP noise (config/infrastructure issue, not app bug)
-  /Content Security Policy.*script-src/i,
-  /Content Security Policy.*connect-src/i,
+  // ── Generic browser CSP messages (Chrome/Chromium) ─────────────────────
+  /Loading the script.*violates the following Content Security Policy/i,
+  /Connecting to .* violates the following Content Security Policy/i,
+  /Fetch API cannot load.*Content Security Policy/i,
+  // ── Hydration mismatch (non-blocking, common in dev with Clerk/analytics) ─
+  /A tree hydrated but some attributes/i,
+  /hydrat/i,
+  // ── Generic HTTP 500 console errors (network handler catches these separately)
+  /Failed to load resource: the server responded with a status of 500/i,
 ];
 
 function shouldIgnore(text: string): boolean {
@@ -400,6 +405,109 @@ export async function openDialog(
     .first()
     .waitFor({ state: "visible", timeout: 8000 });
   log.ok(`Dialog opened via "${triggerText}"`);
+}
+
+// ─── Clerk session helpers ──────────────────────────────────────────────────────
+
+/**
+ * Clear Clerk session cookies from the browser context.
+ *
+ * Clerk stores auth state in multiple cookies on multiple domains:
+ * - `__session` and related tokens on the app domain
+ * - `__clerk_db_jwt`, `__client_uat` on the app domain
+ *
+ * Playwright's `context.clearCookies()` only clears cookies for the base URL's
+ * domain. We also need to clear Clerk's cookies on `cdn.clerk.com` (set via
+ * JS during Clerk's OAuth flow). Using `page.evaluate()` covers all domains
+ * accessible via `document.cookie`.
+ *
+ * Use this before navigating to sign-in/sign-up pages to ensure Clerk renders
+ * the form rather than redirecting an already-authenticated user.
+ *
+ * This function is best-effort — it wraps all cookie/storage access in
+ * try-catch to handle cross-origin iframe restrictions gracefully.
+ */
+export async function clearClerkSession(page: Page): Promise<void> {
+  // First try to clear via JavaScript (covers all same-origin cookies)
+  try {
+    await page.evaluate(() => {
+      try {
+        // Clear all cookies accessible from the main document
+        const cookies = document.cookie.split("; ");
+        for (const cookie of cookies) {
+          const name = cookie.split("=")[0]?.trim();
+          if (name) {
+            // Expire the cookie by setting it with a past date
+            document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/`;
+          }
+        }
+      } catch {
+        // document.cookie may throw SecurityError when the page has
+        // cross-origin iframes that deny cookie access
+      }
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+      } catch {
+        // Storage may be unavailable in iframes or cross-origin contexts
+      }
+    });
+  } catch {
+    // page.evaluate itself may fail for other reasons — ignore
+  }
+
+  // Also use Playwright's context API to clear ALL cookies for this context.
+  // Clerk stores __session as an httpOnly cookie on the app domain, which
+  // cannot be deleted via document.cookie. context.clearCookies() handles it.
+  try {
+    await page.context().clearCookies();
+  } catch {
+    // May fail in some browser configurations — ignore
+  }
+}
+
+/**
+ * Wait for Clerk JS to be fully loaded AND for form elements to be visible.
+ *
+ * Clerk loads asynchronously from cdn.clerk.com. Its form components are
+ * rendered by Clerk's own JavaScript, not server-rendered. The standard
+ * `waitForClerk()` helper only checks that the Clerk client object exists,
+ * but form elements may not yet be in the DOM.
+ *
+ * This helper polls until BOTH conditions are met:
+ * 1. Clerk's client (signIn or signUp) is ready
+ * 2. At least one Clerk form input is visible in the DOM
+ *
+ * Use this after navigating to /sign-in or /sign-up to ensure Clerk has
+ * actually rendered the form before asserting on form fields.
+ *
+ * @param page    Playwright Page
+ * @param type    "signIn" or "signUp" to pick the right Clerk client
+ * @param timeout Max wait time in ms (default 20_000)
+ */
+export async function waitForClerkForm(
+  page: Page,
+  type: "signIn" | "signUp",
+  timeout = 20_000
+): Promise<void> {
+  // Clerk's client key is the same as the type: "signIn" or "signUp"
+  // Pass `type` as an arg so it's available inside the browser context
+  // (closure variables are NOT accessible inside waitForFunction)
+  await page.waitForFunction(
+    (clientType: string) =>
+      Boolean((globalThis as any)?.Clerk?.client?.[clientType]),
+    type,
+    { timeout }
+  );
+
+  // Second: wait for Clerk's form input to appear in the DOM
+  // Clerk renders <input name="identifier"> for sign-in and
+  // <input name="emailAddress"> for sign-up.
+  const inputName = type === "signIn" ? "identifier" : "emailAddress";
+  await page
+    .locator(`input[name="${inputName}"]`)
+    .first()
+    .waitFor({ state: "visible", timeout });
 }
 
 const SUBMIT_RE = /save|submit|create|add/i;

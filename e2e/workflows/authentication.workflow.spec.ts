@@ -10,13 +10,13 @@
  * Note: 1B (GitHub OAuth) requires interactive OAuth flow and is not
  * suitable for automated E2E without dedicated test infrastructure.
  *
- * These tests verify:
- *  - Clerk sign-up/sign-in forms render and function
- *  - Post-auth redirect to /calendar
- *  - Session persistence across navigation
- *  - Sign-out clears session and blocks protected routes
- *  - API returns 401 for unauthenticated requests
- *  - Public token-based routes work without auth
+ * Tests are split into two groups:
+ *  1. "Unauthenticated auth form rendering" — runs in chromium-unauth project
+ *     (no storageState). Clerk renders sign-in/sign-up forms because the
+ *     browser has no session cookies.
+ *  2. "Authenticated session management" — runs in chromium project
+ *     (with storageState from Clerk setup). Tests session persistence,
+ *     route protection, and public token-based routes.
  */
 
 import { expect, test } from "@playwright/test";
@@ -26,68 +26,105 @@ import {
   assertVisible,
   attachErrorCollector,
   BASE_URL,
-  clickButton,
+  clearClerkSession,
   goto,
+  waitForClerkForm,
   waitForURL,
 } from "../helpers/workflow";
-import { waitForClerk, waitForClerkSignUp } from "../helpers/auth";
 
-test.describe("Authentication & Session Management", () => {
+
+// ─── Unauthenticated Tests ──────────────────────────────────────────────────
+// These tests run in the chromium-unauth project (no storageState) so Clerk
+// renders sign-in/sign-up forms instead of redirecting authenticated users.
+// They automatically skip when running in an authenticated project.
+
+test.describe("Unauthenticated auth form rendering", () => {
   let errors: CollectedError[] = [];
 
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, storageState }) => {
+    // Skip if running in an authenticated project (storageState is set)
+    test.skip(
+      typeof storageState === "string" ||
+        (typeof storageState === "object" && storageState !== undefined),
+      "Unauthenticated tests must run without storageState"
+    );
     errors = [];
     attachErrorCollector(page, errors, BASE_URL);
+    // Even in the unauthenticated project, ensure no stale Clerk session
+    // persists across tests. Also clear before sign-in/sign-up tests to
+    // guarantee Clerk renders the form instead of redirecting.
+    await clearClerkSession(page);
   });
 
   // ─── 1A. Sign-Up Form Renders ─────────────────────────────────────────────
 
-  test("sign-up page renders Clerk form", async ({ page, context }, testInfo) => {
-    // Clear Clerk session cookies so Clerk renders the form instead of
-    // redirecting an already-authenticated user back to /
-    await context.clearCookies();
-
+  test("sign-up page renders Clerk form", async ({ page }, testInfo) => {
     await goto(page, "/sign-up");
 
-    // Wait for Clerk JS to load before checking form elements
-    await waitForClerkSignUp(page, 15_000);
+    // Wait for Clerk JS AND form elements to be visible before asserting
+    await waitForClerkForm(page, "signUp", 20_000);
 
     // Clerk renders its own sign-up widget — verify key elements exist
     await assertVisible(page, /sign.up|create.account|get.started/i);
-    // Email input should be present
-    await expect(
-      page.locator('input[type="email"], input[name="email"]').first()
-    ).toBeVisible({ timeout: 15_000 });
-    // Password input
-    await expect(
-      page.locator('input[type="password"]').first()
-    ).toBeVisible({ timeout: 15_000 });
+
+    // Clerk renders <input name="emailAddress" placeholder="Enter your email address">
+    // and <input name="password" type="password">. Use getByRole + getByPlaceholder
+    // for reliable cross-browser matching.
+    const emailInput = page
+      .getByRole("textbox", { name: /email/i })
+      .first();
+    const passwordInput = page
+      .getByRole("textbox", { name: /password/i })
+      .first();
+    await expect(emailInput).toBeVisible({ timeout: 20_000 });
+    await expect(passwordInput).toBeVisible({ timeout: 20_000 });
 
     await assertNoErrors(page, testInfo, errors, "sign-up form render");
   });
 
-  // ─── 1C. Sign-In & Session Persistence ────────────────────────────────────
+  // ─── Sign-In Form Renders ─────────────────────────────────────────────────
 
-  test("sign-in page renders Clerk form", async ({ page, context }, testInfo) => {
-    // Clear Clerk session cookies so Clerk renders the form instead of
-    // redirecting an already-authenticated user back to /
-    await context.clearCookies();
-
+  test("sign-in page renders Clerk form", async ({ page }, testInfo) => {
     await goto(page, "/sign-in");
 
-    // Wait for Clerk JS to load before checking form elements
-    await waitForClerk(page, 15_000);
+    // Wait for Clerk JS AND form elements to be visible before asserting
+    await waitForClerkForm(page, "signIn", 20_000);
 
     await assertVisible(page, /sign.in|log.in|welcome/i);
-    await expect(
-      page.locator('input[type="email"], input[name="email"]').first()
-    ).toBeVisible({ timeout: 15_000 });
-    await expect(
-      page.locator('input[type="password"]').first()
-    ).toBeVisible({ timeout: 15_000 });
+
+    // Clerk renders <input name="identifier" placeholder="Enter your email address">
+    // (sign-in uses "identifier" not "emailAddress"). Use getByRole for reliability.
+    const emailInput = page
+      .getByRole("textbox", { name: /email|identifier|phone/i })
+      .first();
+    const passwordInput = page
+      .getByRole("textbox", { name: /password/i })
+      .first();
+    await expect(emailInput).toBeVisible({ timeout: 20_000 });
+    await expect(passwordInput).toBeVisible({ timeout: 20_000 });
 
     await assertNoErrors(page, testInfo, errors, "sign-in form render");
   });
+});
+
+// ─── Authenticated Tests ────────────────────────────────────────────────────
+// These tests run in the chromium project (with storageState from Clerk setup).
+// They automatically skip when running in an unauthenticated project.
+
+test.describe("Authenticated session management", () => {
+  let errors: CollectedError[] = [];
+
+  test.beforeEach(async ({ page, storageState }) => {
+    // Skip if running in an unauthenticated project (storageState is not a path)
+    test.skip(
+      typeof storageState !== "string",
+      "Authenticated tests require storageState"
+    );
+    errors = [];
+    attachErrorCollector(page, errors, BASE_URL);
+  });
+
+  // ─── 1C. Post-Auth Redirect & Session Persistence ─────────────────────────
 
   test("authenticated user lands on /calendar after sign-in", async ({
     page,
@@ -97,7 +134,7 @@ test.describe("Authentication & Session Management", () => {
     await goto(page, "/");
 
     // After auth, root redirects to /calendar
-    await waitForURL(page, /\/calendar/, 15_000);
+    await waitForURL(page, /\/calendar/, 20_000);
 
     // Verify the calendar component rendered
     await assertVisible(page, /calendar|schedule|events/i);

@@ -9,7 +9,7 @@ test.describe("Multi-Location Executive Dashboards", () => {
   test("should display the multi-location dashboard page", async ({ page }) => {
     // Check that the page title is visible
     await expect(
-      page.getByRole("heading", { name: "Multi-Location Executive Dashboard" })
+      page.getByRole("heading", { name: "Multi-Location Executive Dashboard" }).first()
     ).toBeVisible();
   });
 
@@ -23,7 +23,7 @@ test.describe("Multi-Location Executive Dashboards", () => {
   test("should display KPI cards", async ({ page }) => {
     // Check for KPI section
     await expect(
-      page.getByRole("heading", { name: "Key Performance Indicators" })
+      page.getByRole("heading", { name: "Key Performance Indicators" }).first()
     ).toBeVisible();
 
     // Check for common KPIs
@@ -42,7 +42,7 @@ test.describe("Multi-Location Executive Dashboards", () => {
   test("should display benchmarks section", async ({ page }) => {
     // Check for benchmarks section
     await expect(
-      page.getByRole("heading", { name: "Performance Benchmarks" })
+      page.getByRole("heading", { name: "Performance Benchmarks" }).first()
     ).toBeVisible();
 
     // Check for benchmark cards
@@ -52,14 +52,14 @@ test.describe("Multi-Location Executive Dashboards", () => {
   test("should display top performers section", async ({ page }) => {
     // Check for rankings section
     await expect(
-      page.getByRole("heading", { name: "Top Performers" })
+      page.getByRole("heading", { name: "Top Performers" }).first()
     ).toBeVisible();
   });
 
   test("should display location comparison table", async ({ page }) => {
     // Check for location comparison section
     await expect(
-      page.getByRole("heading", { name: "Location Comparison" })
+      page.getByRole("heading", { name: "Location Comparison" }).first()
     ).toBeVisible();
   });
 

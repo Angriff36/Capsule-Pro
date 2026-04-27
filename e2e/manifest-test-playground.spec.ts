@@ -11,7 +11,7 @@ test.describe("Manifest Test Playground", () => {
   }) => {
     // Wait for the page to load
     await expect(
-      page.getByRole("heading", { name: "Manifest Test Playground" })
+      page.getByRole("heading", { name: "Manifest Test Playground" }).first()
     ).toBeVisible();
 
     // Check that the entity selector is present

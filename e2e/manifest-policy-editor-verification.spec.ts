@@ -9,7 +9,7 @@ test.describe("Manifest Policy Editor", () => {
   test("should load the manifest editor page", async ({ page }) => {
     // Check that the page title is visible
     await expect(
-      page.getByRole("heading", { name: /Manifest Policy Editor/i })
+      page.getByRole("heading", { name: /Manifest Policy Editor/i }).first()
     ).toBeVisible();
 
     // Check that the info banner is visible
@@ -122,7 +122,7 @@ test.describe("Manifest Policy Editor", () => {
   test("should show documentation links", async ({ page }) => {
     // Check that documentation section exists
     await expect(
-      page.getByRole("heading", { name: /Documentation/i })
+      page.getByRole("heading", { name: /Documentation/i }).first()
     ).toBeVisible();
 
     // Check for link to Manifest Specification
@@ -140,7 +140,7 @@ test.describe("Manifest Policy Editor", () => {
 
     // Check that the page structure is correct
     await expect(
-      page.getByRole("heading", { name: /Manifest Policy Editor/i })
+      page.getByRole("heading", { name: /Manifest Policy Editor/i }).first()
     ).toBeVisible();
   });
 

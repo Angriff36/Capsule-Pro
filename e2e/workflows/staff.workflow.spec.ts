@@ -48,6 +48,14 @@ test.describe("Staff: Full Workflow", () => {
 
     await goto(page, "/staff/team");
 
+    // Wait for AutoRegisterStaff to finish syncing ("Setting up your account..." disappears)
+    await page
+      .locator('text=Setting up your account')
+      .waitFor({ state: "hidden", timeout: 10_000 })
+      .catch(() => {
+        /* Already gone or never shown — continue */
+      });
+
     // Fill form — hard fail if any field is missing
     await page.locator('input[name="firstName"]').fill("E2E");
     await page.locator('input[name="lastName"]').fill(STAFF_LAST);

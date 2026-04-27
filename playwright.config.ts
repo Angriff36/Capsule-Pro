@@ -5,7 +5,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const AUTH_STORAGE_STATE = path.resolve(__dirname, "e2e", ".auth", "storageState.json");
+const AUTH_STORAGE_STATE = path.resolve(__dirname, "e2e", ".auth", "user.json");
 
 loadEnvFiles();
 
@@ -107,6 +107,15 @@ export default defineConfig({
           name: "setup",
           testMatch: /.*\.setup\.ts/,
           use: { ...devices["Desktop Chrome"] },
+        },
+        // Unauthenticated test project — NO stored session.
+        // For sign-in/sign-up form rendering tests that need a clean browser.
+        // Does NOT depend on setup — runs with a fresh context.
+        {
+          name: "chromium-unauth",
+          testMatch: /.*\.spec\.ts/,
+          use: { ...devices["Desktop Chrome"] },
+          // No storageState, no dependency on setup
         },
         // Authenticated test project — uses stored Clerk session cookies.
         // Clerk SSR requires __session cookies; Bearer tokens don't work.

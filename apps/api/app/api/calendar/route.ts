@@ -37,12 +37,31 @@ interface CalendarEvent {
 
 export async function GET(request: NextRequest) {
   try {
-    const { orgId } = await auth();
+    let orgId: string | null | undefined;
+    try {
+      const authResult = await auth();
+      orgId = authResult.orgId;
+    } catch (authError) {
+      console.error("[calendar] Auth failed:", authError instanceof Error ? authError.message : authError);
+      return NextResponse.json({ error: "Authentication failed" }, { status: 401 });
+    }
+
     if (!orgId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const tenantId = await getTenantIdForOrg(orgId);
+    let tenantId: string;
+    try {
+      tenantId = await getTenantIdForOrg(orgId);
+    } catch (error) {
+      console.error("[calendar] Failed to resolve tenant:", error instanceof Error ? error.message : error);
+      captureException(error);
+      return NextResponse.json(
+        { error: "Failed to resolve organization" },
+        { status: 500 }
+      );
+    }
+
     const searchParams = request.nextUrl.searchParams;
 
     const startParam = searchParams.get("start");
@@ -71,6 +90,7 @@ export async function GET(request: NextRequest) {
 
     // Fetch events (eventDate is @db.Date — compare date-only bounds)
     if (types.includes("event")) {
+      try {
       const dbEvents = await database.event.findMany({
         where: {
           tenantId,
@@ -104,6 +124,10 @@ export async function GET(request: NextRequest) {
           details: `Type: ${e.eventType}`,
         }))
       );
+      } catch (error) {
+        console.error("[calendar] Events query failed:", error instanceof Error ? error.message : error);
+        captureException(error);
+      }
     }
 
     // Fetch shifts from tenant_staff.schedule_shifts
