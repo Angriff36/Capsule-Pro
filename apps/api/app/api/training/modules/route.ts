@@ -4,6 +4,7 @@ import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { likeContains } from "@/lib/sql-like";
 import type {
   ContentType,
   TrainingModule,
@@ -35,9 +36,20 @@ export async function GET(request: Request) {
   const isRequired = searchParams.get("isRequired");
   const isActive = searchParams.get("isActive");
   const search = searchParams.get("search");
-  const page = Number.parseInt(searchParams.get("page") || "1", 10);
-  const limit = Number.parseInt(searchParams.get("limit") || "50", 10);
+  const rawPage = Number.parseInt(searchParams.get("page") || "1", 10);
+  const rawLimit = Number.parseInt(searchParams.get("limit") || "50", 10);
+  // Clamp pagination so a hostile or buggy client cannot ask for the entire
+  // table (`?limit=999999`) or a negative page that produces a negative
+  // OFFSET (which Postgres rejects with an error).
+  const page = Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1;
+  const limit =
+    Number.isFinite(rawLimit) && rawLimit > 0 ? Math.min(rawLimit, 200) : 50;
   const offset = (page - 1) * limit;
+  // Escape ILIKE metacharacters from user-supplied search so `%` and `_`
+  // are treated as literal characters, not pattern wildcards. The matching
+  // `ESCAPE '\'` clause is included in the WHERE fragment below. Computing
+  // once and reusing avoids re-escaping on every reference.
+  const searchPattern = search ? likeContains(search) : null;
 
   const modules = await database.$queryRaw<
     Array<{
@@ -88,7 +100,7 @@ export async function GET(request: Request) {
         ${category ? Prisma.sql`AND tm.category = ${category}` : Prisma.empty}
         ${isRequired ? Prisma.sql`AND tm.is_required = ${isRequired === "true"}` : Prisma.empty}
         ${isActive ? Prisma.sql`AND tm.is_active = ${isActive === "true"}` : Prisma.empty}
-        ${search ? Prisma.sql`AND (tm.title ILIKE ${`%${search}%`} OR tm.description ILIKE ${`%${search}%`})` : Prisma.empty}
+        ${searchPattern ? Prisma.sql`AND (tm.title ILIKE ${searchPattern} ESCAPE '\\' OR tm.description ILIKE ${searchPattern} ESCAPE '\\')` : Prisma.empty}
       GROUP BY tm.id, tm.tenant_id, tm.title, tm.description, tm.content_url,
                tm.content_type, tm.duration_minutes, tm.category, tm.is_required,
                tm.is_active, tm.created_by, tm.created_at, tm.updated_at
@@ -107,7 +119,7 @@ export async function GET(request: Request) {
         ${category ? Prisma.sql`AND tm.category = ${category}` : Prisma.empty}
         ${isRequired ? Prisma.sql`AND tm.is_required = ${isRequired === "true"}` : Prisma.empty}
         ${isActive ? Prisma.sql`AND tm.is_active = ${isActive === "true"}` : Prisma.empty}
-        ${search ? Prisma.sql`AND (tm.title ILIKE ${`%${search}%`} OR tm.description ILIKE ${`%${search}%`})` : Prisma.empty}
+        ${searchPattern ? Prisma.sql`AND (tm.title ILIKE ${searchPattern} ESCAPE '\\' OR tm.description ILIKE ${searchPattern} ESCAPE '\\')` : Prisma.empty}
     `
   );
 

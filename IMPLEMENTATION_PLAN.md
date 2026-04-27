@@ -1,12 +1,63 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-27 (forty-ninth pass — Facility schema + create API + create dialog + E2E backpressure shipped)
+> **Last updated:** 2026-04-27 (fiftieth pass — ILIKE wildcard escaping + pagination clamps shipped across vendors/list, events/export/csv, training/modules)
 
 ## P0 — Product-flow backpressure for creation UI
 
 - [x] ~~Add E2E/product-flow backpressure for `New Route` creation~~ — **CLOSED 46th pass** (`e2e/workflows/logistics.workflow.spec.ts`).
 - [x] ~~Add E2E/product-flow backpressure for `New Facility` creation~~ — **CLOSED 49th pass** (`e2e/workflows/facilities.workflow.spec.ts`). Required first creating the `Facility` Prisma model + `tenant_facilities.facilities` migration + `POST /api/facilities/commands/create` + `GET /api/facilities/list` + an "Add Facility" dialog on the `/facilities` hub page so the E2E test had a real round-trip to verify.
 - [x] ~~Add E2E/product-flow backpressure for `New Asset` creation~~ — **CLOSED 47th pass** (`e2e/workflows/facilities-assets.workflow.spec.ts`).
+
+## 50th audit pass — ILIKE wildcard escaping + pagination clamps (2026-04-27)
+
+**Problem solved**: Three list/search routes flagged in the 46th–49th pass followups concatenated user-supplied search terms directly into `ILIKE '%' || $N || '%'` patterns. Prisma parameterizes the *value* of an `ILIKE` pattern (preventing classical SQLi), but it does NOT neutralize the LIKE/ILIKE pattern metacharacters `%` and `_` — so a user searching `100%` would silently match every row containing `100`, and a single `%` query would match every row in the table (a free DoS path on large tenants). One of the three routes (`procurement/vendors/list`) had no `LIMIT` clause at all, returning the entire vendor table on every call.
+
+**What shipped this pass**:
+
+1. **New helper `apps/api/lib/sql-like.ts`** — single source of truth for LIKE/ILIKE escaping:
+   - `escapeLikePattern(value)`: escapes `%`, `_`, and `\` using `\` as the escape character. Documented contract: NOT idempotent for metacharacter-containing strings (calling twice double-escapes).
+   - `likeContains(value)`: convenience wrapper that returns `%${escapeLikePattern(value)}%`.
+   - `LIKE_ESCAPE_CLAUSE = "ESCAPE '\\'"`: the SQL fragment callers must append. Constant rather than string-literal so a future change to the escape character only happens in one place.
+   - 10 unit tests in `apps/api/__tests__/lib/sql-like.test.ts` — pin every behavioral contract: plain text untouched, percent escaped, underscore escaped, backslash escaped (so attackers can't supply `\%` to neutralize our escape), mixed metacharacters, non-metacharacter chars (quotes, semicolons, newlines, unicode) untouched, idempotency caveat, `likeContains` wrapping, and the `ESCAPE '\\'` clause string.
+
+2. **`apps/api/app/api/procurement/vendors/list/route.ts` rewrite** — three fixes in one route:
+   - Added `likeContains(search)` for the 4-column OR-search (name, contact_person, email, supplier_number); appended `ESCAPE '\\'` to each `ILIKE`.
+   - Added `?limit=` and `?offset=` query parameters with `clampLimit` (default 50, max 200) and `clampOffset` (default 0, no negatives) so a hostile or buggy client cannot request the full table or trigger a Postgres "OFFSET must not be negative" error.
+   - Bound the search pattern as a single parameter (`$2`) reused four times instead of concatenating `'%' || $2 || '%'` in SQL — slightly cleaner query plan and lets Postgres reuse the prepared statement cache.
+   - Response now includes `{ vendors, limit, offset }` so callers can paginate.
+
+3. **`apps/api/app/api/events/export/csv/route.ts`** — `buildWhereConditions`:
+   - Wrapped `params.search` with `likeContains()` and appended `ESCAPE '\\'` to both ILIKE expressions (`title`, `event_number`).
+   - Bound the escaped pattern to both placeholders so `%` and `_` no longer leak into the pattern.
+
+4. **`apps/api/app/api/training/modules/route.ts`** — applied the helper to both the SELECT and the COUNT subquery so they stay in sync (an earlier audit pass would have failed if only one was fixed). Also clamped the existing pagination: `limit ∈ [1, 200]` (default 50), `page ≥ 1` (default 1) so a `?limit=999999` query no longer succeeds and `?page=-1` no longer produces a negative `OFFSET`.
+
+**Why each line of the helper exists**:
+- `LIKE_METACHARACTER_PATTERN = /[\\%_]/g`: matches `\`, `%`, `_`. Order in the character class doesn't matter — the regex engine evaluates each independently.
+- `value.replace(LIKE_METACHARACTER_PATTERN, "\\$&")`: `$&` is the matched character; prefixing `\\` (one backslash in the output) makes it a literal in PostgreSQL LIKE. JavaScript-level the string contains a single backslash followed by the metacharacter; the SQL engine sees it as `\%`, `\_`, or `\\`.
+- We intentionally escape `\` itself BEFORE escaping `%`/`_`. If we only escaped `%`/`_`, an input of `\%` would become `\\%` — which Postgres would parse as "literal backslash followed by wildcard percent", re-introducing the very vulnerability we are preventing.
+- The `ESCAPE '\\'` clause is technically redundant in current Postgres (default escape char is `\`), but the cluster GUC `standard_conforming_strings` and per-statement settings can theoretically alter parsing context. Stating it explicitly makes the contract auditable and resistant to environmental drift.
+
+**Verification evidence**:
+- `pnpm --filter api test __tests__/lib/sql-like.test.ts` — 10 passed.
+- `pnpm --filter api test` — 1103 passed, 1 skipped, 8 todo, 0 failures (no regression vs 49th pass: 1019 was the count before the 48th pass added 74 staff/availability tests + 10 sql-like tests = 1103).
+- `pnpm --filter api typecheck` — clean.
+- `pnpm dlx ultracite check` on the 5 touched files — 4 stylistic warnings (pre-existing `if (cond) return …` shorthand in `procurement/vendors/list/route.ts`), 0 errors.
+
+**Files touched**:
+- Created: `apps/api/lib/sql-like.ts` (~70 lines).
+- Created: `apps/api/__tests__/lib/sql-like.test.ts` (~95 lines, 10 tests).
+- Modified: `apps/api/app/api/procurement/vendors/list/route.ts` (added likeContains import, pagination clamps, ESCAPE clauses, response shape change).
+- Modified: `apps/api/app/api/events/export/csv/route.ts` (added likeContains import + ESCAPE clause).
+- Modified: `apps/api/app/api/training/modules/route.ts` (added likeContains import, pagination clamp, ESCAPE clause on both SELECT and COUNT subqueries).
+- Modified: `IMPLEMENTATION_PLAN.md` (this entry; closed two MEDIUM followups).
+
+**Why this matters**: every search route in the codebase that uses `ILIKE` against user input was carrying a silent correctness bug. Most users would never trigger it (`%` and `_` are uncommon in normal search input), but a determined user could exfiltrate the entire table with a single `%` request, or a benign search for `Foo Inc.%` would silently return way more rows than expected. The helper centralizes the contract so the next route author can't repeat the mistake — they import `likeContains` + paste the `ESCAPE '\\'` fragment, and the test suite pins every metacharacter behavior.
+
+**Followups still open** (carried forward from 49th pass, minus the two closed this pass):
+- The 16 lifecycle command routes for `PrepTaskPlanWorkflow` have a storage mismatch (PrismaJsonStore writes vs Prisma model reads) that needs Tier 3 architecture work.
+- ~10 other unbounded `findMany()` list routes (clients, leads, events, schedules, recipes, ingredients, prep tasks, suppliers, admin tasks, drivers, etc.) still need pagination clamps. The vendors/list pattern (clampLimit/clampOffset helpers, default 50, max 200) is the canonical shape — apply it as those routes are touched for unrelated work.
+- A `procurement/vendors/list` E2E test would lock the new pagination contract; the existing audit only proves the unit-level helper.
 
 ## 49th audit pass — New Facility full-stack shipped, P0.2 closed (2026-04-27)
 

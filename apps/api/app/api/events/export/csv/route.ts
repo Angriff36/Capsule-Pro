@@ -12,6 +12,7 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { likeContains } from "@/lib/sql-like";
 
 /**
  * Helper function to escape CSV values
@@ -87,10 +88,15 @@ function buildWhereConditions(
   }
 
   if (params.search) {
+    // Escape ILIKE metacharacters before wrapping with `%…%`. Without this,
+    // a search containing `%` or `_` would silently match rows the user did
+    // not intend (e.g. `100%` would match every event whose title contains
+    // `100`). The matching `ESCAPE '\'` clause is appended below.
+    const safe = likeContains(params.search);
     conditions.push(
-      `(title ILIKE $${paramIndex++} OR event_number ILIKE $${paramIndex++})`
+      `(title ILIKE $${paramIndex++} ESCAPE '\\' OR event_number ILIKE $${paramIndex++} ESCAPE '\\')`
     );
-    queryParams.push(`%${params.search}%`, `%${params.search}%`);
+    queryParams.push(safe, safe);
   }
 
   return {
