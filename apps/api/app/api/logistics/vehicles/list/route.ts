@@ -1,4 +1,6 @@
-// List vehicles
+// List vehicles. Pagination policy is centralized in `@/lib/pagination` so a
+// hostile or buggy client cannot request the entire vehicles table for a
+// tenant in one round trip.
 import { auth } from "@repo/auth/server";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
@@ -8,6 +10,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { clampLimit, clampOffset } from "@/lib/pagination";
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,6 +19,10 @@ export async function GET(request: NextRequest) {
 
     const tenantId = await getTenantIdForOrg(orgId);
     if (!tenantId) return manifestErrorResponse("Tenant not found", 400);
+
+    const searchParams = request.nextUrl.searchParams;
+    const limit = clampLimit(searchParams.get("limit"));
+    const offset = clampOffset(searchParams.get("offset"));
 
     const vehicles = await database.$queryRaw`
       SELECT
@@ -27,9 +34,10 @@ export async function GET(request: NextRequest) {
       FROM tenant_logistics.vehicles v
       WHERE v.tenant_id = ${tenantId}::uuid AND v.deleted_at IS NULL
       ORDER BY v.make, v.model
+      LIMIT ${limit} OFFSET ${offset}
     `;
 
-    return manifestSuccessResponse({ vehicles });
+    return manifestSuccessResponse({ vehicles, limit, offset });
   } catch (error) {
     captureException(error);
     console.error("Error listing vehicles:", error);

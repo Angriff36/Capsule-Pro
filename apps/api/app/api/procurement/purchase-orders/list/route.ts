@@ -1,4 +1,6 @@
-// List purchase orders with vendor name and item count
+// List purchase orders with vendor name and item count. Pagination policy is
+// centralized in `@/lib/pagination` so a hostile or buggy client cannot
+// request the entire purchase-orders table for a tenant in one round trip.
 import { auth } from "@repo/auth/server";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
@@ -8,6 +10,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { clampLimit, clampOffset } from "@/lib/pagination";
 
 export async function GET(request: NextRequest) {
   try {
@@ -19,13 +22,20 @@ export async function GET(request: NextRequest) {
 
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get("status");
+    const limit = clampLimit(searchParams.get("limit"));
+    const offset = clampOffset(searchParams.get("offset"));
 
     let statusFilter = "";
-    const params: any[] = [tenantId];
+    const params: (string | number)[] = [tenantId];
     if (status && status !== "all") {
       statusFilter = "AND po.status = $2";
       params.push(status);
     }
+    // LIMIT/OFFSET param indices are dynamic because the optional status
+    // filter consumes $2 when present; mirrors procurement/vendors/list.
+    const limitIdx = params.length + 1;
+    const offsetIdx = params.length + 2;
+    params.push(limit, offset);
 
     const orders = await database.$queryRawUnsafe(
       `
@@ -47,11 +57,12 @@ export async function GET(request: NextRequest) {
         po.subtotal, po.tax_amount, po.shipping_amount, po.total,
         po.notes, po.submitted_at, po.received_at, po.created_at, v.name
       ORDER BY po.order_date DESC, po.created_at DESC
+      LIMIT $${limitIdx} OFFSET $${offsetIdx}
     `,
       ...params
     );
 
-    return manifestSuccessResponse({ orders });
+    return manifestSuccessResponse({ orders, limit, offset });
   } catch (error) {
     captureException(error);
     console.error("Error listing purchase orders:", error);

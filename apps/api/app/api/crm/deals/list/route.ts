@@ -2,13 +2,21 @@
  * GET /api/crm/deals
  * List all proposals as deals for the CRM pipeline view.
  * Maps proposal statuses to pipeline stages.
+ *
+ * Pagination policy is centralized in `@/lib/pagination`. Without these
+ * clamps a hostile or buggy client could request the entire proposals table
+ * (joined to clients + leads) in one round-trip and blow up server memory.
  */
 
 import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
-import { NextResponse as NextResponseAlias } from "next/server";
+import {
+  type NextRequest,
+  NextResponse as NextResponseAlias,
+} from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { clampLimit, clampOffset } from "@/lib/pagination";
 
 /**
  * Maps a proposal status to a pipeline stage.
@@ -36,7 +44,7 @@ function proposalStatusToStage(status: string, eventId: string | null): string {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const { orgId } = await auth();
     if (!orgId) {
@@ -53,6 +61,10 @@ export async function GET() {
         { status: 400 }
       );
     }
+
+    const searchParams = request.nextUrl.searchParams;
+    const limit = clampLimit(searchParams.get("limit"));
+    const offset = clampOffset(searchParams.get("offset"));
 
     const proposals = await database.proposal.findMany({
       where: {
@@ -77,6 +89,8 @@ export async function GET() {
         },
       },
       orderBy: { updatedAt: "desc" },
+      take: limit,
+      skip: offset,
     });
 
     // Map proposals to deal shape with pipeline stage
@@ -112,7 +126,7 @@ export async function GET() {
       updatedAt: proposal.updatedAt,
     }));
 
-    return NextResponseAlias.json({ data: deals });
+    return NextResponseAlias.json({ data: deals, limit, offset });
   } catch (error) {
     captureException(error);
     console.error("Error listing deals:", error);

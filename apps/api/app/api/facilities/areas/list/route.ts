@@ -1,4 +1,6 @@
-// API route for listing facility areas
+// API route for listing facility areas. Pagination policy is centralized in
+// `@/lib/pagination` so a hostile or buggy client cannot request the entire
+// facility-areas table for a tenant in one round trip.
 
 import { auth } from "@repo/auth/server";
 import { Prisma } from "@repo/database";
@@ -10,6 +12,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { clampLimit, clampOffset } from "@/lib/pagination";
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,9 +30,11 @@ export async function GET(request: NextRequest) {
     const venueId = searchParams.get("venueId");
     const areaType = searchParams.get("areaType");
     const status = searchParams.get("status") || "active";
+    const limit = clampLimit(searchParams.get("limit"));
+    const offset = clampOffset(searchParams.get("offset"));
 
     const areas = await database.$queryRaw`
-      SELECT 
+      SELECT
         id, venue_id, name, code, area_type, floor, description,
         square_feet, status, created_at, updated_at
       FROM tenant_facilities.facility_areas
@@ -39,9 +44,10 @@ export async function GET(request: NextRequest) {
         ${areaType ? Prisma.sql`AND area_type = ${areaType}` : Prisma.empty}
         ${status !== "all" ? Prisma.sql`AND status = ${status}` : Prisma.empty}
       ORDER BY name
+      LIMIT ${limit} OFFSET ${offset}
     `;
 
-    return manifestSuccessResponse({ areas });
+    return manifestSuccessResponse({ areas, limit, offset });
   } catch (error) {
     captureException(error);
     console.error("Error listing facility areas:", error);

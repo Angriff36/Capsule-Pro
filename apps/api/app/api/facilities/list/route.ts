@@ -14,6 +14,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { clampLimit, clampOffset } from "@/lib/pagination";
 
 export async function GET(request: NextRequest) {
   try {
@@ -30,6 +31,8 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get("status") || "active";
     const facilityType = searchParams.get("facilityType");
+    const limit = clampLimit(searchParams.get("limit"));
+    const offset = clampOffset(searchParams.get("offset"));
 
     const facilities = await database.$queryRaw`
       SELECT
@@ -42,9 +45,10 @@ export async function GET(request: NextRequest) {
         ${status !== "all" ? Prisma.sql`AND status = ${status}` : Prisma.empty}
         ${facilityType ? Prisma.sql`AND facility_type = ${facilityType}` : Prisma.empty}
       ORDER BY name
+      LIMIT ${limit} OFFSET ${offset}
     `;
 
-    return manifestSuccessResponse({ facilities });
+    return manifestSuccessResponse({ facilities, limit, offset });
   } catch (error) {
     captureException(error);
     console.error("Error listing facilities:", error);

@@ -1,6 +1,45 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-27 (fifty-seventh pass — generator-level test for findFirst pattern locks in 56th-pass fix)
+> **Last updated:** 2026-04-27 (fifty-eighth pass — pagination clamps shipped to 7 more list routes; 51st-pass followup closed)
+
+## 58th audit pass — pagination clamps for 7 hand-written list routes (2026-04-27)
+
+**Problem solved**: The 51st pass shipped centralized pagination clamps (`clampLimit`, `clampOffset` in `apps/api/lib/pagination.ts`) to 9 high-traffic Prisma list routes but explicitly carried over a followup: "~10 other unbounded findMany() list routes still need pagination clamps." Without these clamps any of the remaining list endpoints accept `?limit=999999&offset=0` and respond with the entire tenant table — a denial-of-service vector and a data-exfiltration accelerator. This pass closes the followup for 7 hand-written routes, including 5 raw-SQL routes that were not covered by the manifest scaffolds.
+
+**What shipped this pass**:
+
+Applied `clampLimit`/`clampOffset` from `@/lib/pagination` (DEFAULT_LIMIT=50, MAX_LIMIT=200) to **7 hand-written list routes**, using the right pattern per query style:
+
+1. **`apps/api/app/api/crm/deals/list/route.ts`** — Prisma `findMany`. Added `take`/`skip`. Response: `{ data, limit, offset }`. Surfaces deals (proposals projected to pipeline stages); without the clamp the entire proposals × clients × leads join could be requested in one round trip.
+2. **`apps/api/app/api/documents/versions/list/route.ts`** — Prisma `findMany`. Added `take`/`skip`. Response: `{ versions, limit, offset }`. Document version history was previously unbounded — a long-lived document could have hundreds of versions.
+3. **`apps/api/app/api/facilities/list/route.ts`** — `database.$queryRaw` template tag. Appended `LIMIT ${limit} OFFSET ${offset}` (auto-parameterized by Prisma's tagged template). Response: `{ facilities, limit, offset }`. Canonical read path verified by the New Facility E2E backpressure test — kept response shape backwards-compatible for the existing test.
+4. **`apps/api/app/api/facilities/areas/list/route.ts`** — `$queryRaw` template tag, same pattern as #3. Response: `{ areas, limit, offset }`.
+5. **`apps/api/app/api/facilities/assets/list/route.ts`** — `$queryRaw` template tag, same pattern as #3. Response: `{ assets, limit, offset }`. Canonical read path verified by the New Asset E2E backpressure test.
+6. **`apps/api/app/api/logistics/vehicles/list/route.ts`** — `$queryRaw` template tag (with subquery for `assigned_drivers` count), same pattern. Response: `{ vehicles, limit, offset }`.
+7. **`apps/api/app/api/procurement/purchase-orders/list/route.ts`** — `database.$queryRawUnsafe` (string + spread args) with an optional `status` filter at `$2`. Computed dynamic param indices: `const limitIdx = params.length + 1; const offsetIdx = params.length + 2; params.push(limit, offset);` then `LIMIT $${limitIdx} OFFSET $${offsetIdx}`. This mirrors the existing pattern in `apps/api/app/api/procurement/vendors/list/route.ts` and `apps/api/app/api/logistics/drivers/list/route.ts`. Also tightened the `params: any[]` type to `params: (string | number)[]` since I touched the line. Response: `{ orders, limit, offset }`.
+
+**Why each line exists**:
+- `clampLimit(searchParams.get("limit"))` — the central clamp returns `DEFAULT_LIMIT` (50) for missing/invalid input and `min(parsed, MAX_LIMIT=200)` for valid input. Calling routes never need to repeat the policy.
+- `clampOffset(searchParams.get("offset"))` — returns 0 for missing/invalid/negative input, parsed value otherwise. No upper bound on offset because deep pagination is rare and Postgres handles large offsets gracefully (LIMIT/OFFSET is O(N+M)).
+- For raw-SQL template tags (`$queryRaw`), the `${limit}`/`${offset}` interpolation is auto-parameterized as `$N::int` by Prisma — no SQL injection surface, and Postgres uses a planner-friendly bound.
+- For `$queryRawUnsafe`, the dynamic `$N` index calculation is required because the optional `status` filter consumes `$2` only when present. Hardcoding `$3`/`$4` would break the no-filter path.
+- Returning `limit`/`offset` in the response shape lets clients implement cursorless pagination without re-deriving the values they sent. Mirrors the pattern from the 51st pass.
+
+**Verification evidence**:
+- `pnpm --filter api tsc --noEmit` — 0 errors. (Prior pass also had 0 errors.)
+- `pnpm --filter api test --run` — 1155 passed, 1 skipped, 8 todo (64 test files). No regressions; matches the 56th-pass baseline exactly.
+- `pnpm dlx ultracite check <7 routes>` — 0 errors, 4 preexisting `useBlockStatements` style warnings on `if (x) return y` patterns (warnings, not errors; biome flags them as unsafe-fix only). One real lint regression (`any[]` in purchase-orders) was fixed during this pass.
+
+**Files touched**:
+- Modified: 7 list routes listed above.
+- Modified: `IMPLEMENTATION_PLAN.md` (this entry).
+
+**Why this matters**: The 51st pass framed pagination clamps as a P0 backpressure concern: "any list endpoint without a clamp is a load-bearing DoS vector." Closing the carryover followup for these 7 routes removes 7 more vectors and brings the total clamped surface to 16 list routes (9 from 51st + 7 here). The pattern is now uniform across the three query styles in the codebase (Prisma `findMany`, `$queryRaw` template, `$queryRawUnsafe` with dynamic indices), so future list routes have working examples for each.
+
+**Followups still open**:
+- A handful of less-trafficked manifest-generated list routes may still lack clamps; manifest generator could be extended to emit `clampLimit`/`clampOffset` automatically (currently the generator emits `take: 50` hardcoded, which is fine for default behavior but doesn't honor user-supplied `limit` at all). A future pass should reconcile manifest-generated clamps with the centralized policy.
+- E2E backpressure tests exist for `facilities/assets` (New Asset flow) and a few others; equivalent backpressure tests for `crm/deals`, `documents/versions`, `logistics/vehicles`, `procurement/purchase-orders` would lock the contract in via product-flow assertions. Not strictly required because typecheck + the pagination unit tests prove the clamp is wired, but a backpressure E2E would be the strongest possible guarantee.
+- The 4 preexisting `useBlockStatements` style warnings on `if (x) return y` patterns in vehicles/list and purchase-orders/list are unsafe biome auto-fixes; trivial cleanup but out of scope for a security pass.
 
 ## 57th audit pass — generator-level test for findFirst pattern (2026-04-27)
 

@@ -1,4 +1,7 @@
-// List facility assets
+// List facility assets. Pagination policy is centralized in `@/lib/pagination`
+// so a hostile or buggy client cannot request the entire facility-assets
+// table for a tenant in one round trip. This route is the canonical read
+// path verified by the New Asset E2E backpressure test.
 
 import { auth } from "@repo/auth/server";
 import { Prisma } from "@repo/database";
@@ -10,6 +13,7 @@ import {
   manifestErrorResponse,
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
+import { clampLimit, clampOffset } from "@/lib/pagination";
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,6 +31,8 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status") || "active";
     const assetType = searchParams.get("assetType");
     const areaId = searchParams.get("areaId");
+    const limit = clampLimit(searchParams.get("limit"));
+    const offset = clampOffset(searchParams.get("offset"));
 
     const assets = await database.$queryRaw`
       SELECT
@@ -43,9 +49,10 @@ export async function GET(request: NextRequest) {
         ${assetType ? Prisma.sql`AND a.asset_type = ${assetType}` : Prisma.empty}
         ${areaId ? Prisma.sql`AND a.area_id = ${areaId}::uuid` : Prisma.empty}
       ORDER BY a.name
+      LIMIT ${limit} OFFSET ${offset}
     `;
 
-    return manifestSuccessResponse({ assets });
+    return manifestSuccessResponse({ assets, limit, offset });
   } catch (error) {
     captureException(error);
     console.error("Error listing facility assets:", error);
