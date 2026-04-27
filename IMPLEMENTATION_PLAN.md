@@ -1,6 +1,42 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-26 (forty-first pass — refund gateway seam wired into POST refund handler; 502-on-failure with no DB writes)
+> **Last updated:** 2026-04-26 (forty-second pass — sensitive-mutation rate limit wired into PUT process + POST refund handlers; 20/min/payments_sensitive bucket isolated from global cap)
+
+## 42nd audit pass — sensitive-mutation rate limit on payment PUT/POST (2026-04-26)
+
+**Problem solved**: PUT `/api/accounting/payments/[id]` (process) and POST `/api/accounting/payments/[id]` (refund) were protected only by the global rate limiter (`apps/api/middleware/global-rate-limit.ts`), which caps every authenticated request at 100/min/tenant. For money-moving operations that ceiling is too generous: a leaked session, a misbehaving cron, or an abusive script could still drive ~100 charge or refund attempts per minute before tripping the global limit. That's enough to drain an event's refund budget, hammer the payment processor into a fraud lock, or generate enough partial-refund noise on a single payment row to make manual reconciliation hard. This was the top "still open" item carried forward from the 41st pass.
+
+**What shipped this pass**:
+- Modified `apps/api/app/api/accounting/payments/[id]/route.ts`:
+  - Added `import { checkRateLimit } from "@/middleware/rate-limiter"`.
+  - Defined a single module-scoped `SENSITIVE_RATE_LIMIT` const (`{ limit: 20, window: "1m", prefix: "payments_sensitive" }`) shared by both handlers, with a long doc-comment explaining the tradeoff (20/min still leaves headroom for a busy ops user processing receipts; the dedicated `payments_sensitive` Redis prefix keeps this counter isolated from the global pool, so exhausting one bucket does NOT pre-consume the other; `checkRateLimit` already fails OPEN on Redis errors at line 415, so an Upstash outage degrades to "global limit only" rather than locking out all payment mutations).
+  - PUT handler: renamed first arg back to `request: NextRequest` (was `_request` from 40th pass) and inserted `checkRateLimit(request, tenantId, SENSITIVE_RATE_LIMIT)` immediately after `requireTenantId()`. On `success: false`, returns `rateLimit.response` verbatim (the 429 with proper headers from `createRateLimitedResponse`). The `_request` rename does NOT re-introduce the body trust gap from the 40th pass — `request.json()` is still never called inside PUT; `request` is only passed to the limiter for header inspection (tenant ID, user ID, IP).
+  - POST handler: same shape — limiter call immediately after `requireTenantId()`, BEFORE `await request.json()`, BEFORE any DB lookup, BEFORE `refundPaymentGateway`. Refund-spam protection: a throttled caller cannot drive processor calls or generate partial-refund noise.
+- Updated `apps/api/__tests__/accounting/payment-process-gateway.test.ts` and `apps/api/__tests__/accounting/payment-refund-clamp.test.ts`: added `checkRateLimitMock` to the `vi.hoisted` factories, added `vi.mock("@/middleware/rate-limiter", ...)`, and seeded the mock in `beforeEach` to always return success so the existing 26 ledger-correctness tests continue to assert against the happy path. Without these mocks, the existing tests would now hit the real limiter (which would attempt to call `database.rateLimitConfig.findMany` on the unmocked database surface).
+- Created `apps/api/__tests__/accounting/payment-rate-limit.test.ts` with **8 new tests**:
+  1. **PUT 429 short-circuit** — limiter returns `success: false` with a real 429 response object; handler returns it verbatim (`expect(res).toBe(throttle)`) and asserts NO calls to `payment.findFirst`, `payment.update`, or `processPaymentGateway`. Pins the "no DB writes, no gateway calls" contract.
+  2. **PUT limiter invocation contract** — asserts the limiter is called exactly once with `tenantId` from `requireTenantId()` and the `{ limit: 20, window: "1m", prefix: "payments_sensitive" }` options. Locks in the bucket isolation.
+  3. **PUT fail-open** — limiter returns `success: true` with full quota and no `response` (the Redis-outage shape); handler proceeds to a 200 and the gateway is invoked. Critical: an Upstash outage MUST NOT lock out payment mutations.
+  4-6. Same three tests for POST (refund) — 429 short-circuit (no body parse, no DB, no gateway, no invoice mutation), invocation contract, fail-open.
+  7. **PUT call ordering invariant** — uses `mockImplementation` to record the order of `requireTenantId`, `checkRateLimit`, and `payment.findFirst`. Asserts the first three calls occur in exactly that order — the limiter MUST run BEFORE any DB read so 429 costs zero query budget.
+  8. Same call-ordering invariant for POST.
+
+**Tests**: 8/8 pass in the new `payment-rate-limit.test.ts`. Full `__tests__/accounting/` suite: **57/57 pass** (was 49; +8 new). Full api suite: **1013 passing, 1 skipped, 8 todo, 0 failures** (was 1005). TypeScript: 0 errors (`tsc --noEmit -p apps/api/tsconfig.json`).
+
+**Files touched**:
+- Modified: `apps/api/app/api/accounting/payments/[id]/route.ts` (added `checkRateLimit` import, `SENSITIVE_RATE_LIMIT` const, two limiter calls, restored `request` parameter name in PUT)
+- Modified: `apps/api/__tests__/accounting/payment-process-gateway.test.ts` (added rate-limiter mock)
+- Modified: `apps/api/__tests__/accounting/payment-refund-clamp.test.ts` (added rate-limiter mock)
+- Created: `apps/api/__tests__/accounting/payment-rate-limit.test.ts` (8 tests)
+
+**Why this matters**: payment mutations now have a defense-in-depth rate ceiling at three levels: (1) per-route 20/min via the new `payments_sensitive` bucket, (2) global 100/min from `global-rate-limit.ts`, (3) tenant-config overrides via `database.rateLimitConfig`. The dedicated bucket means a charge-spam attempt cannot pre-consume a refund-spam attempt's quota or vice versa, and neither blocks read traffic on the same session. The "limiter runs before DB" invariant is now test-pinned, so a regression that moves the call to after `payment.findFirst` would fail the call-ordering tests instead of silently letting throttled callers burn DB capacity.
+
+**Followups still open** (carried forward from 41st pass with this item closed):
+- ~~Sensitive-mutation rate limit on PUT/POST is missing~~ — **CLOSED this pass**.
+- Refund failure path returns `refundTransactionId` in the 502 body but does not persist it to a `Payment.refundAttempts` audit table for full forensic trail.
+- `payment-process-refund.test.ts` (referenced in 35th-37th pass entries as a single canonical suite) does NOT exist on `main`. Coverage is now split across `payment-process-gateway.test.ts` (PUT), `payment-refund-clamp.test.ts` (POST + gateway), and `payment-rate-limit.test.ts` (rate limit on both). Consolidation would match the original naming if desired, but the split is functional and each file has a clear, narrow charter.
+
+---
 
 ## 41st audit pass — refund gateway wired into POST handler (2026-04-26)
 

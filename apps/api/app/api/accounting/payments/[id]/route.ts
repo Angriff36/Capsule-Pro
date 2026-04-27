@@ -14,6 +14,7 @@
 import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";
+import { checkRateLimit } from "@/middleware/rate-limiter";
 import {
   captureException,
   type PaymentResponse,
@@ -26,6 +27,33 @@ import { processPaymentGateway, refundPaymentGateway } from "./gateway";
 type RouteContext = {
   params: Promise<{ id: string }>;
 };
+
+/**
+ * Sensitive-mutation rate limit options for payment process/refund.
+ *
+ * The global limiter (apps/api/middleware/global-rate-limit.ts) caps every
+ * authenticated request at 100/min/tenant. That cap is too generous for
+ * money-moving operations: a leaked session can burn ~100 charge or refund
+ * attempts before the global ceiling kicks in, which is more than enough to
+ * empty an event's refund budget or hammer the processor into a fraud lock.
+ *
+ * 20 requests / 60s / (tenant + endpoint + identifier) is a tight cap that
+ * still leaves headroom for legitimate human-driven flows (a busy ops user
+ * processing a queue of receipts) but stops abusive scripts cold. The
+ * `payments_sensitive` prefix keeps this counter isolated from the global
+ * pool — exhausting the sensitive bucket does NOT block read traffic on the
+ * same session, and exhausting the global pool does NOT pre-consume the
+ * sensitive bucket.
+ *
+ * Failure mode: `checkRateLimit` already fails OPEN on Redis connection
+ * errors (rate-limiter.ts:415), so an Upstash outage degrades to "global
+ * limit only" rather than locking out all payment mutations.
+ */
+const SENSITIVE_RATE_LIMIT = {
+  limit: 20,
+  window: "1m",
+  prefix: "payments_sensitive",
+} as const;
 
 /**
  * GET /api/accounting/payments/[id]
@@ -80,9 +108,22 @@ export async function GET(request: NextRequest, context: RouteContext) {
  * `request.json()` back to this function, stop and read
  * `./gateway.ts` first.
  */
-export async function PUT(_request: NextRequest, context: RouteContext) {
+export async function PUT(request: NextRequest, context: RouteContext) {
   try {
     const tenantId = await requireTenantId();
+
+    // Sensitive-mutation throttle. Runs BEFORE any DB read so abusive
+    // callers cannot probe for valid payment IDs or burn DB capacity by
+    // looping on the process endpoint. See SENSITIVE_RATE_LIMIT comment.
+    const rateLimit = await checkRateLimit(
+      request,
+      tenantId,
+      SENSITIVE_RATE_LIMIT
+    );
+    if (!rateLimit.success && rateLimit.response) {
+      return rateLimit.response;
+    }
+
     const { id } = await context.params;
 
     // Get payment
@@ -206,6 +247,20 @@ export async function PUT(_request: NextRequest, context: RouteContext) {
 export async function POST(request: NextRequest, context: RouteContext) {
   try {
     const tenantId = await requireTenantId();
+
+    // Sensitive-mutation throttle. Runs BEFORE we parse the body or touch
+    // the DB so refund-spam cannot drive processor calls or generate
+    // partial-refund noise on the original payment row. See
+    // SENSITIVE_RATE_LIMIT comment.
+    const rateLimit = await checkRateLimit(
+      request,
+      tenantId,
+      SENSITIVE_RATE_LIMIT
+    );
+    if (!rateLimit.success && rateLimit.response) {
+      return rateLimit.response;
+    }
+
     const { id } = await context.params;
     const body = await request.json();
 

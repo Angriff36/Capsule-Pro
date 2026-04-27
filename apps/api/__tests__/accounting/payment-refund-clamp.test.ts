@@ -38,6 +38,7 @@ const mocks = vi.hoisted(() => ({
   captureExceptionMock: vi.fn(),
   refundPaymentGatewayMock: vi.fn(),
   processPaymentGatewayMock: vi.fn(),
+  checkRateLimitMock: vi.fn(),
 }));
 
 vi.mock("@repo/database", () => ({
@@ -64,6 +65,10 @@ vi.mock("@sentry/nextjs", () => ({
 vi.mock("@/app/api/accounting/payments/[id]/gateway", () => ({
   refundPaymentGateway: mocks.refundPaymentGatewayMock,
   processPaymentGateway: mocks.processPaymentGatewayMock,
+}));
+
+vi.mock("@/middleware/rate-limiter", () => ({
+  checkRateLimit: mocks.checkRateLimitMock,
 }));
 
 import { NextRequest } from "next/server";
@@ -131,8 +136,18 @@ beforeEach(() => {
   mocks.captureExceptionMock.mockReset();
   mocks.refundPaymentGatewayMock.mockReset();
   mocks.processPaymentGatewayMock.mockReset();
+  mocks.checkRateLimitMock.mockReset();
 
   mocks.requireTenantIdMock.mockResolvedValue(TENANT_ID);
+  // Default: allow all requests through. The rate-limit-specific test
+  // suite (payment-rate-limit.test.ts) overrides this to assert the 429
+  // throttle path.
+  mocks.checkRateLimitMock.mockResolvedValue({
+    success: true,
+    limit: 20,
+    remaining: 19,
+    reset: new Date(Date.now() + 60_000),
+  });
   // payment.update echoes back input; tests assert against findFirst input.
   mocks.paymentUpdateMock.mockImplementation(({ data }) =>
     Promise.resolve({
