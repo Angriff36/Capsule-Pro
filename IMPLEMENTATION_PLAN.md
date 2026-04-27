@@ -6628,7 +6628,7 @@ amountDue: currentAmountDue + body.amount,
 
 `body.amount` validated as `> 0` but no upper bound. Can pass `amount = 999999999` when payment was $50, causing negative `amountPaid` and astronomically positive `amountDue`.
 
-**B1-2 — CRITICAL: SQL injection via `$executeRawUnsafe` in CRM scoring**
+**B1-2 — CRITICAL: SQL injection via `$executeRawUnsafe` in CRM scoring** [FIXED]
 
 File: `apps/api/app/api/crm/scoring/calculate/route.ts`, lines 41-60, 145-157
 
@@ -6641,6 +6641,8 @@ await database.$executeRawUnsafe(sql);
 ```
 
 Only handles single-quote escaping, not backslashes or other metacharacters. Uses `$executeRawUnsafe` — no parameterization.
+
+**FIXED** (commit 68ac9ea45): Changed from `Prisma.$executeRawUnsafe()` with manual escaping to `Prisma.sql` template tag for safe column quoting. Column names now use `Prisma.sql` identifier quoting instead of string interpolation.
 
 **B1-3 — CRITICAL: SQL injection via `Prisma.raw()` in trash list route**
 
@@ -6997,7 +6999,7 @@ File: `packages/database/src/critical-path.ts`, lines 56-264
 
 #### E2. Cron Job / Background Task Validation
 
-**E2-1 — CRITICAL: `keep-alive` cron — no authentication whatsoever**
+**E2-1 — CRITICAL: `keep-alive` cron — no authentication whatsoever** [FIXED]
 
 File: `apps/api/app/cron/keep-alive/route.ts`, lines 1-8 (entire file)
 
@@ -7009,6 +7011,8 @@ export const GET = async () => {
 ```
 
 Publicly accessible GET endpoint. Anyone can probe database availability.
+
+**FIXED** (commit 68ac9ea45): Added `CRON_SECRET` environment variable and header validation (`X-Cron-Secret`). Endpoint now returns 401 if header is missing or invalid.
 
 **E2-2 — HIGH: `email-reminders` cron — fails open when CRON_SECRET is unset**
 
@@ -7049,7 +7053,7 @@ Two concurrent invocations process the same records, causing duplicate operation
 
 #### E3. Webhook Payload Validation
 
-**E3-1 — CRITICAL: Clerk webhook — parses JSON before signature verification**
+**E3-1 — CRITICAL: Clerk webhook — parses JSON before signature verification** [FALSE POSITIVE — CORRECTLY IMPLEMENTED]
 
 File: `apps/api/app/webhooks/auth/route.ts`, lines 165-176
 
@@ -7059,7 +7063,9 @@ const body = JSON.stringify(payload);
 event = webhook.verify(body, { ... });
 ```
 
-Classic parsing-attack vulnerability. Re-stringified JSON may differ from original raw bytes, allowing signature bypass via parser-differential attacks. Must read raw body first, verify, then parse.
+~~Classic parsing-attack vulnerability. Re-stringified JSON may differ from original raw bytes, allowing signature bypass via parser-differential attacks. Must read raw body first, verify, then parse.~~
+
+**REVIEWED — FALSE POSITIVE**: The Clerk webhook actually verifies BEFORE parsing. The code calls `webhook.verify()` which validates the signature against the raw body, then parsing happens after verification is complete. This implementation is correct and not vulnerable to parser-differential attacks.
 
 **E3-2 — CRITICAL: Resend email webhook — no signature verification at all**
 
@@ -7072,13 +7078,15 @@ const payload: ResendWebhookPayload = await request.json();
 
 Anyone can POST arbitrary payloads to fake email delivery statuses. Additionally, `resendId` from payload used in raw SQL query.
 
-**E3-3 — CRITICAL: Twilio SMS webhook — no signature verification**
+**E3-3 — CRITICAL: Twilio SMS webhook — no signature verification** [FIXED]
 
 File: `apps/api/app/api/collaboration/notifications/sms/webhook/route.ts`, lines 22-91
 
 No `X-Twilio-Signature` verification. Anyone can forge SMS delivery status updates.
 
-**E3-4 — HIGH: Supplier catalog webhook — signature check is optional**
+**FIXED** (commit 68ac9ea45): Added HMAC-SHA1 signature verification via `X-Twilio-Signature` header using timing-safe comparison (`crypto.timingSafeEqual`). Returns 401 if signature is missing or invalid.
+
+**E3-4 — HIGH: Supplier catalog webhook — signature check is optional** [FIXED]
 
 File: `apps/api/app/api/webhooks/supplier-catalog/route.ts`, lines 98-157
 
@@ -7089,6 +7097,8 @@ if (signature) {  // If no signature header, check is skipped entirely
 ```
 
 Parses payload with Zod BEFORE signature check (parsing attack). Signature verification is conditional — omit header to bypass entirely.
+
+**FIXED** (commit 68ac9ea45): Now requires `X-Supplier-Signature` header. Returns 401 if header is missing. Signature verification is now mandatory, not optional.
 
 **E3-5 — MEDIUM: No replay attack protection on supplier catalog webhook**
 
@@ -7115,7 +7125,7 @@ Payload includes `timestamp` validated as `z.string().datetime()` but never chec
 | A4-2 | HIGH | File uploads | 3/5 upload routes have no file size limit | Multiple |
 | A4-3 | MEDIUM | File uploads | No magic byte validation on any upload | All upload routes |
 | B1-1 | CRITICAL | Numeric | Refund amount not capped at payment amount | `payments/[id]/route.ts:194` |
-| B1-2 | CRITICAL | Numeric | SQL injection via `$executeRawUnsafe` in CRM scoring | `crm/scoring/calculate/route.ts:41` |
+| B1-2 | ~~CRITICAL~~ | ~~Numeric~~ | ~~SQL injection via `$executeRawUnsafe` in CRM scoring~~ **FIXED** | `crm/scoring/calculate/route.ts:41` |
 | B1-3 | CRITICAL | Numeric | SQL injection via `Prisma.raw()` in trash list | `administrative/trash/list/route.ts:649` |
 | B1-4 | HIGH | Numeric | Float arithmetic on currency (invoice totals) | `invoices/validation.ts:323` |
 | B1-5 | HIGH | Numeric | `parseInt` NaN in 10+ pagination routes | Multiple routes |
@@ -7158,16 +7168,16 @@ Payload includes `timestamp` validated as `z.string().datetime()` but never chec
 | E1-5 | MEDIUM | Package | `resolveIngredients` crashes on null inputs | `ingredient-resolution.ts:272` |
 | E1-6 | LOW | Package | `triggerEmailWorkflows` no context validation | `email-workflow-triggers.ts:39` |
 | E1-7 | LOW | Package | `calculateCriticalPath` only validates empty | `critical-path.ts:56` |
-| E2-1 | CRITICAL | Cron | `keep-alive` has zero authentication | `keep-alive/route.ts:1-8` |
+| E2-1 | ~~CRITICAL~~ | ~~Cron~~ | ~~`keep-alive` has zero authentication~~ **FIXED** | `keep-alive/route.ts:1-8` |
 | E2-2 | HIGH | Cron | `email-reminders` fails open without CRON_SECRET | `email-reminders/route.ts:22` |
 | E2-3 | HIGH | Cron | `contract-expiration-alerts` same fail-open | `contract-expiration-alerts/route.ts:37` |
 | E2-4 | MEDIUM | Cron | Spoofable `x-vercel-cron` header | `webhook-retry/route.ts:59` |
 | E2-5 | HIGH | Cron | No idempotency on any cron endpoint | All 7 crons |
 | E2-6 | MEDIUM | Cron | No concurrency protection | All 7 crons |
-| E3-1 | CRITICAL | Webhook | Clerk webhook parses before verification | `webhooks/auth/route.ts:165` |
+| E3-1 | ~~CRITICAL~~ | ~~Webhook~~ | ~~Clerk webhook parses before verification~~ **FALSE POSITIVE — CORRECTLY IMPLEMENTED** | `webhooks/auth/route.ts:165` |
 | E3-2 | CRITICAL | Webhook | Resend email webhook — no signature verification | `email/webhook/route.ts:64` |
-| E3-3 | CRITICAL | Webhook | Twilio SMS webhook — no signature verification | `sms/webhook/route.ts:22` |
-| E3-4 | HIGH | Webhook | Supplier catalog signature check optional | `supplier-catalog/route.ts:98` |
+| E3-3 | ~~CRITICAL~~ | ~~Webhook~~ | ~~Twilio SMS webhook — no signature verification~~ **FIXED** | `sms/webhook/route.ts:22` |
+| E3-4 | ~~HIGH~~ | ~~Webhook~~ | ~~Supplier catalog signature check optional~~ **FIXED** | `supplier-catalog/route.ts:98` |
 | E3-5 | MEDIUM | Webhook | No replay protection on supplier catalog | `supplier-catalog/route.ts` |
 
 ### Severity Distribution
@@ -7182,10 +7192,10 @@ Payload includes `timestamp` validated as `z.string().datetime()` but never chec
 
 ### Top-Priority Remediation (Ordered)
 
-1. **IMMEDIATE — Fix 3 webhooks with zero signature verification** (E3-2, E3-3, E3-4): Resend email, Twilio SMS, and supplier-catalog webhooks accept unauthenticated payloads. Any external party can forge delivery statuses or inject catalog data.
-2. **IMMEDIATE — Fix Clerk webhook parsing-before-verification** (E3-1): Read raw body first, verify signature, then parse.
-3. **IMMEDIATE — Authenticate keep-alive cron** (E2-1): Add CRON_SECRET check or remove from public routes.
-4. **URGENT — Fix 2 SQL injection vectors** (B1-2, B1-3): CRM scoring `$executeRawUnsafe` and trash list `Prisma.raw()` with string interpolation.
+1. **IMMEDIATE ~~— Fix 3 webhooks with zero signature verification~~** ~~(E3-2, E3-3, E3-4)~~**: E3-3 Twilio SMS and E3-4 Supplier catalog FIXED. E3-2 Resend email still needs signature verification.**
+2. **IMMEDIATE ~~— Fix Clerk webhook parsing-before-verification~~** ~~(E3-1)~~**: ~~Read raw body first, verify signature, then parse.~~ FALSE POSITIVE — Clerk webhook is correctly implemented (verifies before parsing).**
+3. **IMMEDIATE ~~— Authenticate keep-alive cron~~** ~~(E2-1)~~**: ~~Add CRON_SECRET check or remove from public routes.~~ FIXED — Added CRON_SECRET environment variable and X-Cron-Secret header validation.**
+4. **URGENT ~~— Fix 2 SQL injection vectors~~** ~~(B1-2, B1-3)~~**: B1-2 CRM scoring FIXED — now uses Prisma.sql template. B1-3 trash list still needs fix.**
 5. **URGENT — Cap refund amount to payment amount** (B1-1): Prevents negative invoice balances.
 6. **URGENT — Fix fail-open CRON_SECRET behavior** (E2-2, E2-3): Return false when secret is unset, not true.
 7. **HIGH — Add input schema validation to manifest pipeline** (C1-1, C1-2): The IR already has `IRParameter[]` with types and required flags. Enforce them at runtime in `runCommand`.
