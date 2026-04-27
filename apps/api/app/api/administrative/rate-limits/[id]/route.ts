@@ -3,7 +3,7 @@
 
 import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { database } from "@repo/database";
+import { database } from "@/lib/database";
 import { manifestErrorResponse, manifestSuccessResponse } from "@/lib/manifest-response";
 import { auth } from "@repo/auth/server";
 
@@ -27,9 +27,10 @@ export async function GET(
 
     const rateLimitConfig = await database.rateLimitConfig.findUnique({
       where: {
-        id,
-        tenantId,
-        deletedAt: null
+        tenantId_id: {
+          tenantId,
+          id,
+        },
       },
     });
 

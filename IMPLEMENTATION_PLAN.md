@@ -36,13 +36,15 @@
 - Modified: `scripts/manifest/generate-route-manifest.ts` (added mapping)
 - Generated: `apps/api/app/api/administrative/rate-limits/` (routes scaffold)
 
-**Known issues**:
-- Generated routes have type errors because they assume all entities have `deletedAt` property, but some Prisma models use `deleted_at` or don't have soft-delete. This is a pre-existing issue with the manifest generation system.
-- The `RateLimitConfig` model exists in Prisma schema (`packages/database/prisma/schema.prisma:5194`) so the routes should integrate correctly once the type errors are addressed.
+**Known issues** (addressed in follow-up sessions):
+- Generated routes had two issues: (1) wrong import path `@repo/database` vs `@/lib/database`, (2) `findUnique` used flat `{ id, tenantId, deletedAt: null }` but Prisma requires `tenantId_id: { tenantId, id }` compound key format.
+- The manifest generator has a **systemic pattern bug**: it assumes all entities use flat `{ id, tenantId, deletedAt: null }` for `findUnique`, but Prisma models use compound unique keys (`tenantId_id: { ... }`) or have no soft-delete. This affects ~85 type errors across the codebase.
+- The root cause is in `packages/manifest-runtime/src/manifest/projections/nextjs/generator.ts` — it generates queries without consulting the actual Prisma schema for each model's unique constraints.
 
 **Followups still open**:
 - Remaining 14 quarantined manifests still need to be enabled (require DSL compatibility fixes).
-- Generated routes need manual Prisma schema alignment to fix type errors.
+- Manifest generator needs to be updated to consult Prisma schema for correct `findUnique` compound key format.
+- 85+ type errors in generated routes from compound key mismatch pattern.
 - 17 quarantined manifests total (including prep-task-dependency.manifest, payment-rules.manifest, etc.).
 
 ## 54th audit pass — Prisma error translation utility (2026-04-27)
