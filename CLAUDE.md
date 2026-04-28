@@ -154,7 +154,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[Emergency bridge — running bridge was not updated]
-Files: packages/manifest-adapters/src/manifest-runtime-factory.ts (edit), packages/manifest-adapters/__tests__/prisma-store-broken-read-batch05.test.ts (create), IMPLEMENTATION_PLAN.md (edit)
+[auto-bridge snapshot @ 10 changes]
+Files: packages/manifest-adapters/src/prisma-stores/broken-read-batch06-cycle-dish.ts (edit), packages/manifest-adapters/__tests__/prisma-store-broken-read-batch06.test.ts (create), packages/manifest-adapters/src/prisma-store.ts (edit), packages/manifest-adapters/src/prisma-stores/broken-read-batch06-employee-availability.ts (create), packages/manifest-adapters/src/prisma-stores/broken-read-batch06-email.ts (create), packages/manifest-adapters/src/prisma-stores/broken-read-batch06-cycle-dish.ts (create)
 
 # === END COGNILAYER ===

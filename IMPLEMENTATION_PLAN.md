@@ -1,23 +1,23 @@
 # Capsule-Pro Implementation Plan — Live Queue
 
-> **Last updated:** 2026-04-28 (batch 06 closed — CycleCountSession, Dish, EmailTemplate, EmailWorkflow, EmployeeAvailability stores landed; batch 07 now current).
+> **Last updated:** 2026-04-28 (batch 07 closed — EmployeeCertification, EmployeeDeduction, Event, EventBudget, EventContract stores landed; batch 08 now current).
 > **Convention:** this file is the **live queue only**. Completed pass write-ups are archived, not appended here. See the **Archive Map** at the bottom for where to look up history.
 
 ---
 
-## Current Task — BROKEN_PRISMA_READ Batch 07
+## Current Task — BROKEN_PRISMA_READ Batch 08
 
-Implement batch 07 only:
+Implement batch 08 only:
 
-- EmployeeCertification
-- EmployeeDeduction
-- Event
-- EventBudget
-- EventContract
+- EventDish
+- EventGuest
+- EventImportWorkflow
+- EventProfitability
+- EventReport
 
-Use the AlertsConfig / batch01–batch06 repair pattern (see `AGENTS.md` → **Manifest Persistence Repair Rules**, the existing stores in `packages/manifest-adapters/src/prisma-stores/`, and the persistence test at `packages/manifest-adapters/__tests__/prisma-store-broken-read-batch06.test.ts`).
+Use the AlertsConfig / batch01–batch07 repair pattern (see `AGENTS.md` → **Manifest Persistence Repair Rules**, the existing stores in `packages/manifest-adapters/src/prisma-stores/`, and the persistence test at `packages/manifest-adapters/__tests__/prisma-store-broken-read-batch07.test.ts`).
 
-**Order of work:** complete **EmployeeCertification** first as the representative entity. If its store + wiring + persistence test pass, continue with the rest of batch 07 in alphabetical order.
+**Order of work:** complete **EventDish** first as the representative entity. If its store + wiring + persistence test pass, continue with the rest of batch 08 in alphabetical order.
 
 ### Required verification
 
@@ -39,9 +39,9 @@ The persistence test (one file per batch in `packages/manifest-adapters/__tests_
 
 ### Allowed changes (per entity)
 
-1. Add a dedicated `PrismaStore` in `packages/manifest-adapters/src/prisma-stores/broken-read-batch07-*.ts` (group entities by Prisma shape). Reuse the helpers from `prisma-stores/shared.ts`.
+1. Add a dedicated `PrismaStore` in `packages/manifest-adapters/src/prisma-stores/broken-read-batch08-*.ts` (group entities by Prisma shape). Reuse the helpers from `prisma-stores/shared.ts`.
 2. Add the `case` for the entity in `createPrismaStoreProvider` in `prisma-store.ts`.
-3. Add a targeted persistence test in `packages/manifest-adapters/__tests__/prisma-store-broken-read-batch07.test.ts` with `vi.hoisted` mocks per Prisma model accessor.
+3. Add a targeted persistence test in `packages/manifest-adapters/__tests__/prisma-store-broken-read-batch08.test.ts` with `vi.hoisted` mocks per Prisma model accessor.
 4. Use `toDecimalInput()` for nullable `Decimal` columns and `toDecimalRequired()` for non-null ones.
 
 ### SEMANTIC_BLOCKER handling
@@ -60,8 +60,8 @@ Audit source: `.manifest-persistence-audit-temp.json`. BROKEN_RAW_SQL is tracked
 | 04    | Done        | ClientContact, ClientInteraction, ClientPreference, CommandBoard, CommandBoardCard |
 | 05    | Done        | CommandBoardConnection, CommandBoardGroup, CommandBoardLayout, ContractSignature, CycleCountRecord |
 | 06    | Done        | CycleCountSession, Dish, EmailTemplate, EmailWorkflow, EmployeeAvailability |
-| 07    | **CURRENT** | EmployeeCertification, EmployeeDeduction, Event, EventBudget, EventContract |
-| 08    | Queued      | EventDish, EventGuest, EventImportWorkflow, EventProfitability, EventReport |
+| 07    | Done        | EmployeeCertification, EmployeeDeduction, Event, EventBudget, EventContract |
+| 08    | **CURRENT** | EventDish, EventGuest, EventImportWorkflow, EventProfitability, EventReport |
 | 09    | Queued      | EventStaff, EventSummary, Ingredient, InventoryItem, InventorySupplier |
 | 10    | Queued      | InventoryTransaction, KitchenTask, LaborBudget, Lead, Menu |
 | 11    | Queued      | MenuDish, OverrideAudit, PayrollApprovalHistory, PayrollPeriod, PayrollRun |
@@ -88,6 +88,7 @@ These block end-to-end verification for some entities. Do **not** try to fix the
 
 Full write-ups are in the archive. Highlights:
 
+- **BROKEN_PRISMA_READ Batch 07 (2026-04-28)** — `EmployeeCertificationPrismaStore`, `EmployeeDeductionPrismaStore` (in `broken-read-batch07-employee.ts`) + `EventPrismaStore`, `EventBudgetPrismaStore`, `EventContractPrismaStore` (in `broken-read-batch07-event.ts`). Replaced old inline `EventPrismaStore` in `prisma-store.ts` with imported batch07 version. Persistence test at `packages/manifest-adapters/__tests__/prisma-store-broken-read-batch07.test.ts` (15 tests, covers snake_case `employee_certifications` model with composite key `tenant_id_id`, camelCase `EmployeeDeduction` model with nullable `Decimal` columns via `toDecimalInput`, `Event` with `String[]` arrays and nullable `Decimal` budget/ticketPrice, `EventBudget` with required `Decimal` defaults via `toDecimalRequired`, `EventContract` with nullable fields and default title/status). All three required validations green: `pnpm --filter @repo/manifest-adapters typecheck`, `pnpm --filter @repo/manifest-adapters test` (294 tests across 16 files), `pnpm --filter api typecheck`.
 - **BROKEN_PRISMA_READ Batch 06 (2026-04-28)** — `CycleCountSessionPrismaStore`, `DishPrismaStore` (in `broken-read-batch06-cycle-dish.ts`) + `EmailTemplatePrismaStore`, `EmailWorkflowPrismaStore` (in `broken-read-batch06-email.ts`) + `EmployeeAvailabilityPrismaStore` (in `broken-read-batch06-employee-availability.ts`). Replaced old inline `DishPrismaStore` and `EmailTemplatePrismaStore` in `prisma-store.ts` with imported batch06 versions. Persistence test at `packages/manifest-adapters/__tests__/prisma-store-broken-read-batch06.test.ts` (15 tests, covers tenant scoping, soft-delete, `Prisma.Decimal` passthrough for CycleCountSession's two decimal columns, `String[]` coercion for Dish's `dietaryTags`/`allergens`, nullable decimals via `toDecimalInput`, JSON pass-through for EmailTemplate's `merge_fields` and EmailWorkflow's `triggerConfig`/`recipientConfig`, enum cast for `email_template_type`/`email_trigger_type`, snake_case field handling for `email_templates` and `employee_availability` models including composite key `tenant_id_id`). All three required validations green: `pnpm --filter @repo/manifest-adapters typecheck`, `pnpm --filter @repo/manifest-adapters test` (279 tests across 15 files), `pnpm --filter api typecheck`.
 - **BROKEN_PRISMA_READ Batch 05 (2026-04-28)** — `CommandBoardConnectionPrismaStore`, `CommandBoardGroupPrismaStore`, `CommandBoardLayoutPrismaStore` (in `broken-read-batch05-command-board.ts`) + `ContractSignaturePrismaStore`, `CycleCountRecordPrismaStore` (in `broken-read-batch05-contract-cycle.ts`). Wired into `createPrismaStoreProvider`. Persistence test (13 tests). All three validations green (264 tests across 14 files).
 - **BROKEN_PRISMA_READ Batch 04 (2026-04-28)** — `ClientContactPrismaStore`, `ClientInteractionPrismaStore`, `ClientPreferencePrismaStore` + `CommandBoardPrismaStore`, `CommandBoardCardPrismaStore`. Persistence test (12 tests). All three validations green (251 tests across 13 files).
