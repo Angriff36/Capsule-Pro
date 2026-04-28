@@ -59,7 +59,7 @@ export async function GET(
 
     // Fetch recipe
     const recipe = await database.recipe.findFirst({
-      where: { tenantId, id, deletedAt: null },
+      where: { tenantId, id: recipeId, deletedAt: null },
       select: { id: true, name: true, description: true },
     });
 
@@ -69,7 +69,7 @@ export async function GET(
 
     // Fetch latest recipe version (replaces LATERAL JOIN)
     const latestVersion = await database.recipeVersion.findFirst({
-      where: { tenantId, recipeId: id, deletedAt: null },
+      where: { tenantId, recipeId, deletedAt: null },
       orderBy: { versionNumber: "desc" },
       select: {
         id: true,

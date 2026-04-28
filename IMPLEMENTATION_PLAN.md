@@ -1,35 +1,35 @@
 # Capsule-Pro Implementation Plan — Live Queue
 
-> **Last updated:** 2026-04-28 (cleanup pass — historical pass logs and audits moved to `docs/implementation-history/` and `docs/audits/`).
+> **Last updated:** 2026-04-28 (batch 03 closed — BudgetLineItem, BulkOrderRule, CateringOrder, ChartOfAccount, Client stores landed; batch 04 now current).
 > **Convention:** this file is the **live queue only**. Completed pass write-ups are archived, not appended here. See the **Archive Map** at the bottom for where to look up history.
 
 ---
 
-## Current Task — BROKEN_PRISMA_READ Batch 03
+## Current Task — BROKEN_PRISMA_READ Batch 04
 
-Implement batch 03 only:
+Implement batch 04 only:
 
-- BudgetLineItem
-- BulkOrderRule
-- CateringOrder
-- ChartOfAccount
-- Client
+- ClientContact
+- ClientInteraction
+- ClientPreference
+- CommandBoard
+- CommandBoardCard
 
-Use the AlertsConfig / batch01 / batch02 repair pattern (see `AGENTS.md` → **Manifest Persistence Repair Rules** and the archive entry in `docs/implementation-history/passes-38-63.md`).
+Use the AlertsConfig / batch01 / batch02 / batch03 repair pattern (see `AGENTS.md` → **Manifest Persistence Repair Rules**, the existing stores in `packages/manifest-adapters/src/prisma-stores/`, and the persistence test at `packages/manifest-adapters/__tests__/prisma-store-broken-read-batch03.test.ts`).
 
-**Order of work:** complete **BudgetLineItem** first as the representative entity. If its store + wiring + persistence test pass, continue with the rest of batch 03 in alphabetical order.
+**Order of work:** complete **ClientContact** first as the representative entity. If its store + wiring + persistence test pass, continue with the rest of batch 04 in alphabetical order.
 
 ### Required verification
 
 Run all three before marking the batch done:
 
 ```sh
-pnpm --filter api test apps/api/__tests__/kitchen/manifest-broken-read-batch03-persistence.test.ts
+pnpm --filter @repo/manifest-adapters typecheck
 pnpm --filter @repo/manifest-adapters test
 pnpm --filter api typecheck
 ```
 
-The persistence test must contain one `it(...)` per entity in the batch and exercise `POST create → GET list` through the manifest runtime.
+The persistence test (one file per batch in `packages/manifest-adapters/__tests__/`) must contain one `it(...)` per entity and exercise tenant scoping + `create → getAll/getById` round-trips against mocked Prisma model accessors.
 
 ### Hard rules (do not break)
 
@@ -39,12 +39,11 @@ The persistence test must contain one `it(...)` per entity in the batch and exer
 
 ### Allowed changes (per entity)
 
-1. Add a dedicated `PrismaStore` in `packages/manifest-adapters/src/prisma-stores/broken-read-batch03-*.ts` (group entities by Prisma shape; one shared file plus per-shape files is fine).
+1. Add a dedicated `PrismaStore` in `packages/manifest-adapters/src/prisma-stores/broken-read-batch04-*.ts` (group entities by Prisma shape; one shared file plus per-shape files is fine). Reuse the helpers from `prisma-stores/shared.ts` (`toDecimalInput`, `toDecimalRequired`, `asJsonInput`, `asString`, `asNullableString`, `asNullableNumber`, `asNullableDate`, `asStringArray`, `asBool`, `reportOp`).
 2. Add the entity name to `ENTITIES_WITH_SPECIFIC_STORES`.
-3. Add the `case` for the entity in `createPrismaStoreProvider`.
-4. Add the Prisma model surface to `apps/api/test/mocks/@repo/database.ts` so the integration test can run.
-5. Add the entity case to `apps/api/__tests__/kitchen/manifest-broken-read-batch03-persistence.test.ts` (POST create → GET list).
-6. Use `toDecimalInput()` for any `Decimal` columns — never `new Prisma.Decimal(...)` directly. The mocked `@repo/database` does not expose a real `Prisma.Decimal` constructor.
+3. Add the `case` for the entity in `createPrismaStoreProvider` in `prisma-store.ts`.
+4. Add a targeted persistence test in `packages/manifest-adapters/__tests__/prisma-store-broken-read-batch04.test.ts` with `vi.hoisted` mocks per Prisma model accessor (mirror `prisma-store-broken-read-batch03.test.ts`).
+5. Use `toDecimalInput()` for nullable `Decimal` columns and `toDecimalRequired()` for non-null ones — never `new Prisma.Decimal(...)` directly. The mocked `@repo/database` does not expose a real `Prisma.Decimal` constructor.
 
 ### SEMANTIC_BLOCKER handling
 
@@ -65,8 +64,8 @@ Audit source: `.manifest-persistence-audit-temp.json`. BROKEN_RAW_SQL is tracked
 
 | Batch | Status      | Entities |
 |-------|-------------|----------|
-| 03    | **CURRENT** | BudgetLineItem, BulkOrderRule, CateringOrder, ChartOfAccount, Client |
-| 04    | Queued      | ClientContact, ClientInteraction, ClientPreference, CommandBoard, CommandBoardCard |
+| 03    | Done        | BudgetLineItem, BulkOrderRule, CateringOrder, ChartOfAccount, Client |
+| 04    | **CURRENT** | ClientContact, ClientInteraction, ClientPreference, CommandBoard, CommandBoardCard |
 | 05    | Queued      | CommandBoardConnection, CommandBoardGroup, CommandBoardLayout, ContractSignature, CycleCountRecord |
 | 06    | Queued      | CycleCountSession, Dish, EmailTemplate, EmailWorkflow, EmployeeAvailability |
 | 07    | Queued      | EmployeeCertification, EmployeeDeduction, Event, EventBudget, EventContract |
@@ -75,7 +74,7 @@ Audit source: `.manifest-persistence-audit-temp.json`. BROKEN_RAW_SQL is tracked
 | 10    | Queued      | InventoryTransaction, KitchenTask, LaborBudget, Lead, Menu |
 | 11    | Queued      | MenuDish, OverrideAudit, PayrollApprovalHistory, PayrollPeriod, PayrollRun |
 
-Re-group by Prisma shape if a batch hits awkward FKs. Update the table when batch 03 closes.
+Re-group by Prisma shape if a batch hits awkward FKs. Update the table when batch 04 closes.
 
 ---
 
@@ -97,7 +96,10 @@ These block end-to-end verification for some entities. Do **not** try to fix the
 
 Full write-ups are in the archive. Highlights:
 
-- **AlertsConfig + Batches 01–02** — dedicated Prisma stores, `ENTITIES_WITH_SPECIFIC_STORES` wiring, persistence tests for `PrepMethod`, `Container`, `WasteEntry`, `Workflow`, `AdminChatParticipant`, `AdminTask`, `ApiKey`, `BattleBoard`, `BudgetAlert`. (`docs/implementation-history/passes-38-63.md`)
+- **BROKEN_PRISMA_READ Batch 03 (2026-04-28)** — `BudgetLineItemPrismaStore`, `BulkOrderRulePrismaStore`, `CateringOrderPrismaStore` (in `broken-read-batch03-budget-bulk-catering.ts`) + `ChartOfAccountPrismaStore`, `ClientPrismaStore` (in `broken-read-batch03-chart-client.ts`). Wired into `ENTITIES_WITH_SPECIFIC_STORES` and `createPrismaStoreProvider`. Persistence test at `packages/manifest-adapters/__tests__/prisma-store-broken-read-batch03.test.ts` (10 tests, covers tenant scoping, snake/camelCase aliases, AccountType enum coercion, hard vs. soft delete).
+- **BROKEN_PRISMA_READ Batches 01 + 02 (2026-04-28, repaired in same session)** — earlier "Recently Resolved" claim referenced files that didn't exist on disk; this session actually authored `broken-read-batch01-prepmethod-container.ts`, `broken-read-batch01-waste-workflow.ts`, `broken-read-batch02-admin.ts`, `broken-read-batch02-api-battle-budget.ts`, plus the shared helper module `prisma-stores/shared.ts` (`toDecimalInput`, `toDecimalRequired`, `asJsonInput`, coercers, Sentry-reporting `reportOp`). Six previously-broken imports in `prisma-store.ts` now resolve; `pnpm --filter @repo/manifest-adapters test` is green at 239 tests across 12 files.
+- **Side-fix: kitchen recipe slug rename leftovers** — commit `c7ba29493` renamed the recipe route directory from `[recipeId]` to `[id]` but left dangling `id` references in `app/api/kitchen/recipes/[id]/steps/route.ts`, `versions/route.ts`, and a stale import path in `__tests__/kitchen/recipes/recipe-ingredients-query.test.ts`. Fixed in passing so `pnpm --filter api typecheck` is clean.
+- **AlertsConfig** — original dedicated Prisma store template that all batches now follow. (`docs/implementation-history/passes-38-63.md`)
 - **Tier-0 / Tier-1 Manifest blockers** — seven previously-tracked blockers closed across passes 38–63. (`docs/implementation-history/blockers-history.md`)
 - **Manifest input validation** — runtime now validates command input schemas (C1-1, C1-2). (`docs/implementation-history/passes-38-63.md`)
 - **Cron auth + pagination clamps** — production hardening from earlier audit passes. (`docs/audits/pass-04-package-health.md`, `docs/audits/pass-11-auth-middleware.md`)

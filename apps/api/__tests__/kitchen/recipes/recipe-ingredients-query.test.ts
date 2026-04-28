@@ -5,7 +5,7 @@
 import { database } from "@repo/database";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { GET } from "../../../app/api/kitchen/recipes/[recipeId]/ingredients/route";
+import { GET } from "../../../app/api/kitchen/recipes/[id]/ingredients/route";
 
 vi.mock("@repo/auth/server", () => ({
   auth: vi.fn().mockResolvedValue({ orgId: "org-1" }),
@@ -48,7 +48,7 @@ describe("recipe ingredients API query", () => {
     unitsSpy.mockResolvedValueOnce([{ id: 1, code: "kg" }] as never);
 
     const response = await GET(new NextRequest("http://localhost"), {
-      params: Promise.resolve({ recipeId: "recipe-1" }),
+      params: Promise.resolve({ id: "recipe-1" }),
     });
 
     const body = await response.json();
@@ -69,7 +69,7 @@ describe("recipe ingredients API query", () => {
     recipeSpy.mockResolvedValueOnce(null);
 
     const response = await GET(new NextRequest("http://localhost"), {
-      params: Promise.resolve({ recipeId: "nonexistent" }),
+      params: Promise.resolve({ id: "nonexistent" }),
     });
 
     expect(response.status).toBe(404);
@@ -83,7 +83,7 @@ describe("recipe ingredients API query", () => {
     versionSpy.mockResolvedValueOnce(null);
 
     const response = await GET(new NextRequest("http://localhost"), {
-      params: Promise.resolve({ recipeId: "recipe-1" }),
+      params: Promise.resolve({ id: "recipe-1" }),
     });
 
     const body = await response.json();

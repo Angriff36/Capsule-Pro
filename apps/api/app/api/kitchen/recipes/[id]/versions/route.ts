@@ -15,7 +15,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
+    const { id: recipeId } = await params;
     const { orgId } = await auth();
 
     if (!orgId) {
