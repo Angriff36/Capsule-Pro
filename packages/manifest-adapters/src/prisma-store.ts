@@ -94,6 +94,15 @@ import {
   EventContractPrismaStore,
 } from "./prisma-stores/broken-read-batch07-event.js";
 export { EventPrismaStore };
+import { EventDishPrismaStore } from "./prisma-stores/broken-read-batch08-event-dish.js";
+import {
+  EventGuestPrismaStore,
+  EventImportPrismaStore,
+} from "./prisma-stores/broken-read-batch08-event-guest-import.js";
+import {
+  EventProfitabilityPrismaStore,
+  EventReportPrismaStore,
+} from "./prisma-stores/broken-read-batch08-event-profit-report.js";
 
 /**
  * Report a silent store error to Sentry without blocking the return path.
@@ -1775,6 +1784,16 @@ export function createPrismaStoreProvider(
         return new EventBudgetPrismaStore(prisma, tenantId);
       case "EventContract":
         return new EventContractPrismaStore(prisma, tenantId);
+      case "EventDish":
+        return new EventDishPrismaStore(prisma, tenantId);
+      case "EventGuest":
+        return new EventGuestPrismaStore(prisma, tenantId);
+      case "EventImportWorkflow":
+        return new EventImportPrismaStore(prisma, tenantId);
+      case "EventProfitability":
+        return new EventProfitabilityPrismaStore(prisma, tenantId);
+      case "EventReport":
+        return new EventReportPrismaStore(prisma, tenantId);
       default:
         console.error(
           `[createPrismaStoreProvider] No store for entity "${entityName}" — commands will fail`

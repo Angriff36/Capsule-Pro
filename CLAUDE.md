@@ -155,6 +155,6 @@ Last: [first session]
 
 ## Last Session Bridge
 [auto-bridge snapshot @ 10 changes]
-Files: packages/manifest-adapters/src/prisma-stores/broken-read-batch06-cycle-dish.ts (edit), packages/manifest-adapters/__tests__/prisma-store-broken-read-batch06.test.ts (create), packages/manifest-adapters/src/prisma-store.ts (edit), packages/manifest-adapters/src/prisma-stores/broken-read-batch06-employee-availability.ts (create), packages/manifest-adapters/src/prisma-stores/broken-read-batch06-email.ts (create), packages/manifest-adapters/src/prisma-stores/broken-read-batch06-cycle-dish.ts (create)
+Files: IMPLEMENTATION_PLAN.md (edit), packages/manifest-adapters/__tests__/prisma-store-broken-read-batch07.test.ts (create), packages/manifest-adapters/src/prisma-store.ts (edit), packages/manifest-adapters/src/prisma-stores/broken-read-batch07-event.ts (create), packages/manifest-adapters/src/prisma-stores/broken-read-batch07-employee.ts (create)
 
 # === END COGNILAYER ===
