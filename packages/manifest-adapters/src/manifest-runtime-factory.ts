@@ -165,6 +165,11 @@ const ENTITIES_WITH_SPECIFIC_STORES = new Set([
   "CateringOrder",
   "ChartOfAccount",
   "Client",
+  "ClientContact",
+  "ClientInteraction",
+  "ClientPreference",
+  "CommandBoard",
+  "CommandBoardCard",
 ]);
 
 /** Default precompiled IR path (relative to monorepo root). */
