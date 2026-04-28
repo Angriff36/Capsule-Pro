@@ -1,140 +1,74 @@
-# Ralph Wiggum Diagnosis Prompt — Capsule Pro
+# Ralph Wiggum Planning Prompt — Capsule Pro
 
-## What's Already Done
+## Mode
 
-0a. Study @IMPLEMENTATION_PLAN.md — it already has FOURTEEN verification passes (plus multiple addenda/sub-passes). DO NOT repeat any of that work. The prior passes covered: (1) route-level claims & blockers, (2-3) blocker re-verification, (4) full package health audit of all 34 shared packages, (5) E2E test suite audit, (6-9) raw-SQL correctness audit (4 passes — parameterization, injection, schema drift, tenant isolation), (9) frontend health audit (imports, API contracts, error handling, accessibility), (10) mobile app + public website audit (3 sub-passes), (11) auth, middleware & integration services audit (3 sub-passes), (12) test quality & coverage gap audit, (13) database query performance & N+1 pattern audit, (14) error handling & API resilience audit. Your focus is entirely new.
-0b. The error handling audit (pass 14) identified that 95 files leak `error.message` to clients and there's zero Prisma error code translation — but it did NOT audit what INPUT data enters the system unsanitized.
-0c. The raw-SQL audits (passes 6-9) focused on injection risk from `$queryRawUnsafe` usage — but did NOT audit whether the DATA being passed to safe `$queryRaw` (tagged template) or Prisma ORM calls is properly validated/typed before reaching the query layer.
-0d. Study `apps/api/app/api/` — the main API routes directory. Only ~28 of ~1,347 route files use Zod for input validation. The rest accept raw `Request` bodies, URL params, and query strings without schema validation.
-0e. Study `apps/api/app/lib/` — shared libraries, middleware, utilities.
-0f. Study `packages/` — shared packages including database, manifest-adapters, notifications, etc.
-0g. For reference, the main app routes are in `apps/api/app/api/`, shared packages are in `packages/`, the web app is in `apps/app/`, and E2E tests are in `e2e/`.
+You are in **PLAN MODE**. Do not modify product code, run build commands, or commit. Read, audit, and update planning files only.
 
-## FOCUS: Input Validation & Data Sanitization Audit (15th pass — NEW focus)
+## Goal
 
-All prior audits focused on correctness, security (injection), performance, test quality, and error handling. This pass asks: **what data enters the system, and is it validated before it's used?** The codebase has ~2% Zod coverage on API routes. What about the other 98%? What about URL parameters, query strings, and data flowing between internal services?
+Regenerate / refresh `IMPLEMENTATION_PLAN.md` as a **live queue** (target ≤ 300 lines) and route any historical or audit detail into the right archive file. Never re-append finished pass logs into `IMPLEMENTATION_PLAN.md`.
 
-### Part A: Route Input Validation Coverage
+## Context to Load
 
-#### 1. POST/PUT/PATCH Body Validation
-- Scan ALL route handlers that accept request bodies (POST, PUT, PATCH) in `apps/api/app/api/`
-- Classify each: (a) validated with Zod schema before use, (b) validated with inline type checks (`typeof`, `instanceof`), (c) used directly without validation, (d) delegated to `executeManifestCommand` (which may validate internally)
-- For manifest-delegated routes: does `executeManifestCommand` validate input before passing to manifest actions? Or does it pass raw `req.json()` straight through?
-- Find routes where `await req.json()` is used without any validation — these accept arbitrary JSON and pass it to database queries
+0a. Read `IMPLEMENTATION_PLAN.md` first — it is the single source of truth for the **current task**, the **remaining batches**, **known blockers**, and **recently resolved** work. It should already be short.
+0b. Read `AGENTS.md` for durable operational rules (especially **Manifest Persistence Repair Rules** for BROKEN_PRISMA_READ batches).
+0c. Skim the archive map at the bottom of `IMPLEMENTATION_PLAN.md` and only open archive files when you need that history. Do **not** re-summarize archives back into `IMPLEMENTATION_PLAN.md`.
 
-#### 2. URL Parameter Validation
-- Scan ALL `[id]`, `[eventId]`, `[recipeId]` etc. dynamic route segments
-- Are params validated before use? (e.g., checking they're valid UUIDs, not SQL injection strings, not path traversal)
-- Find routes that use `params.id` directly in database queries without validation
-- Check if Next.js route params are properly awaited (Next.js 15 requires `await params`)
-- Find routes where params could be non-string types that cause unexpected behavior
+Reference locations:
+- API routes: `apps/api/app/api/`
+- Web app: `apps/app/`
+- Mobile: `apps/mobile/`
+- Shared packages: `packages/`
+- Manifest specs: `specs/manifest/`
+- E2E: `e2e/`
 
-#### 3. Query String Validation
-- Scan for `searchParams`, `new URL(request.url).searchParams`, `request.nextUrl.searchParams`
-- Are query parameters validated? Typed? Sanitized?
-- Find routes that pass raw query params to database queries (especially `$queryRaw` where search terms become `LIKE` patterns)
-- Find routes where `page`, `limit`, `offset` query params are not parsed to integers — `SELECT ... LIMIT 'abc'` behavior
-- Find routes where sort direction (`asc`/`desc`) is accepted without validation — could it be used for injection in raw SQL ORDER BY?
+## Required Output
 
-#### 4. File Upload Validation
-- Find all file upload endpoints
-- What validation exists on: file type (MIME), file size, file name (path traversal), file content (magic bytes)?
-- Are uploaded files stored with original names or sanitized names?
-- Is there a global upload size limit?
+Update `IMPLEMENTATION_PLAN.md` so that, after this run, it contains **only** these sections in this order:
 
-### Part B: Data Type Coercion & Boundary Issues
+1. **Title + last-updated note + convention** (one-line reminder that this file is the live queue and history lives in archives).
+2. **Current Task** — the next concrete unit of work (e.g., next BROKEN_PRISMA_READ batch). Must include: entity list / scope, repair pattern reference, required verification commands, hard rules, allowed changes, and SEMANTIC_BLOCKER handling.
+3. **Remaining BROKEN_PRISMA_READ Batches** — table of queued batches with status column.
+4. **Known Blockers** — only the items that actually block the current and queued batches. Tag each with which batch / followup it gates.
+5. **Recently Resolved** — bullet summary of the last few finished passes, each linking to its archive file. No prose write-ups.
+6. **Open Followups** — parked items (E*, A*, D*, manifest republish, quarantined manifests, etc.), each linking to the archive that documents the full reasoning.
+7. **Archive Map** — table of `docs/implementation-history/*.md` and `docs/audits/*.md` with one-line descriptions, plus a short list of other repo docs (`AGENTS.md`, `CLAUDE.md`, `PROMPT_build.md`, `PROMPT_plan.md`, `README.md`).
+8. **Update Discipline** — five-line reminder of the archive rule.
 
-#### 1. Numeric Input Handling
-- Find all routes that accept numeric input (prices, quantities, percentages, IDs)
-- Are they parsed with `Number()`, `parseInt()`, `parseFloat()`? What happens with `NaN`, `Infinity`, negative numbers, floating point precision issues?
-- Find routes where `Number("abc")` produces `NaN` which is then used in database queries — PostgreSQL may reject it or behave unexpectedly
-- Find currency/price fields: are they validated as non-negative? Is there a maximum value? What about `0.1 + 0.2 !== 0.3` floating point issues?
-- Find quantity fields: are they validated as positive integers? Can a user order -5 items or 3.7 items?
+## Archive Rules (mandatory)
 
-#### 2. Date/Time Input Handling
-- Find all routes that accept date/time inputs
-- Are dates parsed and validated? What happens with invalid dates like "2026-02-30" or "not-a-date"?
-- Are timezone-naive dates handled consistently? (Server is likely UTC, clients may send local time)
-- Find date range queries: is start ≤ end enforced? What about ranges spanning years?
-- Find routes where date strings are interpolated into raw SQL — is the format guaranteed safe?
+- Completed pass write-ups, full audit reports, executive summaries, and historical blocker notes belong in:
+  - `docs/implementation-history/` — pass logs (`passes-XX-YY.md`), executive summaries, blocker history, schema/tech-debt notes, categories.
+  - `docs/audits/` — numbered audit passes (`pass-04-package-health.md`, `pass-05-e2e-tests.md`, …).
+- If you discover a new audit / pass write-up still embedded in `IMPLEMENTATION_PLAN.md`, **move it** into the matching archive file (append; never delete archive content) and link to it from the live queue.
+- If an entire archive section is now obsolete, leave it in place with a short header note saying it is superseded — do not delete history.
+- New batches or audits go into a **new** archive file under the right folder, then get linked from the **Archive Map** in `IMPLEMENTATION_PLAN.md`.
 
-#### 3. String Input Handling
-- Find routes that accept string inputs used in database queries
-- Are strings truncated to column length before INSERT? (PostgreSQL will error on over-length strings)
-- Are strings sanitized for special characters? (Newlines in CSV exports, HTML in user-generated content, null bytes)
-- Find routes that accept email addresses — are they format-validated before database lookup?
-- Find routes that accept phone numbers — are they normalized before storage?
+## Update Procedure
 
-#### 4. Array/Bulk Input Handling
-- Find routes that accept arrays of items (bulk create, bulk update, bulk delete)
-- Is there a maximum array length? Could a client send 100,000 items in one request?
-- For bulk operations: is each item validated individually?
-- Find `Promise.all()` on array items — does one invalid item fail the entire batch?
+1. Confirm `IMPLEMENTATION_PLAN.md` already follows the live-queue shape. If it has bloated again (history reappended, audit detail copied back), move that content into archive files first.
+2. Update the **Current Task** to whatever the next mechanical unit of work is (next BROKEN_PRISMA_READ batch in alphabetical order, or the next blocker that's now actionable).
+3. Update the **Remaining BROKEN_PRISMA_READ Batches** table: mark the just-finished batch as completed (move its detailed write-up into `docs/implementation-history/passes-XX-YY.md`), promote the next batch to **CURRENT**, append any newly discovered batches at the end.
+4. Update **Known Blockers**: keep only blockers that actively gate Current Task or queued batches; archive resolved or dormant blockers into `docs/implementation-history/blockers-history.md`.
+5. Update **Recently Resolved** with one bullet per archived pass and a link to the archive file. Cap at the last ~6 bullets — older items live in the archives.
+6. Update **Open Followups** to point to the archive file that owns each item (E* → manifest history; D* → DB perf audit; A2-1 → input validation audit; etc.).
+7. Refresh **Archive Map** to match the actual files in `docs/implementation-history/` and `docs/audits/`.
+8. Re-run a length check: `wc -l IMPLEMENTATION_PLAN.md`. Target ≤ 300 lines. If it grows past 300, more content needs to move to archives.
 
-### Part C: Manifest System Input Validation
+## Guardrails
 
-#### 1. Manifest Command Input Validation
-- How does `executeManifestCommand` validate the `input` field before passing it to manifest actions?
-- Read `packages/manifest-runtime/src/` and `packages/manifest-adapters/src/` to understand the validation pipeline
-- Do manifest schemas define input types? Are they enforced at runtime?
-- What happens when manifest input doesn't match the expected shape?
+- **Plan mode only.** No source code edits, no commits, no `pnpm build`. You may run read-only commands (`wc -l`, `ls`, `grep`).
+- Use the Task tool with `subagent_type='Explore'` for any multi-file lookups or audits, and `subagent_type='general-purpose'` for editing planning files. Keep main context clean.
+- Don't re-audit anything already covered in `docs/audits/` unless explicitly asked. If a fresh audit is needed, write it as a **new** file under `docs/audits/` (e.g., `pass-16-*.md`) and link it from the **Archive Map**.
+- Don't repeat finished work. If the live queue references it as resolved or links to an archive entry for it, treat that as authoritative.
+- Don't write progress notes to `AGENTS.md` — that file is durable rules only. Status / progress goes in `IMPLEMENTATION_PLAN.md` (live queue) or the archives.
+- Cite file paths and line numbers in any new audit findings.
+- For any new findings classify severity: CRITICAL / HIGH / MEDIUM / LOW.
 
-#### 2. Manifest Action Guard Validation
-- How are guard conditions validated? Can a user craft input that bypasses guards?
-- Are guard conditions evaluated with proper type checking?
+## Done Criteria
 
-#### 3. Event Payload Validation
-- When events are emitted (outbox), are payloads validated before storage?
-- When events are consumed (inbox/subscribers), are payloads validated before processing?
-
-### Part D: Cross-Site & Injection Vectors Beyond SQL
-
-#### 1. Stored XSS via User Input
-- Find routes that store user-provided text (names, descriptions, notes, comments)
-- Is the text sanitized for HTML/JavaScript before storage? Or is sanitization applied only at render time?
-- Find rich text / markdown fields — are they properly sanitized server-side?
-- Check if any routes store HTML directly from user input
-
-#### 2. CSV/Export Injection
-- Find all export endpoints (CSV, PDF, Excel)
-- Are exported values sanitized for CSV injection (formulas starting with `=`, `+`, `-`, `@`)?
-- Find endpoints where user-controlled data appears in filenames or headers
-
-#### 3. Email Header Injection
-- Find routes that send emails with user-controlled content (to, from, subject, body)
-- Is user input placed in email headers? (Subject line injection)
-- Are email addresses validated before use in `To:` headers?
-
-#### 4. Redirect/Open Redirect
-- Find all routes that perform redirects (302/303/307)
-- Is the redirect target validated? Can an attacker craft a URL that redirects to an external site?
-- Find routes that accept `returnUrl`, `redirect`, `next`, `callback` query params
-
-### Part E: Internal Service Boundary Validation
-
-#### 1. Package API Input Contracts
-- For each shared package in `packages/`, check if exported functions validate their inputs
-- Do packages trust their callers? Or do they have defensive validation?
-- Find package functions that would crash or produce wrong results with `null`, `undefined`, or wrong-type inputs
-
-#### 2. Cron Job / Background Task Input
-- Find all cron endpoints in `apps/api/app/cron/`
-- Do cron tasks validate their own state before processing? Or do they assume the database is always in a valid state?
-- What happens if a cron task reads partially-written data from a concurrent request?
-
-#### 3. Webhook Incoming Payload Validation
-- Find all webhook receiver endpoints
-- Do they validate webhook payloads against expected schemas?
-- Is signature verification applied BEFORE payload parsing? (prevent parsing attacks)
-
-### Guardrails
-
-- This is PLAN MODE ONLY. Do NOT modify source code. Do NOT commit. Do NOT run build commands.
-- Write all findings to @IMPLEMENTATION_PLAN.md as a new section "## Input Validation & Data Sanitization Audit (15th Pass)".
-- For each finding, include the EXACT file path and line numbers. Do not guess — read the actual code.
-- Classify severity as: CRITICAL (allows data corruption, injection, or security bypass), HIGH (accepts invalid data that causes crashes or wrong results), MEDIUM (missing validation that could cause issues), LOW (style/cosmetic or defensive-only improvement).
-- Distinguish between "no validation at all" (raw input hits DB) and "partial validation" (some fields checked, others not).
-- Do NOT re-audit anything from passes 1-14. Focus exclusively on input validation and data sanitization.
-- If you find a validation pattern that's actually GOOD, note it as a positive example.
-- Pay special attention to PUBLIC endpoints (no auth required) — these are the highest-risk targets.
-- Count things. How many routes lack body validation? How many use raw params in queries? Hard numbers, not vague "many routes".
+- `IMPLEMENTATION_PLAN.md` is ≤ 300 lines.
+- Every historical or full-audit section is in `docs/implementation-history/` or `docs/audits/` and is linked from the **Archive Map**.
+- `Current Task` matches the actual next unit of work.
+- `Known Blockers` has no stale / resolved entries.
+- `Recently Resolved` and `Open Followups` link to archive files for full detail.

@@ -4,6 +4,12 @@ This file defines how agents work in this repo. It is enforceable behavior, not 
 
 If you are unsure what to do next, default to: reproduce → isolate → fix root cause → add/strengthen tests → verify → document.
 
+## Operational Rules
+
+Operational rules (build commands, validation, manifest persistence, planning file discipline, known gotchas) are owned by `AGENTS.md`. Read it as part of session start.
+
+@AGENTS.md
+
 ---
 
 ## Workflow Orchestration

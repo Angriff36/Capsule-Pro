@@ -9,6 +9,13 @@
 - Read `tasks/ledger.md` before starting work (know the scoring system, know the leaderboard)
 - Read `IMPLEMENTATION_PLAN.md` **NEXT** for the current manifest-persistence / repair quest marker (when applicable)
 
+## Planning File Discipline
+
+- `IMPLEMENTATION_PLAN.md` is the **live queue only** (target ≤ 300 lines): current task, remaining batches, known blockers, recently resolved, open followups, archive map.
+- Completed pass write-ups, full audit reports, and historical blocker notes belong in archive files under `docs/implementation-history/` (pass logs, executive summaries, blocker history, schema/tech-debt) or `docs/audits/` (numbered audit passes). **Append to those archives, never delete them.**
+- Do not append finished pass logs back into `IMPLEMENTATION_PLAN.md`. Move them out and link them from the **Archive Map**.
+- `AGENTS.md` is durable operational rules only — no progress notes, no per-pass status updates. Status / progress goes in `IMPLEMENTATION_PLAN.md` (live queue) or the archives.
+
 ## Validation
 Run these after implementing to get immediate feedback:
 - API typecheck: `pnpm --filter api typecheck`

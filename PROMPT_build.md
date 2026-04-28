@@ -56,9 +56,17 @@ reference, the application source code is in `apps/app/app/*` and api routes are
    in @IMPLEMENTATION_PLAN.md using a subagent_type='sonnet' even if it is
    unrelated to the current piece of work. 999999999999. Implement functionality
    completely. Placeholders and stubs waste efforts and time redoing the same
-   work. 9999999999999. When @IMPLEMENTATION_PLAN.md becomes large periodically
-   clean out the items that are completed from the file using a
-   subagent_type='sonnet'. 99999999999999. If you find inconsistencies in the
+   work. 9999999999999. @IMPLEMENTATION_PLAN.md is the **live queue only** (target ≤ 300
+   lines). Completed pass write-ups, full audit reports, and historical
+   blocker notes MUST be moved into archive markdown files under
+   `docs/implementation-history/` (pass logs, executive summaries, blocker
+   history, schema/tech-debt) or `docs/audits/` (numbered audit passes), not
+   appended to IMPLEMENTATION_PLAN.md. After finishing a pass, archive the
+   detailed write-up there and update only the **Current Task**, **Remaining
+   BROKEN_PRISMA_READ Batches** table, **Known Blockers**, and **Recently
+   Resolved** sections in IMPLEMENTATION_PLAN.md. Never delete archive
+   content — append to the matching archive file. If IMPLEMENTATION_PLAN.md
+   grows past ~300 lines, more content needs to move into the archive. 99999999999999. If you find inconsistencies in the
    specs/* then use an subagent_type='Opus' with 'ultrathink' requested to
    update the specs. 999999999999999. IMPORTANT: Keep @AGENTS.md operational
    only — status updates and progress notes belong in `IMPLEMENTATION_PLAN.md`.

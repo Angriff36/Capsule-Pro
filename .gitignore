@@ -256,6 +256,11 @@ sketch
 storybook-static/
 docs/
 !**/packages/manifest-runtime/docs/
+# Allow root-level docs/ tree so Implementation history & audit archives can be tracked
+!/docs/
+/docs/*
+!/docs/implementation-history/
+!/docs/audits/
 ### Turbo ###
 # Turborepo task cache
 .turbo
