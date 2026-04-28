@@ -1,6 +1,5 @@
 "use client";
 
-import { usePostHog } from "posthog-js/react";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -47,6 +46,7 @@ import {
   BoxIcon,
   DollarSignIcon,
 } from "lucide-react";
+import { usePostHog } from "posthog-js/react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ITEM_CATEGORIES, type ItemCategory } from "../../../lib/use-inventory";
@@ -157,7 +157,8 @@ export const StockLevelsPageClient = () => {
       // Fire low stock alert once when data loads with critical items
       if (
         !lowStockFired.current &&
-        (response.summary.belowParCount > 0 || response.summary.outOfStockCount > 0)
+        (response.summary.belowParCount > 0 ||
+          response.summary.outOfStockCount > 0)
       ) {
         lowStockFired.current = true;
         posthog?.capture("inventory:low_stock_alert", {

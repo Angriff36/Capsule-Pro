@@ -113,14 +113,14 @@ const PublicProposalViewPage = async ({
   if (proposal.clientId) {
     try {
       const clientResult = await database.$queryRaw<
-      Array<{
-        company_name: string | null;
-        first_name: string | null;
-        last_name: string | null;
-        email: string | null;
-        phone: string | null;
-      }>
-    >`
+        Array<{
+          company_name: string | null;
+          first_name: string | null;
+          last_name: string | null;
+          email: string | null;
+          phone: string | null;
+        }>
+      >`
       SELECT company_name, first_name, last_name, email, phone
       FROM tenant_crm.clients
       WHERE id = ${proposal.clientId}
@@ -162,19 +162,19 @@ const PublicProposalViewPage = async ({
   if (proposal.eventId) {
     try {
       const eventResult = await database.$queryRaw<
-      Array<{
-        title: string;
-        event_date: Date | null;
-        venue_name: string | null;
-      }>
-    >`
+        Array<{
+          title: string;
+          event_date: Date | null;
+          venue_name: string | null;
+        }>
+      >`
       SELECT title, event_date, venue_name
       FROM tenant_kitchen.events
       WHERE id = ${proposal.eventId}
         AND tenant_id = ${proposal.tenantId}
         AND deleted_at IS NULL
     `;
-    event = eventResult[0] || null;
+      event = eventResult[0] || null;
     } catch {
       event = null;
     }
@@ -220,7 +220,9 @@ const PublicProposalViewPage = async ({
   }
 
   // Format decimal values — handle null/undefined gracefully
-  const formatDecimal = (value: { toNumber: () => number } | null | undefined): number => {
+  const formatDecimal = (
+    value: { toNumber: () => number } | null | undefined
+  ): number => {
     if (value == null) return 0;
     return value.toNumber();
   };

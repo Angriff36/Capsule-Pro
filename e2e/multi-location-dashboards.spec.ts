@@ -9,7 +9,9 @@ test.describe("Multi-Location Executive Dashboards", () => {
   test("should display the multi-location dashboard page", async ({ page }) => {
     // Check that the page title is visible
     await expect(
-      page.getByRole("heading", { name: "Multi-Location Executive Dashboard" }).first()
+      page
+        .getByRole("heading", { name: "Multi-Location Executive Dashboard" })
+        .first()
     ).toBeVisible();
   });
 

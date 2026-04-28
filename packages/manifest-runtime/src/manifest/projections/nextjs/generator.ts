@@ -736,8 +736,12 @@ export class NextJsProjection implements ProjectionTarget {
     }
     lines.push("");
     lines.push("// Pagination bounds. DEFAULT_LIMIT keeps a single page small");
-    lines.push("// enough to render without blowing the wire / memory on large");
-    lines.push("// tenants. MAX_LIMIT caps the worst case so a hostile or buggy");
+    lines.push(
+      "// enough to render without blowing the wire / memory on large"
+    );
+    lines.push(
+      "// tenants. MAX_LIMIT caps the worst case so a hostile or buggy"
+    );
     lines.push("// client cannot request the entire table in one round trip.");
     lines.push("const DEFAULT_LIMIT = 50;");
     lines.push("const MAX_LIMIT = 200;");

@@ -70,7 +70,7 @@ async function getFirstEventId(
   page: import("@playwright/test").Page
 ): Promise<string | null> {
   const result = await apiRequest(page, "GET", "/api/events?limit=1");
-  if (!result.ok || !result.data) return null;
+  if (!(result.ok && result.data)) return null;
   const items = (result.data.data ?? result.data) as unknown[];
   if (!Array.isArray(items) || items.length === 0) return null;
   const first = items[0] as Record<string, unknown>;
@@ -89,7 +89,9 @@ test.describe("Billing, Invoices & Payments", () => {
 
   // ─── 14A. Invoice List & Creation ──────────────────────────────────────────
 
-  test("invoices list loads with pagination structure", async ({ page }, testInfo) => {
+  test("invoices list loads with pagination structure", async ({
+    page,
+  }, testInfo) => {
     const result = await apiRequest(page, "GET", "/api/accounting/invoices");
 
     expect(result.status).not.toBe(404);
@@ -132,9 +134,15 @@ test.describe("Billing, Invoices & Payments", () => {
     if (!eventId) {
       testInfo.annotations.push({
         type: "skip-reason",
-        description: "No events in database — cannot test invoice creation with real data",
+        description:
+          "No events in database — cannot test invoice creation with real data",
       });
-      await assertNoErrors(page, testInfo, errors, "invoice creation (no events)");
+      await assertNoErrors(
+        page,
+        testInfo,
+        errors,
+        "invoice creation (no events)"
+      );
       return;
     }
 
@@ -156,7 +164,10 @@ test.describe("Billing, Invoices & Payments", () => {
     expect(result.status).not.toBe(404);
 
     if (result.ok && result.data) {
-      const invoice = (result.data.data ?? result.data) as Record<string, unknown>;
+      const invoice = (result.data.data ?? result.data) as Record<
+        string,
+        unknown
+      >;
       // Verify invoice was created with expected fields
       expect(invoice.id).toBeTruthy();
       // Verify total is calculated (2 × 500 = 1000 + 85 tax)
@@ -170,7 +181,9 @@ test.describe("Billing, Invoices & Payments", () => {
 
   // ─── 14B. Payment Recording ────────────────────────────────────────────────
 
-  test("payments list loads with pagination structure", async ({ page }, testInfo) => {
+  test("payments list loads with pagination structure", async ({
+    page,
+  }, testInfo) => {
     const result = await apiRequest(page, "GET", "/api/accounting/payments");
 
     expect(result.status).not.toBe(404);
@@ -201,7 +214,9 @@ test.describe("Billing, Invoices & Payments", () => {
     await assertNoErrors(page, testInfo, errors, "payment methods list");
   });
 
-  test("payment recording rejects invalid invoice", async ({ page }, testInfo) => {
+  test("payment recording rejects invalid invoice", async ({
+    page,
+  }, testInfo) => {
     const result = await apiRequest(page, "POST", "/api/payments", {
       invoiceId: "00000000-0000-0000-0000-000000000000",
       amount: 100,
@@ -213,7 +228,12 @@ test.describe("Billing, Invoices & Payments", () => {
     // Should fail with validation (invalid invoice ID)
     expect([400, 404, 422, 500]).toContain(result.status);
 
-    await assertNoErrors(page, testInfo, errors, "payment recording validation");
+    await assertNoErrors(
+      page,
+      testInfo,
+      errors,
+      "payment recording validation"
+    );
   });
 
   // ─── 14C. Chart of Accounts ───────────────────────────────────────────────
@@ -237,7 +257,9 @@ test.describe("Billing, Invoices & Payments", () => {
     await assertNoErrors(page, testInfo, errors, "chart of accounts list");
   });
 
-  test("chart of account creation validates input", async ({ page }, testInfo) => {
+  test("chart of account creation validates input", async ({
+    page,
+  }, testInfo) => {
     const accountName = unique("E2E Test Account");
     const result = await apiRequest(
       page,
@@ -254,14 +276,19 @@ test.describe("Billing, Invoices & Payments", () => {
     expect(result.status).not.toBe(404);
 
     if (result.ok && result.data) {
-      const account = (result.data.data ?? result.data) as Record<string, unknown>;
+      const account = (result.data.data ?? result.data) as Record<
+        string,
+        unknown
+      >;
       expect(account.id).toBeTruthy();
     }
 
     await assertNoErrors(page, testInfo, errors, "chart of account creation");
   });
 
-  test("chart of account deactivation validates input", async ({ page }, testInfo) => {
+  test("chart of account deactivation validates input", async ({
+    page,
+  }, testInfo) => {
     // Try deactivating a non-existent account
     const result = await apiRequest(
       page,
@@ -291,7 +318,7 @@ test.describe("Billing, Invoices & Payments", () => {
     await goto(page, "/accounting");
 
     // Should load the accounting module
-    await page.waitForTimeout(3_000);
+    await page.waitForTimeout(3000);
 
     // Verify we're not on a 404 or error page
     expect(page.url()).not.toContain("/404");
@@ -302,7 +329,7 @@ test.describe("Billing, Invoices & Payments", () => {
   test("invoices page loads without errors", async ({ page }, testInfo) => {
     await goto(page, "/accounting/invoices");
 
-    await page.waitForTimeout(3_000);
+    await page.waitForTimeout(3000);
     expect(page.url()).not.toContain("/404");
 
     await assertNoErrors(page, testInfo, errors, "invoices page");
@@ -319,10 +346,9 @@ test.describe("Billing, Invoices & Payments", () => {
     ];
 
     for (const route of routes) {
-      const response = await page.request.fetch(
-        `${BASE_URL}${route.path}`,
-        { method: route.method }
-      );
+      const response = await page.request.fetch(`${BASE_URL}${route.path}`, {
+        method: route.method,
+      });
       expect(
         response.status(),
         `${route.method} ${route.path} should not be 404`

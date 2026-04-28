@@ -220,8 +220,9 @@ describe("Test B: generated route content determinism", () => {
       }
       const content = readFileSync(listRoute, "utf8");
       if (
-        !hasGeneratedMarker(content) &&
-        !HAND_MAINTAINED_LIST_ROUTES.has(entity)
+        !(
+          hasGeneratedMarker(content) || HAND_MAINTAINED_LIST_ROUTES.has(entity)
+        )
       ) {
         missing.push(
           `${domain}/list/route.ts (entity: ${entity}) — exists but missing generated marker (and not in HAND_MAINTAINED_LIST_ROUTES)`

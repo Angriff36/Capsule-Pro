@@ -29,7 +29,6 @@ import {
   assertNoErrors,
   attachErrorCollector,
   BASE_URL,
-  goto,
 } from "../helpers/workflow";
 
 // ─── Test Data ─────────────────────────────────────────────────────────────────
@@ -71,13 +70,10 @@ async function confirmSession(
   page: import("@playwright/test").Page,
   sessionId: string
 ): Promise<AiEventSetupResponse> {
-  const response = await page.request.post(
-    "/api/aieventsetupsession/confirm",
-    {
-      headers: { "Content-Type": "application/json" },
-      data: { sessionId },
-    }
-  );
+  const response = await page.request.post("/api/aieventsetupsession/confirm", {
+    headers: { "Content-Type": "application/json" },
+    data: { sessionId },
+  });
   let data: Record<string, unknown> | undefined;
   try {
     data = await response.json();
@@ -109,13 +105,10 @@ async function cancelSession(
   sessionId: string,
   reason = "E2E test cancellation"
 ): Promise<AiEventSetupResponse> {
-  const response = await page.request.post(
-    "/api/aieventsetupsession/cancel",
-    {
-      headers: { "Content-Type": "application/json" },
-      data: { sessionId, reason },
-    }
-  );
+  const response = await page.request.post("/api/aieventsetupsession/cancel", {
+    headers: { "Content-Type": "application/json" },
+    data: { sessionId, reason },
+  });
   let data: Record<string, unknown> | undefined;
   try {
     data = await response.json();
@@ -203,14 +196,19 @@ test.describe("AI Event Setup (Natural Language)", () => {
     const parseResult = await parseAiEventSetup(page, SIMPLE_NL_INPUT);
     expect(parseResult.status).not.toBe(404);
 
-    if (!parseResult.ok || !parseResult.data) {
+    if (!(parseResult.ok && parseResult.data)) {
       // API may return validation errors — check structure is correct
       // If auth issue or parse failure, skip gracefully
       testInfo.annotations.push({
         type: "skip-reason",
         description: `Parse returned ${parseResult.status}: ${JSON.stringify(parseResult.data)}`,
       });
-      await assertNoErrors(page, testInfo, errors, "full lifecycle (parse step)");
+      await assertNoErrors(
+        page,
+        testInfo,
+        errors,
+        "full lifecycle (parse step)"
+      );
       return;
     }
 
@@ -237,7 +235,11 @@ test.describe("AI Event Setup (Natural Language)", () => {
 
     // Step 3: Mark created (may fail if confirm didn't transition status — expected)
     if (confirmResult.ok) {
-      const markResult = await markCreatedSession(page, sessionId, "e2e-dummy-event-id");
+      const markResult = await markCreatedSession(
+        page,
+        sessionId,
+        "e2e-dummy-event-id"
+      );
       expect(markResult.status).not.toBe(404);
     }
 
@@ -252,7 +254,7 @@ test.describe("AI Event Setup (Natural Language)", () => {
     // First parse to get a session
     const parseResult = await parseAiEventSetup(page, SIMPLE_NL_INPUT);
 
-    if (!parseResult.ok || !parseResult.data) {
+    if (!(parseResult.ok && parseResult.data)) {
       await assertNoErrors(page, testInfo, errors, "cancel (parse failed)");
       return;
     }
@@ -269,7 +271,11 @@ test.describe("AI Event Setup (Natural Language)", () => {
     }
 
     // Cancel the session
-    const cancelResult = await cancelSession(page, sessionId, "E2E test cleanup");
+    const cancelResult = await cancelSession(
+      page,
+      sessionId,
+      "E2E test cleanup"
+    );
     expect(cancelResult.status).not.toBe(404);
 
     await assertNoErrors(page, testInfo, errors, "cancel session");
@@ -304,7 +310,12 @@ test.describe("AI Event Setup (Natural Language)", () => {
     // Should return 404 or 400 — session doesn't exist
     expect([400, 404, 500]).toContain(result.status);
 
-    await assertNoErrors(page, testInfo, errors, "confirm non-existent session");
+    await assertNoErrors(
+      page,
+      testInfo,
+      errors,
+      "confirm non-existent session"
+    );
   });
 
   test("cancel rejects non-existent session", async ({ page }, testInfo) => {
@@ -316,12 +327,7 @@ test.describe("AI Event Setup (Natural Language)", () => {
 
     expect([400, 404, 500]).toContain(result.status);
 
-    await assertNoErrors(
-      page,
-      testInfo,
-      errors,
-      "cancel non-existent session"
-    );
+    await assertNoErrors(page, testInfo, errors, "cancel non-existent session");
   });
 
   // ─── Route Existence Smoke Tests ──────────────────────────────────────────
@@ -341,9 +347,10 @@ test.describe("AI Event Setup (Natural Language)", () => {
       });
 
       // Routes should NOT return 404 — they exist
-      expect(response.status(), `${route.method} ${route.path} should not be 404`).not.toBe(
-        404
-      );
+      expect(
+        response.status(),
+        `${route.method} ${route.path} should not be 404`
+      ).not.toBe(404);
     }
 
     await assertNoErrors(page, testInfo, errors, "route existence smoke");

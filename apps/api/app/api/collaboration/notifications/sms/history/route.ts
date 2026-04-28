@@ -10,6 +10,7 @@ import { getSmsLogs } from "@repo/notifications";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { clampLimit, clampOffset } from "@/lib/pagination";
 
 /**
  * GET /api/collaboration/notifications/sms/history
@@ -31,12 +32,11 @@ export async function GET(request: NextRequest) {
     const employeeId = searchParams.get("employeeId") ?? undefined;
     const notificationType = searchParams.get("notificationType") ?? undefined;
     const status = searchParams.get("status") ?? undefined;
-    const limit = searchParams.get("limit")
-      ? Number.parseInt(searchParams.get("limit") as string, 10)
-      : 50;
-    const offset = searchParams.get("offset")
-      ? Number.parseInt(searchParams.get("offset") as string, 10)
-      : 0;
+    // Clamp client-supplied pagination so a hostile or buggy client cannot
+    // request the entire SMS log via `?limit=999999`. clampLimit enforces
+    // DEFAULT_LIMIT=50 / MAX_LIMIT=200; clampOffset rejects negatives.
+    const limit = clampLimit(searchParams.get("limit"));
+    const offset = clampOffset(searchParams.get("offset"));
 
     // Validate status if provided
     const validStatuses = ["pending", "sent", "delivered", "failed"];

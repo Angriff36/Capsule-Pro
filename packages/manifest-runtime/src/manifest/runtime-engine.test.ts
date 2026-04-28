@@ -685,6 +685,27 @@ describe("RuntimeEngine", () => {
       expect(result.error).toBe("Command 'list' not found");
     });
 
+    it("runCommand('create', ..., { entityName }) persists via createInstance when instanceId omitted", async () => {
+      const ir = await compileToIR(`
+        entity Widget {
+          property title: string
+          command create(title: string) {
+            mutate result = title
+          }
+        }
+      `);
+      const runtime = new RuntimeEngine(ir);
+      const result = await runtime.runCommand(
+        "create",
+        { title: "Hello" },
+        { entityName: "Widget" }
+      );
+      expect(result.success).toBe(true);
+      const instances = await runtime.getAllInstances("Widget");
+      expect(instances).toHaveLength(1);
+      expect(instances[0].title).toBe("Hello");
+    });
+
     it("should emit events from command", async () => {
       const ir = await compileToIR(`
         entity User {

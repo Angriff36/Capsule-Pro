@@ -345,9 +345,9 @@ describe("NextJsProjection", () => {
 
       expect(detailResult.artifacts).toHaveLength(0);
       expect(detailResult.diagnostics.length).toBeGreaterThanOrEqual(1);
-      expect(
-        detailResult.diagnostics.some((d) => d.severity === "error")
-      ).toBe(true);
+      expect(detailResult.diagnostics.some((d) => d.severity === "error")).toBe(
+        true
+      );
     });
 
     it("returns error diagnostic if entity not provided", async () => {

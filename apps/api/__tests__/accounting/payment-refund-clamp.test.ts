@@ -182,9 +182,7 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
     it("clamps over-refund: $250 requested against $100 payment debits invoice by $100, not $250", async () => {
       mocks.paymentFindFirstMock.mockResolvedValue(makePayment());
       // Invoice was paid in full ($100 paid, $0 due).
-      mocks.invoiceFindFirstMock.mockResolvedValue(
-        makeInvoice(100, 0, "PAID")
-      );
+      mocks.invoiceFindFirstMock.mockResolvedValue(makeInvoice(100, 0, "PAID"));
 
       const res = await POST(
         buildRequest({ amount: 250, reason: "duplicate charge" }),
@@ -202,14 +200,11 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
 
     it("derives REFUNDED status from clamped refund, not body.amount", async () => {
       mocks.paymentFindFirstMock.mockResolvedValue(makePayment());
-      mocks.invoiceFindFirstMock.mockResolvedValue(
-        makeInvoice(100, 0, "PAID")
-      );
+      mocks.invoiceFindFirstMock.mockResolvedValue(makeInvoice(100, 0, "PAID"));
 
-      await POST(
-        buildRequest({ amount: 250, reason: "duplicate charge" }),
-        { params: Promise.resolve({ id: PAYMENT_ID }) }
-      );
+      await POST(buildRequest({ amount: 250, reason: "duplicate charge" }), {
+        params: Promise.resolve({ id: PAYMENT_ID }),
+      });
 
       // body.amount=250 > paymentAmount=100, but the clamp kicks in so the
       // EFFECTIVE refund is 100 — i.e. a full refund. Status must be REFUNDED,
@@ -220,14 +215,11 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
 
     it("partial refund of $30 against $100 payment marks PARTIALLY_REFUNDED and adjusts invoice by $30", async () => {
       mocks.paymentFindFirstMock.mockResolvedValue(makePayment());
-      mocks.invoiceFindFirstMock.mockResolvedValue(
-        makeInvoice(100, 0, "PAID")
-      );
+      mocks.invoiceFindFirstMock.mockResolvedValue(makeInvoice(100, 0, "PAID"));
 
-      await POST(
-        buildRequest({ amount: 30, reason: "partial dispute" }),
-        { params: Promise.resolve({ id: PAYMENT_ID }) }
-      );
+      await POST(buildRequest({ amount: 30, reason: "partial dispute" }), {
+        params: Promise.resolve({ id: PAYMENT_ID }),
+      });
 
       const paymentUpdateArgs = mocks.paymentUpdateMock.mock.calls[0][0];
       expect(paymentUpdateArgs.data.status).toBe("PARTIALLY_REFUNDED");
@@ -241,9 +233,7 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
   describe("invoice status re-derivation", () => {
     it("full refund of fully-paid invoice flips status PAID -> SENT and clears paidAt", async () => {
       mocks.paymentFindFirstMock.mockResolvedValue(makePayment());
-      mocks.invoiceFindFirstMock.mockResolvedValue(
-        makeInvoice(100, 0, "PAID")
-      );
+      mocks.invoiceFindFirstMock.mockResolvedValue(makeInvoice(100, 0, "PAID"));
 
       await POST(
         buildRequest({ amount: 100, reason: "customer cancellation" }),
@@ -259,9 +249,7 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
       mocks.paymentFindFirstMock.mockResolvedValue(makePayment());
       // Invoice is part of a multi-payment series: $200 already paid, $0 due,
       // status = PAID. Refunding the $100 payment leaves $100 still on file.
-      mocks.invoiceFindFirstMock.mockResolvedValue(
-        makeInvoice(200, 0, "PAID")
-      );
+      mocks.invoiceFindFirstMock.mockResolvedValue(makeInvoice(200, 0, "PAID"));
 
       await POST(
         buildRequest({ amount: 100, reason: "customer cancellation" }),
@@ -277,14 +265,11 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
 
     it("clamped over-refund still flips a PAID invoice back to SENT (no negative amountPaid)", async () => {
       mocks.paymentFindFirstMock.mockResolvedValue(makePayment());
-      mocks.invoiceFindFirstMock.mockResolvedValue(
-        makeInvoice(100, 0, "PAID")
-      );
+      mocks.invoiceFindFirstMock.mockResolvedValue(makeInvoice(100, 0, "PAID"));
 
-      await POST(
-        buildRequest({ amount: 1_000_000, reason: "abuse attempt" }),
-        { params: Promise.resolve({ id: PAYMENT_ID }) }
-      );
+      await POST(buildRequest({ amount: 1_000_000, reason: "abuse attempt" }), {
+        params: Promise.resolve({ id: PAYMENT_ID }),
+      });
 
       const updateArgs = mocks.invoiceUpdateMock.mock.calls[0][0];
       // Clamp prevents $1M from being applied. Invoice goes back to zero-paid.
@@ -299,10 +284,9 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
     it("returns 404 when payment does not exist for this tenant", async () => {
       mocks.paymentFindFirstMock.mockResolvedValue(null);
 
-      const res = await POST(
-        buildRequest({ amount: 50, reason: "test" }),
-        { params: Promise.resolve({ id: PAYMENT_ID }) }
-      );
+      const res = await POST(buildRequest({ amount: 50, reason: "test" }), {
+        params: Promise.resolve({ id: PAYMENT_ID }),
+      });
 
       expect(res.status).toBe(404);
       expect(mocks.paymentUpdateMock).not.toHaveBeenCalled();
@@ -314,10 +298,9 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
         makePayment({ status: "PENDING" })
       );
 
-      const res = await POST(
-        buildRequest({ amount: 50, reason: "test" }),
-        { params: Promise.resolve({ id: PAYMENT_ID }) }
-      );
+      const res = await POST(buildRequest({ amount: 50, reason: "test" }), {
+        params: Promise.resolve({ id: PAYMENT_ID }),
+      });
 
       expect(res.status).toBe(500);
       expect(mocks.paymentUpdateMock).not.toHaveBeenCalled();
@@ -327,10 +310,9 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
     it("rejects refund without a reason", async () => {
       mocks.paymentFindFirstMock.mockResolvedValue(makePayment());
 
-      const res = await POST(
-        buildRequest({ amount: 50 }),
-        { params: Promise.resolve({ id: PAYMENT_ID }) }
-      );
+      const res = await POST(buildRequest({ amount: 50 }), {
+        params: Promise.resolve({ id: PAYMENT_ID }),
+      });
 
       expect(res.status).toBe(500);
       expect(mocks.paymentUpdateMock).not.toHaveBeenCalled();
@@ -339,10 +321,9 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
     it("rejects refund with non-positive amount", async () => {
       mocks.paymentFindFirstMock.mockResolvedValue(makePayment());
 
-      const res = await POST(
-        buildRequest({ amount: 0, reason: "test" }),
-        { params: Promise.resolve({ id: PAYMENT_ID }) }
-      );
+      const res = await POST(buildRequest({ amount: 0, reason: "test" }), {
+        params: Promise.resolve({ id: PAYMENT_ID }),
+      });
 
       expect(res.status).toBe(500);
       expect(mocks.paymentUpdateMock).not.toHaveBeenCalled();
@@ -353,10 +334,9 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
         makePayment({ refundedAt: new Date("2026-04-21T00:00:00.000Z") })
       );
 
-      const res = await POST(
-        buildRequest({ amount: 50, reason: "test" }),
-        { params: Promise.resolve({ id: PAYMENT_ID }) }
-      );
+      const res = await POST(buildRequest({ amount: 50, reason: "test" }), {
+        params: Promise.resolve({ id: PAYMENT_ID }),
+      });
 
       expect(res.status).toBe(500);
       expect(mocks.paymentUpdateMock).not.toHaveBeenCalled();
@@ -367,9 +347,7 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
   describe("refund gateway trust boundary", () => {
     it("calls refundPaymentGateway with server-side metadata, NOT request body fields", async () => {
       mocks.paymentFindFirstMock.mockResolvedValue(makePayment());
-      mocks.invoiceFindFirstMock.mockResolvedValue(
-        makeInvoice(100, 0, "PAID")
-      );
+      mocks.invoiceFindFirstMock.mockResolvedValue(makeInvoice(100, 0, "PAID"));
 
       // Caller forges a refund transaction ID and a different
       // originalGatewayTransactionId. Neither value should leak into the
@@ -399,17 +377,14 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
 
     it("passes the CLAMPED effectiveRefund to the gateway, not body.amount", async () => {
       mocks.paymentFindFirstMock.mockResolvedValue(makePayment());
-      mocks.invoiceFindFirstMock.mockResolvedValue(
-        makeInvoice(100, 0, "PAID")
-      );
+      mocks.invoiceFindFirstMock.mockResolvedValue(makeInvoice(100, 0, "PAID"));
 
       // Body asks for $1M against a $100 payment. The clamp is the contract
       // boundary — both the local ledger AND the gateway must see $100, not
       // $1M (otherwise we'd ask Stripe to refund more than was charged).
-      await POST(
-        buildRequest({ amount: 1_000_000, reason: "abuse attempt" }),
-        { params: Promise.resolve({ id: PAYMENT_ID }) }
-      );
+      await POST(buildRequest({ amount: 1_000_000, reason: "abuse attempt" }), {
+        params: Promise.resolve({ id: PAYMENT_ID }),
+      });
 
       const gatewayArgs = mocks.refundPaymentGatewayMock.mock.calls[0][0];
       expect(gatewayArgs.amount).toBe(100);
@@ -443,9 +418,7 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
 
     it("calls refund gateway BEFORE mutating payment or invoice (call ordering)", async () => {
       mocks.paymentFindFirstMock.mockResolvedValue(makePayment());
-      mocks.invoiceFindFirstMock.mockResolvedValue(
-        makeInvoice(100, 0, "PAID")
-      );
+      mocks.invoiceFindFirstMock.mockResolvedValue(makeInvoice(100, 0, "PAID"));
 
       const callOrder: string[] = [];
       mocks.refundPaymentGatewayMock.mockImplementationOnce(async () => {
@@ -483,10 +456,9 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
     it("does not call gateway when payment is missing (404 short-circuit)", async () => {
       mocks.paymentFindFirstMock.mockResolvedValue(null);
 
-      const res = await POST(
-        buildRequest({ amount: 50, reason: "test" }),
-        { params: Promise.resolve({ id: PAYMENT_ID }) }
-      );
+      const res = await POST(buildRequest({ amount: 50, reason: "test" }), {
+        params: Promise.resolve({ id: PAYMENT_ID }),
+      });
 
       expect(res.status).toBe(404);
       // No spurious processor call for a payment we can't find.
@@ -498,10 +470,9 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
         makePayment({ refundedAt: new Date("2026-04-21T00:00:00.000Z") })
       );
 
-      const res = await POST(
-        buildRequest({ amount: 50, reason: "test" }),
-        { params: Promise.resolve({ id: PAYMENT_ID }) }
-      );
+      const res = await POST(buildRequest({ amount: 50, reason: "test" }), {
+        params: Promise.resolve({ id: PAYMENT_ID }),
+      });
 
       expect(res.status).toBe(500);
       expect(mocks.refundPaymentGatewayMock).not.toHaveBeenCalled();
@@ -511,9 +482,7 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
   describe("refund attempt audit trail", () => {
     it("on gateway SUCCESS: writes one audit row with success=true, clamped amounts, and gateway txn id", async () => {
       mocks.paymentFindFirstMock.mockResolvedValue(makePayment());
-      mocks.invoiceFindFirstMock.mockResolvedValue(
-        makeInvoice(100, 0, "PAID")
-      );
+      mocks.invoiceFindFirstMock.mockResolvedValue(makeInvoice(100, 0, "PAID"));
       mocks.refundPaymentGatewayMock.mockResolvedValueOnce({
         success: true,
         refundTransactionId: "re_audit_success",
@@ -574,14 +543,11 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
 
     it("audit row records BOTH the requested AND clamped amounts when caller over-refunds", async () => {
       mocks.paymentFindFirstMock.mockResolvedValue(makePayment());
-      mocks.invoiceFindFirstMock.mockResolvedValue(
-        makeInvoice(100, 0, "PAID")
-      );
+      mocks.invoiceFindFirstMock.mockResolvedValue(makeInvoice(100, 0, "PAID"));
 
-      await POST(
-        buildRequest({ amount: 250, reason: "customer typo" }),
-        { params: Promise.resolve({ id: PAYMENT_ID }) }
-      );
+      await POST(buildRequest({ amount: 250, reason: "customer typo" }), {
+        params: Promise.resolve({ id: PAYMENT_ID }),
+      });
 
       // The audit needs both numbers so a forensic reviewer can see (a)
       // what the caller asked for and (b) what was actually applied. If we
@@ -594,9 +560,7 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
 
     it("audit insert failure does NOT block the user-facing success response (best-effort write)", async () => {
       mocks.paymentFindFirstMock.mockResolvedValue(makePayment());
-      mocks.invoiceFindFirstMock.mockResolvedValue(
-        makeInvoice(100, 0, "PAID")
-      );
+      mocks.invoiceFindFirstMock.mockResolvedValue(makeInvoice(100, 0, "PAID"));
       // Simulate audit table being unreachable (DB outage, RLS misconfig).
       // The processor has already moved money — refusing to acknowledge the
       // refund to the caller would be worse than a missing audit row.
@@ -629,10 +593,9 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
         new Error("audit table offline")
       );
 
-      const res = await POST(
-        buildRequest({ amount: 50, reason: "test" }),
-        { params: Promise.resolve({ id: PAYMENT_ID }) }
-      );
+      const res = await POST(buildRequest({ amount: 50, reason: "test" }), {
+        params: Promise.resolve({ id: PAYMENT_ID }),
+      });
 
       // The user-facing failure mode (gateway said no) is more important
       // to communicate than the audit gap. Surfacing 500 here would cause
@@ -644,10 +607,9 @@ describe("POST /api/accounting/payments/[id] (refund)", () => {
     it("does not write audit row when gateway is never called (404 short-circuit)", async () => {
       mocks.paymentFindFirstMock.mockResolvedValue(null);
 
-      await POST(
-        buildRequest({ amount: 50, reason: "test" }),
-        { params: Promise.resolve({ id: PAYMENT_ID }) }
-      );
+      await POST(buildRequest({ amount: 50, reason: "test" }), {
+        params: Promise.resolve({ id: PAYMENT_ID }),
+      });
 
       // No gateway call -> nothing to audit.
       expect(mocks.refundPaymentGatewayMock).not.toHaveBeenCalled();

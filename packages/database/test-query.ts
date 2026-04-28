@@ -11,16 +11,16 @@ async function test() {
   const neonConfig = { webSocketConstructor: ws, poolQueryViaFetch: true };
   const adapter = new PrismaNeon({ connectionString: DATABASE_URL });
   const database = new PrismaClient({ adapter });
-  
+
   console.log("Testing...");
   try {
     const accounts = await database.account.findMany({ take: 1 });
     console.log("Accounts count:", accounts.length);
-    
+
     if (accounts.length > 0) {
       const tenantId = accounts[0].id;
       console.log("Testing inventory for tenant:", tenantId);
-      
+
       const items = await database.inventoryItem.findMany({
         where: { tenantId, deletedAt: null },
         take: 5,

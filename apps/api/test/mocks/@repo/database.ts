@@ -78,6 +78,22 @@ export const database: Record<string, unknown> = {
   $on: vi.fn(),
   $use: vi.fn(),
   // Add Prisma models
+  user: createMockModel(),
+  alertsConfig: createMockModel(),
+  prepMethod: createMockModel(),
+  container: createMockModel(),
+  wasteEntry: createMockModel(),
+  workflow: createMockModel(),
+  adminChatParticipant: createMockModel(),
+  adminTask: createMockModel(),
+  apiKey: createMockModel(),
+  battleBoard: createMockModel(),
+  budgetAlert: createMockModel(),
+  budgetLineItem: createMockModel(),
+  bulkOrderRule: createMockModel(),
+  cateringOrder: createMockModel(),
+  chartOfAccount: createMockModel(),
+  client: createMockModel(),
   prepTask: createMockModel(),
   outboxEvent: createMockModel(),
   menu: createMockModel(),
@@ -100,6 +116,8 @@ export const database: Record<string, unknown> = {
   // Event model for forecasting tests
   event: createMockModel(),
 };
+
+database.$transaction = vi.fn((fn: (tx: unknown) => unknown) => fn(database));
 
 // Mock tenantDatabase function
 export const tenantDatabase = vi.fn(() => database);

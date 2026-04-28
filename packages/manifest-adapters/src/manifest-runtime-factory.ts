@@ -150,6 +150,21 @@ const ENTITIES_WITH_SPECIFIC_STORES = new Set([
   "Event",
   "EmailTemplate",
   "PrepTaskPlanWorkflow",
+  "AlertsConfig",
+  "PrepMethod",
+  "Container",
+  "WasteEntry",
+  "Workflow",
+  "AdminChatParticipant",
+  "AdminTask",
+  "ApiKey",
+  "BattleBoard",
+  "BudgetAlert",
+  "BudgetLineItem",
+  "BulkOrderRule",
+  "CateringOrder",
+  "ChartOfAccount",
+  "Client",
 ]);
 
 /** Default precompiled IR path (relative to monorepo root). */

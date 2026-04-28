@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, startTransition, useState } from "react";
 import { useRouter } from "next/navigation";
+import { startTransition, useEffect, useState } from "react";
 import { syncCurrentUser } from "../actions";
 
 export const AutoRegisterStaff = () => {

@@ -9,7 +9,9 @@ import { getTenantIdForOrg } from "@/app/lib/tenant";
  * Prevents timezone-offset mismatches when the client sends full ISO timestamps.
  */
 function toDateStart(date: Date): Date {
-  return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()));
+  return new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate())
+  );
 }
 
 /**
@@ -17,7 +19,15 @@ function toDateStart(date: Date): Date {
  */
 function toDateEnd(date: Date): Date {
   return new Date(
-    Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate(), 23, 59, 59, 999),
+    Date.UTC(
+      date.getUTCFullYear(),
+      date.getUTCMonth(),
+      date.getUTCDate(),
+      23,
+      59,
+      59,
+      999
+    )
   );
 }
 
@@ -42,8 +52,14 @@ export async function GET(request: NextRequest) {
       const authResult = await auth();
       orgId = authResult.orgId;
     } catch (authError) {
-      console.error("[calendar] Auth failed:", authError instanceof Error ? authError.message : authError);
-      return NextResponse.json({ error: "Authentication failed" }, { status: 401 });
+      console.error(
+        "[calendar] Auth failed:",
+        authError instanceof Error ? authError.message : authError
+      );
+      return NextResponse.json(
+        { error: "Authentication failed" },
+        { status: 401 }
+      );
     }
 
     if (!orgId) {
@@ -54,7 +70,10 @@ export async function GET(request: NextRequest) {
     try {
       tenantId = await getTenantIdForOrg(orgId);
     } catch (error) {
-      console.error("[calendar] Failed to resolve tenant:", error instanceof Error ? error.message : error);
+      console.error(
+        "[calendar] Failed to resolve tenant:",
+        error instanceof Error ? error.message : error
+      );
       captureException(error);
       return NextResponse.json(
         { error: "Failed to resolve organization" },
@@ -81,7 +100,7 @@ export async function GET(request: NextRequest) {
     if (Number.isNaN(rawStart.getTime()) || Number.isNaN(rawEnd.getTime())) {
       return NextResponse.json(
         { error: "Invalid date format. Use ISO 8601." },
-        { status: 400 },
+        { status: 400 }
       );
     }
     const types = typesParam.split(",");
@@ -91,41 +110,44 @@ export async function GET(request: NextRequest) {
     // Fetch events (eventDate is @db.Date — compare date-only bounds)
     if (types.includes("event")) {
       try {
-      const dbEvents = await database.event.findMany({
-        where: {
-          tenantId,
-          eventDate: {
-            gte: toDateStart(rawStart),
-            lte: toDateEnd(rawEnd),
+        const dbEvents = await database.event.findMany({
+          where: {
+            tenantId,
+            eventDate: {
+              gte: toDateStart(rawStart),
+              lte: toDateEnd(rawEnd),
+            },
+            deletedAt: null,
           },
-          deletedAt: null,
-        },
-        select: {
-          id: true,
-          title: true,
-          eventDate: true,
-          eventType: true,
-          status: true,
-          venueName: true,
-          guestCount: true,
-        },
-        orderBy: { eventDate: "asc" },
-      });
+          select: {
+            id: true,
+            title: true,
+            eventDate: true,
+            eventType: true,
+            status: true,
+            venueName: true,
+            guestCount: true,
+          },
+          orderBy: { eventDate: "asc" },
+        });
 
-      events.push(
-        ...dbEvents.map((e) => ({
-          id: e.id,
-          title: e.title || `${e.eventType} Event`,
-          start: e.eventDate.toISOString(),
-          type: "event" as const,
-          status: e.status || undefined,
-          location: e.venueName || undefined,
-          guestCount: e.guestCount || undefined,
-          details: `Type: ${e.eventType}`,
-        }))
-      );
+        events.push(
+          ...dbEvents.map((e) => ({
+            id: e.id,
+            title: e.title || `${e.eventType} Event`,
+            start: e.eventDate.toISOString(),
+            type: "event" as const,
+            status: e.status || undefined,
+            location: e.venueName || undefined,
+            guestCount: e.guestCount || undefined,
+            details: `Type: ${e.eventType}`,
+          }))
+        );
       } catch (error) {
-        console.error("[calendar] Events query failed:", error instanceof Error ? error.message : error);
+        console.error(
+          "[calendar] Events query failed:",
+          error instanceof Error ? error.message : error
+        );
         captureException(error);
       }
     }
@@ -221,7 +243,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ events });
   } catch (error) {
     captureException(error);
-    console.error("[calendar] API error:", error instanceof Error ? error.message : error);
+    console.error(
+      "[calendar] API error:",
+      error instanceof Error ? error.message : error
+    );
     return NextResponse.json(
       { error: "Failed to fetch calendar data" },
       { status: 500 }

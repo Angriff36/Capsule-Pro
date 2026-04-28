@@ -17,18 +17,18 @@
  * HTTP status codes for Prisma error categories
  */
 export const PRISMA_ERROR_STATUS = {
-	/** P2002: Unique constraint failed on one of the fields */
-	P2002: 409,
-	/** P2025: The required record was not found */
-	P2025: 404,
-	/** P2001: Record to update not found */
-	P2001: 404,
-	/** P2003: Foreign key constraint failed (referenced ID doesn't exist) */
-	P2003: 400,
-	/** P2014: A relation violation occurred */
-	P2014: 400,
-	/** P2015: A related record was not found */
-	P2015: 400,
+  /** P2002: Unique constraint failed on one of the fields */
+  P2002: 409,
+  /** P2025: The required record was not found */
+  P2025: 404,
+  /** P2001: Record to update not found */
+  P2001: 404,
+  /** P2003: Foreign key constraint failed (referenced ID doesn't exist) */
+  P2003: 400,
+  /** P2014: A relation violation occurred */
+  P2014: 400,
+  /** P2015: A related record was not found */
+  P2015: 400,
 } as const;
 
 /** Error codes that indicate a "not found" scenario */
@@ -44,23 +44,23 @@ const BAD_REQUEST_CODES = new Set(["P2003", "P2014", "P2015"]);
  * Classification of Prisma errors by their semantic meaning
  */
 export type PrismaErrorType =
-	| "not_found"
-	| "conflict"
-	| "bad_request"
-	| "unknown";
+  | "not_found"
+  | "conflict"
+  | "bad_request"
+  | "unknown";
 
 /**
  * Result of translating a Prisma error, with HTTP status and response body
  */
 export interface PrismaErrorResult {
-	/** HTTP status code to return */
-	status: number;
-	/** Error type classification */
-	type: PrismaErrorType;
-	/** Whether the error was a recognized Prisma error */
-	mapped: boolean;
-	/** Error message safe to return to client */
-	message: string;
+  /** HTTP status code to return */
+  status: number;
+  /** Error type classification */
+  type: PrismaErrorType;
+  /** Whether the error was a recognized Prisma error */
+  mapped: boolean;
+  /** Error message safe to return to client */
+  message: string;
 }
 
 /**
@@ -83,55 +83,55 @@ export interface PrismaErrorResult {
  * ```
  */
 export function translatePrismaError(error: unknown): PrismaErrorResult {
-	// Default to 500 for any unhandled error
-	const defaultResult: PrismaErrorResult = {
-		status: 500,
-		type: "unknown",
-		mapped: false,
-		message: "An unexpected error occurred",
-	};
+  // Default to 500 for any unhandled error
+  const defaultResult: PrismaErrorResult = {
+    status: 500,
+    type: "unknown",
+    mapped: false,
+    message: "An unexpected error occurred",
+  };
 
-	if (!(error instanceof Error)) {
-		return defaultResult;
-	}
+  if (!(error instanceof Error)) {
+    return defaultResult;
+  }
 
-	// Cast to a generic error with optional code property (Prisma errors have a `code` field)
-	type ErrorWithCode = Error & { code?: unknown };
-	const prismaError = error as ErrorWithCode;
+  // Cast to a generic error with optional code property (Prisma errors have a `code` field)
+  type ErrorWithCode = Error & { code?: unknown };
+  const prismaError = error as ErrorWithCode;
 
-	// Check if it's a Prisma known request error by checking for the code property
-	if (!("code" in prismaError) || typeof prismaError.code !== "string") {
-		return defaultResult;
-	}
+  // Check if it's a Prisma known request error by checking for the code property
+  if (!("code" in prismaError) || typeof prismaError.code !== "string") {
+    return defaultResult;
+  }
 
-	const code = prismaError.code as string;
+  const code = prismaError.code as string;
 
-	// Check for known Prisma error codes
-	type PrismaErrorCode = keyof typeof PRISMA_ERROR_STATUS;
-	if (code in PRISMA_ERROR_STATUS) {
-		const status = PRISMA_ERROR_STATUS[code as PrismaErrorCode];
-		let type: PrismaErrorType;
+  // Check for known Prisma error codes
+  type PrismaErrorCode = keyof typeof PRISMA_ERROR_STATUS;
+  if (code in PRISMA_ERROR_STATUS) {
+    const status = PRISMA_ERROR_STATUS[code as PrismaErrorCode];
+    let type: PrismaErrorType;
 
-		if (NOT_FOUND_CODES.has(code as PrismaErrorCode)) {
-			type = "not_found";
-		} else if (CONFLICT_CODES.has(code as PrismaErrorCode)) {
-			type = "conflict";
-		} else {
-			type = "bad_request";
-		}
+    if (NOT_FOUND_CODES.has(code as PrismaErrorCode)) {
+      type = "not_found";
+    } else if (CONFLICT_CODES.has(code as PrismaErrorCode)) {
+      type = "conflict";
+    } else {
+      type = "bad_request";
+    }
 
-		// Get a safe message that doesn't leak database schema details
-		const message = getSafeErrorMessage(type, code);
+    // Get a safe message that doesn't leak database schema details
+    const message = getSafeErrorMessage(type, code);
 
-		return {
-			status,
-			type,
-			mapped: true,
-			message,
-		};
-	}
+    return {
+      status,
+      type,
+      mapped: true,
+      message,
+    };
+  }
 
-	return defaultResult;
+  return defaultResult;
 }
 
 /**
@@ -139,16 +139,16 @@ export function translatePrismaError(error: unknown): PrismaErrorResult {
  * The message is appropriate to return to API clients.
  */
 function getSafeErrorMessage(type: PrismaErrorType, code: string): string {
-	switch (type) {
-		case "not_found":
-			return "The requested resource was not found";
-		case "conflict":
-			return "A record with this value already exists";
-		case "bad_request":
-			return "The request could not be processed due to a constraint violation";
-		default:
-			return "An unexpected error occurred";
-	}
+  switch (type) {
+    case "not_found":
+      return "The requested resource was not found";
+    case "conflict":
+      return "A record with this value already exists";
+    case "bad_request":
+      return "The request could not be processed due to a constraint violation";
+    default:
+      return "An unexpected error occurred";
+  }
 }
 
 /**
@@ -166,17 +166,17 @@ function getSafeErrorMessage(type: PrismaErrorType, code: string): string {
  * ```
  */
 export async function withPrismaErrorHandling<T>(
-	operation: Promise<T>,
+  operation: Promise<T>
 ): Promise<T> {
-	try {
-		return await operation;
-	} catch (error) {
-		const result = translatePrismaError(error);
+  try {
+    return await operation;
+  } catch (error) {
+    const result = translatePrismaError(error);
 
-		// Return a response-like object that can be used in route handlers
-		// The route handler should convert this to an actual NextResponse
-		throw new PrismaErrorResponse(result);
-	}
+    // Return a response-like object that can be used in route handlers
+    // The route handler should convert this to an actual NextResponse
+    throw new PrismaErrorResponse(result);
+  }
 }
 
 /**
@@ -184,24 +184,24 @@ export async function withPrismaErrorHandling<T>(
  * Route handlers can catch this to get structured error responses.
  */
 export class PrismaErrorResponse extends Error {
-	public readonly status: number;
-	public readonly type: PrismaErrorType;
-	public readonly mapped: boolean;
+  public readonly status: number;
+  public readonly type: PrismaErrorType;
+  public readonly mapped: boolean;
 
-	constructor(result: PrismaErrorResult) {
-		super(result.message);
-		this.name = "PrismaErrorResponse";
-		this.status = result.status;
-		this.type = result.type;
-		this.mapped = result.mapped;
-	}
+  constructor(result: PrismaErrorResult) {
+    super(result.message);
+    this.name = "PrismaErrorResponse";
+    this.status = result.status;
+    this.type = result.type;
+    this.mapped = result.mapped;
+  }
 }
 
 /**
  * Type guard to check if an error is a PrismaErrorResponse
  */
 export function isPrismaErrorResponse(
-	error: unknown,
+  error: unknown
 ): error is PrismaErrorResponse {
-	return error instanceof PrismaErrorResponse;
+  return error instanceof PrismaErrorResponse;
 }

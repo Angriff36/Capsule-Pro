@@ -78,11 +78,13 @@ const validBody = {
   methodType: "CREDIT_CARD",
 };
 
-function makeRequest(opts: {
-  body?: unknown;
-  idempotencyKey?: string;
-  headerName?: "Idempotency-Key" | "X-Idempotency-Key";
-} = {}) {
+function makeRequest(
+  opts: {
+    body?: unknown;
+    idempotencyKey?: string;
+    headerName?: "Idempotency-Key" | "X-Idempotency-Key";
+  } = {}
+) {
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
   };
@@ -249,7 +251,7 @@ describe("POST /api/accounting/payments — Idempotency-Key contract", () => {
       tenantId: TENANT_ID,
       key: "http:accounting:payments:create:idemp_expired",
       result: { status: 201, body: { id: "stale" } },
-      expiresAt: new Date(Date.now() - 1_000),
+      expiresAt: new Date(Date.now() - 1000),
     });
 
     const res = await POST(makeRequest({ idempotencyKey: "idemp_expired" }));

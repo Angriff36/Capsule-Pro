@@ -1,8 +1,8 @@
 "use client";
 
-import type { ReactNode } from "react";
 import posthog from "posthog-js";
 import { PostHogProvider as PHProvider } from "posthog-js/react";
+import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 import { keys } from "./keys";
 
@@ -26,7 +26,9 @@ function writeConsent(state: ConsentState): void {
  * setters so any UI (cookie banner, settings page) can drive it.
  */
 export function useAnalyticsConsent() {
-  const [consent, setConsentState] = useState<ConsentState>(() => readConsent());
+  const [consent, setConsentState] = useState<ConsentState>(() =>
+    readConsent()
+  );
 
   const grant = () => {
     writeConsent("granted");
@@ -70,7 +72,7 @@ export const PostHogProvider = ({ children }: PostHogProviderProps) => {
     const key = env.NEXT_PUBLIC_POSTHOG_KEY;
     const host = env.NEXT_PUBLIC_POSTHOG_HOST;
 
-    if (!key || !host) return;
+    if (!(key && host)) return;
 
     posthog.init(key, {
       api_host: host,

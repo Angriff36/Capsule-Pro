@@ -13,9 +13,9 @@ import { Label } from "@repo/design-system/components/ui/label";
 import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { Banknote, Building, CreditCard, Smartphone } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { usePostHog } from "posthog-js/react";
 import { useState } from "react";
 import { apiFetch } from "@/app/lib/api";
-import { usePostHog } from "posthog-js/react";
 
 type PaymentMethodType =
   | "CREDIT_CARD"

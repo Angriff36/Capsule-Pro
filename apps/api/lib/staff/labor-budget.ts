@@ -312,9 +312,7 @@ export async function updateLaborBudget(
     setClauses.push(Prisma.sql`threshold_90_pct = ${updates.threshold90Pct}`);
   }
   if (updates.threshold100Pct !== undefined) {
-    setClauses.push(
-      Prisma.sql`threshold_100_pct = ${updates.threshold100Pct}`
-    );
+    setClauses.push(Prisma.sql`threshold_100_pct = ${updates.threshold100Pct}`);
   }
 
   if (setClauses.length === 0) {

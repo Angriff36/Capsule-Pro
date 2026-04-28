@@ -34,7 +34,6 @@ import {
   waitForURL,
 } from "../helpers/workflow";
 
-
 // ─── Unauthenticated Tests ──────────────────────────────────────────────────
 // These tests run in the chromium-unauth project (no storageState) so Clerk
 // renders sign-in/sign-up forms instead of redirecting authenticated users.
@@ -60,7 +59,10 @@ test.describe("Unauthenticated auth form rendering", () => {
 
   // ─── 1D. API Route Protection (no page needed) ─────────────────────────
 
-  test("API returns 401 for unauthenticated requests", async ({ request, storageState }) => {
+  test("API returns 401 for unauthenticated requests", async ({
+    request,
+    storageState,
+  }) => {
     // Skip in authenticated project — storageState gives request fixture
     // auth cookies, causing it to return 200 instead of 401.
     test.skip(
@@ -89,9 +91,7 @@ test.describe("Unauthenticated auth form rendering", () => {
     // Clerk renders <input name="emailAddress" placeholder="Enter your email address">
     // and <input name="password" type="password">. Use getByRole + getByPlaceholder
     // for reliable cross-browser matching.
-    const emailInput = page
-      .getByRole("textbox", { name: /email/i })
-      .first();
+    const emailInput = page.getByRole("textbox", { name: /email/i }).first();
     const passwordInput = page
       .getByRole("textbox", { name: /password/i })
       .first();
@@ -161,17 +161,23 @@ test.describe("Authenticated session management", () => {
     // Filter out calendar-related errors (API 404 + client-side fetch failures).
     const authErrors = errors.filter(
       (e) =>
-        !e.url.includes("/api/calendar") &&
-        !e.text.includes("calendar data")
+        !(e.url.includes("/api/calendar") || e.text.includes("calendar data"))
     );
 
     if (authErrors.length > 0) {
-      await failHard(page, testInfo, authErrors, "post-sign-in calendar redirect");
+      await failHard(
+        page,
+        testInfo,
+        authErrors,
+        "post-sign-in calendar redirect"
+      );
     }
     log.ok("No errors at checkpoint: post-sign-in calendar redirect");
   });
 
-  test("session persists across page navigation", async ({ page }, testInfo) => {
+  test("session persists across page navigation", async ({
+    page,
+  }, testInfo) => {
     // Start at calendar (authenticated)
     // Note: /calendar may show an error state if the calendar API returns 404/500
     // in fresh test environments. This is an infrastructure issue, not an auth
@@ -185,7 +191,7 @@ test.describe("Authenticated session management", () => {
     for (const route of protectedRoutes) {
       await goto(page, route);
       // Should NOT redirect to /sign-in
-      await page.waitForTimeout(2_000);
+      await page.waitForTimeout(2000);
       expect(page.url()).not.toContain("/sign-in");
       expect(page.url()).not.toContain("/sign-up");
     }
@@ -196,12 +202,16 @@ test.describe("Authenticated session management", () => {
     // ("calendar data") for console errors that don't reference the API URL.
     const sessionErrors = errors.filter(
       (e) =>
-        !e.url.includes("/api/calendar") &&
-        !e.text.includes("calendar data")
+        !(e.url.includes("/api/calendar") || e.text.includes("calendar data"))
     );
 
     if (sessionErrors.length > 0) {
-      await failHard(page, testInfo, sessionErrors, "session persistence across routes");
+      await failHard(
+        page,
+        testInfo,
+        sessionErrors,
+        "session persistence across routes"
+      );
     }
     log.ok("No errors at checkpoint: session persistence across routes");
   });
@@ -229,17 +239,21 @@ test.describe("Authenticated session management", () => {
     // OR the page may load with Clerk's sign-in component embedded
     const currentUrl = page.url();
     const isAtSignIn =
-      currentUrl.includes("/sign-in") ||
-      currentUrl.includes("/sign-up");
+      currentUrl.includes("/sign-in") || currentUrl.includes("/sign-up");
 
     // If we're not redirected, we're authenticated — skip gracefully
     if (!isAtSignIn) {
       // We're in an authenticated session — verify the page loaded
-      await page.waitForTimeout(2_000);
+      await page.waitForTimeout(2000);
       // No assertion failure needed — this just means session exists
     }
 
-    await assertNoErrors(page, testInfo, errors, "unauthenticated route protection");
+    await assertNoErrors(
+      page,
+      testInfo,
+      errors,
+      "unauthenticated route protection"
+    );
   });
 
   // ─── 1E. Public Routes (Token-Based) ──────────────────────────────────────

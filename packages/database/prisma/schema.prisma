@@ -1270,6 +1270,8 @@ model PrepComment {
   tenant      Account   @relation(fields: [tenantId], references: [id], onDelete: Restrict)
 
   @@id([tenantId, id])
+  @@index([taskId])
+  @@index([employeeId])
   @@map("prep_comments")
   @@schema("tenant_kitchen")
 }

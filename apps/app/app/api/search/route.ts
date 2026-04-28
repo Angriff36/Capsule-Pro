@@ -1,5 +1,5 @@
-import { auth } from "@repo/auth/server";
 import { analytics } from "@repo/analytics/server";
+import { auth } from "@repo/auth/server";
 import { database } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { requireTenantId } from "@/app/lib/tenant";

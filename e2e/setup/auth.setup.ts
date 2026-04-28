@@ -18,7 +18,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { clerkSetup } from "@clerk/testing/playwright";
-import { expect, type FullConfig, test as setup } from "@playwright/test";
+import { expect, test as setup } from "@playwright/test";
 import { AUTH_STORAGE_STATE_PATH, TEST_USER } from "../helpers/auth";
 
 const authFile = AUTH_STORAGE_STATE_PATH;
@@ -51,24 +51,26 @@ setup("authenticate via Clerk", async ({ page }) => {
         strategy: "email_code";
       }
 
-      const clerk = (globalThis as unknown as { Clerk?: unknown }).Clerk as {
-        client?: {
-          signIn?: {
-            create: (args: {
-              identifier: string;
-            }) => Promise<{ supportedFirstFactors?: unknown[] }>;
-            prepareFirstFactor: (args: {
-              strategy: "email_code";
-              emailAddressId: string;
-            }) => Promise<void>;
-            attemptFirstFactor: (args: {
-              strategy: "email_code";
-              code: string;
-            }) => Promise<{ status: string; createdSessionId?: string }>;
-          };
-        };
-        setActive?: (args: { session: string }) => Promise<void>;
-      } | undefined;
+      const clerk = (globalThis as unknown as { Clerk?: unknown }).Clerk as
+        | {
+            client?: {
+              signIn?: {
+                create: (args: {
+                  identifier: string;
+                }) => Promise<{ supportedFirstFactors?: unknown[] }>;
+                prepareFirstFactor: (args: {
+                  strategy: "email_code";
+                  emailAddressId: string;
+                }) => Promise<void>;
+                attemptFirstFactor: (args: {
+                  strategy: "email_code";
+                  code: string;
+                }) => Promise<{ status: string; createdSessionId?: string }>;
+              };
+            };
+            setActive?: (args: { session: string }) => Promise<void>;
+          }
+        | undefined;
 
       if (!clerk?.client?.signIn) {
         throw new Error("Clerk client not available on sign-in page");
@@ -122,9 +124,10 @@ setup("authenticate via Clerk", async ({ page }) => {
   const hasSessionCookie = cookies.some((c) =>
     c.name.toLowerCase().includes("session")
   );
-  expect(hasSessionCookie, "Expected __session cookie after Clerk sign-in").toBe(
-    true
-  );
+  expect(
+    hasSessionCookie,
+    "Expected __session cookie after Clerk sign-in"
+  ).toBe(true);
 
   // Save storage state for dependent test projects
   await fs.mkdir(path.dirname(authFile), { recursive: true });

@@ -12,7 +12,9 @@
 /**
  * Check if a value is a Prisma Decimal object.
  */
-function isDecimal(value: unknown): value is { toNumber: () => number; toString: () => string } {
+function isDecimal(
+  value: unknown
+): value is { toNumber: () => number; toString: () => string } {
   return (
     value != null &&
     typeof value === "object" &&
@@ -24,9 +26,7 @@ function isDecimal(value: unknown): value is { toNumber: () => number; toString:
  * Convert a single Decimal value to a plain number.
  * Returns null/undefined as-is.
  */
-export function serializeDecimal(
-  value: unknown
-): number | null | undefined {
+export function serializeDecimal(value: unknown): number | null | undefined {
   if (value == null) return value as null | undefined;
   if (typeof value === "number") return value;
   if (isDecimal(value)) return value.toNumber();
@@ -67,7 +67,11 @@ export function serializeDecimals<T>(obj: T): T {
       const val = (obj as Record<string, unknown>)[key];
       if (isDecimal(val)) {
         result[key] = val.toNumber();
-      } else if (typeof val === "object" && val != null && !(val instanceof Date)) {
+      } else if (
+        typeof val === "object" &&
+        val != null &&
+        !(val instanceof Date)
+      ) {
         result[key] = serializeDecimals(val);
       } else {
         result[key] = val;
@@ -100,7 +104,9 @@ export function serializeApiDecimalFields(
     const result = { ...obj };
     for (const field of decimalFields) {
       if (field in result && isDecimal(result[field])) {
-        result[field] = (result[field] as { toNumber: () => number }).toNumber();
+        result[field] = (
+          result[field] as { toNumber: () => number }
+        ).toNumber();
       }
     }
     return result;

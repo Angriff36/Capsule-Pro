@@ -69,7 +69,7 @@ function verifyResendSignature(
   const parts = signatureHeader.split(",");
   const timestampPart = parts.find((p) => p.startsWith("t="));
   const signaturePart = parts.find((p) => p.startsWith("v1="));
-  if (!timestampPart || !signaturePart) return false;
+  if (!(timestampPart && signaturePart)) return false;
 
   const timestamp = timestampPart.slice(2);
   const signature = signaturePart.slice(3);
@@ -83,10 +83,7 @@ function verifyResendSignature(
   const expected = hmac.digest("hex");
 
   if (signature.length !== expected.length) return false;
-  return timingSafeEqual(
-    Buffer.from(signature),
-    Buffer.from(expected)
-  );
+  return timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
 }
 
 /**
@@ -99,13 +96,11 @@ export async function POST(request: NextRequest) {
     const signatureHeader = request.headers.get("resend-signature") ?? "";
 
     const webhookSecret = process.env.RESEND_WEBHOOK_SECRET;
-    if (webhookSecret) {
-      if (!verifyResendSignature(rawBody, signatureHeader, webhookSecret)) {
-        return NextResponse.json(
-          { error: "Invalid signature" },
-          { status: 401 }
-        );
-      }
+    if (
+      webhookSecret &&
+      !verifyResendSignature(rawBody, signatureHeader, webhookSecret)
+    ) {
+      return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
     }
 
     const payload: ResendWebhookPayload = JSON.parse(rawBody);

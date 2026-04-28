@@ -15,7 +15,7 @@
  * Ref: docs/clerk-e2e-debug-findings.md
  */
 
-import { type Page } from "@playwright/test";
+import type { Page } from "@playwright/test";
 
 /**
  * Wait for Clerk's async form to be fully rendered and interactive.
@@ -41,7 +41,9 @@ export async function waitForClerkInput(
 
   // Clerk renders email input inside its iframe. Wait for it to be visible and enabled.
   // Use a longer timeout here because the iframe content loads after the page JS.
-  await expect(page.locator("input[type='email'], input[name='email']").first()).toBeEnabled({
+  await expect(
+    page.locator("input[type='email'], input[name='email']").first()
+  ).toBeEnabled({
     timeout: timeout_ms,
   });
 }

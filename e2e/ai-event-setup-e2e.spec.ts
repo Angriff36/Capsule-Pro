@@ -40,12 +40,16 @@ test.describe("AI Event Setup — End-to-End", () => {
   test("T-EVT-012: parse endpoint returns readyToCreate=true for complete request", async ({
     page,
   }) => {
-    const response = await page.request.post(`${BASE_URL}/api/ai-event-setup/parse`, {
-      data: {
-        originalInput: "Wedding for 100 guests at Grand Ballroom on June 15th",
-        referenceDate: new Date().toISOString(),
-      },
-    });
+    const response = await page.request.post(
+      `${BASE_URL}/api/ai-event-setup/parse`,
+      {
+        data: {
+          originalInput:
+            "Wedding for 100 guests at Grand Ballroom on June 15th",
+          referenceDate: new Date().toISOString(),
+        },
+      }
+    );
 
     expect(response.status()).toBe(200);
     const body = await response.json();
@@ -53,18 +57,23 @@ test.describe("AI Event Setup — End-to-End", () => {
     expect(body.result.readyToCreate).toBe(true);
     expect(body.result.missingFields).toEqual([]);
     expect(body.result.parsedGuestCount).toBe(100);
-    expect(body.result.parsedVenueName.toLowerCase()).toContain("grand ballroom");
+    expect(body.result.parsedVenueName.toLowerCase()).toContain(
+      "grand ballroom"
+    );
   });
 
   test("T-EVT-012b: parse endpoint returns readyToCreate=false for incomplete request", async ({
     page,
   }) => {
-    const response = await page.request.post(`${BASE_URL}/api/ai-event-setup/parse`, {
-      data: {
-        originalInput: "Corporate event for 50 people",
-        referenceDate: new Date().toISOString(),
-      },
-    });
+    const response = await page.request.post(
+      `${BASE_URL}/api/ai-event-setup/parse`,
+      {
+        data: {
+          originalInput: "Corporate event for 50 people",
+          referenceDate: new Date().toISOString(),
+        },
+      }
+    );
 
     expect(response.status()).toBe(200);
     const body = await response.json();
@@ -78,22 +87,26 @@ test.describe("AI Event Setup — End-to-End", () => {
   test("T-EVT-001: creating a wedding via NL produces a non-404 response", async ({
     page,
   }) => {
-    const chatResponse = await page.request.post(`${BASE_URL}/api/command-board/chat`, {
-      data: {
-        messages: [
-          {
-            role: "user",
-            content: "Create a wedding for 100 guests at Grand Ballroom on June 15th",
-            parts: [
-              {
-                type: "text",
-                text: "Create a wedding for 100 guests at Grand Ballroom on June 15th",
-              },
-            ],
-          },
-        ],
-      },
-    });
+    const chatResponse = await page.request.post(
+      `${BASE_URL}/api/command-board/chat`,
+      {
+        data: {
+          messages: [
+            {
+              role: "user",
+              content:
+                "Create a wedding for 100 guests at Grand Ballroom on June 15th",
+              parts: [
+                {
+                  type: "text",
+                  text: "Create a wedding for 100 guests at Grand Ballroom on June 15th",
+                },
+              ],
+            },
+          ],
+        },
+      }
+    );
 
     // Route must exist (not 404)
     expect(chatResponse.status()).not.toBe(404);
@@ -123,17 +136,20 @@ test.describe("AI Event Setup — End-to-End", () => {
   test("T-EVT-005: unauthenticated request returns 401", async ({ page }) => {
     // Use an unauthenticated request by not passing storage state
     const unauthPage = await page.context().newPage();
-    const response = await unauthPage.request.post(`${BASE_URL}/api/command-board/chat`, {
-      data: {
-        messages: [
-          {
-            role: "user",
-            content: "Create an event",
-            parts: [{ type: "text", text: "Create an event" }],
-          },
-        ],
-      },
-    });
+    const response = await unauthPage.request.post(
+      `${BASE_URL}/api/command-board/chat`,
+      {
+        data: {
+          messages: [
+            {
+              role: "user",
+              content: "Create an event",
+              parts: [{ type: "text", text: "Create an event" }],
+            },
+          ],
+        },
+      }
+    );
 
     // 401 = auth required; 200 = OPENAI_API_KEY error (app is up but key missing)
     expect([200, 401]).toContain(response.status());
@@ -144,22 +160,25 @@ test.describe("AI Event Setup — End-to-End", () => {
   test("T-EVT-007: query about events goes through query path (not 404)", async ({
     page,
   }) => {
-    const response = await page.request.post(`${BASE_URL}/api/command-board/chat`, {
-      data: {
-        messages: [
-          {
-            role: "user",
-            content: "What events are scheduled this week?",
-            parts: [
-              {
-                type: "text",
-                text: "What events are scheduled this week?",
-              },
-            ],
-          },
-        ],
-      },
-    });
+    const response = await page.request.post(
+      `${BASE_URL}/api/command-board/chat`,
+      {
+        data: {
+          messages: [
+            {
+              role: "user",
+              content: "What events are scheduled this week?",
+              parts: [
+                {
+                  type: "text",
+                  text: "What events are scheduled this week?",
+                },
+              ],
+            },
+          ],
+        },
+      }
+    );
 
     expect(response.status()).not.toBe(404);
     const text = await response.text();
@@ -171,17 +190,20 @@ test.describe("AI Event Setup — End-to-End", () => {
   test("T-EVT-006: request with missing required field does not crash the route", async ({
     page,
   }) => {
-    const response = await page.request.post(`${BASE_URL}/api/command-board/chat`, {
-      data: {
-        messages: [
-          {
-            role: "user",
-            content: "Create an event for 50 guests",
-            parts: [{ type: "text", text: "Create an event for 50 guests" }],
-          },
-        ],
-      },
-    });
+    const response = await page.request.post(
+      `${BASE_URL}/api/command-board/chat`,
+      {
+        data: {
+          messages: [
+            {
+              role: "user",
+              content: "Create an event for 50 guests",
+              parts: [{ type: "text", text: "Create an event for 50 guests" }],
+            },
+          ],
+        },
+      }
+    );
 
     // Route should handle gracefully — not 404, not 500
     expect(response.status()).not.toBe(404);

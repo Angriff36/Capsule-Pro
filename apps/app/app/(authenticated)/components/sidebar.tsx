@@ -1,7 +1,6 @@
 "use client";
 
 import { OrganizationSwitcher } from "@repo/auth/client";
-import { TrackedUserButton } from "./tracked-user-button";
 import { ModeToggle } from "@repo/design-system/components/mode-toggle";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -34,6 +33,7 @@ import { useState } from "react";
 import { ModuleHeader } from "./module-header";
 import { getModuleKeyFromPathname, modules } from "./module-nav";
 import { Search } from "./search";
+import { TrackedUserButton } from "./tracked-user-button";
 
 /**
  * Lazy-load NotificationsTrigger with placeholder.

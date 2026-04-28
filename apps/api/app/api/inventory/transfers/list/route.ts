@@ -3,6 +3,7 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { clampLimit, clampOffset } from "@/lib/pagination";
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,8 +21,11 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status");
     const fromLocationId = searchParams.get("fromLocationId");
     const toLocationId = searchParams.get("toLocationId");
-    const limit = Number.parseInt(searchParams.get("limit") || "50");
-    const offset = Number.parseInt(searchParams.get("offset") || "0");
+    // Clamp client-supplied pagination so a hostile or buggy client cannot
+    // request the entire transfers table via `?limit=999999`. clampLimit
+    // enforces DEFAULT_LIMIT=50 / MAX_LIMIT=200; clampOffset rejects negatives.
+    const limit = clampLimit(searchParams.get("limit"));
+    const offset = clampOffset(searchParams.get("offset"));
 
     const where: Record<string, unknown> = {
       tenantId,

@@ -8,6 +8,7 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { createManifestRuntime } from "@/lib/manifest-runtime";
+import { clampLimit, clampOffset } from "@/lib/pagination";
 
 export const runtime = "nodejs";
 
@@ -27,8 +28,11 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const isActiveParam = searchParams.get("isActive");
     const triggerType = searchParams.get("triggerType");
-    const limit = Number.parseInt(searchParams.get("limit") || "50", 10);
-    const offset = Number.parseInt(searchParams.get("offset") || "0", 10);
+    // Clamp client-supplied pagination so a hostile or buggy client cannot
+    // request the entire automation-rules table via `?limit=999999`. clampLimit
+    // enforces DEFAULT_LIMIT=50 / MAX_LIMIT=200; clampOffset rejects negatives.
+    const limit = clampLimit(searchParams.get("limit"));
+    const offset = clampOffset(searchParams.get("offset"));
 
     const where: Record<string, unknown> = {
       tenant_id: tenantId,

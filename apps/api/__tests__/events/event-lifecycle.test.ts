@@ -4,8 +4,7 @@
  * Tests event budget validation and route handlers
  */
 
-import { Prisma } from "@repo/database";
-import { database } from "@repo/database";
+import { database, Prisma } from "@repo/database";
 import { NextRequest } from "next/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { GET, POST } from "@/app/api/events/budgets/route";
@@ -460,7 +459,9 @@ describe("Event Budget API", () => {
 
       vi.mocked(auth).mockResolvedValue({ orgId: TEST_USER_ORG } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.eventBudget.findMany).mockResolvedValue(mockBudgets as never);
+      vi.mocked(database.eventBudget.findMany).mockResolvedValue(
+        mockBudgets as never
+      );
       vi.mocked(database.eventBudget.count).mockResolvedValue(2);
 
       const request = createMockRequest(
@@ -483,7 +484,9 @@ describe("Event Budget API", () => {
 
       vi.mocked(auth).mockResolvedValue({ orgId: TEST_USER_ORG } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.eventBudget.findMany).mockResolvedValue(mockBudgets as never);
+      vi.mocked(database.eventBudget.findMany).mockResolvedValue(
+        mockBudgets as never
+      );
       vi.mocked(database.eventBudget.count).mockResolvedValue(1);
 
       const request = createMockRequest(
@@ -512,7 +515,9 @@ describe("Event Budget API", () => {
 
       vi.mocked(auth).mockResolvedValue({ orgId: TEST_USER_ORG } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.eventBudget.findMany).mockResolvedValue(mockBudgets as never);
+      vi.mocked(database.eventBudget.findMany).mockResolvedValue(
+        mockBudgets as never
+      );
       vi.mocked(database.eventBudget.count).mockResolvedValue(1);
 
       const request = createMockRequest(
@@ -552,7 +557,9 @@ describe("Event Budget API", () => {
 
       vi.mocked(auth).mockResolvedValue({ orgId: TEST_USER_ORG } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.eventBudget.findMany).mockResolvedValue(mockBudgets as never);
+      vi.mocked(database.eventBudget.findMany).mockResolvedValue(
+        mockBudgets as never
+      );
       vi.mocked(database.eventBudget.count).mockResolvedValue(50);
 
       const request = createMockRequest(
@@ -635,7 +642,9 @@ describe("Event Budget API", () => {
 
       vi.mocked(auth).mockResolvedValue({ orgId: TEST_USER_ORG } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.event.findUnique).mockResolvedValue(createMockEvent() as never);
+      vi.mocked(database.event.findUnique).mockResolvedValue(
+        createMockEvent() as never
+      );
       vi.mocked(database.eventBudget.findFirst).mockResolvedValue(null);
       vi.mocked(database.$transaction).mockImplementation(async (fn: any) =>
         fn(database)
@@ -712,7 +721,9 @@ describe("Event Budget API", () => {
 
       vi.mocked(auth).mockResolvedValue({ orgId: TEST_USER_ORG } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.event.findUnique).mockResolvedValue(createMockEvent() as never);
+      vi.mocked(database.event.findUnique).mockResolvedValue(
+        createMockEvent() as never
+      );
       vi.mocked(database.eventBudget.findFirst).mockResolvedValue(
         createMockBudget() as never
       );
@@ -804,7 +815,9 @@ describe("Event Budget API", () => {
 
       vi.mocked(auth).mockResolvedValue({ orgId: TEST_USER_ORG } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.event.findUnique).mockResolvedValue(createMockEvent() as never);
+      vi.mocked(database.event.findUnique).mockResolvedValue(
+        createMockEvent() as never
+      );
       vi.mocked(database.eventBudget.findFirst).mockResolvedValue(null);
       vi.mocked(database.$transaction).mockImplementation(async (fn: any) =>
         fn(database)
@@ -881,7 +894,9 @@ describe("Event Budget API", () => {
 
       vi.mocked(auth).mockResolvedValue({ orgId: TEST_USER_ORG } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.event.findUnique).mockResolvedValue(createMockEvent() as never);
+      vi.mocked(database.event.findUnique).mockResolvedValue(
+        createMockEvent() as never
+      );
       vi.mocked(database.eventBudget.findFirst).mockResolvedValue(null);
       vi.mocked(database.$transaction).mockImplementation(async (fn: any) =>
         fn(database)

@@ -1124,6 +1124,48 @@ export class RuntimeEngine {
     }
   }
 
+  /**
+   * Build `command.emits` entries (shared by the action loop and the `create` fast-path).
+   */
+  private appendDeclaredCommandEvents(
+    command: IRCommand,
+    payloadInput: Record<string, unknown>,
+    actionResult: unknown,
+    emitCounter: { value: number },
+    workflowMeta: { correlationId?: string; causationId?: string },
+    emittedEvents: EmittedEvent[]
+  ): void {
+    for (const eventName of command.emits) {
+      const event = this.ir.events.find((e) => e.name === eventName);
+      const prov = this.ir.provenance;
+      const emitted: EmittedEvent = {
+        name: eventName,
+        channel: event?.channel || eventName,
+        payload: { ...payloadInput, result: actionResult },
+        timestamp: this.getNow(),
+        ...(prov
+          ? {
+              provenance: {
+                contentHash: prov.contentHash,
+                compilerVersion: prov.compilerVersion,
+                schemaVersion: prov.schemaVersion,
+              },
+            }
+          : {}),
+        ...(workflowMeta.correlationId !== undefined
+          ? { correlationId: workflowMeta.correlationId }
+          : {}),
+        ...(workflowMeta.causationId !== undefined
+          ? { causationId: workflowMeta.causationId }
+          : {}),
+        emitIndex: emitCounter.value++,
+      };
+      emittedEvents.push(emitted);
+      this.eventLog.push(emitted);
+      this.notifyListeners(emitted);
+    }
+  }
+
   async updateInstance(
     entityName: string,
     id: string,
@@ -1491,6 +1533,60 @@ export class RuntimeEngine {
         causationId: options.causationId,
       };
 
+      // `create` commands compile `mutate` actions that call `updateInstance`, but
+      // route handlers do not pass `instanceId`, so those mutates no-op and nothing
+      // reaches the store. Persist new rows via `createInstance` instead.
+      if (
+        command.name === "create" &&
+        options.entityName &&
+        !options.instanceId
+      ) {
+        const created = await this.createInstance(
+          options.entityName,
+          validatedInput
+        );
+        if (!created) {
+          return {
+            success: false,
+            error: "Failed to create instance",
+            constraintOutcomes:
+              constraintResult.outcomes.length > 0
+                ? constraintResult.outcomes
+                : undefined,
+            ...(workflowMeta.correlationId !== undefined
+              ? { correlationId: workflowMeta.correlationId }
+              : {}),
+            ...(workflowMeta.causationId !== undefined
+              ? { causationId: workflowMeta.causationId }
+              : {}),
+            emittedEvents,
+          };
+        }
+        this.appendDeclaredCommandEvents(
+          command,
+          validatedInput,
+          created,
+          emitCounter,
+          workflowMeta,
+          emittedEvents
+        );
+        return {
+          success: true,
+          result: created,
+          constraintOutcomes:
+            constraintResult.outcomes.length > 0
+              ? constraintResult.outcomes
+              : undefined,
+          ...(workflowMeta.correlationId !== undefined
+            ? { correlationId: workflowMeta.correlationId }
+            : {}),
+          ...(workflowMeta.causationId !== undefined
+            ? { causationId: workflowMeta.causationId }
+            : {}),
+          emittedEvents,
+        };
+      }
+
       for (const action of command.actions) {
         const actionResult = await this.executeAction(
           action,
@@ -1560,35 +1656,14 @@ export class RuntimeEngine {
         result = actionResult;
       }
 
-      for (const eventName of command.emits) {
-        const event = this.ir.events.find((e) => e.name === eventName);
-        const prov = this.ir.provenance;
-        const emitted: EmittedEvent = {
-          name: eventName,
-          channel: event?.channel || eventName,
-          payload: { ...input, result },
-          timestamp: this.getNow(),
-          ...(prov
-            ? {
-                provenance: {
-                  contentHash: prov.contentHash,
-                  compilerVersion: prov.compilerVersion,
-                  schemaVersion: prov.schemaVersion,
-                },
-              }
-            : {}),
-          ...(workflowMeta.correlationId !== undefined
-            ? { correlationId: workflowMeta.correlationId }
-            : {}),
-          ...(workflowMeta.causationId !== undefined
-            ? { causationId: workflowMeta.causationId }
-            : {}),
-          emitIndex: emitCounter.value++,
-        };
-        emittedEvents.push(emitted);
-        this.eventLog.push(emitted);
-        this.notifyListeners(emitted);
-      }
+      this.appendDeclaredCommandEvents(
+        command,
+        validatedInput,
+        result,
+        emitCounter,
+        workflowMeta,
+        emittedEvents
+      );
 
       return {
         success: true,
@@ -1677,11 +1752,7 @@ export class RuntimeEngine {
           enriched[param.name] = irValueToJs(param.defaultValue);
           continue;
         }
-        if (
-          enforceRequired &&
-          param.required &&
-          !param.type.nullable
-        ) {
+        if (enforceRequired && param.required && !param.type.nullable) {
           issues.push({
             parameter: param.name,
             code: "missing",

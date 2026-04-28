@@ -221,15 +221,17 @@ export const RecipeEditorModal = ({
         </DialogHeader>
 
         <form
+          className="flex flex-col gap-6"
           onSubmit={(e) => {
             e.preventDefault();
             const formEl = e.currentTarget;
             const fullFormData = serializeToFormData(formEl);
-            onSave(fullFormData).then(() => onOpenChange(false)).catch(() => {
-              // Error already handled in onSave (toast shown)
-            });
+            onSave(fullFormData)
+              .then(() => onOpenChange(false))
+              .catch(() => {
+                // Error already handled in onSave (toast shown)
+              });
           }}
-          className="flex flex-col gap-6"
         >
           {recipe?.id && (
             <input name="recipeId" type="hidden" value={recipe.id} />

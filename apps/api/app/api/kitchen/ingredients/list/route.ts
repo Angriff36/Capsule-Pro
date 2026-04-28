@@ -5,8 +5,8 @@
 // will produce this pattern automatically the next time the
 // @angriff36/manifest CLI is republished.
 
-import type { NextRequest } from "next/server";
 import { auth } from "@repo/auth/server";
+import type { NextRequest } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { database } from "@/lib/database";
 import {

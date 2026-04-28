@@ -7,6 +7,7 @@
 
 ## Session Start
 - Read `tasks/ledger.md` before starting work (know the scoring system, know the leaderboard)
+- Read `IMPLEMENTATION_PLAN.md` **NEXT** for the current manifest-persistence / repair quest marker (when applicable)
 
 ## Validation
 Run these after implementing to get immediate feedback:
@@ -35,6 +36,23 @@ For any command route (`POST /commands/*`), do not trust the command response pa
 - Fix the storage wiring or replace the command implementation with a direct database write that persists to the same model the read API uses.
 
 Only read APIs are source of truth. Do not commit command-route work unless command execution is proven through the read path.
+
+## Manifest Persistence Repair Rules
+
+For BROKEN_PRISMA_READ work, use the existing AlertsConfig / batch01 / batch02 pattern.
+
+Allowed changes:
+- Add entity-specific PrismaStore.
+- Wire entity into ENTITIES_WITH_SPECIFIC_STORES.
+- Add createPrismaStoreProvider case.
+- Add database mock surface if needed.
+- Add targeted persistence test proving command/write path and list/detail read path align.
+
+Do not modify Manifest runtime, generator, IR compiler, or constraint semantics during mechanical BROKEN_PRISMA_READ batches.
+
+If an entity requires runtime, generator, or manifest semantic changes, mark it SEMANTIC_BLOCKER in IMPLEMENTATION_PLAN.md with a one-line reason and move on.
+
+Do not work on BYPASS routes during BROKEN_PRISMA_READ batches.
 
 ## Manifest Commands
 

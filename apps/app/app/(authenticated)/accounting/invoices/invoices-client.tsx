@@ -1,7 +1,5 @@
 "use client";
 
-import { usePostHog } from "posthog-js/react";
-import { useEffect } from "react";
 import { Badge } from "@repo/design-system/components/ui/badge";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
@@ -11,6 +9,8 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import { FileText, Plus } from "lucide-react";
+import { usePostHog } from "posthog-js/react";
+import { useEffect } from "react";
 
 interface Invoice {
   id: string;

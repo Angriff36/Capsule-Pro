@@ -1,4 +1,3 @@
-import { SignUp } from "@repo/auth/components/sign-up";
 import { createMetadata } from "@repo/seo/metadata";
 import type { Metadata } from "next";
 import { SignUpWithAnalytics } from "./sign-up-with-analytics";

@@ -29,6 +29,23 @@ export default defineConfig({
         find: "@repo/database",
         replacement: resolve(__dirname, "./test/mocks/@repo/database.ts"),
       },
+      // Workspace runtime (create-command persistence, etc.) — package.json pins
+      // npm @angriff36/manifest; tests must exercise the same source as local edits.
+      // Use $-anchored patterns so `@angriff36/manifest/ir-compiler` still resolves to node_modules.
+      {
+        find: /^@angriff36\/manifest\/ir$/,
+        replacement: resolve(
+          __dirname,
+          "../../packages/manifest-runtime/src/manifest/ir.ts"
+        ),
+      },
+      {
+        find: /^@angriff36\/manifest$/,
+        replacement: resolve(
+          __dirname,
+          "../../packages/manifest-runtime/src/manifest/runtime-engine.ts"
+        ),
+      },
       // Resolve manifest-adapters to source so transitive imports
       // (e.g. @repo/database/standalone from prisma-store) go through
       // vitest's alias pipeline instead of Node's native ESM resolver.

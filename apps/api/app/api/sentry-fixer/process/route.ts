@@ -348,12 +348,23 @@ export const POST = async (request: Request): Promise<Response> => {
     );
   }
 
-  // All gates passed - drain the queue within time budget
+  // All gates passed - drain the queue within time budget.
+  //
+  // The worker also bounds itself by MAX_EXECUTION_MS, but a missing or
+  // garbage `limit` query string previously meant `Infinity` jobs — so a
+  // single request could keep claiming jobs until the time budget tripped,
+  // which is a footgun on retries and on local invocation. Bound the loop
+  // explicitly: clamp client-supplied limits to MAX_JOB_BATCH and treat any
+  // non-positive / non-finite value (including a missing param) as that cap.
+  // The time budget remains the ultimate stop condition.
+  const MAX_JOB_BATCH = 200;
   const url = new URL(request.url);
   const limitParam = url.searchParams.get("limit");
-  const maxJobs = limitParam
-    ? Number.parseInt(limitParam, 10)
-    : Number.POSITIVE_INFINITY;
+  const parsedLimit = Number.parseInt(limitParam ?? "", 10);
+  const maxJobs =
+    Number.isFinite(parsedLimit) && parsedLimit > 0
+      ? Math.min(parsedLimit, MAX_JOB_BATCH)
+      : MAX_JOB_BATCH;
 
   const results: Array<{
     processed: boolean;

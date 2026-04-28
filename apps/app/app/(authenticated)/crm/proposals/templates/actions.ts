@@ -175,7 +175,9 @@ export async function getDefaultTemplateForEventType(eventType: string) {
     },
   });
 
-  return defaultTemplate ? serializeDecimals(defaultTemplate) as unknown as ProposalTemplate : null;
+  return defaultTemplate
+    ? (serializeDecimals(defaultTemplate) as unknown as ProposalTemplate)
+    : null;
 }
 
 /**

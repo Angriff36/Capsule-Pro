@@ -1,5 +1,6 @@
 "use client";
 
+import { analytics } from "@repo/analytics";
 import { Button } from "@repo/design-system/components/ui/button";
 import {
   Card,
@@ -39,7 +40,6 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
-import { analytics } from "@repo/analytics";
 import { Header } from "../components/header";
 
 const dateFormatter = new Intl.DateTimeFormat("en-US", {

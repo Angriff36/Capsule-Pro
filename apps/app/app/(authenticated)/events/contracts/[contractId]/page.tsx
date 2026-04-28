@@ -78,15 +78,15 @@ const ContractDetailPage = async ({ params }: ContractDetailPageProps) => {
   }>;
   try {
     client = await database.$queryRaw<
-    Array<{
-      id: string;
-      company_name: string | null;
-      first_name: string | null;
-      last_name: string | null;
-      email: string | null;
-      phone: string | null;
-    }>
-  >`
+      Array<{
+        id: string;
+        company_name: string | null;
+        first_name: string | null;
+        last_name: string | null;
+        email: string | null;
+        phone: string | null;
+      }>
+    >`
     SELECT c.id,
            c.company_name,
            c.first_name,
@@ -103,7 +103,9 @@ const ContractDetailPage = async ({ params }: ContractDetailPageProps) => {
   }
 
   // Fetch signatures for this contract
-  let signatures: Awaited<ReturnType<typeof database.contractSignature.findMany>>;
+  let signatures: Awaited<
+    ReturnType<typeof database.contractSignature.findMany>
+  >;
   try {
     signatures = await database.contractSignature.findMany({
       where: {

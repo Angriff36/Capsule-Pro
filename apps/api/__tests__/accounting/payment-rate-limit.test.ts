@@ -85,8 +85,7 @@ vi.mock("@/middleware/rate-limiter", () => ({
   checkRateLimit: mocks.checkRateLimitMock,
 }));
 
-import { NextResponse } from "next/server";
-import { NextRequest } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { POST, PUT } from "@/app/api/accounting/payments/[id]/route";
 
 const completedPayment = {
@@ -219,8 +218,7 @@ describe("Sensitive-mutation rate limiting", () => {
       });
 
       expect(mocks.checkRateLimitMock).toHaveBeenCalledTimes(1);
-      const [, tenantArg, optionsArg] =
-        mocks.checkRateLimitMock.mock.calls[0];
+      const [, tenantArg, optionsArg] = mocks.checkRateLimitMock.mock.calls[0];
       expect(tenantArg).toBe(TENANT_ID);
       expect(optionsArg).toEqual({
         limit: 20,
@@ -323,8 +321,7 @@ describe("Sensitive-mutation rate limiting", () => {
       });
 
       expect(mocks.checkRateLimitMock).toHaveBeenCalledTimes(1);
-      const [, tenantArg, optionsArg] =
-        mocks.checkRateLimitMock.mock.calls[0];
+      const [, tenantArg, optionsArg] = mocks.checkRateLimitMock.mock.calls[0];
       expect(tenantArg).toBe(TENANT_ID);
       expect(optionsArg).toEqual({
         limit: 20,

@@ -41,21 +41,21 @@ const BattleBoardDetailPage = async ({ params }: PageProps) => {
   if (board.eventId) {
     try {
       event = await database.event.findFirst({
-      where: {
-        id: board.eventId,
-        tenantId,
-        deletedAt: null,
-      },
-      select: {
-        id: true,
-        eventNumber: true,
-        title: true,
-        eventDate: true,
-        venueName: true,
-        venueAddress: true,
-        guestCount: true,
-      },
-    });
+        where: {
+          id: board.eventId,
+          tenantId,
+          deletedAt: null,
+        },
+        select: {
+          id: true,
+          eventNumber: true,
+          title: true,
+          eventDate: true,
+          venueName: true,
+          venueAddress: true,
+          guestCount: true,
+        },
+      });
     } catch {
       event = null;
     }

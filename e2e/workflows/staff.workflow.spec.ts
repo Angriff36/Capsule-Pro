@@ -50,7 +50,7 @@ test.describe("Staff: Full Workflow", () => {
 
     // Wait for AutoRegisterStaff to finish syncing ("Setting up your account..." disappears)
     await page
-      .locator('text=Setting up your account')
+      .locator("text=Setting up your account")
       .waitFor({ state: "hidden", timeout: 10_000 })
       .catch(() => {
         /* Already gone or never shown — continue */
@@ -104,7 +104,9 @@ test.describe("Staff: Full Workflow", () => {
     // /staff/time-off redirects to /scheduling/time-off
     await goto(page, "/staff/time-off");
     await expect(page).toHaveURL(/scheduling\/time-off/);
-    await expect(page.getByRole("heading", { name: /time.off/i }).first()).toBeVisible({
+    await expect(
+      page.getByRole("heading", { name: /time.off/i }).first()
+    ).toBeVisible({
       timeout: 10_000,
     });
     await assertNoErrors(page, testInfo, errors, "time-off page");
@@ -113,7 +115,9 @@ test.describe("Staff: Full Workflow", () => {
   test("training page loads", async ({ page }, testInfo) => {
     await goto(page, "/staff/training");
     await expect(page).toHaveURL(/staff\/training/);
-    await expect(page.getByRole("heading", { name: /training/i }).first()).toBeVisible({
+    await expect(
+      page.getByRole("heading", { name: /training/i }).first()
+    ).toBeVisible({
       timeout: 10_000,
     });
     await assertNoErrors(page, testInfo, errors, "training page");

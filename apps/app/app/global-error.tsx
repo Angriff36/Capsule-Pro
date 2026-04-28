@@ -3,8 +3,8 @@
 import { Button } from "@repo/design-system/components/ui/button";
 import { fonts } from "@repo/design-system/lib/fonts";
 import { captureException } from "@sentry/nextjs";
-import { posthog } from "posthog-js";
 import type NextError from "next/error";
+import { posthog } from "posthog-js";
 import { useEffect } from "react";
 
 interface GlobalErrorProperties {

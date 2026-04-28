@@ -58,8 +58,6 @@ export {
 } from "./outbound-webhook-service";
 // Re-export SMS utilities
 export { sendSms } from "./sms";
-export { sendSMS, resetSmsProvider } from "./sms-temp";
-export type { SendSMSParams, SendSMSResult, SmsProvider } from "./sms-temp";
 export {
   getSmsLogs,
   getSmsPreferences,
@@ -72,6 +70,8 @@ export {
   setSmsPreference,
   updateDeliveryStatus,
 } from "./sms-notification-service";
+export type { SendSMSParams, SendSMSResult, SmsProvider } from "./sms-temp";
+export { resetSmsProvider, sendSMS } from "./sms-temp";
 export {
   getAvailableTemplateTypes,
   getTemplateMetadata,

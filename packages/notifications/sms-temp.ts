@@ -71,7 +71,9 @@ class NoOpProvider implements SmsProvider {
   readonly name = "noop";
 
   async send(_to: string, _message: string): Promise<string> {
-    console.warn("[SMS] No-op provider: SMS not sent. Configure TWILIO credentials.");
+    console.warn(
+      "[SMS] No-op provider: SMS not sent. Configure TWILIO credentials."
+    );
     return "noop-" + Date.now();
   }
 }

@@ -3,6 +3,7 @@ import { database, Prisma } from "@repo/database";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 import { executeManifestCommand } from "@/lib/manifest-command-handler";
+import { clampLimit } from "@/lib/pagination";
 import type {
   AssignmentStatus,
   TrainingAssignment,
@@ -32,8 +33,12 @@ export async function GET(request: Request) {
   const moduleId = searchParams.get("moduleId");
   const employeeId = searchParams.get("employeeId");
   const status = searchParams.get("status");
-  const page = Number.parseInt(searchParams.get("page") || "1", 10);
-  const limit = Number.parseInt(searchParams.get("limit") || "50", 10);
+  // Clamp pagination so a hostile or buggy client cannot ask for the entire
+  // assignment table via `?limit=999999` or trigger a negative OFFSET via a
+  // negative `page`. clampLimit enforces DEFAULT_LIMIT=50 / MAX_LIMIT=200.
+  const rawPage = Number.parseInt(searchParams.get("page") || "1", 10);
+  const page = Number.isFinite(rawPage) && rawPage > 0 ? rawPage : 1;
+  const limit = clampLimit(searchParams.get("limit"));
   const offset = (page - 1) * limit;
 
   const assignments = await database.$queryRaw<

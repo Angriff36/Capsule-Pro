@@ -10,6 +10,7 @@ import { type EmailStatus, getEmailLogs } from "@repo/notifications";
 import { captureException } from "@sentry/nextjs";
 import { type NextRequest, NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
+import { clampLimit, clampOffset } from "@/lib/pagination";
 
 /**
  * GET /api/collaboration/notifications/email/history
@@ -32,19 +33,20 @@ export async function GET(request: NextRequest) {
     const recipientEmail = searchParams.get("recipientEmail") ?? undefined;
     const notificationType = searchParams.get("notificationType") ?? undefined;
     const status = searchParams.get("status") as EmailStatus | null;
-    const limit = searchParams.get("limit")
-      ? Number.parseInt(searchParams.get("limit") as string, 10)
-      : 50;
-    const offset = searchParams.get("offset")
-      ? Number.parseInt(searchParams.get("offset") as string, 10)
-      : 0;
+    // Clamp client-supplied pagination so a hostile or buggy client cannot
+    // request the entire email log via `?limit=999999`. clampLimit enforces
+    // DEFAULT_LIMIT=50 / MAX_LIMIT=200; clampOffset rejects negatives.
+    // Replaces the previous ad-hoc `Math.min(limit, 100)` so the response
+    // pagination block reports the actual clamped value used by the query.
+    const limit = clampLimit(searchParams.get("limit"));
+    const offset = clampOffset(searchParams.get("offset"));
 
     const logs = await getEmailLogs(database, tenantId, {
       workflowId,
       recipientEmail,
       notificationType,
       status: status ?? undefined,
-      limit: Math.min(limit, 100),
+      limit,
       offset,
     });
 

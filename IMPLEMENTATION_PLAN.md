@@ -1,8 +1,165 @@
 # Capsule-Pro Implementation Plan
 
-> **Last updated:** 2026-04-27 (sixtieth pass — manifest runtime input schema validation; C1-1 and C1-2 closed)
+> **Last updated:** 2026-04-27 (sixty-third pass — BROKEN_PRISMA_READ batches 01–02 + backlog for generator / constraint polarity; production `@angriff36/manifest` bump reminder)
 
-## 60th audit pass — manifest runtime input schema validation: C1-1, C1-2 (2026-04-27)
+## NEXT — BROKEN_PRISMA_READ Batch 03
+
+Implement batch 03 only:
+- BudgetLineItem
+- BulkOrderRule
+- CateringOrder
+- ChartOfAccount
+- Client
+
+Use the AlertsConfig / batch01 / batch02 pattern.
+
+First complete BudgetLineItem as the representative entity. If its store + wiring + persistence test pass, continue the rest of batch 03.
+
+Required verification:
+- targeted batch03 persistence test
+- pnpm --filter @repo/manifest-adapters test
+- pnpm --filter api typecheck
+
+Do not modify Manifest runtime, generator, IR compiler, or constraint polarity in this batch.
+
+If an entity lacks a usable create command, has instanceId route-generation problems, or hits constraint-polarity/runtime semantics, mark SEMANTIC_BLOCKER and continue to the next entity.
+
+Do not touch BYPASS routes.
+
+**Mechanical batch rules (stable law):** `AGENTS.md` → **Manifest Persistence Repair Rules**.
+
+## 63rd pass — BROKEN_PRISMA_READ batches (2026-04-27)
+
+**Audit source**: `.manifest-persistence-audit-temp.json`. **BROKEN_PRISMA_READ** = `classification === BROKEN` and `rawSqlRouteHints` empty (54 rows). **BROKEN_RAW_SQL** remains out of scope here (6 entities: Notification, Proposal, PurchaseOrder, Schedule, Shipment, User).
+
+**Production warning**: `apps/api` pins npm `@angriff36/manifest`. Vitest aliases the **workspace** runtime (see `apps/api/vitest.config.ts`), so **tests can pass while deployed bundles still run the old published package** until `@angriff36/manifest` is **version-bumped, rebuilt, and republished** (or the app is pointed at the workspace package). Coordinate manifest-runtime releases with adapter/store changes.
+
+**Done (pattern = AlertsConfig)**:
+- **AlertsConfig** (prior pass).
+- **Batch 01** (this pass): `PrepMethod`, `Container`, `WasteEntry`, `Workflow` — `packages/manifest-adapters/src/prisma-stores/broken-read-batch01-*.ts` (shared + prep/container + waste/workflow), `ENTITIES_WITH_SPECIFIC_STORES`, `createPrismaStoreProvider` cases, mock models in `apps/api/test/mocks/@repo/database.ts`, integration tests `apps/api/__tests__/kitchen/manifest-broken-read-batch01-persistence.test.ts` (one `it` per entity: POST create → GET list).
+- **Batch 02**: `AdminChatParticipant`, `AdminTask`, `ApiKey`, `BattleBoard`, `BudgetAlert` — `broken-read-batch02-shared.ts`, `broken-read-batch02-participant-task.ts`, `broken-read-batch02-api-battle-budget.ts`, wiring + `apps/api/__tests__/kitchen/manifest-broken-read-batch02-persistence.test.ts`. **Verified**: `AdminTask` / `ApiKey` — POST `create` → GET list. **Partially verified** (Prisma store + list; HTTP routes still omit `instanceId`): `AdminChatParticipant` / `BudgetAlert` — `runCommand` + `instanceId` → GET list. **Not command-verified**: `BattleBoard` — store/list alignment proven with a **seeded** row only; entity `block*` constraints are mis-polarized in runtime (see backlog §2). Prisma stores are still wired for when those defects are fixed.
+
+**Backlog (track separately — do not fold into mechanical BROKEN_PRISMA_READ batches)**:
+
+1. **Generator — `instanceId` on instance-scoped commands.** Generated HTTP command handlers that mutate an **existing** row must pass `instanceId` into `runtime.runCommand(...)` (pattern: extract `id` from body or `[id]` segment, as in `kitchen-tasks/commands/claim`). Today, archive / acknowledge–style routes call `runCommand` with only `entityName`, so `mutate` / `updateInstance` no-op at the store even after a dedicated Prisma store exists. Store wiring alone does **not** fix persistence for those routes until the generator (or hand-edited route template) emits `instanceId`.
+
+2. **Runtime — manifest constraint polarity for `:block` / `block*` entity constraints.** IR entities carry constraints such as `blockVoteIfFinalized` and `blockFinalizeNoData` (expressions describe a **bad** state; severity `block`). `RuntimeEngine.evaluateConstraint` classifies “negative” constraints only when `constraint.name.startsWith("severity")`; names like `blockVoteIfFinalized` are treated as **positive** (`passed = !!result`). That requires the expression to be **true** to pass — so e.g. `self.status == "finalized"` fails for every draft board and blocks legitimate creates/updates. Until polarity matches manifest intent, **BattleBoard**-style command tests cannot be end-to-end verified without a semantic fix (compiler naming, runtime detection of `block*` / severity, or manifest rewrite).
+
+**Decimal / mocks**: Dedicated stores use `toDecimalInput()` (number/string) instead of `new Prisma.Decimal()` so Vitest’s `@repo/database` mock (no real `Prisma.Decimal` constructor) matches production behavior closely enough for integration tests.
+
+**Remaining BROKEN_PRISMA_READ** (44 entities): repeat the same mechanical steps in **groups of 5** (alphabetical machine list — re-group by Prisma shape when a batch hits awkward FKs):
+
+| Next batch | Entities |
+|------------|----------|
+| 3 | BudgetLineItem, BulkOrderRule, CateringOrder, ChartOfAccount, Client |
+| 4 | ClientContact, ClientInteraction, ClientPreference, CommandBoard, CommandBoardCard |
+| 5 | CommandBoardConnection, CommandBoardGroup, CommandBoardLayout, ContractSignature, CycleCountRecord |
+| 6 | CycleCountSession, EmailWorkflow, EmployeeDeduction, EventBudget, EventContract |
+| 7 | EventGuest, EventProfitability, EventReport, EventSummary, InventorySupplier |
+| 8 | InventoryTransaction, LaborBudget, Lead, OverrideAudit, PrepComment |
+| 9 | PricingTier, ProposalLineItem, PurchaseOrderItem, PurchaseRequisition, RolePolicy |
+| 10 | ScheduleShift, ShipmentItem, TimeEntry, TimecardEditRequest, TrainingAssignment |
+| 11 | TrainingModule, VarianceReport, VendorCatalog, VendorContract |
+
+**Files touched (63rd pass)**: `packages/manifest-adapters/src/prisma-stores/broken-read-batch01-*.ts`, `broken-read-batch02-*.ts`, `packages/manifest-adapters/src/prisma-store.ts`, `packages/manifest-adapters/src/manifest-runtime-factory.ts`, `apps/api/test/mocks/@repo/database.ts`, `apps/api/__tests__/kitchen/manifest-broken-read-batch01-persistence.test.ts`, `apps/api/__tests__/kitchen/manifest-broken-read-batch02-persistence.test.ts`, `IMPLEMENTATION_PLAN.md`.
+
+**Verification**: `pnpm --filter @repo/manifest-adapters test`; `cd apps/api && pnpm exec vitest run __tests__/kitchen/manifest-broken-read-batch01-persistence.test.ts __tests__/kitchen/manifest-broken-read-batch02-persistence.test.ts`; `pnpm --filter api typecheck`.
+
+## 62nd audit pass — manifest BROKEN triage, AlertsConfig repair pattern, create persistence (2026-04-27)
+
+**Context**: `.manifest-persistence-audit-temp.json` classified **60 BROKEN** manifest rows (Manifest command route vs Prisma read path). This pass does **triage + one representative Prisma-read fix**, not a batch fix of all 60.
+
+**Triage (from audit JSON)**:
+
+- **BROKEN_PRISMA_READ**: **54** (entity list/detail uses a real Prisma delegate; no raw-SQL hint in the audit row).
+- **BROKEN_RAW_SQL_READ**: **6** (`Notification`, `Proposal`, `PurchaseOrder`, `Schedule`, `Shipment`, `User` — raw-SQL route/table hints present).
+- **BROKEN_UNKNOWN_READ**: **0** under this split.
+
+**BYPASS** manifest-command routes were intentionally **not** changed — they need a separate “should this be Manifest-owned?” audit.
+
+**Representative entity — `AlertsConfig`**:
+
+1. **`AlertsConfigPrismaStore`** in `packages/manifest-adapters/src/prisma-store.ts` — CRUD aligned with `tenant_inventory.alerts_config`.
+2. **`ENTITIES_WITH_SPECIFIC_STORES`** + **`createPrismaStoreProvider`** case in `packages/manifest-adapters/src/manifest-runtime-factory.ts` / `prisma-store.ts` (same pattern as other dedicated stores).
+3. **Unit tests**: `packages/manifest-adapters/__tests__/prisma-store-alerts-config.test.ts`.
+4. **Integration test**: `apps/api/__tests__/kitchen/manifest-alerts-config-persistence.test.ts` — POST `commands/create` then GET `list` sees the row (shared `@repo/database` mock + `user` / `alertsConfig` / `$transaction`).
+
+**Root cause beyond “wrong store” — `create` commands did not persist**:
+
+- Generated routes call `runCommand("create", body, { entityName })` **without** `instanceId`.
+- Compiled command actions use `mutate` → `updateInstance`, which only applies when `options.instanceId` is set — so **creates no-op’d** at the store layer even after wiring a Prisma store.
+- **Fix** in `packages/manifest-runtime/src/manifest/runtime-engine.ts`: when `command.name === "create"`, `options.entityName` is set, and `options.instanceId` is absent, **`createInstance(entityName, validatedInput)`** runs (then declared `emits` are appended via new **`appendDeclaredCommandEvents`** helper shared with the action loop).
+
+**API Vitest — workspace runtime alignment**:
+
+- `apps/api` pins **`@angriff36/manifest`** to npm while Vitest resolves **`@repo/manifest-adapters`** to **source**; `ManifestRuntimeEngine` was therefore extending the **published** `RuntimeEngine`, so local runtime fixes were invisible in tests.
+- **`apps/api/vitest.config.ts`**: exact regex aliases for **`@angriff36/manifest$`** and **`@angriff36/manifest/ir$`** → `packages/manifest-runtime/src/...` so subpaths like **`ir-compiler`** still resolve from `node_modules`.
+
+**Verification (this pass)**:
+
+- `pnpm exec vitest run packages/manifest-runtime/src/manifest/runtime-engine.test.ts` — pass.
+- `pnpm exec vitest run packages/manifest-adapters/__tests__/prisma-store-alerts-config.test.ts` — pass.
+- `cd apps/api && pnpm exec vitest run __tests__/kitchen/manifest-alerts-config-persistence.test.ts` — pass.
+- `pnpm --filter api typecheck` — run as part of close-out.
+
+**Remaining backlog**:
+
+- **53** further **BROKEN_PRISMA_READ** entities — repeat the AlertsConfig pattern + re-run audit after each batch.
+- **6** **BROKEN_RAW_SQL_READ** — separate pass (raw SQL list/detail vs Manifest store).
+- **Republish / version bump** `@angriff36/manifest` when consumers should use the published artifact instead of Vitest aliases.
+
+**Files touched**: `packages/manifest-runtime/src/manifest/runtime-engine.ts`, `packages/manifest-adapters/src/prisma-store.ts`, `packages/manifest-adapters/src/manifest-runtime-factory.ts`, `packages/manifest-adapters/__tests__/prisma-store-alerts-config.test.ts`, `apps/api/__tests__/kitchen/manifest-alerts-config-persistence.test.ts`, `apps/api/test/mocks/@repo/database.ts`, `apps/api/vitest.config.ts`, `IMPLEMENTATION_PLAN.md`.
+
+## 61st audit pass — close E2 + remaining E4 (C2) routes (2026-04-27)
+
+**Problem solved**: The Performance Audit's Priority-1 list (lines 5149–5157) named two open items that protect the API from OutOfMemory crashes on large tenants and from sequential-scan blowups on the busiest kitchen page:
+
+- **E4 / C2 — Unbounded user-controlled limits.** Eight list routes parsed `?limit=...` straight into Prisma `take`/`$queryRaw LIMIT` with no upper bound. A single `?limit=999999` request could materialize the entire table for that tenant.
+- **E2 — Missing FK indexes on `PrepComment`.** Both `task_id` and `employee_id` were unindexed. The kitchen task detail page issues a `PrepComment` lookup on every render; on tenants with thousands of comments that becomes a sequential scan per task view.
+
+**What shipped this pass**:
+
+1. **6 routes converted to the shared `clampLimit` / `clampOffset` helpers in `apps/api/lib/pagination.ts`** (DEFAULT_LIMIT=50, MAX_LIMIT=200; rejects `NaN`, negatives, zero, and overflow):
+   - `training/assignments/route.ts` — clamped `limit`; clamped `page` to ≥ 1 so OFFSET cannot go negative.
+   - `collaboration/notifications/sms/history/route.ts` — replaced ad-hoc parsing with `clampLimit`/`clampOffset`.
+   - `collaboration/notifications/email/history/route.ts` — replaced inconsistent `Math.min(limit, 100)` (which ignored the unclamped value reported back in `pagination.limit`) with the shared helper so the response reflects the actual clamped value used by the query.
+   - `communications/sms/automation-rules/route.ts` — same pattern.
+   - `inventory/transfers/list/route.ts` — same pattern.
+   - `timecards/route.ts` — clamped `limit`; clamped `page` to ≥ 1.
+2. **`sentry-fixer/process/route.ts`** — replaced `Number.POSITIVE_INFINITY` default with an explicit `MAX_JOB_BATCH = 200` cap. Time budget remains the ultimate stop condition; the cap prevents a single invocation (manual or buggy cron) from looping for the full execution window.
+3. **`PrepComment` indexes** — added `@@index([taskId])` and `@@index([employeeId])` to `packages/database/prisma/schema.prisma` and shipped a forward-only migration `20260427050000_add_prep_comment_fk_indexes/migration.sql` (uses `CREATE INDEX IF NOT EXISTS`; does NOT use `CONCURRENTLY` because Prisma migrate wraps each step in a transaction and CONCURRENTLY is rejected there — the table is small enough that the brief write lock is acceptable).
+
+**Why each line exists**:
+- The shared helpers were already battle-tested by 13 unit tests in `apps/api/__tests__/lib/pagination.test.ts` (NaN, negative, overflow, zero, trailing-non-digit cases). Reusing them keeps the policy in one auditable place rather than re-deriving `Math.min(parseInt(x, 10), 200)` per route — which is exactly how `email/history` ended up with the inconsistent-`Math.min(...,100)` drift this pass fixes.
+- For `sentry-fixer`: the loop already has a time-budget guard (`MAX_EXECUTION_MS`), but a `?limit=` of garbage previously meant `Infinity` and the loop would lock out the queue if a job kept failing fast. A hard cap at `MAX_JOB_BATCH=200` matches the `MAX_LIMIT` policy elsewhere and removes the foot-gun without changing legitimate cron behavior (typical drain volume is far below 200).
+- For `PrepComment` indexes: the audit (lines 5193–5194) explicitly identified these as the only missing FK indexes in the Priority-1 list. Both lookups are O(comments-per-tenant) without the index and O(log n) with it — the same scaling that every other tenant-FK index in the schema delivers.
+
+**Routes deliberately NOT touched this pass**:
+- `procurement/requisitions/list/route.ts` — auto-generated from the manifest IR (header reads `DO NOT EDIT`); fixing it requires a generator update, not a route edit. Left open under E5 (unbounded `findMany` list routes); also already gated by quarantined manifests + missing Prisma model (Blocker 2a/2b).
+- `training/modules/route.ts` — already clamped via the inline `Math.min(rawLimit, 200)` pattern in a prior pass; no further change needed.
+
+**Verification evidence**:
+- `pnpm --filter api typecheck` — exit 0.
+- `pnpm --filter api test` — 1166 passed / 1 skipped / 8 todo (no new failures; pre-existing skips/todos unrelated to this change).
+- `apps/api/__tests__/lib/pagination.test.ts` — 13/13 pass; this pass relies on the helpers' unit tests as the contract, since manually exercising eight routes through E2E would be far more expensive than testing the single shared helper they all delegate to.
+
+**Files touched**:
+- `apps/api/app/api/training/assignments/route.ts`
+- `apps/api/app/api/collaboration/notifications/sms/history/route.ts`
+- `apps/api/app/api/collaboration/notifications/email/history/route.ts`
+- `apps/api/app/api/communications/sms/automation-rules/route.ts`
+- `apps/api/app/api/inventory/transfers/list/route.ts`
+- `apps/api/app/api/timecards/route.ts`
+- `apps/api/app/api/sentry-fixer/process/route.ts`
+- `packages/database/prisma/schema.prisma` (+ `migrations/20260427050000_add_prep_comment_fk_indexes/migration.sql`)
+- `IMPLEMENTATION_PLAN.md` (this entry).
+
+**Followups still open** (from the Performance Audit Priority-1 list):
+- **E1** — `Event` model composite indexes (`@@index([tenantId, status])`, `@@index([tenantId, eventDate])`) — still open; touches the largest table and warrants a dedicated pass with EXPLAIN proof.
+- **E3** — CRM scoring SQL injection fix — still open (also tracked in the security audit).
+- **E5** — 20 unbounded `findMany` list routes — partially closed by passes 50/51/58; some auto-generated routes remain (require generator update, not route edits).
+
+## 60th audit pass — manifest runtime input schema validation: C1, C1-2 (2026-04-27)
 
 **Problem solved**: The end-of-document security audit ranked C1-1/C1-2 as CRITICAL because the manifest pipeline — which processes ~60% of write operations — performed **zero runtime input schema validation** despite the IR carrying full `IRParameter[]` metadata (name, `IRType`, required, defaultValue). Every `executeManifestCommand` call passed `request.json()` directly to `runCommand`, which spread it into the eval context unchanged. That meant:
 

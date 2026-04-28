@@ -1,7 +1,7 @@
 "use client";
 
-import { SignUp } from "@repo/auth/components/sign-up";
 import { useAuth } from "@clerk/nextjs";
+import { SignUp } from "@repo/auth/components/sign-up";
 import { usePostHog } from "posthog-js/react";
 import { useEffect, useRef } from "react";
 

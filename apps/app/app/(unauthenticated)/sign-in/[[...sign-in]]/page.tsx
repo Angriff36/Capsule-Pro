@@ -1,4 +1,3 @@
-import { SignIn } from "@repo/auth/components/sign-in";
 import { createMetadata } from "@repo/seo/metadata";
 import type { Metadata } from "next";
 import { SignInWithAnalytics } from "./sign-in-with-analytics";

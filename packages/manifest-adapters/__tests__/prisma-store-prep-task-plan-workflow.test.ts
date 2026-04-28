@@ -93,7 +93,9 @@ describe("PrepTaskPlanWorkflowPrismaStore", () => {
     vi.resetAllMocks();
     prisma = { prepTaskPlanWorkflow: mockPrepTaskPlanWorkflow };
     store = new PrepTaskPlanWorkflowPrismaStore(
-      prisma as unknown as Parameters<typeof PrepTaskPlanWorkflowPrismaStore>[0],
+      prisma as unknown as Parameters<
+        typeof PrepTaskPlanWorkflowPrismaStore
+      >[0],
       TENANT_A
     );
   });
@@ -115,7 +117,9 @@ describe("PrepTaskPlanWorkflowPrismaStore", () => {
     it("never queries another tenant's rows", async () => {
       mockPrepTaskPlanWorkflow.findMany.mockResolvedValueOnce([]);
       const otherStore = new PrepTaskPlanWorkflowPrismaStore(
-        prisma as unknown as Parameters<typeof PrepTaskPlanWorkflowPrismaStore>[0],
+        prisma as unknown as Parameters<
+          typeof PrepTaskPlanWorkflowPrismaStore
+        >[0],
         TENANT_B
       );
 

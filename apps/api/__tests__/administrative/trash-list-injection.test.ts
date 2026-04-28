@@ -67,9 +67,7 @@ beforeEach(() => {
 
 describe("administrative/trash/list — SQL injection regression (CRIT-2)", () => {
   it("does NOT call $queryRaw or $queryRawUnsafe under any input", async () => {
-    const { GET } = await import(
-      "@/app/api/administrative/trash/list/route"
-    );
+    const { GET } = await import("@/app/api/administrative/trash/list/route");
 
     const malicious = new URLSearchParams({
       sortOrder: "DESC; DROP TABLE users;--",
@@ -94,9 +92,7 @@ describe("administrative/trash/list — SQL injection regression (CRIT-2)", () =
     const auth = await import("@repo/auth/server");
     (auth.auth as any).mockResolvedValueOnce({ orgId: null, userId: null });
 
-    const { GET } = await import(
-      "@/app/api/administrative/trash/list/route"
-    );
+    const { GET } = await import("@/app/api/administrative/trash/list/route");
     const request = new NextRequest(
       "http://localhost/api/administrative/trash/list"
     );
@@ -107,9 +103,7 @@ describe("administrative/trash/list — SQL injection regression (CRIT-2)", () =
   });
 
   it("rejects out-of-range pagination without touching the database", async () => {
-    const { GET } = await import(
-      "@/app/api/administrative/trash/list/route"
-    );
+    const { GET } = await import("@/app/api/administrative/trash/list/route");
     const request = new NextRequest(
       "http://localhost/api/administrative/trash/list?limit=999999"
     );
@@ -119,9 +113,7 @@ describe("administrative/trash/list — SQL injection regression (CRIT-2)", () =
   });
 
   it("accepts safe inputs and returns the paginated envelope shape", async () => {
-    const { GET } = await import(
-      "@/app/api/administrative/trash/list/route"
-    );
+    const { GET } = await import("@/app/api/administrative/trash/list/route");
     const request = new NextRequest(
       "http://localhost/api/administrative/trash/list?sortOrder=asc&sortBy=displayName&page=1&limit=20"
     );

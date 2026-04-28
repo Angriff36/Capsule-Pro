@@ -1,7 +1,7 @@
 "use client";
 
-import { UserButton } from "@repo/auth/client";
 import { useAuth } from "@clerk/nextjs";
+import { UserButton } from "@repo/auth/client";
 import { usePostHog } from "posthog-js/react";
 import { useEffect, useRef } from "react";
 

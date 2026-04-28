@@ -1,8 +1,8 @@
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { defineConfig, devices } from "@playwright/test";
 import { detectBrowserEndpoint } from "./e2e/detect-browser-endpoint";
 import { loadEnvFiles } from "./e2e/env";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const AUTH_STORAGE_STATE = path.resolve(__dirname, "e2e", ".auth", "user.json");

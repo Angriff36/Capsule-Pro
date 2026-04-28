@@ -33,8 +33,8 @@ import {
 } from "lucide-react";
 import { notFound } from "next/navigation";
 import { getTenantIdForOrg } from "../../lib/tenant";
-import SchedulingRealtime from "./scheduling-realtime";
 import { formatDelta } from "./format-delta";
+import SchedulingRealtime from "./scheduling-realtime";
 
 interface ScheduleSummaryRow {
   shift_date: Date;

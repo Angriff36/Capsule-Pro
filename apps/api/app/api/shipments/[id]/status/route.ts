@@ -253,7 +253,10 @@ function mapShipmentToResponse(shipment: Shipment) {
 /**
  * Fetches shipment items for inventory processing
  */
-async function fetchShipmentItems(tenantId: string, shipmentId: string): Promise<ShipmentItem[]> {
+async function fetchShipmentItems(
+  tenantId: string,
+  shipmentId: string
+): Promise<ShipmentItem[]> {
   return await database.$queryRaw<ShipmentItem[]>`
     SELECT si.id,
            si.item_id,

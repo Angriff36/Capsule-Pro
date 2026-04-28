@@ -19,9 +19,9 @@ import { Input } from "@repo/design-system/components/ui/input";
 import { ArrowLeft, Loader2, Package, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { usePostHog } from "posthog-js/react";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
-import { usePostHog } from "posthog-js/react";
 import type { POFormData, Vendor } from "../../components/po-form";
 import { POForm } from "../../components/po-form";
 import {

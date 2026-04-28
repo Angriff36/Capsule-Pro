@@ -49,10 +49,16 @@ const middleware: NextMiddleware = clerkMiddleware(async (auth, req) => {
       }
     );
     // Return a safe 401 instead of letting unhandled auth errors surface as 500s
-    return new Response(JSON.stringify({ error: "Unauthorized", message: "Invalid or expired session" }), {
-      status: 401,
-      headers: { "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        error: "Unauthorized",
+        message: "Invalid or expired session",
+      }),
+      {
+        status: 401,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
   }
 });
 

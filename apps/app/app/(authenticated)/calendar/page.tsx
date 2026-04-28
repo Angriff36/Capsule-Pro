@@ -38,8 +38,12 @@ async function getCalendarData(tenantId: string, start: Date, end: Date) {
   const events: CalendarEvent[] = [];
 
   // Normalize to UTC date-only for @db.Date column comparisons
-  const startUtc = new Date(Date.UTC(start.getFullYear(), start.getMonth(), start.getDate()));
-  const endUtc = new Date(Date.UTC(end.getFullYear(), end.getMonth(), end.getDate(), 23, 59, 59, 999));
+  const startUtc = new Date(
+    Date.UTC(start.getFullYear(), start.getMonth(), start.getDate())
+  );
+  const endUtc = new Date(
+    Date.UTC(end.getFullYear(), end.getMonth(), end.getDate(), 23, 59, 59, 999)
+  );
 
   // Fetch events
   const dbEvents = await database.event.findMany({

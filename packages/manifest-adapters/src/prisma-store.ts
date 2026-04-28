@@ -29,6 +29,32 @@ import type {
   Station,
 } from "@repo/database/standalone";
 import { Prisma } from "@repo/database/standalone";
+import {
+  ContainerPrismaStore,
+  PrepMethodPrismaStore,
+} from "./prisma-stores/broken-read-batch01-prep-container.js";
+import {
+  WasteEntryPrismaStore,
+  WorkflowPrismaStore,
+} from "./prisma-stores/broken-read-batch01-waste-workflow.js";
+import {
+  ApiKeyPrismaStore,
+  BattleBoardPrismaStore,
+  BudgetAlertPrismaStore,
+} from "./prisma-stores/broken-read-batch02-api-battle-budget.js";
+import {
+  AdminChatParticipantPrismaStore,
+  AdminTaskPrismaStore,
+} from "./prisma-stores/broken-read-batch02-participant-task.js";
+import {
+  BudgetLineItemPrismaStore,
+  BulkOrderRulePrismaStore,
+  CateringOrderPrismaStore,
+} from "./prisma-stores/broken-read-batch03-budget-bulk-catering.js";
+import {
+  ChartOfAccountPrismaStore,
+  ClientPrismaStore,
+} from "./prisma-stores/broken-read-batch03-chart-client.js";
 
 /**
  * Report a silent store error to Sentry without blocking the return path.
@@ -1392,6 +1418,103 @@ export class AllergenWarningPrismaStore implements Store<EntityInstance> {
   }
 }
 
+/**
+ * Prisma-backed store for AlertsConfig (`tenant_inventory.alerts_config`).
+ *
+ * Manifest commands for this entity previously used `PrismaJsonStore` while
+ * list/detail routes under `/api/kitchen/alerts-config/*` read
+ * `database.alertsConfig` — writes never appeared in the UI.
+ */
+export class AlertsConfigPrismaStore implements Store<EntityInstance> {
+  constructor(
+    private readonly prisma: PrismaClient,
+    private readonly tenantId: string
+  ) {}
+
+  async getAll(): Promise<EntityInstance[]> {
+    const rows = await this.prisma.alertsConfig.findMany({
+      where: { tenantId: this.tenantId },
+      orderBy: { id: "desc" },
+    });
+    return rows.map((r) => this.mapToManifestEntity(r));
+  }
+
+  async getById(id: string): Promise<EntityInstance | undefined> {
+    const row = await this.prisma.alertsConfig.findFirst({
+      where: { tenantId: this.tenantId, id },
+    });
+    return row ? this.mapToManifestEntity(row) : undefined;
+  }
+
+  async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
+    const id = (data.id as string | undefined) ?? crypto.randomUUID();
+    const row = await this.prisma.alertsConfig.create({
+      data: {
+        tenantId: this.tenantId,
+        id,
+        channel: (data.channel as string) ?? "",
+        destination: (data.destination as string) ?? "",
+      },
+    });
+    return this.mapToManifestEntity(row);
+  }
+
+  async update(
+    id: string,
+    data: Partial<EntityInstance>
+  ): Promise<EntityInstance | undefined> {
+    try {
+      const patch: { channel?: string; destination?: string } = {};
+      if (data.channel !== undefined) {
+        patch.channel = data.channel as string;
+      }
+      if (data.destination !== undefined) {
+        patch.destination = data.destination as string;
+      }
+      const row = await this.prisma.alertsConfig.update({
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
+        data: patch,
+      });
+      return this.mapToManifestEntity(row);
+    } catch (error) {
+      reportOp(this, "update", error);
+      return undefined;
+    }
+  }
+
+  async delete(id: string): Promise<boolean> {
+    try {
+      await this.prisma.alertsConfig.delete({
+        where: { tenantId_id: { tenantId: this.tenantId, id } },
+      });
+      return true;
+    } catch (error) {
+      reportOp(this, "delete", error);
+      return false;
+    }
+  }
+
+  async clear(): Promise<void> {
+    await this.prisma.alertsConfig.deleteMany({
+      where: { tenantId: this.tenantId },
+    });
+  }
+
+  private mapToManifestEntity(r: {
+    tenantId: string;
+    id: string;
+    channel: string;
+    destination: string;
+  }): EntityInstance {
+    return {
+      id: r.id,
+      tenantId: r.tenantId,
+      channel: r.channel ?? "",
+      destination: r.destination ?? "",
+    };
+  }
+}
+
 // ---------------------------------------------------------------------------
 // EventPrismaStore
 // ---------------------------------------------------------------------------
@@ -1643,7 +1766,8 @@ export class EmailTemplatePrismaStore implements Store<EntityInstance> {
         body: (data.body as string) || "",
         merge_fields: mergeFields,
         is_active: data.isActive !== undefined ? Boolean(data.isActive) : true,
-        is_default: data.isDefault !== undefined ? Boolean(data.isDefault) : false,
+        is_default:
+          data.isDefault !== undefined ? Boolean(data.isDefault) : false,
       },
     });
     return this.mapToManifestEntity(template);
@@ -1659,13 +1783,18 @@ export class EmailTemplatePrismaStore implements Store<EntityInstance> {
         data: {
           name: data.name as string | undefined,
           template_type: data.templateType
-            ? ((data.templateType as string) as any)
+            ? (data.templateType as string as any)
             : undefined,
           subject: data.subject as string | undefined,
           body: data.body as string | undefined,
-          merge_fields: data.mergeFields != null ? this.normalizeMergeFields(data.mergeFields) : undefined,
-          is_active: data.isActive !== undefined ? Boolean(data.isActive) : undefined,
-          is_default: data.isDefault !== undefined ? Boolean(data.isDefault) : undefined,
+          merge_fields:
+            data.mergeFields != null
+              ? this.normalizeMergeFields(data.mergeFields)
+              : undefined,
+          is_active:
+            data.isActive !== undefined ? Boolean(data.isActive) : undefined,
+          is_default:
+            data.isDefault !== undefined ? Boolean(data.isDefault) : undefined,
           updated_at: new Date(),
         },
       });
@@ -1972,6 +2101,8 @@ export function createPrismaStoreProvider(
 ): (entityName: string) => Store<EntityInstance> | undefined {
   return (entityName: string) => {
     switch (entityName) {
+      case "AlertsConfig":
+        return new AlertsConfigPrismaStore(prisma, tenantId);
       case "AllergenWarning":
         return new AllergenWarningPrismaStore(prisma, tenantId);
       case "PrepTask":
@@ -2008,6 +2139,34 @@ export function createPrismaStoreProvider(
         return new EmailTemplatePrismaStore(prisma, tenantId);
       case "PrepTaskPlanWorkflow":
         return new PrepTaskPlanWorkflowPrismaStore(prisma, tenantId);
+      case "PrepMethod":
+        return new PrepMethodPrismaStore(prisma, tenantId);
+      case "Container":
+        return new ContainerPrismaStore(prisma, tenantId);
+      case "WasteEntry":
+        return new WasteEntryPrismaStore(prisma, tenantId);
+      case "Workflow":
+        return new WorkflowPrismaStore(prisma, tenantId);
+      case "AdminChatParticipant":
+        return new AdminChatParticipantPrismaStore(prisma, tenantId);
+      case "AdminTask":
+        return new AdminTaskPrismaStore(prisma, tenantId);
+      case "ApiKey":
+        return new ApiKeyPrismaStore(prisma, tenantId);
+      case "BattleBoard":
+        return new BattleBoardPrismaStore(prisma, tenantId);
+      case "BudgetAlert":
+        return new BudgetAlertPrismaStore(prisma, tenantId);
+      case "BudgetLineItem":
+        return new BudgetLineItemPrismaStore(prisma, tenantId);
+      case "BulkOrderRule":
+        return new BulkOrderRulePrismaStore(prisma, tenantId);
+      case "CateringOrder":
+        return new CateringOrderPrismaStore(prisma, tenantId);
+      case "ChartOfAccount":
+        return new ChartOfAccountPrismaStore(prisma, tenantId);
+      case "Client":
+        return new ClientPrismaStore(prisma, tenantId);
       default:
         console.error(
           `[createPrismaStoreProvider] No store for entity "${entityName}" — commands will fail`

@@ -41,7 +41,9 @@ test.describe("Settings: Full Workflow", () => {
   test("team settings page loads", async ({ page }, testInfo) => {
     await goto(page, "/settings/team");
     await expect(page).toHaveURL(/settings\/team/);
-    await expect(page.getByRole("heading", { name: /^team$/i }).first()).toBeVisible({
+    await expect(
+      page.getByRole("heading", { name: /^team$/i }).first()
+    ).toBeVisible({
       timeout: 10_000,
     });
     await assertNoErrors(page, testInfo, errors, "team settings");
@@ -50,7 +52,9 @@ test.describe("Settings: Full Workflow", () => {
   test("security settings page loads", async ({ page }, testInfo) => {
     await goto(page, "/settings/security");
     await expect(page).toHaveURL(/settings\/security/);
-    await expect(page.getByRole("heading", { name: /security/i }).first()).toBeVisible({
+    await expect(
+      page.getByRole("heading", { name: /security/i }).first()
+    ).toBeVisible({
       timeout: 10_000,
     });
     await assertNoErrors(page, testInfo, errors, "security settings");
