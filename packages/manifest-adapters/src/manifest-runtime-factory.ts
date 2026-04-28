@@ -170,6 +170,11 @@ const ENTITIES_WITH_SPECIFIC_STORES = new Set([
   "ClientPreference",
   "CommandBoard",
   "CommandBoardCard",
+  "CommandBoardConnection",
+  "CommandBoardGroup",
+  "CommandBoardLayout",
+  "ContractSignature",
+  "CycleCountRecord",
 ]);
 
 /** Default precompiled IR path (relative to monorepo root). */

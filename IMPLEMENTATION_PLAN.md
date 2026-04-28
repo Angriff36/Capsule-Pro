@@ -1,23 +1,23 @@
 # Capsule-Pro Implementation Plan — Live Queue
 
-> **Last updated:** 2026-04-28 (batch 04 closed — ClientContact, ClientInteraction, ClientPreference, CommandBoard, CommandBoardCard stores landed; batch 05 now current).
+> **Last updated:** 2026-04-28 (batch 05 closed — CommandBoardConnection, CommandBoardGroup, CommandBoardLayout, ContractSignature, CycleCountRecord stores landed; batch 06 now current).
 > **Convention:** this file is the **live queue only**. Completed pass write-ups are archived, not appended here. See the **Archive Map** at the bottom for where to look up history.
 
 ---
 
-## Current Task — BROKEN_PRISMA_READ Batch 05
+## Current Task — BROKEN_PRISMA_READ Batch 06
 
-Implement batch 05 only:
+Implement batch 06 only:
 
-- CommandBoardConnection
-- CommandBoardGroup
-- CommandBoardLayout
-- ContractSignature
-- CycleCountRecord
+- CycleCountSession
+- Dish
+- EmailTemplate
+- EmailWorkflow
+- EmployeeAvailability
 
-Use the AlertsConfig / batch01 / batch02 / batch03 / batch04 repair pattern (see `AGENTS.md` → **Manifest Persistence Repair Rules**, the existing stores in `packages/manifest-adapters/src/prisma-stores/`, and the persistence test at `packages/manifest-adapters/__tests__/prisma-store-broken-read-batch04.test.ts`).
+Use the AlertsConfig / batch01 / batch02 / batch03 / batch04 / batch05 repair pattern (see `AGENTS.md` → **Manifest Persistence Repair Rules**, the existing stores in `packages/manifest-adapters/src/prisma-stores/`, and the persistence test at `packages/manifest-adapters/__tests__/prisma-store-broken-read-batch05.test.ts`).
 
-**Order of work:** complete **CommandBoardConnection** first as the representative entity. If its store + wiring + persistence test pass, continue with the rest of batch 05 in alphabetical order.
+**Order of work:** complete **CycleCountSession** first as the representative entity. If its store + wiring + persistence test pass, continue with the rest of batch 06 in alphabetical order.
 
 ### Required verification
 
@@ -39,10 +39,10 @@ The persistence test (one file per batch in `packages/manifest-adapters/__tests_
 
 ### Allowed changes (per entity)
 
-1. Add a dedicated `PrismaStore` in `packages/manifest-adapters/src/prisma-stores/broken-read-batch05-*.ts` (group entities by Prisma shape; one shared file plus per-shape files is fine). Reuse the helpers from `prisma-stores/shared.ts` (`toDecimalInput`, `toDecimalRequired`, `asJsonInput`, `asString`, `asNullableString`, `asNullableNumber`, `asNullableDate`, `asStringArray`, `asBool`, `reportOp`).
+1. Add a dedicated `PrismaStore` in `packages/manifest-adapters/src/prisma-stores/broken-read-batch06-*.ts` (group entities by Prisma shape; one shared file plus per-shape files is fine). Reuse the helpers from `prisma-stores/shared.ts` (`toDecimalInput`, `toDecimalRequired`, `asJsonInput`, `asString`, `asNullableString`, `asNullableNumber`, `asNullableDate`, `asStringArray`, `asBool`, `reportOp`).
 2. Add the entity name to `ENTITIES_WITH_SPECIFIC_STORES`.
 3. Add the `case` for the entity in `createPrismaStoreProvider` in `prisma-store.ts`.
-4. Add a targeted persistence test in `packages/manifest-adapters/__tests__/prisma-store-broken-read-batch05.test.ts` with `vi.hoisted` mocks per Prisma model accessor (mirror `prisma-store-broken-read-batch04.test.ts`).
+4. Add a targeted persistence test in `packages/manifest-adapters/__tests__/prisma-store-broken-read-batch06.test.ts` with `vi.hoisted` mocks per Prisma model accessor (mirror `prisma-store-broken-read-batch05.test.ts`).
 5. Use `toDecimalInput()` for nullable `Decimal` columns and `toDecimalRequired()` for non-null ones — never `new Prisma.Decimal(...)` directly. The mocked `@repo/database` does not expose a real `Prisma.Decimal` constructor.
 
 ### SEMANTIC_BLOCKER handling
@@ -66,15 +66,15 @@ Audit source: `.manifest-persistence-audit-temp.json`. BROKEN_RAW_SQL is tracked
 |-------|-------------|----------|
 | 03    | Done        | BudgetLineItem, BulkOrderRule, CateringOrder, ChartOfAccount, Client |
 | 04    | Done        | ClientContact, ClientInteraction, ClientPreference, CommandBoard, CommandBoardCard |
-| 05    | **CURRENT** | CommandBoardConnection, CommandBoardGroup, CommandBoardLayout, ContractSignature, CycleCountRecord |
-| 06    | Queued      | CycleCountSession, Dish, EmailTemplate, EmailWorkflow, EmployeeAvailability |
+| 05    | Done        | CommandBoardConnection, CommandBoardGroup, CommandBoardLayout, ContractSignature, CycleCountRecord |
+| 06    | **CURRENT** | CycleCountSession, Dish, EmailTemplate, EmailWorkflow, EmployeeAvailability |
 | 07    | Queued      | EmployeeCertification, EmployeeDeduction, Event, EventBudget, EventContract |
 | 08    | Queued      | EventDish, EventGuest, EventImportWorkflow, EventProfitability, EventReport |
 | 09    | Queued      | EventStaff, EventSummary, Ingredient, InventoryItem, InventorySupplier |
 | 10    | Queued      | InventoryTransaction, KitchenTask, LaborBudget, Lead, Menu |
 | 11    | Queued      | MenuDish, OverrideAudit, PayrollApprovalHistory, PayrollPeriod, PayrollRun |
 
-Re-group by Prisma shape if a batch hits awkward FKs. Update the table when batch 05 closes.
+Re-group by Prisma shape if a batch hits awkward FKs. Update the table when batch 06 closes.
 
 ---
 
@@ -96,6 +96,7 @@ These block end-to-end verification for some entities. Do **not** try to fix the
 
 Full write-ups are in the archive. Highlights:
 
+- **BROKEN_PRISMA_READ Batch 05 (2026-04-28)** — `CommandBoardConnectionPrismaStore`, `CommandBoardGroupPrismaStore`, `CommandBoardLayoutPrismaStore` (in `broken-read-batch05-command-board.ts`) + `ContractSignaturePrismaStore`, `CycleCountRecordPrismaStore` (in `broken-read-batch05-contract-cycle.ts`). Wired into `ENTITIES_WITH_SPECIFIC_STORES` and `createPrismaStoreProvider`. Persistence test at `packages/manifest-adapters/__tests__/prisma-store-broken-read-batch05.test.ts` (13 tests, covers tenant scoping, soft-delete via `deletedAt`, JSON pass-through for `viewport`, `String[]` coercion for `visibleCards`, `Prisma.Decimal` passthrough for CycleCountRecord's four decimal columns, default-value handling for relationshipType/visible/positionX/etc.). All three required validations green: `pnpm --filter @repo/manifest-adapters typecheck`, `pnpm --filter @repo/manifest-adapters test` (264 tests across 14 files), `pnpm --filter api typecheck`.
 - **BROKEN_PRISMA_READ Batch 04 (2026-04-28)** — `ClientContactPrismaStore`, `ClientInteractionPrismaStore`, `ClientPreferencePrismaStore` (in `broken-read-batch04-client-trio.ts`) + `CommandBoardPrismaStore`, `CommandBoardCardPrismaStore` (in `broken-read-batch04-command-board.ts`). Wired into `ENTITIES_WITH_SPECIFIC_STORES` and `createPrismaStoreProvider`. Persistence test at `packages/manifest-adapters/__tests__/prisma-store-broken-read-batch04.test.ts` (12 tests, covers tenant scoping, snake/camelCase aliases for `first_name`/`last_name`/`correlation_id`, JSON pass-through for `preferenceValue`/`metadata`, `String[]` tag coercion for CommandBoard, soft-delete via `deletedAt`). All three required validations green: `pnpm --filter @repo/manifest-adapters typecheck`, `pnpm --filter @repo/manifest-adapters test` (251 tests across 13 files), `pnpm --filter api typecheck`.
 - **BROKEN_PRISMA_READ Batch 03 (2026-04-28)** — `BudgetLineItemPrismaStore`, `BulkOrderRulePrismaStore`, `CateringOrderPrismaStore` (in `broken-read-batch03-budget-bulk-catering.ts`) + `ChartOfAccountPrismaStore`, `ClientPrismaStore` (in `broken-read-batch03-chart-client.ts`). Wired into `ENTITIES_WITH_SPECIFIC_STORES` and `createPrismaStoreProvider`. Persistence test at `packages/manifest-adapters/__tests__/prisma-store-broken-read-batch03.test.ts` (10 tests, covers tenant scoping, snake/camelCase aliases, AccountType enum coercion, hard vs. soft delete).
 - **BROKEN_PRISMA_READ Batches 01 + 02 (2026-04-28, repaired in same session)** — earlier "Recently Resolved" claim referenced files that didn't exist on disk; this session actually authored `broken-read-batch01-prepmethod-container.ts`, `broken-read-batch01-waste-workflow.ts`, `broken-read-batch02-admin.ts`, `broken-read-batch02-api-battle-budget.ts`, plus the shared helper module `prisma-stores/shared.ts` (`toDecimalInput`, `toDecimalRequired`, `asJsonInput`, coercers, Sentry-reporting `reportOp`). Six previously-broken imports in `prisma-store.ts` now resolve; `pnpm --filter @repo/manifest-adapters test` is green at 239 tests across 12 files.

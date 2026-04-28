@@ -64,6 +64,15 @@ import {
   CommandBoardCardPrismaStore,
   CommandBoardPrismaStore,
 } from "./prisma-stores/broken-read-batch04-command-board.js";
+import {
+  CommandBoardConnectionPrismaStore,
+  CommandBoardGroupPrismaStore,
+  CommandBoardLayoutPrismaStore,
+} from "./prisma-stores/broken-read-batch05-command-board.js";
+import {
+  ContractSignaturePrismaStore,
+  CycleCountRecordPrismaStore,
+} from "./prisma-stores/broken-read-batch05-contract-cycle.js";
 
 /**
  * Report a silent store error to Sentry without blocking the return path.
@@ -2186,6 +2195,16 @@ export function createPrismaStoreProvider(
         return new CommandBoardPrismaStore(prisma, tenantId);
       case "CommandBoardCard":
         return new CommandBoardCardPrismaStore(prisma, tenantId);
+      case "CommandBoardConnection":
+        return new CommandBoardConnectionPrismaStore(prisma, tenantId);
+      case "CommandBoardGroup":
+        return new CommandBoardGroupPrismaStore(prisma, tenantId);
+      case "CommandBoardLayout":
+        return new CommandBoardLayoutPrismaStore(prisma, tenantId);
+      case "ContractSignature":
+        return new ContractSignaturePrismaStore(prisma, tenantId);
+      case "CycleCountRecord":
+        return new CycleCountRecordPrismaStore(prisma, tenantId);
       default:
         console.error(
           `[createPrismaStoreProvider] No store for entity "${entityName}" — commands will fail`
