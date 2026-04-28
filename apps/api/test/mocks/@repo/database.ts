@@ -115,6 +115,9 @@ export const database: Record<string, unknown> = {
   inventoryTransaction: createMockModel(),
   // Event model for forecasting tests
   event: createMockModel(),
+  // Schedule models
+  schedule: createMockModel(),
+  scheduleShift: createMockModel(),
 };
 
 database.$transaction = vi.fn((fn: (tx: unknown) => unknown) => fn(database));

@@ -21,7 +21,7 @@ In-scope parents (no new BROKEN_PRISMA_READ batches — those are done):
 | 1 | **Proposal** ✅   | tenant_crm       | `ProposalPrismaStore` + `ProposalLineItemPrismaStore` wired; instanceId fixed  |
 | 2 | **PurchaseOrder** ✅ | tenant_inventory | `PurchaseOrderPrismaStore` + `PurchaseOrderItemPrismaStore` wired; instanceId fixed |
 | 3 | **Notification** ✅ | tenant_admin   | `NotificationPrismaStore` wired; instanceId fixed on 3 command routes |
-| 4 | Schedule          | tenant_staff     | `ScheduleShiftPrismaStore` exists (batch 13)     |
+| 4 | **Schedule** ✅   | tenant_staff     | `SchedulePrismaStore` + `ScheduleShiftPrismaStore` wired; instanceId fixed |
 | 5 | Shipment          | tenant_inventory | `ShipmentItemPrismaStore` exists (batch 13)      |
 | 6 | User              | tenant_core      | n/a (high blast radius — auth/session)           |
 
@@ -215,22 +215,49 @@ Knock's cloud API — it does NOT call any of the app's own `/api/collaboration/
 
 ---
 
+## Step 4 — Schedule (Staff) ✅ DONE
+
+**Completed 2026-04-28.** Changes:
+- Added `SchedulePrismaStore` at `packages/manifest-adapters/src/prisma-stores/broken-read-schedule-parent.ts`
+- Wired `Schedule` and `ScheduleShift` into `ENTITIES_WITH_SPECIFIC_STORES` and `createPrismaStoreProvider` switch
+- Fixed `instanceId` on all 3 instance-scoped command routes (update, release, close)
+- Added `apps/api/__tests__/staff/schedules/schedule-end-to-end.test.ts` (9 assertions)
+- All typechecks and tests pass (manifest-adapters: 436 tests, api: 1206 tests)
+
+**Frontend entry:** `apps/app/app/(authenticated)/scheduling/...` calls
+`GET /api/staff/schedules/list` for the index and
+`POST /api/staff/schedules/commands/{create|update|release|close}`
+for actions.
+
+**Canonical routes (under `apps/api/app/api/staff/schedules/`):**
+- `GET .../list` — Prisma (`database.schedule.findMany`) ✅
+- `GET .../[id]` — Prisma (`database.schedule.findFirst`) ✅
+- `POST .../commands/create` — manifest runtime (no instanceId needed) ✅
+- `POST .../commands/update` — manifest runtime (instanceId fixed) ✅
+- `POST .../commands/release` — manifest runtime (instanceId fixed) ✅
+- `POST .../commands/close` — manifest runtime (instanceId fixed) ✅
+
+**Key findings:**
+- Schedule lives in `tenant_staff` schema. Table: `schedules`.
+- `schedule_date` stored as `DateTime @db.Date`; manifest uses ms epoch. Store handles conversion.
+- `published_at` / `published_by` are nullable columns mapped from manifest `publishedAt` / `publishedBy`.
+- Manifest-only fields `notes` and `shiftCount` have no Prisma columns — accepted on write, dropped; returned as defaults on read.
+- **ScheduleShift wiring gap found and fixed:** `ScheduleShiftPrismaStore` (from batch 13) was in `ENTITIES_WITH_SPECIFIC_STORES` but had **no switch case** in `createPrismaStoreProvider`. Added it alongside Schedule.
+- **Blocker #2 polarity bug observed:** The `close` command has `blockNotPublished:block self.status != "published"` which may incorrectly block legitimate close operations due to constraint polarity misclassification. Documented but not fixed per plan rules.
+- **Response format difference:** `apps/api/lib/manifest-response.ts` spreads data objects at the top level (`{success: true, ...data}`) rather than nesting under `data.data`. Tests use `data.schedules` / `data.schedule` accordingly.
+
+---
+
 ## Tracked but not started (in priority order)
 
-These three are part of the same task; do not start them until Proposal,
-PurchaseOrder, **and** Notification are landed and verified.
-
-3. **Schedule** (tenant_staff). `ScheduleShiftPrismaStore` already exists; the
-   parent likely needs the same treatment as Proposal. Confirm read/write split
-   before starting.
-4. **Shipment** (tenant_inventory). `ShipmentItemPrismaStore` exists. Same
+5. **Shipment** (tenant_inventory). `ShipmentItemPrismaStore` exists. Same
    parent treatment.
-5. **User** (tenant_core). High blast radius — touches auth/session. Trace
+6. **User** (tenant_core). High blast radius — touches auth/session. Trace
    tenant-isolation paths first; do not refactor until earlier entities are
    green and you have a written rollback plan.
 
 When you start one of these, lift it into its own numbered step section above,
-identical in shape to Steps 1 and 2.
+identical in shape to Steps 1–4.
 
 ---
 
@@ -276,6 +303,7 @@ Full write-ups live in the archive. Highlights:
 
 - **Proposal parent workflow (completed 2026-04-28).** `ProposalPrismaStore` bridges manifest command writes to Prisma `tenant_crm.proposals`. All 6 status-transition command routes now pass `instanceId` to `runCommand`. `executeManifestCommand` helper also passes `instanceId` for non-create commands (fixes Blocker #1 for all entities using this helper). Batch 13 stores (`ProposalLineItemPrismaStore`, `PurchaseOrderItemPrismaStore`) wired into `createPrismaStoreProvider` switch — they were in `ENTITIES_WITH_SPECIFIC_STORES` but had no switch case.
 - **PurchaseOrder parent workflow (completed 2026-04-28).** `PurchaseOrderPrismaStore` bridges manifest command writes to Prisma `tenant_inventory.purchase_orders`. All 6 instance-scoped command routes (submit, approve, reject, cancel, mark-ordered, mark-received) now pass `instanceId` to `runCommand`. Key finding: frontend uses `/api/procurement/` routes (raw SQL, self-consistent), not the `/api/inventory/` manifest command routes.
+- **Schedule parent workflow (completed 2026-04-28).** `SchedulePrismaStore` bridges manifest command writes to Prisma `tenant_staff.schedules`. All 3 instance-scoped command routes (update, release, close) now pass `instanceId` to `runCommand`. ScheduleShiftPrismaStore wiring gap fixed (was in `ENTITIES_WITH_SPECIFIC_STORES` but had no `createPrismaStoreProvider` switch case). Manifest-only fields (`notes`, `shiftCount`) have no Prisma columns — accepted but dropped on write, returned as defaults on read.
 - **Notification parent workflow (completed 2026-04-28).** `NotificationPrismaStore` bridges manifest command writes to Prisma `tenant_admin.notifications`. All 3 instance-scoped command routes (mark-read, mark-dismissed, remove) now pass `instanceId` to `runCommand`. Key finding: Notification lives in `tenant_admin` (not `tenant_core`); frontend uses Knock SDK directly and does not call the app's notification API routes.
 - **BROKEN_PRISMA_READ Batches 03–13 (closed 2026-04-28).** Twelve mechanical
   batches landed dedicated Prisma stores for AlertsConfig and 50+ other

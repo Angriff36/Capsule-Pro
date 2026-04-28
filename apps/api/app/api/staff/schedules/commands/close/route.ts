@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
 
     const result = await runtime.runCommand("close", body, {
       entityName: "Schedule",
+      ...(body.id ? { instanceId: String(body.id) } : {}),
     });
 
     if (!result.success) {
