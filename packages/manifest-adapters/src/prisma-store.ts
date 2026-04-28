@@ -103,6 +103,17 @@ import {
   EventProfitabilityPrismaStore,
   EventReportPrismaStore,
 } from "./prisma-stores/broken-read-batch08-event-profit-report.js";
+import {
+  EventStaffAssignmentPrismaStore,
+  EventSummaryPrismaStore,
+} from "./prisma-stores/broken-read-batch09-event-staff-summary.js";
+import { IngredientPrismaStore } from "./prisma-stores/broken-read-batch09-ingredient.js";
+export { IngredientPrismaStore };
+import {
+  InventoryItemPrismaStore,
+  InventorySupplierPrismaStore,
+} from "./prisma-stores/broken-read-batch09-inventory.js";
+export { InventoryItemPrismaStore };
 
 /**
  * Report a silent store error to Sentry without blocking the return path.
@@ -641,104 +652,6 @@ export class RecipeVersionPrismaStore implements Store<EntityInstance> {
       totalTimeMinutes: prepTime + cookTime + restTime,
       isVersion1: version.versionNumber === 1,
       isHighDifficulty: (version.difficultyLevel ?? 1) >= 4,
-    };
-  }
-}
-
-/**
- * Prisma-backed store for Ingredient entities
- *
- * Maps Manifest Ingredient entities to the Prisma Ingredient table.
- */
-export class IngredientPrismaStore implements Store<EntityInstance> {
-  constructor(
-    private readonly prisma: PrismaClient,
-    private readonly tenantId: string
-  ) {}
-
-  async getAll(): Promise<EntityInstance[]> {
-    const ingredients = await this.prisma.ingredient.findMany({
-      where: { tenantId: this.tenantId, deletedAt: null },
-    });
-    return ingredients.map((ingredient) =>
-      this.mapToManifestEntity(ingredient)
-    );
-  }
-
-  async getById(id: string): Promise<EntityInstance | undefined> {
-    const ingredient = await this.prisma.ingredient.findFirst({
-      where: { tenantId: this.tenantId, id, deletedAt: null },
-    });
-    return ingredient ? this.mapToManifestEntity(ingredient) : undefined;
-  }
-
-  async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
-    const ingredient = await this.prisma.ingredient.create({
-      data: {
-        tenantId: this.tenantId,
-        id: data.id as string,
-        name: data.name as string,
-        category: (data.category as string) || null,
-        defaultUnitId: (data.defaultUnitId as number) || 1,
-        allergens: (data.allergens as string[]) || [],
-        isActive: (data.isActive as boolean) ?? true,
-      },
-    });
-    return this.mapToManifestEntity(ingredient);
-  }
-
-  async update(
-    id: string,
-    data: Partial<EntityInstance>
-  ): Promise<EntityInstance | undefined> {
-    try {
-      const updated = await this.prisma.ingredient.update({
-        where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: {
-          allergens: data.allergens as string[] | undefined,
-          updatedAt: new Date(),
-        },
-      });
-      return this.mapToManifestEntity(updated);
-    } catch (error) {
-      reportOp(this, "update", error);
-      return undefined;
-    }
-  }
-
-  async delete(id: string): Promise<boolean> {
-    try {
-      await this.prisma.ingredient.update({
-        where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: { deletedAt: new Date() },
-      });
-      return true;
-    } catch (error) {
-      reportOp(this, "delete", error);
-      return false;
-    }
-  }
-
-  async clear(): Promise<void> {
-    await this.prisma.ingredient.updateMany({
-      where: { tenantId: this.tenantId },
-      data: { deletedAt: new Date() },
-    });
-  }
-
-  private mapToManifestEntity(ingredient: Ingredient): EntityInstance {
-    return {
-      id: ingredient.id,
-      tenantId: ingredient.tenantId,
-      name: ingredient.name,
-      category: ingredient.category ?? "",
-      defaultUnitId: ingredient.defaultUnitId,
-      allergens: Array.isArray(ingredient.allergens)
-        ? ingredient.allergens.join(",")
-        : "",
-      isActive: ingredient.isActive,
-      createdAt: ingredient.createdAt.getTime(),
-      updatedAt: ingredient.updatedAt.getTime(),
     };
   }
 }
@@ -1794,6 +1707,12 @@ export function createPrismaStoreProvider(
         return new EventProfitabilityPrismaStore(prisma, tenantId);
       case "EventReport":
         return new EventReportPrismaStore(prisma, tenantId);
+      case "EventStaff":
+        return new EventStaffAssignmentPrismaStore(prisma, tenantId);
+      case "EventSummary":
+        return new EventSummaryPrismaStore(prisma, tenantId);
+      case "InventorySupplier":
+        return new InventorySupplierPrismaStore(prisma, tenantId);
       default:
         console.error(
           `[createPrismaStoreProvider] No store for entity "${entityName}" — commands will fail`
@@ -2683,159 +2602,6 @@ export class StationPrismaStore implements Store<EntityInstance> {
       notes: station.notes ?? "",
       createdAt: station.createdAt.getTime(),
       updatedAt: station.updatedAt.getTime(),
-    };
-  }
-}
-
-/**
- * Prisma-backed store for InventoryItem entities
- *
- * Maps Manifest InventoryItem entities to the Prisma InventoryItem table.
- */
-export class InventoryItemPrismaStore implements Store<EntityInstance> {
-  constructor(
-    private readonly prisma: PrismaClient,
-    private readonly tenantId: string
-  ) {}
-
-  async getAll(): Promise<EntityInstance[]> {
-    const items = await this.prisma.inventoryItem.findMany({
-      where: { tenantId: this.tenantId, deletedAt: null },
-    });
-    return items.map((item) => this.mapToManifestEntity(item));
-  }
-
-  async getById(id: string): Promise<EntityInstance | undefined> {
-    const item = await this.prisma.inventoryItem.findFirst({
-      where: { tenantId: this.tenantId, id, deletedAt: null },
-    });
-    return item ? this.mapToManifestEntity(item) : undefined;
-  }
-
-  async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
-    // Generate ID if not provided (per Manifest Store contract, create() returns entity with id)
-    const id = (data.id as string | undefined) ?? crypto.randomUUID();
-
-    // itemNumber is the SKU/item number (required by Prisma schema)
-    const itemNumber = data.itemNumber as string | undefined;
-    if (!itemNumber) {
-      throw new Error(
-        "InventoryItemPrismaStore.create: missing itemNumber. Provide itemNumber (SKU) in request."
-      );
-    }
-
-    const item = await this.prisma.inventoryItem.create({
-      data: {
-        tenantId: this.tenantId,
-        id,
-        item_number: itemNumber,
-        name: data.name as string,
-        category: (data.category as string) || "",
-        unitCost: data.costPerUnit
-          ? new Prisma.Decimal(data.costPerUnit as number)
-          : new Prisma.Decimal(0),
-        quantityOnHand: data.quantityOnHand
-          ? new Prisma.Decimal(data.quantityOnHand as number)
-          : new Prisma.Decimal(0),
-        reorder_level: data.reorderPoint
-          ? new Prisma.Decimal(data.reorderPoint as number)
-          : new Prisma.Decimal(0),
-        tags:
-          typeof data.allergens === "string"
-            ? data.allergens.split(",").filter(Boolean)
-            : [],
-        fsa_status: null,
-        fsa_temp_logged: null,
-        fsa_allergen_info: null,
-        fsa_traceable: null,
-      },
-    });
-    return this.mapToManifestEntity(item);
-  }
-
-  async update(
-    id: string,
-    data: Partial<EntityInstance>
-  ): Promise<EntityInstance | undefined> {
-    try {
-      const updated = await this.prisma.inventoryItem.update({
-        where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: {
-          name: data.name as string | undefined,
-          category: data.category as string | undefined,
-          unitCost: data.costPerUnit
-            ? new Prisma.Decimal(data.costPerUnit as number)
-            : undefined,
-          quantityOnHand: data.quantityOnHand
-            ? new Prisma.Decimal(data.quantityOnHand as number)
-            : undefined,
-          reorder_level: data.reorderPoint
-            ? new Prisma.Decimal(data.reorderPoint as number)
-            : undefined,
-          tags:
-            data.allergens !== undefined
-              ? typeof data.allergens === "string"
-                ? data.allergens.split(",").filter(Boolean)
-                : []
-              : undefined,
-          updatedAt: new Date(),
-        },
-      });
-      return this.mapToManifestEntity(updated);
-    } catch (error) {
-      reportOp(this, "update", error);
-      return undefined;
-    }
-  }
-
-  async delete(id: string): Promise<boolean> {
-    try {
-      await this.prisma.inventoryItem.update({
-        where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: { deletedAt: new Date() },
-      });
-      return true;
-    } catch (error) {
-      reportOp(this, "delete", error);
-      return false;
-    }
-  }
-
-  async clear(): Promise<void> {
-    await this.prisma.inventoryItem.updateMany({
-      where: { tenantId: this.tenantId },
-      data: { deletedAt: new Date() },
-    });
-  }
-
-  private mapToManifestEntity(item: InventoryItem): EntityInstance {
-    const quantityOnHand = Number(item.quantityOnHand ?? 0);
-    return {
-      id: item.id,
-      tenantId: item.tenantId,
-      name: item.name,
-      itemType: "ingredient",
-      itemNumber: item.item_number,
-      category: item.category ?? "",
-      baseUnit: "each",
-      quantityOnHand,
-      quantityReserved: 0, // Not tracked in Prisma
-      quantityAvailable: quantityOnHand, // Computed field
-      parLevel: 0, // Not tracked in Prisma
-      reorderPoint: Number(item.reorder_level ?? 0),
-      reorderQuantity: 0, // Not tracked in Prisma
-      costPerUnit: Number(item.unitCost ?? 0),
-      supplierId: "", // Not tracked in Prisma
-      locationId: "", // Not tracked in Prisma
-      allergens: Array.isArray(item.tags) ? item.tags.join(",") : "",
-      isActive: item.deletedAt === null,
-      lastCountedAt: 0, // Not tracked in Prisma
-      fsaStatus: item.fsa_status ?? "unknown",
-      fsaTempLogged: item.fsa_temp_logged ?? false,
-      fsaAllergenInfo: item.fsa_allergen_info ?? false,
-      fsaTraceable: item.fsa_traceable ?? false,
-      createdAt: item.createdAt.getTime(),
-      updatedAt: item.updatedAt.getTime(),
     };
   }
 }
