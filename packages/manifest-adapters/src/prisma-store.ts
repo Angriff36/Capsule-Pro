@@ -114,6 +114,11 @@ import {
   InventorySupplierPrismaStore,
 } from "./prisma-stores/broken-read-batch09-inventory.js";
 export { InventoryItemPrismaStore };
+import { InventoryTransactionPrismaStore } from "./prisma-stores/broken-read-batch10-inventory-transaction.js";
+import {
+  LaborBudgetPrismaStore,
+  LeadPrismaStore,
+} from "./prisma-stores/broken-read-batch10-labor-budget-lead.js";
 
 /**
  * Report a silent store error to Sentry without blocking the return path.
@@ -1713,6 +1718,12 @@ export function createPrismaStoreProvider(
         return new EventSummaryPrismaStore(prisma, tenantId);
       case "InventorySupplier":
         return new InventorySupplierPrismaStore(prisma, tenantId);
+      case "InventoryTransaction":
+        return new InventoryTransactionPrismaStore(prisma, tenantId);
+      case "LaborBudget":
+        return new LaborBudgetPrismaStore(prisma, tenantId);
+      case "Lead":
+        return new LeadPrismaStore(prisma, tenantId);
       default:
         console.error(
           `[createPrismaStoreProvider] No store for entity "${entityName}" — commands will fail`
