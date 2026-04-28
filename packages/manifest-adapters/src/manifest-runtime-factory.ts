@@ -208,6 +208,7 @@ const ENTITIES_WITH_SPECIFIC_STORES = new Set([
   "VendorCatalog",
   "VendorContract",
   "PurchaseOrderItem",
+  "Proposal",
   "ProposalLineItem",
   "ScheduleShift",
   "ShipmentItem",

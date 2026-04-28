@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
 
     const result = await runtime.runCommand("markViewed", body, {
       entityName: "Proposal",
+      ...(body.id ? { instanceId: String(body.id) } : {}),
     });
 
     if (!result.success) {

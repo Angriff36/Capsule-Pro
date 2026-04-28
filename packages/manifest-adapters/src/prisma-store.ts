@@ -134,6 +134,11 @@ import {
   TimecardEditRequestPrismaStore,
   TrainingAssignmentPrismaStore,
 } from "./prisma-stores/broken-read-batch12-staff-time.js";
+import {
+  PurchaseOrderItemPrismaStore,
+  ProposalLineItemPrismaStore,
+} from "./prisma-stores/broken-read-batch13-order-proposal.js";
+import { ProposalPrismaStore } from "./prisma-stores/broken-read-proposal-parent.js";
 
 /**
  * Report a silent store error to Sentry without blocking the return path.
@@ -1757,6 +1762,12 @@ export function createPrismaStoreProvider(
         return new TimecardEditRequestPrismaStore(prisma, tenantId);
       case "TrainingAssignment":
         return new TrainingAssignmentPrismaStore(prisma, tenantId);
+      case "Proposal":
+        return new ProposalPrismaStore(prisma, tenantId);
+      case "ProposalLineItem":
+        return new ProposalLineItemPrismaStore(prisma, tenantId);
+      case "PurchaseOrderItem":
+        return new PurchaseOrderItemPrismaStore(prisma, tenantId);
       default:
         console.error(
           `[createPrismaStoreProvider] No store for entity "${entityName}" — commands will fail`
