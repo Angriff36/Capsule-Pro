@@ -1,5 +1,6 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
 import { toast } from "sonner";
 
 // Types
@@ -165,7 +166,7 @@ export async function getBudgets(
     params.set("page", String(filters.page || 1));
     params.set("limit", String(filters.limit || 50));
 
-    const response = await fetch(`${API_BASE}?${params.toString()}`);
+    const response = await apiFetch(`${API_BASE}?${params.toString()}`);
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message || "Failed to fetch budgets");
@@ -181,7 +182,7 @@ export async function getBudgets(
 
 export async function getBudget(budgetId: string): Promise<EventBudget> {
   try {
-    const response = await fetch(`${API_BASE}/${budgetId}`);
+    const response = await apiFetch(`${API_BASE}/${budgetId}`);
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message || "Failed to fetch budget");
@@ -198,7 +199,7 @@ export async function createBudget(
   input: CreateEventBudgetInput
 ): Promise<EventBudget> {
   try {
-    const response = await fetch(API_BASE, {
+    const response = await apiFetch(API_BASE, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(input),
@@ -221,7 +222,7 @@ export async function updateBudget(
   input: UpdateEventBudgetInput
 ): Promise<EventBudget> {
   try {
-    const response = await fetch(`${API_BASE}/${budgetId}`, {
+    const response = await apiFetch(`${API_BASE}/${budgetId}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(input),
@@ -241,7 +242,7 @@ export async function updateBudget(
 
 export async function deleteBudget(budgetId: string): Promise<void> {
   try {
-    const response = await fetch(`${API_BASE}/${budgetId}`, {
+    const response = await apiFetch(`${API_BASE}/${budgetId}`, {
       method: "DELETE",
     });
 
@@ -260,7 +261,7 @@ export async function getLineItems(
   budgetId: string
 ): Promise<BudgetLineItem[]> {
   try {
-    const response = await fetch(`${API_BASE}/${budgetId}/line-items`);
+    const response = await apiFetch(`${API_BASE}/${budgetId}/line-items`);
     if (!response.ok) {
       const error = await response.json();
       throw new Error(error.message || "Failed to fetch line items");
@@ -279,7 +280,7 @@ export async function createLineItem(
   input: CreateBudgetLineItemInput
 ): Promise<BudgetLineItem> {
   try {
-    const response = await fetch(`${API_BASE}/${budgetId}/line-items`, {
+    const response = await apiFetch(`${API_BASE}/${budgetId}/line-items`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(input),
@@ -303,7 +304,7 @@ export async function updateLineItem(
   input: UpdateBudgetLineItemInput
 ): Promise<BudgetLineItem> {
   try {
-    const response = await fetch(
+    const response = await apiFetch(
       `${API_BASE}/${budgetId}/line-items/${lineItemId}`,
       {
         method: "PUT",
@@ -329,7 +330,7 @@ export async function deleteLineItem(
   lineItemId: string
 ): Promise<void> {
   try {
-    const response = await fetch(
+    const response = await apiFetch(
       `${API_BASE}/${budgetId}/line-items/${lineItemId}`,
       { method: "DELETE" }
     );

@@ -30,6 +30,7 @@ test.describe("AI Event Setup — End-to-End", () => {
     await expect(
       page
         .getByRole("heading", { name: /capsule/i })
+        .first()
         .or(page.getByText(/capsule/i))
     ).toBeVisible({ timeout: 15_000 });
   });

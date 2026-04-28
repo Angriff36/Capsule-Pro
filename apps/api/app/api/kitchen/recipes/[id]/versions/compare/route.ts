@@ -59,7 +59,7 @@ interface RecipeVersionCompare {
 
 export async function GET(
   request: Request,
-  { params }: { params: Promise<{ recipeId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { orgId } = await auth();
   if (!orgId) {
@@ -71,7 +71,7 @@ export async function GET(
     return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
   }
 
-  const { recipeId } = await params;
+  const { id } = await params;
   const { searchParams } = new URL(request.url);
   const fromId = searchParams.get("from");
   const toId = searchParams.get("to");
@@ -135,7 +135,7 @@ export async function GET(
         notes
       FROM tenant_kitchen.recipe_versions
       WHERE tenant_id = ${tenantId}::uuid
-        AND recipe_id = ${recipeId}::uuid
+        AND recipe_id = ${id}::uuid
         AND id IN (${fromId}::uuid, ${toId}::uuid)
     `;
 

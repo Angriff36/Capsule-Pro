@@ -19,7 +19,7 @@ interface RestoreVersionRequest {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ recipeId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { orgId, userId } = await auth();
@@ -32,7 +32,7 @@ export async function POST(
       return manifestErrorResponse("Tenant not found", 400);
     }
 
-    const { recipeId } = await params;
+    const { id: recipeId } = await params;
     const body: RestoreVersionRequest = await request.json();
 
     if (!body.sourceVersionId) {

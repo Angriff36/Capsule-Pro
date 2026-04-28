@@ -54,7 +54,7 @@ interface RecipeVersionDetail {
 
 export async function GET(
   _request: Request,
-  { params }: { params: Promise<{ recipeId: string; versionId: string }> }
+  { params }: { params: Promise<{ id: string; versionId: string }> }
 ) {
   const { orgId } = await auth();
   if (!orgId) {
@@ -66,7 +66,7 @@ export async function GET(
     return NextResponse.json({ error: "Tenant not found" }, { status: 404 });
   }
 
-  const { recipeId, versionId } = await params;
+  const { id, versionId } = await params;
 
   try {
     // Fetch version details
@@ -114,7 +114,7 @@ export async function GET(
       FROM tenant_kitchen.recipe_versions
       WHERE tenant_id = ${tenantId}::uuid
         AND id = ${versionId}::uuid
-        AND recipe_id = ${recipeId}::uuid
+        AND recipe_id = ${id}::uuid
     `;
 
     if (versionResult.length === 0) {

@@ -137,10 +137,10 @@ const calculateRecipeCostData = async (
  */
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ recipeId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { recipeId } = await params;
+    const { id: recipeId } = await params;
     const recipeVersionId = recipeId;
     const { orgId } = await auth();
 

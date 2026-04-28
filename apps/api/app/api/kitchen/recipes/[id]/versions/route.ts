@@ -5,17 +5,17 @@ import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
 
 /**
- * GET /api/kitchen/recipes/:recipeId/versions
+ * GET /api/kitchen/recipes/:id/versions
  *
  * Returns all non-deleted versions for a recipe, ordered by version_number DESC.
  * Shape: RecipeVersionRow[] — consumed by the History tab in recipe-detail-tabs.tsx.
  */
 export async function GET(
   _request: Request,
-  { params }: { params: Promise<{ recipeId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { recipeId } = await params;
+    const { id } = await params;
     const { orgId } = await auth();
 
     if (!orgId) {
@@ -72,7 +72,7 @@ export async function GET(
     return NextResponse.json(rows);
   } catch (error) {
     console.error(
-      "[GET /api/kitchen/recipes/:recipeId/versions] Error:",
+      "[GET /api/kitchen/recipes/:id/versions] Error:",
       error
     );
     captureException(error);

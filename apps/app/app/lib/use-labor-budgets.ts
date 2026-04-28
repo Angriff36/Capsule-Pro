@@ -1,5 +1,7 @@
 "use client";
 
+import { apiFetch } from "@/app/lib/api";
+
 // Type definitions and API client functions for Labor Budget Management
 
 export type BudgetType = "event" | "week" | "month";
@@ -128,7 +130,7 @@ export async function getBudgets(
     params.set("status", filters.status);
   }
 
-  const response = await fetch(`${API_BASE}?${params.toString()}`);
+  const response = await apiFetch(`${API_BASE}?${params.toString()}`);
   if (!response.ok) {
     throw new Error(`Failed to fetch budgets: ${response.statusText}`);
   }
@@ -143,7 +145,7 @@ export async function getBudgets(
 export async function getBudgetById(
   id: string
 ): Promise<BudgetWithUtilization> {
-  const response = await fetch(`${API_BASE}/${id}`);
+  const response = await apiFetch(`${API_BASE}/${id}`);
   if (!response.ok) {
     throw new Error(`Failed to fetch budget: ${response.statusText}`);
   }
@@ -158,7 +160,7 @@ export async function getBudgetById(
 export async function createBudget(
   input: CreateBudgetInput
 ): Promise<LaborBudget> {
-  const response = await fetch(API_BASE, {
+  const response = await apiFetch(API_BASE, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(input),
@@ -180,7 +182,7 @@ export async function updateBudget(
   id: string,
   updates: UpdateBudgetInput
 ): Promise<LaborBudget> {
-  const response = await fetch(`${API_BASE}/${id}`, {
+  const response = await apiFetch(`${API_BASE}/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(updates),
@@ -199,7 +201,7 @@ export async function updateBudget(
  * Delete (soft delete) a labor budget
  */
 export async function deleteBudget(id: string): Promise<{ success: boolean }> {
-  const response = await fetch(`${API_BASE}/${id}`, {
+  const response = await apiFetch(`${API_BASE}/${id}`, {
     method: "DELETE",
   });
 
@@ -227,7 +229,7 @@ export async function getBudgetAlerts(
     params.set("alertType", filters.alertType);
   }
 
-  const response = await fetch(`${API_BASE}/alerts?${params.toString()}`);
+  const response = await apiFetch(`${API_BASE}/alerts?${params.toString()}`);
   if (!response.ok) {
     throw new Error(`Failed to fetch alerts: ${response.statusText}`);
   }
@@ -242,7 +244,7 @@ export async function getBudgetAlerts(
 export async function acknowledgeAlert(
   alertId: string
 ): Promise<{ success: boolean }> {
-  const response = await fetch(`${API_BASE}/alerts`, {
+  const response = await apiFetch(`${API_BASE}/alerts`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ alertId, action: "acknowledge" }),
@@ -261,7 +263,7 @@ export async function acknowledgeAlert(
 export async function resolveAlert(
   alertId: string
 ): Promise<{ success: boolean }> {
-  const response = await fetch(`${API_BASE}/alerts`, {
+  const response = await apiFetch(`${API_BASE}/alerts`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ alertId, action: "resolve" }),

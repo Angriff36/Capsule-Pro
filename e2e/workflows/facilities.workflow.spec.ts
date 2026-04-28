@@ -86,7 +86,7 @@ test.describe("Facilities: Add Facility creation backpressure", () => {
 
     // Heading proves the page rendered
     await expect(
-      page.getByRole("heading", { name: /^facilities$/i })
+      page.getByRole("heading", { name: /^facilities$/i }).first()
     ).toBeVisible({ timeout: 15_000 });
 
     // The CTA must exist before any subsequent test can rely on it.

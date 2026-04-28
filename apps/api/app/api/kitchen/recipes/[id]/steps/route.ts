@@ -40,15 +40,15 @@ export interface RecipeStepsResponse {
 }
 
 /**
- * GET /api/kitchen/recipes/[recipeId]/steps
+ * GET /api/kitchen/recipes/[id]/steps
  * Fetch recipe steps for the latest version of a recipe
  */
 export async function GET(
   _request: Request,
-  { params }: { params: Promise<{ recipeId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { recipeId } = await params;
+    const { id: recipeId } = await params;
     const { orgId } = await auth();
 
     if (!orgId) {
@@ -59,7 +59,7 @@ export async function GET(
 
     // Fetch recipe
     const recipe = await database.recipe.findFirst({
-      where: { tenantId, id: recipeId, deletedAt: null },
+      where: { tenantId, id, deletedAt: null },
       select: { id: true, name: true, description: true },
     });
 
@@ -69,7 +69,7 @@ export async function GET(
 
     // Fetch latest recipe version (replaces LATERAL JOIN)
     const latestVersion = await database.recipeVersion.findFirst({
-      where: { tenantId, recipeId, deletedAt: null },
+      where: { tenantId, recipeId: id, deletedAt: null },
       orderBy: { versionNumber: "desc" },
       select: {
         id: true,

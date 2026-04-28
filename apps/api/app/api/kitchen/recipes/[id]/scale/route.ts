@@ -86,10 +86,10 @@ const scaleRecipeCost = async (
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ recipeId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { recipeId } = await params;
+    const { id: recipeId } = await params;
     const { orgId } = await auth();
 
     if (!orgId) {
@@ -213,10 +213,10 @@ export async function GET(
  */
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ recipeId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { recipeId } = await params;
+    const { id: recipeId } = await params;
     const recipeVersionId = recipeId;
     const body = await request.json();
     const { targetPortions, currentYield } = body;
@@ -257,7 +257,7 @@ export async function POST(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ recipeId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { orgId, userId } = await auth();

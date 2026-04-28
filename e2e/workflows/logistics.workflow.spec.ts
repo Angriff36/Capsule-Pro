@@ -62,7 +62,7 @@ test.describe("Logistics: New Route creation backpressure", () => {
 
     // Heading proves the page rendered server-side
     await expect(
-      page.getByRole("heading", { name: /delivery routes/i })
+      page.getByRole("heading", { name: /delivery routes/i }).first()
     ).toBeVisible({ timeout: 15_000 });
 
     // The CTA must exist before any subsequent test can rely on it
@@ -82,7 +82,7 @@ test.describe("Logistics: New Route creation backpressure", () => {
     await page.getByRole("button", { name: /new route/i }).click();
     await expect(page.getByRole("dialog")).toBeVisible({ timeout: 8000 });
     await expect(
-      page.getByRole("heading", { name: /create new route/i })
+      page.getByRole("heading", { name: /create new route/i }).first()
     ).toBeVisible({ timeout: 5000 });
     log.ok("Dialog opened");
 

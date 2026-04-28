@@ -24,15 +24,15 @@ export interface RecipeIngredient {
 }
 
 /**
- * GET /api/kitchen/recipes/[recipeId]/ingredients
+ * GET /api/kitchen/recipes/[id]/ingredients
  * Fetch ingredients for the latest version of a recipe
  */
 export async function GET(
   _request: Request,
-  { params }: { params: Promise<{ recipeId: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { recipeId } = await params;
+    const { id } = await params;
     const { orgId } = await auth();
 
     if (!orgId) {
@@ -43,7 +43,7 @@ export async function GET(
 
     // Verify recipe exists
     const recipe = await database.recipe.findFirst({
-      where: { tenantId, id: recipeId, deletedAt: null },
+      where: { tenantId, id, deletedAt: null },
       select: { id: true },
     });
 
@@ -53,7 +53,7 @@ export async function GET(
 
     // Fetch latest recipe version (replaces LATERAL JOIN)
     const latestVersion = await database.recipeVersion.findFirst({
-      where: { tenantId, recipeId, deletedAt: null },
+      where: { tenantId, recipeId: id, deletedAt: null },
       orderBy: { versionNumber: "desc" },
       select: { id: true },
     });
