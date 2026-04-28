@@ -125,6 +125,15 @@ import {
   PayrollPeriodPrismaStore,
   PayrollRunPrismaStore,
 } from "./prisma-stores/broken-read-batch11-payroll.js";
+import {
+  PrepCommentPrismaStore,
+  PricingTierPrismaStore,
+} from "./prisma-stores/broken-read-batch12-prep-pricing.js";
+import {
+  TimeEntryPrismaStore,
+  TimecardEditRequestPrismaStore,
+  TrainingAssignmentPrismaStore,
+} from "./prisma-stores/broken-read-batch12-staff-time.js";
 
 /**
  * Report a silent store error to Sentry without blocking the return path.
@@ -1738,6 +1747,16 @@ export function createPrismaStoreProvider(
         return new PayrollPeriodPrismaStore(prisma, tenantId);
       case "PayrollRun":
         return new PayrollRunPrismaStore(prisma, tenantId);
+      case "PrepComment":
+        return new PrepCommentPrismaStore(prisma, tenantId);
+      case "PricingTier":
+        return new PricingTierPrismaStore(prisma, tenantId);
+      case "TimeEntry":
+        return new TimeEntryPrismaStore(prisma, tenantId);
+      case "TimecardEditRequest":
+        return new TimecardEditRequestPrismaStore(prisma, tenantId);
+      case "TrainingAssignment":
+        return new TrainingAssignmentPrismaStore(prisma, tenantId);
       default:
         console.error(
           `[createPrismaStoreProvider] No store for entity "${entityName}" — commands will fail`
