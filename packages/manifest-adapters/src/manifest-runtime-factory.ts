@@ -194,6 +194,10 @@ const ENTITIES_WITH_SPECIFIC_STORES = new Set([
   "InventoryTransaction",
   "LaborBudget",
   "Lead",
+  "OverrideAudit",
+  "PayrollApprovalHistory",
+  "PayrollPeriod",
+  "PayrollRun",
 ]);
 
 /** Default precompiled IR path (relative to monorepo root). */

@@ -1,52 +1,25 @@
 # Capsule-Pro Implementation Plan — Live Queue
 
-> **Last updated:** 2026-04-28 (batch 10 closed — InventoryTransaction, LaborBudget, Lead stores landed; KitchenTask & Menu already had inline stores; ENTITIES_WITH_SPECIFIC_STORES gap for batches 06–09 fixed; batch 11 now current).
+> **Last updated:** 2026-04-28 (batch 11 closed — OverrideAudit, PayrollApprovalHistory, PayrollPeriod, PayrollRun stores landed; MenuDish already had inline store — test coverage added; batch 12 now current).
 > **Convention:** this file is the **live queue only**. Completed pass write-ups are archived, not appended here. See the **Archive Map** at the bottom for where to look up history.
 
 ---
 
-## Current Task — BROKEN_PRISMA_READ Batch 11
+## Current Task — BROKEN_PRISMA_READ Batch 12 (TBD)
 
-Implement batch 11 only:
+Batch 11 closed. The audit temp file (`.manifest-persistence-audit-temp.json`) is no longer available — a fresh audit is needed to determine the remaining BROKEN_PRISMA_READ entities. Run a scan comparing `ENTITIES_WITH_SPECIFIC_STORES` entries against manifest entities that still fall back to `PrismaJsonStore` to identify the next batch.
 
-- MenuDish
-- OverrideAudit
-- PayrollApprovalHistory
-- PayrollPeriod
-- PayrollRun
-
-Use the AlertsConfig / batch01–batch10 repair pattern (see `AGENTS.md` → **Manifest Persistence Repair Rules**, the existing stores in `packages/manifest-adapters/src/prisma-stores/`, and the persistence test at `packages/manifest-adapters/__tests__/prisma-store-broken-read-batch10.test.ts`).
-
-**Order of work:** complete **MenuDish** first as the representative entity. If its store + wiring + persistence test pass, continue with the rest of batch 11 in alphabetical order.
+Candidates from the manifest IR that may still need stores: PrepComment, PricingTier, ProposalLineItem, PurchaseOrderItem, PurchaseRequisition, ScheduleShift, ShipmentItem, TimeEntry, TimecardEditRequest, TrainingAssignment, TrainingModule, VarianceReport, VendorCatalog, VendorContract — verify against Prisma schema before batching.
 
 ### Required verification
 
-Run all three before marking the batch done:
+Run all three before marking any batch done:
 
 ```sh
 pnpm --filter @repo/manifest-adapters typecheck
 pnpm --filter @repo/manifest-adapters test
 pnpm --filter api typecheck
 ```
-
-The persistence test (one file per batch in `packages/manifest-adapters/__tests__/`) must contain one `it(...)` per entity and exercise tenant scoping + `create → getAll/getById` round-trips against mocked Prisma model accessors.
-
-### Hard rules (do not break)
-
-- Do **not** modify Manifest runtime, generator, IR compiler, or constraint polarity in this batch. Those are tracked separately under **Known Blockers**.
-- Do **not** touch BYPASS routes. They are intentionally out of the manifest pipeline.
-- Do **not** change `executeManifestCommand` semantics or how `instanceId` is threaded — that is a generator-level fix (Blocker #1).
-
-### Allowed changes (per entity)
-
-1. Add a dedicated `PrismaStore` in `packages/manifest-adapters/src/prisma-stores/broken-read-batch11-*.ts` (group entities by Prisma shape). Reuse the helpers from `prisma-stores/shared.ts`.
-2. Add the `case` for the entity in `createPrismaStoreProvider` in `prisma-store.ts`.
-3. Add a targeted persistence test in `packages/manifest-adapters/__tests__/prisma-store-broken-read-batch11.test.ts` with `vi.hoisted` mocks per Prisma model accessor.
-4. Use `toDecimalInput()` for nullable `Decimal` columns and `toDecimalRequired()` for non-null ones.
-
-### SEMANTIC_BLOCKER handling
-
-If an entity in this batch lacks a usable `create` command, depends on an instance-scoped command whose generated route omits `instanceId` (Blocker #1), triggers `block*` constraint polarity issues (Blocker #2), or otherwise needs a runtime / generator / manifest semantic change to verify end-to-end — mark it **SEMANTIC_BLOCKER**, leave the Prisma store wired, document the blocker line under **Known Blockers**, and continue with the next entity.
 
 ---
 
@@ -64,7 +37,7 @@ Audit source: `.manifest-persistence-audit-temp.json`. BROKEN_RAW_SQL is tracked
 | 08    | Done        | EventDish, EventGuest, EventImportWorkflow, EventProfitability, EventReport |
 | 09    | Done        | EventStaff (→EventStaffAssignment), EventSummary, Ingredient, InventoryItem, InventorySupplier |
 | 10    | Done        | InventoryTransaction, KitchenTask, LaborBudget, Lead, Menu |
-| 11    | **CURRENT** | MenuDish, OverrideAudit, PayrollApprovalHistory, PayrollPeriod, PayrollRun |
+| 11    | Done        | MenuDish, OverrideAudit, PayrollApprovalHistory, PayrollPeriod, PayrollRun |
 
 Re-group by Prisma shape if a batch hits awkward FKs. Update the table when batch 10 closes.
 
@@ -88,7 +61,7 @@ These block end-to-end verification for some entities. Do **not** try to fix the
 
 Full write-ups are in the archive. Highlights:
 
-- **BROKEN_PRISMA_READ Batch 10 (2026-04-28)** — `InventoryTransactionPrismaStore` (in `broken-read-batch10-inventory-transaction.ts`) — mixed snake_case/camelCase Prisma fields (`unit_cost`, `total_cost`, `transaction_date`, `storage_location_id`, `employee_id` without `@map`). No `deletedAt`/`updatedAt` columns — hard-delete semantics, no soft-delete filtering in getAll/getById. + `LaborBudgetPrismaStore`, `LeadPrismaStore` (in `broken-read-batch10-labor-budget-lead.ts`) — clean camelCase fields with `@map`. `LaborBudget` with 3 boolean threshold fields, required `budgetTarget` Decimal, nullable `actualSpend` Decimal, `@db.Date` period fields. `Lead` with nullable `estimatedValue` Decimal, `@db.Date` eventDate, `@@unique([id])` in addition to composite key. KitchenTask and Menu already had working inline stores — only test coverage added. Fixed missing `ENTITIES_WITH_SPECIFIC_STORES` entries for batch06–09 entities (CycleCountSession, EmailWorkflow, EmployeeAvailability, EmployeeCertification, EmployeeDeduction, EventBudget, EventContract, EventDish, EventGuest, EventImportWorkflow, EventProfitability, EventReport, EventStaff, EventSummary, InventorySupplier, AllergenWarning). Persistence test at `packages/manifest-adapters/__tests__/prisma-store-broken-read-batch10.test.ts` (21 tests). All three validations green: `pnpm --filter @repo/manifest-adapters typecheck`, `pnpm --filter @repo/manifest-adapters test` (352 tests across 19 files), `pnpm --filter api typecheck`.
+- **BROKEN_PRISMA_READ Batch 11 (2026-04-28)** — `OverrideAuditPrismaStore` (in `broken-read-batch11-override-audit.ts`) — append-only audit table in `tenant_kitchen`, `@@unique([tenantId, id])` (not `@@id`), no `deletedAt`/`updatedAt` — hard-delete semantics. + `PayrollApprovalHistoryPrismaStore` (in `broken-read-batch11-payroll.ts`) — maps to `ApprovalHistory` Prisma model with polymorphic `entityType: "payroll_run"` filter, no `deletedAt`. + `PayrollPeriodPrismaStore` — snake_case fields (`tenant_id`, `period_start`, `period_end`, `deleted_at` without `@map`), composite key `tenant_id_id`, soft-delete via `deleted_at`. + `PayrollRunPrismaStore` — snake_case fields, composite key `tenant_id_id`, Decimal fields (`total_gross`, `total_deductions`, `total_net`) via `toDecimalRequired()`, soft-delete. MenuDish already had working inline store — test coverage added. Persistence test at `packages/manifest-adapters/__tests__/prisma-store-broken-read-batch11.test.ts` (25 tests). All three validations green: `pnpm --filter @repo/manifest-adapters typecheck`, `pnpm --filter @repo/manifest-adapters test` (377 tests across 20 files), `pnpm --filter api typecheck`.
 - **BROKEN_PRISMA_READ Batch 09 (2026-04-28)** — `EventStaffAssignmentPrismaStore`, `EventSummaryPrismaStore` (in `broken-read-batch09-event-staff-summary.ts`) — `EventStaffAssignment` (manifest entity "EventStaff") with nullable DateTime fields (`startTime`, `endTime`), camelCase Prisma fields. `EventSummary` with nullable Json fields (`highlights`, `issues`, `financialPerformance`, `clientFeedback`, `insights`), nullable `overallSummary`, `generationDurationMs`. + `IngredientPrismaStore` (in `broken-read-batch09-ingredient.ts`) — replaced old inline store. Nullable `Decimal` (`densityGPerMl`), `String[]` (`allergens`), `Boolean` (`isActive`). + `InventoryItemPrismaStore`, `InventorySupplierPrismaStore` (in `broken-read-batch09-inventory.ts`) — replaced old inline `InventoryItemPrismaStore`. Mixed camelCase/snake_case Prisma field names. `InventoryItem` with required `Decimal` fields via `toDecimalRequired` (`unitCost`, `quantityOnHand`, `parLevel`, `reorder_level`), `String[]` (`tags`), `fsa_*` fields. `InventorySupplier` with required `Json` (`connectorCredentials`), `String[]` (`tags`), mixed naming (`supplier_number`, `contact_person`, `payment_terms` as snake_case Prisma fields). Persistence test at `packages/manifest-adapters/__tests__/prisma-store-broken-read-batch09.test.ts` (22 tests). All three validations green: `pnpm --filter @repo/manifest-adapters typecheck`, `pnpm --filter @repo/manifest-adapters test` (331 tests across 18 files), `pnpm --filter api typecheck`.
 
 ---

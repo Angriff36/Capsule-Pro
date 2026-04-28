@@ -119,6 +119,12 @@ import {
   LaborBudgetPrismaStore,
   LeadPrismaStore,
 } from "./prisma-stores/broken-read-batch10-labor-budget-lead.js";
+import { OverrideAuditPrismaStore } from "./prisma-stores/broken-read-batch11-override-audit.js";
+import {
+  PayrollApprovalHistoryPrismaStore,
+  PayrollPeriodPrismaStore,
+  PayrollRunPrismaStore,
+} from "./prisma-stores/broken-read-batch11-payroll.js";
 
 /**
  * Report a silent store error to Sentry without blocking the return path.
@@ -1724,6 +1730,14 @@ export function createPrismaStoreProvider(
         return new LaborBudgetPrismaStore(prisma, tenantId);
       case "Lead":
         return new LeadPrismaStore(prisma, tenantId);
+      case "OverrideAudit":
+        return new OverrideAuditPrismaStore(prisma, tenantId);
+      case "PayrollApprovalHistory":
+        return new PayrollApprovalHistoryPrismaStore(prisma, tenantId);
+      case "PayrollPeriod":
+        return new PayrollPeriodPrismaStore(prisma, tenantId);
+      case "PayrollRun":
+        return new PayrollRunPrismaStore(prisma, tenantId);
       default:
         console.error(
           `[createPrismaStoreProvider] No store for entity "${entityName}" — commands will fail`
