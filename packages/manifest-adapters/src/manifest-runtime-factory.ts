@@ -203,6 +203,14 @@ const ENTITIES_WITH_SPECIFIC_STORES = new Set([
   "TimeEntry",
   "TimecardEditRequest",
   "TrainingAssignment",
+  "TrainingModule",
+  "VarianceReport",
+  "VendorCatalog",
+  "VendorContract",
+  "PurchaseOrderItem",
+  "ProposalLineItem",
+  "ScheduleShift",
+  "ShipmentItem",
 ]);
 
 /** Default precompiled IR path (relative to monorepo root). */

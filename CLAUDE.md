@@ -155,6 +155,6 @@ Last: [first session]
 
 ## Last Session Bridge
 [auto-bridge snapshot @ 10 changes]
-Files: IMPLEMENTATION_PLAN.md (edit), packages/manifest-adapters/__tests__/prisma-store-broken-read-batch11.test.ts (create), packages/manifest-adapters/src/manifest-runtime-factory.ts (edit), packages/manifest-adapters/src/prisma-store.ts (edit), packages/manifest-adapters/src/prisma-stores/broken-read-batch11-payroll.ts (create), packages/manifest-adapters/src/prisma-stores/broken-read-batch11-override-audit.ts (create)
+Files: IMPLEMENTATION_PLAN.md (edit), packages/manifest-adapters/__tests__/prisma-store-broken-read-batch12.test.ts (edit), packages/manifest-adapters/__tests__/prisma-store-broken-read-batch12.test.ts (create), packages/manifest-adapters/src/manifest-runtime-factory.ts (edit), packages/manifest-adapters/src/prisma-store.ts (edit), packages/manifest-adapters/src/prisma-stores/broken-read-batch12-staff-time.ts (create), packages/manifest-adapters/src/prisma-stores/broken-read-batch12-prep-pricing.ts (create)
 
 # === END COGNILAYER ===

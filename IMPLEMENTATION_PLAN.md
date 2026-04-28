@@ -1,15 +1,15 @@
 # Capsule-Pro Implementation Plan — Live Queue
 
-> **Last updated:** 2026-04-28 (batch 12 closed — PrepComment, PricingTier, TimeEntry, TimecardEditRequest, TrainingAssignment stores landed; batch 13 now current).
+> **Last updated:** 2026-04-28 (batch 13 closed — TrainingModule, VarianceReport, VendorCatalog, VendorContract, PurchaseOrderItem, ProposalLineItem, ScheduleShift, ShipmentItem stores landed; all BROKEN_PRISMA_READ candidates now have stores).
 > **Convention:** this file is the **live queue only**. Completed pass write-ups are archived, not appended here. See the **Archive Map** at the bottom for where to look up history.
 
 ---
 
-## Current Task — BROKEN_PRISMA_READ Batch 13 (TBD)
+## Current Task — BROKEN_PRISMA_READ Complete
 
-Batch 12 closed. Remaining candidates from the manifest IR that still need stores: TrainingModule, VarianceReport, VendorCatalog, VendorContract, PurchaseOrderItem, ProposalLineItem, ScheduleShift, ShipmentItem, PurchaseRequisition (last two are children of BROKEN_RAW_SQL entities — verify store works before committing). Excluded: entities under BROKEN_RAW_SQL parents that have raw-SQL route dependencies (Blocker #3).
+All BROKEN_PRISMA_READ batches are done (batches 03–13). PurchaseRequisition was the only remaining candidate but is skipped — it has no Prisma model (see Known Gotchas/Blocker #3). All remaining work is under Blocker #3 (BROKEN_RAW_SQL parent entities that need raw-SQL-to-manifest-store migration). No further mechanical BROKEN_PRISMA_READ batches are needed.
 
-### Required verification
+### Required verification (for future batches of any kind)
 
 Run all three before marking any batch done:
 
@@ -37,6 +37,7 @@ Audit source: `.manifest-persistence-audit-temp.json`. BROKEN_RAW_SQL is tracked
 | 10    | Done        | InventoryTransaction, KitchenTask, LaborBudget, Lead, Menu |
 | 11    | Done        | MenuDish, OverrideAudit, PayrollApprovalHistory, PayrollPeriod, PayrollRun |
 | 12    | Done        | PrepComment, PricingTier, TimeEntry, TimecardEditRequest, TrainingAssignment |
+| 13    | Done        | TrainingModule, VarianceReport, VendorCatalog, VendorContract, PurchaseOrderItem, ProposalLineItem, ScheduleShift, ShipmentItem |
 
 Re-group by Prisma shape if a batch hits awkward FKs. Update the table when batch closes.
 
@@ -60,8 +61,8 @@ These block end-to-end verification for some entities. Do **not** try to fix the
 
 Full write-ups are in the archive. Highlights:
 
+- **BROKEN_PRISMA_READ Batch 13 (2026-04-28)** — `TrainingModulePrismaStore`, `VarianceReportPrismaStore` (in `broken-read-batch13-training-variance.ts`) — TrainingModule: tenant_staff, all snake_case fields (`tenant_id`, `content_url`, `duration_minutes`, etc.), soft-delete via `deleted_at`, composite key `tenant_id_id`. VarianceReport: tenant_inventory, camelCase fields, 6 Decimal fields (`expectedQuantity`, `countedQuantity`, `variance`, `variancePct`, `accuracyScore`, `adjustmentAmount`), soft-delete, composite key `tenantId_id`. + `VendorCatalogPrismaStore`, `VendorContractPrismaStore` (in `broken-read-batch13-vendor.ts`) — VendorCatalog: tenant_inventory, camelCase, Decimal fields, `String[]` tags, soft-delete. VendorContract: tenant_inventory, camelCase, many Decimal/Int fields, contract lifecycle (`approvedAt`, `terminatedAt`), soft-delete. + `PurchaseOrderItemPrismaStore`, `ProposalLineItemPrismaStore` (in `broken-read-batch13-order-proposal.ts`) — PurchaseOrderItem: tenant_inventory, Decimal quantity/cost fields, child of PurchaseOrder. ProposalLineItem: tenant_crm, Decimal quantity/price fields, child of Proposal. + `ScheduleShiftPrismaStore`, `ShipmentItemPrismaStore` (in `broken-read-batch13-schedule-shipment.ts`) — ScheduleShift: tenant_staff, mixed naming (camelCase + snake_case `shift_start`/`shift_end`/`role_during_shift`). ShipmentItem: tenant_inventory, Decimal quantity fields, lot tracking. Persistence test at `packages/manifest-adapters/__tests__/prisma-store-broken-read-batch13.test.ts` (34 tests). All three validations green: `pnpm --filter @repo/manifest-adapters typecheck`, `pnpm --filter @repo/manifest-adapters test` (436 tests across 22 files), `pnpm --filter api typecheck`. PurchaseRequisition skipped (no Prisma model — see Known Gotchas/Blocker #3). All BROKEN_PRISMA_READ candidates now have stores; remaining work is Blocker #3 (BROKEN_RAW_SQL parent entities).
 - **BROKEN_PRISMA_READ Batch 12 (2026-04-28)** — `PrepCommentPrismaStore`, `PricingTierPrismaStore` (in `broken-read-batch12-prep-pricing.ts`) — PrepComment: tenant_kitchen, soft-delete, camelCase fields, composite key `tenantId_id`. PricingTier: tenant_inventory, soft-delete, Decimal fields (`minQuantity`, `maxQuantity`, `unitCost`, `discountPercent`), composite key `tenantId_id`. + `TimeEntryPrismaStore`, `TimecardEditRequestPrismaStore`, `TrainingAssignmentPrismaStore` (in `broken-read-batch12-staff-time.ts`) — TimeEntry: tenant_staff, mixed naming (camelCase `tenantId`/`employeeId` + snake_case `shift_id`/`approved_by`/`deleted_at`), soft-delete via `deleted_at`, composite key `tenantId_id`. TimecardEditRequest: tenant_staff, NO soft-delete (hard delete), camelCase fields, composite key `tenantId_id`. TrainingAssignment: tenant_staff, all snake_case fields (`tenant_id`, `module_id`, `employee_id`, etc.), soft-delete via `deleted_at`, composite key `tenant_id_id`. Persistence test at `packages/manifest-adapters/__tests__/prisma-store-broken-read-batch12.test.ts` (25 tests). All three validations green: `pnpm --filter @repo/manifest-adapters typecheck`, `pnpm --filter @repo/manifest-adapters test` (402 tests across 21 files), `pnpm --filter api typecheck`.
-- **BROKEN_PRISMA_READ Batch 09 (2026-04-28)** — `EventStaffAssignmentPrismaStore`, `EventSummaryPrismaStore` (in `broken-read-batch09-event-staff-summary.ts`) — `EventStaffAssignment` (manifest entity "EventStaff") with nullable DateTime fields (`startTime`, `endTime`), camelCase Prisma fields. `EventSummary` with nullable Json fields (`highlights`, `issues`, `financialPerformance`, `clientFeedback`, `insights`), nullable `overallSummary`, `generationDurationMs`. + `IngredientPrismaStore` (in `broken-read-batch09-ingredient.ts`) — replaced old inline store. Nullable `Decimal` (`densityGPerMl`), `String[]` (`allergens`), `Boolean` (`isActive`). + `InventoryItemPrismaStore`, `InventorySupplierPrismaStore` (in `broken-read-batch09-inventory.ts`) — replaced old inline `InventoryItemPrismaStore`. Mixed camelCase/snake_case Prisma field names. `InventoryItem` with required `Decimal` fields via `toDecimalRequired` (`unitCost`, `quantityOnHand`, `parLevel`, `reorder_level`), `String[]` (`tags`), `fsa_*` fields. `InventorySupplier` with required `Json` (`connectorCredentials`), `String[]` (`tags`), mixed naming (`supplier_number`, `contact_person`, `payment_terms` as snake_case Prisma fields). Persistence test at `packages/manifest-adapters/__tests__/prisma-store-broken-read-batch09.test.ts` (22 tests). All three validations green: `pnpm --filter @repo/manifest-adapters typecheck`, `pnpm --filter @repo/manifest-adapters test` (331 tests across 18 files), `pnpm --filter api typecheck`.
 
 ---
 
