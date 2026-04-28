@@ -53,9 +53,19 @@ interface EmployeeMetrics {
   totalHoursWorked: number;
 }
 
-function getThreeMonthsAgo(): Date {
+function getDateFromPeriod(period: string): Date {
   const now = new Date();
-  return new Date(now.getFullYear(), now.getMonth() - 3, 1);
+  switch (period) {
+    case '1m':
+      return new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    case '6m':
+      return new Date(now.getFullYear(), now.getMonth() - 6, 1);
+    case '12m':
+      return new Date(now.getFullYear(), now.getMonth() - 12, 1);
+    case '3m':
+    default:
+      return new Date(now.getFullYear(), now.getMonth() - 3, 1);
+  }
 }
 
 async function fetchEmployee(tenantId: string, employeeId: string) {
@@ -294,7 +304,7 @@ function buildMetricsResponse(
  * Get performance metrics for a specific employee
  */
 export async function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ employeeId: string }> }
 ) {
   const { orgId } = await auth();
@@ -305,6 +315,9 @@ export async function GET(
 
   const tenantId = await getTenantIdForOrg(orgId);
   const { employeeId } = await params;
+  const { searchParams } = new URL(request.url);
+  const period = searchParams.get('period') || '3m';
+  const dateFrom = getDateFromPeriod(period);
 
   try {
     const employee = await fetchEmployee(tenantId, employeeId);
@@ -316,7 +329,7 @@ export async function GET(
       );
     }
 
-    const threeMonthsAgo = getThreeMonthsAgo();
+    const threeMonthsAgo = dateFrom;
 
     const [
       taskMetricsRaw,
