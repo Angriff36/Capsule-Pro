@@ -280,7 +280,9 @@ model EmployeeBankAccount {
   accountType        String    @default("checking") @map("account_type")
   routingNumber      String    @map("routing_number")
   accountNumber      String    @map("account_number")
-  accountNumberLast4 String    @default(dbgenerated("\"\"")) @map("account_number_last4")
+  /// Generated column: GENERATED ALWAYS AS (RIGHT(account_number, 4)) STORED.
+  /// Managed by Postgres; never set from application code.
+  accountNumberLast4 String?   @default(dbgenerated("\"right\"(account_number, 4)")) @map("account_number_last4")
   accountHolderName  String    @map("account_holder_name")
   isDefault          Boolean   @default(false) @map("is_default")
   status             String    @default("pending")

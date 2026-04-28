@@ -155,6 +155,6 @@ Last: [first session]
 
 ## Last Session Bridge
 [Emergency bridge — running bridge was not updated]
-No changes or facts in this session.
+Files: packages/manifest-adapters/src/manifest-runtime-factory.ts (edit), packages/manifest-adapters/__tests__/prisma-store-broken-read-batch05.test.ts (create), IMPLEMENTATION_PLAN.md (edit)
 
 # === END COGNILAYER ===

@@ -9,8 +9,6 @@
 import type { Store } from "@angriff36/manifest";
 import type {
   AllergenWarning,
-  Dish,
-  email_templates,
   Ingredient,
   InventoryItem,
   KitchenTask,
@@ -73,6 +71,19 @@ import {
   ContractSignaturePrismaStore,
   CycleCountRecordPrismaStore,
 } from "./prisma-stores/broken-read-batch05-contract-cycle.js";
+import {
+  CycleCountSessionPrismaStore,
+  DishPrismaStore,
+} from "./prisma-stores/broken-read-batch06-cycle-dish.js";
+export { DishPrismaStore };
+import {
+  EmailTemplatePrismaStore,
+  EmailWorkflowPrismaStore,
+} from "./prisma-stores/broken-read-batch06-email.js";
+export { EmailTemplatePrismaStore };
+import {
+  EmployeeAvailabilityPrismaStore,
+} from "./prisma-stores/broken-read-batch06-employee-availability.js";
 
 /**
  * Report a silent store error to Sentry without blocking the return path.
@@ -931,123 +942,6 @@ export class RecipeStepPrismaStore implements Store<EntityInstance> {
 }
 
 /**
- * Prisma-backed store for Dish entities
- *
- * Maps Manifest Dish entities to the Prisma Dish table.
- */
-export class DishPrismaStore implements Store<EntityInstance> {
-  constructor(
-    private readonly prisma: PrismaClient,
-    private readonly tenantId: string
-  ) {}
-
-  async getAll(): Promise<EntityInstance[]> {
-    const dishes = await this.prisma.dish.findMany({
-      where: { tenantId: this.tenantId, deletedAt: null },
-    });
-    return dishes.map((dish) => this.mapToManifestEntity(dish));
-  }
-
-  async getById(id: string): Promise<EntityInstance | undefined> {
-    const dish = await this.prisma.dish.findFirst({
-      where: { tenantId: this.tenantId, id, deletedAt: null },
-    });
-    return dish ? this.mapToManifestEntity(dish) : undefined;
-  }
-
-  async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
-    const dish = await this.prisma.dish.create({
-      data: {
-        tenantId: this.tenantId,
-        id: data.id as string,
-        recipeId: (data.recipeId as string) || "",
-        name: data.name as string,
-        description: (data.description as string) || null,
-        category: (data.category as string) || null,
-        serviceStyle: (data.serviceStyle as string) || null,
-        presentationImageUrl: (data.presentationImageUrl as string) || null,
-        dietaryTags: (data.dietaryTags as string[]) || [],
-        allergens: (data.allergens as string[]) || [],
-        pricePerPerson: (data.pricePerPerson as number) || null,
-        costPerPerson: (data.costPerPerson as number) || null,
-        minPrepLeadDays: (data.minPrepLeadDays as number) || 0,
-        maxPrepLeadDays: (data.maxPrepLeadDays as number) || null,
-        portionSizeDescription: (data.portionSizeDescription as string) || null,
-        isActive: (data.isActive as boolean) ?? true,
-      },
-    });
-    return this.mapToManifestEntity(dish);
-  }
-
-  async update(
-    id: string,
-    data: Partial<EntityInstance>
-  ): Promise<EntityInstance | undefined> {
-    try {
-      const updated = await this.prisma.dish.update({
-        where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: {
-          pricePerPerson: data.pricePerPerson as number | null | undefined,
-          costPerPerson: data.costPerPerson as number | null | undefined,
-          minPrepLeadDays: data.minPrepLeadDays as number | undefined,
-          maxPrepLeadDays: data.maxPrepLeadDays as number | null | undefined,
-          updatedAt: new Date(),
-        },
-      });
-      return this.mapToManifestEntity(updated);
-    } catch (error) {
-      reportOp(this, "update", error);
-      return undefined;
-    }
-  }
-
-  async delete(id: string): Promise<boolean> {
-    try {
-      await this.prisma.dish.update({
-        where: { tenantId_id: { tenantId: this.tenantId, id } },
-        data: { deletedAt: new Date() },
-      });
-      return true;
-    } catch (error) {
-      reportOp(this, "delete", error);
-      return false;
-    }
-  }
-
-  async clear(): Promise<void> {
-    await this.prisma.dish.updateMany({
-      where: { tenantId: this.tenantId },
-      data: { deletedAt: new Date() },
-    });
-  }
-
-  private mapToManifestEntity(dish: Dish): EntityInstance {
-    return {
-      id: dish.id,
-      tenantId: dish.tenantId,
-      name: dish.name,
-      recipeId: dish.recipeId ?? "",
-      description: dish.description ?? "",
-      category: dish.category ?? "",
-      serviceStyle: dish.serviceStyle ?? "",
-      presentationImageUrl: dish.presentationImageUrl ?? "",
-      dietaryTags: Array.isArray(dish.dietaryTags)
-        ? dish.dietaryTags.join(",")
-        : "",
-      allergens: Array.isArray(dish.allergens) ? dish.allergens.join(",") : "",
-      pricePerPerson: Number(dish.pricePerPerson ?? 0),
-      costPerPerson: Number(dish.costPerPerson ?? 0),
-      minPrepLeadDays: dish.minPrepLeadDays,
-      maxPrepLeadDays: dish.maxPrepLeadDays ?? dish.minPrepLeadDays,
-      portionSizeDescription: dish.portionSizeDescription ?? "",
-      isActive: dish.isActive,
-      createdAt: dish.createdAt.getTime(),
-      updatedAt: dish.updatedAt.getTime(),
-    };
-  }
-}
-
-/**
  * Prisma-backed store for KitchenTask entities
  *
  * Maps Manifest KitchenTask entities to the Prisma KitchenTask table.
@@ -1747,141 +1641,6 @@ export class EventPrismaStore implements Store<EntityInstance> {
 }
 
 /**
- * Prisma-backed store for EmailTemplate entities
- *
- * Maps Manifest EmailTemplate entities to the Prisma email_templates table.
- */
-export class EmailTemplatePrismaStore implements Store<EntityInstance> {
-  constructor(
-    private readonly prisma: PrismaClient,
-    private readonly tenantId: string
-  ) {}
-
-  async getAll(): Promise<EntityInstance[]> {
-    const templates = await this.prisma.email_templates.findMany({
-      where: { tenant_id: this.tenantId, deleted_at: null },
-    });
-    return templates.map((t) => this.mapToManifestEntity(t));
-  }
-
-  async getById(id: string): Promise<EntityInstance | undefined> {
-    const template = await this.prisma.email_templates.findFirst({
-      where: { tenant_id: this.tenantId, id, deleted_at: null },
-    });
-    return template ? this.mapToManifestEntity(template) : undefined;
-  }
-
-  async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
-    const id = (data.id as string) || crypto.randomUUID();
-    const mergeFields = this.normalizeMergeFields(data.mergeFields);
-    const template = await this.prisma.email_templates.create({
-      data: {
-        tenant_id: this.tenantId,
-        id,
-        name: (data.name as string) || "",
-        template_type: ((data.templateType as string) || "custom") as any,
-        subject: (data.subject as string) || "",
-        body: (data.body as string) || "",
-        merge_fields: mergeFields,
-        is_active: data.isActive !== undefined ? Boolean(data.isActive) : true,
-        is_default:
-          data.isDefault !== undefined ? Boolean(data.isDefault) : false,
-      },
-    });
-    return this.mapToManifestEntity(template);
-  }
-
-  async update(
-    id: string,
-    data: Partial<EntityInstance>
-  ): Promise<EntityInstance | undefined> {
-    try {
-      const updated = await this.prisma.email_templates.update({
-        where: { tenant_id_id: { tenant_id: this.tenantId, id } },
-        data: {
-          name: data.name as string | undefined,
-          template_type: data.templateType
-            ? (data.templateType as string as any)
-            : undefined,
-          subject: data.subject as string | undefined,
-          body: data.body as string | undefined,
-          merge_fields:
-            data.mergeFields != null
-              ? this.normalizeMergeFields(data.mergeFields)
-              : undefined,
-          is_active:
-            data.isActive !== undefined ? Boolean(data.isActive) : undefined,
-          is_default:
-            data.isDefault !== undefined ? Boolean(data.isDefault) : undefined,
-          updated_at: new Date(),
-        },
-      });
-      return this.mapToManifestEntity(updated);
-    } catch (error) {
-      reportStoreError(error, "EmailTemplate", "update");
-      return undefined;
-    }
-  }
-
-  async delete(id: string): Promise<boolean> {
-    try {
-      await this.prisma.email_templates.update({
-        where: { tenant_id_id: { tenant_id: this.tenantId, id } },
-        data: { deleted_at: new Date() },
-      });
-      return true;
-    } catch (error) {
-      reportStoreError(error, "EmailTemplate", "delete");
-      return false;
-    }
-  }
-
-  async clear(): Promise<void> {
-    await this.prisma.email_templates.updateMany({
-      where: { tenant_id: this.tenantId, deleted_at: null },
-      data: { deleted_at: new Date() },
-    });
-  }
-
-  /**
-   * Normalize mergeFields to a valid Prisma Json value.
-   * Accepts string (parsed), array/object (passed through), or null (defaults to []).
-   */
-  private normalizeMergeFields(value: unknown): Prisma.InputJsonValue {
-    if (value == null) return [];
-    if (typeof value === "string") {
-      try {
-        const parsed = JSON.parse(value);
-        return Array.isArray(parsed) || (parsed && typeof parsed === "object")
-          ? (parsed as Prisma.InputJsonValue)
-          : [];
-      } catch {
-        return [];
-      }
-    }
-    return value as Prisma.InputJsonValue;
-  }
-
-  private mapToManifestEntity(t: email_templates): EntityInstance {
-    return {
-      id: t.id,
-      tenantId: t.tenant_id,
-      name: t.name ?? "",
-      templateType: t.template_type ?? "custom",
-      subject: t.subject ?? "",
-      body: t.body ?? "",
-      mergeFields: t.merge_fields ?? "[]",
-      isActive: t.is_active ?? true,
-      isDefault: t.is_default ?? false,
-      createdAt: t.created_at ? new Date(t.created_at).getTime() : 0,
-      updatedAt: t.updated_at ? new Date(t.updated_at).getTime() : 0,
-      deletedAt: t.deleted_at ? new Date(t.deleted_at).getTime() : 0,
-      isDeleted: t.deleted_at !== null,
-    };
-  }
-}
-
-/**
  * Prisma-backed store for PrepTaskPlanWorkflow entities
  *
  * Backs the 16 lifecycle command routes for the prep-task plan pipeline
@@ -2135,8 +1894,6 @@ export function createPrismaStoreProvider(
         return new RecipeIngredientPrismaStore(prisma, tenantId);
       case "RecipeStep":
         return new RecipeStepPrismaStore(prisma, tenantId);
-      case "Dish":
-        return new DishPrismaStore(prisma, tenantId);
       case "Menu":
         return new MenuPrismaStore(prisma, tenantId);
       case "MenuDish":
@@ -2153,8 +1910,6 @@ export function createPrismaStoreProvider(
         return new KitchenTaskPrismaStore(prisma, tenantId);
       case "Event":
         return new EventPrismaStore(prisma, tenantId);
-      case "EmailTemplate":
-        return new EmailTemplatePrismaStore(prisma, tenantId);
       case "PrepTaskPlanWorkflow":
         return new PrepTaskPlanWorkflowPrismaStore(prisma, tenantId);
       case "PrepMethod":
@@ -2205,6 +1960,16 @@ export function createPrismaStoreProvider(
         return new ContractSignaturePrismaStore(prisma, tenantId);
       case "CycleCountRecord":
         return new CycleCountRecordPrismaStore(prisma, tenantId);
+      case "CycleCountSession":
+        return new CycleCountSessionPrismaStore(prisma, tenantId);
+      case "Dish":
+        return new DishPrismaStore(prisma, tenantId);
+      case "EmailTemplate":
+        return new EmailTemplatePrismaStore(prisma, tenantId);
+      case "EmailWorkflow":
+        return new EmailWorkflowPrismaStore(prisma, tenantId);
+      case "EmployeeAvailability":
+        return new EmployeeAvailabilityPrismaStore(prisma, tenantId);
       default:
         console.error(
           `[createPrismaStoreProvider] No store for entity "${entityName}" — commands will fail`
