@@ -83,10 +83,16 @@ export default clerkMiddleware(async (auth, req) => {
 
     await auth.protect();
   } catch (error) {
-    captureException(error, {
-      tags: { route: "app-middleware", errorType: "protect_failure" },
-      extra: { url: req.url },
-    });
+    // Filter out Next.js HTTP error fallbacks (404s, etc.) — not real errors
+    const isNextHttpError =
+      error instanceof Error &&
+      error.message?.startsWith("NEXT_HTTP_ERROR_FALLBACK;");
+    if (!isNextHttpError) {
+      captureException(error, {
+        tags: { route: "app-middleware", errorType: "protect_failure" },
+        extra: { url: req.url },
+      });
+    }
     throw error;
   }
 });

@@ -3,11 +3,18 @@
     "id": "cp-sentry-001",
     "title": "Fix 404 error in middleware/proxy.ts",
     "description": "Sentry CAPSULE-PRO-3C: Error: NEXT_HTTP_ERROR_FALLBACK;404 in eval(webpack-internal:///(middleware)/./proxy.ts). 5 occurrences, last seen 2026-04-20. Culprit: GET requests hitting middleware proxy. Investigate proxy.ts route matching and 404 handling. Permalink: https://the-eight-percent.sentry.io/issues/7388555485/",
-    "status": "ready",
+    "status": "done",
     "priority": "high",
     "source": "sentry",
     "created_by": "Sentinel",
-    "tags": ["sentry", "middleware", "404"]
+    "tags": [
+      "sentry",
+      "middleware",
+      "404"
+    ],
+    "completed_by": "Sentinel",
+    "completed_at": "2026-04-27T17:57:30.237Z",
+    "resolution": "Added NEXT_HTTP_ERROR_FALLBACK filter in proxy.ts catch block to prevent Sentry capture of Next.js 404 fallbacks"
   },
   {
     "id": "cp-001",
@@ -4180,9 +4187,7 @@
       "rollback",
       "blocked"
     ]
-  }
-]
-,
+  },
   {
     "id": "cp-099",
     "title": "Sentry: Error 404 in proxy.ts middleware",
@@ -4191,8 +4196,13 @@
     "priority": "high",
     "source": "sentry",
     "created_by": "Sentinel",
-    "tags": ["sentry", "middleware", "404", "proxy"],
+    "tags": [
+      "sentry",
+      "middleware",
+      "404",
+      "proxy"
+    ],
     "sentry_issue_id": "7388555485",
     "sentry_permalink": "https://the-eight-percent.sentry.io/issues/7388555485/"
   }
-]TASKEOF
+]
