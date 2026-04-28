@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
     });
     const result = await runtime.runCommand("terminate", body, {
       entityName: "User",
+      ...(body.userId ? { instanceId: String(body.userId) } : {}),
     });
 
     if (!result.success) {

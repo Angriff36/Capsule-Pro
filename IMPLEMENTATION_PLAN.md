@@ -23,7 +23,7 @@ In-scope parents (no new BROKEN_PRISMA_READ batches — those are done):
 | 3 | **Notification** ✅ | tenant_admin   | `NotificationPrismaStore` wired; instanceId fixed on 3 command routes |
 | 4 | **Schedule** ✅   | tenant_staff     | `SchedulePrismaStore` + `ScheduleShiftPrismaStore` wired; instanceId fixed |
 | 5 | **Shipment** ✅   | tenant_inventory | `ShipmentPrismaStore` + `ShipmentItemPrismaStore` wired; instanceId fixed |
-| 6 | User              | tenant_core      | n/a (high blast radius — auth/session)           |
+| 6 | **User** ✅       | tenant_staff     | `UserPrismaStore` wired; instanceId fixed on 4 command routes |
 
 **Start with Proposal**, then PurchaseOrder. ProposalLineItem /
 PurchaseOrderItem stores already exist, so the parent fix is the missing piece
@@ -285,11 +285,49 @@ for actions.
 
 ---
 
+## Step 6 — User (Staff) ✅ DONE
+
+**Completed 2026-04-28.** Changes:
+- Added `UserPrismaStore` at `packages/manifest-adapters/src/prisma-stores/broken-read-user-parent.ts`
+- Wired `User` into `ENTITIES_WITH_SPECIFIC_STORES`
+- Fixed `instanceId` on all 4 instance-scoped command routes (update, deactivate, terminate, update-role)
+- Added `apps/api/__tests__/staff/users/user-end-to-end.test.ts` (15 assertions)
+- All typechecks and tests pass (manifest-adapters: 436 tests, api: 1,233 tests)
+
+**Frontend entry:** `apps/app/app/(authenticated)/settings/team/page.tsx` reads directly
+from `database.user.findMany()` — no API list route. Frontend currently has a read-only
+team view; no create/edit UI exists for users.
+
+**Canonical routes (under `apps/api/app/api/user/`):**
+- `POST .../create` — manifest runtime (no instanceId needed) ✅
+- `POST .../update` — manifest runtime (instanceId from `body.id`) ✅
+- `POST .../deactivate` — manifest runtime (instanceId from `body.userId`) ✅
+- `POST .../terminate` — manifest runtime (instanceId from `body.userId`) ✅
+- `POST .../update-role` — manifest runtime (instanceId from `body.userId`) ✅
+
+**Key findings:**
+- User lives in `tenant_staff` schema (not `tenant_core` as originally assumed). Table: `employees`.
+- Composite key: `tenantId_id` (same as other entities).
+- Soft-delete via `deletedAt` column.
+- `EmploymentType` is a Prisma enum — store uses `as any` cast.
+- Nullable Decimal fields (`hourlyRate`, `salaryAnnual`) handled with `toDecimalInput`.
+- `hireDate` is `@db.Date` (required); `terminationDate` is nullable `@db.Date`.
+- No list/detail GET API routes exist — frontend reads directly from Prisma.
+- 5 manifest commands: create, update, deactivate, terminate, updateRole.
+- `payoutMethod` field exists in Prisma model but not in manifest — accepted but dropped on write.
+
+**Visible behavior on completion:**
+- Server-side code that creates users through `POST /api/user/create` persists to
+  `tenant_staff.employees` and the record is visible through `database.user.findMany()`.
+- The update, deactivate, terminate, and update-role commands correctly target specific
+  user instances (via `instanceId`) and persist changes to the database.
+
+---
+
 ## Tracked but not started (in priority order)
 
-6. **User** (tenant_core). High blast radius — touches auth/session. Trace
-   tenant-isolation paths first; do not refactor until earlier entities are
-   green and you have a written rollback plan.
+All in-scope parent entities are complete (Steps 1–6). No further entities are
+queued. Future work items live in **Open Followups** below.
 
 When you start one of these, lift it into its own numbered step section above,
 identical in shape to Steps 1–5.
@@ -341,6 +379,7 @@ Full write-ups live in the archive. Highlights:
 - **Schedule parent workflow (completed 2026-04-28).** `SchedulePrismaStore` bridges manifest command writes to Prisma `tenant_staff.schedules`. All 3 instance-scoped command routes (update, release, close) now pass `instanceId` to `runCommand`. ScheduleShiftPrismaStore wiring gap fixed (was in `ENTITIES_WITH_SPECIFIC_STORES` but had no `createPrismaStoreProvider` switch case). Manifest-only fields (`notes`, `shiftCount`) have no Prisma columns — accepted but dropped on write, returned as defaults on read.
 - **Notification parent workflow (completed 2026-04-28).** `NotificationPrismaStore` bridges manifest command writes to Prisma `tenant_admin.notifications`. All 3 instance-scoped command routes (mark-read, mark-dismissed, remove) now pass `instanceId` to `runCommand`. Key finding: Notification lives in `tenant_admin` (not `tenant_core`); frontend uses Knock SDK directly and does not call the app's notification API routes.
 - **Shipment parent workflow (completed 2026-04-28).** `ShipmentPrismaStore` bridges manifest command writes to Prisma `tenant_inventory.shipments`. All 6 instance-scoped command routes (update, cancel, schedule, ship, start-preparing, mark-delivered) now pass `instanceId` to `runCommand`. Key finding: `status` is a Prisma enum (`ShipmentStatus`), not plain string — store uses `as any` cast. Root routes (`/api/shipments`, `/api/shipments/[id]`) use `executeManifestCommand` for writes (instanceId handled by shared helper); auto-generated routes under `/shipment/commands/` directly call `runtime.runCommand` and needed individual fixes.
+- **User parent workflow (completed 2026-04-28).** `UserPrismaStore` bridges manifest command writes to Prisma `tenant_staff.employees`. All 4 instance-scoped command routes (update, deactivate, terminate, update-role) now pass `instanceId` to `runCommand`. Key finding: User lives in `tenant_staff` (not `tenant_core` as originally assumed); table name is `employees`. No list/detail GET API routes — frontend reads directly from `database.user.findMany()`. `EmploymentType` is a Prisma enum; `payoutMethod` exists in Prisma but not in manifest.
 - **BROKEN_PRISMA_READ Batches 03–13 (closed 2026-04-28).** Twelve mechanical
   batches landed dedicated Prisma stores for AlertsConfig and 50+ other
   entities, including ProposalLineItem, PurchaseOrderItem, ScheduleShift,

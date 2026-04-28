@@ -204,6 +204,7 @@ const ENTITIES_WITH_SPECIFIC_STORES = new Set([
   "TimecardEditRequest",
   "TrainingAssignment",
   "TrainingModule",
+  "User",
   "VarianceReport",
   "VendorCatalog",
   "VendorContract",

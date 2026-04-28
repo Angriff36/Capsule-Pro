@@ -581,6 +581,11 @@
       "pattern": "^/api/shipments/[^/]+/status$",
       "methods": ["POST"],
       "comment": "Infrastructure: Shipment status transition with inventory reservation/cancellation/delivery side-effects"
+    },
+    {
+      "prefix": "/api/user/",
+      "methods": ["POST"],
+      "comment": "Uses createManifestRuntime — User.create/update/deactivate/terminate/updateRole (instanceId fix)"
     }
   ]
 }

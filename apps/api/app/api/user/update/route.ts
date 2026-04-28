@@ -33,6 +33,7 @@ export async function POST(request: NextRequest) {
     });
     const result = await runtime.runCommand("update", body, {
       entityName: "User",
+      ...(body.id ? { instanceId: String(body.id) } : {}),
     });
 
     if (!result.success) {
