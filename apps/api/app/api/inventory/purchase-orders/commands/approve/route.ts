@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
 
     const result = await runtime.runCommand("approve", body, {
       entityName: "PurchaseOrder",
+      instanceId: body.id,
     });
 
     if (!result.success) {

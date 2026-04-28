@@ -154,7 +154,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[Emergency bridge — running bridge was not updated]
-No changes or facts in this session.
+[auto-bridge snapshot @ 10 changes]
+Files: apps/api/app/api/crm/proposals/commands/withdraw/route.ts (edit), apps/api/app/api/crm/proposals/commands/reject/route.ts (edit), apps/api/app/api/crm/proposals/commands/accept/route.ts (edit), apps/api/app/api/crm/proposals/commands/send/route.ts (edit), apps/api/app/api/crm/proposals/commands/update/route.ts (edit), apps/api/lib/manifest-command-handler.ts (edit), packages/manifest-adapters/src/manifest-runtime-factory.ts (edit), packages/manifest-adapters/src/prisma-store.ts (edit), packages/manifest-adapters/src/prisma-stores/broken-read-proposal-parent.ts (create)
 
 # === END COGNILAYER ===

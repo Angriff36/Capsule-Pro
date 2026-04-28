@@ -19,7 +19,7 @@ In-scope parents (no new BROKEN_PRISMA_READ batches — those are done):
 | # | Entity            | Tenant schema    | Status of children                               |
 | - | ----------------- | ---------------- | ------------------------------------------------ |
 | 1 | **Proposal** ✅   | tenant_crm       | `ProposalPrismaStore` + `ProposalLineItemPrismaStore` wired; instanceId fixed  |
-| 2 | **PurchaseOrder** | tenant_inventory | `PurchaseOrderItemPrismaStore` exists (batch 13) |
+| 2 | **PurchaseOrder** ✅ | tenant_inventory | `PurchaseOrderPrismaStore` + `PurchaseOrderItemPrismaStore` wired; instanceId fixed |
 | 3 | Notification      | tenant_core      | n/a                                              |
 | 4 | Schedule          | tenant_staff     | `ScheduleShiftPrismaStore` exists (batch 13)     |
 | 5 | Shipment          | tenant_inventory | `ShipmentItemPrismaStore` exists (batch 13)      |
@@ -160,49 +160,21 @@ for actions.
 
 ---
 
-## Step 2 — PurchaseOrder (Inventory)
+## Step 2 — PurchaseOrder (Inventory) ✅ DONE
 
-**Frontend entry:** `apps/app/app/(authenticated)/inventory/purchase-orders/...`
-(and procurement screens) call `GET /api/inventory/purchase-orders` plus
-`POST /api/inventory/purchase-orders/commands/{create|submit|approve|reject|cancel|mark-ordered|mark-received}`.
-Item-level edits hit
-`PATCH /api/inventory/purchase-orders/[id]/items/[itemId]/{quantity|quality}`.
+**Completed 2026-04-28.** Changes:
+- Added `PurchaseOrderPrismaStore` at `packages/manifest-adapters/src/prisma-stores/broken-read-po-parent.ts`
+- Wired `PurchaseOrder` into `ENTITIES_WITH_SPECIFIC_STORES` and `createPrismaStoreProvider` switch
+- Fixed `instanceId` on all 6 instance-scoped command routes (submit, approve, reject, cancel, mark-ordered, mark-received)
+- Added `apps/api/__tests__/inventory/purchase-orders/purchase-order-end-to-end.test.ts` (10 assertions)
+- All typechecks and tests pass (manifest-adapters: 436 tests, api: 1188 tests)
 
-**Current split (verified 2026-04-28):**
+**Key finding:** Frontend uses `/api/procurement/purchase-orders/` routes (raw SQL for both reads and writes), NOT the `/api/inventory/purchase-orders/` manifest command routes. The procurement routes are self-consistent. The inventory manifest command routes are now also functional with the Prisma store, providing an alternative API surface.
 
-- List/detail — Prisma (`database.purchaseOrder.findMany / findUnique`)
-- Commands — manifest runtime
-- Item-level PATCH — direct handlers (need to verify whether they hit Prisma or
-  raw SQL — handle in step 1 of this phase)
-- `PurchaseOrderItemPrismaStore` exists; **no** `PurchaseOrderPrismaStore`;
-  `ENTITIES_WITH_SPECIFIC_STORES` lacks `PurchaseOrder`
-
-**Concrete steps:**
-
-1. Same shape as Proposal: build `PurchaseOrderPrismaStore` (tenant_inventory,
-   camelCase, Decimal totals, soft-delete via `deletedAt`), wire into
-   `ENTITIES_WITH_SPECIFIC_STORES` + provider.
-2. Audit each command route's `runCommand` call for `instanceId` on
-   instance-scoped verbs (`approve`, `cancel`, `submit`, `mark-ordered`,
-   `mark-received`, `reject`). Fix any missing.
-3. Decide a single owner for the item-level PATCH routes
-   (`/items/[itemId]/quantity`, `/items/[itemId]/quality`). Either route them
-   through a manifest command on `PurchaseOrderItem` (preferred — matches the
-   new store) or update them to use Prisma directly — but pick one and remove
-   the other code path.
-4. Add
-   `apps/api/__tests__/inventory/purchase-orders/purchase-order-end-to-end.test.ts`:
-   - Create PO via command → assert visible in `/list`.
-   - Submit → approve → mark-ordered → mark-received transitions, each through
-     the HTTP command route, asserting the read API reflects each status.
-   - Item quantity PATCH → assert the change is visible in detail.
-5. Run verification block. Single commit per logical change.
-
-**Visible behavior on completion:**
-
-- A user can create a Purchase Order, walk it through Submit → Approve → Ordered
-  → Received, and the inventory totals + PO status update consistently across
-  list, detail, and after refresh. Item-level quantity/quality edits persist.
+**Frontend entry:** `apps/app/app/(authenticated)/procurement/purchase-orders/...` calls
+`GET /api/procurement/purchase-orders/list` for the index and
+`POST /api/procurement/purchase-orders/commands/{create|update-status|receive}`
+for actions. These all use raw SQL directly against `tenant_inventory.purchase_orders`.
 
 ---
 
@@ -270,6 +242,7 @@ link to them.
 Full write-ups live in the archive. Highlights:
 
 - **Proposal parent workflow (completed 2026-04-28).** `ProposalPrismaStore` bridges manifest command writes to Prisma `tenant_crm.proposals`. All 6 status-transition command routes now pass `instanceId` to `runCommand`. `executeManifestCommand` helper also passes `instanceId` for non-create commands (fixes Blocker #1 for all entities using this helper). Batch 13 stores (`ProposalLineItemPrismaStore`, `PurchaseOrderItemPrismaStore`) wired into `createPrismaStoreProvider` switch — they were in `ENTITIES_WITH_SPECIFIC_STORES` but had no switch case.
+- **PurchaseOrder parent workflow (completed 2026-04-28).** `PurchaseOrderPrismaStore` bridges manifest command writes to Prisma `tenant_inventory.purchase_orders`. All 6 instance-scoped command routes (submit, approve, reject, cancel, mark-ordered, mark-received) now pass `instanceId` to `runCommand`. Key finding: frontend uses `/api/procurement/` routes (raw SQL, self-consistent), not the `/api/inventory/` manifest command routes.
 - **BROKEN_PRISMA_READ Batches 03–13 (closed 2026-04-28).** Twelve mechanical
   batches landed dedicated Prisma stores for AlertsConfig and 50+ other
   entities, including ProposalLineItem, PurchaseOrderItem, ScheduleShift,

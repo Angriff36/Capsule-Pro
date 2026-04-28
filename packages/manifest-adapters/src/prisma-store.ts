@@ -139,6 +139,7 @@ import {
   ProposalLineItemPrismaStore,
 } from "./prisma-stores/broken-read-batch13-order-proposal.js";
 import { ProposalPrismaStore } from "./prisma-stores/broken-read-proposal-parent.js";
+import { PurchaseOrderPrismaStore } from "./prisma-stores/broken-read-po-parent.js";
 
 /**
  * Report a silent store error to Sentry without blocking the return path.
@@ -1766,6 +1767,8 @@ export function createPrismaStoreProvider(
         return new ProposalPrismaStore(prisma, tenantId);
       case "ProposalLineItem":
         return new ProposalLineItemPrismaStore(prisma, tenantId);
+      case "PurchaseOrder":
+        return new PurchaseOrderPrismaStore(prisma, tenantId);
       case "PurchaseOrderItem":
         return new PurchaseOrderItemPrismaStore(prisma, tenantId);
       default:

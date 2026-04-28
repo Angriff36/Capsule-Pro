@@ -31,3 +31,14 @@
 {"ts":"2026-04-28T20:22:12.679Z","type":"edit","agent":"ZenFalcon","target":"docs/reviews/implementation-plan-discipline-review.md"}
 {"ts":"2026-04-28T20:22:25.310Z","type":"leave","agent":"ZenFalcon"}
 {"ts":"2026-04-28T20:23:23.483Z","type":"edit","agent":"CalmFalcon","target":"C:/Projects/capsule-pro/.pi/messenger/crew/artifacts/task-3-purchaseorder-validation.md"}
+{"ts":"2026-04-28T20:31:33.395Z","type":"commit","agent":"RedKnight","preview":"docs(review): add task-4 findings on blocker/followup staleness and incorrect claims Task: task-4 Key findings: - Proposal frontend uses Server Actions (Prisma), not manifest command routes - PurchaseOrder frontend is under procurement/, not inventory/ - PO frontend routes use raw SQL, not manifest runtime - Generator vs generated-file contradiction in Blocker #1 - Quarantined manifests count stale (17 → 12) - Missing biome check and done criteria gaps"}
+{"ts":"2026-04-28T20:31:34.870Z","type":"edit","agent":"CalmFalcon","target":"C:/Projects/capsule-pro/.pi/messenger/crew/tasks/task-3-report.md"}
+{"ts":"2026-04-28T20:38:00Z","type":"broadcast","agent":"CalmFalcon","message":"Completed task-3: PurchaseOrder validation report at .pi/messenger/crew/tasks/task-3-report.md. Key findings: (1) Frontend is under procurement/ not inventory/, (2) Frontend-active routes use raw SQL not manifest, (3) All 6 instance-scoped manifest commands missing instanceId, (4) Item-level routes are PUT not PATCH and are orphaned from frontend"}
+{"ts":"2026-04-28T20:32:17.448Z","type":"leave","agent":"RedKnight"}
+{"ts":"2026-04-28T20:40:00Z","type":"broadcast","agent":"CalmFalcon","message":"Picking up task-4 (Review blockers, followups, and verification criteria)"}
+{"ts":"2026-04-28T20:33:48.323Z","type":"edit","agent":"CalmFalcon","target":"C:/Projects/capsule-pro/.pi/messenger/crew/tasks/task-4-report.md"}
+{"ts":"2026-04-28T20:48:00Z","type":"broadcast","agent":"CalmFalcon","message":"Completed task-4: Blockers/followups/verification review at .pi/messenger/crew/tasks/task-4-report.md. Found: Blocker #1 undersells scope, 3 contradictions, missing dual-path blocker, server-action bypass not mentioned"}
+{"ts":"2026-04-28T20:49:00Z","type":"broadcast","agent":"CalmFalcon","message":"Picking up task-1 (Review IMPLEMENTATION_PLAN.md structure and archive discipline)"}
+{"ts":"2026-04-28T20:36:10.613Z","type":"edit","agent":"CalmFalcon","target":"C:/Projects/capsule-pro/.pi/messenger/crew/tasks/task-1-report.md"}
+{"ts":"2026-04-28T20:54:00Z","type":"broadcast","agent":"CalmFalcon","message":"Completed task-1: IMPLEMENTATION_PLAN.md structure review at .pi/messenger/crew/tasks/task-1-report.md. Structure is sound (207 lines, all archives exist). Found 4 issues: inaccurate verified claims, misleading Step 2 label, missing server action guidance, out-of-scope contradiction."}
+{"ts":"2026-04-28T20:36:51.022Z","type":"leave","agent":"CalmFalcon"}
