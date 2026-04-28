@@ -213,6 +213,7 @@ const ENTITIES_WITH_SPECIFIC_STORES = new Set([
   "ProposalLineItem",
   "ScheduleShift",
   "ShipmentItem",
+  "Notification",
 ]);
 
 /** Default precompiled IR path (relative to monorepo root). */

@@ -20,7 +20,7 @@ In-scope parents (no new BROKEN_PRISMA_READ batches — those are done):
 | - | ----------------- | ---------------- | ------------------------------------------------ |
 | 1 | **Proposal** ✅   | tenant_crm       | `ProposalPrismaStore` + `ProposalLineItemPrismaStore` wired; instanceId fixed  |
 | 2 | **PurchaseOrder** ✅ | tenant_inventory | `PurchaseOrderPrismaStore` + `PurchaseOrderItemPrismaStore` wired; instanceId fixed |
-| 3 | Notification      | tenant_core      | n/a                                              |
+| 3 | **Notification** ✅ | tenant_admin   | `NotificationPrismaStore` wired; instanceId fixed on 3 command routes |
 | 4 | Schedule          | tenant_staff     | `ScheduleShiftPrismaStore` exists (batch 13)     |
 | 5 | Shipment          | tenant_inventory | `ShipmentItemPrismaStore` exists (batch 13)      |
 | 6 | User              | tenant_core      | n/a (high blast radius — auth/session)           |
@@ -178,21 +178,54 @@ for actions. These all use raw SQL directly against `tenant_inventory.purchase_o
 
 ---
 
+## Step 3 — Notification (Collaboration) ✅ DONE
+
+**Completed 2026-04-28.** Changes:
+- Added `NotificationPrismaStore` at `packages/manifest-adapters/src/prisma-stores/broken-read-notification-parent.ts`
+- Wired `Notification` into `ENTITIES_WITH_SPECIFIC_STORES` and `createPrismaStoreProvider` switch
+- Fixed `instanceId` on all 3 instance-scoped command routes (mark-read, mark-dismissed, remove)
+- Added `apps/api/__tests__/collaboration/notifications/notification-end-to-end.test.ts` (11 assertions)
+- All typechecks and tests pass (manifest-adapters: 436 tests, api: 1197 tests)
+
+**Frontend entry:** No dedicated notification page. Frontend uses Knock SDK (3rd party popover from
+sidebar bell icon) for real-time notification display. The Knock SDK communicates directly with
+Knock's cloud API — it does NOT call any of the app's own `/api/collaboration/notifications/` routes.
+
+**Canonical routes (under `apps/api/app/api/collaboration/notifications/`):**
+- `GET .../list` — Prisma (`database.notification.findMany`) ✅
+- `GET .../[id]` — Prisma (`database.notification.findFirst`) ✅
+- `POST .../commands/create` — manifest runtime ✅
+- `POST .../commands/mark-read` — manifest runtime (instanceId fixed) ✅
+- `POST .../commands/mark-dismissed` — manifest runtime (instanceId fixed) ✅
+- `POST .../commands/remove` — manifest runtime (instanceId fixed) ✅
+
+**Key findings:**
+- Notification lives in `tenant_admin` schema (not `tenant_core` as the plan assumed). Table: `notifications`.
+- No soft-delete — `delete()` in the store is a hard delete (no `deletedAt` column in the Prisma model).
+- Duplicate legacy routes under `apps/api/app/api/notification/` (4 routes) — these are NOT called by the frontend and use the older `createManifestRuntime()` directly without `executeManifestCommand`. Only the canonical routes under `collaboration/notifications/` matter.
+- The manifest (`notification-rules.manifest`) declares `store Notification in memory` — now bridged to Prisma via `NotificationPrismaStore`.
+- 4 commands: create, markRead, markDismissed, remove. No update command.
+
+**Visible behavior on completion:**
+- Server-side code that creates notifications through `POST /api/collaboration/notifications/commands/create`
+  persists to `tenant_admin.notifications` and the record is immediately visible via
+  `GET /api/collaboration/notifications/list`.
+- The mark-read and mark-dismissed commands correctly target the specific notification instance
+  (via `instanceId`) and persist the `isRead`/`readAt` changes to the database.
+
+---
+
 ## Tracked but not started (in priority order)
 
-These four are part of the same task; do not start them until Proposal **and**
-PurchaseOrder are landed and verified.
+These three are part of the same task; do not start them until Proposal,
+PurchaseOrder, **and** Notification are landed and verified.
 
-3. **Notification** (tenant_core). Trace `apps/app/...notifications` UI → API.
-   Likely raw SQL today; choose Prisma route, add `NotificationPrismaStore` if
-   commands flow through manifest, add HTTP test that creates → lists →
-   marks-read.
-4. **Schedule** (tenant_staff). `ScheduleShiftPrismaStore` already exists; the
+3. **Schedule** (tenant_staff). `ScheduleShiftPrismaStore` already exists; the
    parent likely needs the same treatment as Proposal. Confirm read/write split
    before starting.
-5. **Shipment** (tenant_inventory). `ShipmentItemPrismaStore` exists. Same
+4. **Shipment** (tenant_inventory). `ShipmentItemPrismaStore` exists. Same
    parent treatment.
-6. **User** (tenant_core). High blast radius — touches auth/session. Trace
+5. **User** (tenant_core). High blast radius — touches auth/session. Trace
    tenant-isolation paths first; do not refactor until earlier entities are
    green and you have a written rollback plan.
 
@@ -243,6 +276,7 @@ Full write-ups live in the archive. Highlights:
 
 - **Proposal parent workflow (completed 2026-04-28).** `ProposalPrismaStore` bridges manifest command writes to Prisma `tenant_crm.proposals`. All 6 status-transition command routes now pass `instanceId` to `runCommand`. `executeManifestCommand` helper also passes `instanceId` for non-create commands (fixes Blocker #1 for all entities using this helper). Batch 13 stores (`ProposalLineItemPrismaStore`, `PurchaseOrderItemPrismaStore`) wired into `createPrismaStoreProvider` switch — they were in `ENTITIES_WITH_SPECIFIC_STORES` but had no switch case.
 - **PurchaseOrder parent workflow (completed 2026-04-28).** `PurchaseOrderPrismaStore` bridges manifest command writes to Prisma `tenant_inventory.purchase_orders`. All 6 instance-scoped command routes (submit, approve, reject, cancel, mark-ordered, mark-received) now pass `instanceId` to `runCommand`. Key finding: frontend uses `/api/procurement/` routes (raw SQL, self-consistent), not the `/api/inventory/` manifest command routes.
+- **Notification parent workflow (completed 2026-04-28).** `NotificationPrismaStore` bridges manifest command writes to Prisma `tenant_admin.notifications`. All 3 instance-scoped command routes (mark-read, mark-dismissed, remove) now pass `instanceId` to `runCommand`. Key finding: Notification lives in `tenant_admin` (not `tenant_core`); frontend uses Knock SDK directly and does not call the app's notification API routes.
 - **BROKEN_PRISMA_READ Batches 03–13 (closed 2026-04-28).** Twelve mechanical
   batches landed dedicated Prisma stores for AlertsConfig and 50+ other
   entities, including ProposalLineItem, PurchaseOrderItem, ScheduleShift,

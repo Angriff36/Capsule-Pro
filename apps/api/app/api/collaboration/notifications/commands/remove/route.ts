@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
 
     const result = await runtime.runCommand("remove", body, {
       entityName: "Notification",
+      instanceId: body.id,
     });
 
     if (!result.success) {
