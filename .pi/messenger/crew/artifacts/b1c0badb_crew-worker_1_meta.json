@@ -1,0 +1,10 @@
+{
+  "runId": "b1c0badb",
+  "agent": "crew-worker",
+  "index": 1,
+  "exitCode": 0,
+  "durationMs": 1569,
+  "tokens": 0,
+  "truncated": false,
+  "error": "400 {\"type\":\"error\",\"error\":{\"type\":\"invalid_request_error\",\"message\":\"You're out of extra usage. Add more at claude.ai/settings/usage and keep going.\"},\"request_id\":\"req_011CaWnCxKEGehPfC3qoQihs\"}"
+}

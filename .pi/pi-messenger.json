@@ -1,0 +1,10 @@
+{
+  "crew": {
+    "models": {
+      "planner": "zai/glm-5.1",
+      "worker": "zai/glm-5.1",
+      "reviewer": "zai/glm-5.1",
+      "analyst": "zai/glm-5.1"
+    }
+  }
+}
