@@ -214,6 +214,7 @@ const ENTITIES_WITH_SPECIFIC_STORES = new Set([
   "Schedule",
   "ScheduleShift",
   "ShipmentItem",
+  "Shipment",
   "Notification",
 ]);
 

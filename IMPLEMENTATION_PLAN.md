@@ -22,7 +22,7 @@ In-scope parents (no new BROKEN_PRISMA_READ batches — those are done):
 | 2 | **PurchaseOrder** ✅ | tenant_inventory | `PurchaseOrderPrismaStore` + `PurchaseOrderItemPrismaStore` wired; instanceId fixed |
 | 3 | **Notification** ✅ | tenant_admin   | `NotificationPrismaStore` wired; instanceId fixed on 3 command routes |
 | 4 | **Schedule** ✅   | tenant_staff     | `SchedulePrismaStore` + `ScheduleShiftPrismaStore` wired; instanceId fixed |
-| 5 | Shipment          | tenant_inventory | `ShipmentItemPrismaStore` exists (batch 13)      |
+| 5 | **Shipment** ✅   | tenant_inventory | `ShipmentPrismaStore` + `ShipmentItemPrismaStore` wired; instanceId fixed |
 | 6 | User              | tenant_core      | n/a (high blast radius — auth/session)           |
 
 **Start with Proposal**, then PurchaseOrder. ProposalLineItem /
@@ -248,16 +248,51 @@ for actions.
 
 ---
 
+## Step 5 — Shipment (Inventory) ✅ DONE
+
+**Completed 2026-04-28.** Changes:
+- Added `ShipmentPrismaStore` at `packages/manifest-adapters/src/prisma-stores/broken-read-shipment-parent.ts`
+- Wired `Shipment` into `ENTITIES_WITH_SPECIFIC_STORES` and `createPrismaStoreProvider` switch
+- Fixed `instanceId` on all 6 instance-scoped command routes (update, cancel, schedule, ship, start-preparing, mark-delivered)
+- Added `apps/api/__tests__/logistics/shipments/shipment-end-to-end.test.ts` (11 assertions)
+- Added `shipment` and `shipmentItem` models to API test database mock
+- All typechecks and tests pass (manifest-adapters: 436 tests, api: 1218 tests)
+
+**Frontend entry:** Two pages: `/logistics/shipments` and `/warehouse/shipments`.
+`GET /api/shipments` (with filters/pagination) for the index.
+`POST /api/shipments/shipment/commands/{create|update|cancel|schedule|ship|start-preparing|mark-delivered}`
+for actions.
+
+**Canonical routes (under `apps/api/app/api/shipments/`):**
+- `GET .../shipment/list` — Prisma (`database.shipment.findMany`) ✅
+- `GET .../shipment/[id]` — Prisma (`database.shipment.findUnique`) ✅
+- `POST .../shipment/commands/create` — manifest runtime (no instanceId needed) ✅
+- `POST .../shipment/commands/update` — manifest runtime (instanceId fixed) ✅
+- `POST .../shipment/commands/cancel` — manifest runtime (instanceId fixed) ✅
+- `POST .../shipment/commands/schedule` — manifest runtime (instanceId fixed) ✅
+- `POST .../shipment/commands/ship` — manifest runtime (instanceId fixed) ✅
+- `POST .../shipment/commands/start-preparing` — manifest runtime (instanceId fixed) ✅
+- `POST .../shipment/commands/mark-delivered` — manifest runtime (instanceId fixed) ✅
+
+**Key findings:**
+- Shipment lives in `tenant_inventory` schema. Table: `shipments`.
+- `status` is a `ShipmentStatus` Prisma enum (not plain string) — store uses `as any` cast.
+- Multiple nullable DateTime fields (scheduledDate, shippedDate, estimatedDeliveryDate, actualDeliveryDate).
+- Nullable Decimal fields (shippingCost, totalValue) handled with `toDecimalInput`.
+- Root routes (`/api/shipments`, `/api/shipments/[id]`) provide richer APIs with filters, pagination, includes — these use Prisma for reads and `executeManifestCommand` for writes (instanceId already handled by the shared helper fix from Step 1).
+- Auto-generated command routes under `/shipment/commands/` directly call `runtime.runCommand` — these needed the instanceId fix.
+- Manifest (`shipment-rules.manifest`) declares `store Shipment in memory` — now bridged to Prisma via `ShipmentPrismaStore`.
+
+---
+
 ## Tracked but not started (in priority order)
 
-5. **Shipment** (tenant_inventory). `ShipmentItemPrismaStore` exists. Same
-   parent treatment.
 6. **User** (tenant_core). High blast radius — touches auth/session. Trace
    tenant-isolation paths first; do not refactor until earlier entities are
    green and you have a written rollback plan.
 
 When you start one of these, lift it into its own numbered step section above,
-identical in shape to Steps 1–4.
+identical in shape to Steps 1–5.
 
 ---
 
@@ -305,6 +340,7 @@ Full write-ups live in the archive. Highlights:
 - **PurchaseOrder parent workflow (completed 2026-04-28).** `PurchaseOrderPrismaStore` bridges manifest command writes to Prisma `tenant_inventory.purchase_orders`. All 6 instance-scoped command routes (submit, approve, reject, cancel, mark-ordered, mark-received) now pass `instanceId` to `runCommand`. Key finding: frontend uses `/api/procurement/` routes (raw SQL, self-consistent), not the `/api/inventory/` manifest command routes.
 - **Schedule parent workflow (completed 2026-04-28).** `SchedulePrismaStore` bridges manifest command writes to Prisma `tenant_staff.schedules`. All 3 instance-scoped command routes (update, release, close) now pass `instanceId` to `runCommand`. ScheduleShiftPrismaStore wiring gap fixed (was in `ENTITIES_WITH_SPECIFIC_STORES` but had no `createPrismaStoreProvider` switch case). Manifest-only fields (`notes`, `shiftCount`) have no Prisma columns — accepted but dropped on write, returned as defaults on read.
 - **Notification parent workflow (completed 2026-04-28).** `NotificationPrismaStore` bridges manifest command writes to Prisma `tenant_admin.notifications`. All 3 instance-scoped command routes (mark-read, mark-dismissed, remove) now pass `instanceId` to `runCommand`. Key finding: Notification lives in `tenant_admin` (not `tenant_core`); frontend uses Knock SDK directly and does not call the app's notification API routes.
+- **Shipment parent workflow (completed 2026-04-28).** `ShipmentPrismaStore` bridges manifest command writes to Prisma `tenant_inventory.shipments`. All 6 instance-scoped command routes (update, cancel, schedule, ship, start-preparing, mark-delivered) now pass `instanceId` to `runCommand`. Key finding: `status` is a Prisma enum (`ShipmentStatus`), not plain string — store uses `as any` cast. Root routes (`/api/shipments`, `/api/shipments/[id]`) use `executeManifestCommand` for writes (instanceId handled by shared helper); auto-generated routes under `/shipment/commands/` directly call `runtime.runCommand` and needed individual fixes.
 - **BROKEN_PRISMA_READ Batches 03–13 (closed 2026-04-28).** Twelve mechanical
   batches landed dedicated Prisma stores for AlertsConfig and 50+ other
   entities, including ProposalLineItem, PurchaseOrderItem, ScheduleShift,

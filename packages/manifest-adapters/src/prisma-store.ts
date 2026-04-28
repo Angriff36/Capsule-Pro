@@ -143,6 +143,7 @@ import { PurchaseOrderPrismaStore } from "./prisma-stores/broken-read-po-parent.
 import { NotificationPrismaStore } from "./prisma-stores/broken-read-notification-parent.js";
 import { SchedulePrismaStore } from "./prisma-stores/broken-read-schedule-parent.js";
 import { ScheduleShiftPrismaStore } from "./prisma-stores/broken-read-batch13-schedule-shipment.js";
+import { ShipmentPrismaStore } from "./prisma-stores/broken-read-shipment-parent.js";
 
 /**
  * Report a silent store error to Sentry without blocking the return path.
@@ -1780,6 +1781,8 @@ export function createPrismaStoreProvider(
         return new SchedulePrismaStore(prisma, tenantId);
       case "ScheduleShift":
         return new ScheduleShiftPrismaStore(prisma, tenantId);
+      case "Shipment":
+        return new ShipmentPrismaStore(prisma, tenantId);
       default:
         console.error(
           `[createPrismaStoreProvider] No store for entity "${entityName}" — commands will fail`
