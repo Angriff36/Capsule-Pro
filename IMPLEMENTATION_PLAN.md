@@ -24,7 +24,7 @@
 | **Backend-Complete, No UI** | 4 major systems | **ALL IMPLEMENTED** ✅ | ~~P1~~ |
 | **SPEC Coverage** | 36/46 complete (78%) — All AI conflict detection + payroll approvals implemented | UPDATED COUNT | P2 |
 | **Placeholder Pages** | 5 pages remain stubs (down from 12) | **7 FIXED ✅** | P2 |
-| **Test Coverage** | ~65 of ~126 API domains untested (10 critical domains now covered, 1874 tests total) | IN PROGRESS | P3 |
+| **Test Coverage** | ~55 of ~126 API domains untested (2,134 tests across 96 files, 6 new domains covered in wave 3) | IN PROGRESS | P3 |
 
 ### Audit Statistics (14 agents, 2026-04-29)
 
@@ -308,18 +308,24 @@ All 16 `alert()` calls across 7 files replaced with `toast.success()` / `toast.e
 | Domain | Status | Action |
 |--------|--------|--------|
 | Recipe/Prep system | PARTIAL — stations (27), ingredients (27) covered | Add remaining unit tests |
-| Payroll workflows | NO INTEGRATION | Add integration tests |
-| Menu/Dish management | PARTIAL — menus (14), dishes (25) covered | Add remaining unit tests |
-| Training management | NO TESTS | Add unit tests |
-| Event lifecycle | PARTIAL (4 files) — catering-orders (35), budgets (23), contracts (24), lifecycle (1) | Expand coverage |
-| 80+ API domains | ZERO TESTS | Prioritize core business domains |
+| Payroll workflows | COVERED — periods (18), runs (13), deductions (11) | Add approval workflow tests |
+| Menu/Dish management | COVERED — menus (14), dishes (25) covered | Add remaining unit tests |
+| Training management | COVERED — ~80 tests (modules, assignments, completion) | Expand edge cases |
+| Event lifecycle | COVERED — catering-orders (35), budgets (23), contracts (24), lifecycle (1) | Expand coverage |
+| Logistics | COVERED — drivers/vehicles/routes (43 tests) | Expand edge cases |
+| Facilities | COVERED — facilities/assets/areas/work-orders (78 tests) | Expand edge cases |
+| Calendar | COVERED — GET calendar + PATCH reschedule (31 tests) | Expand edge cases |
+| Knowledge Base | COVERED — entries list/create (40 tests) | Add update/delete tests |
+| Admin Tasks | COVERED — 7 endpoints (~55 tests) | Expand edge cases |
+| Analytics | COVERED — finance/kitchen/staff (46 tests) | Expand edge cases |
+| ~55 remaining API domains | ZERO TESTS | Prioritize core business domains |
 
 ### Skipped Tests
 
 - **API:** 1 skipped `describe` block in `sales-reporting/generate.test.ts`
 - **E2E:** 41 skipped tests across 13 files
-- **API test files:** 85 files covering 27 domains (of ~126 total)
-- **All 1,520 API tests pass**
+- **API test files:** 96 files covering 37+ domains (of ~126 total)
+- **All 2,134 API tests pass**
 
 ---
 
@@ -366,6 +372,18 @@ All 33 placeholder occurrences across 12 event files replaced with consistent, u
 ---
 
 ## Recently Resolved
+
+### 2026-04-29 — Test Coverage Wave 3 — Logistics, Facilities, Calendar, KB, Admin, Analytics (6 domains, ~293 tests)
+- **ADDED** test coverage for 6 previously-untested API domains across 10 test suites:
+  - `__tests__/logistics/logistics.test.ts` — 43 tests (drivers/vehicles/routes list/create/delete with auth, tenant isolation, raw SQL)
+  - `__tests__/facilities/facilities-commands.test.ts` — 78 tests (facility/area/work-order CRUD with raw SQL multi-call mocking)
+  - `__tests__/calendar/calendar.test.ts` — 31 tests (GET calendar with multi-source fetching, PATCH reschedule with compound keys)
+  - `__tests__/knowledge-base/knowledge-base.test.ts` — 40 tests (entries list with filtering/pagination, create with validation/duplicate detection)
+  - `__tests__/administrative/admin-tasks.test.ts` — ~55 tests (7 endpoints covering list/detail/create/PATCH/DELETE with manifest runtime + direct DB patterns)
+  - `__tests__/analytics/analytics.test.ts` — ~46 tests (finance/kitchen/staff analytics with multi-$queryRaw Promise.all mocking)
+  - `__tests__/logistics/shipments/shipment-end-to-end.test.ts` — existing shipment persistence tests
+- **Updated database mock surface:** Added `driver`, `vehicle`, `deliveryRoute` models to shared test mock
+- All 2,134 API tests pass across 96 test files. Zero failures.
 
 ### 2026-04-29 — Critical Domain Test Coverage Wave 2 (5 suites, ~350 tests)
 - **ADDED** test coverage for 5 critical previously-untested API domains:

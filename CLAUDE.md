@@ -155,14 +155,27 @@ Last: [first session]
 
 ## Last Session Bridge
 [pre-compact bridge — saved before context compaction]
+Files (10):
+  apps/api/__tests__/logistics/logistics.test.ts (create)
+  apps/api/__tests__/administrative/admin-tasks.test.ts (create)
+  apps/api/__tests__/calendar/calendar.test.ts (create)
+  apps/api/test/mocks/@repo/database.ts (edit)
+  apps/api/__tests__/facilities/facilities-commands.test.ts (create)
+  apps/api/__tests__/knowledge-base/knowledge-base.test.ts (create)
+  apps/api/__tests__/analytics/analytics.test.ts (create)
+  apps/api/__tests__/facilities/facilities-commands.test.ts (edit)
+  apps/api/__tests__/calendar/calendar.test.ts (edit)
+  apps/api/__tests__/administrative/admin-tasks.test.ts (edit)
+Manual bridge:
+[proactive bridge @ 83% context — saved before compacting]
 Files (8):
-  apps/api/__tests__/kitchen/menus.test.ts (create)
-  apps/api/__tests__/events/event-budgets.test.ts (create)
-  apps/api/__tests__/events/event-contracts.test.ts (create)
-  apps/api/__tests__/events/catering-orders.test.ts (create)
-  apps/api/__tests__/kitchen/dishes.test.ts (create)
-  apps/api/__tests__/kitchen/stations.test.ts (create)
-  apps/api/__tests__/events/catering-orders.test.ts (edit)
-  apps/api/__tests__/kitchen/ingredients.test.ts (create)
+  apps/api/__tests__/logistics/logistics.test.ts (create)
+  apps/api/__tests__/administrative/admin-tasks.test.ts (create)
+  apps/api/__tests__/calendar/calendar.test.ts (create)
+  apps/api/test/mocks/@repo/database.ts (edit)
+  apps/api/__tests__/facilities/facilities-commands.test.ts (create)
+  apps/api/__tests__/knowledge-base/knowledge-base.test.ts (create)
+  apps/api/__tests__/analytics/analytics.test.ts (create)
+  apps/api/__tests__/facilities/facilities-commands.test.ts (edit)
 
 # === END COGNILAYER ===

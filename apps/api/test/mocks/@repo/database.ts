@@ -131,6 +131,10 @@ export const database: Record<string, unknown> = {
   email_templates: createMockModel(),
   emailWorkflow: createMockModel(),
   sms_automation_rules: createMockModel(),
+  // Logistics models
+  driver: createMockModel(),
+  vehicle: createMockModel(),
+  deliveryRoute: createMockModel(),
 };
 
 database.$transaction = vi.fn((fn: (tx: unknown) => unknown) => fn(database));
