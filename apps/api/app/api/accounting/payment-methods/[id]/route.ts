@@ -146,6 +146,115 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 }
 
 /**
+ * PATCH /api/accounting/payment-methods/[id]
+ * Handle payment method command actions
+ */
+export async function PATCH(request: NextRequest, context: RouteContext) {
+  try {
+    const tenantId = await requireTenantId();
+    const { id } = await context.params;
+    const body = await request.json();
+
+    const paymentMethod = await database.paymentMethod.findFirst({
+      where: { tenantId, id, deletedAt: null },
+    });
+
+    if (!paymentMethod) {
+      return NextResponse.json(
+        { error: "Payment method not found" },
+        { status: 404 }
+      );
+    }
+
+    validatePaymentMethodAccess(paymentMethod, tenantId);
+
+    const action = body.action;
+
+    if (action === "mark-as-default") {
+      // Unset other defaults for this client
+      await database.paymentMethod.updateMany({
+        where: {
+          tenantId,
+          clientId: paymentMethod.clientId,
+          id: { not: id },
+          isDefault: true,
+        },
+        data: { isDefault: false },
+      });
+
+      const updated = await database.paymentMethod.update({
+        where: { tenantId_id: { tenantId, id } },
+        data: { isDefault: true, updatedAt: new Date() },
+      });
+
+      const response: PaymentMethodResponse = {
+        ...updated,
+        displayInfo: getDisplayInfo(updated),
+      };
+      return NextResponse.json<PaymentMethodResponse>(response);
+    }
+
+    if (action === "verify") {
+      const updated = await database.paymentMethod.update({
+        where: { tenantId_id: { tenantId, id } },
+        data: { status: "VERIFIED", updatedAt: new Date() },
+      });
+
+      const response: PaymentMethodResponse = {
+        ...updated,
+        displayInfo: getDisplayInfo(updated),
+      };
+      return NextResponse.json<PaymentMethodResponse>(response);
+    }
+
+    if (action === "flag-for-fraud") {
+      const updated = await database.paymentMethod.update({
+        where: { tenantId_id: { tenantId, id } },
+        data: { status: "FLAGGED", updatedAt: new Date() },
+      });
+
+      const response: PaymentMethodResponse = {
+        ...updated,
+        displayInfo: getDisplayInfo(updated),
+      };
+      return NextResponse.json<PaymentMethodResponse>(response);
+    }
+
+    if (action === "mark-expired") {
+      const updated = await database.paymentMethod.update({
+        where: { tenantId_id: { tenantId, id } },
+        data: { status: "EXPIRED", updatedAt: new Date() },
+      });
+
+      const response: PaymentMethodResponse = {
+        ...updated,
+        displayInfo: getDisplayInfo(updated),
+      };
+      return NextResponse.json<PaymentMethodResponse>(response);
+    }
+
+    if (action === "remove") {
+      // Soft delete
+      await database.paymentMethod.update({
+        where: { tenantId_id: { tenantId, id } },
+        data: { deletedAt: new Date() },
+      });
+
+      return NextResponse.json({ success: true });
+    }
+
+    return NextResponse.json({ error: "Invalid action" }, { status: 400 });
+  } catch (error) {
+    captureException(error);
+    console.error("Error handling payment method action:", error);
+    return NextResponse.json(
+      { error: "Failed to handle payment method action" },
+      { status: 500 }
+    );
+  }
+}
+
+/**
  * DELETE /api/accounting/payment-methods/[id]
  * Delete (soft delete) a payment method
  */

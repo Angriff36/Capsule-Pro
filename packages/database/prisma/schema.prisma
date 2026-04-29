@@ -4437,6 +4437,7 @@ model PaymentMethod {
   cardLastFour String?   @map("card_last_four") @db.Char(4)
   cardNetwork  String?   @map("card_network") // VISA, MASTERCARD, AMEX, DISCOVER, DINERS_CLUB, JCB
   isDefault    Boolean   @default(false) @map("is_default")
+  status       String    @default("ACTIVE") @db.Text
   createdAt    DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
   deletedAt    DateTime? @map("deleted_at") @db.Timestamptz(6)

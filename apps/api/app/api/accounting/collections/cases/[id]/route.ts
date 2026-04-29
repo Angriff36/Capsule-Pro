@@ -344,6 +344,24 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json(updated);
     }
 
+    if (action === "reopen") {
+      const updated = await database.collectionCase.update({
+        where: { id },
+        data: {
+          status: "ACTIVE",
+          dunningStage: "CURRENT",
+          isEscalatedToLegal: false,
+          notes: collectionCase.notes
+            ? collectionCase.notes +
+              "\nReopened: " +
+              (body.reason || "No reason provided")
+            : "Reopened: " + (body.reason || "No reason provided"),
+          updatedAt: new Date(),
+        },
+      });
+      return NextResponse.json(updated);
+    }
+
     return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   } catch (error) {
     captureException(error);

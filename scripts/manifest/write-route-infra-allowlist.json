@@ -214,7 +214,7 @@
     },
     {
       "prefix": "/api/accounting/payment-methods",
-      "methods": ["POST", "PUT", "DELETE"],
+      "methods": ["POST", "PUT", "PATCH", "DELETE"],
       "comment": "Legacy infrastructure: Direct DB access for payment methods (needs manifest migration)"
     },
     {

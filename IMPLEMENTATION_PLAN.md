@@ -155,16 +155,16 @@ Root cause: `manifestSuccessResponse()` spreads data at top level, but UI reads 
 
 ---
 
-## TIER 1 — Missing API Commands (4 entities)
+## TIER 1 — Missing API Commands (0 entities)
 
-| # | Entity | Missing Commands |
-|---|--------|------------------|
-| 35 | CollectionCase | assign, close, create-payment-plan, escalate-dunning, reopen, record-payment |
-| 36 | Invoice | apply-payment, mark-as-paid, mark-overdue, send-reminder, void |
-| 37 | PaymentMethod | mark-as-default, verify, flag-for-fraud, mark-expired, remove |
-| 38 | RevenueRecognitionSchedule | List route + create, adjust, cancel, recognize, reverse, start |
+| # | Entity | Status | Missing Commands |
+|---|--------|---------|------------------|
+| 35 | CollectionCase | ✅ FIXED | reopen (added to existing PATCH) |
+| 36 | Invoice | ✅ FIXED | apply-payment, mark-as-paid, mark-overdue, send-reminder, void |
+| 37 | PaymentMethod | ✅ FIXED | mark-as-default, verify, flag-for-fraud, mark-expired, remove |
+| 38 | RevenueRecognitionSchedule | ✅ FIXED | adjust, cancel, recognize, reverse, start |
 
-All 4 have Prisma models in `schema.prisma`.
+All 4 entities now have complete command implementations with Prisma models in `schema.prisma`.
 
 ### Venue Migration
 
@@ -359,6 +359,13 @@ Fix: Replace all with toast notifications via the design system.
 - **BONUS:** TrainingModule PrismaStore wired (same pattern, was also unwired)
 - All 17 requisition end-to-end tests pass
 - API typecheck passes
+
+### 2026-04-29 — Financial API Commands Implementation
+- **FIXED T1 #35:** CollectionCase - Added missing `reopen` command to existing PATCH handler
+- **FIXED T1 #36:** Invoice - Added PATCH handler with 4 action commands (apply-payment, mark-as-paid, mark-overdue, send-reminder)
+- **FIXED T1 #37:** PaymentMethod - Added status field + 5 command actions (mark-as-default, verify, flag-for-fraud, mark-expired, remove)
+- **FIXED T1 #38:** RevenueRecognitionSchedule - Expanded PATCH handler with 5 action commands (adjust, cancel, recognize, reverse, start)
+- All 4 entities now have complete CRUD + command implementations
 
 ### 2026-04-29 — Dead Button Fixes (T0-B batch 2)
 - **FIXED T0-B #8:** "New Invoice" button navigates to /accounting/invoices/new
