@@ -155,6 +155,6 @@ Last: [first session]
 
 ## Last Session Bridge
 [Emergency bridge — running bridge was not updated]
-Files: apps/app/app/(authenticated)/settings/notifications/page.tsx (create), apps/app/app/(authenticated)/settings/notifications/notifications-client.tsx (create), apps/app/app/(authenticated)/settings/notifications/notifications-client.tsx (edit), IMPLEMENTATION_PLAN.md (edit)
+Files: IMPLEMENTATION_PLAN.md (edit), .gitignore (edit)
 
 # === END COGNILAYER ===

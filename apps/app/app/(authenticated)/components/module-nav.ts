@@ -246,6 +246,7 @@ export const modules: ModuleDefinition[] = [
           { title: "Integrations", href: "/settings/integrations" },
           { title: "Security", href: "/settings/security" },
           { title: "Email Templates", href: "/settings/email-templates" },
+          { title: "Email Workflows", href: "/settings/email-workflows" },
           { title: "Audit Log", href: "/settings/audit-log" },
         ],
       },
