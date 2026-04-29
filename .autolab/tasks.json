@@ -7,11 +7,7 @@
     "priority": "high",
     "source": "sentry",
     "created_by": "Sentinel",
-    "tags": [
-      "sentry",
-      "middleware",
-      "404"
-    ],
+    "tags": ["sentry", "middleware", "404"],
     "completed_by": "Sentinel",
     "completed_at": "2026-04-27T17:57:30.237Z",
     "resolution": "Added NEXT_HTTP_ERROR_FALLBACK filter in proxy.ts catch block to prevent Sentry capture of Next.js 404 fallbacks"
@@ -23,10 +19,7 @@
     "status": "completed",
     "priority": "critical",
     "assignee": null,
-    "tags": [
-      "database",
-      "deployment"
-    ],
+    "tags": ["database", "deployment"],
     "dependencies": [],
     "created_at": "2026-03-26T18:40:00.000Z",
     "updated_at": "2026-03-26T18:46:00.000Z",
@@ -43,10 +36,7 @@
     "status": "completed",
     "priority": "high",
     "assignee": null,
-    "tags": [
-      "frontend",
-      "bug"
-    ],
+    "tags": ["frontend", "bug"],
     "dependencies": [],
     "created_at": "2026-03-26T18:40:00.000Z",
     "updated_at": "2026-03-28T13:45:58.749Z",
@@ -64,10 +54,7 @@
     "status": "done",
     "priority": "high",
     "assignee": null,
-    "tags": [
-      "frontend",
-      "bug"
-    ],
+    "tags": ["frontend", "bug"],
     "dependencies": [],
     "created_at": "2026-03-26T18:40:00.000Z",
     "updated_at": "2026-03-26T23:03:32.833Z",
@@ -85,10 +72,7 @@
     "status": "done",
     "priority": "medium",
     "assignee": null,
-    "tags": [
-      "tooling",
-      "dx"
-    ],
+    "tags": ["tooling", "dx"],
     "dependencies": [],
     "created_at": "2026-03-26T18:40:00.000Z",
     "updated_at": "2026-03-26T23:04:10.565Z",
@@ -106,11 +90,7 @@
     "status": "done",
     "priority": "medium",
     "assignee": null,
-    "tags": [
-      "refactor",
-      "manifest",
-      "tech-debt"
-    ],
+    "tags": ["refactor", "manifest", "tech-debt"],
     "dependencies": [],
     "created_at": "2026-03-26T18:40:00.000Z",
     "updated_at": "2026-03-27T04:14:59.730Z",
@@ -128,10 +108,7 @@
     "status": "done",
     "priority": "medium",
     "assignee": null,
-    "tags": [
-      "observability",
-      "sentry"
-    ],
+    "tags": ["observability", "sentry"],
     "dependencies": [],
     "created_at": "2026-03-26T18:40:00.000Z",
     "updated_at": "2026-03-27T04:50:34.745Z",
@@ -149,11 +126,7 @@
     "status": "done",
     "priority": "low",
     "assignee": null,
-    "tags": [
-      "dx",
-      "lint",
-      "tech-debt"
-    ],
+    "tags": ["dx", "lint", "tech-debt"],
     "dependencies": [],
     "created_at": "2026-03-26T18:40:00.000Z",
     "updated_at": "2026-03-26T23:04:29.619Z",
@@ -170,11 +143,7 @@
     "description": "Thoroughly test EVERY feature, button, link on the Command Board tab. Verify everything works as expected. Note any missing functionality, broken links, errors, or pain points. Create follow-up tasks for each issue found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "testing",
-      "command-board"
-    ],
+    "tags": ["qa", "testing", "command-board"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -191,11 +160,7 @@
     "description": "Thoroughly test EVERY feature, button, link on the Knowledge Base tab. Verify everything works as expected. Note any missing functionality, broken links, errors, or pain points. Create follow-up tasks for each issue found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "testing",
-      "knowledge-base"
-    ],
+    "tags": ["qa", "testing", "knowledge-base"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -212,11 +177,7 @@
     "description": "Thoroughly test EVERY feature, button, link on the Calendar tab. Verify everything works as expected. Note any missing functionality, broken links, errors, or pain points. Create follow-up tasks for each issue found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "testing",
-      "calendar"
-    ],
+    "tags": ["qa", "testing", "calendar"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -233,11 +194,7 @@
     "description": "Thoroughly test EVERY feature, button, link on the Inventory tab. Verify everything works as expected. Note any missing functionality, broken links, errors, or pain points. Create follow-up tasks for each issue found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "testing",
-      "inventory"
-    ],
+    "tags": ["qa", "testing", "inventory"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -254,11 +211,7 @@
     "description": "Thoroughly test EVERY feature, button, link on the Events tab. Verify everything works as expected. Note any missing functionality, broken links, errors, or pain points. Create follow-up tasks for each issue found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "testing",
-      "events"
-    ],
+    "tags": ["qa", "testing", "events"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -275,11 +228,7 @@
     "description": "Thoroughly test EVERY feature, button, link on the Warehouse tab. Verify everything works as expected. Note any missing functionality, broken links, errors, or pain points. Create follow-up tasks for each issue found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "testing",
-      "warehouse"
-    ],
+    "tags": ["qa", "testing", "warehouse"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -296,11 +245,7 @@
     "description": "Thoroughly test EVERY feature, button, link on the Scheduling tab. Verify everything works as expected. Note any missing functionality, broken links, errors, or pain points. Create follow-up tasks for each issue found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "testing",
-      "scheduling"
-    ],
+    "tags": ["qa", "testing", "scheduling"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -317,11 +262,7 @@
     "description": "Thoroughly test EVERY feature, button, link on the Staff tab. Verify everything works as expected. Note any missing functionality, broken links, errors, or pain points. Create follow-up tasks for each issue found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "testing",
-      "staff"
-    ],
+    "tags": ["qa", "testing", "staff"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -338,11 +279,7 @@
     "description": "Thoroughly test EVERY feature, button, link on the Staffing tab. Verify everything works as expected. Note any missing functionality, broken links, errors, or pain points. Create follow-up tasks for each issue found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "testing",
-      "staffing"
-    ],
+    "tags": ["qa", "testing", "staffing"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -359,11 +296,7 @@
     "description": "Thoroughly test EVERY feature, button, link on the Payroll tab. Verify everything works as expected. Note any missing functionality, broken links, errors, or pain points. Create follow-up tasks for each issue found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "testing",
-      "payroll"
-    ],
+    "tags": ["qa", "testing", "payroll"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -380,11 +313,7 @@
     "description": "Thoroughly test EVERY feature, button, link on the Administrative tab. Verify everything works as expected. Note any missing functionality, broken links, errors, or pain points. Create follow-up tasks for each issue found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "testing",
-      "administrative"
-    ],
+    "tags": ["qa", "testing", "administrative"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -401,11 +330,7 @@
     "description": "Thoroughly test EVERY feature, button, link on the CRM tab. Verify everything works as expected. Note any missing functionality, broken links, errors, or pain points. Create follow-up tasks for each issue found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "testing",
-      "crm"
-    ],
+    "tags": ["qa", "testing", "crm"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -422,11 +347,7 @@
     "description": "Thoroughly test EVERY feature, button, link on the Analytics tab. Verify everything works as expected. Note any missing functionality, broken links, errors, or pain points. Create follow-up tasks for each issue found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "testing",
-      "analytics"
-    ],
+    "tags": ["qa", "testing", "analytics"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -443,11 +364,7 @@
     "description": "Thoroughly test EVERY feature, button, link on the Logistics tab. Verify everything works as expected. Note any missing functionality, broken links, errors, or pain points. Create follow-up tasks for each issue found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "testing",
-      "logistics"
-    ],
+    "tags": ["qa", "testing", "logistics"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -464,11 +381,7 @@
     "description": "Thoroughly test EVERY feature, button, link on the Facilities tab. Verify everything works as expected. Note any missing functionality, broken links, errors, or pain points. Create follow-up tasks for each issue found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "testing",
-      "facilities"
-    ],
+    "tags": ["qa", "testing", "facilities"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -485,11 +398,7 @@
     "description": "Thoroughly test EVERY feature, button, link on the Procurement tab. Verify everything works as expected. Note any missing functionality, broken links, errors, or pain points. Create follow-up tasks for each issue found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "testing",
-      "procurement"
-    ],
+    "tags": ["qa", "testing", "procurement"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -506,11 +415,7 @@
     "description": "Sentinel completed QA on Command Board tab but did not document findings or create follow-up tasks. Review the QA results and create/implement tasks for any issues found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "follow-up",
-      "command-board"
-    ],
+    "tags": ["qa", "follow-up", "command-board"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -527,11 +432,7 @@
     "description": "Sentinel completed QA on Knowledge Base tab but did not document findings or create follow-up tasks. Review the QA results and create/implement tasks for any issues found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "follow-up",
-      "knowledge-base"
-    ],
+    "tags": ["qa", "follow-up", "knowledge-base"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -548,11 +449,7 @@
     "description": "Sentinel completed QA on Calendar tab but did not document findings or create follow-up tasks. Review the QA results and create/implement tasks for any issues found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "follow-up",
-      "calendar"
-    ],
+    "tags": ["qa", "follow-up", "calendar"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -569,11 +466,7 @@
     "description": "Sentinel completed QA on Inventory tab but did not document findings or create follow-up tasks. Review the QA results and create/implement tasks for any issues found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "follow-up",
-      "inventory"
-    ],
+    "tags": ["qa", "follow-up", "inventory"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -590,11 +483,7 @@
     "description": "Sentinel completed QA on Events tab but did not document findings or create follow-up tasks. Review the QA results and create/implement tasks for any issues found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "follow-up",
-      "events"
-    ],
+    "tags": ["qa", "follow-up", "events"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -611,11 +500,7 @@
     "description": "Sentinel completed QA on Warehouse tab but did not document findings or create follow-up tasks. Review the QA results and create/implement tasks for any issues found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "follow-up",
-      "warehouse"
-    ],
+    "tags": ["qa", "follow-up", "warehouse"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -632,11 +517,7 @@
     "description": "Sentinel completed QA on Scheduling tab but did not document findings or create follow-up tasks. Review the QA results and create/implement tasks for any issues found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "follow-up",
-      "scheduling"
-    ],
+    "tags": ["qa", "follow-up", "scheduling"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -653,11 +534,7 @@
     "description": "Sentinel completed QA on Staff tab but did not document findings or create follow-up tasks. Review the QA results and create/implement tasks for any issues found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "follow-up",
-      "staff"
-    ],
+    "tags": ["qa", "follow-up", "staff"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -674,11 +551,7 @@
     "description": "Sentinel completed QA on Staffing tab but did not document findings or create follow-up tasks. Review the QA results and create/implement tasks for any issues found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "follow-up",
-      "staffing"
-    ],
+    "tags": ["qa", "follow-up", "staffing"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -695,11 +568,7 @@
     "description": "Sentinel completed QA on Payroll tab but did not document findings or create follow-up tasks. Review the QA results and create/implement tasks for any issues found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "follow-up",
-      "payroll"
-    ],
+    "tags": ["qa", "follow-up", "payroll"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -716,11 +585,7 @@
     "description": "Sentinel completed QA on Administrative tab but did not document findings or create follow-up tasks. Review the QA results and create/implement tasks for any issues found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "follow-up",
-      "administrative"
-    ],
+    "tags": ["qa", "follow-up", "administrative"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -737,11 +602,7 @@
     "description": "Sentinel completed QA on CRM tab but did not document findings or create follow-up tasks. Review the QA results and create/implement tasks for any issues found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "follow-up",
-      "crm"
-    ],
+    "tags": ["qa", "follow-up", "crm"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -758,11 +619,7 @@
     "description": "Sentinel completed QA on Analytics tab but did not document findings or create follow-up tasks. Review the QA results and create/implement tasks for any issues found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "follow-up",
-      "analytics"
-    ],
+    "tags": ["qa", "follow-up", "analytics"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -779,11 +636,7 @@
     "description": "Sentinel completed QA on Logistics tab but did not document findings or create follow-up tasks. Review the QA results and create/implement tasks for any issues found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "follow-up",
-      "logistics"
-    ],
+    "tags": ["qa", "follow-up", "logistics"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -800,11 +653,7 @@
     "description": "Sentinel completed QA on Facilities tab but did not document findings or create follow-up tasks. Review the QA results and create/implement tasks for any issues found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "follow-up",
-      "facilities"
-    ],
+    "tags": ["qa", "follow-up", "facilities"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -821,11 +670,7 @@
     "description": "Sentinel completed QA on Procurement tab but did not document findings or create follow-up tasks. Review the QA results and create/implement tasks for any issues found.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "follow-up",
-      "procurement"
-    ],
+    "tags": ["qa", "follow-up", "procurement"],
     "source": "human",
     "created_by": "Bill",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -843,10 +688,7 @@
     "status": "done",
     "priority": "medium",
     "assignee": null,
-    "tags": [
-      "frontend",
-      "qa"
-    ],
+    "tags": ["frontend", "qa"],
     "dependencies": [],
     "created_at": "2026-03-27T05:50:00.000Z",
     "updated_at": "2026-03-27T06:17:53.395Z",
@@ -864,10 +706,7 @@
     "status": "done",
     "priority": "medium",
     "assignee": null,
-    "tags": [
-      "frontend",
-      "qa"
-    ],
+    "tags": ["frontend", "qa"],
     "dependencies": [],
     "created_at": "2026-03-27T05:50:00.000Z",
     "updated_at": "2026-03-27T07:50:28.997Z",
@@ -885,10 +724,7 @@
     "status": "done",
     "priority": "medium",
     "assignee": null,
-    "tags": [
-      "frontend",
-      "qa"
-    ],
+    "tags": ["frontend", "qa"],
     "dependencies": [],
     "created_at": "2026-03-27T05:50:00.000Z",
     "updated_at": "2026-03-27T07:53:30.990Z",
@@ -906,10 +742,7 @@
     "status": "done",
     "priority": "medium",
     "assignee": null,
-    "tags": [
-      "frontend",
-      "qa"
-    ],
+    "tags": ["frontend", "qa"],
     "dependencies": [],
     "created_at": "2026-03-27T05:50:00.000Z",
     "updated_at": "2026-03-27T08:21:26.270Z",
@@ -925,11 +758,7 @@
     "title": "Add real-time GPS delivery tracking to Logistics",
     "description": "Add real-time GPS delivery tracking to the Logistics tab.\n\n**Current state:** Logistics only has a basic routes view at /logistics with routes-view.tsx.\n\n**What to build:**\n- Map component showing active delivery locations (use Leaflet or Mapbox)\n- Real-time position updates via polling or websocket\n- ETA display for each active delivery\n- Delivery status timeline (dispatched \u2192 in transit \u2192 delivered)\n\n**Files to modify/create:**\n- apps/app/app/(authenticated)/logistics/tracking/page.tsx (new)\n- apps/app/app/(authenticated)/logistics/components/delivery-map.tsx (new)\n- apps/api/app/api/logistics/tracking/ (new API routes)\n\n**Acceptance criteria:**\n- [ ] Tracking page loads at /logistics/tracking\n- [ ] Map renders with mock delivery positions\n- [ ] Status timeline shows delivery progress\n- [ ] No TypeScript errors (npx tsc --noEmit)",
     "priority": "medium",
-    "tags": [
-      "frontend",
-      "logistics",
-      "enhancement"
-    ],
+    "tags": ["frontend", "logistics", "enhancement"],
     "status": "done",
     "assignee": null,
     "assigned_agent_handle": "sentinel",
@@ -947,11 +776,7 @@
     "title": "Add driver and vehicle management to Logistics",
     "description": "Add driver and vehicle management to the Logistics tab.\n\n**Current state:** No driver/vehicle management exists.\n\n**What to build:**\n- Driver CRUD (name, license, phone, availability status)\n- Vehicle CRUD (make, model, plate, capacity, status)\n- Driver-vehicle assignment\n- Driver availability calendar\n\n**Files to modify/create:**\n- apps/app/app/(authenticated)/logistics/drivers/page.tsx (new)\n- apps/app/app/(authenticated)/logistics/vehicles/page.tsx (new)\n- apps/api/app/api/logistics/drivers/ (new API routes)\n- apps/api/app/api/logistics/vehicles/ (new API routes)\n\n**Acceptance criteria:**\n- [ ] Driver list page at /logistics/drivers with add/edit/delete\n- [ ] Vehicle list page at /logistics/vehicles with add/edit/delete\n- [ ] Can assign driver to vehicle\n- [ ] No TypeScript errors",
     "priority": "medium",
-    "tags": [
-      "frontend",
-      "logistics",
-      "enhancement"
-    ],
+    "tags": ["frontend", "logistics", "enhancement"],
     "status": "done",
     "assignee": null,
     "assigned_agent_handle": "sentinel",
@@ -969,11 +794,7 @@
     "title": "Add dispatch functionality to Logistics",
     "description": "Add dispatch board to the Logistics tab.\n\n**Current state:** Routes exist but no dispatch functionality.\n\n**What to build:**\n- Dispatch board showing available drivers, pending deliveries, active routes\n- Drag-drop or click-assign driver to route\n- Dispatch status (unassigned \u2192 assigned \u2192 in progress \u2192 complete)\n- Today's dispatch overview\n\n**Files to modify/create:**\n- apps/app/app/(authenticated)/logistics/dispatch/page.tsx (new)\n- apps/app/app/(authenticated)/logistics/components/dispatch-board.tsx (new)\n\n**Acceptance criteria:**\n- [ ] Dispatch page loads at /logistics/dispatch\n- [ ] Shows list of routes and available drivers\n- [ ] Can assign driver to route\n- [ ] No TypeScript errors",
     "priority": "medium",
-    "tags": [
-      "frontend",
-      "logistics",
-      "enhancement"
-    ],
+    "tags": ["frontend", "logistics", "enhancement"],
     "status": "done",
     "assignee": null,
     "assigned_agent_handle": "sentinel",
@@ -992,11 +813,7 @@
     "title": "Add maintenance scheduling to Facilities",
     "description": "Add maintenance scheduling to the Facilities tab.\n\n**Current state:** Facilities has work orders and areas (API endpoints exist at /api/facilities/areas, /schedules, /work-orders) but no scheduling calendar.\n\n**What to build:**\n- PM (preventive maintenance) schedule calendar view\n- Recurring maintenance task creation\n- Equipment-to-schedule linking\n- Upcoming maintenance dashboard widget\n\n**Files to modify/create:**\n- apps/app/app/(authenticated)/facilities/scheduling/page.tsx (new)\n- apps/app/app/(authenticated)/facilities/components/pm-calendar.tsx (new)\n- Integrate with existing /api/facilities/schedules endpoints\n\n**Acceptance criteria:**\n- [ ] Scheduling page at /facilities/scheduling\n- [ ] Calendar shows scheduled maintenance\n- [ ] Can create recurring maintenance tasks\n- [ ] No TypeScript errors",
     "priority": "medium",
-    "tags": [
-      "frontend",
-      "facilities",
-      "enhancement"
-    ],
+    "tags": ["frontend", "facilities", "enhancement"],
     "status": "done",
     "assignee": null,
     "assigned_agent_handle": "sentinel",
@@ -1015,11 +832,7 @@
     "title": "Add asset tracking to Facilities",
     "description": "Add asset/equipment tracking to the Facilities tab.\n\n**Current state:** No asset tracking exists.\n\n**What to build:**\n- Asset registry CRUD (name, type, location, serial number, purchase date, warranty)\n- Asset status (active, maintenance, retired)\n- Maintenance history per asset\n- Asset location mapping to facility areas\n\n**Files to modify/create:**\n- apps/app/app/(authenticated)/facilities/assets/page.tsx (new)\n- apps/api/app/api/facilities/assets/ (new API routes)\n- Link to existing areas via /api/facilities/areas\n\n**Acceptance criteria:**\n- [ ] Asset list page at /facilities/assets\n- [ ] Can add/edit/delete assets with all fields\n- [ ] Assets link to facility areas\n- [ ] No TypeScript errors",
     "priority": "medium",
-    "tags": [
-      "frontend",
-      "facilities",
-      "enhancement"
-    ],
+    "tags": ["frontend", "facilities", "enhancement"],
     "status": "done",
     "assignee": null,
     "assigned_agent_handle": "lens",
@@ -1037,11 +850,7 @@
     "title": "Expand Facilities frontend with sub-pages",
     "description": "Expand Facilities frontend \u2014 currently a single monolithic page.tsx (~20KB).\n\n**Current state:** All facilities UI is in one page.tsx. Backend APIs exist at /api/facilities/areas, /schedules, /work-orders.\n\n**What to build:**\n- Split into sub-pages: /facilities/areas, /facilities/work-orders, /facilities/schedules\n- Each sub-page gets its own client component with full CRUD\n- Navigation tabs between sub-sections\n- Keep existing functionality, just reorganize\n\n**Files to modify/create:**\n- apps/app/app/(authenticated)/facilities/page.tsx (refactor \u2014 make it a layout/nav)\n- apps/app/app/(authenticated)/facilities/areas/page.tsx (new)\n- apps/app/app/(authenticated)/facilities/work-orders/page.tsx (new)\n- apps/app/app/(authenticated)/facilities/schedules/page.tsx (new)\n\n**Acceptance criteria:**\n- [ ] Each sub-page loads independently\n- [ ] All existing functionality preserved\n- [ ] Tab navigation between sections\n- [ ] No TypeScript errors",
     "priority": "high",
-    "tags": [
-      "frontend",
-      "facilities",
-      "enhancement"
-    ],
+    "tags": ["frontend", "facilities", "enhancement"],
     "status": "done",
     "assignee": null,
     "assigned_agent_handle": "sentinel",
@@ -1059,11 +868,7 @@
     "title": "Add approval workflow to Procurement",
     "description": "Add approval workflow to Procurement.\n\n**Current state:** Procurement has basic page components but no approval chain.\n\n**What to build:**\n- Multi-step approval flow: requester \u2192 manager \u2192 finance\n- Approval dashboard showing pending/approved/rejected\n- Approval notifications\n- Approval history per purchase order\n\n**Files to modify/create:**\n- apps/app/app/(authenticated)/procurement/approvals/page.tsx (new)\n- apps/api/app/api/procurement/approvals/ (new API routes)\n\n**Acceptance criteria:**\n- [ ] Approval page at /procurement/approvals\n- [ ] Can approve/reject purchase orders\n- [ ] Shows approval chain status\n- [ ] No TypeScript errors",
     "priority": "medium",
-    "tags": [
-      "frontend",
-      "procurement",
-      "enhancement"
-    ],
+    "tags": ["frontend", "procurement", "enhancement"],
     "status": "done",
     "assignee": null,
     "assigned_agent_handle": "forge",
@@ -1081,11 +886,7 @@
     "title": "Add vendor management to Procurement",
     "description": "Add vendor management to Procurement.\n\n**Current state:** No vendor management.\n\n**What to build:**\n- Vendor CRUD (name, contact, address, payment terms, tax ID)\n- Vendor performance ratings\n- Vendor-item catalog linking\n- Vendor contact history\n\n**Files to modify/create:**\n- apps/app/app/(authenticated)/procurement/vendors/page.tsx (new)\n- apps/api/app/api/procurement/vendors/ (new API routes)\n\n**Acceptance criteria:**\n- [ ] Vendor list page at /procurement/vendors\n- [ ] Can add/edit/delete vendors with all fields\n- [ ] No TypeScript errors",
     "priority": "medium",
-    "tags": [
-      "frontend",
-      "procurement",
-      "enhancement"
-    ],
+    "tags": ["frontend", "procurement", "enhancement"],
     "status": "done",
     "assignee": null,
     "assigned_agent_handle": "forge",
@@ -1103,11 +904,7 @@
     "title": "Add detail views and forms to Procurement",
     "description": "Add detail views and forms to Procurement \u2014 currently only skeleton pages.\n\n**Current state:** Only 4 TSX files total (page.tsx, requisitions, vendor-contracts, purchase-orders). Minimal implementation.\n\n**What to build:**\n- Purchase order detail view with line items\n- Create/edit PO form with item selection, quantities, pricing\n- PO receiving workflow (mark items received)\n- PO status tracking (draft \u2192 submitted \u2192 approved \u2192 ordered \u2192 received)\n\n**Files to modify/create:**\n- apps/app/app/(authenticated)/procurement/purchase-orders/[id]/page.tsx (new detail view)\n- apps/app/app/(authenticated)/procurement/purchase-orders/new/page.tsx (new create form)\n- apps/app/app/(authenticated)/procurement/components/po-form.tsx (new)\n- apps/app/app/(authenticated)/procurement/components/po-line-items.tsx (new)\n\n**Acceptance criteria:**\n- [ ] PO detail page at /procurement/purchase-orders/[id]\n- [ ] Create PO form with line items\n- [ ] Status workflow visible in UI\n- [ ] No TypeScript errors",
     "priority": "high",
-    "tags": [
-      "frontend",
-      "procurement",
-      "enhancement"
-    ],
+    "tags": ["frontend", "procurement", "enhancement"],
     "status": "done",
     "assignee": null,
     "assigned_agent_handle": "sentinel",
@@ -1125,11 +922,7 @@
     "title": "Add automatic schedule-to-payroll calculation",
     "description": "Add automatic schedule-to-payroll calculation.\n\n**Current state:** Payroll has timecards with scheduled_hours field but no auto-population from the Scheduling module.\n\n**What to build:**\n- Integration between Scheduling and Payroll modules\n- Auto-generate timecards from approved schedules\n- Scheduled vs actual hours comparison\n- Overtime detection based on schedule rules\n\n**Files to modify/create:**\n- apps/api/app/api/payroll/timecards/generate/route.ts (new)\n- apps/app/app/(authenticated)/payroll/timecards/ (modify to show scheduled hours)\n\n**Acceptance criteria:**\n- [ ] API endpoint generates timecards from schedules\n- [ ] Timecard UI shows scheduled vs actual hours\n- [ ] Overtime flagged automatically\n- [ ] No TypeScript errors",
     "priority": "medium",
-    "tags": [
-      "backend",
-      "payroll",
-      "enhancement"
-    ],
+    "tags": ["backend", "payroll", "enhancement"],
     "status": "done",
     "assignee": null,
     "assigned_agent_handle": "forge",
@@ -1148,11 +941,7 @@
     "title": "Add tax withholding to Payroll",
     "description": "Add tax withholding to Payroll.\n\n**Current state:** No tax calculation in the payroll module.\n\n**What to build:**\n- Federal and state tax bracket configuration\n- W-4 / employee tax filing status\n- Tax withholding calculation per payroll run\n- Tax summary reports\n\n**Files to modify/create:**\n- apps/app/app/(authenticated)/payroll/tax-setup/page.tsx (new)\n- apps/api/app/api/payroll/tax/ (new API routes)\n- Modify existing payroll run to include tax calculations\n\n**Acceptance criteria:**\n- [ ] Tax configuration page at /payroll/tax-setup\n- [ ] Tax brackets configurable\n- [ ] Payroll run includes tax withholding line items\n- [ ] No TypeScript errors",
     "priority": "high",
-    "tags": [
-      "backend",
-      "payroll",
-      "enhancement"
-    ],
+    "tags": ["backend", "payroll", "enhancement"],
     "status": "done",
     "assignee": null,
     "assigned_agent_handle": "sentinel",
@@ -1170,11 +959,7 @@
     "title": "Add direct deposit / bank account management",
     "description": "Add direct deposit / bank account management to Payroll.\n\n**Current state:** No bank account management for employees.\n\n**What to build:**\n- Employee bank account CRUD (encrypted storage)\n- Deposit verification flow\n- Payout method selection (direct deposit vs check)\n- Deposit history per employee\n\n**Files to modify/create:**\n- apps/app/app/(authenticated)/payroll/direct-deposit/page.tsx (new)\n- apps/api/app/api/payroll/bank-accounts/ (new API routes)\n\n**Acceptance criteria:**\n- [ ] Direct deposit page at /payroll/direct-deposit\n- [ ] Can add/edit bank accounts\n- [ ] Payout method selectable per employee\n- [ ] No TypeScript errors",
     "priority": "medium",
-    "tags": [
-      "backend",
-      "payroll",
-      "enhancement"
-    ],
+    "tags": ["backend", "payroll", "enhancement"],
     "status": "done",
     "assignee": null,
     "assigned_agent_handle": "forge",
@@ -1192,11 +977,7 @@
     "title": "Add performance tracking to Staff",
     "description": "Add performance tracking to the Staff tab.\n\n**Current state:** Staff tab has no performance tracking \u2014 scheduling is delegated to the Scheduling tab.\n\n**What to build:**\n- Performance review CRUD\n- Goal setting and tracking\n- KPI dashboard per employee\n- Review scheduling and reminders\n\n**Files to modify/create:**\n- apps/app/app/(authenticated)/staff/performance/page.tsx (new)\n- apps/api/app/api/staff/performance/ (new API routes)\n\n**Acceptance criteria:**\n- [ ] Performance page at /staff/performance\n- [ ] Can create and view performance reviews\n- [ ] Goal tracking visible\n- [ ] No TypeScript errors",
     "priority": "low",
-    "tags": [
-      "frontend",
-      "staff",
-      "enhancement"
-    ],
+    "tags": ["frontend", "staff", "enhancement"],
     "status": "done",
     "assignee": null,
     "assigned_agent_handle": "forge",
@@ -1214,11 +995,7 @@
     "title": "Expand Staffing tab beyond recommendations",
     "description": "Expand the Staffing tab \u2014 currently only shows recommendations.\n\n**Current state:** Staffing tab is minimal \u2014 only a recommendations view.\n\n**What to build:**\n- Shift planning board (visual weekly/daily grid)\n- Staff availability management\n- Shift swap requests\n- Staffing coverage reports\n\n**Files to modify/create:**\n- apps/app/app/(authenticated)/staffing/shifts/page.tsx (new)\n- apps/app/app/(authenticated)/staffing/availability/page.tsx (new)\n- apps/app/app/(authenticated)/staffing/components/shift-board.tsx (new)\n\n**Acceptance criteria:**\n- [ ] Shift planning at /staffing/shifts\n- [ ] Availability management at /staffing/availability\n- [ ] Visual shift grid renders\n- [ ] No TypeScript errors",
     "priority": "medium",
-    "tags": [
-      "frontend",
-      "staffing",
-      "enhancement"
-    ],
+    "tags": ["frontend", "staffing", "enhancement"],
     "status": "done",
     "assignee": null,
     "assigned_agent_handle": "forge",
@@ -1236,11 +1013,7 @@
     "title": "Add audit logging UI to Administrative",
     "description": "Add audit logging UI to the Administrative/Settings section.\n\n**Current state:** Settings changes have no visible audit trail.\n\n**What to build:**\n- Audit log page showing all settings changes\n- Filter by user, action type, date range\n- Change detail view (before/after values)\n\n**Files to modify/create:**\n- apps/app/app/(authenticated)/settings/audit-log/page.tsx (new)\n- apps/api/app/api/settings/audit-log/ (new API routes)\n\n**Acceptance criteria:**\n- [ ] Audit log page at /settings/audit-log\n- [ ] Shows who changed what and when\n- [ ] Filterable by user and date\n- [ ] No TypeScript errors",
     "priority": "low",
-    "tags": [
-      "frontend",
-      "admin",
-      "enhancement"
-    ],
+    "tags": ["frontend", "admin", "enhancement"],
     "status": "done",
     "assignee": null,
     "assigned_agent_handle": "sentinel",
@@ -1259,11 +1032,7 @@
     "title": "Add barcode scanner to Inventory",
     "description": "Add barcode scanner to Inventory.\n\n**Current state:** No barcode scanning functionality.\n\n**What to build:**\n- Camera-based barcode reader component (use quagga2 or html5-qrcode)\n- Scan to look up inventory item\n- Scan to add to stock count\n- Barcode field on inventory items\n\n**Files to modify/create:**\n- apps/app/app/(authenticated)/inventory/scanner/page.tsx (new)\n- apps/app/app/(authenticated)/inventory/components/barcode-scanner.tsx (new)\n\n**Acceptance criteria:**\n- [ ] Scanner page at /inventory/scanner\n- [ ] Camera opens and reads barcodes\n- [ ] Scanned barcode looks up inventory item\n- [ ] No TypeScript errors",
     "priority": "medium",
-    "tags": [
-      "frontend",
-      "inventory",
-      "enhancement"
-    ],
+    "tags": ["frontend", "inventory", "enhancement"],
     "status": "complete",
     "assignee": null,
     "assigned_agent_handle": "forge",
@@ -1280,11 +1049,7 @@
     "title": "Add batch operations to Inventory",
     "description": "Add batch operations to Inventory.\n\n**Current state:** No bulk actions for inventory items.\n\n**What to build:**\n- Multi-select inventory items\n- Batch update (change category, location, status)\n- Batch transfer between locations\n- CSV import/export for inventory\n\n**Files to modify/create:**\n- Modify apps/app/app/(authenticated)/inventory/ pages to add multi-select\n- apps/api/app/api/inventory/batch/ (new API routes)\n- apps/app/app/(authenticated)/inventory/import/page.tsx (new)\n\n**Acceptance criteria:**\n- [ ] Can select multiple items in inventory list\n- [ ] Batch actions menu appears on selection\n- [ ] CSV import page at /inventory/import\n- [ ] No TypeScript errors",
     "priority": "medium",
-    "tags": [
-      "frontend",
-      "inventory",
-      "enhancement"
-    ],
+    "tags": ["frontend", "inventory", "enhancement"],
     "status": "complete",
     "assignee": null,
     "assigned_agent_handle": "forge",
@@ -1301,11 +1066,7 @@
     "title": "Add drag-and-drop event rescheduling to Calendar",
     "description": "Add drag-and-drop event rescheduling to Calendar.\n\n**Current state:** Calendar view toggle was fixed but no drag-drop for moving events.\n\n**What to build:**\n- Drag events between dates on month view\n- Drag events between time slots on week/day view\n- Confirmation dialog before rescheduling\n- Update event API on drop\n\n**Files to modify/create:**\n- Modify apps/app/app/(authenticated)/calendar/ components\n- Add react-dnd or similar drag library to calendar grid\n\n**Acceptance criteria:**\n- [ ] Can drag event to new date on month view\n- [ ] Can drag event to new time on day view\n- [ ] Event API updates on drop\n- [ ] No TypeScript errors",
     "priority": "low",
-    "tags": [
-      "frontend",
-      "calendar",
-      "enhancement"
-    ],
+    "tags": ["frontend", "calendar", "enhancement"],
     "status": "complete",
     "assignee": null,
     "assigned_agent_handle": "forge",
@@ -1322,11 +1083,7 @@
     "title": "Add external calendar sync (Google/Outlook)",
     "description": "Add external calendar sync (Google Calendar / Outlook).\n\n**Current state:** No external calendar integration.\n\n**What to build:**\n- Google Calendar OAuth integration\n- Outlook/Microsoft Calendar OAuth integration\n- Two-way sync (import + export events)\n- Sync status and conflict resolution UI\n\n**Files to modify/create:**\n- apps/api/app/api/calendar/sync/ (new API routes)\n- apps/app/app/(authenticated)/calendar/sync/page.tsx (new)\n- apps/app/app/(authenticated)/settings/integrations/ (add calendar sync config)\n\n**Acceptance criteria:**\n- [ ] Sync settings page accessible\n- [ ] OAuth flow for Google Calendar\n- [ ] Imported events visible on calendar\n- [ ] No TypeScript errors",
     "priority": "low",
-    "tags": [
-      "frontend",
-      "calendar",
-      "enhancement"
-    ],
+    "tags": ["frontend", "calendar", "enhancement"],
     "status": "complete",
     "assignee": null,
     "assigned_agent_handle": "forge",
@@ -1343,11 +1100,7 @@
     "title": "Add pipeline UI to CRM",
     "description": "Add visual pipeline/kanban to CRM for deal tracking.\n\n**Current state:** CRM exists with full implementation but no visual pipeline.\n\n**What to build:**\n- Kanban-style deal pipeline (Lead \u2192 Qualified \u2192 Proposal \u2192 Negotiation \u2192 Won/Lost)\n- Drag-drop deals between stages\n- Deal value totals per stage\n- Pipeline conversion metrics\n\n**Files to modify/create:**\n- apps/app/app/(authenticated)/crm/pipeline/page.tsx (new)\n- apps/app/app/(authenticated)/crm/components/pipeline-board.tsx (new)\n\n**Acceptance criteria:**\n- [ ] Pipeline page at /crm/pipeline\n- [ ] Kanban board with configurable stages\n- [ ] Can drag deals between stages\n- [ ] Stage totals visible\n- [ ] No TypeScript errors",
     "priority": "medium",
-    "tags": [
-      "frontend",
-      "crm",
-      "enhancement"
-    ],
+    "tags": ["frontend", "crm", "enhancement"],
     "status": "complete",
     "assignee": null,
     "assigned_agent_handle": "forge",
@@ -1364,11 +1117,7 @@
     "title": "Add lead scoring to CRM",
     "description": "Add lead scoring system to CRM.\n\n**Current state:** CRM has no lead scoring.\n\n**What to build:**\n- Configurable scoring rules (engagement, company size, industry, etc.)\n- Auto-score calculation on lead creation/update\n- Lead priority ranking based on score\n- Score breakdown visible on lead detail\n\n**Files to modify/create:**\n- apps/app/app/(authenticated)/crm/scoring/page.tsx (new for config)\n- Modify CRM lead list to show score column\n- apps/api/app/api/crm/scoring/ (new API routes)\n\n**Acceptance criteria:**\n- [ ] Scoring config at /crm/scoring\n- [ ] Lead list shows score column\n- [ ] Scores update automatically\n- [ ] No TypeScript errors",
     "priority": "low",
-    "tags": [
-      "frontend",
-      "crm",
-      "enhancement"
-    ],
+    "tags": ["frontend", "crm", "enhancement"],
     "status": "complete",
     "assignee": null,
     "assigned_agent_handle": "forge",
@@ -1385,11 +1134,7 @@
     "title": "Add calendar integration to Events",
     "description": "Add bidirectional sync between Events and Calendar tabs.\n\n**Current state:** Events and Calendar are separate \u2014 events don't appear on the calendar.\n\n**What to build:**\n- Events automatically show on Calendar view\n- Calendar click-to-create links to event creation\n- Event date changes reflect on calendar\n- Color coding by event type\n\n**Files to modify/create:**\n- Modify calendar data source to include events from events module\n- apps/api/app/api/calendar/events-feed/ (new endpoint)\n\n**Acceptance criteria:**\n- [ ] Events appear as entries on Calendar view\n- [ ] Different event types have distinct colors\n- [ ] Clicking calendar event opens event detail\n- [ ] No TypeScript errors",
     "priority": "medium",
-    "tags": [
-      "frontend",
-      "events",
-      "enhancement"
-    ],
+    "tags": ["frontend", "events", "enhancement"],
     "status": "complete",
     "assignee": null,
     "assigned_agent_handle": "forge",
@@ -1406,11 +1151,7 @@
     "title": "Add waitlist and RSVP management to Events",
     "description": "Add waitlist and enhanced RSVP management to Events.\n\n**Current state:** Limited RSVP functionality in events.\n\n**What to build:**\n- Waitlist for full-capacity events\n- Auto-promotion from waitlist on cancellation\n- RSVP status tracking (invited \u2192 confirmed \u2192 attended)\n- Capacity management per event\n\n**Files to modify/create:**\n- apps/app/app/(authenticated)/events/[id]/waitlist/page.tsx (new)\n- Modify event detail to show capacity and waitlist count\n- apps/api/app/api/events/[id]/waitlist/ (new API routes)\n\n**Acceptance criteria:**\n- [ ] Waitlist page at /events/[id]/waitlist\n- [ ] Guests auto-promoted when spots open\n- [ ] Capacity shown on event detail\n- [ ] No TypeScript errors",
     "priority": "low",
-    "tags": [
-      "frontend",
-      "events",
-      "enhancement"
-    ],
+    "tags": ["frontend", "events", "enhancement"],
     "status": "complete",
     "assignee": null,
     "assigned_agent_handle": "forge",
@@ -1427,11 +1168,7 @@
     "title": "[CP] Implement CSP + security headers in vercel.json/next.config",
     "status": "completed",
     "priority": "high",
-    "tags": [
-      "capsule-pro",
-      "production",
-      "security"
-    ],
+    "tags": ["capsule-pro", "production", "security"],
     "created_at": "2026-03-28T03:04:46.105479Z",
     "updated_at": "2026-03-28T03:06:07.586Z",
     "assigned_agent_id": "07f4fd27-daf6-4bbf-b052-b9cacc0a897b",
@@ -1444,11 +1181,7 @@
     "title": "[CP] Enable Vercel Deployment Protection for unauthorized deploy prevention",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "capsule-pro",
-      "production",
-      "security"
-    ],
+    "tags": ["capsule-pro", "production", "security"],
     "created_at": "2026-03-28T03:04:46.105479Z",
     "updated_at": "2026-03-28T09:15:02.845Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -1462,11 +1195,7 @@
     "title": "[CP] Configure monorepo caching for turbo builds on Vercel",
     "status": "completed",
     "priority": "high",
-    "tags": [
-      "capsule-pro",
-      "production",
-      "caching"
-    ],
+    "tags": ["capsule-pro", "production", "caching"],
     "created_at": "2026-03-28T03:04:46.105479Z",
     "updated_at": "2026-03-28T03:07:49.312Z",
     "assigned_agent_id": "07f4fd27-daf6-4bbf-b052-b9cacc0a897b",
@@ -1479,10 +1208,7 @@
     "title": "[CP] Verify pnpm-lock.yaml is committed and cached on Vercel",
     "status": "done",
     "priority": "medium",
-    "tags": [
-      "capsule-pro",
-      "production"
-    ],
+    "tags": ["capsule-pro", "production"],
     "created_at": "2026-03-28T03:04:46.105479Z",
     "updated_at": "2026-03-28T09:16:24.238Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -1496,11 +1222,7 @@
     "title": "[CP] Enable Vercel Speed Insights for Core Web Vitals monitoring",
     "status": "done",
     "priority": "medium",
-    "tags": [
-      "capsule-pro",
-      "production",
-      "monitoring"
-    ],
+    "tags": ["capsule-pro", "production", "monitoring"],
     "created_at": "2026-03-28T03:04:46.105479Z",
     "updated_at": "2026-03-28T08:38:45.010Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -1514,10 +1236,7 @@
     "title": "[CP] Verify Next.js Image/Script/Font Optimization is enabled",
     "status": "done",
     "priority": "medium",
-    "tags": [
-      "capsule-pro",
-      "production"
-    ],
+    "tags": ["capsule-pro", "production"],
     "created_at": "2026-03-28T03:04:46.105479Z",
     "updated_at": "2026-03-28T08:44:42.396Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -1531,10 +1250,7 @@
     "title": "[CP] Add caching headers for static assets to reduce bandwidth",
     "status": "done",
     "priority": "medium",
-    "tags": [
-      "capsule-pro",
-      "production"
-    ],
+    "tags": ["capsule-pro", "production"],
     "created_at": "2026-03-28T03:04:46.105479Z",
     "updated_at": "2026-03-28T08:41:47.453Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -1548,11 +1264,7 @@
     "title": "[CP] Configure Log Drains to persist deployment logs",
     "status": "done",
     "priority": "medium",
-    "tags": [
-      "capsule-pro",
-      "production",
-      "logging"
-    ],
+    "tags": ["capsule-pro", "production", "logging"],
     "created_at": "2026-03-28T03:04:46.105479Z",
     "updated_at": "2026-03-28T08:45:51.074Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -1566,11 +1278,7 @@
     "title": "[CP] Implement rate limiting on API routes",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "capsule-pro",
-      "production",
-      "security"
-    ],
+    "tags": ["capsule-pro", "production", "security"],
     "created_at": "2026-03-28T03:04:46.105479Z",
     "updated_at": "2026-03-28T08:27:59.998Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -1584,11 +1292,7 @@
     "title": "[CP] Verify Sentry source maps are uploading correctly",
     "status": "done",
     "priority": "medium",
-    "tags": [
-      "capsule-pro",
-      "production",
-      "monitoring"
-    ],
+    "tags": ["capsule-pro", "production", "monitoring"],
     "created_at": "2026-03-28T03:04:46.105479Z",
     "updated_at": "2026-03-28T08:51:39.407Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -1602,10 +1306,7 @@
     "title": "[CP] Align Vercel Function region with database region",
     "status": "done",
     "priority": "low",
-    "tags": [
-      "capsule-pro",
-      "production"
-    ],
+    "tags": ["capsule-pro", "production"],
     "created_at": "2026-03-28T03:04:46.105479Z",
     "updated_at": "2026-03-28T08:58:30.725Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -1619,10 +1320,7 @@
     "title": "[CP] Review and tune ISR revalidation strategy (on-demand preferred)",
     "status": "done",
     "priority": "low",
-    "tags": [
-      "capsule-pro",
-      "production"
-    ],
+    "tags": ["capsule-pro", "production"],
     "created_at": "2026-03-28T03:04:46.105479Z",
     "updated_at": "2026-03-28T09:02:57.547Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -1636,10 +1334,7 @@
     "title": "[CP] Enable Vercel Fluid Compute to reduce cold starts",
     "status": "done",
     "priority": "low",
-    "tags": [
-      "capsule-pro",
-      "production"
-    ],
+    "tags": ["capsule-pro", "production"],
     "created_at": "2026-03-28T03:04:46.105479Z",
     "updated_at": "2026-03-28T09:04:01.937Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -1653,10 +1348,7 @@
     "title": "[CP] Configure Vercel Spend Management alerts",
     "status": "done",
     "priority": "medium",
-    "tags": [
-      "capsule-pro",
-      "production"
-    ],
+    "tags": ["capsule-pro", "production"],
     "created_at": "2026-03-28T03:04:46.105479Z",
     "updated_at": "2026-03-28T09:04:38.610Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -1670,11 +1362,7 @@
     "title": "[CP] Draft incident response plan for Capsule Pro deployments",
     "status": "done",
     "priority": "medium",
-    "tags": [
-      "capsule-pro",
-      "production",
-      "docs"
-    ],
+    "tags": ["capsule-pro", "production", "docs"],
     "created_at": "2026-03-28T03:04:46.105479Z",
     "updated_at": "2026-03-28T09:05:11.393Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -1688,10 +1376,7 @@
     "title": "[CP] Set up Preview Deployment suffix with custom domain",
     "status": "done",
     "priority": "low",
-    "tags": [
-      "capsule-pro",
-      "production"
-    ],
+    "tags": ["capsule-pro", "production"],
     "created_at": "2026-03-28T03:04:46.105479Z",
     "updated_at": "2026-03-28T09:06:32.459Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -1706,10 +1391,7 @@
     "description": "Add Content-Security-Policy header and other security headers (X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy) to Vercel deployment",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "security",
-      "vercel"
-    ],
+    "tags": ["security", "vercel"],
     "project_id": "capsule_pro",
     "dependencies": [],
     "created_at": "2026-03-28T03:05:37.235Z",
@@ -1727,10 +1409,7 @@
     "description": "Enable deployment protection to prevent unauthorized access to deployments. Configure bypass headers for CI/CD.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "security",
-      "vercel"
-    ],
+    "tags": ["security", "vercel"],
     "project_id": "capsule_pro",
     "dependencies": [],
     "created_at": "2026-03-28T03:05:37.235Z",
@@ -1748,11 +1427,7 @@
     "description": "Verify and configure Vercel build caching for pnpm monorepo to prevent unnecessary rebuilds. Check if turbo.json is properly set up.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "deployment",
-      "monorepo",
-      "performance"
-    ],
+    "tags": ["deployment", "monorepo", "performance"],
     "project_id": "capsule_pro",
     "dependencies": [],
     "created_at": "2026-03-28T03:05:37.235Z",
@@ -1770,10 +1445,7 @@
     "description": "Ensure pnpm-lock.yaml is in git and committed. This pins dependencies and enables faster builds through caching.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "deployment",
-      "security"
-    ],
+    "tags": ["deployment", "security"],
     "project_id": "capsule_pro",
     "dependencies": [],
     "created_at": "2026-03-28T03:05:37.235Z",
@@ -1791,10 +1463,7 @@
     "description": "Enable Speed Insights to monitor Core Web Vitals and field performance data. Free on Pro plan.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "performance",
-      "vercel"
-    ],
+    "tags": ["performance", "vercel"],
     "project_id": "capsule_pro",
     "dependencies": [],
     "created_at": "2026-03-28T03:05:37.235Z",
@@ -1812,10 +1481,7 @@
     "description": "Check that Next.js built-in optimization is enabled for images (next/image), scripts (next/script), and fonts (next/font).",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "performance",
-      "nextjs"
-    ],
+    "tags": ["performance", "nextjs"],
     "project_id": "capsule_pro",
     "dependencies": [],
     "created_at": "2026-03-28T03:05:37.235Z",
@@ -1833,10 +1499,7 @@
     "description": "Set proper Cache-Control headers for static assets to reduce bandwidth and TTFB. Configure ISR/revalidation as needed.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "performance",
-      "caching"
-    ],
+    "tags": ["performance", "caching"],
     "project_id": "capsule_pro",
     "dependencies": [],
     "created_at": "2026-03-28T03:05:37.235Z",
@@ -1855,11 +1518,7 @@
     "description": "Configure log drains to persist deployment logs somewhere durable (Datadog, Logtail, or similar).",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "reliability",
-      "logging",
-      "vercel"
-    ],
+    "tags": ["reliability", "logging", "vercel"],
     "project_id": "capsule_pro",
     "dependencies": [],
     "created_at": "2026-03-28T03:05:37.235Z",
@@ -1878,10 +1537,7 @@
     "description": "Add rate limiting middleware to API routes to prevent abuse. Consider using upstash/ratelimit or similar.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "security",
-      "api"
-    ],
+    "tags": ["security", "api"],
     "project_id": "capsule_pro",
     "dependencies": [],
     "created_at": "2026-03-28T03:05:37.235Z",
@@ -1899,10 +1555,7 @@
     "description": "Ensure Vercel Function region matches the database/origin API region for lowest latency.",
     "status": "done",
     "priority": "medium",
-    "tags": [
-      "performance",
-      "deployment"
-    ],
+    "tags": ["performance", "deployment"],
     "project_id": "capsule_pro",
     "dependencies": [],
     "created_at": "2026-03-28T03:05:37.235Z",
@@ -1920,11 +1573,7 @@
     "description": "Review ISR revalidation times - ensure they match content change frequency or move to on-demand revalidation.",
     "status": "done",
     "priority": "medium",
-    "tags": [
-      "performance",
-      "caching",
-      "nextjs"
-    ],
+    "tags": ["performance", "caching", "nextjs"],
     "project_id": "capsule_pro",
     "dependencies": [],
     "created_at": "2026-03-28T03:05:37.235Z",
@@ -1942,10 +1591,7 @@
     "description": "Enable fluid compute to reduce cold starts, optimize concurrency, and enhance function scalability.",
     "status": "done",
     "priority": "medium",
-    "tags": [
-      "performance",
-      "vercel"
-    ],
+    "tags": ["performance", "vercel"],
     "project_id": "capsule_pro",
     "dependencies": [],
     "created_at": "2026-03-28T03:05:37.235Z",
@@ -1964,10 +1610,7 @@
     "description": "Set up spend management alerts in Vercel to prevent unexpected bills.",
     "status": "done",
     "priority": "medium",
-    "tags": [
-      "cost",
-      "vercel"
-    ],
+    "tags": ["cost", "vercel"],
     "project_id": "capsule_pro",
     "dependencies": [],
     "created_at": "2026-03-28T03:05:37.235Z",
@@ -1986,10 +1629,7 @@
     "description": "Create incident response plan for the team including escalation paths, communication channels, and rollback strategies.",
     "status": "done",
     "priority": "medium",
-    "tags": [
-      "reliability",
-      "process"
-    ],
+    "tags": ["reliability", "process"],
     "project_id": "capsule_pro",
     "dependencies": [],
     "created_at": "2026-03-28T03:05:37.235Z",
@@ -2008,10 +1648,7 @@
     "description": "Set up custom domain suffix for preview deployments.",
     "status": "done",
     "priority": "medium",
-    "tags": [
-      "deployment",
-      "vercel"
-    ],
+    "tags": ["deployment", "vercel"],
     "project_id": "capsule_pro",
     "dependencies": [],
     "created_at": "2026-03-28T03:05:37.235Z",
@@ -2053,11 +1690,7 @@
     "status": "completed",
     "priority": "high",
     "assignee": null,
-    "tags": [
-      "manifest",
-      "routes",
-      "generation"
-    ],
+    "tags": ["manifest", "routes", "generation"],
     "dependencies": [],
     "created_at": "2026-03-28T13:36:54.987Z",
     "updated_at": "2026-03-28T13:45:58.749Z",
@@ -2070,14 +1703,8 @@
     "status": "pending",
     "priority": "medium",
     "assignee": null,
-    "tags": [
-      "manifest",
-      "governance",
-      "audit"
-    ],
-    "dependencies": [
-      "cp-002"
-    ],
+    "tags": ["manifest", "governance", "audit"],
+    "dependencies": ["cp-002"],
     "created_at": "2026-03-28T13:36:54.987Z",
     "updated_at": "2026-03-28T13:36:54.987Z",
     "project_id": "capsule_pro"
@@ -2089,14 +1716,8 @@
     "status": "pending",
     "priority": "high",
     "assignee": null,
-    "tags": [
-      "qa",
-      "browser",
-      "testing"
-    ],
-    "dependencies": [
-      "cp-002"
-    ],
+    "tags": ["qa", "browser", "testing"],
+    "dependencies": ["cp-002"],
     "created_at": "2026-03-28T13:36:54.987Z",
     "updated_at": "2026-03-28T13:36:54.987Z",
     "project_id": "capsule_pro"
@@ -2108,11 +1729,7 @@
     "status": "complete",
     "priority": "medium",
     "assignee": null,
-    "tags": [
-      "frontend",
-      "search",
-      "ux"
-    ],
+    "tags": ["frontend", "search", "ux"],
     "dependencies": [],
     "created_at": "2026-03-30T19:42:21.580Z",
     "updated_at": "2026-04-13T18:31:42.319Z",
@@ -2128,10 +1745,7 @@
     "description": "Run pnpm install and pnpm -r build (or repo's canonical build command). Start dev servers for app + api and document exact commands used. Verify both start without errors.",
     "status": "partial",
     "priority": "high",
-    "tags": [
-      "qa",
-      "setup"
-    ],
+    "tags": ["qa", "setup"],
     "dependencies": [],
     "created_at": "2026-03-30T22:19:00.048245+00:00",
     "updated_at": "2026-04-20T15:41:38.838Z",
@@ -2146,13 +1760,8 @@
     "description": "Confirm required env vars exist (do not print secrets). Confirm DB reachable and migrations applied (use repo's documented prisma/migrate commands). Report any missing vars or migration issues.",
     "status": "complete",
     "priority": "high",
-    "tags": [
-      "qa",
-      "setup"
-    ],
-    "dependencies": [
-      "cp-025"
-    ],
+    "tags": ["qa", "setup"],
+    "dependencies": ["cp-025"],
     "created_at": "2026-03-30T22:19:00.048245+00:00",
     "updated_at": "2026-04-02T08:04:14.848Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -2174,13 +1783,8 @@
     "description": "Load app home page. Open devtools console. Confirm no errors on initial load. Capture any warnings. Screenshot the loaded state.",
     "status": "complete",
     "priority": "high",
-    "tags": [
-      "qa",
-      "setup"
-    ],
-    "dependencies": [
-      "cp-026"
-    ],
+    "tags": ["qa", "setup"],
+    "dependencies": ["cp-026"],
     "created_at": "2026-03-30T22:19:00.048245+00:00",
     "updated_at": "2026-04-02T07:56:24.832Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -2204,13 +1808,8 @@
     "description": "Create a new user (if supported) or sign in with test creds. Confirm redirect flows and session persistence on refresh. Verify auth state survives page reload.",
     "status": "complete",
     "priority": "high",
-    "tags": [
-      "qa",
-      "auth"
-    ],
-    "dependencies": [
-      "cp-027"
-    ],
+    "tags": ["qa", "auth"],
+    "dependencies": ["cp-027"],
     "created_at": "2026-03-30T22:19:00.048245+00:00",
     "updated_at": "2026-04-02T08:21:24.328Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -2230,14 +1829,8 @@
     "description": "Create a tenant/workspace. Switch tenants and confirm data separation \u2014 no leakage between tenants. Verify tenant context persists across navigation.",
     "status": "complete",
     "priority": "high",
-    "tags": [
-      "qa",
-      "auth",
-      "multi-tenant"
-    ],
-    "dependencies": [
-      "cp-028"
-    ],
+    "tags": ["qa", "auth", "multi-tenant"],
+    "dependencies": ["cp-028"],
     "created_at": "2026-03-30T22:19:00.048245+00:00",
     "updated_at": "2026-04-02T07:31:24.723Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -2248,9 +1841,7 @@
     "result": {
       "summary": "FAIL \u2014 Tenant API returns 404 (route not deployed)",
       "tenant_api": "FAIL 404",
-      "notes": [
-        "Tenant selection API not available in production"
-      ]
+      "notes": ["Tenant selection API not available in production"]
     }
   },
   {
@@ -2259,14 +1850,8 @@
     "description": "Attempt an action requiring elevated access as a non-privileged user. Confirm UI blocks it and API returns a handled 403/401 \u2014 not a generic crash. Verify no unhandled promise rejections.",
     "status": "complete",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "auth",
-      "permissions"
-    ],
-    "dependencies": [
-      "cp-029"
-    ],
+    "tags": ["qa", "auth", "permissions"],
+    "dependencies": ["cp-029"],
     "created_at": "2026-03-30T22:19:00.048245+00:00",
     "updated_at": "2026-04-02T07:56:25.115Z",
     "assigned_agent_id": "07f4fd27-daf6-4bbf-b052-b9cacc0a897b",
@@ -2285,14 +1870,8 @@
     "description": "Create minimal valid event (date/time/location/customer as required). Confirm it appears in list/search views. Capture endpoint, payload, response.",
     "status": "complete",
     "priority": "high",
-    "tags": [
-      "qa",
-      "events",
-      "crud"
-    ],
-    "dependencies": [
-      "cp-027"
-    ],
+    "tags": ["qa", "events", "crud"],
+    "dependencies": ["cp-027"],
     "created_at": "2026-03-30T22:19:00.048245+00:00",
     "updated_at": "2026-04-02T04:37:28.900Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -2314,14 +1893,8 @@
     "description": "Update event name/date/time/notes. Refresh page and confirm persistence. Verify no stale data cached in UI.",
     "status": "complete",
     "priority": "high",
-    "tags": [
-      "qa",
-      "events",
-      "crud"
-    ],
-    "dependencies": [
-      "cp-031"
-    ],
+    "tags": ["qa", "events", "crud"],
+    "dependencies": ["cp-031"],
     "created_at": "2026-03-30T22:19:00.048245+00:00",
     "updated_at": "2026-04-02T07:16:24.235Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -2345,14 +1918,8 @@
     "description": "Navigate across ALL event subviews (overview/menu/prep/tasks/staff/notes/budget etc). Confirm no console errors and no missing data exceptions on any tab. Capture any 4xx/5xx responses with endpoint, payload, response body.",
     "status": "complete",
     "priority": "high",
-    "tags": [
-      "qa",
-      "events",
-      "navigation"
-    ],
-    "dependencies": [
-      "cp-031"
-    ],
+    "tags": ["qa", "events", "navigation"],
+    "dependencies": ["cp-031"],
     "created_at": "2026-03-30T22:19:00.048245+00:00",
     "updated_at": "2026-04-02T05:16:29.243Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -2387,14 +1954,8 @@
     "description": "Create a prep list entity tied to the event. Confirm it renders cleanly and names are not mangled. Verify data structure matches expected schema.",
     "status": "done",
     "priority": "high",
-    "tags": [
-      "qa",
-      "prep",
-      "crud"
-    ],
-    "dependencies": [
-      "cp-031"
-    ],
+    "tags": ["qa", "prep", "crud"],
+    "dependencies": ["cp-031"],
     "created_at": "2026-03-30T22:19:00.048245+00:00",
     "updated_at": "2026-04-02T06:46:39.871Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -2409,14 +1970,8 @@
     "description": "Add at least 3 items with different shapes: simple, with modifiers, with nested instructions. Confirm all render correctly and persist after refresh.",
     "status": "complete",
     "priority": "high",
-    "tags": [
-      "qa",
-      "prep",
-      "crud"
-    ],
-    "dependencies": [
-      "cp-034"
-    ],
+    "tags": ["qa", "prep", "crud"],
+    "dependencies": ["cp-034"],
     "created_at": "2026-03-30T22:19:00.048245+00:00",
     "updated_at": "2026-04-02T05:19:29.649Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -2451,14 +2006,8 @@
     "description": "For each prep item, create 1\u20133 tasks (claimable units). Confirm tasks have stable identifiers and show up in task views. Verify no duplicate creation.",
     "status": "partial",
     "priority": "high",
-    "tags": [
-      "qa",
-      "tasks",
-      "crud"
-    ],
-    "dependencies": [
-      "cp-035"
-    ],
+    "tags": ["qa", "tasks", "crud"],
+    "dependencies": ["cp-035"],
     "created_at": "2026-03-30T22:19:00.048245+00:00",
     "updated_at": "2026-04-20T15:41:38.838Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -2472,13 +2021,8 @@
     "description": "Claim task as a kitchen staff user. Confirm assignment updates UI and persists after refresh. Verify no race conditions on simultaneous claims.",
     "status": "partial",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "tasks"
-    ],
-    "dependencies": [
-      "cp-036"
-    ],
+    "tags": ["qa", "tasks"],
+    "dependencies": ["cp-036"],
     "created_at": "2026-03-30T22:19:00.048245+00:00",
     "updated_at": "2026-04-20T15:41:38.838Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -2492,13 +2036,8 @@
     "description": "Move task through supported statuses (e.g. todo \u2192 in_progress \u2192 done). If 'open' exists or is blocked, confirm server returns meaningful error and UI surfaces it. Verify status transitions are valid.",
     "status": "complete",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "tasks"
-    ],
-    "dependencies": [
-      "cp-036"
-    ],
+    "tags": ["qa", "tasks"],
+    "dependencies": ["cp-036"],
     "created_at": "2026-03-30T22:19:00.048245+00:00",
     "updated_at": "2026-04-02T08:06:24.305Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -2520,13 +2059,8 @@
     "description": "Unassign and reassign task to another user. Confirm audit trail or history if present. Verify previous assignee no longer sees task claimed.",
     "status": "complete",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "tasks"
-    ],
-    "dependencies": [
-      "cp-037"
-    ],
+    "tags": ["qa", "tasks"],
+    "dependencies": ["cp-037"],
     "created_at": "2026-03-30T22:19:00.048245+00:00",
     "updated_at": "2026-04-02T07:59:49.468Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -2550,14 +2084,8 @@
     "description": "Find at least one manifest command used in the app (command board, kitchen ops, etc). Document the command, its trigger path, and expected behavior.",
     "status": "complete",
     "priority": "high",
-    "tags": [
-      "qa",
-      "manifest",
-      "commands"
-    ],
-    "dependencies": [
-      "cp-027"
-    ],
+    "tags": ["qa", "manifest", "commands"],
+    "dependencies": ["cp-027"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T04:49:29.202Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -2570,23 +2098,16 @@
       "command": "CommandBoardCard.create",
       "trigger": "POST /api/command-board/cards/commands/create",
       "governance": {
-        "guards": [
-          "boardId required",
-          "title required"
-        ],
+        "guards": ["boardId required", "title required"],
         "constraints": [
           "cardType in valid set",
           "status in valid set",
           "width>0",
           "height>0"
         ],
-        "warnings": [
-          "warnStatusChange (non-blocking)"
-        ],
+        "warnings": ["warnStatusChange (non-blocking)"],
         "policy": "BoardCardManagement: kitchen_staff or higher role required",
-        "events": [
-          "CommandBoardCardCreated \u2192 board.card.created"
-        ]
+        "events": ["CommandBoardCardCreated \u2192 board.card.created"]
       },
       "deployment_status": {
         "command_apis": "404 NOT DEPLOYED",
@@ -2601,14 +2122,8 @@
     "description": "Trigger the command from UI (button/menu/command palette). Verify request payload is valid, response is typed, and errors are handled.",
     "status": "complete",
     "priority": "high",
-    "tags": [
-      "qa",
-      "manifest",
-      "commands"
-    ],
-    "dependencies": [
-      "cp-040"
-    ],
+    "tags": ["qa", "manifest", "commands"],
+    "dependencies": ["cp-040"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T08:10:58.001Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -2628,14 +2143,8 @@
     "description": "Call the route directly with a valid payload. Confirm deterministic response shape and no internal stack traces leaked.",
     "status": "complete",
     "priority": "high",
-    "tags": [
-      "qa",
-      "manifest",
-      "commands"
-    ],
-    "dependencies": [
-      "cp-040"
-    ],
+    "tags": ["qa", "manifest", "commands"],
+    "dependencies": ["cp-040"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T07:44:30.748Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -2659,14 +2168,8 @@
     "description": "Test: missing required field, invalid status transition, policy/guard failure. Confirm 4xx with structured error, UI surfaces actionable message, no console noise.",
     "status": "complete",
     "priority": "high",
-    "tags": [
-      "qa",
-      "manifest",
-      "commands"
-    ],
-    "dependencies": [
-      "cp-040"
-    ],
+    "tags": ["qa", "manifest", "commands"],
+    "dependencies": ["cp-040"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T08:08:49.146Z",
     "assigned_agent_id": "a332ab99-921f-44ad-a9ee-e14a876c784d",
@@ -2686,13 +2189,8 @@
     "description": "Load command board for an event. Ensure nodes render for event + prep list + tasks. Confirm no console errors during render.",
     "status": "complete",
     "priority": "high",
-    "tags": [
-      "qa",
-      "command-board"
-    ],
-    "dependencies": [
-      "cp-031"
-    ],
+    "tags": ["qa", "command-board"],
+    "dependencies": ["cp-031"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T07:58:30.637Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -2712,13 +2210,8 @@
     "description": "Create a task or linked entity from the board UI. Confirm it appears elsewhere (event view, tasks list). Verify cross-view consistency.",
     "status": "complete",
     "priority": "high",
-    "tags": [
-      "qa",
-      "command-board"
-    ],
-    "dependencies": [
-      "cp-044"
-    ],
+    "tags": ["qa", "command-board"],
+    "dependencies": ["cp-044"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T08:12:55.381Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -2737,13 +2230,8 @@
     "description": "Link task to prep item, prep item to recipe, recipe to inventory item (whatever exists). Confirm relationship persists and renders on refresh.",
     "status": "complete",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "command-board"
-    ],
-    "dependencies": [
-      "cp-044"
-    ],
+    "tags": ["qa", "command-board"],
+    "dependencies": ["cp-044"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T07:58:30.744Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -2763,13 +2251,8 @@
     "description": "Perform a governed mutation. Confirm board is not pretending state changed before server confirms. No optimistic snaps without reconciliation.",
     "status": "complete",
     "priority": "high",
-    "tags": [
-      "qa",
-      "command-board"
-    ],
-    "dependencies": [
-      "cp-044"
-    ],
+    "tags": ["qa", "command-board"],
+    "dependencies": ["cp-044"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T08:04:13.306Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -2790,14 +2273,8 @@
     "description": "Open same board in two sessions. Update task in session A. Confirm session B receives update or at least updates correctly on refresh.",
     "status": "complete",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "command-board",
-      "realtime"
-    ],
-    "dependencies": [
-      "cp-044"
-    ],
+    "tags": ["qa", "command-board", "realtime"],
+    "dependencies": ["cp-044"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T04:37:28.921Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -2839,13 +2316,8 @@
     "description": "CB6: Create + delete relationship. CB7: Undo/redo or revert without desync. CB8: Invalid mutation shows inline error on affected node, not generic toast only.",
     "status": "complete",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "command-board"
-    ],
-    "dependencies": [
-      "cp-046"
-    ],
+    "tags": ["qa", "command-board"],
+    "dependencies": ["cp-046"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T04:42:29.214Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -2881,13 +2353,8 @@
     "description": "Perform a write (task claim/status update). Confirm projection updates without manual refresh (if expected). Verify Ably/websocket delivery.",
     "status": "done",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "realtime"
-    ],
-    "dependencies": [
-      "cp-036"
-    ],
+    "tags": ["qa", "realtime"],
+    "dependencies": ["cp-036"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-01T19:43:48.276Z",
     "assigned_agent_id": "3df8b66e-ed9e-489a-ab8b-10b1ba555d0b",
@@ -2902,13 +2369,8 @@
     "description": "Throttle network / brief disconnect. Perform a write if UI allows optimistic updates. Confirm reconciliation without duplication or corruption.",
     "status": "done",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "realtime"
-    ],
-    "dependencies": [
-      "cp-050"
-    ],
+    "tags": ["qa", "realtime"],
+    "dependencies": ["cp-050"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T12:51:47.852Z",
     "assigned_agent_id": "3df8b66e-ed9e-489a-ab8b-10b1ba555d0b",
@@ -2922,14 +2384,8 @@
     "description": "Confirm emitted event record exists after successful command. Confirm it does NOT exist after failed command. Verify audit trail integrity.",
     "status": "complete",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "realtime",
-      "audit"
-    ],
-    "dependencies": [
-      "cp-050"
-    ],
+    "tags": ["qa", "realtime", "audit"],
+    "dependencies": ["cp-050"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T08:04:43.336Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -2948,14 +2404,8 @@
     "description": "Create inventory item with units, vendor info, cost. Confirm persistence and correct display.",
     "status": "complete",
     "priority": "high",
-    "tags": [
-      "qa",
-      "inventory",
-      "crud"
-    ],
-    "dependencies": [
-      "cp-027"
-    ],
+    "tags": ["qa", "inventory", "crud"],
+    "dependencies": ["cp-027"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T05:19:29.614Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -2986,14 +2436,8 @@
     "description": "Create recipe. Add ingredients referencing inventory items. Confirm relationship integrity.",
     "status": "complete",
     "priority": "high",
-    "tags": [
-      "qa",
-      "inventory",
-      "recipes"
-    ],
-    "dependencies": [
-      "cp-053"
-    ],
+    "tags": ["qa", "inventory", "recipes"],
+    "dependencies": ["cp-053"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T05:28:29.621Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -3020,15 +2464,8 @@
     "description": "Run ingredient resolution for event prep list. Confirm results match expectations and no undefined crashes.",
     "status": "complete",
     "priority": "high",
-    "tags": [
-      "qa",
-      "inventory",
-      "recipes"
-    ],
-    "dependencies": [
-      "cp-054",
-      "cp-034"
-    ],
+    "tags": ["qa", "inventory", "recipes"],
+    "dependencies": ["cp-054", "cp-034"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T08:16:24.318Z",
     "assigned_agent_id": "07f4fd27-daf6-4bbf-b052-b9cacc0a897b",
@@ -3048,14 +2485,8 @@
     "description": "Test: missing inventory reference, unit mismatch, duplicate ingredient names. Confirm handled errors with user-safe messages, not silent wrong math.",
     "status": "complete",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "inventory",
-      "edge-cases"
-    ],
-    "dependencies": [
-      "cp-054"
-    ],
+    "tags": ["qa", "inventory", "edge-cases"],
+    "dependencies": ["cp-054"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T08:16:24.739Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -3076,13 +2507,8 @@
     "description": "INV5: Bulk edit or bulk receive. INV6: Unit conversions edge case and rounding display. INV7: Low-stock thresholds/alerts display (even if notifications disabled).",
     "status": "complete",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "inventory"
-    ],
-    "dependencies": [
-      "cp-053"
-    ],
+    "tags": ["qa", "inventory"],
+    "dependencies": ["cp-053"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T08:10:23.722Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -3116,14 +2542,8 @@
     "description": "Create staff member with minimal required fields. Confirm creation and display.",
     "status": "complete",
     "priority": "high",
-    "tags": [
-      "qa",
-      "staff",
-      "crud"
-    ],
-    "dependencies": [
-      "cp-027"
-    ],
+    "tags": ["qa", "staff", "crud"],
+    "dependencies": ["cp-027"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T08:08:25.179Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -3143,14 +2563,8 @@
     "description": "Assign staff member to event. Confirm assignment persists and displays correctly.",
     "status": "complete",
     "priority": "high",
-    "tags": [
-      "qa",
-      "staff"
-    ],
-    "dependencies": [
-      "cp-058",
-      "cp-031"
-    ],
+    "tags": ["qa", "staff"],
+    "dependencies": ["cp-058", "cp-031"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T08:14:00.875Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -3179,13 +2593,8 @@
     "description": "Assign staff to station or role. Confirm role-based display and permissions.",
     "status": "complete",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "staff"
-    ],
-    "dependencies": [
-      "cp-058"
-    ],
+    "tags": ["qa", "staff"],
+    "dependencies": ["cp-058"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T04:54:29.133Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -3228,14 +2637,8 @@
     "description": "Confirm permissions on task claiming align with role. Verify non-privileged users can't claim restricted tasks.",
     "status": "complete",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "staff",
-      "permissions"
-    ],
-    "dependencies": [
-      "cp-060"
-    ],
+    "tags": ["qa", "staff", "permissions"],
+    "dependencies": ["cp-060"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T08:10:55.639Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -3255,13 +2658,8 @@
     "description": "STAFF1: Create staff (minimal). STAFF2: Edit fields (role, station, availability, contact). STAFF3: Assign to event/task/schedule. STAFF4: Deactivate/terminate. STAFF5: Duplicate email clean error.",
     "status": "complete",
     "priority": "high",
-    "tags": [
-      "qa",
-      "staff"
-    ],
-    "dependencies": [
-      "cp-058"
-    ],
+    "tags": ["qa", "staff"],
+    "dependencies": ["cp-058"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T08:10:23.619Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -3284,13 +2682,8 @@
     "description": "Trigger notification via task assignment, event update, or reminder. Confirm notification is created.",
     "status": "complete",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "notifications"
-    ],
-    "dependencies": [
-      "cp-036"
-    ],
+    "tags": ["qa", "notifications"],
+    "dependencies": ["cp-036"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T08:14:00.303Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -3310,13 +2703,8 @@
     "description": "If notification provider isn't configured, confirm app degrades gracefully with clear message and no crashes.",
     "status": "done",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "notifications"
-    ],
-    "dependencies": [
-      "cp-063"
-    ],
+    "tags": ["qa", "notifications"],
+    "dependencies": ["cp-063"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-20T15:41:38.838Z",
     "assigned_agent_id": "07f4fd27-daf6-4bbf-b052-b9cacc0a897b",
@@ -3330,13 +2718,8 @@
     "description": "Search for an event and a task. Confirm results are relevant and links work.",
     "status": "complete",
     "priority": "high",
-    "tags": [
-      "qa",
-      "search"
-    ],
-    "dependencies": [
-      "cp-027"
-    ],
+    "tags": ["qa", "search"],
+    "dependencies": ["cp-027"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T06:41:30.020Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -3363,14 +2746,8 @@
     "description": "Apply filters to task lists. Confirm filter state persists in URL and works on refresh.",
     "status": "done",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "search",
-      "filters"
-    ],
-    "dependencies": [
-      "cp-036"
-    ],
+    "tags": ["qa", "search", "filters"],
+    "dependencies": ["cp-036"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-20T15:41:38.838Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -3401,14 +2778,8 @@
     "description": "Sort task/event lists by different columns. Paginate through results. Confirm no off-by-one errors or missing pages.",
     "status": "complete",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "search",
-      "pagination"
-    ],
-    "dependencies": [
-      "cp-036"
-    ],
+    "tags": ["qa", "search", "pagination"],
+    "dependencies": ["cp-036"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T07:44:30.701Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -3436,13 +2807,8 @@
     "description": "Export if available. Test empty dataset and special characters. Confirm export generation handles edge cases.",
     "status": "done",
     "priority": "low",
-    "tags": [
-      "qa",
-      "export"
-    ],
-    "dependencies": [
-      "cp-027"
-    ],
+    "tags": ["qa", "export"],
+    "dependencies": ["cp-027"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-01T19:43:48.279Z",
     "assigned_agent_id": "3df8b66e-ed9e-489a-ab8b-10b1ba555d0b",
@@ -3457,13 +2823,8 @@
     "description": "Force unsupported status transition. Confirm UX displays server message and a next step. No console spam.",
     "status": "complete",
     "priority": "high",
-    "tags": [
-      "qa",
-      "error-handling"
-    ],
-    "dependencies": [
-      "cp-036"
-    ],
+    "tags": ["qa", "error-handling"],
+    "dependencies": ["cp-036"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T08:10:23.752Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -3492,13 +2853,8 @@
     "description": "Temporarily break an internal call in dev or hit invalid endpoint. Confirm generic error UI appears, logs captured, no secrets leaked.",
     "status": "complete",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "error-handling"
-    ],
-    "dependencies": [
-      "cp-027"
-    ],
+    "tags": ["qa", "error-handling"],
+    "dependencies": ["cp-027"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T08:12:23.540Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -3526,13 +2882,8 @@
     "description": "Go offline. Attempt a write. Confirm retry/backoff or queued behavior with clean message.",
     "status": "done",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "error-handling"
-    ],
-    "dependencies": [
-      "cp-027"
-    ],
+    "tags": ["qa", "error-handling"],
+    "dependencies": ["cp-027"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T04:17:32.551Z",
     "assigned_agent_id": "3df8b66e-ed9e-489a-ab8b-10b1ba555d0b",
@@ -3547,13 +2898,8 @@
     "description": "Navigate between heavy pages rapidly. Confirm no memory leak symptoms (massive console spam, repeated subscriptions).",
     "status": "complete",
     "priority": "low",
-    "tags": [
-      "qa",
-      "performance"
-    ],
-    "dependencies": [
-      "cp-027"
-    ],
+    "tags": ["qa", "performance"],
+    "dependencies": ["cp-027"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T08:12:23.449Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -3582,13 +2928,8 @@
     "description": "Confirm no React key warnings, hydration warnings, or Next warnings during normal flows.",
     "status": "complete",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "performance"
-    ],
-    "dependencies": [
-      "cp-027"
-    ],
+    "tags": ["qa", "performance"],
+    "dependencies": ["cp-027"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T07:53:30.798Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -3608,13 +2949,8 @@
     "description": "Confirm no Unhandled Runtime Error overlays during normal flows. Cover all main navigation paths.",
     "status": "complete",
     "priority": "high",
-    "tags": [
-      "qa",
-      "performance"
-    ],
-    "dependencies": [
-      "cp-027"
-    ],
+    "tags": ["qa", "performance"],
+    "dependencies": ["cp-027"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T08:12:23.446Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -3628,12 +2964,7 @@
       "l3_no_unhandled_rejections": "PASS \u2014 0 unhandled promise rejections",
       "l3_no_runtime_overlays": "PASS \u2014 React error overlay not shown, pages show error boundary instead",
       "l3_error_boundary_works": "PASS \u2014 \"Oops, something went wrong\" shown via Next.js error boundary",
-      "pages_tested": [
-        "/events",
-        "/tasks",
-        "/search",
-        "/events/:id"
-      ],
+      "pages_tested": ["/events", "/tasks", "/search", "/events/:id"],
       "notes": [
         "Pages crash with 500 (Clerk orgId=undefined) but are caught by Next.js error boundary",
         "React error overlay does not appear \u2014 proper error boundary handling"
@@ -3646,13 +2977,8 @@
     "description": "S1: Open search, confirm clean render. S2: Search event/task/inventory/staff. S3: Apply filters, confirm URL sync on refresh. S4: Open 3+ result types, deep links land correctly. S5: Nonsense query returns no results UI, not errors.",
     "status": "complete",
     "priority": "high",
-    "tags": [
-      "qa",
-      "search"
-    ],
-    "dependencies": [
-      "cp-027"
-    ],
+    "tags": ["qa", "search"],
+    "dependencies": ["cp-027"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T05:04:29.743Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -3680,13 +3006,8 @@
     "description": "SET1: Open settings, no undefined crashes. SET2: Change low-risk preference (theme, notifications). SET3: Reload, confirm persistence. SET4: Invalid input gives inline validation. SET5: Admin-only setting as non-admin returns 403 or blocked UI.",
     "status": "partial",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "settings"
-    ],
-    "dependencies": [
-      "cp-027"
-    ],
+    "tags": ["qa", "settings"],
+    "dependencies": ["cp-027"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-20T15:41:38.838Z",
     "assigned_agent_id": "07f4fd27-daf6-4bbf-b052-b9cacc0a897b",
@@ -3700,13 +3021,8 @@
     "description": "TOOLS1: Open tools page, click each tool card/link. TOOLS2: Run backend tool action (imports, batch ops, generators) with minimal scope. TOOLS3: Force failure input gives structured error, no partial state.",
     "status": "blocked",
     "priority": "low",
-    "tags": [
-      "qa",
-      "tools"
-    ],
-    "dependencies": [
-      "cp-027"
-    ],
+    "tags": ["qa", "tools"],
+    "dependencies": ["cp-027"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-20T15:41:38.838Z",
     "assigned_agent_id": "a332ab99-921f-44ad-a9ee-e14a876c784d",
@@ -3720,13 +3036,8 @@
     "description": "WH1: Create warehouse/location. WH2: Receive stock into warehouse. WH3: Transfer between locations. WH4: Adjust stock (cycle count). WH5: Verify inventory totals reconcile in /inventory.",
     "status": "partial",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "warehouse"
-    ],
-    "dependencies": [
-      "cp-053"
-    ],
+    "tags": ["qa", "warehouse"],
+    "dependencies": ["cp-053"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-20T15:41:38.838Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -3740,13 +3051,8 @@
     "description": "WEBH1: Open webhooks list, secrets masked. WEBH2: Create webhook (dummy URL). WEBH3: Trigger event, confirm delivery recorded. WEBH4: Invalid URL shows retries visible, errors not silent. WEBH5: Delete/disable webhook, no further deliveries.",
     "status": "done",
     "priority": "low",
-    "tags": [
-      "qa",
-      "webhooks"
-    ],
-    "dependencies": [
-      "cp-027"
-    ],
+    "tags": ["qa", "webhooks"],
+    "dependencies": ["cp-027"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-20T15:41:38.838Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -3769,13 +3075,8 @@
     "description": "ACC1: Open accounting dashboard. ACC2: Create entity (invoice/bill/journal). ACC3: Edit, confirm totals update. ACC4: Export CSV, special characters OK. ACC5: Permission check on sensitive actions (write-off, finalize).",
     "status": "done",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "accounting"
-    ],
-    "dependencies": [
-      "cp-027"
-    ],
+    "tags": ["qa", "accounting"],
+    "dependencies": ["cp-027"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T05:16:43.993Z",
     "assigned_agent_id": "3df8b66e-ed9e-489a-ab8b-10b1ba555d0b",
@@ -3790,13 +3091,8 @@
     "description": "ADM1: Open admin area. ADM2: Run each admin page (users, tenants, flags, config). ADM3: Create benign admin entity. ADM4: Confirm audit trail entry. ADM5: Non-admin cannot access routes, redirect or 403.",
     "status": "partial",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "admin"
-    ],
-    "dependencies": [
-      "cp-027"
-    ],
+    "tags": ["qa", "admin"],
+    "dependencies": ["cp-027"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-20T15:41:38.838Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -3810,13 +3106,8 @@
     "description": "AN1: Open analytics, charts load without hydration warnings. AN2: Change time range/filter, queries refetch. AN3: Empty data range shows no data UI. AN4: Drilldown links land correctly. AN5: No infinite refetch loops.",
     "status": "complete",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "analytics"
-    ],
-    "dependencies": [
-      "cp-027"
-    ],
+    "tags": ["qa", "analytics"],
+    "dependencies": ["cp-027"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T08:15:39.308Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -3839,13 +3130,8 @@
     "description": "CRM1: Create customer/account. CRM2: Create contact under customer. CRM3: Create deal/opportunity. CRM4: Convert/attach CRM record to Event. CRM5: Duplicate customer email gives merge flow or clean error.",
     "status": "complete",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "crm"
-    ],
-    "dependencies": [
-      "cp-027"
-    ],
+    "tags": ["qa", "crm"],
+    "dependencies": ["cp-027"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T07:32:30.709Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -3875,14 +3161,8 @@
     "description": "CC1: Start cycle count session. CC2: Add items from inventory. CC3: Enter counts with discrepancy. CC4: Complete count, confirm adjustments propagate to /inventory and /warehouse. CC5: Concurrent edits/double-submit gives idempotent handling.",
     "status": "complete",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "cycle-counting",
-      "inventory"
-    ],
-    "dependencies": [
-      "cp-053"
-    ],
+    "tags": ["qa", "cycle-counting", "inventory"],
+    "dependencies": ["cp-053"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T08:05:49.903Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -3902,15 +3182,8 @@
     "description": "DATA1: Open data section. DATA2: Smallest supported import (CSV, 1-3 rows). DATA3: Malformed row gives error pointing to row/field. DATA4: Export dataset and re-import if supported. DATA5: Audit/log views pagination and filters.",
     "status": "partial",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "data",
-      "import",
-      "export"
-    ],
-    "dependencies": [
-      "cp-027"
-    ],
+    "tags": ["qa", "data", "import", "export"],
+    "dependencies": ["cp-027"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-20T15:41:38.838Z",
     "assigned_agent_id": "c4304c4d-de35-45c1-9d35-e6b501464d01",
@@ -3924,13 +3197,8 @@
     "description": "EV6: Event duplication/clone (if present). EV7: Event cancellation/archival and downstream impact on tasks, prep lists, schedules.",
     "status": "complete",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "events"
-    ],
-    "dependencies": [
-      "cp-031"
-    ],
+    "tags": ["qa", "events"],
+    "dependencies": ["cp-031"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T04:28:28.830Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -3952,13 +3220,8 @@
     "description": "K1: Station view shows tasks by station. K2: Claim/unclaim from kitchen view syncs to event + board. K3: My work view and end-to-end completion loop for a shift.",
     "status": "complete",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "kitchen"
-    ],
-    "dependencies": [
-      "cp-036"
-    ],
+    "tags": ["qa", "kitchen"],
+    "dependencies": ["cp-036"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T07:32:30.827Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -3989,13 +3252,8 @@
     "description": "PAY1: Create time entry/shift for staff. PAY2: Approve/lock timesheet period. PAY3: Adjust time entry (break, overtime). PAY4: Generate payroll report/export. PAY5: Permission check only payroll admins approve/lock.",
     "status": "complete",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "payroll"
-    ],
-    "dependencies": [
-      "cp-058"
-    ],
+    "tags": ["qa", "payroll"],
+    "dependencies": ["cp-058"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T05:06:29.178Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -4021,13 +3279,8 @@
     "description": "SCH1: Create schedule block/shift. SCH2: Assign staff to shift. SCH3: Overlapping shift gives clean validation. SCH4: Connect schedule to event. SCH5: Delete shift with assignments confirms cleanup.",
     "status": "complete",
     "priority": "medium",
-    "tags": [
-      "qa",
-      "scheduling"
-    ],
-    "dependencies": [
-      "cp-058"
-    ],
+    "tags": ["qa", "scheduling"],
+    "dependencies": ["cp-058"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T05:06:29.245Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -4057,13 +3310,8 @@
     "description": "If component showcase/storybook route exists: open it, click through examples, confirm no console errors. If not user-facing, mark N/A.",
     "status": "complete",
     "priority": "low",
-    "tags": [
-      "qa",
-      "components"
-    ],
-    "dependencies": [
-      "cp-027"
-    ],
+    "tags": ["qa", "components"],
+    "dependencies": ["cp-027"],
     "created_at": "2026-03-30T22:26:10.242201+00:00",
     "updated_at": "2026-04-02T07:32:30.677Z",
     "assigned_agent_id": "cfaada1d-2127-4c79-a369-ba2c8d084e1f",
@@ -4088,10 +3336,7 @@
     "description": "Run full build. Run tests for areas touched + broader suite. Start dev servers and repeat smoke pass: auth, event, prep list, tasks, board mutation, negative 422. Confirm zero console errors/warnings.",
     "status": "complete",
     "priority": "high",
-    "tags": [
-      "qa",
-      "final"
-    ],
+    "tags": ["qa", "final"],
     "dependencies": [
       "cp-030",
       "cp-033",
@@ -4182,11 +3427,7 @@
     "updated_at": "2026-04-21T05:09:49Z",
     "completed_at": "2026-04-21T05:09:49Z",
     "completion_summary": "BLOCKED \u2014 no staging environment exists. Runbook confirms Vercel prod-only deploys with no Vercel CLI creds on dev machine. Cannot safely trigger rollback test. Updated runbook with documented blockers and staging setup prerequisites. Actual rollback time estimate: 2-10 min based on architecture analysis (app rollback ~2 min, DB rollback ~3-8 min).",
-    "tags": [
-      "deployment",
-      "rollback",
-      "blocked"
-    ]
+    "tags": ["deployment", "rollback", "blocked"]
   },
   {
     "id": "cp-099",
@@ -4196,12 +3437,7 @@
     "priority": "high",
     "source": "sentry",
     "created_by": "Sentinel",
-    "tags": [
-      "sentry",
-      "middleware",
-      "404",
-      "proxy"
-    ],
+    "tags": ["sentry", "middleware", "404", "proxy"],
     "sentry_issue_id": "7388555485",
     "sentry_permalink": "https://the-eight-percent.sentry.io/issues/7388555485/"
   },
@@ -4240,11 +3476,7 @@
     "priority": "high",
     "source": "backlog",
     "created_at": "2026-04-28T06:47:57Z",
-    "tags": [
-      "bug",
-      "api",
-      "inventory"
-    ],
+    "tags": ["bug", "api", "inventory"],
     "assigned_agent_handle": "forge",
     "updated_at": "2026-04-28T06:49:22.000Z",
     "completed_at": "2026-04-28T06:56:04.284Z",
@@ -4259,12 +3491,7 @@
     "priority": "high",
     "source": "backlog",
     "created_at": "2026-04-28T06:47:57Z",
-    "tags": [
-      "bug",
-      "api",
-      "inventory",
-      "forecasts"
-    ],
+    "tags": ["bug", "api", "inventory", "forecasts"],
     "assigned_agent_handle": "forge",
     "updated_at": "2026-04-28T06:49:22.000Z",
     "completed_at": "2026-04-28T06:56:04.284Z",
@@ -4279,12 +3506,7 @@
     "priority": "medium",
     "source": "backlog",
     "created_at": "2026-04-28T06:47:57Z",
-    "tags": [
-      "bug",
-      "api",
-      "email",
-      "templates"
-    ],
+    "tags": ["bug", "api", "email", "templates"],
     "assigned_agent_handle": "forge",
     "updated_at": "2026-04-28T06:49:22.000Z",
     "completed_at": "2026-04-28T06:56:04.284Z",
@@ -4299,12 +3521,7 @@
     "priority": "medium",
     "source": "backlog",
     "created_at": "2026-04-28T06:47:57Z",
-    "tags": [
-      "bug",
-      "e2e",
-      "testing",
-      "strict-mode"
-    ],
+    "tags": ["bug", "e2e", "testing", "strict-mode"],
     "assigned_agent_handle": "sentinel",
     "updated_at": "2026-04-28T06:49:22.000Z",
     "completed_at": "2026-04-28T06:56:04.284Z",

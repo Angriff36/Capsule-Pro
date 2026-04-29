@@ -19,9 +19,7 @@ import {
 // AdminChatParticipant (tenant_admin.admin_chat_participants)
 // ---------------------------------------------------------------------------
 
-export class AdminChatParticipantPrismaStore
-  implements Store<EntityInstance>
-{
+export class AdminChatParticipantPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
     private readonly tenantId: string
@@ -64,8 +62,7 @@ export class AdminChatParticipantPrismaStore
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
-      if (data.threadId !== undefined)
-        patch.threadId = asString(data.threadId);
+      if (data.threadId !== undefined) patch.threadId = asString(data.threadId);
       if (data.userId !== undefined) patch.userId = asString(data.userId);
       if (data.archivedAt !== undefined)
         patch.archivedAt = asNullableDate(data.archivedAt);
@@ -172,8 +169,7 @@ export class AdminTaskPrismaStore implements Store<EntityInstance> {
       if (data.description !== undefined)
         patch.description = asNullableString(data.description);
       if (data.status !== undefined) patch.status = asString(data.status);
-      if (data.priority !== undefined)
-        patch.priority = asString(data.priority);
+      if (data.priority !== undefined) patch.priority = asString(data.priority);
       if (data.category !== undefined)
         patch.category = asNullableString(data.category);
       if (data.dueDate !== undefined)

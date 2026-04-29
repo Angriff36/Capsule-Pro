@@ -82,8 +82,29 @@ async function fetchCurrentPeriodMetrics(
   now: Date,
   locationId: string | null
 ) {
-  return await database.$queryRawUnsafe<CurrentMetrics[]>(
-    `
+  if (locationId) {
+    return await database.$queryRaw<CurrentMetrics[]>`
+      SELECT
+        COUNT(*)::int as total_events,
+        COALESCE(SUM(ep.budgeted_revenue), 0)::numeric as budgeted_revenue,
+        COALESCE(SUM(ep.actual_revenue), 0)::numeric as actual_revenue,
+        COALESCE(SUM(ep.budgeted_food_cost), 0)::numeric as budgeted_food_cost,
+        COALESCE(SUM(ep.actual_food_cost), 0)::numeric as actual_food_cost,
+        COALESCE(SUM(ep.budgeted_labor_cost), 0)::numeric as budgeted_labor_cost,
+        COALESCE(SUM(ep.actual_labor_cost), 0)::numeric as actual_labor_cost,
+        COALESCE(SUM(ep.actual_beverage_cost + ep.actual_rentals_cost + ep.actual_other_cost), 0)::numeric as budgeted_other_cost,
+        COALESCE(SUM(ep.actual_beverage_cost + ep.actual_rentals_cost + ep.actual_other_cost), 0)::numeric as actual_other_cost
+      FROM tenant_events.event_profitability ep
+      JOIN tenant_events.events e ON ep.tenant_id = e.tenant_id AND ep.event_id = e.id
+      WHERE ep.tenant_id = ${tenantId}
+        AND e.event_date >= ${startDate}
+        AND e.event_date <= ${now}
+        AND ep.deleted_at IS NULL
+        AND e.deleted_at IS NULL
+        AND e.location_id = ${locationId}
+    `;
+  }
+  return await database.$queryRaw<CurrentMetrics[]>`
     SELECT
       COUNT(*)::int as total_events,
       COALESCE(SUM(ep.budgeted_revenue), 0)::numeric as budgeted_revenue,
@@ -96,17 +117,12 @@ async function fetchCurrentPeriodMetrics(
       COALESCE(SUM(ep.actual_beverage_cost + ep.actual_rentals_cost + ep.actual_other_cost), 0)::numeric as actual_other_cost
     FROM tenant_events.event_profitability ep
     JOIN tenant_events.events e ON ep.tenant_id = e.tenant_id AND ep.event_id = e.id
-    WHERE ep.tenant_id = $1
-      AND e.event_date >= $2
-      AND e.event_date <= $3
+    WHERE ep.tenant_id = ${tenantId}
+      AND e.event_date >= ${startDate}
+      AND e.event_date <= ${now}
       AND ep.deleted_at IS NULL
       AND e.deleted_at IS NULL
-    ${locationId ? "AND e.location_id = $4" : ""}
-    `,
-    locationId
-      ? [tenantId, startDate, now, locationId]
-      : [tenantId, startDate, now]
-  );
+  `;
 }
 
 async function fetchPreviousPeriodMetrics(
@@ -115,8 +131,25 @@ async function fetchPreviousPeriodMetrics(
   startDate: Date,
   locationId: string | null
 ) {
-  return await database.$queryRawUnsafe<PreviousMetrics[]>(
-    `
+  if (locationId) {
+    return await database.$queryRaw<PreviousMetrics[]>`
+      SELECT
+        COUNT(*)::int as total_events,
+        COALESCE(SUM(ep.budgeted_revenue), 0)::numeric as budgeted_revenue,
+        COALESCE(SUM(ep.actual_revenue), 0)::numeric as actual_revenue,
+        COALESCE(SUM(ep.actual_food_cost), 0)::numeric as actual_food_cost,
+        COALESCE(SUM(ep.actual_labor_cost), 0)::numeric as actual_labor_cost
+      FROM tenant_events.event_profitability ep
+      JOIN tenant_events.events e ON ep.tenant_id = e.tenant_id AND ep.event_id = e.id
+      WHERE ep.tenant_id = ${tenantId}
+        AND e.event_date >= ${previousStartDate}
+        AND e.event_date < ${startDate}
+        AND ep.deleted_at IS NULL
+        AND e.deleted_at IS NULL
+        AND e.location_id = ${locationId}
+    `;
+  }
+  return await database.$queryRaw<PreviousMetrics[]>`
     SELECT
       COUNT(*)::int as total_events,
       COALESCE(SUM(ep.budgeted_revenue), 0)::numeric as budgeted_revenue,
@@ -125,17 +158,12 @@ async function fetchPreviousPeriodMetrics(
       COALESCE(SUM(ep.actual_labor_cost), 0)::numeric as actual_labor_cost
     FROM tenant_events.event_profitability ep
     JOIN tenant_events.events e ON ep.tenant_id = e.tenant_id AND ep.event_id = e.id
-    WHERE ep.tenant_id = $1
-      AND e.event_date >= $2
-      AND e.event_date < $3
+    WHERE ep.tenant_id = ${tenantId}
+      AND e.event_date >= ${previousStartDate}
+      AND e.event_date < ${startDate}
       AND ep.deleted_at IS NULL
       AND e.deleted_at IS NULL
-    ${locationId ? "AND e.location_id = $4" : ""}
-    `,
-    locationId
-      ? [tenantId, previousStartDate, startDate, locationId]
-      : [tenantId, previousStartDate, startDate]
-  );
+  `;
 }
 
 async function fetchLedgerData(
@@ -144,13 +172,46 @@ async function fetchLedgerData(
   now: Date,
   locationId: string | null
 ) {
-  return await database.$queryRawUnsafe<LedgerData[]>(
-    `
+  if (locationId) {
+    return await database.$queryRaw<LedgerData[]>`
+      SELECT
+        (
+          SELECT COALESCE(COUNT(*), 0)::int
+          FROM tenant_crm.proposals
+          WHERE tenant_id = ${tenantId}
+            AND status = 'pending'
+            AND deleted_at IS NULL
+        ) as pending_proposals,
+        (
+          SELECT COALESCE(SUM(ec.total_value), 0)::numeric
+          FROM tenant_events.event_contracts ec
+          JOIN tenant_events.events e ON ec.tenant_id = e.tenant_id AND ec.event_id = e.id
+          WHERE ec.tenant_id = ${tenantId}
+            AND ec.status = 'active'
+            AND ec.deleted_at IS NULL
+            AND e.deleted_at IS NULL
+            AND e.location_id = ${locationId}
+        ) as active_contracts,
+        (
+          SELECT COALESCE(SUM(ec.total_value * 0.5), 0)::numeric
+          FROM tenant_events.event_contracts ec
+          JOIN tenant_events.events e ON ec.tenant_id = e.tenant_id AND ec.event_id = e.id
+          WHERE ec.tenant_id = ${tenantId}
+            AND ec.deposit_paid = true
+            AND e.event_date >= ${startDate}
+            AND e.event_date <= ${now}
+            AND ec.deleted_at IS NULL
+            AND e.deleted_at IS NULL
+            AND e.location_id = ${locationId}
+        ) as deposits_received
+    `;
+  }
+  return await database.$queryRaw<LedgerData[]>`
     SELECT
       (
         SELECT COALESCE(COUNT(*), 0)::int
         FROM tenant_crm.proposals
-        WHERE tenant_id = $1
+        WHERE tenant_id = ${tenantId}
           AND status = 'pending'
           AND deleted_at IS NULL
       ) as pending_proposals,
@@ -158,29 +219,23 @@ async function fetchLedgerData(
         SELECT COALESCE(SUM(ec.total_value), 0)::numeric
         FROM tenant_events.event_contracts ec
         JOIN tenant_events.events e ON ec.tenant_id = e.tenant_id AND ec.event_id = e.id
-        WHERE ec.tenant_id = $1
+        WHERE ec.tenant_id = ${tenantId}
           AND ec.status = 'active'
           AND ec.deleted_at IS NULL
           AND e.deleted_at IS NULL
-          ${locationId ? "AND e.location_id = $4" : ""}
       ) as active_contracts,
       (
         SELECT COALESCE(SUM(ec.total_value * 0.5), 0)::numeric
         FROM tenant_events.event_contracts ec
         JOIN tenant_events.events e ON ec.tenant_id = e.tenant_id AND ec.event_id = e.id
-        WHERE ec.tenant_id = $1
+        WHERE ec.tenant_id = ${tenantId}
           AND ec.deposit_paid = true
-          AND e.event_date >= $2
-          AND e.event_date <= $3
+          AND e.event_date >= ${startDate}
+          AND e.event_date <= ${now}
           AND ec.deleted_at IS NULL
           AND e.deleted_at IS NULL
-          ${locationId ? "AND e.location_id = $4" : ""}
       ) as deposits_received
-    `,
-    locationId
-      ? [tenantId, startDate, now, locationId]
-      : [tenantId, startDate, now]
-  );
+  `;
 }
 
 async function fetchBudgetAlerts(tenantId: string) {

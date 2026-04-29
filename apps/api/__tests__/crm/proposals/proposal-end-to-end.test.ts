@@ -85,7 +85,15 @@ vi.mock("@/lib/manifest-command-handler", async () => {
         // as the result so the caller gets a 200.
         return manifestSuccessResponse({
           result: (options as any).transformBody
-            ? (options as any).transformBody({}, { userId: TEST_USER_ID, tenantId: TEST_TENANT_ID, role: "admin", params: (options as any).params })
+            ? (options as any).transformBody(
+                {},
+                {
+                  userId: TEST_USER_ID,
+                  tenantId: TEST_TENANT_ID,
+                  role: "admin",
+                  params: (options as any).params,
+                }
+              )
             : {},
         });
       }
@@ -149,14 +157,14 @@ function createMockProposal(overrides: Record<string, unknown> = {}) {
 
 function createMockRequest(
   url: string,
-  options: RequestInit = {},
+  options: RequestInit = {}
 ): NextRequest {
   if (options.body && !options.headers) {
     options.headers = { "Content-Type": "application/json" };
   }
   return new NextRequest(
     new URL(url, "http://localhost:3000"),
-    options as ConstructorParameters<typeof NextRequest>[1],
+    options as ConstructorParameters<typeof NextRequest>[1]
   );
 }
 
@@ -190,17 +198,13 @@ describe("Proposal Persistence (write → read alignment)", () => {
       vi.mocked(database.proposal.count).mockResolvedValue(1);
       vi.mocked(database.client.findMany).mockResolvedValue([]);
       vi.mocked(database.lead.findMany).mockResolvedValue([]);
-      vi.mocked(database.proposalLineItem.findMany).mockResolvedValue(
-        [],
-      );
+      vi.mocked(database.proposalLineItem.findMany).mockResolvedValue([]);
 
       // Import the GET handler from the root route
-      const { GET } = await import(
-        "@/app/api/crm/proposals/route"
-      );
+      const { GET } = await import("@/app/api/crm/proposals/route");
 
       const request = createMockRequest(
-        "http://localhost:3000/api/crm/proposals",
+        "http://localhost:3000/api/crm/proposals"
       );
       const response = await GET(request);
       const data = await response.json();
@@ -220,19 +224,17 @@ describe("Proposal Persistence (write → read alignment)", () => {
               expect.objectContaining({ deletedAt: null }),
             ]),
           }),
-        }),
+        })
       );
     });
 
     it("returns 401 for unauthenticated requests", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null } as any);
 
-      const { GET } = await import(
-        "@/app/api/crm/proposals/route"
-      );
+      const { GET } = await import("@/app/api/crm/proposals/route");
 
       const request = createMockRequest(
-        "http://localhost:3000/api/crm/proposals",
+        "http://localhost:3000/api/crm/proposals"
       );
       const response = await GET(request);
 
@@ -246,16 +248,12 @@ describe("Proposal Persistence (write → read alignment)", () => {
       vi.mocked(database.proposal.count).mockResolvedValue(0);
       vi.mocked(database.client.findMany).mockResolvedValue([]);
       vi.mocked(database.lead.findMany).mockResolvedValue([]);
-      vi.mocked(database.proposalLineItem.findMany).mockResolvedValue(
-        [],
-      );
+      vi.mocked(database.proposalLineItem.findMany).mockResolvedValue([]);
 
-      const { GET } = await import(
-        "@/app/api/crm/proposals/route"
-      );
+      const { GET } = await import("@/app/api/crm/proposals/route");
 
       const request = createMockRequest(
-        "http://localhost:3000/api/crm/proposals",
+        "http://localhost:3000/api/crm/proposals"
       );
       const response = await GET(request);
       const data = await response.json();
@@ -281,20 +279,24 @@ describe("Proposal Persistence (write → read alignment)", () => {
       vi.mocked(auth).mockResolvedValue({ orgId: TEST_ORG_ID } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
       vi.mocked(database.proposal.findFirst).mockResolvedValue(
-        mockProposal as never,
+        mockProposal as never
       );
       vi.mocked(database.client.findFirst).mockResolvedValue(null);
       vi.mocked(database.lead.findFirst).mockResolvedValue(null);
       vi.mocked(database.proposalLineItem.findMany).mockResolvedValue([
-        { id: "li-001", proposalId: "prop-002", category: "food", description: "Catering", sortOrder: 0 },
+        {
+          id: "li-001",
+          proposalId: "prop-002",
+          category: "food",
+          description: "Catering",
+          sortOrder: 0,
+        },
       ] as never);
 
-      const { GET } = await import(
-        "@/app/api/crm/proposals/[id]/route"
-      );
+      const { GET } = await import("@/app/api/crm/proposals/[id]/route");
 
       const request = createMockRequest(
-        "http://localhost:3000/api/crm/proposals/prop-002",
+        "http://localhost:3000/api/crm/proposals/prop-002"
       );
       const response = await GET(request, {
         params: Promise.resolve({ id: "prop-002" }),
@@ -316,7 +318,7 @@ describe("Proposal Persistence (write → read alignment)", () => {
               expect.objectContaining({ deletedAt: null }),
             ]),
           }),
-        }),
+        })
       );
     });
 
@@ -325,12 +327,10 @@ describe("Proposal Persistence (write → read alignment)", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
       vi.mocked(database.proposal.findFirst).mockResolvedValue(null);
 
-      const { GET } = await import(
-        "@/app/api/crm/proposals/[id]/route"
-      );
+      const { GET } = await import("@/app/api/crm/proposals/[id]/route");
 
       const request = createMockRequest(
-        "http://localhost:3000/api/crm/proposals/non-existent",
+        "http://localhost:3000/api/crm/proposals/non-existent"
       );
       const response = await GET(request, {
         params: Promise.resolve({ id: "non-existent" }),
@@ -364,9 +364,7 @@ describe("Proposal Persistence (write → read alignment)", () => {
         userId: TEST_CLERK_ID,
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.user.findFirst).mockResolvedValue(
-        mockUser as never,
-      );
+      vi.mocked(database.user.findFirst).mockResolvedValue(mockUser as never);
       mockRunCommand.mockClear();
       vi.mocked(createManifestRuntime).mockResolvedValue({
         runCommand: mockRunCommand,
@@ -392,7 +390,7 @@ describe("Proposal Persistence (write → read alignment)", () => {
           {
             method: "POST",
             body: JSON.stringify({ id: "prop-003" }),
-          },
+          }
         );
 
         await mod.POST(request);
@@ -403,21 +401,19 @@ describe("Proposal Persistence (write → read alignment)", () => {
           expect.objectContaining({
             entityName: "Proposal",
             instanceId: "prop-003",
-          }),
+          })
         );
       });
     }
 
     it("create route does NOT pass instanceId", async () => {
-      const mod = await import(
-        "@/app/api/crm/proposals/commands/create/route"
-      );
+      const mod = await import("@/app/api/crm/proposals/commands/create/route");
       const request = createMockRequest(
         "http://localhost:3000/api/crm/proposals/commands/create",
         {
           method: "POST",
           body: JSON.stringify({ title: "New Proposal" }),
-        },
+        }
       );
 
       await mod.POST(request);
@@ -425,7 +421,7 @@ describe("Proposal Persistence (write → read alignment)", () => {
       expect(mockRunCommand).toHaveBeenCalledWith(
         "create",
         expect.any(Object),
-        expect.not.objectContaining({ instanceId: expect.anything() }),
+        expect.not.objectContaining({ instanceId: expect.anything() })
       );
     });
   });

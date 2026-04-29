@@ -38,7 +38,7 @@ import {
 export class EventGuestPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -81,7 +81,7 @@ export class EventGuestPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
@@ -97,8 +97,7 @@ export class EventGuestPrismaStore implements Store<EntityInstance> {
         patch.dietaryRestrictions = asStringArray(data.dietaryRestrictions);
       if (data.allergenRestrictions !== undefined)
         patch.allergenRestrictions = asStringArray(data.allergenRestrictions);
-      if (data.notes !== undefined)
-        patch.notes = asNullableString(data.notes);
+      if (data.notes !== undefined) patch.notes = asNullableString(data.notes);
       if (data.specialMealRequired !== undefined)
         patch.specialMealRequired = asBool(data.specialMealRequired, false);
       if (data.specialMealNotes !== undefined)
@@ -169,7 +168,7 @@ export class EventGuestPrismaStore implements Store<EntityInstance> {
 export class EventImportPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -214,7 +213,7 @@ export class EventImportPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};

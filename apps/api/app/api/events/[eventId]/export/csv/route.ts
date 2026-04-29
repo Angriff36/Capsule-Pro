@@ -85,26 +85,22 @@ async function buildMenuSection(
 ): Promise<string[]> {
   const rows: string[] = [];
 
-  const dishes = await database.$queryRawUnsafe<
+  const dishes = await database.$queryRaw<
     Array<{
       dish_name: string;
       quantity_servings: number;
       special_instructions: string | null;
     }>
-  >(
-    `SELECT
-        d.name as dish_name,
-        ed.quantity_servings,
-        ed.special_instructions
-      FROM tenant_events.event_dishes ed
-      JOIN tenant_kitchen.dishes d ON d.id = ed.dish_id
-      WHERE ed.tenant_id = $1
-        AND ed.event_id = $2
-        AND ed.deleted_at IS NULL
-      ORDER BY d.name`,
-    tenantId,
-    eventId
-  );
+  >`SELECT
+      d.name as dish_name,
+      ed.quantity_servings,
+      ed.special_instructions
+    FROM tenant_events.event_dishes ed
+    JOIN tenant_kitchen.dishes d ON d.id = ed.dish_id
+    WHERE ed.tenant_id = ${tenantId}
+      AND ed.event_id = ${eventId}
+      AND ed.deleted_at IS NULL
+    ORDER BY d.name`;
 
   if (dishes.length > 0) {
     rows.push("Menu / Dishes");
@@ -130,7 +126,7 @@ async function buildStaffSection(
 ): Promise<string[]> {
   const rows: string[] = [];
 
-  const tasks = await database.$queryRawUnsafe<
+  const tasks = await database.$queryRaw<
     Array<{
       title: string;
       assignee_name: string;
@@ -139,23 +135,19 @@ async function buildStaffSection(
       status: string;
       priority: string;
     }>
-  >(
-    `SELECT
-        t.title,
-        u.first_name || ' ' || u.last_name as assignee_name,
-        t.start_time,
-        t.end_time,
-        t.status,
-        t.priority
-      FROM tenant_events.timeline_tasks t
-      LEFT JOIN tenant_staff.employees u ON u.tenant_id = t.tenant_id AND u.id = t.assignee_id
-      WHERE t.tenant_id = $1
-        AND t.event_id = $2
-        AND t.deleted_at IS NULL
-      ORDER BY t.start_time ASC`,
-    tenantId,
-    eventId
-  );
+  >`SELECT
+      t.title,
+      u.first_name || ' ' || u.last_name as assignee_name,
+      t.start_time,
+      t.end_time,
+      t.status,
+      t.priority
+    FROM tenant_events.timeline_tasks t
+    LEFT JOIN tenant_staff.employees u ON u.tenant_id = t.tenant_id AND u.id = t.assignee_id
+    WHERE t.tenant_id = ${tenantId}
+      AND t.event_id = ${eventId}
+      AND t.deleted_at IS NULL
+    ORDER BY t.start_time ASC`;
 
   if (tasks.length > 0) {
     rows.push("Staff Assignments");
@@ -181,27 +173,23 @@ async function buildGuestsSection(
 ): Promise<string[]> {
   const rows: string[] = [];
 
-  const guests = await database.$queryRawUnsafe<
+  const guests = await database.$queryRaw<
     Array<{
       guest_name: string;
       dietary_restrictions: string | null;
       meal_choice: string | null;
       table_number: string | null;
     }>
-  >(
-    `SELECT
-        name as guest_name,
-        dietary_restrictions,
-        meal_choice,
-        table_number
-      FROM tenant_events.event_guests
-      WHERE tenant_id = $1
-        AND event_id = $2
-        AND deleted_at IS NULL
-      ORDER BY table_number NULLS LAST, name`,
-    tenantId,
-    eventId
-  );
+  >`SELECT
+      name as guest_name,
+      dietary_restrictions,
+      meal_choice,
+      table_number
+    FROM tenant_events.event_guests
+    WHERE tenant_id = ${tenantId}
+      AND event_id = ${eventId}
+      AND deleted_at IS NULL
+    ORDER BY table_number NULLS LAST, name`;
 
   if (guests.length > 0) {
     rows.push("Guest List");

@@ -43,7 +43,10 @@ export async function GET(request: Request) {
       months = 12;
     }
 
-    const result = await database.$queryRawUnsafe<
+    const startDate = new Date();
+    startDate.setMonth(startDate.getMonth() - months);
+
+    const result = await database.$queryRaw<
       Array<{
         month: string;
         total_events: string;
@@ -54,8 +57,7 @@ export async function GET(request: Request) {
         avg_labor_cost_pct: string;
         avg_overhead_pct: string;
       }>
-    >(
-      `
+    >`
       SELECT
         TO_CHAR(e.event_date, 'YYYY-MM') as month,
         COUNT(*) as total_events,
@@ -101,15 +103,12 @@ export async function GET(request: Request) {
       FROM tenant_events.events e
       LEFT JOIN tenant_events.event_profitability ep
         ON e.tenant_id = ep.tenant_id AND e.id = ep.event_id AND ep.deleted_at IS NULL
-      WHERE e.tenant_id = $1
+      WHERE e.tenant_id = ${tenantId}::uuid
         AND e.deleted_at IS NULL
-        AND e.event_date >= NOW() - INTERVAL '1 month' * $2
+        AND e.event_date >= ${startDate}
       GROUP BY TO_CHAR(e.event_date, 'YYYY-MM')
       ORDER BY month ASC
-      `,
-      tenantId,
-      months
-    );
+    `;
 
     const data = result.map((row) => ({
       period: row.month,

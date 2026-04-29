@@ -82,14 +82,14 @@ function createMockSchedule(overrides: Record<string, unknown> = {}) {
 
 function createMockRequest(
   url: string,
-  options: RequestInit = {},
+  options: RequestInit = {}
 ): NextRequest {
   if (options.body && !options.headers) {
     options.headers = { "Content-Type": "application/json" };
   }
   return new NextRequest(
     new URL(url, "http://localhost:3000"),
-    options as ConstructorParameters<typeof NextRequest>[1],
+    options as ConstructorParameters<typeof NextRequest>[1]
   );
 }
 
@@ -114,18 +114,19 @@ describe("Schedule Persistence (write → read alignment)", () => {
         schedule_date: new Date("2026-05-01"),
       });
 
-      vi.mocked(auth).mockResolvedValue({ orgId: TEST_ORG_ID, userId: TEST_CLERK_ID } as any);
+      vi.mocked(auth).mockResolvedValue({
+        orgId: TEST_ORG_ID,
+        userId: TEST_CLERK_ID,
+      } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
       vi.mocked(database.schedule.findMany).mockResolvedValue([
         mockSchedule,
       ] as never);
 
-      const { GET } = await import(
-        "@/app/api/staff/schedules/list/route"
-      );
+      const { GET } = await import("@/app/api/staff/schedules/list/route");
 
       const request = createMockRequest(
-        "http://localhost:3000/api/staff/schedules/list",
+        "http://localhost:3000/api/staff/schedules/list"
       );
       const response = await GET(request);
       const data = await response.json();
@@ -142,19 +143,17 @@ describe("Schedule Persistence (write → read alignment)", () => {
             tenantId: TEST_TENANT_ID,
             deletedAt: null,
           }),
-        }),
+        })
       );
     });
 
     it("returns 401 for unauthenticated requests", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: null, userId: null } as any);
 
-      const { GET } = await import(
-        "@/app/api/staff/schedules/list/route"
-      );
+      const { GET } = await import("@/app/api/staff/schedules/list/route");
 
       const request = createMockRequest(
-        "http://localhost:3000/api/staff/schedules/list",
+        "http://localhost:3000/api/staff/schedules/list"
       );
       const response = await GET(request);
 
@@ -162,16 +161,17 @@ describe("Schedule Persistence (write → read alignment)", () => {
     });
 
     it("excludes soft-deleted schedules from the list", async () => {
-      vi.mocked(auth).mockResolvedValue({ orgId: TEST_ORG_ID, userId: TEST_CLERK_ID } as any);
+      vi.mocked(auth).mockResolvedValue({
+        orgId: TEST_ORG_ID,
+        userId: TEST_CLERK_ID,
+      } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
       vi.mocked(database.schedule.findMany).mockResolvedValue([]);
 
-      const { GET } = await import(
-        "@/app/api/staff/schedules/list/route"
-      );
+      const { GET } = await import("@/app/api/staff/schedules/list/route");
 
       const request = createMockRequest(
-        "http://localhost:3000/api/staff/schedules/list",
+        "http://localhost:3000/api/staff/schedules/list"
       );
       const response = await GET(request);
       const data = await response.json();
@@ -194,18 +194,19 @@ describe("Schedule Persistence (write → read alignment)", () => {
         published_by: TEST_USER_ID,
       });
 
-      vi.mocked(auth).mockResolvedValue({ orgId: TEST_ORG_ID, userId: TEST_CLERK_ID } as any);
+      vi.mocked(auth).mockResolvedValue({
+        orgId: TEST_ORG_ID,
+        userId: TEST_CLERK_ID,
+      } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
       vi.mocked(database.schedule.findFirst).mockResolvedValue(
-        mockSchedule as never,
+        mockSchedule as never
       );
 
-      const { GET } = await import(
-        "@/app/api/staff/schedules/[id]/route"
-      );
+      const { GET } = await import("@/app/api/staff/schedules/[id]/route");
 
       const request = createMockRequest(
-        "http://localhost:3000/api/staff/schedules/sched-002",
+        "http://localhost:3000/api/staff/schedules/sched-002"
       );
       const response = await GET(request, {
         params: Promise.resolve({ id: "sched-002" }),
@@ -224,21 +225,22 @@ describe("Schedule Persistence (write → read alignment)", () => {
             tenantId: TEST_TENANT_ID,
             deletedAt: null,
           }),
-        }),
+        })
       );
     });
 
     it("returns 404 for non-existent schedule", async () => {
-      vi.mocked(auth).mockResolvedValue({ orgId: TEST_ORG_ID, userId: TEST_CLERK_ID } as any);
+      vi.mocked(auth).mockResolvedValue({
+        orgId: TEST_ORG_ID,
+        userId: TEST_CLERK_ID,
+      } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
       vi.mocked(database.schedule.findFirst).mockResolvedValue(null);
 
-      const { GET } = await import(
-        "@/app/api/staff/schedules/[id]/route"
-      );
+      const { GET } = await import("@/app/api/staff/schedules/[id]/route");
 
       const request = createMockRequest(
-        "http://localhost:3000/api/staff/schedules/non-existent",
+        "http://localhost:3000/api/staff/schedules/non-existent"
       );
       const response = await GET(request, {
         params: Promise.resolve({ id: "non-existent" }),
@@ -272,9 +274,7 @@ describe("Schedule Persistence (write → read alignment)", () => {
         userId: TEST_CLERK_ID,
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.user.findFirst).mockResolvedValue(
-        mockUser as never,
-      );
+      vi.mocked(database.user.findFirst).mockResolvedValue(mockUser as never);
       mockRunCommand.mockClear();
       vi.mocked(createManifestRuntime).mockResolvedValue({
         runCommand: mockRunCommand,
@@ -297,7 +297,7 @@ describe("Schedule Persistence (write → read alignment)", () => {
           {
             method: "POST",
             body: JSON.stringify({ id: "sched-003" }),
-          },
+          }
         );
 
         await mod.POST(request);
@@ -308,7 +308,7 @@ describe("Schedule Persistence (write → read alignment)", () => {
           expect.objectContaining({
             entityName: "Schedule",
             instanceId: "sched-003",
-          }),
+          })
         );
       });
     }
@@ -321,8 +321,11 @@ describe("Schedule Persistence (write → read alignment)", () => {
         "http://localhost:3000/api/staff/schedules/commands/create",
         {
           method: "POST",
-          body: JSON.stringify({ locationId: "loc-001", scheduleDate: Date.now() }),
-        },
+          body: JSON.stringify({
+            locationId: "loc-001",
+            scheduleDate: Date.now(),
+          }),
+        }
       );
 
       await mod.POST(request);
@@ -330,7 +333,7 @@ describe("Schedule Persistence (write → read alignment)", () => {
       expect(mockRunCommand).toHaveBeenCalledWith(
         "create",
         expect.any(Object),
-        expect.not.objectContaining({ instanceId: expect.anything() }),
+        expect.not.objectContaining({ instanceId: expect.anything() })
       );
     });
   });

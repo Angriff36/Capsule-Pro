@@ -84,16 +84,14 @@ export class WasteEntryPrismaStore implements Store<EntityInstance> {
         patch.locationId = asNullableString(data.locationId);
       if (data.eventId !== undefined)
         patch.eventId = asNullableString(data.eventId);
-      if (data.loggedBy !== undefined)
-        patch.loggedBy = asString(data.loggedBy);
+      if (data.loggedBy !== undefined) patch.loggedBy = asString(data.loggedBy);
       if (data.loggedAt !== undefined)
         patch.loggedAt = asNullableDate(data.loggedAt);
       if (data.unitCost !== undefined)
         patch.unitCost = toDecimalInput(data.unitCost);
       if (data.totalCost !== undefined)
         patch.totalCost = toDecimalInput(data.totalCost);
-      if (data.notes !== undefined)
-        patch.notes = asNullableString(data.notes);
+      if (data.notes !== undefined) patch.notes = asNullableString(data.notes);
       const row = await this.prisma.wasteEntry.update({
         where: { tenantId_id: { tenantId: this.tenantId, id } },
         data: patch,

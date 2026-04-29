@@ -106,13 +106,10 @@ describe("EventStaffAssignmentPrismaStore", () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         deletedAt: null,
-      }),
+      })
     );
 
-    const store = new EventStaffAssignmentPrismaStore(
-      prisma as never,
-      TENANT,
-    );
+    const store = new EventStaffAssignmentPrismaStore(prisma as never, TENANT);
     await store.create({
       eventId: "evt-1",
       employeeId: "emp-1",
@@ -137,10 +134,7 @@ describe("EventStaffAssignmentPrismaStore", () => {
 
   it("getAll filters by tenantId and deletedAt null", async () => {
     mockEventStaffAssignment.findMany.mockResolvedValueOnce([]);
-    const store = new EventStaffAssignmentPrismaStore(
-      prisma as never,
-      TENANT,
-    );
+    const store = new EventStaffAssignmentPrismaStore(prisma as never, TENANT);
     await store.getAll();
 
     const call = mockEventStaffAssignment.findMany.mock.calls[0][0] as {
@@ -152,10 +146,7 @@ describe("EventStaffAssignmentPrismaStore", () => {
 
   it("getById uses composite key tenantId_id", async () => {
     mockEventStaffAssignment.findFirst.mockResolvedValueOnce(null);
-    const store = new EventStaffAssignmentPrismaStore(
-      prisma as never,
-      TENANT,
-    );
+    const store = new EventStaffAssignmentPrismaStore(prisma as never, TENANT);
     await store.getById("staff-1");
 
     const call = mockEventStaffAssignment.findFirst.mock.calls[0][0] as {
@@ -168,10 +159,7 @@ describe("EventStaffAssignmentPrismaStore", () => {
 
   it("delete soft-deletes with deletedAt", async () => {
     mockEventStaffAssignment.update.mockResolvedValueOnce({});
-    const store = new EventStaffAssignmentPrismaStore(
-      prisma as never,
-      TENANT,
-    );
+    const store = new EventStaffAssignmentPrismaStore(prisma as never, TENANT);
     await store.delete("staff-1");
 
     const call = mockEventStaffAssignment.update.mock.calls[0][0] as {
@@ -187,10 +175,7 @@ describe("EventStaffAssignmentPrismaStore", () => {
     mockEventStaffAssignment.findMany.mockResolvedValueOnce([
       { id: "s-1", tenantId: TENANT, role: "server" },
     ]);
-    const store = new EventStaffAssignmentPrismaStore(
-      prisma as never,
-      TENANT,
-    );
+    const store = new EventStaffAssignmentPrismaStore(prisma as never, TENANT);
     const result = await store.getAll();
 
     const call = mockEventStaffAssignment.findMany.mock.calls[0][0] as {
@@ -214,7 +199,7 @@ describe("EventSummaryPrismaStore", () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         deletedAt: null,
-      }),
+      })
     );
 
     const store = new EventSummaryPrismaStore(prisma as never, TENANT);
@@ -279,7 +264,7 @@ describe("IngredientPrismaStore", () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         deletedAt: null,
-      }),
+      })
     );
 
     const store = new IngredientPrismaStore(prisma as never, TENANT);
@@ -383,7 +368,7 @@ describe("InventoryItemPrismaStore", () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         deletedAt: null,
-      }),
+      })
     );
 
     const store = new InventoryItemPrismaStore(prisma as never, TENANT);
@@ -487,7 +472,7 @@ describe("InventorySupplierPrismaStore", () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         deletedAt: null,
-      }),
+      })
     );
 
     const store = new InventorySupplierPrismaStore(prisma as never, TENANT);

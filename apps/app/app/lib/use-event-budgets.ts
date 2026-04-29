@@ -1,7 +1,7 @@
 "use client";
 
-import { apiFetch } from "@/app/lib/api";
 import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
 
 // Types
 export type EventBudgetStatus =

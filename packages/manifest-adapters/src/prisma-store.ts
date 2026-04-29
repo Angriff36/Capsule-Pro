@@ -9,8 +9,6 @@
 import type { Store } from "@angriff36/manifest";
 import type {
   AllergenWarning,
-  Ingredient,
-  InventoryItem,
   KitchenTask,
   KitchenTaskClaim,
   Menu,
@@ -76,24 +74,25 @@ import {
   DishPrismaStore,
 } from "./prisma-stores/broken-read-batch06-cycle-dish.js";
 export { DishPrismaStore };
+
 import {
   EmailTemplatePrismaStore,
   EmailWorkflowPrismaStore,
 } from "./prisma-stores/broken-read-batch06-email.js";
 export { EmailTemplatePrismaStore };
-import {
-  EmployeeAvailabilityPrismaStore,
-} from "./prisma-stores/broken-read-batch06-employee-availability.js";
+
+import { EmployeeAvailabilityPrismaStore } from "./prisma-stores/broken-read-batch06-employee-availability.js";
 import {
   EmployeeCertificationPrismaStore,
   EmployeeDeductionPrismaStore,
 } from "./prisma-stores/broken-read-batch07-employee.js";
 import {
-  EventPrismaStore,
   EventBudgetPrismaStore,
   EventContractPrismaStore,
+  EventPrismaStore,
 } from "./prisma-stores/broken-read-batch07-event.js";
 export { EventPrismaStore };
+
 import { EventDishPrismaStore } from "./prisma-stores/broken-read-batch08-event-dish.js";
 import {
   EventGuestPrismaStore,
@@ -109,11 +108,13 @@ import {
 } from "./prisma-stores/broken-read-batch09-event-staff-summary.js";
 import { IngredientPrismaStore } from "./prisma-stores/broken-read-batch09-ingredient.js";
 export { IngredientPrismaStore };
+
 import {
   InventoryItemPrismaStore,
   InventorySupplierPrismaStore,
 } from "./prisma-stores/broken-read-batch09-inventory.js";
 export { InventoryItemPrismaStore };
+
 import { InventoryTransactionPrismaStore } from "./prisma-stores/broken-read-batch10-inventory-transaction.js";
 import {
   LaborBudgetPrismaStore,
@@ -130,39 +131,39 @@ import {
   PricingTierPrismaStore,
 } from "./prisma-stores/broken-read-batch12-prep-pricing.js";
 import {
-  TimeEntryPrismaStore,
   TimecardEditRequestPrismaStore,
+  TimeEntryPrismaStore,
   TrainingAssignmentPrismaStore,
 } from "./prisma-stores/broken-read-batch12-staff-time.js";
 import {
-  PurchaseOrderItemPrismaStore,
   ProposalLineItemPrismaStore,
+  PurchaseOrderItemPrismaStore,
 } from "./prisma-stores/broken-read-batch13-order-proposal.js";
-import { ProposalPrismaStore } from "./prisma-stores/broken-read-proposal-parent.js";
-import { PurchaseOrderPrismaStore } from "./prisma-stores/broken-read-po-parent.js";
-import { NotificationPrismaStore } from "./prisma-stores/broken-read-notification-parent.js";
-import { SchedulePrismaStore } from "./prisma-stores/broken-read-schedule-parent.js";
 import { ScheduleShiftPrismaStore } from "./prisma-stores/broken-read-batch13-schedule-shipment.js";
-import { ShipmentPrismaStore } from "./prisma-stores/broken-read-shipment-parent.js";
+import {
+  TrainingModulePrismaStore,
+  VarianceReportPrismaStore,
+} from "./prisma-stores/broken-read-batch13-training-variance.js";
 import {
   VendorCatalogPrismaStore,
   VendorContractPrismaStore,
 } from "./prisma-stores/broken-read-batch13-vendor.js";
 import {
-  TrainingModulePrismaStore,
-  VarianceReportPrismaStore,
-} from "./prisma-stores/broken-read-batch13-training-variance.js";
-import { PurchaseRequisitionPrismaStore } from "./prisma-stores/broken-read-requisition-parent.js";
+  CollectionActionPrismaStore,
+  CollectionCasePrismaStore,
+  CollectionPaymentPlanPrismaStore,
+} from "./prisma-stores/broken-read-batch14-collections.js";
 import {
   InvoicePrismaStore,
   PaymentMethodPrismaStore,
   PaymentPrismaStore,
 } from "./prisma-stores/broken-read-batch14-invoice-payment.js";
-import {
-  CollectionCasePrismaStore,
-  CollectionActionPrismaStore,
-  CollectionPaymentPlanPrismaStore,
-} from "./prisma-stores/broken-read-batch14-collections.js";
+import { NotificationPrismaStore } from "./prisma-stores/broken-read-notification-parent.js";
+import { PurchaseOrderPrismaStore } from "./prisma-stores/broken-read-po-parent.js";
+import { ProposalPrismaStore } from "./prisma-stores/broken-read-proposal-parent.js";
+import { PurchaseRequisitionPrismaStore } from "./prisma-stores/broken-read-requisition-parent.js";
+import { SchedulePrismaStore } from "./prisma-stores/broken-read-schedule-parent.js";
+import { ShipmentPrismaStore } from "./prisma-stores/broken-read-shipment-parent.js";
 
 /**
  * Report a silent store error to Sentry without blocking the return path.

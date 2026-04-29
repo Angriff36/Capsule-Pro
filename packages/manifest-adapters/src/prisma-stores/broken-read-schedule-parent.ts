@@ -30,7 +30,7 @@ import {
 export class SchedulePrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -66,7 +66,7 @@ export class SchedulePrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
@@ -116,7 +116,8 @@ export class SchedulePrismaStore implements Store<EntityInstance> {
       id: r.id as string,
       tenantId: r.tenantId as string,
       locationId: r.locationId ?? null,
-      scheduleDate: r.schedule_date instanceof Date ? r.schedule_date.getTime() : 0,
+      scheduleDate:
+        r.schedule_date instanceof Date ? r.schedule_date.getTime() : 0,
       status: r.status ?? "draft",
       publishedAt:
         r.published_at instanceof Date ? r.published_at.getTime() : 0,
@@ -124,12 +125,9 @@ export class SchedulePrismaStore implements Store<EntityInstance> {
       // Manifest-only fields (no Prisma column) — return defaults
       notes: "",
       shiftCount: 0,
-      createdAt:
-        r.createdAt instanceof Date ? r.createdAt.getTime() : 0,
-      updatedAt:
-        r.updatedAt instanceof Date ? r.updatedAt.getTime() : 0,
-      deletedAt:
-        r.deletedAt instanceof Date ? r.deletedAt.getTime() : 0,
+      createdAt: r.createdAt instanceof Date ? r.createdAt.getTime() : 0,
+      updatedAt: r.updatedAt instanceof Date ? r.updatedAt.getTime() : 0,
+      deletedAt: r.deletedAt instanceof Date ? r.deletedAt.getTime() : 0,
     };
   }
 }

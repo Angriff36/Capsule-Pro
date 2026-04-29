@@ -25,7 +25,7 @@ import {
 export class NotificationPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -63,7 +63,7 @@ export class NotificationPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};

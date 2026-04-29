@@ -76,7 +76,9 @@ test.describe("Facilities: Add Asset creation backpressure", () => {
     await goto(page, "/facilities/assets");
 
     // Heading proves the page rendered
-    await expect(page.getByRole("heading", { name: /^assets$/i }).first()).toBeVisible({
+    await expect(
+      page.getByRole("heading", { name: /^assets$/i }).first()
+    ).toBeVisible({
       timeout: 15_000,
     });
 

@@ -80,14 +80,14 @@ const TEST_CLERK_ID = "clerk_test_001";
 
 function createMockRequest(
   url: string,
-  options: RequestInit = {},
+  options: RequestInit = {}
 ): NextRequest {
   if (options.body && !options.headers) {
     options.headers = { "Content-Type": "application/json" };
   }
   return new NextRequest(
     new URL(url, "http://localhost:3000"),
-    options as ConstructorParameters<typeof NextRequest>[1],
+    options as ConstructorParameters<typeof NextRequest>[1]
   );
 }
 
@@ -138,7 +138,7 @@ describe("User Command Routes", () => {
           {
             method: "POST",
             body: JSON.stringify({ [idField]: "user-001" }),
-          },
+          }
         );
 
         await mod.POST(request);
@@ -149,7 +149,7 @@ describe("User Command Routes", () => {
           expect.objectContaining({
             entityName: "User",
             instanceId: "user-001",
-          }),
+          })
         );
       });
     }
@@ -166,7 +166,7 @@ describe("User Command Routes", () => {
             lastName: "User",
             role: "staff",
           }),
-        },
+        }
       );
 
       await mod.POST(request);
@@ -174,7 +174,7 @@ describe("User Command Routes", () => {
       expect(mockRunCommand).toHaveBeenCalledWith(
         "create",
         expect.any(Object),
-        expect.not.objectContaining({ instanceId: expect.anything() }),
+        expect.not.objectContaining({ instanceId: expect.anything() })
       );
     });
   });
@@ -189,7 +189,7 @@ describe("User Command Routes", () => {
 
       const { POST } = await import("@/app/api/user/create/route");
       const request = createMockRequest(
-        "http://localhost:3000/api/user/create",
+        "http://localhost:3000/api/user/create"
       );
       const response = await POST(request);
 
@@ -201,7 +201,7 @@ describe("User Command Routes", () => {
 
       const { POST } = await import("@/app/api/user/update/route");
       const request = createMockRequest(
-        "http://localhost:3000/api/user/update",
+        "http://localhost:3000/api/user/update"
       );
       const response = await POST(request);
 
@@ -213,7 +213,7 @@ describe("User Command Routes", () => {
 
       const { POST } = await import("@/app/api/user/deactivate/route");
       const request = createMockRequest(
-        "http://localhost:3000/api/user/deactivate",
+        "http://localhost:3000/api/user/deactivate"
       );
       const response = await POST(request);
 
@@ -225,7 +225,7 @@ describe("User Command Routes", () => {
 
       const { POST } = await import("@/app/api/user/terminate/route");
       const request = createMockRequest(
-        "http://localhost:3000/api/user/terminate",
+        "http://localhost:3000/api/user/terminate"
       );
       const response = await POST(request);
 
@@ -237,7 +237,7 @@ describe("User Command Routes", () => {
 
       const { POST } = await import("@/app/api/user/update-role/route");
       const request = createMockRequest(
-        "http://localhost:3000/api/user/update-role",
+        "http://localhost:3000/api/user/update-role"
       );
       const response = await POST(request);
 
@@ -276,7 +276,7 @@ describe("User Command Routes", () => {
         {
           method: "POST",
           body: JSON.stringify({}),
-        },
+        }
       );
       const response = await POST(request);
 
@@ -295,7 +295,7 @@ describe("User Command Routes", () => {
         {
           method: "POST",
           body: JSON.stringify({}),
-        },
+        }
       );
       const response = await POST(request);
 
@@ -314,7 +314,7 @@ describe("User Command Routes", () => {
         {
           method: "POST",
           body: JSON.stringify({}),
-        },
+        }
       );
       const response = await POST(request);
 
@@ -330,7 +330,7 @@ describe("User Command Routes", () => {
         {
           method: "POST",
           body: JSON.stringify({}),
-        },
+        }
       );
       const response = await POST(request);
 
@@ -346,7 +346,7 @@ describe("User Command Routes", () => {
         {
           method: "POST",
           body: JSON.stringify({}),
-        },
+        }
       );
       const response = await POST(request);
 

@@ -38,24 +38,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Get current PO to validate state transition
-    const currentPOs = await database.$queryRawUnsafe(
-      `
-      SELECT id, status, po_number FROM tenant_inventory.purchase_orders
-      WHERE id = $1::uuid AND tenant_id = $2::uuid AND deleted_at IS NULL
-    `,
-      orderId,
-      tenantId
-    );
+    const currentPO = await database.purchaseOrder.findFirst({
+      where: { id: orderId, tenantId, deletedAt: null },
+      select: { id: true, status: true, poNumber: true },
+    });
 
-    if (!Array.isArray(currentPOs) || currentPOs.length === 0) {
+    if (!currentPO) {
       return manifestErrorResponse("Purchase order not found", 404);
     }
-
-    const currentPO = currentPOs[0] as {
-      id: string;
-      status: string;
-      po_number: string;
-    };
 
     // Validate state transition: only "submitted" can transition to "approved" or "rejected"
     if (currentPO.status !== "submitted") {
@@ -66,57 +56,64 @@ export async function POST(request: NextRequest) {
     }
 
     // Update PO status
-    await database.$queryRawUnsafe(
-      `
-      UPDATE tenant_inventory.purchase_orders
-      SET status = $1, updated_at = NOW()
-      WHERE id = $2::uuid AND tenant_id = $3::uuid
-    `,
-      action,
-      orderId,
-      tenantId
-    );
+    await database.purchaseOrder.update({
+      where: { tenantId_id: { tenantId, id: orderId } },
+      data: { status: action },
+    });
 
     // Insert approval history record
-    await database.$queryRawUnsafe(
-      `
-      INSERT INTO tenant_staff.approval_history (
-        entity_type, entity_id, action, performed_by, performed_at,
-        previous_status, new_status, notes, tenant_id
-      ) VALUES (
-        'purchase_order', $1::uuid, $2, $3, NOW(),
-        'submitted', $4, $5, $6::uuid
-      )
-    `,
-      orderId,
-      action,
-      userId,
-      action,
-      notes || null,
-      tenantId
-    );
+    await database.approvalHistory.create({
+      data: {
+        entityType: "purchase_order",
+        entityId: orderId,
+        action,
+        performedBy: userId,
+        previousStatus: "submitted",
+        newStatus: action,
+        notes: notes || null,
+        tenantId,
+      },
+    });
 
-    // Return updated PO with vendor info. tenant_id is included so the
-    // SELECT cannot return a row from another tenant if PO ids ever collide.
-    const updatedPOs = await database.$queryRawUnsafe(
-      `
-      SELECT
-        po.id, po.po_number, po.status, po.total,
-        po.submitted_by, po.submitted_at, po.updated_at,
-        v.name as vendor_name
-      FROM tenant_inventory.purchase_orders po
-      LEFT JOIN tenant_inventory.inventory_suppliers v
-        ON v.id = po.vendor_id
-        AND v.tenant_id = po.tenant_id
-      WHERE po.id = $1::uuid AND po.tenant_id = $2::uuid
-    `,
-      orderId,
-      tenantId
-    );
+    // Return updated PO with vendor info
+    const updatedPO = await database.purchaseOrder.findFirst({
+      where: { id: orderId, tenantId },
+      select: {
+        id: true,
+        poNumber: true,
+        status: true,
+        total: true,
+        submittedBy: true,
+        submittedAt: true,
+        updatedAt: true,
+        vendorId: true,
+      },
+    });
+
+    // Fetch vendor name separately (no Prisma relation between PurchaseOrder and InventorySupplier)
+    let vendorName: string | null = null;
+    if (updatedPO?.vendorId) {
+      const vendor = await database.inventorySupplier.findFirst({
+        where: { id: updatedPO.vendorId, tenantId },
+        select: { name: true },
+      });
+      vendorName = vendor?.name ?? null;
+    }
 
     return manifestSuccessResponse({
-      order: (updatedPOs as any[])[0],
-      message: `Purchase order ${currentPO.po_number} has been ${action}`,
+      order: updatedPO
+        ? {
+            id: updatedPO.id,
+            po_number: updatedPO.poNumber,
+            status: updatedPO.status,
+            total: updatedPO.total,
+            submitted_by: updatedPO.submittedBy,
+            submitted_at: updatedPO.submittedAt,
+            updated_at: updatedPO.updatedAt,
+            vendor_name: vendorName,
+          }
+        : null,
+      message: `Purchase order ${currentPO.poNumber} has been ${action}`,
     });
   } catch (error) {
     captureException(error);

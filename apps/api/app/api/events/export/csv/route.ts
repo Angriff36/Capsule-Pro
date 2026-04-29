@@ -12,7 +12,6 @@ import { database } from "@repo/database";
 import { captureException } from "@sentry/nextjs";
 import { NextResponse } from "next/server";
 import { getTenantIdForOrg } from "@/app/lib/tenant";
-import { likeContains } from "@/lib/sql-like";
 
 /**
  * Helper function to escape CSV values
@@ -45,86 +44,24 @@ function formatDateForCSV(date: Date | string | null): string {
 }
 
 /**
- * Build where clause conditions from query parameters
- */
-function buildWhereConditions(
-  tenantId: string,
-  params: {
-    startDate: string | null;
-    endDate: string | null;
-    status: string | null;
-    eventType: string | null;
-    venueId: string | null;
-    search: string | null;
-  }
-): { clause: string; params: (string | Date | number)[]; limit: number } {
-  const conditions: string[] = ["tenant_id = $1", "deleted_at IS NULL"];
-  const queryParams: (string | Date | number)[] = [tenantId];
-  let paramIndex = 2;
-
-  if (params.startDate) {
-    conditions.push(`event_date >= $${paramIndex++}`);
-    queryParams.push(params.startDate);
-  }
-
-  if (params.endDate) {
-    conditions.push(`event_date <= $${paramIndex++}`);
-    queryParams.push(params.endDate);
-  }
-
-  if (params.status) {
-    conditions.push(`status = $${paramIndex++}`);
-    queryParams.push(params.status);
-  }
-
-  if (params.eventType) {
-    conditions.push(`event_type = $${paramIndex++}`);
-    queryParams.push(params.eventType);
-  }
-
-  if (params.venueId) {
-    conditions.push(`venue_id = $${paramIndex++}`);
-    queryParams.push(params.venueId);
-  }
-
-  if (params.search) {
-    // Escape ILIKE metacharacters before wrapping with `%…%`. Without this,
-    // a search containing `%` or `_` would silently match rows the user did
-    // not intend (e.g. `100%` would match every event whose title contains
-    // `100`). The matching `ESCAPE '\'` clause is appended below.
-    const safe = likeContains(params.search);
-    conditions.push(
-      `(title ILIKE $${paramIndex++} ESCAPE '\\' OR event_number ILIKE $${paramIndex++} ESCAPE '\\')`
-    );
-    queryParams.push(safe, safe);
-  }
-
-  return {
-    clause: conditions.join(" AND "),
-    params: queryParams,
-    limit: paramIndex,
-  };
-}
-
-/**
  * Generate CSV rows from events
  */
 function generateCSVRows(
   events: Array<{
     id: string;
-    event_number: string | null;
+    eventNumber: string | null;
     title: string;
-    event_date: Date;
-    event_type: string;
+    eventDate: Date;
+    eventType: string;
     status: string;
-    guest_count: number;
-    venue_name: string | null;
-    venue_address: string | null;
+    guestCount: number;
+    venueName: string | null;
+    venueAddress: string | null;
     budget: number | null;
     notes: string | null;
     tags: string[];
-    created_at: Date;
-    updated_at: Date;
+    createdAt: Date;
+    updatedAt: Date;
   }>,
   filters: {
     startDate: string | null;
@@ -150,18 +87,18 @@ function generateCSVRows(
     rows.push(
       [
         escapeCSV(event.id),
-        escapeCSV(event.event_number),
+        escapeCSV(event.eventNumber),
         escapeCSV(event.title),
-        formatDateForCSV(event.event_date),
-        escapeCSV(event.event_type),
+        formatDateForCSV(event.eventDate),
+        escapeCSV(event.eventType),
         escapeCSV(event.status),
-        escapeCSV(event.guest_count),
-        escapeCSV(event.venue_name),
-        escapeCSV(event.venue_address),
+        escapeCSV(event.guestCount),
+        escapeCSV(event.venueName),
+        escapeCSV(event.venueAddress),
         escapeCSV(event.budget),
         escapeCSV(event.tags.join("; ")),
-        formatDateForCSV(event.created_at),
-        formatDateForCSV(event.updated_at),
+        formatDateForCSV(event.createdAt),
+        formatDateForCSV(event.updatedAt),
       ].join(",")
     );
   }
@@ -234,61 +171,62 @@ export async function GET(request: Request) {
 
     const limit = Math.min(Number.parseInt(limitParam, 10), 5000);
 
-    // Build where clause
-    const {
-      clause: whereClause,
-      params: queryParams,
-      limit: paramIndex,
-    } = buildWhereConditions(tenantId, {
-      startDate,
-      endDate,
-      status,
-      eventType,
-      venueId,
-      search,
+    // Build Prisma where clause
+    const where: Record<string, unknown> = {
+      tenantId,
+      deletedAt: null,
+    };
+
+    if (startDate || endDate) {
+      const eventDateFilter: Record<string, Date> = {};
+      if (startDate) eventDateFilter.gte = new Date(startDate);
+      if (endDate) eventDateFilter.lte = new Date(endDate);
+      where.eventDate = eventDateFilter;
+    }
+
+    if (status) {
+      where.status = status;
+    }
+
+    if (eventType) {
+      where.eventType = eventType;
+    }
+
+    if (venueId) {
+      where.venueId = venueId;
+    }
+
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: "insensitive" } },
+        { eventNumber: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    // Fetch events with pagination via Prisma ORM
+    const rawEvents = await database.event.findMany({
+      where,
+      orderBy: [{ eventDate: "desc" }, { createdAt: "desc" }],
+      take: limit,
     });
 
-    // Fetch events with pagination
-    const events = await database.$queryRawUnsafe<
-      Array<{
-        id: string;
-        event_number: string | null;
-        title: string;
-        event_date: Date;
-        event_type: string;
-        status: string;
-        guest_count: number;
-        venue_name: string | null;
-        venue_address: string | null;
-        budget: number | null;
-        notes: string | null;
-        tags: string[];
-        created_at: Date;
-        updated_at: Date;
-      }>
-    >(
-      `SELECT
-          id,
-          event_number,
-          title,
-          event_date,
-          event_type,
-          status,
-          guest_count,
-          venue_name,
-          venue_address,
-          budget,
-          notes,
-          tags,
-          created_at,
-          updated_at
-        FROM tenant_events.events
-        WHERE ${whereClause}
-        ORDER BY event_date DESC, created_at DESC
-        LIMIT $${paramIndex}`,
-      ...queryParams,
-      limit
-    );
+    // Map Prisma result (camelCase) to the shape expected by generateCSVRows
+    const events = rawEvents.map((e) => ({
+      id: e.id,
+      eventNumber: e.eventNumber,
+      title: e.title,
+      eventDate: e.eventDate,
+      eventType: e.eventType,
+      status: e.status,
+      guestCount: e.guestCount,
+      venueName: e.venueName,
+      venueAddress: e.venueAddress,
+      budget: e.budget ? Number(e.budget) : null,
+      notes: e.notes,
+      tags: e.tags,
+      createdAt: e.createdAt,
+      updatedAt: e.updatedAt,
+    }));
 
     if (events.length === 0) {
       return NextResponse.json(

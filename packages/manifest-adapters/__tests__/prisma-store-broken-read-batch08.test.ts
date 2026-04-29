@@ -103,7 +103,7 @@ describe("EventDishPrismaStore", () => {
       async ({ data }: { data: Record<string, unknown> }) => ({
         ...data,
         tenant_id: TENANT,
-      }),
+      })
     );
 
     const store = new EventDishPrismaStore(prisma as never, TENANT);
@@ -125,9 +125,7 @@ describe("EventDishPrismaStore", () => {
     expect(call.data.course).toBe("main");
     expect(call.data.quantity_servings).toBe(10);
     expect(call.data.service_style).toBe("plated");
-    expect(call.data.special_instructions).toBe(
-      "Gluten-free option required",
-    );
+    expect(call.data.special_instructions).toBe("Gluten-free option required");
   });
 
   it("getAll filters by tenant_id + deleted_at", async () => {
@@ -167,7 +165,7 @@ describe("EventGuestPrismaStore", () => {
       async ({ data }: { data: Record<string, unknown> }) => ({
         ...data,
         tenantId: TENANT,
-      }),
+      })
     );
 
     const store = new EventGuestPrismaStore(prisma as never, TENANT);
@@ -241,7 +239,7 @@ describe("EventImportPrismaStore", () => {
       async ({ data }: { data: Record<string, unknown> }) => ({
         ...data,
         tenantId: TENANT,
-      }),
+      })
     );
 
     const store = new EventImportPrismaStore(prisma as never, TENANT);
@@ -249,7 +247,7 @@ describe("EventImportPrismaStore", () => {
       eventId: "evt-1",
       fileName: "event-brief.pdf",
       mimeType: "application/pdf",
-      fileSize: 204800,
+      fileSize: 204_800,
       blobUrl: "https://blob.example.com/file.pdf",
       fileType: "pdf",
       detectedFormat: "tpp",
@@ -268,7 +266,7 @@ describe("EventImportPrismaStore", () => {
     expect(call.data.eventId).toBe("evt-1");
     expect(call.data.fileName).toBe("event-brief.pdf");
     expect(call.data.mimeType).toBe("application/pdf");
-    expect(call.data.fileSize).toBe(204800);
+    expect(call.data.fileSize).toBe(204_800);
     expect(call.data.blobUrl).toBe("https://blob.example.com/file.pdf");
     expect(call.data.fileType).toBe("pdf");
     expect(call.data.detectedFormat).toBe("tpp");
@@ -320,25 +318,25 @@ describe("EventProfitabilityPrismaStore", () => {
       async ({ data }: { data: Record<string, unknown> }) => ({
         ...data,
         tenantId: TENANT,
-      }),
+      })
     );
 
     const store = new EventProfitabilityPrismaStore(prisma as never, TENANT);
     await store.create({
       eventId: "evt-1",
-      budgetedRevenue: 50000,
-      budgetedFoodCost: 15000,
-      budgetedLaborCost: 10000,
+      budgetedRevenue: 50_000,
+      budgetedFoodCost: 15_000,
+      budgetedLaborCost: 10_000,
       budgetedOverhead: 5000,
-      budgetedTotalCost: 30000,
-      budgetedGrossMargin: 20000,
+      budgetedTotalCost: 30_000,
+      budgetedGrossMargin: 20_000,
       budgetedGrossMarginPct: 40,
-      actualRevenue: 48000,
-      actualFoodCost: 14500,
-      actualLaborCost: 10200,
+      actualRevenue: 48_000,
+      actualFoodCost: 14_500,
+      actualLaborCost: 10_200,
       actualOverhead: 5200,
-      actualTotalCost: 29900,
-      actualGrossMargin: 18100,
+      actualTotalCost: 29_900,
+      actualGrossMargin: 18_100,
       actualGrossMarginPct: 37.7,
       revenueVariance: -2000,
       foodCostVariance: -500,
@@ -353,19 +351,19 @@ describe("EventProfitabilityPrismaStore", () => {
     };
     expect(call.data.tenantId).toBe(TENANT);
     expect(call.data.eventId).toBe("evt-1");
-    expect(call.data.budgetedRevenue).toBe(50000);
-    expect(call.data.budgetedFoodCost).toBe(15000);
-    expect(call.data.budgetedLaborCost).toBe(10000);
+    expect(call.data.budgetedRevenue).toBe(50_000);
+    expect(call.data.budgetedFoodCost).toBe(15_000);
+    expect(call.data.budgetedLaborCost).toBe(10_000);
     expect(call.data.budgetedOverhead).toBe(5000);
-    expect(call.data.budgetedTotalCost).toBe(30000);
-    expect(call.data.budgetedGrossMargin).toBe(20000);
+    expect(call.data.budgetedTotalCost).toBe(30_000);
+    expect(call.data.budgetedGrossMargin).toBe(20_000);
     expect(call.data.budgetedGrossMarginPct).toBe(40);
-    expect(call.data.actualRevenue).toBe(48000);
-    expect(call.data.actualFoodCost).toBe(14500);
-    expect(call.data.actualLaborCost).toBe(10200);
+    expect(call.data.actualRevenue).toBe(48_000);
+    expect(call.data.actualFoodCost).toBe(14_500);
+    expect(call.data.actualLaborCost).toBe(10_200);
     expect(call.data.actualOverhead).toBe(5200);
-    expect(call.data.actualTotalCost).toBe(29900);
-    expect(call.data.actualGrossMargin).toBe(18100);
+    expect(call.data.actualTotalCost).toBe(29_900);
+    expect(call.data.actualGrossMargin).toBe(18_100);
     expect(call.data.actualGrossMarginPct).toBe(37.7);
     expect(call.data.revenueVariance).toBe(-2000);
     expect(call.data.foodCostVariance).toBe(-500);
@@ -413,7 +411,7 @@ describe("EventReportPrismaStore", () => {
       async ({ data }: { data: Record<string, unknown> }) => ({
         ...data,
         tenantId: TENANT,
-      }),
+      })
     );
 
     const store = new EventReportPrismaStore(prisma as never, TENANT);

@@ -8,7 +8,7 @@
  * verify wiring. OverrideAudit and the payroll stores are new batch11 stores.
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // vi.hoisted mocks — one per Prisma model accessor
@@ -117,7 +117,7 @@ beforeEach(() => {
 describe("MenuDishPrismaStore", () => {
   const store = new MenuDishPrismaStore(
     prisma as unknown as import("@repo/database/standalone").PrismaClient,
-    TENANT,
+    TENANT
   );
 
   it("create maps fields and tenantId", async () => {
@@ -127,7 +127,7 @@ describe("MenuDishPrismaStore", () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         deletedAt: null,
-      }),
+      })
     );
 
     await store.create({
@@ -209,7 +209,7 @@ describe("MenuDishPrismaStore", () => {
 describe("OverrideAuditPrismaStore", () => {
   const store = new OverrideAuditPrismaStore(
     prisma as unknown as import("@repo/database/standalone").PrismaClient,
-    TENANT,
+    TENANT
   );
 
   it("create maps fields and tenantId", async () => {
@@ -217,7 +217,7 @@ describe("OverrideAuditPrismaStore", () => {
       async ({ data }: { data: Record<string, unknown> }) => ({
         ...data,
         createdAt: new Date(),
-      }),
+      })
     );
 
     await store.create({
@@ -228,7 +228,7 @@ describe("OverrideAuditPrismaStore", () => {
       overriddenBy: "user-1",
       overrideReason: "Emergency prep needed",
       authorizedBy: "admin-1",
-      authorizedAt: 1700000000000,
+      authorizedAt: 1_700_000_000_000,
     });
 
     const call = mockOverrideAudit.create.mock.calls[0][0];
@@ -306,7 +306,7 @@ describe("OverrideAuditPrismaStore", () => {
 describe("PayrollApprovalHistoryPrismaStore", () => {
   const store = new PayrollApprovalHistoryPrismaStore(
     prisma as unknown as import("@repo/database/standalone").PrismaClient,
-    TENANT,
+    TENANT
   );
 
   it("create maps fields and auto-sets entityType to payroll_run", async () => {
@@ -314,7 +314,7 @@ describe("PayrollApprovalHistoryPrismaStore", () => {
       async ({ data }: { data: Record<string, unknown> }) => ({
         ...data,
         createdAt: new Date(),
-      }),
+      })
     );
 
     await store.create({
@@ -401,7 +401,7 @@ describe("PayrollApprovalHistoryPrismaStore", () => {
 describe("PayrollPeriodPrismaStore", () => {
   const store = new PayrollPeriodPrismaStore(
     prisma as unknown as import("@repo/database/standalone").PrismaClient,
-    TENANT,
+    TENANT
   );
 
   it("create maps snake_case fields and tenantId", async () => {
@@ -411,7 +411,7 @@ describe("PayrollPeriodPrismaStore", () => {
         created_at: new Date(),
         updated_at: new Date(),
         deleted_at: null,
-      }),
+      })
     );
 
     await store.create({
@@ -486,7 +486,7 @@ describe("PayrollPeriodPrismaStore", () => {
 describe("PayrollRunPrismaStore", () => {
   const store = new PayrollRunPrismaStore(
     prisma as unknown as import("@repo/database/standalone").PrismaClient,
-    TENANT,
+    TENANT
   );
 
   it("create maps snake_case fields, Decimal fields, and tenantId", async () => {
@@ -496,16 +496,16 @@ describe("PayrollRunPrismaStore", () => {
         created_at: new Date(),
         updated_at: new Date(),
         deleted_at: null,
-      }),
+      })
     );
 
     await store.create({
       id: "pr-1",
       payrollPeriodId: "pp-1",
       status: "pending",
-      totalGross: 50000.0,
-      totalDeductions: 12000.0,
-      totalNet: 38000.0,
+      totalGross: 50_000.0,
+      totalDeductions: 12_000.0,
+      totalNet: 38_000.0,
       approvedBy: null,
     });
 
@@ -513,9 +513,9 @@ describe("PayrollRunPrismaStore", () => {
     expect(call.data.tenant_id).toBe(TENANT);
     expect(call.data.payroll_period_id).toBe("pp-1");
     expect(call.data.status).toBe("pending");
-    expect(Number(call.data.total_gross)).toBe(50000);
-    expect(Number(call.data.total_deductions)).toBe(12000);
-    expect(Number(call.data.total_net)).toBe(38000);
+    expect(Number(call.data.total_gross)).toBe(50_000);
+    expect(Number(call.data.total_deductions)).toBe(12_000);
+    expect(Number(call.data.total_net)).toBe(38_000);
     expect(call.data.approved_by).toBeNull();
   });
 
@@ -553,9 +553,9 @@ describe("PayrollRunPrismaStore", () => {
       payroll_period_id: "pp-2",
       run_date: new Date("2026-04-15"),
       status: "approved",
-      total_gross: 75000.0,
-      total_deductions: 18000.0,
-      total_net: 57000.0,
+      total_gross: 75_000.0,
+      total_deductions: 18_000.0,
+      total_net: 57_000.0,
       approved_by: "mgr-1",
       approved_at: new Date("2026-04-16"),
       paid_at: null,
@@ -569,9 +569,9 @@ describe("PayrollRunPrismaStore", () => {
     expect(entity?.tenantId).toBe(TENANT);
     expect(entity?.payrollPeriodId).toBe("pp-2");
     expect(entity?.status).toBe("approved");
-    expect(entity?.totalGross).toBe(75000);
-    expect(entity?.totalDeductions).toBe(18000);
-    expect(entity?.totalNet).toBe(57000);
+    expect(entity?.totalGross).toBe(75_000);
+    expect(entity?.totalDeductions).toBe(18_000);
+    expect(entity?.totalNet).toBe(57_000);
     expect(entity?.approvedBy).toBe("mgr-1");
     expect(entity?.approvedAt).toBeGreaterThan(0);
     expect(entity?.paidAt).toBeNull();

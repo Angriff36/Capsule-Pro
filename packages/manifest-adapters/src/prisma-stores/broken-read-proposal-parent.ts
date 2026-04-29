@@ -29,7 +29,7 @@ import {
 export class ProposalPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -53,8 +53,7 @@ export class ProposalPrismaStore implements Store<EntityInstance> {
       data: {
         tenantId: this.tenantId,
         id,
-        proposalNumber:
-          (data.proposalNumber as string) ?? `PROP-${Date.now()}`,
+        proposalNumber: (data.proposalNumber as string) ?? `PROP-${Date.now()}`,
         templateId: asNullableString(data.templateId),
         clientId: asNullableString(data.clientId),
         leadId: asNullableString(data.leadId),
@@ -86,35 +85,57 @@ export class ProposalPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
-      if (data.proposalNumber !== undefined) patch.proposalNumber = data.proposalNumber;
-      if (data.templateId !== undefined) patch.templateId = asNullableString(data.templateId);
-      if (data.clientId !== undefined) patch.clientId = asNullableString(data.clientId);
-      if (data.leadId !== undefined) patch.leadId = asNullableString(data.leadId);
-      if (data.eventId !== undefined) patch.eventId = asNullableString(data.eventId);
+      if (data.proposalNumber !== undefined)
+        patch.proposalNumber = data.proposalNumber;
+      if (data.templateId !== undefined)
+        patch.templateId = asNullableString(data.templateId);
+      if (data.clientId !== undefined)
+        patch.clientId = asNullableString(data.clientId);
+      if (data.leadId !== undefined)
+        patch.leadId = asNullableString(data.leadId);
+      if (data.eventId !== undefined)
+        patch.eventId = asNullableString(data.eventId);
       if (data.title !== undefined) patch.title = data.title;
-      if (data.eventDate !== undefined) patch.eventDate = asNullableDate(data.eventDate);
-      if (data.eventType !== undefined) patch.eventType = asNullableString(data.eventType);
-      if (data.guestCount !== undefined) patch.guestCount = asNullableNumber(data.guestCount);
-      if (data.venueName !== undefined) patch.venueName = asNullableString(data.venueName);
-      if (data.venueAddress !== undefined) patch.venueAddress = asNullableString(data.venueAddress);
-      if (data.subtotal !== undefined) patch.subtotal = toDecimalRequired(data.subtotal, 0);
-      if (data.taxRate !== undefined) patch.taxRate = toDecimalRequired(data.taxRate, 0);
-      if (data.taxAmount !== undefined) patch.taxAmount = toDecimalRequired(data.taxAmount, 0);
-      if (data.discountAmount !== undefined) patch.discountAmount = toDecimalRequired(data.discountAmount, 0);
-      if (data.total !== undefined) patch.total = toDecimalRequired(data.total, 0);
-      if (data.status !== undefined) patch.status = asNullableString(data.status);
-      if (data.publicToken !== undefined) patch.publicToken = asNullableString(data.publicToken);
-      if (data.validUntil !== undefined) patch.validUntil = asNullableDate(data.validUntil);
+      if (data.eventDate !== undefined)
+        patch.eventDate = asNullableDate(data.eventDate);
+      if (data.eventType !== undefined)
+        patch.eventType = asNullableString(data.eventType);
+      if (data.guestCount !== undefined)
+        patch.guestCount = asNullableNumber(data.guestCount);
+      if (data.venueName !== undefined)
+        patch.venueName = asNullableString(data.venueName);
+      if (data.venueAddress !== undefined)
+        patch.venueAddress = asNullableString(data.venueAddress);
+      if (data.subtotal !== undefined)
+        patch.subtotal = toDecimalRequired(data.subtotal, 0);
+      if (data.taxRate !== undefined)
+        patch.taxRate = toDecimalRequired(data.taxRate, 0);
+      if (data.taxAmount !== undefined)
+        patch.taxAmount = toDecimalRequired(data.taxAmount, 0);
+      if (data.discountAmount !== undefined)
+        patch.discountAmount = toDecimalRequired(data.discountAmount, 0);
+      if (data.total !== undefined)
+        patch.total = toDecimalRequired(data.total, 0);
+      if (data.status !== undefined)
+        patch.status = asNullableString(data.status);
+      if (data.publicToken !== undefined)
+        patch.publicToken = asNullableString(data.publicToken);
+      if (data.validUntil !== undefined)
+        patch.validUntil = asNullableDate(data.validUntil);
       if (data.sentAt !== undefined) patch.sentAt = asNullableDate(data.sentAt);
-      if (data.viewedAt !== undefined) patch.viewedAt = asNullableDate(data.viewedAt);
-      if (data.acceptedAt !== undefined) patch.acceptedAt = asNullableDate(data.acceptedAt);
-      if (data.rejectedAt !== undefined) patch.rejectedAt = asNullableDate(data.rejectedAt);
+      if (data.viewedAt !== undefined)
+        patch.viewedAt = asNullableDate(data.viewedAt);
+      if (data.acceptedAt !== undefined)
+        patch.acceptedAt = asNullableDate(data.acceptedAt);
+      if (data.rejectedAt !== undefined)
+        patch.rejectedAt = asNullableDate(data.rejectedAt);
       if (data.notes !== undefined) patch.notes = asNullableString(data.notes);
-      if (data.termsAndConditions !== undefined) patch.termsAndConditions = asNullableString(data.termsAndConditions);
+      if (data.termsAndConditions !== undefined)
+        patch.termsAndConditions = asNullableString(data.termsAndConditions);
 
       const row = await this.prisma.proposal.update({
         where: { tenantId_id: { tenantId: this.tenantId, id } },

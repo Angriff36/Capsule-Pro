@@ -37,7 +37,7 @@ import {
 export class EventStaffAssignmentPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -74,7 +74,7 @@ export class EventStaffAssignmentPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
@@ -85,8 +85,7 @@ export class EventStaffAssignmentPrismaStore implements Store<EntityInstance> {
         patch.startTime = asNullableDate(data.startTime);
       if (data.endTime !== undefined)
         patch.endTime = asNullableDate(data.endTime);
-      if (data.notes !== undefined)
-        patch.notes = asNullableString(data.notes);
+      if (data.notes !== undefined) patch.notes = asNullableString(data.notes);
 
       const row = await this.prisma.eventStaffAssignment.update({
         where: { tenantId_id: { tenantId: this.tenantId, id } },
@@ -142,7 +141,7 @@ export class EventStaffAssignmentPrismaStore implements Store<EntityInstance> {
 export class EventSummaryPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -182,7 +181,7 @@ export class EventSummaryPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
@@ -202,7 +201,7 @@ export class EventSummaryPrismaStore implements Store<EntityInstance> {
         patch.generatedAt = asNullableDate(data.generatedAt) ?? new Date();
       if (data.generationDurationMs !== undefined)
         patch.generationDurationMs = asNullableNumber(
-          data.generationDurationMs,
+          data.generationDurationMs
         );
 
       const row = await this.prisma.eventSummary.update({

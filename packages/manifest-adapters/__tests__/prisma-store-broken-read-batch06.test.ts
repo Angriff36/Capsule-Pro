@@ -107,7 +107,7 @@ describe("CycleCountSessionPrismaStore", () => {
       async ({ data }: { data: Record<string, unknown> }) => ({
         ...data,
         tenantId: TENANT,
-      }),
+      })
     );
 
     const store = new CycleCountSessionPrismaStore(prisma as never, TENANT);
@@ -177,7 +177,7 @@ describe("DishPrismaStore", () => {
       async ({ data }: { data: Record<string, unknown> }) => ({
         ...data,
         tenantId: TENANT,
-      }),
+      })
     );
 
     const store = new DishPrismaStore(prisma as never, TENANT);
@@ -243,7 +243,7 @@ describe("EmailTemplatePrismaStore", () => {
       async ({ data }: { data: Record<string, unknown> }) => ({
         ...data,
         tenant_id: TENANT,
-      }),
+      })
     );
 
     const store = new EmailTemplatePrismaStore(prisma as never, TENANT);
@@ -305,7 +305,7 @@ describe("EmailWorkflowPrismaStore", () => {
       async ({ data }: { data: Record<string, unknown> }) => ({
         ...data,
         tenantId: TENANT,
-      }),
+      })
     );
 
     const store = new EmailWorkflowPrismaStore(prisma as never, TENANT);
@@ -370,13 +370,10 @@ describe("EmployeeAvailabilityPrismaStore", () => {
       async ({ data }: { data: Record<string, unknown> }) => ({
         ...data,
         tenant_id: TENANT,
-      }),
+      })
     );
 
-    const store = new EmployeeAvailabilityPrismaStore(
-      prisma as never,
-      TENANT,
-    );
+    const store = new EmployeeAvailabilityPrismaStore(prisma as never, TENANT);
     await store.create({
       employee_id: "emp-1",
       day_of_week: 1,
@@ -399,10 +396,7 @@ describe("EmployeeAvailabilityPrismaStore", () => {
 
   it("getAll filters by tenant_id + deleted_at", async () => {
     mockEmployeeAvailability.findMany.mockResolvedValueOnce([]);
-    const store = new EmployeeAvailabilityPrismaStore(
-      prisma as never,
-      TENANT,
-    );
+    const store = new EmployeeAvailabilityPrismaStore(prisma as never, TENANT);
     await store.getAll();
     expect(mockEmployeeAvailability.findMany).toHaveBeenCalledWith({
       where: { tenant_id: TENANT, deleted_at: null },
@@ -412,10 +406,7 @@ describe("EmployeeAvailabilityPrismaStore", () => {
 
   it("delete is soft-delete (sets deleted_at)", async () => {
     mockEmployeeAvailability.update.mockResolvedValueOnce({});
-    const store = new EmployeeAvailabilityPrismaStore(
-      prisma as never,
-      TENANT,
-    );
+    const store = new EmployeeAvailabilityPrismaStore(prisma as never, TENANT);
     const ok = await store.delete("avail-1");
     expect(ok).toBe(true);
     const call = mockEmployeeAvailability.update.mock.calls[0][0] as {

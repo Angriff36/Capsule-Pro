@@ -16,19 +16,21 @@ import {
   asJsonInput,
   asNullableString,
   asString,
-  toDecimalRequired,
   type EntityInstance,
   reportOp,
+  toDecimalRequired,
 } from "./shared.js";
 
 // ---------------------------------------------------------------------------
 // PayrollApprovalHistoryPrismaStore
 // ---------------------------------------------------------------------------
 
-export class PayrollApprovalHistoryPrismaStore implements Store<EntityInstance> {
+export class PayrollApprovalHistoryPrismaStore
+  implements Store<EntityInstance>
+{
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -70,7 +72,7 @@ export class PayrollApprovalHistoryPrismaStore implements Store<EntityInstance> 
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
@@ -140,7 +142,7 @@ export class PayrollApprovalHistoryPrismaStore implements Store<EntityInstance> 
 export class PayrollPeriodPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -164,16 +166,16 @@ export class PayrollPeriodPrismaStore implements Store<EntityInstance> {
       data: {
         tenant_id: this.tenantId,
         id,
-        period_start: data.periodStart ?? data.period_start
-          ? new Date(
-              (data.periodStart ?? data.period_start) as number | string,
-            )
-          : new Date(),
-        period_end: data.periodEnd ?? data.period_end
-          ? new Date(
-              (data.periodEnd ?? data.period_end) as number | string,
-            )
-          : new Date(),
+        period_start:
+          (data.periodStart ?? data.period_start)
+            ? new Date(
+                (data.periodStart ?? data.period_start) as number | string
+              )
+            : new Date(),
+        period_end:
+          (data.periodEnd ?? data.period_end)
+            ? new Date((data.periodEnd ?? data.period_end) as number | string)
+            : new Date(),
         status: ((data.status as string) ?? "open") || "open",
       },
     });
@@ -182,18 +184,18 @@ export class PayrollPeriodPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
       if (data.status !== undefined) patch.status = data.status;
       if (data.periodStart !== undefined || data.period_start !== undefined)
         patch.period_start = new Date(
-          (data.periodStart ?? data.period_start) as number | string,
+          (data.periodStart ?? data.period_start) as number | string
         );
       if (data.periodEnd !== undefined || data.period_end !== undefined)
         patch.period_end = new Date(
-          (data.periodEnd ?? data.period_end) as number | string,
+          (data.periodEnd ?? data.period_end) as number | string
         );
       patch.updated_at = new Date();
 
@@ -259,7 +261,7 @@ export class PayrollPeriodPrismaStore implements Store<EntityInstance> {
 export class PayrollRunPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -285,30 +287,26 @@ export class PayrollRunPrismaStore implements Store<EntityInstance> {
         id,
         payroll_period_id:
           ((data.payrollPeriodId ?? data.payroll_period_id) as string) ?? "",
-        run_date: data.runDate ?? data.run_date
-          ? new Date((data.runDate ?? data.run_date) as number | string)
-          : new Date(),
+        run_date:
+          (data.runDate ?? data.run_date)
+            ? new Date((data.runDate ?? data.run_date) as number | string)
+            : new Date(),
         status: ((data.status as string) ?? "pending") || "pending",
-        total_gross: toDecimalRequired(
-          data.totalGross ?? data.total_gross,
-          0,
-        ),
+        total_gross: toDecimalRequired(data.totalGross ?? data.total_gross, 0),
         total_deductions: toDecimalRequired(
           data.totalDeductions ?? data.total_deductions,
-          0,
+          0
         ),
         total_net: toDecimalRequired(data.totalNet ?? data.total_net, 0),
-        approved_by: asNullableString(
-          data.approvedBy ?? data.approved_by,
-        ),
-        approved_at: data.approvedAt ?? data.approved_at
-          ? new Date(
-              (data.approvedAt ?? data.approved_at) as number | string,
-            )
-          : null,
-        paid_at: data.paidAt ?? data.paid_at
-          ? new Date((data.paidAt ?? data.paid_at) as number | string)
-          : null,
+        approved_by: asNullableString(data.approvedBy ?? data.approved_by),
+        approved_at:
+          (data.approvedAt ?? data.approved_at)
+            ? new Date((data.approvedAt ?? data.approved_at) as number | string)
+            : null,
+        paid_at:
+          (data.paidAt ?? data.paid_at)
+            ? new Date((data.paidAt ?? data.paid_at) as number | string)
+            : null,
       },
     });
     return this.mapToManifestEntity(row);
@@ -316,7 +314,7 @@ export class PayrollRunPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
@@ -324,7 +322,7 @@ export class PayrollRunPrismaStore implements Store<EntityInstance> {
       if (data.totalGross !== undefined || data.total_gross !== undefined)
         patch.total_gross = toDecimalRequired(
           data.totalGross ?? data.total_gross,
-          0,
+          0
         );
       if (
         data.totalDeductions !== undefined ||
@@ -332,25 +330,22 @@ export class PayrollRunPrismaStore implements Store<EntityInstance> {
       )
         patch.total_deductions = toDecimalRequired(
           data.totalDeductions ?? data.total_deductions,
-          0,
+          0
         );
       if (data.totalNet !== undefined || data.total_net !== undefined)
-        patch.total_net = toDecimalRequired(
-          data.totalNet ?? data.total_net,
-          0,
-        );
+        patch.total_net = toDecimalRequired(data.totalNet ?? data.total_net, 0);
       if (data.approvedBy !== undefined || data.approved_by !== undefined)
         patch.approved_by = data.approvedBy ?? data.approved_by;
       if (data.approvedAt !== undefined || data.approved_at !== undefined)
-        patch.approved_at = (data.approvedAt ?? data.approved_at)
-          ? new Date(
-              (data.approvedAt ?? data.approved_at) as number | string,
-            )
-          : null;
+        patch.approved_at =
+          (data.approvedAt ?? data.approved_at)
+            ? new Date((data.approvedAt ?? data.approved_at) as number | string)
+            : null;
       if (data.paidAt !== undefined || data.paid_at !== undefined)
-        patch.paid_at = (data.paidAt ?? data.paid_at)
-          ? new Date((data.paidAt ?? data.paid_at) as number | string)
-          : null;
+        patch.paid_at =
+          (data.paidAt ?? data.paid_at)
+            ? new Date((data.paidAt ?? data.paid_at) as number | string)
+            : null;
       patch.updated_at = new Date();
 
       const updated = await this.prisma.payroll_runs.update({

@@ -70,10 +70,8 @@ export class BudgetLineItemPrismaStore implements Store<EntityInstance> {
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
-      if (data.budgetId !== undefined)
-        patch.budgetId = asString(data.budgetId);
-      if (data.category !== undefined)
-        patch.category = asString(data.category);
+      if (data.budgetId !== undefined) patch.budgetId = asString(data.budgetId);
+      if (data.category !== undefined) patch.category = asString(data.category);
       if (data.name !== undefined) patch.name = asString(data.name);
       if (data.description !== undefined)
         patch.description = asNullableString(data.description);
@@ -85,8 +83,7 @@ export class BudgetLineItemPrismaStore implements Store<EntityInstance> {
         patch.varianceAmount = toDecimalInput(data.varianceAmount);
       if (data.sortOrder !== undefined)
         patch.sortOrder = asNullableNumber(data.sortOrder) ?? 0;
-      if (data.notes !== undefined)
-        patch.notes = asNullableString(data.notes);
+      if (data.notes !== undefined) patch.notes = asNullableString(data.notes);
       const row = await this.prisma.budgetLineItem.update({
         where: { tenantId_id: { tenantId: this.tenantId, id } },
         data: patch,
@@ -191,12 +188,10 @@ export class BulkOrderRulePrismaStore implements Store<EntityInstance> {
       const patch: Record<string, unknown> = {};
       if (data.catalogEntryId !== undefined)
         patch.catalogEntryId = asString(data.catalogEntryId);
-      if (data.ruleName !== undefined)
-        patch.ruleName = asString(data.ruleName);
+      if (data.ruleName !== undefined) patch.ruleName = asString(data.ruleName);
       if (data.minimumQuantity !== undefined)
         patch.minimumQuantity = toDecimalInput(data.minimumQuantity);
-      if (data.ruleType !== undefined)
-        patch.ruleType = asString(data.ruleType);
+      if (data.ruleType !== undefined) patch.ruleType = asString(data.ruleType);
       if (data.thresholdQuantity !== undefined)
         patch.thresholdQuantity = toDecimalInput(data.thresholdQuantity);
       if (data.action !== undefined) patch.action = asString(data.action);
@@ -299,7 +294,8 @@ export class CateringOrderPrismaStore implements Store<EntityInstance> {
         customer_id: asString(data.customer_id ?? data.customerId),
         eventId: asNullableString(data.eventId),
         orderNumber: asString(data.orderNumber),
-        order_status: asString(data.order_status ?? data.orderStatus) || "draft",
+        order_status:
+          asString(data.order_status ?? data.orderStatus) || "draft",
         order_date:
           asNullableDate(data.order_date ?? data.orderDate) ?? new Date(),
         delivery_date:

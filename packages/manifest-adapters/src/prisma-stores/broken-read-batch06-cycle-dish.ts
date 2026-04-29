@@ -29,7 +29,7 @@ import {
 export class CycleCountSessionPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -76,7 +76,7 @@ export class CycleCountSessionPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
@@ -95,7 +95,10 @@ export class CycleCountSessionPrismaStore implements Store<EntityInstance> {
       if (data.totalVariance !== undefined)
         patch.totalVariance = toDecimalRequired(data.totalVariance, 0);
       if (data.variancePercentage !== undefined)
-        patch.variancePercentage = toDecimalRequired(data.variancePercentage, 0);
+        patch.variancePercentage = toDecimalRequired(
+          data.variancePercentage,
+          0
+        );
       if (data.scheduledDate !== undefined)
         patch.scheduledDate = asNullableDate(data.scheduledDate);
       if (data.startedAt !== undefined)
@@ -172,7 +175,7 @@ export class CycleCountSessionPrismaStore implements Store<EntityInstance> {
 export class DishPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -218,7 +221,7 @@ export class DishPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
@@ -234,7 +237,8 @@ export class DishPrismaStore implements Store<EntityInstance> {
         patch.costPerPerson = toDecimalInput(data.costPerPerson);
       if (data.minPrepLeadDays !== undefined)
         patch.minPrepLeadDays = asNullableNumber(data.minPrepLeadDays) ?? 0;
-      if (data.isActive !== undefined) patch.isActive = asBool(data.isActive, true);
+      if (data.isActive !== undefined)
+        patch.isActive = asBool(data.isActive, true);
       if (data.description !== undefined)
         patch.description = asNullableString(data.description);
       if (data.category !== undefined)
@@ -244,10 +248,12 @@ export class DishPrismaStore implements Store<EntityInstance> {
       if (data.defaultContainerId !== undefined)
         patch.defaultContainerId = asNullableString(data.defaultContainerId);
       if (data.presentationImageUrl !== undefined)
-        patch.presentationImageUrl = asNullableString(data.presentationImageUrl);
+        patch.presentationImageUrl = asNullableString(
+          data.presentationImageUrl
+        );
       if (data.portionSizeDescription !== undefined)
         patch.portionSizeDescription = asNullableString(
-          data.portionSizeDescription,
+          data.portionSizeDescription
         );
       if (data.maxPrepLeadDays !== undefined)
         patch.maxPrepLeadDays = asNullableNumber(data.maxPrepLeadDays);

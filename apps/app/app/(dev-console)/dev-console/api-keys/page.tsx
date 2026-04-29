@@ -1,14 +1,15 @@
+import { ApiKeysClient } from "./api-keys-client";
+
 const DevConsoleApiKeysPage = () => (
-  <div className="dev-console-panel">
-    <div className="dev-console-panel-header">
+  <div className="dev-console-stack">
+    <header className="dev-console-header">
       <div>
-        <h2>API Keys</h2>
-        <p>Issue, rotate, and revoke API keys.</p>
+        <p className="dev-console-breadcrumb">Developers / Security</p>
+        <h1 className="dev-console-title">API Keys</h1>
       </div>
-    </div>
-    <p className="text-slate-400 text-sm">
-      Placeholder screen. Hook this to key management when ready.
-    </p>
+    </header>
+
+    <ApiKeysClient />
   </div>
 );
 

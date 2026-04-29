@@ -24,7 +24,7 @@ import {
 export class EmployeeAvailabilityPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -53,8 +53,7 @@ export class EmployeeAvailabilityPrismaStore implements Store<EntityInstance> {
         start_time: data.start_time as string,
         end_time: data.end_time as string,
         is_available: asBool(data.is_available, true),
-        effective_from:
-          asNullableDate(data.effective_from) ?? new Date(),
+        effective_from: asNullableDate(data.effective_from) ?? new Date(),
         effective_until: asNullableDate(data.effective_until),
       },
     });
@@ -63,7 +62,7 @@ export class EmployeeAvailabilityPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};

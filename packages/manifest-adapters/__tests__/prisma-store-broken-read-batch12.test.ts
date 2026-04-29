@@ -7,7 +7,7 @@
  *   - TrainingAssignmentPrismaStore (tenant_staff, all snake_case, soft-delete)
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // Hoisted mocks — one per Prisma model
@@ -93,11 +93,51 @@ interface MockClient {
 
 function makeMockClient(): MockClient {
   return {
-    prepComment: { ...mockPrepComment, findMany: vi.fn(), findFirst: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
-    pricingTier: { ...mockPricingTier, findMany: vi.fn(), findFirst: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
-    timeEntry: { ...mockTimeEntry, findMany: vi.fn(), findFirst: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
-    timecardEditRequest: { ...mockTimecardEditRequest, findMany: vi.fn(), findFirst: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
-    trainingAssignment: { ...mockTrainingAssignment, findMany: vi.fn(), findFirst: vi.fn(), create: vi.fn(), update: vi.fn(), delete: vi.fn(), deleteMany: vi.fn() },
+    prepComment: {
+      ...mockPrepComment,
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+      deleteMany: vi.fn(),
+    },
+    pricingTier: {
+      ...mockPricingTier,
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+      deleteMany: vi.fn(),
+    },
+    timeEntry: {
+      ...mockTimeEntry,
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+      deleteMany: vi.fn(),
+    },
+    timecardEditRequest: {
+      ...mockTimecardEditRequest,
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+      deleteMany: vi.fn(),
+    },
+    trainingAssignment: {
+      ...mockTrainingAssignment,
+      findMany: vi.fn(),
+      findFirst: vi.fn(),
+      create: vi.fn(),
+      update: vi.fn(),
+      delete: vi.fn(),
+      deleteMany: vi.fn(),
+    },
   };
 }
 
@@ -113,10 +153,14 @@ let TrainingAssignmentPrismaStore: typeof import("../src/prisma-stores/broken-re
 
 beforeEach(async () => {
   vi.clearAllMocks();
-  const prepPricing = await import("../src/prisma-stores/broken-read-batch12-prep-pricing.js");
+  const prepPricing = await import(
+    "../src/prisma-stores/broken-read-batch12-prep-pricing.js"
+  );
   PrepCommentPrismaStore = prepPricing.PrepCommentPrismaStore;
   PricingTierPrismaStore = prepPricing.PricingTierPrismaStore;
-  const staffTime = await import("../src/prisma-stores/broken-read-batch12-staff-time.js");
+  const staffTime = await import(
+    "../src/prisma-stores/broken-read-batch12-staff-time.js"
+  );
   TimeEntryPrismaStore = staffTime.TimeEntryPrismaStore;
   TimecardEditRequestPrismaStore = staffTime.TimecardEditRequestPrismaStore;
   TrainingAssignmentPrismaStore = staffTime.TrainingAssignmentPrismaStore;
@@ -143,7 +187,10 @@ describe("PrepCommentPrismaStore", () => {
       deletedAt: null,
     };
     client.prepComment.create.mockResolvedValue(fakeRow);
-    const store = new PrepCommentPrismaStore(client as unknown as Parameters<typeof PrepCommentPrismaStore>[0], TID);
+    const store = new PrepCommentPrismaStore(
+      client as unknown as Parameters<typeof PrepCommentPrismaStore>[0],
+      TID
+    );
     await store.create({
       taskId: "task-1",
       employeeId: "emp-1",
@@ -163,19 +210,25 @@ describe("PrepCommentPrismaStore", () => {
   it("getAll filters by tenantId and deletedAt null", async () => {
     const client = makeMockClient();
     client.prepComment.findMany.mockResolvedValue([]);
-    const store = new PrepCommentPrismaStore(client as unknown as Parameters<typeof PrepCommentPrismaStore>[0], TID);
+    const store = new PrepCommentPrismaStore(
+      client as unknown as Parameters<typeof PrepCommentPrismaStore>[0],
+      TID
+    );
     await store.getAll();
     expect(client.prepComment.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { tenantId: TID, deletedAt: null },
-      }),
+      })
     );
   });
 
   it("getById uses composite key tenantId_id", async () => {
     const client = makeMockClient();
     client.prepComment.findFirst.mockResolvedValue(null);
-    const store = new PrepCommentPrismaStore(client as unknown as Parameters<typeof PrepCommentPrismaStore>[0], TID);
+    const store = new PrepCommentPrismaStore(
+      client as unknown as Parameters<typeof PrepCommentPrismaStore>[0],
+      TID
+    );
     await store.getById("pc-1");
     expect(client.prepComment.findFirst).toHaveBeenCalledWith({
       where: { tenantId: TID, id: "pc-1", deletedAt: null },
@@ -185,7 +238,10 @@ describe("PrepCommentPrismaStore", () => {
   it("delete soft-deletes via deletedAt", async () => {
     const client = makeMockClient();
     client.prepComment.update.mockResolvedValue({});
-    const store = new PrepCommentPrismaStore(client as unknown as Parameters<typeof PrepCommentPrismaStore>[0], TID);
+    const store = new PrepCommentPrismaStore(
+      client as unknown as Parameters<typeof PrepCommentPrismaStore>[0],
+      TID
+    );
     const result = await store.delete("pc-1");
     expect(result).toBe(true);
     expect(client.prepComment.update).toHaveBeenCalledWith({
@@ -210,7 +266,10 @@ describe("PrepCommentPrismaStore", () => {
       deletedAt: null,
     };
     client.prepComment.findFirst.mockResolvedValue(fakeRow);
-    const store = new PrepCommentPrismaStore(client as unknown as Parameters<typeof PrepCommentPrismaStore>[0], TID);
+    const store = new PrepCommentPrismaStore(
+      client as unknown as Parameters<typeof PrepCommentPrismaStore>[0],
+      TID
+    );
     const entity = await store.getById("pc-1");
     expect(entity).toEqual({
       id: "pc-1",
@@ -252,7 +311,10 @@ describe("PricingTierPrismaStore", () => {
       deletedAt: null,
     };
     client.pricingTier.create.mockResolvedValue(fakeRow);
-    const store = new PricingTierPrismaStore(client as unknown as Parameters<typeof PricingTierPrismaStore>[0], TID);
+    const store = new PricingTierPrismaStore(
+      client as unknown as Parameters<typeof PricingTierPrismaStore>[0],
+      TID
+    );
     await store.create({
       catalogEntryId: "cat-1",
       tierName: "Volume Discount",
@@ -272,19 +334,25 @@ describe("PricingTierPrismaStore", () => {
   it("getAll filters by tenantId and deletedAt null", async () => {
     const client = makeMockClient();
     client.pricingTier.findMany.mockResolvedValue([]);
-    const store = new PricingTierPrismaStore(client as unknown as Parameters<typeof PricingTierPrismaStore>[0], TID);
+    const store = new PricingTierPrismaStore(
+      client as unknown as Parameters<typeof PricingTierPrismaStore>[0],
+      TID
+    );
     await store.getAll();
     expect(client.pricingTier.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { tenantId: TID, deletedAt: null },
-      }),
+      })
     );
   });
 
   it("getById uses composite key tenantId_id", async () => {
     const client = makeMockClient();
     client.pricingTier.findFirst.mockResolvedValue(null);
-    const store = new PricingTierPrismaStore(client as unknown as Parameters<typeof PricingTierPrismaStore>[0], TID);
+    const store = new PricingTierPrismaStore(
+      client as unknown as Parameters<typeof PricingTierPrismaStore>[0],
+      TID
+    );
     await store.getById("pt-1");
     expect(client.pricingTier.findFirst).toHaveBeenCalledWith({
       where: { tenantId: TID, id: "pt-1", deletedAt: null },
@@ -294,7 +362,10 @@ describe("PricingTierPrismaStore", () => {
   it("delete soft-deletes via deletedAt", async () => {
     const client = makeMockClient();
     client.pricingTier.update.mockResolvedValue({});
-    const store = new PricingTierPrismaStore(client as unknown as Parameters<typeof PricingTierPrismaStore>[0], TID);
+    const store = new PricingTierPrismaStore(
+      client as unknown as Parameters<typeof PricingTierPrismaStore>[0],
+      TID
+    );
     const result = await store.delete("pt-1");
     expect(result).toBe(true);
     expect(client.pricingTier.update).toHaveBeenCalledWith({
@@ -322,7 +393,10 @@ describe("PricingTierPrismaStore", () => {
       deletedAt: null,
     };
     client.pricingTier.findFirst.mockResolvedValue(fakeRow);
-    const store = new PricingTierPrismaStore(client as unknown as Parameters<typeof PricingTierPrismaStore>[0], TID);
+    const store = new PricingTierPrismaStore(
+      client as unknown as Parameters<typeof PricingTierPrismaStore>[0],
+      TID
+    );
     const entity = await store.getById("pt-1");
     expect(entity).toEqual({
       id: "pt-1",
@@ -367,7 +441,10 @@ describe("TimeEntryPrismaStore", () => {
       deleted_at: null,
     };
     client.timeEntry.create.mockResolvedValue(fakeRow);
-    const store = new TimeEntryPrismaStore(client as unknown as Parameters<typeof TimeEntryPrismaStore>[0], TID);
+    const store = new TimeEntryPrismaStore(
+      client as unknown as Parameters<typeof TimeEntryPrismaStore>[0],
+      TID
+    );
     await store.create({
       employeeId: "emp-1",
       clockIn: new Date("2026-01-01T08:00:00Z").getTime(),
@@ -388,19 +465,25 @@ describe("TimeEntryPrismaStore", () => {
   it("getAll filters by tenantId and deleted_at null (snake_case)", async () => {
     const client = makeMockClient();
     client.timeEntry.findMany.mockResolvedValue([]);
-    const store = new TimeEntryPrismaStore(client as unknown as Parameters<typeof TimeEntryPrismaStore>[0], TID);
+    const store = new TimeEntryPrismaStore(
+      client as unknown as Parameters<typeof TimeEntryPrismaStore>[0],
+      TID
+    );
     await store.getAll();
     expect(client.timeEntry.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { tenantId: TID, deleted_at: null },
-      }),
+      })
     );
   });
 
   it("getById uses composite key tenantId_id with deleted_at null", async () => {
     const client = makeMockClient();
     client.timeEntry.findFirst.mockResolvedValue(null);
-    const store = new TimeEntryPrismaStore(client as unknown as Parameters<typeof TimeEntryPrismaStore>[0], TID);
+    const store = new TimeEntryPrismaStore(
+      client as unknown as Parameters<typeof TimeEntryPrismaStore>[0],
+      TID
+    );
     await store.getById("te-1");
     expect(client.timeEntry.findFirst).toHaveBeenCalledWith({
       where: { tenantId: TID, id: "te-1", deleted_at: null },
@@ -410,7 +493,10 @@ describe("TimeEntryPrismaStore", () => {
   it("delete soft-deletes via deleted_at (snake_case)", async () => {
     const client = makeMockClient();
     client.timeEntry.update.mockResolvedValue({});
-    const store = new TimeEntryPrismaStore(client as unknown as Parameters<typeof TimeEntryPrismaStore>[0], TID);
+    const store = new TimeEntryPrismaStore(
+      client as unknown as Parameters<typeof TimeEntryPrismaStore>[0],
+      TID
+    );
     const result = await store.delete("te-1");
     expect(result).toBe(true);
     expect(client.timeEntry.update).toHaveBeenCalledWith({
@@ -438,7 +524,10 @@ describe("TimeEntryPrismaStore", () => {
       deleted_at: null,
     };
     client.timeEntry.findFirst.mockResolvedValue(fakeRow);
-    const store = new TimeEntryPrismaStore(client as unknown as Parameters<typeof TimeEntryPrismaStore>[0], TID);
+    const store = new TimeEntryPrismaStore(
+      client as unknown as Parameters<typeof TimeEntryPrismaStore>[0],
+      TID
+    );
     const entity = await store.getById("te-1");
     expect(entity).toEqual({
       id: "te-1",
@@ -480,7 +569,10 @@ describe("TimecardEditRequestPrismaStore", () => {
       updatedAt: new Date("2026-01-01"),
     };
     client.timecardEditRequest.create.mockResolvedValue(fakeRow);
-    const store = new TimecardEditRequestPrismaStore(client as unknown as Parameters<typeof TimecardEditRequestPrismaStore>[0], TID);
+    const store = new TimecardEditRequestPrismaStore(
+      client as unknown as Parameters<typeof TimecardEditRequestPrismaStore>[0],
+      TID
+    );
     await store.create({
       timeEntryId: "te-1",
       employeeId: "emp-1",
@@ -500,19 +592,25 @@ describe("TimecardEditRequestPrismaStore", () => {
   it("getAll filters by tenantId only (no deletedAt — hard-delete model)", async () => {
     const client = makeMockClient();
     client.timecardEditRequest.findMany.mockResolvedValue([]);
-    const store = new TimecardEditRequestPrismaStore(client as unknown as Parameters<typeof TimecardEditRequestPrismaStore>[0], TID);
+    const store = new TimecardEditRequestPrismaStore(
+      client as unknown as Parameters<typeof TimecardEditRequestPrismaStore>[0],
+      TID
+    );
     await store.getAll();
     expect(client.timecardEditRequest.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { tenantId: TID },
-      }),
+      })
     );
   });
 
   it("getById uses composite key tenantId_id (no deletedAt filter)", async () => {
     const client = makeMockClient();
     client.timecardEditRequest.findFirst.mockResolvedValue(null);
-    const store = new TimecardEditRequestPrismaStore(client as unknown as Parameters<typeof TimecardEditRequestPrismaStore>[0], TID);
+    const store = new TimecardEditRequestPrismaStore(
+      client as unknown as Parameters<typeof TimecardEditRequestPrismaStore>[0],
+      TID
+    );
     await store.getById("tcr-1");
     expect(client.timecardEditRequest.findFirst).toHaveBeenCalledWith({
       where: { tenantId: TID, id: "tcr-1" },
@@ -522,7 +620,10 @@ describe("TimecardEditRequestPrismaStore", () => {
   it("delete performs hard delete (no deletedAt column)", async () => {
     const client = makeMockClient();
     client.timecardEditRequest.delete.mockResolvedValue({});
-    const store = new TimecardEditRequestPrismaStore(client as unknown as Parameters<typeof TimecardEditRequestPrismaStore>[0], TID);
+    const store = new TimecardEditRequestPrismaStore(
+      client as unknown as Parameters<typeof TimecardEditRequestPrismaStore>[0],
+      TID
+    );
     const result = await store.delete("tcr-1");
     expect(result).toBe(true);
     expect(client.timecardEditRequest.delete).toHaveBeenCalledWith({
@@ -546,7 +647,10 @@ describe("TimecardEditRequestPrismaStore", () => {
       updatedAt: new Date("2026-01-01T19:00:00Z"),
     };
     client.timecardEditRequest.findFirst.mockResolvedValue(fakeRow);
-    const store = new TimecardEditRequestPrismaStore(client as unknown as Parameters<typeof TimecardEditRequestPrismaStore>[0], TID);
+    const store = new TimecardEditRequestPrismaStore(
+      client as unknown as Parameters<typeof TimecardEditRequestPrismaStore>[0],
+      TID
+    );
     const entity = await store.getById("tcr-1");
     expect(entity).toEqual({
       id: "tcr-1",
@@ -586,7 +690,10 @@ describe("TrainingAssignmentPrismaStore", () => {
       deleted_at: null,
     };
     client.trainingAssignment.create.mockResolvedValue(fakeRow);
-    const store = new TrainingAssignmentPrismaStore(client as unknown as Parameters<typeof TrainingAssignmentPrismaStore>[0], TID);
+    const store = new TrainingAssignmentPrismaStore(
+      client as unknown as Parameters<typeof TrainingAssignmentPrismaStore>[0],
+      TID
+    );
     await store.create({
       moduleId: "mod-1",
       employeeId: "emp-1",
@@ -608,19 +715,25 @@ describe("TrainingAssignmentPrismaStore", () => {
   it("getAll filters by tenant_id and deleted_at null (snake_case)", async () => {
     const client = makeMockClient();
     client.trainingAssignment.findMany.mockResolvedValue([]);
-    const store = new TrainingAssignmentPrismaStore(client as unknown as Parameters<typeof TrainingAssignmentPrismaStore>[0], TID);
+    const store = new TrainingAssignmentPrismaStore(
+      client as unknown as Parameters<typeof TrainingAssignmentPrismaStore>[0],
+      TID
+    );
     await store.getAll();
     expect(client.trainingAssignment.findMany).toHaveBeenCalledWith(
       expect.objectContaining({
         where: { tenant_id: TID, deleted_at: null },
-      }),
+      })
     );
   });
 
   it("getById uses composite key tenant_id_id (snake_case)", async () => {
     const client = makeMockClient();
     client.trainingAssignment.findFirst.mockResolvedValue(null);
-    const store = new TrainingAssignmentPrismaStore(client as unknown as Parameters<typeof TrainingAssignmentPrismaStore>[0], TID);
+    const store = new TrainingAssignmentPrismaStore(
+      client as unknown as Parameters<typeof TrainingAssignmentPrismaStore>[0],
+      TID
+    );
     await store.getById("ta-1");
     expect(client.trainingAssignment.findFirst).toHaveBeenCalledWith({
       where: { tenant_id: TID, id: "ta-1", deleted_at: null },
@@ -630,7 +743,10 @@ describe("TrainingAssignmentPrismaStore", () => {
   it("delete soft-deletes via deleted_at (snake_case)", async () => {
     const client = makeMockClient();
     client.trainingAssignment.update.mockResolvedValue({});
-    const store = new TrainingAssignmentPrismaStore(client as unknown as Parameters<typeof TrainingAssignmentPrismaStore>[0], TID);
+    const store = new TrainingAssignmentPrismaStore(
+      client as unknown as Parameters<typeof TrainingAssignmentPrismaStore>[0],
+      TID
+    );
     const result = await store.delete("ta-1");
     expect(result).toBe(true);
     expect(client.trainingAssignment.update).toHaveBeenCalledWith({
@@ -656,7 +772,10 @@ describe("TrainingAssignmentPrismaStore", () => {
       deleted_at: null,
     };
     client.trainingAssignment.findFirst.mockResolvedValue(fakeRow);
-    const store = new TrainingAssignmentPrismaStore(client as unknown as Parameters<typeof TrainingAssignmentPrismaStore>[0], TID);
+    const store = new TrainingAssignmentPrismaStore(
+      client as unknown as Parameters<typeof TrainingAssignmentPrismaStore>[0],
+      TID
+    );
     const entity = await store.getById("ta-1");
     expect(entity).toEqual({
       id: "ta-1",

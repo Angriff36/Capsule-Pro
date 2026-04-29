@@ -21,9 +21,9 @@ import {
   asNullableNumber,
   asNullableString,
   asStringArray,
-  toDecimalInput,
   type EntityInstance,
   reportOp,
+  toDecimalInput,
 } from "./shared.js";
 
 // ---------------------------------------------------------------------------
@@ -33,7 +33,7 @@ import {
 export class IngredientPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -72,7 +72,7 @@ export class IngredientPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};

@@ -85,8 +85,7 @@ export class ClientContactPrismaStore implements Store<EntityInstance> {
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
-      if (data.clientId !== undefined)
-        patch.clientId = asString(data.clientId);
+      if (data.clientId !== undefined) patch.clientId = asString(data.clientId);
       if (data.first_name !== undefined)
         patch.first_name = asString(data.first_name);
       if (data.firstName !== undefined)
@@ -95,20 +94,16 @@ export class ClientContactPrismaStore implements Store<EntityInstance> {
         patch.last_name = asString(data.last_name);
       if (data.lastName !== undefined)
         patch.last_name = asString(data.lastName);
-      if (data.title !== undefined)
-        patch.title = asNullableString(data.title);
-      if (data.email !== undefined)
-        patch.email = asNullableString(data.email);
-      if (data.phone !== undefined)
-        patch.phone = asNullableString(data.phone);
+      if (data.title !== undefined) patch.title = asNullableString(data.title);
+      if (data.email !== undefined) patch.email = asNullableString(data.email);
+      if (data.phone !== undefined) patch.phone = asNullableString(data.phone);
       if (data.phoneMobile !== undefined)
         patch.phoneMobile = asNullableString(data.phoneMobile);
       if (data.isPrimary !== undefined)
         patch.isPrimary = asBool(data.isPrimary, false);
       if (data.isBillingContact !== undefined)
         patch.isBillingContact = asBool(data.isBillingContact, false);
-      if (data.notes !== undefined)
-        patch.notes = asNullableString(data.notes);
+      if (data.notes !== undefined) patch.notes = asNullableString(data.notes);
       const row = await this.prisma.clientContact.update({
         where: { tenantId_id: { tenantId: this.tenantId, id } },
         data: patch,
@@ -192,8 +187,7 @@ export class ClientInteractionPrismaStore implements Store<EntityInstance> {
         leadId: asNullableString(data.leadId),
         employeeId: asString(data.employeeId),
         interactionType: asString(data.interactionType) || "note",
-        interactionDate:
-          asNullableDate(data.interactionDate) ?? new Date(),
+        interactionDate: asNullableDate(data.interactionDate) ?? new Date(),
         subject: asNullableString(data.subject),
         description: asNullableString(data.description),
         followUpDate: asNullableDate(data.followUpDate),
@@ -330,16 +324,14 @@ export class ClientPreferencePrismaStore implements Store<EntityInstance> {
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
-      if (data.clientId !== undefined)
-        patch.clientId = asString(data.clientId);
+      if (data.clientId !== undefined) patch.clientId = asString(data.clientId);
       if (data.preferenceType !== undefined)
         patch.preferenceType = asString(data.preferenceType);
       if (data.preferenceKey !== undefined)
         patch.preferenceKey = asString(data.preferenceKey);
       if (data.preferenceValue !== undefined)
         patch.preferenceValue = asJsonInput(data.preferenceValue);
-      if (data.notes !== undefined)
-        patch.notes = asNullableString(data.notes);
+      if (data.notes !== undefined) patch.notes = asNullableString(data.notes);
       const row = await this.prisma.clientPreference.update({
         where: { tenantId_id: { tenantId: this.tenantId, id } },
         data: patch,

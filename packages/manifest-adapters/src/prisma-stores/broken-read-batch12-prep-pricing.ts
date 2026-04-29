@@ -16,10 +16,10 @@ import {
   asNullableDate,
   asNullableString,
   asString,
-  toDecimalInput,
-  toDecimalRequired,
   type EntityInstance,
   reportOp,
+  toDecimalInput,
+  toDecimalRequired,
 } from "./shared.js";
 
 // ---------------------------------------------------------------------------
@@ -29,7 +29,7 @@ import {
 export class PrepCommentPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -66,7 +66,7 @@ export class PrepCommentPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
@@ -139,7 +139,7 @@ export class PrepCommentPrismaStore implements Store<EntityInstance> {
 export class PricingTierPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -179,7 +179,7 @@ export class PricingTierPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};

@@ -11,16 +11,16 @@ import type { Store } from "@angriff36/manifest";
 import type { PrismaClient } from "@repo/database/standalone";
 import {
   asNullableString,
-  toDecimalInput,
-  toDecimalRequired,
   type EntityInstance,
   reportOp,
+  toDecimalInput,
+  toDecimalRequired,
 } from "./shared.js";
 
 export class InventoryTransactionPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -48,27 +48,25 @@ export class InventoryTransactionPrismaStore implements Store<EntityInstance> {
         transactionType:
           ((data.transactionType ?? data.transaction_type) as string) ??
           "adjustment",
-        quantity: toDecimalRequired(
-          data.quantity ?? data.quantityChange,
-          0,
-        ),
+        quantity: toDecimalRequired(data.quantity ?? data.quantityChange, 0),
         unit_cost: toDecimalRequired(data.unitCost ?? data.unit_cost, 0),
         total_cost: toDecimalInput(data.totalCost ?? data.total_cost),
         reference: asNullableString(data.reference),
         notes: asNullableString(data.notes),
-        transaction_date: data.transactionDate ?? data.transaction_date
-          ? new Date(
-              (data.transactionDate ?? data.transaction_date) as
-                | number
-                | string,
-            )
-          : new Date(),
+        transaction_date:
+          (data.transactionDate ?? data.transaction_date)
+            ? new Date(
+                (data.transactionDate ?? data.transaction_date) as
+                  | number
+                  | string
+              )
+            : new Date(),
         storage_location_id:
           ((data.storageLocationId ?? data.storage_location_id) as string) ??
           "00000000-0000-0000-0000-000000000000",
         reason: ((data.reason as string) ?? "") || "",
         referenceType: asNullableString(
-          data.referenceType ?? data.reference_type,
+          data.referenceType ?? data.reference_type
         ),
         referenceId: asNullableString(data.referenceId ?? data.reference_id),
         employee_id: asNullableString(data.employeeId ?? data.employee_id),
@@ -79,42 +77,42 @@ export class InventoryTransactionPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
 
-      if (data.transactionType !== undefined || data.transaction_type !== undefined)
-        patch.transactionType =
-          data.transactionType ?? data.transaction_type;
+      if (
+        data.transactionType !== undefined ||
+        data.transaction_type !== undefined
+      )
+        patch.transactionType = data.transactionType ?? data.transaction_type;
       if (data.quantity !== undefined || data.quantityChange !== undefined)
         patch.quantity = toDecimalRequired(
           data.quantity ?? data.quantityChange,
-          0,
+          0
         );
       if (data.unitCost !== undefined || data.unit_cost !== undefined)
-        patch.unit_cost = toDecimalRequired(
-          data.unitCost ?? data.unit_cost,
-          0,
-        );
+        patch.unit_cost = toDecimalRequired(data.unitCost ?? data.unit_cost, 0);
       if (data.totalCost !== undefined || data.total_cost !== undefined)
-        patch.total_cost = toDecimalInput(
-          data.totalCost ?? data.total_cost,
-        );
+        patch.total_cost = toDecimalInput(data.totalCost ?? data.total_cost);
       if (data.reference !== undefined) patch.reference = data.reference;
       if (data.notes !== undefined) patch.notes = data.notes;
-      if (data.transactionDate !== undefined || data.transaction_date !== undefined)
-        patch.transaction_date = (data.transactionDate ?? data.transaction_date)
-          ? new Date(
-              (data.transactionDate ?? data.transaction_date) as
-                | number
-                | string,
-            )
-          : new Date();
+      if (
+        data.transactionDate !== undefined ||
+        data.transaction_date !== undefined
+      )
+        patch.transaction_date =
+          (data.transactionDate ?? data.transaction_date)
+            ? new Date(
+                (data.transactionDate ?? data.transaction_date) as
+                  | number
+                  | string
+              )
+            : new Date();
       if (data.reason !== undefined) patch.reason = data.reason;
       if (data.referenceType !== undefined || data.reference_type !== undefined)
-        patch.referenceType =
-          data.referenceType ?? data.reference_type;
+        patch.referenceType = data.referenceType ?? data.reference_type;
       if (data.referenceId !== undefined || data.reference_id !== undefined)
         patch.referenceId = data.referenceId ?? data.reference_id;
       if (data.employeeId !== undefined || data.employee_id !== undefined)
@@ -156,9 +154,7 @@ export class InventoryTransactionPrismaStore implements Store<EntityInstance> {
     });
   }
 
-  private mapToManifestEntity(
-    row: Record<string, unknown>,
-  ): EntityInstance {
+  private mapToManifestEntity(row: Record<string, unknown>): EntityInstance {
     return {
       id: row.id as string,
       tenantId: row.tenantId as string,

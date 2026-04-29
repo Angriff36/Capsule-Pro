@@ -41,8 +41,8 @@ vi.mock("@repo/database", () => {
     {},
     {
       get: (_target, prop) => {
-        if (prop === "$queryRaw") return queryRawSpy;
-        if (prop === "$queryRawUnsafe") return queryRawUnsafeSpy;
+        if (prop === "$queryRaw") { return queryRawSpy; }
+        if (prop === "$queryRawUnsafe") { return queryRawUnsafeSpy; }
         return modelStub;
       },
     }

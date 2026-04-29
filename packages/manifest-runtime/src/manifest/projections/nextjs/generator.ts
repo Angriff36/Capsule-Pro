@@ -662,9 +662,7 @@ export class NextJsProjection implements ProjectionTarget {
     // Pass instanceId for instance-scoped (non-create) commands so the
     // runtime engine targets the correct entity for mutate/update.
     if (command.name !== "create") {
-      lines.push(
-        '      ...(body.id ? { instanceId: String(body.id) } : {}),'
-      );
+      lines.push("      ...(body.id ? { instanceId: String(body.id) } : {}),");
     }
     lines.push("    });");
     lines.push("");

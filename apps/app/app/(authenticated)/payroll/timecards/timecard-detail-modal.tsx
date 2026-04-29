@@ -370,10 +370,7 @@ export default function TimecardDetailModal({
               </>
             )}
             {isOpen && (
-              <Button
-                onClick={onClockOut}
-                variant="outline"
-              >
+              <Button onClick={onClockOut} variant="outline">
                 Clock Out
               </Button>
             )}

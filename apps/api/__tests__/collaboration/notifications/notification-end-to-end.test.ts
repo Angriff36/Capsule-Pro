@@ -82,9 +82,7 @@ const TEST_CLERK_ID = "clerk_test_001";
 // Mock data factories
 // ---------------------------------------------------------------------------
 
-function createMockNotification(
-  overrides: Record<string, unknown> = {},
-) {
+function createMockNotification(overrides: Record<string, unknown> = {}) {
   return {
     id: "notif-001",
     tenantId: TEST_TENANT_ID,
@@ -103,14 +101,14 @@ function createMockNotification(
 
 function createMockRequest(
   url: string,
-  options: RequestInit = {},
+  options: RequestInit = {}
 ): NextRequest {
   if (options.body && !options.headers) {
     options.headers = { "Content-Type": "application/json" };
   }
   return new NextRequest(
     new URL(url, "http://localhost:3000"),
-    options as ConstructorParameters<typeof NextRequest>[1],
+    options as ConstructorParameters<typeof NextRequest>[1]
   );
 }
 
@@ -150,7 +148,7 @@ describe("Notification Persistence (write → read alignment)", () => {
       );
 
       const request = createMockRequest(
-        "http://localhost:3000/api/collaboration/notifications/list",
+        "http://localhost:3000/api/collaboration/notifications/list"
       );
       const response = await GET(request);
       const data = await response.json();
@@ -166,7 +164,7 @@ describe("Notification Persistence (write → read alignment)", () => {
           where: expect.objectContaining({
             tenantId: TEST_TENANT_ID,
           }),
-        }),
+        })
       );
     });
 
@@ -178,7 +176,7 @@ describe("Notification Persistence (write → read alignment)", () => {
       );
 
       const request = createMockRequest(
-        "http://localhost:3000/api/collaboration/notifications/list",
+        "http://localhost:3000/api/collaboration/notifications/list"
       );
       const response = await GET(request);
 
@@ -198,7 +196,7 @@ describe("Notification Persistence (write → read alignment)", () => {
       );
 
       const request = createMockRequest(
-        "http://localhost:3000/api/collaboration/notifications/list",
+        "http://localhost:3000/api/collaboration/notifications/list"
       );
       const response = await GET(request);
       const data = await response.json();
@@ -228,7 +226,7 @@ describe("Notification Persistence (write → read alignment)", () => {
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
       vi.mocked(database.notification.findFirst).mockResolvedValue(
-        mockNotification as never,
+        mockNotification as never
       );
 
       const { GET } = await import(
@@ -236,7 +234,7 @@ describe("Notification Persistence (write → read alignment)", () => {
       );
 
       const request = createMockRequest(
-        "http://localhost:3000/api/collaboration/notifications/notif-002",
+        "http://localhost:3000/api/collaboration/notifications/notif-002"
       );
       const response = await GET(request, {
         params: Promise.resolve({ id: "notif-002" }),
@@ -255,7 +253,7 @@ describe("Notification Persistence (write → read alignment)", () => {
             id: "notif-002",
             tenantId: TEST_TENANT_ID,
           }),
-        }),
+        })
       );
     });
 
@@ -272,7 +270,7 @@ describe("Notification Persistence (write → read alignment)", () => {
       );
 
       const request = createMockRequest(
-        "http://localhost:3000/api/collaboration/notifications/non-existent",
+        "http://localhost:3000/api/collaboration/notifications/non-existent"
       );
       const response = await GET(request, {
         params: Promise.resolve({ id: "non-existent" }),
@@ -306,9 +304,7 @@ describe("Notification Persistence (write → read alignment)", () => {
         userId: TEST_CLERK_ID,
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.user.findFirst).mockResolvedValue(
-        mockUser as never,
-      );
+      vi.mocked(database.user.findFirst).mockResolvedValue(mockUser as never);
       mockRunCommand.mockClear();
       vi.mocked(createManifestRuntime).mockResolvedValue({
         runCommand: mockRunCommand,
@@ -331,7 +327,7 @@ describe("Notification Persistence (write → read alignment)", () => {
           {
             method: "POST",
             body: JSON.stringify({ id: "notif-003" }),
-          },
+          }
         );
 
         await mod.POST(request);
@@ -342,7 +338,7 @@ describe("Notification Persistence (write → read alignment)", () => {
           expect.objectContaining({
             entityName: "Notification",
             instanceId: "notif-003",
-          }),
+          })
         );
       });
     }
@@ -359,7 +355,7 @@ describe("Notification Persistence (write → read alignment)", () => {
             title: "New Notification",
             notificationType: "info",
           }),
-        },
+        }
       );
 
       await mod.POST(request);
@@ -367,7 +363,7 @@ describe("Notification Persistence (write → read alignment)", () => {
       expect(mockRunCommand).toHaveBeenCalledWith(
         "create",
         expect.any(Object),
-        expect.not.objectContaining({ instanceId: expect.anything() }),
+        expect.not.objectContaining({ instanceId: expect.anything() })
       );
     });
   });

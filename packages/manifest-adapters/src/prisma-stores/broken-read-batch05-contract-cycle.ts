@@ -210,8 +210,7 @@ export class CycleCountRecordPrismaStore implements Store<EntityInstance> {
       if (data.itemId !== undefined) patch.itemId = asString(data.itemId);
       if (data.itemNumber !== undefined)
         patch.itemNumber = asString(data.itemNumber);
-      if (data.itemName !== undefined)
-        patch.itemName = asString(data.itemName);
+      if (data.itemName !== undefined) patch.itemName = asString(data.itemName);
       if (data.storageLocationId !== undefined)
         patch.storageLocationId = asString(data.storageLocationId);
       if (data.expectedQuantity !== undefined)
@@ -230,8 +229,7 @@ export class CycleCountRecordPrismaStore implements Store<EntityInstance> {
         patch.countedById = asString(data.countedById);
       if (data.barcode !== undefined)
         patch.barcode = asNullableString(data.barcode);
-      if (data.notes !== undefined)
-        patch.notes = asNullableString(data.notes);
+      if (data.notes !== undefined) patch.notes = asNullableString(data.notes);
       if (data.isVerified !== undefined)
         patch.isVerified = asBool(data.isVerified, false);
       if (data.verifiedById !== undefined)

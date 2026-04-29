@@ -63,7 +63,7 @@ function fetchTimelineTasks(
   tenantId: string,
   eventId: string
 ): Promise<TimelineTask[]> {
-  return database.$queryRawUnsafe<
+  return database.$queryRaw<
     Array<{
       id: string;
       title: string;
@@ -81,32 +81,28 @@ function fetchTimelineTasks(
       slack_minutes: number;
       notes: string | null;
     }>
-  >(
-    `SELECT
-        t.id,
-        t.title,
-        t.description,
-        t.start_time,
-        t.end_time,
-        t.status,
-        t.priority,
-        t.category,
-        t.assignee_id,
-        u.first_name || ' ' || u.last_name as assignee_name,
-        t.progress,
-        COALESCE(t.dependencies, ARRAY[]::text[]) as dependencies,
-        t.is_on_critical_path,
-        t.slack_minutes,
-        t.notes
-      FROM tenant_events.timeline_tasks t
-      LEFT JOIN tenant_staff.employees u ON u.tenant_id = t.tenant_id AND u.id = t.assignee_id
-      WHERE t.tenant_id = $1
-        AND t.event_id = $2
-        AND t.deleted_at IS NULL
-      ORDER BY t.start_time ASC`,
-    tenantId,
-    eventId
-  );
+  >`SELECT
+      t.id,
+      t.title,
+      t.description,
+      t.start_time,
+      t.end_time,
+      t.status,
+      t.priority,
+      t.category,
+      t.assignee_id,
+      u.first_name || ' ' || u.last_name as assignee_name,
+      t.progress,
+      COALESCE(t.dependencies, ARRAY[]::text[]) as dependencies,
+      t.is_on_critical_path,
+      t.slack_minutes,
+      t.notes
+    FROM tenant_events.timeline_tasks t
+    LEFT JOIN tenant_staff.employees u ON u.tenant_id = t.tenant_id AND u.id = t.assignee_id
+    WHERE t.tenant_id = ${tenantId}
+      AND t.event_id = ${eventId}
+      AND t.deleted_at IS NULL
+    ORDER BY t.start_time ASC`;
 }
 
 /**
@@ -116,28 +112,25 @@ function fetchStaff(
   database: PrismaClient,
   tenantId: string
 ): Promise<StaffMember[]> {
-  return database.$queryRawUnsafe<
+  return database.$queryRaw<
     Array<{
       id: string;
       name: string;
       role: string | null;
       assignment_count: bigint;
     }>
-  >(
-    `SELECT
-        u.id,
-        u.first_name || ' ' || u.last_name as name,
-        u.role,
-        COUNT(DISTINCT t.id) as assignment_count
-      FROM tenant_staff.employees u
-      LEFT JOIN tenant_events.timeline_tasks t ON t.tenant_id = u.tenant_id AND t.assignee_id = u.id AND t.deleted_at IS NULL
-      WHERE u.tenant_id = $1
-        AND u.deleted_at IS NULL
-      GROUP BY u.id, u.first_name, u.last_name, u.role
-      HAVING COUNT(DISTINCT t.id) > 0
-      ORDER BY u.first_name, u.last_name`,
-    tenantId
-  );
+  >`SELECT
+      u.id,
+      u.first_name || ' ' || u.last_name as name,
+      u.role,
+      COUNT(DISTINCT t.id) as assignment_count
+    FROM tenant_staff.employees u
+    LEFT JOIN tenant_events.timeline_tasks t ON t.tenant_id = u.tenant_id AND t.assignee_id = u.id AND t.deleted_at IS NULL
+    WHERE u.tenant_id = ${tenantId}
+      AND u.deleted_at IS NULL
+    GROUP BY u.id, u.first_name, u.last_name, u.role
+    HAVING COUNT(DISTINCT t.id) > 0
+    ORDER BY u.first_name, u.last_name`;
 }
 
 /**

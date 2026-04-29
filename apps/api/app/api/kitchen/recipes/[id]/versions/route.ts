@@ -71,10 +71,7 @@ export async function GET(
 
     return NextResponse.json(rows);
   } catch (error) {
-    console.error(
-      "[GET /api/kitchen/recipes/:id/versions] Error:",
-      error
-    );
+    console.error("[GET /api/kitchen/recipes/:id/versions] Error:", error);
     captureException(error);
     return NextResponse.json(
       { error: "Failed to fetch recipe versions" },

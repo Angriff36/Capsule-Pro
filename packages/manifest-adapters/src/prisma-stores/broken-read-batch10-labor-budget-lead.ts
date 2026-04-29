@@ -12,10 +12,10 @@ import {
   asNullableNumber,
   asNullableString,
   asString,
-  toDecimalInput,
-  toDecimalRequired,
   type EntityInstance,
   reportOp,
+  toDecimalInput,
+  toDecimalRequired,
 } from "./shared.js";
 
 // ---------------------------------------------------------------------------
@@ -25,7 +25,7 @@ import {
 export class LaborBudgetPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -75,7 +75,7 @@ export class LaborBudgetPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
@@ -137,9 +137,7 @@ export class LaborBudgetPrismaStore implements Store<EntityInstance> {
     });
   }
 
-  private mapToManifestEntity(
-    row: Record<string, unknown>,
-  ): EntityInstance {
+  private mapToManifestEntity(row: Record<string, unknown>): EntityInstance {
     return {
       id: row.id as string,
       tenantId: row.tenantId as string,
@@ -156,8 +154,7 @@ export class LaborBudgetPrismaStore implements Store<EntityInstance> {
         : null,
       budgetTarget: Number(row.budgetTarget ?? 0),
       budgetUnit: (row.budgetUnit as string) ?? "hours",
-      actualSpend:
-        row.actualSpend != null ? Number(row.actualSpend) : null,
+      actualSpend: row.actualSpend != null ? Number(row.actualSpend) : null,
       threshold80Pct: row.threshold80Pct ?? true,
       threshold90Pct: row.threshold90Pct ?? true,
       threshold100Pct: row.threshold100Pct ?? true,
@@ -183,7 +180,7 @@ export class LaborBudgetPrismaStore implements Store<EntityInstance> {
 export class LeadPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -232,7 +229,7 @@ export class LeadPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
@@ -292,9 +289,7 @@ export class LeadPrismaStore implements Store<EntityInstance> {
     });
   }
 
-  private mapToManifestEntity(
-    row: Record<string, unknown>,
-  ): EntityInstance {
+  private mapToManifestEntity(row: Record<string, unknown>): EntityInstance {
     return {
       id: row.id as string,
       tenantId: row.tenantId as string,

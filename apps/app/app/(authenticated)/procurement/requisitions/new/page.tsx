@@ -24,9 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@repo/design-system/components/ui/select";
-import {
-  Textarea,
-} from "@repo/design-system/components/ui/textarea";
+import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { ArrowLeft, Loader2, Package, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -207,10 +205,7 @@ export default function NewRequisitionPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="priority">Priority</Label>
-                    <Select
-                      onValueChange={setPriority}
-                      value={priority}
-                    >
+                    <Select onValueChange={setPriority} value={priority}>
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
@@ -300,9 +295,7 @@ export default function NewRequisitionPage() {
                         key={item.itemId}
                       >
                         <div className="flex-1 min-w-0">
-                          <p className="font-medium text-sm">
-                            {item.itemName}
-                          </p>
+                          <p className="font-medium text-sm">{item.itemName}</p>
                           <p className="text-xs text-muted-foreground">
                             {item.itemNumber} &middot; {item.unitOfMeasure}
                           </p>
@@ -446,9 +439,7 @@ export default function NewRequisitionPage() {
                           {formatCurrency(Number(item.unit_cost))}
                         </p>
                         {alreadyAdded && (
-                          <p className="text-xs text-muted-foreground">
-                            Added
-                          </p>
+                          <p className="text-xs text-muted-foreground">Added</p>
                         )}
                       </div>
                     </button>

@@ -143,14 +143,14 @@ const mockUser = {
 
 function createMockRequest(
   url: string,
-  options: RequestInit = {},
+  options: RequestInit = {}
 ): NextRequest {
   if (options.body && !options.headers) {
     options.headers = { "Content-Type": "application/json" };
   }
   return new NextRequest(
     new URL(url, "http://localhost:3000"),
-    options as ConstructorParameters<typeof NextRequest>[1],
+    options as ConstructorParameters<typeof NextRequest>[1]
   );
 }
 
@@ -183,7 +183,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       );
 
       const request = createMockRequest(
-        "http://localhost:3000/api/procurement/vendor-contracts/list",
+        "http://localhost:3000/api/procurement/vendor-contracts/list"
       );
       const response = await GET(request);
       const data = await response.json();
@@ -200,7 +200,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
             tenantId: TEST_TENANT_ID,
             deletedAt: null,
           },
-        }),
+        })
       );
     });
 
@@ -215,7 +215,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       );
 
       const request = createMockRequest(
-        "http://localhost:3000/api/procurement/vendor-contracts/list",
+        "http://localhost:3000/api/procurement/vendor-contracts/list"
       );
       const response = await GET(request);
 
@@ -235,7 +235,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       );
 
       const request = createMockRequest(
-        "http://localhost:3000/api/procurement/vendor-contracts/list",
+        "http://localhost:3000/api/procurement/vendor-contracts/list"
       );
       const response = await GET(request);
       const data = await response.json();
@@ -257,7 +257,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
       vi.mocked(mockDatabase.vendorContract.findUnique).mockResolvedValue(
-        mockContract as never,
+        mockContract as never
       );
 
       const { GET } = await import(
@@ -265,7 +265,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       );
 
       const request = createMockRequest(
-        "http://localhost:3000/api/procurement/vendor-contracts/vc-001",
+        "http://localhost:3000/api/procurement/vendor-contracts/vc-001"
       );
       const response = await GET(request, {
         params: Promise.resolve({ id: "vc-001" }),
@@ -284,7 +284,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
             tenantId: TEST_TENANT_ID,
             deletedAt: null,
           },
-        }),
+        })
       );
     });
 
@@ -294,16 +294,14 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
         userId: TEST_CLERK_ID,
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(mockDatabase.vendorContract.findUnique).mockResolvedValue(
-        null,
-      );
+      vi.mocked(mockDatabase.vendorContract.findUnique).mockResolvedValue(null);
 
       const { GET } = await import(
         "@/app/api/procurement/vendor-contracts/[id]/route"
       );
 
       const request = createMockRequest(
-        "http://localhost:3000/api/procurement/vendor-contracts/non-existent",
+        "http://localhost:3000/api/procurement/vendor-contracts/non-existent"
       );
       const response = await GET(request, {
         params: Promise.resolve({ id: "non-existent" }),
@@ -325,7 +323,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
       vi.mocked(mockDatabase.user.findFirst).mockResolvedValue(
-        mockUser as never,
+        mockUser as never
       );
       mockRunCommand.mockClear();
       mockRunCommand.mockResolvedValue({
@@ -356,7 +354,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
             startDate: "2026-01-01",
             endDate: "2026-12-31",
           }),
-        },
+        }
       );
 
       const response = await POST(request);
@@ -368,7 +366,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
         expect.objectContaining({
           entityName: "VendorContract",
           instanceId: undefined,
-        }),
+        })
       );
     });
 
@@ -386,7 +384,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
             id: "vc-001",
             endDate: "2027-12-31",
           }),
-        },
+        }
       );
 
       const response = await POST(request);
@@ -398,7 +396,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
         expect.objectContaining({
           entityName: "VendorContract",
           instanceId: "vc-001",
-        }),
+        })
       );
     });
 
@@ -416,7 +414,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
             id: "vc-001",
             userId: TEST_USER_ID,
           }),
-        },
+        }
       );
 
       const response = await POST(request);
@@ -428,7 +426,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
         expect.objectContaining({
           entityName: "VendorContract",
           instanceId: "vc-001",
-        }),
+        })
       );
     });
 
@@ -446,7 +444,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
             id: "vc-001",
             userId: TEST_USER_ID,
           }),
-        },
+        }
       );
 
       const response = await POST(request);
@@ -458,7 +456,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
         expect.objectContaining({
           entityName: "VendorContract",
           instanceId: "vc-001",
-        }),
+        })
       );
     });
 
@@ -477,7 +475,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
             userId: TEST_USER_ID,
             reason: "Terms unacceptable",
           }),
-        },
+        }
       );
 
       const response = await POST(request);
@@ -489,7 +487,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
         expect.objectContaining({
           entityName: "VendorContract",
           instanceId: "vc-001",
-        }),
+        })
       );
     });
 
@@ -507,7 +505,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
             id: "vc-001",
             userId: TEST_USER_ID,
           }),
-        },
+        }
       );
 
       const response = await POST(request);
@@ -519,7 +517,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
         expect.objectContaining({
           entityName: "VendorContract",
           instanceId: "vc-001",
-        }),
+        })
       );
     });
 
@@ -538,7 +536,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
             userId: TEST_USER_ID,
             reason: "Breach of contract",
           }),
-        },
+        }
       );
 
       const response = await POST(request);
@@ -550,7 +548,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
         expect.objectContaining({
           entityName: "VendorContract",
           instanceId: "vc-001",
-        }),
+        })
       );
     });
   });
@@ -567,7 +565,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
         "@/app/api/procurement/vendor-contracts/commands/create/route"
       );
       const request = createMockRequest(
-        "http://localhost:3000/api/procurement/vendor-contracts/commands/create",
+        "http://localhost:3000/api/procurement/vendor-contracts/commands/create"
       );
       const response = await POST(request);
 
@@ -581,7 +579,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
         "@/app/api/procurement/vendor-contracts/commands/update/route"
       );
       const request = createMockRequest(
-        "http://localhost:3000/api/procurement/vendor-contracts/commands/update",
+        "http://localhost:3000/api/procurement/vendor-contracts/commands/update"
       );
       const response = await POST(request);
 
@@ -595,7 +593,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
         "@/app/api/procurement/vendor-contracts/commands/submit/route"
       );
       const request = createMockRequest(
-        "http://localhost:3000/api/procurement/vendor-contracts/commands/submit",
+        "http://localhost:3000/api/procurement/vendor-contracts/commands/submit"
       );
       const response = await POST(request);
 
@@ -615,7 +613,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
       vi.mocked(mockDatabase.user.findFirst).mockResolvedValue(
-        mockUser as never,
+        mockUser as never
       );
       mockRunCommand.mockClear();
       vi.mocked(createManifestRuntime).mockResolvedValue({
@@ -640,7 +638,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
         {
           method: "POST",
           body: JSON.stringify({}),
-        },
+        }
       );
       const response = await POST(request);
 
@@ -661,7 +659,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
         {
           method: "POST",
           body: JSON.stringify({}),
-        },
+        }
       );
       const response = await POST(request);
 
@@ -682,7 +680,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
         {
           method: "POST",
           body: JSON.stringify({}),
-        },
+        }
       );
       const response = await POST(request);
 
@@ -700,7 +698,7 @@ describe("VendorContract Persistence (write -> read alignment)", () => {
         {
           method: "POST",
           body: JSON.stringify({}),
-        },
+        }
       );
       const response = await POST(request);
 

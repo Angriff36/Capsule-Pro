@@ -94,10 +94,7 @@ describe("BudgetLineItemPrismaStore", () => {
       })
     );
 
-    const store = new BudgetLineItemPrismaStore(
-      prisma as never,
-      TENANT
-    );
+    const store = new BudgetLineItemPrismaStore(prisma as never, TENANT);
     const result = await store.create({
       budgetId: "budget-1",
       category: "labor",
@@ -118,10 +115,7 @@ describe("BudgetLineItemPrismaStore", () => {
 
   it("getAll filters by tenant + deletedAt", async () => {
     mockBudgetLineItem.findMany.mockResolvedValueOnce([]);
-    const store = new BudgetLineItemPrismaStore(
-      prisma as never,
-      TENANT
-    );
+    const store = new BudgetLineItemPrismaStore(prisma as never, TENANT);
     await store.getAll();
     expect(mockBudgetLineItem.findMany).toHaveBeenCalledWith({
       where: { tenantId: TENANT, deletedAt: null },
@@ -138,10 +132,7 @@ describe("BulkOrderRulePrismaStore", () => {
         tenantId: TENANT,
       })
     );
-    const store = new BulkOrderRulePrismaStore(
-      prisma as never,
-      TENANT
-    );
+    const store = new BulkOrderRulePrismaStore(prisma as never, TENANT);
     await store.create({
       catalogEntryId: "cat-1",
       ruleName: "10% off",

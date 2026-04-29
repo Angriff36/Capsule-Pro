@@ -17,7 +17,6 @@ import type { PrismaClient } from "@repo/database/standalone";
 import {
   asBool,
   asNullableDate,
-  asNullableNumber,
   asNullableString,
   type EntityInstance,
   reportOp,
@@ -28,12 +27,10 @@ import {
 // EmployeeCertificationPrismaStore  (tenant_staff.employee_certifications — snake_case)
 // ---------------------------------------------------------------------------
 
-export class EmployeeCertificationPrismaStore
-  implements Store<EntityInstance>
-{
+export class EmployeeCertificationPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -70,7 +67,7 @@ export class EmployeeCertificationPrismaStore
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
@@ -140,7 +137,7 @@ export class EmployeeCertificationPrismaStore
 export class EmployeeDeductionPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -180,15 +177,14 @@ export class EmployeeDeductionPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
       if (data.employee_id !== undefined) patch.employee_id = data.employee_id;
       if (data.type !== undefined) patch.type = data.type;
       if (data.name !== undefined) patch.name = data.name;
-      if (data.amount !== undefined)
-        patch.amount = toDecimalInput(data.amount);
+      if (data.amount !== undefined) patch.amount = toDecimalInput(data.amount);
       if (data.percentage !== undefined)
         patch.percentage = toDecimalInput(data.percentage);
       if (data.is_pre_tax !== undefined)

@@ -20,10 +20,10 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 import {
-  PRIORITY_CONFIG,
-  REQ_STATUS_CONFIG,
   formatCurrency,
   formatDateShort,
+  PRIORITY_CONFIG,
+  REQ_STATUS_CONFIG,
 } from "../components/req-shared";
 
 interface Requisition {
@@ -106,7 +106,12 @@ export default function RequisitionsPage() {
       {/* Summary */}
       <div className="grid gap-4 md:grid-cols-4">
         {(
-          ["pending_manager", "pending_finance", "approved", "rejected"] as const
+          [
+            "pending_manager",
+            "pending_finance",
+            "approved",
+            "rejected",
+          ] as const
         ).map((status) => {
           const config = REQ_STATUS_CONFIG[status];
           const count = requisitions.filter((r) => r.status === status).length;
@@ -174,7 +179,8 @@ export default function RequisitionsPage() {
                 const config =
                   REQ_STATUS_CONFIG[req.status] || REQ_STATUS_CONFIG.draft;
                 const Icon = config.icon;
-                const priorityConfig = PRIORITY_CONFIG[req.priority] || PRIORITY_CONFIG.normal;
+                const priorityConfig =
+                  PRIORITY_CONFIG[req.priority] || PRIORITY_CONFIG.normal;
                 return (
                   <Card
                     className="hover:shadow-sm transition-shadow"
@@ -198,7 +204,10 @@ export default function RequisitionsPage() {
                             <Badge className={config.color}>
                               {config.label}
                             </Badge>
-                            <Badge className={priorityConfig.color} variant="outline">
+                            <Badge
+                              className={priorityConfig.color}
+                              variant="outline"
+                            >
                               {priorityConfig.label}
                             </Badge>
                           </div>

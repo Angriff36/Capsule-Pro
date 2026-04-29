@@ -71,16 +71,17 @@ const exprStatusFinalized: IR["entities"][0]["constraints"][0]["expression"] = {
 };
 
 // Expression: self.status != "published"  (returns true when status is NOT published)
-const exprStatusNotPublished: IR["entities"][0]["constraints"][0]["expression"] = {
-  kind: "binary",
-  operator: "!=",
-  left: {
-    kind: "member",
-    object: { kind: "identifier", name: "self" },
-    property: "status",
-  },
-  right: { kind: "literal", value: { kind: "string", value: "published" } },
-};
+const exprStatusNotPublished: IR["entities"][0]["constraints"][0]["expression"] =
+  {
+    kind: "binary",
+    operator: "!=",
+    left: {
+      kind: "member",
+      object: { kind: "identifier", name: "self" },
+      property: "status",
+    },
+    right: { kind: "literal", value: { kind: "string", value: "published" } },
+  };
 
 describe("Constraint polarity (Blocker #2 — FIXED)", () => {
   it("FIXED: blockVoteIfFinalized constraint correctly blocks finalized status", async () => {
@@ -202,7 +203,9 @@ describe("Constraint polarity (Blocker #2 — FIXED)", () => {
     const runtime = new RuntimeEngine(ir);
 
     // "draft" is in the valid list -> expression = true -> passed = !!true = true (correct)
-    let failures = await runtime.checkConstraints("Widget", { status: "draft" });
+    let failures = await runtime.checkConstraints("Widget", {
+      status: "draft",
+    });
     expect(failures.length).toBe(0);
 
     // "unknown" is NOT in the valid list -> expression = false -> passed = !!false = false (correct)
@@ -217,45 +220,45 @@ describe("Constraint polarity (Blocker #2 — FIXED)", () => {
     // expression evaluates TRUE when the bad state is present).
     // After fix: constraint.name.startsWith("block") is also detected as negative.
     const affectedConstraints = [
-      "blockVoteIfFinalized",       // battle-board-rules.manifest:36
-      "blockFinalizeNoData",        // battle-board-rules.manifest:43
-      "blockNoDishes",              // battle-board-rules.manifest:71
-      "blockCancelIfCompleted",     // catering-order-rules.manifest:72
-      "blockCompanyNoName",         // client-rules.manifest:57
-      "blockIndividualNoName",      // client-rules.manifest:62
-      "blockFinalizeHighVariance",  // event-budget-rules.manifest:49
-      "blockNoLineItems",           // event-budget-rules.manifest:99
-      "blockSubmitEmptyContent",    // event-report-rules.manifest:45
+      "blockVoteIfFinalized", // battle-board-rules.manifest:36
+      "blockFinalizeNoData", // battle-board-rules.manifest:43
+      "blockNoDishes", // battle-board-rules.manifest:71
+      "blockCancelIfCompleted", // catering-order-rules.manifest:72
+      "blockCompanyNoName", // client-rules.manifest:57
+      "blockIndividualNoName", // client-rules.manifest:62
+      "blockFinalizeHighVariance", // event-budget-rules.manifest:49
+      "blockNoLineItems", // event-budget-rules.manifest:99
+      "blockSubmitEmptyContent", // event-report-rules.manifest:45
       "blockApproveIfNotCompleted", // event-report-rules.manifest:52
-      "blockCancelIfFinalized",     // event-rules.manifest:53
+      "blockCancelIfFinalized", // event-rules.manifest:53
       "blockArchiveIfNotCompleted", // event-rules.manifest:61
-      "blockNoGuestCount",          // event-rules.manifest:120
-      "blockAlreadyConverted",      // lead-rules.manifest:113
-      "blockDisqualified",          // lead-rules.manifest:122
-      "blockStockout",              // inventory-rules.manifest:70
-      "blockInsufficientStock",     // inventory-rules.manifest:114
-      "blockInsufficientForWaste",  // inventory-rules.manifest:156
-      "blockDeleteIfResolved",      // prep-comment-rules.manifest:20
-      "blockEditAfterSubmit",       // procurement-requisition-rules.manifest:53
-      "blockNoItems",               // procurement-requisition-rules.manifest:98
-      "blockEditAfterSubmit",       // purchase-order-rules.manifest:40
-      "blockCancelReceived",        // purchase-order-rules.manifest:121
-      "blockNoShifts",              // schedule-rules.manifest:54
-      "blockNotPublished",          // schedule-rules.manifest:73
-      "blockNoLineItems",           // proposal-rules.manifest:138
-      "blockExpired",               // proposal-rules.manifest:184
-      "blockAlreadyAccepted",       // proposal-rules.manifest:214
-      "blockAlreadyWithdrawn",      // proposal-rules.manifest:223
-      "blockAlreadyClockedIn",      // time-entry-rules.manifest:29
-      "blockNotClockedIn",          // time-entry-rules.manifest:53
-      "blockAlreadyProcessed",      // time-entry-rules.manifest:158
-      "blockAtCapacity",            // station-rules.manifest:36
-      "blockOverCapacity",          // station-rules.manifest:45
-      "blockInactive",              // station-rules.manifest:55
-      "blockFull",                  // station-rules.manifest:76
-      "blockNoTriggerConfig",       // workflow-rules.manifest:62
-      "blockModifyActive",          // vendor-contract-rules.manifest:56
-      "blockAlreadyTerminated",     // user-rules.manifest:84
+      "blockNoGuestCount", // event-rules.manifest:120
+      "blockAlreadyConverted", // lead-rules.manifest:113
+      "blockDisqualified", // lead-rules.manifest:122
+      "blockStockout", // inventory-rules.manifest:70
+      "blockInsufficientStock", // inventory-rules.manifest:114
+      "blockInsufficientForWaste", // inventory-rules.manifest:156
+      "blockDeleteIfResolved", // prep-comment-rules.manifest:20
+      "blockEditAfterSubmit", // procurement-requisition-rules.manifest:53
+      "blockNoItems", // procurement-requisition-rules.manifest:98
+      "blockEditAfterSubmit", // purchase-order-rules.manifest:40
+      "blockCancelReceived", // purchase-order-rules.manifest:121
+      "blockNoShifts", // schedule-rules.manifest:54
+      "blockNotPublished", // schedule-rules.manifest:73
+      "blockNoLineItems", // proposal-rules.manifest:138
+      "blockExpired", // proposal-rules.manifest:184
+      "blockAlreadyAccepted", // proposal-rules.manifest:214
+      "blockAlreadyWithdrawn", // proposal-rules.manifest:223
+      "blockAlreadyClockedIn", // time-entry-rules.manifest:29
+      "blockNotClockedIn", // time-entry-rules.manifest:53
+      "blockAlreadyProcessed", // time-entry-rules.manifest:158
+      "blockAtCapacity", // station-rules.manifest:36
+      "blockOverCapacity", // station-rules.manifest:45
+      "blockInactive", // station-rules.manifest:55
+      "blockFull", // station-rules.manifest:76
+      "blockNoTriggerConfig", // workflow-rules.manifest:62
+      "blockModifyActive", // vendor-contract-rules.manifest:56
+      "blockAlreadyTerminated", // user-rules.manifest:84
     ];
 
     // After fix: the detection logic now checks both "severity" and "block" prefixes

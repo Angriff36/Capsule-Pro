@@ -24,7 +24,6 @@
 import type { Store } from "@angriff36/manifest";
 import type { PrismaClient } from "@repo/database/standalone";
 import {
-  asBool,
   asNullableDate,
   asNullableNumber,
   asNullableString,
@@ -42,7 +41,7 @@ import {
 export class EventPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -95,7 +94,7 @@ export class EventPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
@@ -117,8 +116,7 @@ export class EventPrismaStore implements Store<EntityInstance> {
         patch.guestCount = asNullableNumber(data.guestCount) ?? 1;
       if (data.status !== undefined)
         patch.status = asNullableString(data.status);
-      if (data.budget !== undefined)
-        patch.budget = toDecimalInput(data.budget);
+      if (data.budget !== undefined) patch.budget = toDecimalInput(data.budget);
       if (data.ticketPrice !== undefined)
         patch.ticketPrice = toDecimalInput(data.ticketPrice);
       if (data.ticketTier !== undefined)
@@ -135,8 +133,7 @@ export class EventPrismaStore implements Store<EntityInstance> {
         patch.venueName = asNullableString(data.venueName);
       if (data.venueAddress !== undefined)
         patch.venueAddress = asNullableString(data.venueAddress);
-      if (data.notes !== undefined)
-        patch.notes = asNullableString(data.notes);
+      if (data.notes !== undefined) patch.notes = asNullableString(data.notes);
       if (data.tags !== undefined) patch.tags = asStringArray(data.tags);
       if (data.templateId !== undefined)
         patch.templateId = asNullableString(data.templateId);
@@ -211,7 +208,7 @@ export class EventPrismaStore implements Store<EntityInstance> {
 export class EventBudgetPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -250,7 +247,7 @@ export class EventBudgetPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
@@ -260,10 +257,7 @@ export class EventBudgetPrismaStore implements Store<EntityInstance> {
       if (data.status !== undefined)
         patch.status = asNullableString(data.status);
       if (data.totalBudgetAmount !== undefined)
-        patch.totalBudgetAmount = toDecimalRequired(
-          data.totalBudgetAmount,
-          0,
-        );
+        patch.totalBudgetAmount = toDecimalRequired(data.totalBudgetAmount, 0);
       if (data.totalActualAmount !== undefined)
         patch.totalActualAmount = toDecimalRequired(data.totalActualAmount, 0);
       if (data.varianceAmount !== undefined)
@@ -271,10 +265,9 @@ export class EventBudgetPrismaStore implements Store<EntityInstance> {
       if (data.variancePercentage !== undefined)
         patch.variancePercentage = toDecimalRequired(
           data.variancePercentage,
-          0,
+          0
         );
-      if (data.notes !== undefined)
-        patch.notes = asNullableString(data.notes);
+      if (data.notes !== undefined) patch.notes = asNullableString(data.notes);
 
       const row = await this.prisma.eventBudget.update({
         where: { tenantId_id: { tenantId: this.tenantId, id } },
@@ -332,7 +325,7 @@ export class EventBudgetPrismaStore implements Store<EntityInstance> {
 export class EventContractPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -373,7 +366,7 @@ export class EventContractPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
@@ -388,8 +381,7 @@ export class EventContractPrismaStore implements Store<EntityInstance> {
         patch.documentUrl = asNullableString(data.documentUrl);
       if (data.documentType !== undefined)
         patch.documentType = asNullableString(data.documentType);
-      if (data.notes !== undefined)
-        patch.notes = asNullableString(data.notes);
+      if (data.notes !== undefined) patch.notes = asNullableString(data.notes);
       if (data.signingToken !== undefined)
         patch.signingToken = asNullableString(data.signingToken);
       if (data.expiresAt !== undefined)

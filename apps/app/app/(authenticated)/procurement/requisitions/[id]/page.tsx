@@ -14,10 +14,10 @@ import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 import {
-  PRIORITY_CONFIG,
-  REQ_STATUS_CONFIG,
   formatCurrency,
   formatDate,
+  PRIORITY_CONFIG,
+  REQ_STATUS_CONFIG,
 } from "../../components/req-shared";
 
 interface Requisition {
@@ -38,7 +38,10 @@ interface Requisition {
   rejectionReason: string | null;
 }
 
-const WORKFLOW_ACTIONS: Record<string, { label: string; command: string; variant?: "default" | "destructive" }[]> = {
+const WORKFLOW_ACTIONS: Record<
+  string,
+  { label: string; command: string; variant?: "default" | "destructive" }[]
+> = {
   draft: [{ label: "Submit for Approval", command: "submit" }],
   pending_manager: [
     { label: "Approve (Manager)", command: "approve-manager" },
@@ -296,9 +299,7 @@ export default function RequisitionDetailPage() {
             <CardTitle>Notes</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-sm text-muted-foreground">
-              {requisition.notes}
-            </p>
+            <p className="text-sm text-muted-foreground">{requisition.notes}</p>
           </CardContent>
         </Card>
       )}

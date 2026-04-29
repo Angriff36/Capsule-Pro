@@ -197,12 +197,12 @@ These have full API backends but zero or placeholder frontend. Each is a signifi
 
 ### GS-1: GoodShuffle Integration (3 specs)
 - Backend: client, sync service, config API, status API — all functional
-- UI: Settings/integrations page is ModuleSection placeholder
-- Blocker: `settings/integrations/page.tsx` must be built first (P2-51)
+- UI: **IMPLEMENTED** — Settings/Integrations page with GoodShuffle tab (config form, status display, sync controls, edit/delete)
+- Blocks cleared: P2-51 resolved
 
 ### GS-2: Nowsta Integration
 - Backend: 6 API routes, client, sync service, 3 Prisma models
-- UI: ZERO frontend pages
+- UI: **IMPLEMENTED** — Settings/Integrations page with Nowsta tab (config form, status display, statistics, recent errors, sync controls)
 
 ### GS-3: SMS Notification System
 - Backend: 9+ API routes, Twilio integration, automation engine, 5 Prisma models
@@ -364,6 +364,13 @@ All 16 `alert()` calls across 7 files replaced with `toast.success()` / `toast.e
 
 ## Recently Resolved
 
+### 2026-04-29 — Placeholder Page Implementation: Settings/Integrations (#51), Settings/Security (#50), Dev-console/API Keys (#55)
+- **FIXED #51:** Settings/Integrations — replaced ModuleSection placeholder with full GoodShuffle + Nowsta integration management UI (config forms, status cards, sync controls, edit/delete with confirmation dialogs, test connection)
+- **FIXED #50:** Settings/Security — replaced ModuleSection placeholder with API Keys table (view/revoke) + Role Policies table (view) + detail dialogs + revoke confirmation dialog
+- **FIXED #55:** Dev-console/API Keys — replaced ModuleSection placeholder with full CRUD: list, create (scope selector), revoke, delete, rotate, view details + copy-to-clipboard for new/rotated keys
+- Unblocks: GS-1 GoodShuffle specs (3), GS-2 Nowsta specs
+- Biome: 0 errors, 0 warnings on all 4 files. App typecheck: clean.
+
 ### 2026-04-29 — Dead Buttons + alert() + Payouts Page Fix (T0-B #17, T2 #60-62, T2 alerts)
 - **FIXED T0-B #17:** Payroll payouts page converted from hardcoded fake data to live client component fetching from `/api/payroll/runs` with status filtering, summary cards (Total Paid, Awaiting Payment, Processing), refresh button, and empty state. Blocker was stale — `PayrollRun` model and runs API both existed.
 - **FIXED T2 #60:** CRM scoring rule delete button wired to `DELETE /api/crm/scoring/[id]` with confirmation dialog. Backend existed, frontend was just disabled.
@@ -508,9 +515,10 @@ All 16 `alert()` calls across 7 files replaced with `toast.success()` / `toast.e
    - `Equipment` model missing — routes return 501
    - Create model before converting routes to ORM
 
-4. **Settings/Integrations placeholder**
-   - Blocks GoodShuffle UI (GS-1)
-   - Must be built before integration pages
+4. ~~**Settings/Integrations placeholder**~~ **RESOLVED** (2026-04-29)
+   - Full GoodShuffle + Nowsta integration management UI implemented
+   - Settings/Security (API Keys + Role Policies) also implemented
+   - Dev-console/API Keys CRUD page also implemented
 
 ---
 

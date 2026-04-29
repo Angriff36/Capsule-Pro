@@ -123,9 +123,7 @@ export type JsonInput =
  * Return type excludes `null` so the helper is safe for required JSON
  * columns. Callers wanting NULL behavior should pass through explicitly.
  */
-export function asJsonInput(
-  value: unknown
-): Exclude<JsonInput, null> {
+export function asJsonInput(value: unknown): Exclude<JsonInput, null> {
   if (value === null || value === undefined) {
     return {} as Exclude<JsonInput, null>;
   }

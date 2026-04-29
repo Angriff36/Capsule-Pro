@@ -1,12 +1,10 @@
 import {
-  AlertTriangle,
   ArrowRightLeft,
   Ban,
   CheckCircle2,
   Clock,
   FileText,
   Loader2,
-  ShieldAlert,
   XCircle,
 } from "lucide-react";
 
@@ -54,16 +52,14 @@ export const REQ_STATUS_CONFIG: Record<string, ReqStatusConfig> = {
   },
 };
 
-export const PRIORITY_CONFIG: Record<
-  string,
-  { label: string; color: string }
-> = {
-  low: { label: "Low", color: "bg-gray-100 text-gray-600" },
-  normal: { label: "Normal", color: "bg-blue-100 text-blue-600" },
-  high: { label: "High", color: "bg-orange-100 text-orange-600" },
-  urgent: { label: "Urgent", color: "bg-red-100 text-red-600" },
-  critical: { label: "Critical", color: "bg-red-200 text-red-800" },
-};
+export const PRIORITY_CONFIG: Record<string, { label: string; color: string }> =
+  {
+    low: { label: "Low", color: "bg-gray-100 text-gray-600" },
+    normal: { label: "Normal", color: "bg-blue-100 text-blue-600" },
+    high: { label: "High", color: "bg-orange-100 text-orange-600" },
+    urgent: { label: "Urgent", color: "bg-red-100 text-red-600" },
+    critical: { label: "Critical", color: "bg-red-200 text-red-800" },
+  };
 
 export const formatCurrency = (n: number) =>
   new Intl.NumberFormat("en-US", {

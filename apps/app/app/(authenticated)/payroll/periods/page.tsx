@@ -328,7 +328,13 @@ export default function PayrollPeriodsPage() {
                           {formatDate(period.createdAt)}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button onClick={() => router.push(`/payroll/periods/${period.id}`)} size="sm" variant="outline">
+                          <Button
+                            onClick={() =>
+                              router.push(`/payroll/periods/${period.id}`)
+                            }
+                            size="sm"
+                            variant="outline"
+                          >
                             View Details
                           </Button>
                         </TableCell>

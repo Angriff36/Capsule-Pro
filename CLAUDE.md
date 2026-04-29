@@ -154,7 +154,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[auto-bridge snapshot @ 10 changes]
-Files: apps/app/app/(authenticated)/payroll/timecards/page.tsx (edit), apps/app/app/(authenticated)/accounting/payments/components/payment-list-client.tsx (edit), apps/app/app/(authenticated)/accounting/invoices/invoices-client.tsx (edit)
+[pre-compact bridge — saved before context compaction]
+(no changes or facts recorded in this session segment)
 
 # === END COGNILAYER ===

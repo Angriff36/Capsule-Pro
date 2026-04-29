@@ -86,9 +86,7 @@ export class CommandBoardPrismaStore implements Store<EntityInstance> {
         isTemplate: asBool(data.isTemplate, false),
         tags: coerceTags(data.tags),
         autoPopulate: asBool(data.autoPopulate, false),
-        ...(data.scope !== undefined
-          ? { scope: asJsonInput(data.scope) }
-          : {}),
+        ...(data.scope !== undefined ? { scope: asJsonInput(data.scope) } : {}),
       },
     });
     return this.mapToManifestEntity(row);
@@ -217,8 +215,7 @@ export class CommandBoardCardPrismaStore implements Store<EntityInstance> {
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
-      if (data.boardId !== undefined)
-        patch.boardId = asString(data.boardId);
+      if (data.boardId !== undefined) patch.boardId = asString(data.boardId);
       if (data.title !== undefined) patch.title = asString(data.title);
       if (data.content !== undefined)
         patch.content = asNullableString(data.content);
@@ -236,8 +233,7 @@ export class CommandBoardCardPrismaStore implements Store<EntityInstance> {
         patch.height = asNullableNumber(data.height) ?? 150;
       if (data.zIndex !== undefined)
         patch.zIndex = asNullableNumber(data.zIndex) ?? 0;
-      if (data.color !== undefined)
-        patch.color = asNullableString(data.color);
+      if (data.color !== undefined) patch.color = asNullableString(data.color);
       if (data.metadata !== undefined)
         patch.metadata = asJsonInput(data.metadata);
       if (data.groupId !== undefined)

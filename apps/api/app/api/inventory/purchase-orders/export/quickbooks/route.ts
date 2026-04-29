@@ -219,104 +219,104 @@ export async function POST(request: NextRequest) {
       accountMappings,
     } = parseResult.data;
 
-    // Build where conditions
-    const conditions: string[] = ["po.tenant_id = $1", "po.deleted_at IS NULL"];
-    const queryParams: (string | Date)[] = [tenantId];
-    let paramIndex = 2;
+    // Build Prisma where clause
+    const where: Record<string, unknown> = {
+      tenantId,
+      deletedAt: null,
+    };
 
-    if (startDate) {
-      conditions.push(`po.order_date >= $${paramIndex++}`);
-      queryParams.push(startDate);
-    }
-
-    if (endDate) {
-      conditions.push(`po.order_date <= $${paramIndex++}`);
-      queryParams.push(endDate);
+    if (startDate || endDate) {
+      const orderDateFilter: Record<string, Date> = {};
+      if (startDate) orderDateFilter.gte = new Date(startDate);
+      if (endDate) orderDateFilter.lte = new Date(endDate);
+      where.orderDate = orderDateFilter;
     }
 
     if (status) {
-      conditions.push(`po.status = $${paramIndex++}`);
-      queryParams.push(status);
+      where.status = status;
     }
 
     if (vendorId) {
-      conditions.push(`po.vendor_id = $${paramIndex++}`);
-      queryParams.push(vendorId);
+      where.vendorId = vendorId;
     }
 
-    const whereClause = conditions.join(" AND ");
+    // Fetch purchase orders with items via Prisma ORM
+    const rawPOs = await database.purchaseOrder.findMany({
+      where,
+      include: {
+        items: {
+          where: { deletedAt: null },
+        },
+      },
+      orderBy: { orderDate: "desc" },
+      take: 1000,
+    });
 
-    // Fetch purchase orders with vendor and item data
-    const purchaseOrders = await database.$queryRawUnsafe<
-      Array<{
-        id: string;
-        poNumber: string;
-        orderDate: Date;
-        expectedDeliveryDate: Date | null;
-        subtotal: number;
-        taxAmount: number;
-        shippingAmount: number;
-        total: number;
-        notes: string | null;
-        status: string;
-        vendor: {
-          id: string;
-          name: string;
-          email: string | null;
-          paymentTerms: string | null;
-        } | null;
-        items: Array<{
-          itemId: string;
-          itemName: string;
-          quantityOrdered: number;
-          unitCost: number;
-          totalCost: number;
-          notes: string | null;
-        }>;
-      }>
-    >(
-      `
-      SELECT
-        po.id,
-        po.po_number as "poNumber",
-        po.order_date as "orderDate",
-        po.expected_delivery_date as "expectedDeliveryDate",
-        CAST(po.subtotal AS FLOAT) as subtotal,
-        CAST(po.tax_amount AS FLOAT) as "taxAmount",
-        CAST(po.shipping_amount AS FLOAT) as "shippingAmount",
-        CAST(po.total AS FLOAT) as total,
-        po.notes,
-        po.status,
-        json_build_object(
-          'id', v.id,
-          'name', v.name,
-          'email', v.email,
-          'paymentTerms', v.payment_terms
-        ) as vendor,
-        COALESCE(
-          (
-            SELECT json_agg(json_build_object(
-              'itemId', poi.item_id,
-              'itemName', COALESCE(ii.name, 'Item'),
-              'quantityOrdered', CAST(poi.quantity_ordered AS FLOAT),
-              'unitCost', CAST(poi.unit_cost AS FLOAT),
-              'totalCost', CAST(poi.total_cost AS FLOAT),
-              'notes', poi.notes
-            ))
-            FROM tenant_inventory.purchase_order_items poi
-            LEFT JOIN tenant_inventory.inventory_items ii ON ii.id = poi.item_id
-            WHERE poi.purchase_order_id = po.id AND poi.deleted_at IS NULL
-          ),
-          '[]'::json
-        ) as items
-      FROM tenant_inventory.purchase_orders po
-      LEFT JOIN tenant_inventory.inventory_suppliers v ON v.id = po.vendor_id AND v.deleted_at IS NULL
-      WHERE ${whereClause}
-      ORDER BY po.order_date DESC
-      LIMIT 1000
-      `,
-      ...queryParams
-    );
+    // Collect unique vendor IDs and item IDs for batch lookup
+    const vendorIds = [...new Set(rawPOs.map((po) => po.vendorId))];
+    const itemIds = [
+      ...new Set(rawPOs.flatMap((po) => po.items.map((item) => item.itemId))),
+    ];
+
+    // Batch-fetch vendors and inventory items
+    const [vendors, inventoryItems] = await Promise.all([
+      vendorIds.length > 0
+        ? database.inventorySupplier.findMany({
+            where: {
+              id: { in: vendorIds },
+              deletedAt: null,
+            },
+            select: {
+              id: true,
+              name: true,
+              email: true,
+              payment_terms: true,
+            },
+          })
+        : [],
+      itemIds.length > 0
+        ? database.inventoryItem.findMany({
+            where: { id: { in: itemIds } },
+            select: { id: true, name: true },
+          })
+        : [],
+    ]);
+
+    const vendorMap = new Map(vendors.map((v) => [v.id, v]));
+    const itemMap = new Map(inventoryItems.map((i) => [i.id, i.name]));
+
+    // Map to the shape expected by purchaseOrderToBill
+    const purchaseOrders = rawPOs.map((po) => ({
+      id: po.id,
+      poNumber: po.poNumber,
+      orderDate: po.orderDate,
+      expectedDeliveryDate: po.expectedDeliveryDate,
+      subtotal: Number(po.subtotal),
+      taxAmount: Number(po.taxAmount),
+      shippingAmount: Number(po.shippingAmount),
+      total: Number(po.total),
+      notes: po.notes,
+      status: po.status,
+      vendor: (() => {
+        const v = vendorMap.get(po.vendorId);
+        return v
+          ? {
+              id: v.id,
+              name: v.name,
+              email: v.email,
+              paymentTerms: v.payment_terms,
+            }
+          : null;
+      })(),
+      items: po.items.map((item) => ({
+        itemId: item.itemId,
+        itemName: itemMap.get(item.itemId) || "Item",
+        quantityOrdered: Number(item.quantityOrdered),
+        unitCost: Number(item.unitCost),
+        totalCost: Number(item.totalCost),
+        notes: item.notes,
+      })),
+    }));
 
     if (purchaseOrders.length === 0) {
       return NextResponse.json(

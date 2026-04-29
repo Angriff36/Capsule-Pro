@@ -94,7 +94,7 @@ const PAYMENT_METADATA_KEYS = [
 /** Extract metadata-only keys from a data bag into a JSON object. */
 function extractMetadata(
   data: Partial<EntityInstance>,
-  keys: readonly string[],
+  keys: readonly string[]
 ): Record<string, unknown> {
   const meta: Record<string, unknown> = {};
   for (const key of keys) {
@@ -112,7 +112,7 @@ function extractMetadata(
 export class InvoicePrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -141,8 +141,23 @@ export class InvoicePrismaStore implements Store<EntityInstance> {
         tenantId: this.tenantId,
         id,
         invoiceNumber: asString(data.invoiceNumber) || `INV-${Date.now()}`,
-        invoiceType: (asString(data.type ?? data.invoiceType) || "FINAL_PAYMENT") as "DEPOSIT" | "FINAL_PAYMENT" | "PROGRESS" | "MISC" | "CREDIT_NOTE" | "DEBIT_NOTE",
-        status: (asString(data.status) || "DRAFT") as "DRAFT" | "SENT" | "VIEWED" | "OVERDUE" | "PARTIALLY_PAID" | "PAID" | "VOID" | "WRITE_OFF",
+        invoiceType: (asString(data.type ?? data.invoiceType) ||
+          "FINAL_PAYMENT") as
+          | "DEPOSIT"
+          | "FINAL_PAYMENT"
+          | "PROGRESS"
+          | "MISC"
+          | "CREDIT_NOTE"
+          | "DEBIT_NOTE",
+        status: (asString(data.status) || "DRAFT") as
+          | "DRAFT"
+          | "SENT"
+          | "VIEWED"
+          | "OVERDUE"
+          | "PARTIALLY_PAID"
+          | "PAID"
+          | "VOID"
+          | "WRITE_OFF",
         clientId: asString(data.clientId),
         eventId: asString(data.eventId),
         subtotal: toDecimalRequired(data.subtotal, 0),
@@ -172,41 +187,64 @@ export class InvoicePrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
 
       // Scalar fields
-      if (data.invoiceNumber !== undefined) patch.invoiceNumber = asString(data.invoiceNumber);
+      if (data.invoiceNumber !== undefined)
+        patch.invoiceNumber = asString(data.invoiceNumber);
       if (data.type !== undefined) patch.invoiceType = asString(data.type);
-      if (data.invoiceType !== undefined) patch.invoiceType = asString(data.invoiceType);
+      if (data.invoiceType !== undefined)
+        patch.invoiceType = asString(data.invoiceType);
       if (data.status !== undefined) patch.status = asString(data.status);
-      if (data.clientId !== undefined) patch.clientId = asNullableString(data.clientId);
-      if (data.eventId !== undefined) patch.eventId = asNullableString(data.eventId);
-      if (data.subtotal !== undefined) patch.subtotal = toDecimalRequired(data.subtotal, 0);
-      if (data.taxAmount !== undefined) patch.taxAmount = toDecimalRequired(data.taxAmount, 0);
-      if (data.discountAmount !== undefined) patch.discountAmount = toDecimalRequired(data.discountAmount, 0);
-      if (data.total !== undefined) patch.total = toDecimalRequired(data.total, 0);
-      if (data.amountPaid !== undefined) patch.amountPaid = toDecimalRequired(data.amountPaid, 0);
-      if (data.amountDue !== undefined) patch.amountDue = toDecimalRequired(data.amountDue, 0);
-      if (data.paymentTerms !== undefined) patch.paymentTerms = asNullableNumber(data.paymentTerms) ?? 30;
-      if (data.dueDate !== undefined) patch.dueDate = asNullableDate(data.dueDate);
-      if (data.issuedAt !== undefined) patch.issuedAt = asNullableDate(data.issuedAt);
-      if (data.depositPercentage !== undefined) patch.depositPercentage = toDecimalInput(data.depositPercentage);
-      if (data.depositRequired !== undefined) patch.depositRequired = toDecimalInput(data.depositRequired);
-      if (data.depositPaid !== undefined) patch.depositPaid = toDecimalInput(data.depositPaid);
+      if (data.clientId !== undefined)
+        patch.clientId = asNullableString(data.clientId);
+      if (data.eventId !== undefined)
+        patch.eventId = asNullableString(data.eventId);
+      if (data.subtotal !== undefined)
+        patch.subtotal = toDecimalRequired(data.subtotal, 0);
+      if (data.taxAmount !== undefined)
+        patch.taxAmount = toDecimalRequired(data.taxAmount, 0);
+      if (data.discountAmount !== undefined)
+        patch.discountAmount = toDecimalRequired(data.discountAmount, 0);
+      if (data.total !== undefined)
+        patch.total = toDecimalRequired(data.total, 0);
+      if (data.amountPaid !== undefined)
+        patch.amountPaid = toDecimalRequired(data.amountPaid, 0);
+      if (data.amountDue !== undefined)
+        patch.amountDue = toDecimalRequired(data.amountDue, 0);
+      if (data.paymentTerms !== undefined)
+        patch.paymentTerms = asNullableNumber(data.paymentTerms) ?? 30;
+      if (data.dueDate !== undefined)
+        patch.dueDate = asNullableDate(data.dueDate);
+      if (data.issuedAt !== undefined)
+        patch.issuedAt = asNullableDate(data.issuedAt);
+      if (data.depositPercentage !== undefined)
+        patch.depositPercentage = toDecimalInput(data.depositPercentage);
+      if (data.depositRequired !== undefined)
+        patch.depositRequired = toDecimalInput(data.depositRequired);
+      if (data.depositPaid !== undefined)
+        patch.depositPaid = toDecimalInput(data.depositPaid);
       if (data.notes !== undefined) patch.notes = asNullableString(data.notes);
-      if (data.internalNotes !== undefined) patch.internalNotes = asNullableString(data.internalNotes);
-      if (data.lineItems !== undefined) patch.lineItems = asJsonInput(data.lineItems);
+      if (data.internalNotes !== undefined)
+        patch.internalNotes = asNullableString(data.internalNotes);
+      if (data.lineItems !== undefined)
+        patch.lineItems = asJsonInput(data.lineItems);
       if (data.sentAt !== undefined) patch.sentAt = asNullableDate(data.sentAt);
-      if (data.viewedAt !== undefined) patch.viewedAt = asNullableDate(data.viewedAt);
+      if (data.viewedAt !== undefined)
+        patch.viewedAt = asNullableDate(data.viewedAt);
       if (data.paidAt !== undefined) patch.paidAt = asNullableDate(data.paidAt);
-      if (data.voidedAt !== undefined) patch.voidedAt = asNullableDate(data.voidedAt);
+      if (data.voidedAt !== undefined)
+        patch.voidedAt = asNullableDate(data.voidedAt);
 
       // Merge manifest-only props into metadata
       const metaOverrides = extractMetadata(data, INVOICE_METADATA_KEYS);
-      if (Object.keys(metaOverrides).length > 0 || data.metadata !== undefined) {
+      if (
+        Object.keys(metaOverrides).length > 0 ||
+        data.metadata !== undefined
+      ) {
         const existingMeta = (data.metadata as Record<string, unknown>) ?? {};
         patch.metadata = { ...existingMeta, ...metaOverrides };
       }
@@ -293,7 +331,7 @@ export class InvoicePrismaStore implements Store<EntityInstance> {
 export class PaymentMethodPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -332,16 +370,19 @@ export class PaymentMethodPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
 
       if (data.clientId !== undefined) patch.clientId = asString(data.clientId);
       if (data.type !== undefined) patch.type = asString(data.type);
-      if (data.cardLastFour !== undefined) patch.cardLastFour = asNullableString(data.cardLastFour);
-      if (data.cardNetwork !== undefined) patch.cardNetwork = asNullableString(data.cardNetwork);
-      if (data.isDefault !== undefined) patch.isDefault = asBool(data.isDefault, false);
+      if (data.cardLastFour !== undefined)
+        patch.cardLastFour = asNullableString(data.cardLastFour);
+      if (data.cardNetwork !== undefined)
+        patch.cardNetwork = asNullableString(data.cardNetwork);
+      if (data.isDefault !== undefined)
+        patch.isDefault = asBool(data.isDefault, false);
 
       const row = await this.prisma.paymentMethod.update({
         where: { tenantId_id: { tenantId: this.tenantId, id } },
@@ -416,7 +457,7 @@ export class PaymentMethodPrismaStore implements Store<EntityInstance> {
 export class PaymentPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -461,24 +502,37 @@ export class PaymentPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
 
-      if (data.amount !== undefined) patch.amount = toDecimalRequired(data.amount, 0);
+      if (data.amount !== undefined)
+        patch.amount = toDecimalRequired(data.amount, 0);
       if (data.currency !== undefined) patch.currency = asString(data.currency);
       if (data.status !== undefined) patch.status = asString(data.status);
-      if (data.methodType !== undefined) patch.methodType = asString(data.methodType);
-      if (data.invoiceId !== undefined) patch.invoiceId = asString(data.invoiceId);
+      if (data.methodType !== undefined)
+        patch.methodType = asString(data.methodType);
+      if (data.invoiceId !== undefined)
+        patch.invoiceId = asString(data.invoiceId);
       if (data.eventId !== undefined) patch.eventId = asString(data.eventId);
       if (data.clientId !== undefined) patch.clientId = asString(data.clientId);
-      if (data.gatewayTransactionId !== undefined) patch.gatewayTransactionId = asNullableString(data.gatewayTransactionId);
-      if (data.gatewayPaymentMethodId !== undefined) patch.gatewayPaymentMethodId = asNullableString(data.gatewayPaymentMethodId);
-      if (data.processor !== undefined) patch.processor = asNullableString(data.processor);
-      if (data.processedAt !== undefined) patch.processedAt = asNullableDate(data.processedAt);
-      if (data.completedAt !== undefined) patch.completedAt = asNullableDate(data.completedAt);
-      if (data.refundedAt !== undefined) patch.refundedAt = asNullableDate(data.refundedAt);
+      if (data.gatewayTransactionId !== undefined)
+        patch.gatewayTransactionId = asNullableString(
+          data.gatewayTransactionId
+        );
+      if (data.gatewayPaymentMethodId !== undefined)
+        patch.gatewayPaymentMethodId = asNullableString(
+          data.gatewayPaymentMethodId
+        );
+      if (data.processor !== undefined)
+        patch.processor = asNullableString(data.processor);
+      if (data.processedAt !== undefined)
+        patch.processedAt = asNullableDate(data.processedAt);
+      if (data.completedAt !== undefined)
+        patch.completedAt = asNullableDate(data.completedAt);
+      if (data.refundedAt !== undefined)
+        patch.refundedAt = asNullableDate(data.refundedAt);
 
       const row = await this.prisma.payment.update({
         where: { tenantId_id: { tenantId: this.tenantId, id } },

@@ -188,8 +188,7 @@ export class ClientPrismaStore implements Store<EntityInstance> {
         stateProvince: asNullableString(data.stateProvince),
         postalCode: asNullableString(data.postalCode),
         countryCode: asNullableString(data.countryCode),
-        defaultPaymentTerms:
-          asNullableNumber(data.defaultPaymentTerms) ?? 30,
+        defaultPaymentTerms: asNullableNumber(data.defaultPaymentTerms) ?? 30,
         taxExempt: asBool(data.taxExempt, false),
         taxId: asNullableString(data.taxId),
         notes: asNullableString(data.notes),
@@ -221,10 +220,8 @@ export class ClientPrismaStore implements Store<EntityInstance> {
         patch.last_name = asNullableString(data.last_name);
       if (data.lastName !== undefined)
         patch.last_name = asNullableString(data.lastName);
-      if (data.email !== undefined)
-        patch.email = asNullableString(data.email);
-      if (data.phone !== undefined)
-        patch.phone = asNullableString(data.phone);
+      if (data.email !== undefined) patch.email = asNullableString(data.email);
+      if (data.phone !== undefined) patch.phone = asNullableString(data.phone);
       if (data.website !== undefined)
         patch.website = asNullableString(data.website);
       if (data.addressLine1 !== undefined)
@@ -243,10 +240,8 @@ export class ClientPrismaStore implements Store<EntityInstance> {
           asNullableNumber(data.defaultPaymentTerms) ?? 30;
       if (data.taxExempt !== undefined)
         patch.taxExempt = asBool(data.taxExempt, false);
-      if (data.taxId !== undefined)
-        patch.taxId = asNullableString(data.taxId);
-      if (data.notes !== undefined)
-        patch.notes = asNullableString(data.notes);
+      if (data.taxId !== undefined) patch.taxId = asNullableString(data.taxId);
+      if (data.notes !== undefined) patch.notes = asNullableString(data.notes);
       if (data.tags !== undefined) patch.tags = asStringArray(data.tags);
       if (data.source !== undefined)
         patch.source = asNullableString(data.source);

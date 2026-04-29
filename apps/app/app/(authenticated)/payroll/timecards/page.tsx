@@ -337,11 +337,14 @@ export default function TimecardsPage() {
     if (!selectedTimeEntry) return;
     setActionLoading(true);
     try {
-      const response = await apiFetch(`/api/timecards/${selectedTimeEntry.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ clockOut: new Date().toISOString() }),
-      });
+      const response = await apiFetch(
+        `/api/timecards/${selectedTimeEntry.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ clockOut: new Date().toISOString() }),
+        }
+      );
 
       if (!response.ok) {
         throw new Error("Failed to clock out");
@@ -722,7 +725,9 @@ export default function TimecardsPage() {
                               disabled={actionLoading}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                const reason = prompt("Enter edit request reason:");
+                                const reason = prompt(
+                                  "Enter edit request reason:"
+                                );
                                 if (reason) {
                                   handleEditRequest(entry.id, reason);
                                 }
@@ -737,7 +742,9 @@ export default function TimecardsPage() {
                               disabled={actionLoading}
                               onClick={(e) => {
                                 e.stopPropagation();
-                                const type = prompt("Exception type (missing_clock_out, late_arrival, excessive_break, other):");
+                                const type = prompt(
+                                  "Exception type (missing_clock_out, late_arrival, excessive_break, other):"
+                                );
                                 if (type) {
                                   const notes = prompt("Exception notes:");
                                   if (notes) {

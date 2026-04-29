@@ -34,7 +34,7 @@ import {
 export class TimeEntryPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -76,22 +76,21 @@ export class TimeEntryPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
       if (data.clockOut !== undefined)
         patch.clockOut = asNullableDate(data.clockOut);
-      if (data.breakMinutes !== undefined) patch.breakMinutes = data.breakMinutes;
+      if (data.breakMinutes !== undefined)
+        patch.breakMinutes = data.breakMinutes;
       if (data.notes !== undefined) patch.notes = data.notes;
       if (data.approvedBy !== undefined || data.approved_by !== undefined)
         patch.approved_by = asNullableString(
-          data.approvedBy ?? data.approved_by,
+          data.approvedBy ?? data.approved_by
         );
       if (data.approvedAt !== undefined || data.approved_at !== undefined)
-        patch.approved_at = asNullableDate(
-          data.approvedAt ?? data.approved_at,
-        );
+        patch.approved_at = asNullableDate(data.approvedAt ?? data.approved_at);
 
       const updated = await this.prisma.timeEntry.update({
         where: { tenantId_id: { tenantId: this.tenantId, id } },
@@ -163,7 +162,7 @@ export class TimeEntryPrismaStore implements Store<EntityInstance> {
 export class TimecardEditRequestPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -201,7 +200,7 @@ export class TimecardEditRequestPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
@@ -276,7 +275,7 @@ export class TimecardEditRequestPrismaStore implements Store<EntityInstance> {
 export class TrainingAssignmentPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -302,7 +301,10 @@ export class TrainingAssignmentPrismaStore implements Store<EntityInstance> {
         id,
         module_id: asString(data.moduleId ?? data.module_id),
         employee_id: asNullableString(data.employeeId ?? data.employee_id),
-        assigned_to_all: asBool(data.assignedToAll ?? data.assigned_to_all, false),
+        assigned_to_all: asBool(
+          data.assignedToAll ?? data.assigned_to_all,
+          false
+        ),
         assigned_by: asString(data.assignedBy ?? data.assigned_by),
         due_date: asNullableDate(data.dueDate ?? data.due_date),
         status: ((data.status as string) ?? "assigned") || "assigned",
@@ -313,14 +315,17 @@ export class TrainingAssignmentPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
       if (data.status !== undefined) patch.status = data.status;
       if (data.dueDate !== undefined || data.due_date !== undefined)
         patch.due_date = asNullableDate(data.dueDate ?? data.due_date);
-      if (data.assignedToAll !== undefined || data.assigned_to_all !== undefined)
+      if (
+        data.assignedToAll !== undefined ||
+        data.assigned_to_all !== undefined
+      )
         patch.assigned_to_all = data.assignedToAll ?? data.assigned_to_all;
       patch.updated_at = new Date();
 

@@ -43,7 +43,6 @@ import {
   asString,
   type EntityInstance,
   reportOp,
-  toDecimalInput,
   toDecimalRequired,
 } from "./shared.js";
 
@@ -103,7 +102,7 @@ const COLLECTION_PAYMENT_PLAN_METADATA_KEYS = [
 /** Extract metadata-only keys from a data bag into a JSON object. */
 function extractMetadata(
   data: Partial<EntityInstance>,
-  keys: readonly string[],
+  keys: readonly string[]
 ): Record<string, unknown> {
   const meta: Record<string, unknown> = {};
   for (const key of keys) {
@@ -121,7 +120,7 @@ function extractMetadata(
 export class CollectionCasePrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -157,9 +156,24 @@ export class CollectionCasePrismaStore implements Store<EntityInstance> {
         originalAmount: toDecimalRequired(data.originalAmount, 0),
         outstandingAmount: toDecimalRequired(data.outstandingAmount, 0),
         collectedAmount: toDecimalRequired(data.collectedAmount, 0),
-        status: (asString(data.status) || "ACTIVE") as "ACTIVE" | "PAID" | "CLOSED" | "LEGAL" | "WRITE_OFF",
-        priority: (asString(data.priority) || "MEDIUM") as "LOW" | "MEDIUM" | "HIGH" | "URGENT",
-        dunningStage: (asString(data.dunningStage) || "CURRENT") as "CURRENT" | "REMINDER_1" | "REMINDER_2" | "REMINDER_3" | "FINAL_NOTICE" | "COLLECTIONS",
+        status: (asString(data.status) || "ACTIVE") as
+          | "ACTIVE"
+          | "PAID"
+          | "CLOSED"
+          | "LEGAL"
+          | "WRITE_OFF",
+        priority: (asString(data.priority) || "MEDIUM") as
+          | "LOW"
+          | "MEDIUM"
+          | "HIGH"
+          | "URGENT",
+        dunningStage: (asString(data.dunningStage) || "CURRENT") as
+          | "CURRENT"
+          | "REMINDER_1"
+          | "REMINDER_2"
+          | "REMINDER_3"
+          | "FINAL_NOTICE"
+          | "COLLECTIONS",
         daysOverdue: asNullableNumber(data.daysOverdue) ?? 0,
         agingBucket: asNullableString(data.agingBucket),
         notes: asNullableString(data.notes),
@@ -175,33 +189,52 @@ export class CollectionCasePrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
 
-      if (data.invoiceId !== undefined) patch.invoiceId = asString(data.invoiceId);
-      if (data.invoiceNumber !== undefined) patch.invoiceNumber = asString(data.invoiceNumber);
+      if (data.invoiceId !== undefined)
+        patch.invoiceId = asString(data.invoiceId);
+      if (data.invoiceNumber !== undefined)
+        patch.invoiceNumber = asString(data.invoiceNumber);
       if (data.eventId !== undefined) patch.eventId = asString(data.eventId);
       if (data.clientId !== undefined) patch.clientId = asString(data.clientId);
-      if (data.clientName !== undefined) patch.clientName = asString(data.clientName);
-      if (data.originalAmount !== undefined) patch.originalAmount = toDecimalRequired(data.originalAmount, 0);
-      if (data.outstandingAmount !== undefined) patch.outstandingAmount = toDecimalRequired(data.outstandingAmount, 0);
-      if (data.collectedAmount !== undefined) patch.collectedAmount = toDecimalRequired(data.collectedAmount, 0);
+      if (data.clientName !== undefined)
+        patch.clientName = asString(data.clientName);
+      if (data.originalAmount !== undefined)
+        patch.originalAmount = toDecimalRequired(data.originalAmount, 0);
+      if (data.outstandingAmount !== undefined)
+        patch.outstandingAmount = toDecimalRequired(data.outstandingAmount, 0);
+      if (data.collectedAmount !== undefined)
+        patch.collectedAmount = toDecimalRequired(data.collectedAmount, 0);
       if (data.status !== undefined) patch.status = asString(data.status);
       if (data.priority !== undefined) patch.priority = asString(data.priority);
-      if (data.dunningStage !== undefined) patch.dunningStage = asString(data.dunningStage);
-      if (data.daysOverdue !== undefined) patch.daysOverdue = asNullableNumber(data.daysOverdue) ?? 0;
-      if (data.agingBucket !== undefined) patch.agingBucket = asNullableString(data.agingBucket);
+      if (data.dunningStage !== undefined)
+        patch.dunningStage = asString(data.dunningStage);
+      if (data.daysOverdue !== undefined)
+        patch.daysOverdue = asNullableNumber(data.daysOverdue) ?? 0;
+      if (data.agingBucket !== undefined)
+        patch.agingBucket = asNullableString(data.agingBucket);
       if (data.notes !== undefined) patch.notes = asNullableString(data.notes);
-      if (data.assignedTo !== undefined) patch.assignedTo = asNullableString(data.assignedTo);
-      if (data.hasPaymentPlan !== undefined) patch.hasPaymentPlan = asBool(data.hasPaymentPlan, false);
-      if (data.isDisputed !== undefined) patch.isDisputed = asBool(data.isDisputed, false);
-      if (data.isEscalatedToLegal !== undefined) patch.isEscalatedToLegal = asBool(data.isEscalatedToLegal, false);
+      if (data.assignedTo !== undefined)
+        patch.assignedTo = asNullableString(data.assignedTo);
+      if (data.hasPaymentPlan !== undefined)
+        patch.hasPaymentPlan = asBool(data.hasPaymentPlan, false);
+      if (data.isDisputed !== undefined)
+        patch.isDisputed = asBool(data.isDisputed, false);
+      if (data.isEscalatedToLegal !== undefined)
+        patch.isEscalatedToLegal = asBool(data.isEscalatedToLegal, false);
 
       // Merge manifest-only props into metadata
-      const metaOverrides = extractMetadata(data, COLLECTION_CASE_METADATA_KEYS);
-      if (Object.keys(metaOverrides).length > 0 || data.metadata !== undefined) {
+      const metaOverrides = extractMetadata(
+        data,
+        COLLECTION_CASE_METADATA_KEYS
+      );
+      if (
+        Object.keys(metaOverrides).length > 0 ||
+        data.metadata !== undefined
+      ) {
         const existingMeta = (data.metadata as Record<string, unknown>) ?? {};
         patch.metadata = { ...existingMeta, ...metaOverrides };
       }
@@ -286,7 +319,7 @@ export class CollectionCasePrismaStore implements Store<EntityInstance> {
 export class CollectionActionPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -306,7 +339,10 @@ export class CollectionActionPrismaStore implements Store<EntityInstance> {
 
   async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
     const id = (data.id as string | undefined) ?? crypto.randomUUID();
-    const metaOverrides = extractMetadata(data, COLLECTION_ACTION_METADATA_KEYS);
+    const metaOverrides = extractMetadata(
+      data,
+      COLLECTION_ACTION_METADATA_KEYS
+    );
 
     const row = await this.prisma.collectionAction.create({
       data: {
@@ -324,24 +360,33 @@ export class CollectionActionPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
 
-      if (data.collectionCaseId !== undefined) patch.collectionCaseId = asString(data.collectionCaseId);
-      if (data.caseId !== undefined) patch.collectionCaseId = asString(data.caseId);
-      if (data.actionType !== undefined) patch.actionType = asString(data.actionType);
-      if (data.description !== undefined) patch.description = asString(data.description);
-      if (data.outcome !== undefined) patch.outcome = asNullableString(data.outcome);
-      if (data.contactedAt !== undefined) patch.contactedAt = asNullableDate(data.contactedAt);
+      if (data.collectionCaseId !== undefined)
+        patch.collectionCaseId = asString(data.collectionCaseId);
+      if (data.caseId !== undefined)
+        patch.collectionCaseId = asString(data.caseId);
+      if (data.actionType !== undefined)
+        patch.actionType = asString(data.actionType);
+      if (data.description !== undefined)
+        patch.description = asString(data.description);
+      if (data.outcome !== undefined)
+        patch.outcome = asNullableString(data.outcome);
+      if (data.contactedAt !== undefined)
+        patch.contactedAt = asNullableDate(data.contactedAt);
 
       const row = await this.prisma.collectionAction.update({
         where: { tenantId_id: { tenantId: this.tenantId, id } },
         data: patch,
       });
 
-      const metaOverrides = extractMetadata(data, COLLECTION_ACTION_METADATA_KEYS);
+      const metaOverrides = extractMetadata(
+        data,
+        COLLECTION_ACTION_METADATA_KEYS
+      );
       return this.mapToManifestEntity({ ...row, ...metaOverrides });
     } catch (error) {
       reportOp(this, "update", error);
@@ -405,7 +450,7 @@ export class CollectionActionPrismaStore implements Store<EntityInstance> {
 export class CollectionPaymentPlanPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -425,7 +470,10 @@ export class CollectionPaymentPlanPrismaStore implements Store<EntityInstance> {
 
   async create(data: Partial<EntityInstance>): Promise<EntityInstance> {
     const id = (data.id as string | undefined) ?? crypto.randomUUID();
-    const metaOverrides = extractMetadata(data, COLLECTION_PAYMENT_PLAN_METADATA_KEYS);
+    const metaOverrides = extractMetadata(
+      data,
+      COLLECTION_PAYMENT_PLAN_METADATA_KEYS
+    );
     const existingMeta = (data.metadata as Record<string, unknown>) ?? {};
     const mergedMeta = { ...existingMeta, ...metaOverrides };
 
@@ -435,7 +483,8 @@ export class CollectionPaymentPlanPrismaStore implements Store<EntityInstance> {
         id,
         collectionCaseId: asString(data.caseId ?? data.collectionCaseId),
         totalAmount: toDecimalRequired(data.totalAmount, 0),
-        installments: asNullableNumber(data.installments ?? data.installmentCount) ?? 1,
+        installments:
+          asNullableNumber(data.installments ?? data.installmentCount) ?? 1,
         frequencyDays: asNullableNumber(data.frequencyDays) ?? 30,
         startDate: asNullableDate(data.startDate) ?? new Date(),
         status: asString(data.status) || "ACTIVE",
@@ -447,23 +496,36 @@ export class CollectionPaymentPlanPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
 
-      if (data.collectionCaseId !== undefined) patch.collectionCaseId = asString(data.collectionCaseId);
-      if (data.caseId !== undefined) patch.collectionCaseId = asString(data.caseId);
-      if (data.totalAmount !== undefined) patch.totalAmount = toDecimalRequired(data.totalAmount, 0);
-      if (data.installments !== undefined) patch.installments = asNullableNumber(data.installments) ?? 1;
-      if (data.installmentCount !== undefined) patch.installments = asNullableNumber(data.installmentCount) ?? 1;
-      if (data.frequencyDays !== undefined) patch.frequencyDays = asNullableNumber(data.frequencyDays) ?? 30;
-      if (data.startDate !== undefined) patch.startDate = asNullableDate(data.startDate);
+      if (data.collectionCaseId !== undefined)
+        patch.collectionCaseId = asString(data.collectionCaseId);
+      if (data.caseId !== undefined)
+        patch.collectionCaseId = asString(data.caseId);
+      if (data.totalAmount !== undefined)
+        patch.totalAmount = toDecimalRequired(data.totalAmount, 0);
+      if (data.installments !== undefined)
+        patch.installments = asNullableNumber(data.installments) ?? 1;
+      if (data.installmentCount !== undefined)
+        patch.installments = asNullableNumber(data.installmentCount) ?? 1;
+      if (data.frequencyDays !== undefined)
+        patch.frequencyDays = asNullableNumber(data.frequencyDays) ?? 30;
+      if (data.startDate !== undefined)
+        patch.startDate = asNullableDate(data.startDate);
       if (data.status !== undefined) patch.status = asString(data.status);
 
       // Merge manifest-only props into metadata
-      const metaOverrides = extractMetadata(data, COLLECTION_PAYMENT_PLAN_METADATA_KEYS);
-      if (Object.keys(metaOverrides).length > 0 || data.metadata !== undefined) {
+      const metaOverrides = extractMetadata(
+        data,
+        COLLECTION_PAYMENT_PLAN_METADATA_KEYS
+      );
+      if (
+        Object.keys(metaOverrides).length > 0 ||
+        data.metadata !== undefined
+      ) {
         const existingMeta = (data.metadata as Record<string, unknown>) ?? {};
         patch.metadata = { ...existingMeta, ...metaOverrides };
       }
@@ -514,7 +576,8 @@ export class CollectionPaymentPlanPrismaStore implements Store<EntityInstance> {
       updatedAt: r.updatedAt ?? null,
       // Manifest-only props from metadata
       installmentAmount: (meta.installmentAmount as number) ?? null,
-      installmentCount: (meta.installmentCount as number) ?? r.installments ?? null,
+      installmentCount:
+        (meta.installmentCount as number) ?? r.installments ?? null,
       completedInstallments: (meta.completedInstallments as number) ?? 0,
       endDate: (meta.endDate as string) ?? null,
       frequency: (meta.frequency as string) ?? null,

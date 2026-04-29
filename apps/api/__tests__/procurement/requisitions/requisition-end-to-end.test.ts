@@ -141,14 +141,14 @@ const mockUser = {
 
 function createMockRequest(
   url: string,
-  options: RequestInit = {},
+  options: RequestInit = {}
 ): NextRequest {
   if (options.body && !options.headers) {
     options.headers = { "Content-Type": "application/json" };
   }
   return new NextRequest(
     new URL(url, "http://localhost:3000"),
-    options as ConstructorParameters<typeof NextRequest>[1],
+    options as ConstructorParameters<typeof NextRequest>[1]
   );
 }
 
@@ -172,16 +172,16 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
         userId: TEST_CLERK_ID,
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(
-        mockDatabase.purchaseRequisition.findMany,
-      ).mockResolvedValue([mockRequisition] as never);
+      vi.mocked(mockDatabase.purchaseRequisition.findMany).mockResolvedValue([
+        mockRequisition,
+      ] as never);
 
       const { GET } = await import(
         "@/app/api/procurement/requisitions/list/route"
       );
 
       const request = createMockRequest(
-        "http://localhost:3000/api/procurement/requisitions/list",
+        "http://localhost:3000/api/procurement/requisitions/list"
       );
       const response = await GET(request);
       const data = await response.json();
@@ -191,15 +191,13 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
       expect(data.purchaseRequisitions[0].id).toBe("req-001");
       expect(data.purchaseRequisitions[0].status).toBe("draft");
 
-      expect(
-        mockDatabase.purchaseRequisition.findMany,
-      ).toHaveBeenCalledWith(
+      expect(mockDatabase.purchaseRequisition.findMany).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
             tenantId: TEST_TENANT_ID,
             deletedAt: null,
           },
-        }),
+        })
       );
     });
 
@@ -214,7 +212,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
       );
 
       const request = createMockRequest(
-        "http://localhost:3000/api/procurement/requisitions/list",
+        "http://localhost:3000/api/procurement/requisitions/list"
       );
       const response = await GET(request);
 
@@ -227,16 +225,16 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
         userId: TEST_CLERK_ID,
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(
-        mockDatabase.purchaseRequisition.findMany,
-      ).mockResolvedValue([]);
+      vi.mocked(mockDatabase.purchaseRequisition.findMany).mockResolvedValue(
+        []
+      );
 
       const { GET } = await import(
         "@/app/api/procurement/requisitions/list/route"
       );
 
       const request = createMockRequest(
-        "http://localhost:3000/api/procurement/requisitions/list",
+        "http://localhost:3000/api/procurement/requisitions/list"
       );
       const response = await GET(request);
       const data = await response.json();
@@ -257,16 +255,16 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
         userId: TEST_CLERK_ID,
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(
-        mockDatabase.purchaseRequisition.findUnique,
-      ).mockResolvedValue(mockRequisition as never);
+      vi.mocked(mockDatabase.purchaseRequisition.findUnique).mockResolvedValue(
+        mockRequisition as never
+      );
 
       const { GET } = await import(
         "@/app/api/procurement/requisitions/[id]/route"
       );
 
       const request = createMockRequest(
-        "http://localhost:3000/api/procurement/requisitions/req-001",
+        "http://localhost:3000/api/procurement/requisitions/req-001"
       );
       const response = await GET(request, {
         params: Promise.resolve({ id: "req-001" }),
@@ -278,16 +276,14 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
       expect(data.purchaseRequisition.status).toBe("draft");
       expect(data.purchaseRequisition.requisitionNumber).toBe("PR-2026-001");
 
-      expect(
-        mockDatabase.purchaseRequisition.findUnique,
-      ).toHaveBeenCalledWith(
+      expect(mockDatabase.purchaseRequisition.findUnique).toHaveBeenCalledWith(
         expect.objectContaining({
           where: {
             id: "req-001",
             tenantId: TEST_TENANT_ID,
             deletedAt: null,
           },
-        }),
+        })
       );
     });
 
@@ -297,16 +293,16 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
         userId: TEST_CLERK_ID,
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(
-        mockDatabase.purchaseRequisition.findUnique,
-      ).mockResolvedValue(null);
+      vi.mocked(mockDatabase.purchaseRequisition.findUnique).mockResolvedValue(
+        null
+      );
 
       const { GET } = await import(
         "@/app/api/procurement/requisitions/[id]/route"
       );
 
       const request = createMockRequest(
-        "http://localhost:3000/api/procurement/requisitions/non-existent",
+        "http://localhost:3000/api/procurement/requisitions/non-existent"
       );
       const response = await GET(request, {
         params: Promise.resolve({ id: "non-existent" }),
@@ -328,7 +324,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
       vi.mocked(mockDatabase.user.findFirst).mockResolvedValue(
-        mockUser as never,
+        mockUser as never
       );
       mockRunCommand.mockClear();
       mockRunCommand.mockResolvedValue({
@@ -361,7 +357,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
             locationId: "loc-001",
             itemCategory: "food",
           }),
-        },
+        }
       );
 
       const response = await POST(request);
@@ -370,7 +366,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
       expect(mockRunCommand).toHaveBeenCalledWith(
         "create",
         expect.any(Object),
-        expect.not.objectContaining({ instanceId: expect.anything() }),
+        expect.not.objectContaining({ instanceId: expect.anything() })
       );
     });
 
@@ -388,7 +384,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
             id: "req-001",
             justification: "Updated reason",
           }),
-        },
+        }
       );
 
       const response = await POST(request);
@@ -400,7 +396,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
         expect.objectContaining({
           entityName: "PurchaseRequisition",
           instanceId: "req-001",
-        }),
+        })
       );
     });
 
@@ -418,7 +414,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
             id: "req-001",
             userId: TEST_USER_ID,
           }),
-        },
+        }
       );
 
       const response = await POST(request);
@@ -430,7 +426,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
         expect.objectContaining({
           entityName: "PurchaseRequisition",
           instanceId: "req-001",
-        }),
+        })
       );
     });
 
@@ -448,7 +444,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
             id: "req-001",
             userId: TEST_USER_ID,
           }),
-        },
+        }
       );
 
       const response = await POST(request);
@@ -460,7 +456,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
         expect.objectContaining({
           entityName: "PurchaseRequisition",
           instanceId: "req-001",
-        }),
+        })
       );
     });
 
@@ -479,7 +475,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
             userId: TEST_USER_ID,
             reason: "Budget cut",
           }),
-        },
+        }
       );
 
       const response = await POST(request);
@@ -491,7 +487,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
         expect.objectContaining({
           entityName: "PurchaseRequisition",
           instanceId: "req-001",
-        }),
+        })
       );
     });
   });
@@ -508,7 +504,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
         "@/app/api/procurement/requisitions/commands/create/route"
       );
       const request = createMockRequest(
-        "http://localhost:3000/api/procurement/requisitions/commands/create",
+        "http://localhost:3000/api/procurement/requisitions/commands/create"
       );
       const response = await POST(request);
 
@@ -522,7 +518,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
         "@/app/api/procurement/requisitions/commands/update/route"
       );
       const request = createMockRequest(
-        "http://localhost:3000/api/procurement/requisitions/commands/update",
+        "http://localhost:3000/api/procurement/requisitions/commands/update"
       );
       const response = await POST(request);
 
@@ -536,7 +532,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
         "@/app/api/procurement/requisitions/commands/submit/route"
       );
       const request = createMockRequest(
-        "http://localhost:3000/api/procurement/requisitions/commands/submit",
+        "http://localhost:3000/api/procurement/requisitions/commands/submit"
       );
       const response = await POST(request);
 
@@ -556,7 +552,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
       vi.mocked(mockDatabase.user.findFirst).mockResolvedValue(
-        mockUser as never,
+        mockUser as never
       );
       mockRunCommand.mockClear();
       vi.mocked(createManifestRuntime).mockResolvedValue({
@@ -578,7 +574,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
         {
           method: "POST",
           body: JSON.stringify({}),
-        },
+        }
       );
       const response = await POST(request);
 
@@ -599,7 +595,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
         {
           method: "POST",
           body: JSON.stringify({}),
-        },
+        }
       );
       const response = await POST(request);
 
@@ -620,7 +616,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
         {
           method: "POST",
           body: JSON.stringify({}),
-        },
+        }
       );
       const response = await POST(request);
 
@@ -638,7 +634,7 @@ describe("PurchaseRequisition Persistence (write -> read alignment)", () => {
         {
           method: "POST",
           body: JSON.stringify({}),
-        },
+        }
       );
       const response = await POST(request);
 

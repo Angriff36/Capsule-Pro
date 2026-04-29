@@ -28,7 +28,7 @@ import {
 export class UserPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -59,7 +59,8 @@ export class UserPrismaStore implements Store<EntityInstance> {
         authUserId: asNullableString(data.authUserId),
         employeeNumber: asNullableString(data.employeeNumber),
         phone: asNullableString(data.phone),
-        employmentType: (data.employmentType as EmploymentType | undefined) ??
+        employmentType:
+          (data.employmentType as EmploymentType | undefined) ??
           EmploymentType.full_time,
         hourlyRate: toDecimalInput(data.hourlyRate),
         salaryAnnual: toDecimalInput(data.salaryAnnual),
@@ -75,7 +76,7 @@ export class UserPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
@@ -92,7 +93,8 @@ export class UserPrismaStore implements Store<EntityInstance> {
         patch.avatarUrl = asNullableString(data.avatarUrl);
       if (data.isActive !== undefined) patch.isActive = data.isActive;
       if (data.role !== undefined) patch.role = data.role;
-      if (data.roleId !== undefined) patch.roleId = asNullableString(data.roleId);
+      if (data.roleId !== undefined)
+        patch.roleId = asNullableString(data.roleId);
       if (data.terminationDate !== undefined)
         patch.terminationDate = asNullableDate(data.terminationDate);
 

@@ -8,13 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@repo/design-system/components/ui/card";
-import { Input } from "@repo/design-system/components/ui/input";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@repo/design-system/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -22,6 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@repo/design-system/components/ui/dialog";
+import { Input } from "@repo/design-system/components/ui/input";
 import { Label } from "@repo/design-system/components/ui/label";
 import {
   Select,
@@ -31,16 +25,20 @@ import {
   SelectValue,
 } from "@repo/design-system/components/ui/select";
 import {
-  Textarea,
-} from "@repo/design-system/components/ui/textarea";
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs";
+import { Textarea } from "@repo/design-system/components/ui/textarea";
 import { Eye, FileText, Loader2, Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 import {
   CONTRACT_TYPE_CONFIG,
-  VC_STATUS_CONFIG,
   formatDateShort,
+  VC_STATUS_CONFIG,
 } from "../components/vc-shared";
 
 interface VendorContract {
@@ -105,7 +103,7 @@ export default function VendorContractsPage() {
   }, [contracts, activeTab, searchQuery]);
 
   const handleCreate = async () => {
-    if (!contractNumber || !vendorId || !startDate) return;
+    if (!(contractNumber && vendorId && startDate)) return;
     setCreating(true);
     try {
       const res = await apiFetch(
@@ -174,25 +172,25 @@ export default function VendorContractsPage() {
 
       {/* Summary */}
       <div className="grid gap-4 md:grid-cols-4">
-        {(
-          ["pending_approval", "active", "expired", "terminated"] as const
-        ).map((status) => {
-          const config = VC_STATUS_CONFIG[status];
-          const count = contracts.filter((c) => c.status === status).length;
-          return (
-            <Card key={status}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">
-                  {config.label}
-                </CardTitle>
-                <config.icon className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{count}</div>
-              </CardContent>
-            </Card>
-          );
-        })}
+        {(["pending_approval", "active", "expired", "terminated"] as const).map(
+          (status) => {
+            const config = VC_STATUS_CONFIG[status];
+            const count = contracts.filter((c) => c.status === status).length;
+            return (
+              <Card key={status}>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">
+                    {config.label}
+                  </CardTitle>
+                  <config.icon className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{count}</div>
+                </CardContent>
+              </Card>
+            );
+          }
+        )}
       </div>
 
       {/* Search */}
@@ -286,9 +284,7 @@ export default function VendorContractsPage() {
                               </span>
                             )}
                             <span>{contract.paymentTerms}</span>
-                            <span>
-                              Compliance: {contract.complianceScore}%
-                            </span>
+                            <span>Compliance: {contract.complianceScore}%</span>
                           </div>
                         </div>
                         <Link
@@ -342,10 +338,7 @@ export default function VendorContractsPage() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Contract Type</Label>
-                <Select
-                  onValueChange={setContractType}
-                  value={contractType}
-                >
+                <Select onValueChange={setContractType} value={contractType}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -361,10 +354,7 @@ export default function VendorContractsPage() {
               </div>
               <div className="space-y-2">
                 <Label>Payment Terms</Label>
-                <Select
-                  onValueChange={setPaymentTerms}
-                  value={paymentTerms}
-                >
+                <Select onValueChange={setPaymentTerms} value={paymentTerms}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
@@ -420,9 +410,7 @@ export default function VendorContractsPage() {
               Cancel
             </Button>
             <Button
-              disabled={
-                !contractNumber || !vendorId || !startDate || creating
-              }
+              disabled={!(contractNumber && vendorId && startDate) || creating}
               onClick={handleCreate}
             >
               {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

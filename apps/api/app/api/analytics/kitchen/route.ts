@@ -111,8 +111,32 @@ async function fetchStationMetrics(
   startDate: Date,
   locationId: string | null
 ) {
-  return await database.$queryRawUnsafe<StationMetrics[]>(
-    `
+  if (locationId) {
+    return await database.$queryRaw<StationMetrics[]>`
+      SELECT
+        pli.station_id as station_id,
+        pli.station_name as station_name,
+        COUNT(*)::int as total_items,
+        COUNT(CASE WHEN pli.is_completed = true THEN 1 END)::int as completed_items,
+        COALESCE(AVG(
+          CASE
+            WHEN pli.completed_at IS NOT NULL AND pli.created_at IS NOT NULL
+            THEN EXTRACT(EPOCH FROM (pli.completed_at - pli.created_at)) / 60
+            ELSE NULL
+          END
+        ), 0)::numeric as avg_completion_minutes
+      FROM tenant_kitchen.prep_list_items pli
+      WHERE pli.tenant_id = ${tenantId}
+        AND pli.created_at >= ${startDate}
+        AND pli.deleted_at IS NULL
+        AND pli.station_id IS NOT NULL
+        AND pli.station_name IS NOT NULL
+        AND pli.station_id = ${locationId}
+      GROUP BY pli.station_id, pli.station_name
+      ORDER BY pli.station_name
+    `;
+  }
+  return await database.$queryRaw<StationMetrics[]>`
     SELECT
       pli.station_id as station_id,
       pli.station_name as station_name,
@@ -126,17 +150,14 @@ async function fetchStationMetrics(
         END
       ), 0)::numeric as avg_completion_minutes
     FROM tenant_kitchen.prep_list_items pli
-    WHERE pli.tenant_id = $1
-      AND pli.created_at >= $2
+    WHERE pli.tenant_id = ${tenantId}
+      AND pli.created_at >= ${startDate}
       AND pli.deleted_at IS NULL
       AND pli.station_id IS NOT NULL
       AND pli.station_name IS NOT NULL
-      ${locationId ? "AND pli.station_id = $3" : ""}
     GROUP BY pli.station_id, pli.station_name
     ORDER BY pli.station_name
-    `,
-    locationId ? [tenantId, startDate, locationId] : [tenantId, startDate]
-  );
+  `;
 }
 
 async function fetchKitchenHealthMetrics(
@@ -146,19 +167,15 @@ async function fetchKitchenHealthMetrics(
 ) {
   const [prepListsSync, allergenWarnings, wasteAlerts, timeToCompletion] =
     await Promise.all([
-      database.$queryRawUnsafe<PrepListsSync[]>(
-        `
+      database.$queryRaw<PrepListsSync[]>`
         SELECT
           COUNT(*)::int as total,
           COUNT(CASE WHEN status = 'finalized' THEN 1 END)::int as completed
         FROM tenant_kitchen.prep_lists
-        WHERE tenant_id = $1
-          AND generated_at >= $2
+        WHERE tenant_id = ${tenantId}
+          AND generated_at >= ${startDate}
           AND deleted_at IS NULL
-        `,
-        tenantId,
-        startDate
-      ),
+      `,
 
       database.allergenWarning.count({
         where: {
@@ -177,8 +194,7 @@ async function fetchKitchenHealthMetrics(
         },
       }),
 
-      database.$queryRawUnsafe<TimeToCompletion[]>(
-        `
+      database.$queryRaw<TimeToCompletion[]>`
         SELECT COALESCE(AVG(
           CASE
             WHEN pt.actual_minutes IS NOT NULL THEN pt.actual_minutes
@@ -188,14 +204,11 @@ async function fetchKitchenHealthMetrics(
           END
         ), 0)::numeric as avg_minutes
         FROM tenant_kitchen.prep_tasks pt
-        WHERE pt.tenant_id = $1
-          AND pt.created_at >= $2
+        WHERE pt.tenant_id = ${tenantId}
+          AND pt.created_at >= ${startDate}
           AND pt.status = 'completed'
           AND pt.deleted_at IS NULL
-        `,
-        tenantId,
-        startDate
-      ),
+      `,
     ]);
 
   return { prepListsSync, allergenWarnings, wasteAlerts, timeToCompletion };
@@ -206,25 +219,39 @@ async function fetchStationTrends(
   startDate: Date,
   locationId: string | null
 ) {
-  return await database.$queryRawUnsafe<StationTrend[]>(
-    `
+  if (locationId) {
+    return await database.$queryRaw<StationTrend[]>`
+      SELECT
+        DATE(pli.created_at)::text as date,
+        pli.station_name as station_name,
+        COUNT(*)::int as total,
+        COUNT(CASE WHEN pli.is_completed = true THEN 1 END)::int as completed
+      FROM tenant_kitchen.prep_list_items pli
+      WHERE pli.tenant_id = ${tenantId}
+        AND pli.created_at >= ${startDate}
+        AND pli.deleted_at IS NULL
+        AND pli.station_name IS NOT NULL
+        AND pli.station_id = ${locationId}
+      GROUP BY DATE(pli.created_at), pli.station_name
+      ORDER BY date DESC, station_name
+      LIMIT 500
+    `;
+  }
+  return await database.$queryRaw<StationTrend[]>`
     SELECT
       DATE(pli.created_at)::text as date,
       pli.station_name as station_name,
       COUNT(*)::int as total,
       COUNT(CASE WHEN pli.is_completed = true THEN 1 END)::int as completed
     FROM tenant_kitchen.prep_list_items pli
-    WHERE pli.tenant_id = $1
-      AND pli.created_at >= $2
+    WHERE pli.tenant_id = ${tenantId}
+      AND pli.created_at >= ${startDate}
       AND pli.deleted_at IS NULL
       AND pli.station_name IS NOT NULL
-      ${locationId ? "AND pli.station_id = $3" : ""}
     GROUP BY DATE(pli.created_at), pli.station_name
     ORDER BY date DESC, station_name
     LIMIT 500
-    `,
-    ...(locationId ? [tenantId, startDate, locationId] : [tenantId, startDate])
-  );
+  `;
 }
 
 async function fetchTopPerformers(
@@ -232,8 +259,35 @@ async function fetchTopPerformers(
   startDate: Date,
   locationId: string | null
 ) {
-  return await database.$queryRawUnsafe<TopPerformer[]>(
-    `
+  if (locationId) {
+    return await database.$queryRaw<TopPerformer[]>`
+      SELECT
+        u.id as employee_id,
+        u.first_name,
+        u.last_name,
+        COUNT(DISTINCT pt.id)::int as completed_tasks,
+        COALESCE(AVG(
+          CASE
+            WHEN pt.actual_minutes IS NOT NULL THEN pt.actual_minutes
+            WHEN pt.completed_at IS NOT NULL AND pt.created_at IS NOT NULL
+            THEN EXTRACT(EPOCH FROM (pt.completed_at - pt.created_at)) / 60
+            ELSE NULL
+          END
+        ), 0)::numeric as avg_minutes
+      FROM tenant_kitchen.prep_tasks pt
+      JOIN platform.users u ON pt.tenant_id = u.tenant_id AND pt.location_id = ANY(u.location_ids)
+      WHERE pt.tenant_id = ${tenantId}
+        AND pt.created_at >= ${startDate}
+        AND pt.status = 'completed'
+        AND pt.deleted_at IS NULL
+        AND u.deleted_at IS NULL
+        AND pt.location_id = ${locationId}
+      GROUP BY u.id, u.first_name, u.last_name
+      ORDER BY completed_tasks DESC
+      LIMIT 5
+    `;
+  }
+  return await database.$queryRaw<TopPerformer[]>`
     SELECT
       u.id as employee_id,
       u.first_name,
@@ -249,18 +303,15 @@ async function fetchTopPerformers(
       ), 0)::numeric as avg_minutes
     FROM tenant_kitchen.prep_tasks pt
     JOIN platform.users u ON pt.tenant_id = u.tenant_id AND pt.location_id = ANY(u.location_ids)
-    WHERE pt.tenant_id = $1
-      AND pt.created_at >= $2
+    WHERE pt.tenant_id = ${tenantId}
+      AND pt.created_at >= ${startDate}
       AND pt.status = 'completed'
       AND pt.deleted_at IS NULL
       AND u.deleted_at IS NULL
-      ${locationId ? "AND pt.location_id = $3" : ""}
     GROUP BY u.id, u.first_name, u.last_name
     ORDER BY completed_tasks DESC
     LIMIT 5
-    `,
-    locationId ? [tenantId, startDate, locationId] : [tenantId, startDate]
-  );
+  `;
 }
 
 function formatAvgTime(minutes: number): string {

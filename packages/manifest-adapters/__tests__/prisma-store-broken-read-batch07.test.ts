@@ -18,9 +18,9 @@ import {
   EmployeeDeductionPrismaStore,
 } from "../src/prisma-stores/broken-read-batch07-employee";
 import {
-  EventPrismaStore,
   EventBudgetPrismaStore,
   EventContractPrismaStore,
+  EventPrismaStore,
 } from "../src/prisma-stores/broken-read-batch07-event";
 
 // ---------------------------------------------------------------------------
@@ -103,13 +103,10 @@ describe("EmployeeCertificationPrismaStore", () => {
       async ({ data }: { data: Record<string, unknown> }) => ({
         ...data,
         tenant_id: TENANT,
-      }),
+      })
     );
 
-    const store = new EmployeeCertificationPrismaStore(
-      prisma as never,
-      TENANT,
-    );
+    const store = new EmployeeCertificationPrismaStore(prisma as never, TENANT);
     await store.create({
       employee_id: "emp-1",
       certification_type: "food_safety",
@@ -133,10 +130,7 @@ describe("EmployeeCertificationPrismaStore", () => {
 
   it("getAll filters by tenant_id + deleted_at", async () => {
     mockEmployeeCertifications.findMany.mockResolvedValueOnce([]);
-    const store = new EmployeeCertificationPrismaStore(
-      prisma as never,
-      TENANT,
-    );
+    const store = new EmployeeCertificationPrismaStore(prisma as never, TENANT);
     await store.getAll();
     expect(mockEmployeeCertifications.findMany).toHaveBeenCalledWith({
       where: { tenant_id: TENANT, deleted_at: null },
@@ -146,10 +140,7 @@ describe("EmployeeCertificationPrismaStore", () => {
 
   it("delete is soft-delete (sets deleted_at)", async () => {
     mockEmployeeCertifications.update.mockResolvedValueOnce({});
-    const store = new EmployeeCertificationPrismaStore(
-      prisma as never,
-      TENANT,
-    );
+    const store = new EmployeeCertificationPrismaStore(prisma as never, TENANT);
     const ok = await store.delete("cert-1");
     expect(ok).toBe(true);
     const call = mockEmployeeCertifications.update.mock.calls[0][0] as {
@@ -174,7 +165,7 @@ describe("EmployeeDeductionPrismaStore", () => {
       async ({ data }: { data: Record<string, unknown> }) => ({
         ...data,
         tenant_id: TENANT,
-      }),
+      })
     );
 
     const store = new EmployeeDeductionPrismaStore(prisma as never, TENANT);
@@ -240,7 +231,7 @@ describe("EventPrismaStore", () => {
       async ({ data }: { data: Record<string, unknown> }) => ({
         ...data,
         tenantId: TENANT,
-      }),
+      })
     );
 
     const store = new EventPrismaStore(prisma as never, TENANT);
@@ -249,7 +240,7 @@ describe("EventPrismaStore", () => {
       eventDate: "2026-06-15",
       title: "Smith Wedding",
       guestCount: 150,
-      budget: 25000.0,
+      budget: 25_000.0,
       ticketPrice: 150.0,
       accessibilityOptions: ["wheelchair", "sign_language"],
       tags: ["outdoor", "summer"],
@@ -265,7 +256,7 @@ describe("EventPrismaStore", () => {
     expect(call.data.title).toBe("Smith Wedding");
     expect(call.data.guestCount).toBe(150);
     expect(call.data.status).toBe("confirmed");
-    expect(call.data.budget).toBe(25000.0);
+    expect(call.data.budget).toBe(25_000.0);
     expect(call.data.ticketPrice).toBe(150.0);
     expect(call.data.accessibilityOptions).toEqual([
       "wheelchair",
@@ -315,14 +306,14 @@ describe("EventBudgetPrismaStore", () => {
       async ({ data }: { data: Record<string, unknown> }) => ({
         ...data,
         tenantId: TENANT,
-      }),
+      })
     );
 
     const store = new EventBudgetPrismaStore(prisma as never, TENANT);
     await store.create({
       eventId: "evt-1",
-      totalBudgetAmount: 50000.0,
-      totalActualAmount: 48000.0,
+      totalBudgetAmount: 50_000.0,
+      totalActualAmount: 48_000.0,
       varianceAmount: 2000.0,
       variancePercentage: 4.0,
     });
@@ -334,8 +325,8 @@ describe("EventBudgetPrismaStore", () => {
     expect(call.data.eventId).toBe("evt-1");
     expect(call.data.version).toBe(1);
     expect(call.data.status).toBe("draft");
-    expect(call.data.totalBudgetAmount).toBe(50000.0);
-    expect(call.data.totalActualAmount).toBe(48000.0);
+    expect(call.data.totalBudgetAmount).toBe(50_000.0);
+    expect(call.data.totalActualAmount).toBe(48_000.0);
     expect(call.data.varianceAmount).toBe(2000.0);
     expect(call.data.variancePercentage).toBe(4.0);
     expect(call.data.notes).toBeNull();
@@ -378,7 +369,7 @@ describe("EventContractPrismaStore", () => {
       async ({ data }: { data: Record<string, unknown> }) => ({
         ...data,
         tenantId: TENANT,
-      }),
+      })
     );
 
     const store = new EventContractPrismaStore(prisma as never, TENANT);

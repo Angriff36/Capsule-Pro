@@ -39,7 +39,7 @@ import {
 export class EmailTemplatePrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -77,7 +77,7 @@ export class EmailTemplatePrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
@@ -148,7 +148,7 @@ export class EmailTemplatePrismaStore implements Store<EntityInstance> {
 export class EmailWorkflowPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -187,7 +187,7 @@ export class EmailWorkflowPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
@@ -202,7 +202,7 @@ export class EmailWorkflowPrismaStore implements Store<EntityInstance> {
         patch.emailTemplateId = asNullableString(data.emailTemplateId);
       if (data.emailTemplateTenantId !== undefined)
         patch.emailTemplateTenantId = asNullableString(
-          data.emailTemplateTenantId,
+          data.emailTemplateTenantId
         );
       if (data.lastTriggeredAt !== undefined)
         patch.lastTriggeredAt = asNullableDate(data.lastTriggeredAt);

@@ -8,7 +8,7 @@
  * new batch10 stores.
  */
 
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 // ---------------------------------------------------------------------------
 // vi.hoisted mocks — one per Prisma model accessor
@@ -102,19 +102,15 @@ const prisma: MockClient = {
 };
 
 // Import stores AFTER mocks are set up
-const {
-  InventoryTransactionPrismaStore,
-} = await import(
+const { InventoryTransactionPrismaStore } = await import(
   "../src/prisma-stores/broken-read-batch10-inventory-transaction.js"
 );
-const {
-  LaborBudgetPrismaStore,
-  LeadPrismaStore,
-} = await import("../src/prisma-stores/broken-read-batch10-labor-budget-lead.js");
-const {
-  KitchenTaskPrismaStore,
-  MenuPrismaStore,
-} = await import("../src/prisma-store.js");
+const { LaborBudgetPrismaStore, LeadPrismaStore } = await import(
+  "../src/prisma-stores/broken-read-batch10-labor-budget-lead.js"
+);
+const { KitchenTaskPrismaStore, MenuPrismaStore } = await import(
+  "../src/prisma-store.js"
+);
 
 const TENANT = "55555555-5555-5555-5555-555555555555";
 const OTHER_TENANT = "66666666-6666-6666-6666-666666666666";
@@ -130,7 +126,7 @@ beforeEach(() => {
 describe("InventoryTransactionPrismaStore", () => {
   const store = new InventoryTransactionPrismaStore(
     prisma as unknown as import("@repo/database/standalone").PrismaClient,
-    TENANT,
+    TENANT
   );
 
   it("create maps mixed snake_case/camelCase fields and tenantId", async () => {
@@ -138,7 +134,7 @@ describe("InventoryTransactionPrismaStore", () => {
       async ({ data }: { data: Record<string, unknown> }) => ({
         ...data,
         createdAt: new Date(),
-      }),
+      })
     );
 
     await store.create({
@@ -149,7 +145,7 @@ describe("InventoryTransactionPrismaStore", () => {
       totalCost: 625,
       reference: "PO-123",
       notes: "Monthly delivery",
-      transactionDate: 1700000000000,
+      transactionDate: 1_700_000_000_000,
       storageLocationId: "loc-1",
       reason: "reorder",
       referenceType: "purchase_order",
@@ -233,7 +229,7 @@ describe("InventoryTransactionPrismaStore", () => {
 describe("KitchenTaskPrismaStore", () => {
   const store = new KitchenTaskPrismaStore(
     prisma as unknown as import("@repo/database/standalone").PrismaClient,
-    TENANT,
+    TENANT
   );
 
   it("create maps fields and tenantId", async () => {
@@ -243,7 +239,7 @@ describe("KitchenTaskPrismaStore", () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         deletedAt: null,
-      }),
+      })
     );
     mockKitchenTaskClaim.findMany.mockResolvedValueOnce([]);
 
@@ -295,7 +291,7 @@ describe("KitchenTaskPrismaStore", () => {
 describe("LaborBudgetPrismaStore", () => {
   const store = new LaborBudgetPrismaStore(
     prisma as unknown as import("@repo/database/standalone").PrismaClient,
-    TENANT,
+    TENANT
   );
 
   it("create maps Decimal, Boolean threshold fields", async () => {
@@ -305,15 +301,15 @@ describe("LaborBudgetPrismaStore", () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         deletedAt: null,
-      }),
+      })
     );
 
     await store.create({
       name: "Q2 Kitchen Budget",
       budgetType: "monthly",
-      budgetTarget: 25000,
+      budgetTarget: 25_000,
       budgetUnit: "dollars",
-      actualSpend: 18000,
+      actualSpend: 18_000,
       threshold80Pct: true,
       threshold90Pct: true,
       threshold100Pct: false,
@@ -326,7 +322,7 @@ describe("LaborBudgetPrismaStore", () => {
     expect(call.data.tenantId).toBe(TENANT);
     expect(call.data.name).toBe("Q2 Kitchen Budget");
     // Decimal fields wrapped by Prisma.Decimal stub
-    expect(Number(call.data.budgetTarget)).toBe(25000);
+    expect(Number(call.data.budgetTarget)).toBe(25_000);
     expect(call.data.threshold80Pct).toBe(true);
     expect(call.data.threshold100Pct).toBe(false);
     expect(call.data.status).toBe("active");
@@ -369,9 +365,9 @@ describe("LaborBudgetPrismaStore", () => {
       budgetType: "annual",
       periodStart: new Date("2026-01-01"),
       periodEnd: new Date("2026-12-31"),
-      budgetTarget: 120000,
+      budgetTarget: 120_000,
       budgetUnit: "dollars",
-      actualSpend: 45000,
+      actualSpend: 45_000,
       threshold80Pct: true,
       threshold90Pct: true,
       threshold100Pct: true,
@@ -384,8 +380,8 @@ describe("LaborBudgetPrismaStore", () => {
 
     const entity = await store.getById("lb-2");
     expect(entity?.name).toBe("Annual Budget");
-    expect(entity?.budgetTarget).toBe(120000);
-    expect(entity?.actualSpend).toBe(45000);
+    expect(entity?.budgetTarget).toBe(120_000);
+    expect(entity?.actualSpend).toBe(45_000);
     expect(entity?.threshold80Pct).toBe(true);
     expect(entity?.status).toBe("active");
   });
@@ -398,7 +394,7 @@ describe("LaborBudgetPrismaStore", () => {
 describe("LeadPrismaStore", () => {
   const store = new LeadPrismaStore(
     prisma as unknown as import("@repo/database/standalone").PrismaClient,
-    TENANT,
+    TENANT
   );
 
   it("create maps nullable Decimal, DateTime, String fields", async () => {
@@ -408,7 +404,7 @@ describe("LeadPrismaStore", () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         deletedAt: null,
-      }),
+      })
     );
 
     await store.create({
@@ -418,7 +414,7 @@ describe("LeadPrismaStore", () => {
       contactEmail: "jane@acme.com",
       eventType: "wedding",
       estimatedGuests: 150,
-      estimatedValue: 15000,
+      estimatedValue: 15_000,
       status: "new",
       notes: "Interested in full catering package",
     });
@@ -427,7 +423,7 @@ describe("LeadPrismaStore", () => {
     expect(call.data.tenantId).toBe(TENANT);
     expect(call.data.contactName).toBe("Jane Doe");
     // Decimal fields wrapped by Prisma.Decimal stub
-    expect(Number(call.data.estimatedValue)).toBe(15000);
+    expect(Number(call.data.estimatedValue)).toBe(15_000);
     expect(call.data.estimatedGuests).toBe(150);
     expect(call.data.status).toBe("new");
   });
@@ -470,7 +466,7 @@ describe("LeadPrismaStore", () => {
       eventType: "corporate",
       eventDate: new Date("2026-06-15"),
       estimatedGuests: 200,
-      estimatedValue: 25000,
+      estimatedValue: 25_000,
       status: "qualified",
       assignedTo: "emp-1",
       notes: "Needs custom menu",
@@ -483,7 +479,7 @@ describe("LeadPrismaStore", () => {
 
     const entity = await store.getById("lead-2");
     expect(entity?.contactName).toBe("Bob Smith");
-    expect(entity?.estimatedValue).toBe(25000);
+    expect(entity?.estimatedValue).toBe(25_000);
     expect(entity?.estimatedGuests).toBe(200);
     expect(entity?.status).toBe("qualified");
     expect(entity?.convertedToClientId).toBeNull();
@@ -497,7 +493,7 @@ describe("LeadPrismaStore", () => {
 describe("MenuPrismaStore", () => {
   const store = new MenuPrismaStore(
     prisma as unknown as import("@repo/database/standalone").PrismaClient,
-    TENANT,
+    TENANT
   );
 
   it("create maps Decimal and Boolean fields", async () => {
@@ -507,7 +503,7 @@ describe("MenuPrismaStore", () => {
         createdAt: new Date(),
         updatedAt: new Date(),
         deletedAt: null,
-      }),
+      })
     );
 
     await store.create({

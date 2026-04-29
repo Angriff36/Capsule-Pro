@@ -57,7 +57,9 @@ function coerceVisibleCards(value: unknown): string[] {
 // CommandBoardConnection (tenant_events.command_board_connections)
 // ---------------------------------------------------------------------------
 
-export class CommandBoardConnectionPrismaStore implements Store<EntityInstance> {
+export class CommandBoardConnectionPrismaStore
+  implements Store<EntityInstance>
+{
   constructor(
     private readonly prisma: PrismaClient,
     private readonly tenantId: string
@@ -104,13 +106,10 @@ export class CommandBoardConnectionPrismaStore implements Store<EntityInstance> 
       if (data.boardId !== undefined) patch.boardId = asString(data.boardId);
       if (data.fromCardId !== undefined)
         patch.fromCardId = asString(data.fromCardId);
-      if (data.toCardId !== undefined)
-        patch.toCardId = asString(data.toCardId);
+      if (data.toCardId !== undefined) patch.toCardId = asString(data.toCardId);
       if (data.relationshipType !== undefined)
-        patch.relationshipType =
-          asString(data.relationshipType) || "generic";
-      if (data.label !== undefined)
-        patch.label = asNullableString(data.label);
+        patch.relationshipType = asString(data.relationshipType) || "generic";
+      if (data.label !== undefined) patch.label = asNullableString(data.label);
       if (data.visible !== undefined)
         patch.visible = asBool(data.visible, true);
       const row = await this.prisma.commandBoardConnection.update({
@@ -210,8 +209,7 @@ export class CommandBoardGroupPrismaStore implements Store<EntityInstance> {
       const patch: Record<string, unknown> = {};
       if (data.boardId !== undefined) patch.boardId = asString(data.boardId);
       if (data.name !== undefined) patch.name = asString(data.name);
-      if (data.color !== undefined)
-        patch.color = asNullableString(data.color);
+      if (data.color !== undefined) patch.color = asNullableString(data.color);
       if (data.collapsed !== undefined)
         patch.collapsed = asBool(data.collapsed, false);
       if (data.positionX !== undefined)
@@ -381,4 +379,3 @@ export class CommandBoardLayoutPrismaStore implements Store<EntityInstance> {
     };
   }
 }
-

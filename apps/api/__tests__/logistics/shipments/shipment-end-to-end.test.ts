@@ -81,14 +81,14 @@ function createMockShipment(overrides: Record<string, unknown> = {}) {
 
 function createMockRequest(
   url: string,
-  options: RequestInit = {},
+  options: RequestInit = {}
 ): NextRequest {
   if (options.body && !options.headers) {
     options.headers = { "Content-Type": "application/json" };
   }
   return new NextRequest(
     new URL(url, "http://localhost:3000"),
-    options as ConstructorParameters<typeof NextRequest>[1],
+    options as ConstructorParameters<typeof NextRequest>[1]
   );
 }
 
@@ -118,12 +118,10 @@ describe("Shipment Persistence (write → read alignment)", () => {
         mockShipment,
       ] as never);
 
-      const { GET } = await import(
-        "@/app/api/shipments/shipment/list/route"
-      );
+      const { GET } = await import("@/app/api/shipments/shipment/list/route");
 
       const request = createMockRequest(
-        "http://localhost:3000/api/shipments/shipment/list",
+        "http://localhost:3000/api/shipments/shipment/list"
       );
       const response = await GET(request);
       const data = await response.json();
@@ -139,7 +137,7 @@ describe("Shipment Persistence (write → read alignment)", () => {
             tenantId: TEST_TENANT_ID,
             deletedAt: null,
           }),
-        }),
+        })
       );
     });
 
@@ -149,12 +147,10 @@ describe("Shipment Persistence (write → read alignment)", () => {
         userId: null,
       } as any);
 
-      const { GET } = await import(
-        "@/app/api/shipments/shipment/list/route"
-      );
+      const { GET } = await import("@/app/api/shipments/shipment/list/route");
 
       const request = createMockRequest(
-        "http://localhost:3000/api/shipments/shipment/list",
+        "http://localhost:3000/api/shipments/shipment/list"
       );
       const response = await GET(request);
 
@@ -169,12 +165,10 @@ describe("Shipment Persistence (write → read alignment)", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
       vi.mocked(database.shipment.findMany).mockResolvedValue([]);
 
-      const { GET } = await import(
-        "@/app/api/shipments/shipment/list/route"
-      );
+      const { GET } = await import("@/app/api/shipments/shipment/list/route");
 
       const request = createMockRequest(
-        "http://localhost:3000/api/shipments/shipment/list",
+        "http://localhost:3000/api/shipments/shipment/list"
       );
       const response = await GET(request);
       const data = await response.json();
@@ -202,15 +196,13 @@ describe("Shipment Persistence (write → read alignment)", () => {
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
       vi.mocked(database.shipment.findUnique).mockResolvedValue(
-        mockShipment as never,
+        mockShipment as never
       );
 
-      const { GET } = await import(
-        "@/app/api/shipments/shipment/[id]/route"
-      );
+      const { GET } = await import("@/app/api/shipments/shipment/[id]/route");
 
       const request = createMockRequest(
-        "http://localhost:3000/api/shipments/shipment/ship-002",
+        "http://localhost:3000/api/shipments/shipment/ship-002"
       );
       const response = await GET(request, {
         params: Promise.resolve({ id: "ship-002" }),
@@ -228,7 +220,7 @@ describe("Shipment Persistence (write → read alignment)", () => {
             tenantId: TEST_TENANT_ID,
             deletedAt: null,
           }),
-        }),
+        })
       );
     });
 
@@ -240,12 +232,10 @@ describe("Shipment Persistence (write → read alignment)", () => {
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
       vi.mocked(database.shipment.findUnique).mockResolvedValue(null);
 
-      const { GET } = await import(
-        "@/app/api/shipments/shipment/[id]/route"
-      );
+      const { GET } = await import("@/app/api/shipments/shipment/[id]/route");
 
       const request = createMockRequest(
-        "http://localhost:3000/api/shipments/shipment/non-existent",
+        "http://localhost:3000/api/shipments/shipment/non-existent"
       );
       const response = await GET(request, {
         params: Promise.resolve({ id: "non-existent" }),
@@ -279,9 +269,7 @@ describe("Shipment Persistence (write → read alignment)", () => {
         userId: TEST_CLERK_ID,
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.user.findFirst).mockResolvedValue(
-        mockUser as never,
-      );
+      vi.mocked(database.user.findFirst).mockResolvedValue(mockUser as never);
       mockRunCommand.mockClear();
       vi.mocked(createManifestRuntime).mockResolvedValue({
         runCommand: mockRunCommand,
@@ -307,7 +295,7 @@ describe("Shipment Persistence (write → read alignment)", () => {
           {
             method: "POST",
             body: JSON.stringify({ id: "ship-003" }),
-          },
+          }
         );
 
         await mod.POST(request);
@@ -318,7 +306,7 @@ describe("Shipment Persistence (write → read alignment)", () => {
           expect.objectContaining({
             entityName: "Shipment",
             instanceId: "ship-003",
-          }),
+          })
         );
       });
     }
@@ -335,7 +323,7 @@ describe("Shipment Persistence (write → read alignment)", () => {
             shipmentNumber: "SHP-NEW",
             carrier: "FedEx",
           }),
-        },
+        }
       );
 
       await mod.POST(request);
@@ -345,7 +333,7 @@ describe("Shipment Persistence (write → read alignment)", () => {
         expect.any(Object),
         expect.not.objectContaining({
           instanceId: expect.anything(),
-        }),
+        })
       );
     });
   });

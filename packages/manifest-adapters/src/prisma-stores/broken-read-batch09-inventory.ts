@@ -29,9 +29,9 @@ import {
   asJsonInput,
   asNullableString,
   asStringArray,
-  toDecimalRequired,
   type EntityInstance,
   reportOp,
+  toDecimalRequired,
 } from "./shared.js";
 
 // ---------------------------------------------------------------------------
@@ -41,7 +41,7 @@ import {
 export class InventoryItemPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -65,7 +65,10 @@ export class InventoryItemPrismaStore implements Store<EntityInstance> {
       data: {
         tenantId: this.tenantId,
         id,
-        item_number: (data.itemNumber as string) ?? (data.item_number as string) ?? `ITEM-${Date.now()}`,
+        item_number:
+          (data.itemNumber as string) ??
+          (data.item_number as string) ??
+          `ITEM-${Date.now()}`,
         name: (data.name as string) ?? "Unnamed Item",
         description: asNullableString(data.description),
         category: (data.category as string) ?? "general",
@@ -73,12 +76,22 @@ export class InventoryItemPrismaStore implements Store<EntityInstance> {
         unitCost: toDecimalRequired(data.unitCost ?? data.costPerUnit, 0),
         quantityOnHand: toDecimalRequired(data.quantityOnHand, 0),
         parLevel: toDecimalRequired(data.parLevel, 0),
-        reorder_level: toDecimalRequired(data.reorder_level ?? data.reorderPoint, 0),
+        reorder_level: toDecimalRequired(
+          data.reorder_level ?? data.reorderPoint,
+          0
+        ),
         supplierId: asNullableString(data.supplierId),
         tags: asStringArray(data.tags ?? data.allergens),
-        fsa_status: asNullableString(data.fsa_status ?? data.fsaStatus) ?? "unknown",
-        fsa_temp_logged: asBool(data.fsa_temp_logged ?? data.fsaTempLogged, false),
-        fsa_allergen_info: asBool(data.fsa_allergen_info ?? data.fsaAllergenInfo, false),
+        fsa_status:
+          asNullableString(data.fsa_status ?? data.fsaStatus) ?? "unknown",
+        fsa_temp_logged: asBool(
+          data.fsa_temp_logged ?? data.fsaTempLogged,
+          false
+        ),
+        fsa_allergen_info: asBool(
+          data.fsa_allergen_info ?? data.fsaAllergenInfo,
+          false
+        ),
         fsa_traceable: asBool(data.fsa_traceable ?? data.fsaTraceable, false),
       },
     });
@@ -87,7 +100,7 @@ export class InventoryItemPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
@@ -97,27 +110,49 @@ export class InventoryItemPrismaStore implements Store<EntityInstance> {
       if (data.description !== undefined)
         patch.description = asNullableString(data.description);
       if (data.category !== undefined) patch.category = data.category;
-      if (data.unitOfMeasure !== undefined) patch.unitOfMeasure = data.unitOfMeasure;
+      if (data.unitOfMeasure !== undefined)
+        patch.unitOfMeasure = data.unitOfMeasure;
       if (data.unitCost !== undefined || data.costPerUnit !== undefined)
-        patch.unitCost = toDecimalRequired(data.unitCost ?? data.costPerUnit, 0);
+        patch.unitCost = toDecimalRequired(
+          data.unitCost ?? data.costPerUnit,
+          0
+        );
       if (data.quantityOnHand !== undefined)
         patch.quantityOnHand = toDecimalRequired(data.quantityOnHand, 0);
       if (data.parLevel !== undefined)
         patch.parLevel = toDecimalRequired(data.parLevel, 0);
       if (data.reorder_level !== undefined || data.reorderPoint !== undefined)
-        patch.reorder_level = toDecimalRequired(data.reorder_level ?? data.reorderPoint, 0);
+        patch.reorder_level = toDecimalRequired(
+          data.reorder_level ?? data.reorderPoint,
+          0
+        );
       if (data.supplierId !== undefined)
         patch.supplierId = asNullableString(data.supplierId);
       if (data.tags !== undefined || data.allergens !== undefined)
         patch.tags = asStringArray(data.tags ?? data.allergens);
       if (data.fsa_status !== undefined || data.fsaStatus !== undefined)
         patch.fsa_status = asNullableString(data.fsa_status ?? data.fsaStatus);
-      if (data.fsa_temp_logged !== undefined || data.fsaTempLogged !== undefined)
-        patch.fsa_temp_logged = asBool(data.fsa_temp_logged ?? data.fsaTempLogged, false);
-      if (data.fsa_allergen_info !== undefined || data.fsaAllergenInfo !== undefined)
-        patch.fsa_allergen_info = asBool(data.fsa_allergen_info ?? data.fsaAllergenInfo, false);
+      if (
+        data.fsa_temp_logged !== undefined ||
+        data.fsaTempLogged !== undefined
+      )
+        patch.fsa_temp_logged = asBool(
+          data.fsa_temp_logged ?? data.fsaTempLogged,
+          false
+        );
+      if (
+        data.fsa_allergen_info !== undefined ||
+        data.fsaAllergenInfo !== undefined
+      )
+        patch.fsa_allergen_info = asBool(
+          data.fsa_allergen_info ?? data.fsaAllergenInfo,
+          false
+        );
       if (data.fsa_traceable !== undefined || data.fsaTraceable !== undefined)
-        patch.fsa_traceable = asBool(data.fsa_traceable ?? data.fsaTraceable, false);
+        patch.fsa_traceable = asBool(
+          data.fsa_traceable ?? data.fsaTraceable,
+          false
+        );
 
       const row = await this.prisma.inventoryItem.update({
         where: { tenantId_id: { tenantId: this.tenantId, id } },
@@ -182,7 +217,7 @@ export class InventoryItemPrismaStore implements Store<EntityInstance> {
 export class InventorySupplierPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -206,12 +241,20 @@ export class InventorySupplierPrismaStore implements Store<EntityInstance> {
       data: {
         tenantId: this.tenantId,
         id,
-        supplier_number: (data.supplierNumber as string) ?? (data.supplier_number as string) ?? `SUP-${Date.now()}`,
+        supplier_number:
+          (data.supplierNumber as string) ??
+          (data.supplier_number as string) ??
+          `SUP-${Date.now()}`,
         name: (data.name as string) ?? "Unnamed Supplier",
-        contact_person: asNullableString(data.contact_person ?? data.contactPerson),
+        contact_person: asNullableString(
+          data.contact_person ?? data.contactPerson
+        ),
         email: asNullableString(data.email),
         phone: asNullableString(data.phone),
-        payment_terms: (data.payment_terms as string) ?? (data.paymentTerms as string) ?? "NET_30",
+        payment_terms:
+          (data.payment_terms as string) ??
+          (data.paymentTerms as string) ??
+          "NET_30",
         connectorType: asNullableString(data.connectorType),
         connectorCredentials: asJsonInput(data.connectorCredentials),
         notes: asNullableString(data.notes),
@@ -223,29 +266,30 @@ export class InventorySupplierPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
-      if (data.supplier_number !== undefined || data.supplierNumber !== undefined)
+      if (
+        data.supplier_number !== undefined ||
+        data.supplierNumber !== undefined
+      )
         patch.supplier_number = data.supplier_number ?? data.supplierNumber;
       if (data.name !== undefined) patch.name = data.name;
       if (data.contact_person !== undefined || data.contactPerson !== undefined)
-        patch.contact_person = asNullableString(data.contact_person ?? data.contactPerson);
-      if (data.email !== undefined)
-        patch.email = asNullableString(data.email);
-      if (data.phone !== undefined)
-        patch.phone = asNullableString(data.phone);
+        patch.contact_person = asNullableString(
+          data.contact_person ?? data.contactPerson
+        );
+      if (data.email !== undefined) patch.email = asNullableString(data.email);
+      if (data.phone !== undefined) patch.phone = asNullableString(data.phone);
       if (data.payment_terms !== undefined || data.paymentTerms !== undefined)
         patch.payment_terms = data.payment_terms ?? data.paymentTerms;
       if (data.connectorType !== undefined)
         patch.connectorType = asNullableString(data.connectorType);
       if (data.connectorCredentials !== undefined)
         patch.connectorCredentials = asJsonInput(data.connectorCredentials);
-      if (data.notes !== undefined)
-        patch.notes = asNullableString(data.notes);
-      if (data.tags !== undefined)
-        patch.tags = asStringArray(data.tags);
+      if (data.notes !== undefined) patch.notes = asNullableString(data.notes);
+      if (data.tags !== undefined) patch.tags = asStringArray(data.tags);
 
       const row = await this.prisma.inventorySupplier.update({
         where: { tenantId_id: { tenantId: this.tenantId, id } },

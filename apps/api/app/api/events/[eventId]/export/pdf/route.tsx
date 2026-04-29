@@ -55,26 +55,22 @@ function prepareEventData(event: Event) {
 
 // Helper function to fetch dishes data
 async function fetchDishes(tenantId: string, eventId: string) {
-  const dishes = await database.$queryRawUnsafe<
+  const dishes = await database.$queryRaw<
     Array<{
       dish_name: string;
       quantity_servings: number;
       special_instructions: string | null;
     }>
-  >(
-    `SELECT
-            d.name as dish_name,
-            ed.quantity_servings,
-            ed.special_instructions
-          FROM tenant_events.event_dishes ed
-          JOIN tenant_kitchen.dishes d ON d.id = ed.dish_id
-          WHERE ed.tenant_id = $1
-            AND ed.event_id = $2
-            AND ed.deleted_at IS NULL
-          ORDER BY d.name`,
-    tenantId,
-    eventId
-  );
+  >`SELECT
+      d.name as dish_name,
+      ed.quantity_servings,
+      ed.special_instructions
+    FROM tenant_events.event_dishes ed
+    JOIN tenant_kitchen.dishes d ON d.id = ed.dish_id
+    WHERE ed.tenant_id = ${tenantId}
+      AND ed.event_id = ${eventId}
+      AND ed.deleted_at IS NULL
+    ORDER BY d.name`;
 
   return dishes.map((d) => ({
     name: d.dish_name,
@@ -85,7 +81,7 @@ async function fetchDishes(tenantId: string, eventId: string) {
 
 // Helper function to fetch tasks data
 async function fetchTasks(tenantId: string, eventId: string) {
-  const tasks = await database.$queryRawUnsafe<
+  const tasks = await database.$queryRaw<
     Array<{
       title: string;
       assignee_name: string | null;
@@ -95,24 +91,20 @@ async function fetchTasks(tenantId: string, eventId: string) {
       priority: string;
       notes: string | null;
     }>
-  >(
-    `SELECT
-            t.title,
-            u.first_name || ' ' || u.last_name as assignee_name,
-            t.start_time,
-            t.end_time,
-            t.status,
-            t.priority,
-            t.notes
-          FROM tenant_events.timeline_tasks t
-          LEFT JOIN tenant_staff.employees u ON u.tenant_id = t.tenant_id AND u.id = t.assignee_id
-          WHERE t.tenant_id = $1
-            AND t.event_id = $2
-            AND t.deleted_at IS NULL
-          ORDER BY t.start_time ASC`,
-    tenantId,
-    eventId
-  );
+  >`SELECT
+      t.title,
+      u.first_name || ' ' || u.last_name as assignee_name,
+      t.start_time,
+      t.end_time,
+      t.status,
+      t.priority,
+      t.notes
+    FROM tenant_events.timeline_tasks t
+    LEFT JOIN tenant_staff.employees u ON u.tenant_id = t.tenant_id AND u.id = t.assignee_id
+    WHERE t.tenant_id = ${tenantId}
+      AND t.event_id = ${eventId}
+      AND t.deleted_at IS NULL
+    ORDER BY t.start_time ASC`;
 
   return tasks.map((t) => ({
     title: t.title,
@@ -127,27 +119,23 @@ async function fetchTasks(tenantId: string, eventId: string) {
 
 // Helper function to fetch guests data
 async function fetchGuests(tenantId: string, eventId: string) {
-  const guests = await database.$queryRawUnsafe<
+  const guests = await database.$queryRaw<
     Array<{
       guest_name: string;
       dietary_restrictions: string | null;
       meal_choice: string | null;
       table_number: string | null;
     }>
-  >(
-    `SELECT
-            name as guest_name,
-            dietary_restrictions,
-            meal_choice,
-            table_number
-          FROM tenant_events.event_guests
-          WHERE tenant_id = $1
-            AND event_id = $2
-            AND deleted_at IS NULL
-          ORDER BY table_number NULLS LAST, name`,
-    tenantId,
-    eventId
-  );
+  >`SELECT
+      name as guest_name,
+      dietary_restrictions,
+      meal_choice,
+      table_number
+    FROM tenant_events.event_guests
+    WHERE tenant_id = ${tenantId}
+      AND event_id = ${eventId}
+      AND deleted_at IS NULL
+    ORDER BY table_number NULLS LAST, name`;
 
   return guests.map((g) => ({
     name: g.guest_name,
@@ -159,26 +147,23 @@ async function fetchGuests(tenantId: string, eventId: string) {
 
 // Helper function to fetch staff data
 async function fetchStaff(tenantId: string) {
-  const staff = await database.$queryRawUnsafe<
+  const staff = await database.$queryRaw<
     Array<{
       name: string;
       role: string | null;
       assignment_count: bigint;
     }>
-  >(
-    `SELECT
-            u.first_name || ' ' || u.last_name as name,
-            u.role,
-            COUNT(DISTINCT t.id) as assignment_count
-          FROM tenant_staff.employees u
-          LEFT JOIN tenant_events.timeline_tasks t ON t.tenant_id = u.tenant_id AND t.assignee_id = u.id AND t.deleted_at IS NULL
-          WHERE u.tenant_id = $1
-            AND u.deleted_at IS NULL
-          GROUP BY u.id, u.first_name, u.last_name, u.role
-          HAVING COUNT(DISTINCT t.id) > 0
-          ORDER BY u.first_name, u.last_name`,
-    tenantId
-  );
+  >`SELECT
+      u.first_name || ' ' || u.last_name as name,
+      u.role,
+      COUNT(DISTINCT t.id) as assignment_count
+    FROM tenant_staff.employees u
+    LEFT JOIN tenant_events.timeline_tasks t ON t.tenant_id = u.tenant_id AND t.assignee_id = u.id AND t.deleted_at IS NULL
+    WHERE u.tenant_id = ${tenantId}
+      AND u.deleted_at IS NULL
+    GROUP BY u.id, u.first_name, u.last_name, u.role
+    HAVING COUNT(DISTINCT t.id) > 0
+    ORDER BY u.first_name, u.last_name`;
 
   return staff.map((s) => ({
     name: s.name,

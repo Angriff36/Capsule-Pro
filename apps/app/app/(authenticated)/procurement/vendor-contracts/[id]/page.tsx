@@ -15,9 +15,9 @@ import { useEffect, useState } from "react";
 import { apiFetch } from "@/app/lib/api";
 import {
   CONTRACT_TYPE_CONFIG,
-  VC_STATUS_CONFIG,
-  formatDate,
   formatCurrency,
+  formatDate,
+  VC_STATUS_CONFIG,
 } from "../../components/vc-shared";
 
 interface VendorContract {
@@ -219,7 +219,9 @@ export default function VendorContractDetailPage() {
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Quality Rating</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Quality Rating
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
@@ -292,7 +294,9 @@ export default function VendorContractDetailPage() {
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">Min. Order Qty</span>
-              <span>{formatCurrency(Number(contract.minimumOrderQuantity))}</span>
+              <span>
+                {formatCurrency(Number(contract.minimumOrderQuantity))}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-muted-foreground">

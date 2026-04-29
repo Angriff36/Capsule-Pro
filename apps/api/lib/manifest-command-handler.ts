@@ -143,8 +143,7 @@ export async function executeManifestCommand(
       ...(idempotencyKey ? { idempotencyKey } : {}),
       // Pass instanceId for instance-scoped (non-create) commands so the
       // runtime engine targets the correct entity for mutate/update.
-      ...(commandName !== "create" &&
-      (commandPayload.id ?? params?.id)
+      ...(commandName !== "create" && (commandPayload.id ?? params?.id)
         ? { instanceId: String(commandPayload.id ?? params?.id) }
         : {}),
     });

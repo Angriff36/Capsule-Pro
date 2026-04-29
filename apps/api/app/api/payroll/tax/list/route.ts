@@ -29,19 +29,16 @@ export async function GET(request: NextRequest) {
     if (!tenantId) return manifestErrorResponse("Tenant not found", 400);
 
     // Get or create tenant tax config
-    let configs = await database.$queryRawUnsafe(
-      `
+    let configs = await database.$queryRaw`
       SELECT * FROM tenant_payroll.tax_configurations
-      WHERE tenant_id = $1::uuid AND deleted_at IS NULL
-    `,
-      tenantId
-    );
+      WHERE tenant_id = ${tenantId}::uuid AND deleted_at IS NULL
+    `;
 
     const configList = configs as any[];
 
     // If no configs exist, create default federal + user's state
     if (!configList?.length) {
-      await database.$queryRaw`
+      await database.$executeRaw`
         INSERT INTO tenant_payroll.tax_configurations (
           tenant_id, tax_type, jurisdiction, state_code, is_active, created_at
         ) VALUES (
@@ -49,13 +46,10 @@ export async function GET(request: NextRequest) {
         )
       `;
 
-      configs = await database.$queryRawUnsafe(
-        `
+      configs = await database.$queryRaw`
         SELECT * FROM tenant_payroll.tax_configurations
-        WHERE tenant_id = $1::uuid AND deleted_at IS NULL
-      `,
-        tenantId
-      );
+        WHERE tenant_id = ${tenantId}::uuid AND deleted_at IS NULL
+      `;
     }
 
     return manifestSuccessResponse({

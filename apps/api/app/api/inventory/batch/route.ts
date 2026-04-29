@@ -100,12 +100,14 @@ export async function POST(request: NextRequest) {
     const { ids } = body;
 
     // Verify all items exist and belong to tenant
-    const existingItems = await database.$queryRaw<{ id: string }[]>`
-      SELECT id FROM "tenant_inventory".inventory_items
-      WHERE tenant_id = ${tenantId}
-        AND id = ANY(${ids}::uuid[])
-        AND deleted_at IS NULL
-    `;
+    const existingItems = await database.inventoryItem.findMany({
+      where: {
+        tenantId,
+        id: { in: ids },
+        deletedAt: null,
+      },
+      select: { id: true },
+    });
 
     const existingIds = new Set(existingItems.map((i) => i.id));
     const invalidIds = ids.filter((id) => !existingIds.has(id));
@@ -118,13 +120,14 @@ export async function POST(request: NextRequest) {
 
     if (body.action === "delete") {
       // Soft-delete all items
-      await database.$executeRaw`
-        UPDATE "tenant_inventory".inventory_items
-        SET deleted_at = NOW()
-        WHERE tenant_id = ${tenantId}
-          AND id = ANY(${ids}::uuid[])
-          AND deleted_at IS NULL
-      `;
+      await database.inventoryItem.updateMany({
+        where: {
+          tenantId,
+          id: { in: ids },
+          deletedAt: null,
+        },
+        data: { deletedAt: new Date() },
+      });
 
       return NextResponse.json({
         success: true,
@@ -150,52 +153,31 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      // Build dynamic SET clause via raw SQL
-      const setClauses: string[] = ["updated_at = NOW()"];
-      const params: unknown[] = [];
-      let paramIndex = 1;
+      // Build update data dynamically, only including provided fields
+      const data: Record<string, unknown> = {
+        updatedAt: new Date(),
+      };
+      if (updates.category !== undefined) data.category = updates.category;
+      if (updates.fsa_status !== undefined) data.fsa_status = updates.fsa_status;
+      if (updates.tags !== undefined) data.tags = updates.tags;
+      if (updates.unit_cost !== undefined) data.unitCost = updates.unit_cost;
+      if (updates.reorder_level !== undefined) data.reorder_level = updates.reorder_level;
 
-      if (updates.category !== undefined) {
-        setClauses.push(`category = $${paramIndex++}`);
-        params.push(updates.category);
-      }
-      if (updates.fsa_status !== undefined) {
-        setClauses.push(`fsa_status = $${paramIndex++}`);
-        params.push(updates.fsa_status);
-      }
-      if (updates.tags !== undefined) {
-        setClauses.push(`tags = $${paramIndex++}::jsonb`);
-        params.push(JSON.stringify(updates.tags));
-      }
-      if (updates.unit_cost !== undefined) {
-        setClauses.push(`unit_cost = $${paramIndex++}::decimal(10,2)`);
-        params.push(updates.unit_cost.toString());
-      }
-      if (updates.reorder_level !== undefined) {
-        setClauses.push(`reorder_level = $${paramIndex++}::decimal(12,3)`);
-        params.push(updates.reorder_level.toString());
-      }
-
-      if (setClauses.length === 1) {
+      if (Object.keys(data).length === 1) {
         return NextResponse.json(
           { message: "No valid updates provided" },
           { status: 400 }
         );
       }
 
-      // Append ids and tenantId as last params
-      params.push(ids);
-      params.push(tenantId);
-
-      const sql = `
-        UPDATE "tenant_inventory".inventory_items
-        SET ${setClauses.join(", ")}
-        WHERE tenant_id = $${paramIndex++}
-          AND id = ANY($${paramIndex++}::uuid[])
-          AND deleted_at IS NULL
-      `;
-
-      await database.$executeRawUnsafe(sql, ...params);
+      await database.inventoryItem.updateMany({
+        where: {
+          tenantId,
+          id: { in: ids },
+          deletedAt: null,
+        },
+        data,
+      });
 
       return NextResponse.json({
         success: true,

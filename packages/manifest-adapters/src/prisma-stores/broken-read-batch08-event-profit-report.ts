@@ -42,7 +42,7 @@ import {
 export class EventProfitabilityPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -75,7 +75,7 @@ export class EventProfitabilityPrismaStore implements Store<EntityInstance> {
         budgetedGrossMargin: toDecimalRequired(data.budgetedGrossMargin, 0),
         budgetedGrossMarginPct: toDecimalRequired(
           data.budgetedGrossMarginPct,
-          0,
+          0
         ),
         actualRevenue: toDecimalRequired(data.actualRevenue, 0),
         actualFoodCost: toDecimalRequired(data.actualFoodCost, 0),
@@ -98,7 +98,7 @@ export class EventProfitabilityPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
@@ -112,19 +112,16 @@ export class EventProfitabilityPrismaStore implements Store<EntityInstance> {
       if (data.budgetedOverhead !== undefined)
         patch.budgetedOverhead = toDecimalRequired(data.budgetedOverhead, 0);
       if (data.budgetedTotalCost !== undefined)
-        patch.budgetedTotalCost = toDecimalRequired(
-          data.budgetedTotalCost,
-          0,
-        );
+        patch.budgetedTotalCost = toDecimalRequired(data.budgetedTotalCost, 0);
       if (data.budgetedGrossMargin !== undefined)
         patch.budgetedGrossMargin = toDecimalRequired(
           data.budgetedGrossMargin,
-          0,
+          0
         );
       if (data.budgetedGrossMarginPct !== undefined)
         patch.budgetedGrossMarginPct = toDecimalRequired(
           data.budgetedGrossMarginPct,
-          0,
+          0
         );
       if (data.actualRevenue !== undefined)
         patch.actualRevenue = toDecimalRequired(data.actualRevenue, 0);
@@ -141,7 +138,7 @@ export class EventProfitabilityPrismaStore implements Store<EntityInstance> {
       if (data.actualGrossMarginPct !== undefined)
         patch.actualGrossMarginPct = toDecimalRequired(
           data.actualGrossMarginPct,
-          0,
+          0
         );
       if (data.revenueVariance !== undefined)
         patch.revenueVariance = toDecimalRequired(data.revenueVariance, 0);
@@ -155,8 +152,7 @@ export class EventProfitabilityPrismaStore implements Store<EntityInstance> {
         patch.marginVariancePct = toDecimalRequired(data.marginVariancePct, 0);
       if (data.calculationMethod !== undefined)
         patch.calculationMethod = asNullableString(data.calculationMethod);
-      if (data.notes !== undefined)
-        patch.notes = asNullableString(data.notes);
+      if (data.notes !== undefined) patch.notes = asNullableString(data.notes);
 
       const row = await this.prisma.eventProfitability.update({
         where: { tenantId_id: { tenantId: this.tenantId, id } },
@@ -229,7 +225,7 @@ export class EventProfitabilityPrismaStore implements Store<EntityInstance> {
 export class EventReportPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -273,7 +269,7 @@ export class EventReportPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};

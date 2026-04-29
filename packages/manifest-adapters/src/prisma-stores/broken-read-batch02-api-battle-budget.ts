@@ -160,7 +160,8 @@ export class BattleBoardPrismaStore implements Store<EntityInstance> {
         id,
         eventId: asNullableString(data.eventId),
         board_name: asString(data.board_name ?? data.boardName),
-        board_type: asString(data.board_type ?? data.boardType) || "event-specific",
+        board_type:
+          asString(data.board_type ?? data.boardType) || "event-specific",
         schema_version:
           asString(data.schema_version ?? data.schemaVersion) ||
           "mangia-battle-board@1",
@@ -207,8 +208,7 @@ export class BattleBoardPrismaStore implements Store<EntityInstance> {
         patch.is_template = asBool(data.isTemplate, false);
       if (data.description !== undefined)
         patch.description = asNullableString(data.description);
-      if (data.notes !== undefined)
-        patch.notes = asNullableString(data.notes);
+      if (data.notes !== undefined) patch.notes = asNullableString(data.notes);
       if (data.tags !== undefined) patch.tags = asStringArray(data.tags);
       const row = await this.prisma.battleBoard.update({
         where: { tenantId_id: { tenantId: this.tenantId, id } },
@@ -312,8 +312,7 @@ export class BudgetAlertPrismaStore implements Store<EntityInstance> {
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
-      if (data.budgetId !== undefined)
-        patch.budgetId = asString(data.budgetId);
+      if (data.budgetId !== undefined) patch.budgetId = asString(data.budgetId);
       if (data.alertType !== undefined)
         patch.alertType = asString(data.alertType);
       if (data.utilization !== undefined)

@@ -231,95 +231,76 @@ export async function POST(request: NextRequest) {
       accountMappings,
     } = parseResult.data;
 
-    // Build where conditions
-    const conditions: string[] = ["e.tenant_id = $1", "e.deleted_at IS NULL"];
-    const queryParams: (string | Date)[] = [tenantId];
-    let paramIndex = 2;
+    // Build Prisma where clause
+    const where: Record<string, unknown> = {
+      tenantId,
+      deletedAt: null,
+    };
 
-    if (startDate) {
-      conditions.push(`e.event_date >= $${paramIndex++}`);
-      queryParams.push(startDate);
-    }
-
-    if (endDate) {
-      conditions.push(`e.event_date <= $${paramIndex++}`);
-      queryParams.push(endDate);
+    if (startDate || endDate) {
+      const eventDateFilter: Record<string, Date> = {};
+      if (startDate) eventDateFilter.gte = new Date(startDate);
+      if (endDate) eventDateFilter.lte = new Date(endDate);
+      where.eventDate = eventDateFilter;
     }
 
     if (status) {
-      conditions.push(`e.status = $${paramIndex++}`);
-      queryParams.push(status);
+      where.status = status;
     }
 
-    const whereClause = conditions.join(" AND ");
-
-    // Fetch events with client and budget data
-    const events = await database.$queryRawUnsafe<
-      Array<{
-        id: string;
-        eventNumber: string | null;
-        title: string;
-        eventDate: Date;
-        guestCount: number;
-        budget: number | null;
-        status: string;
+    // Fetch events with client and budget data via Prisma ORM
+    const rawEvents = await database.event.findMany({
+      where,
+      include: {
         client: {
-          id: string;
-          companyName: string | null;
-          firstName: string | null;
-          lastName: string | null;
-          email: string | null;
-          defaultPaymentTerms: number | null;
-        } | null;
-        budgetItems: Array<{
-          category: string;
-          description: string | null;
-          budgetedAmount: number | null;
-          actualAmount: number | null;
-        }>;
-      }>
-    >(
-      `
-      SELECT
-        e.id,
-        e.event_number,
-        e.title,
-        e.event_date as "eventDate",
-        e.guest_count as "guestCount",
-        e.budget,
-        e.status,
-        json_build_object(
-          'id', c.id,
-          'companyName', c.company_name,
-          'firstName', c.first_name,
-          'lastName', c.last_name,
-          'email', c.email,
-          'defaultPaymentTerms', c.default_payment_terms
-        ) as client,
-        COALESCE(
-          (
-            SELECT json_agg(json_build_object(
-              'category', bi.category,
-              'description', bi.description,
-              'budgetedAmount', bi.budgeted_amount,
-              'actualAmount', bi.actual_amount
-            ))
-            FROM tenant_events.budget_line_items bi
-            WHERE bi.budget_id IN (
-              SELECT b.id FROM tenant_events.budgets b
-              WHERE b.event_id = e.id AND b.deleted_at IS NULL
-            )
-          ),
-          '[]'::json
-        ) as "budgetItems"
-      FROM tenant_events.events e
-      LEFT JOIN tenant_crm.clients c ON c.id = e.client_id AND c.deleted_at IS NULL
-      WHERE ${whereClause}
-      ORDER BY e.event_date DESC
-      LIMIT 1000
-      `,
-      ...queryParams
-    );
+          select: {
+            id: true,
+            company_name: true,
+            first_name: true,
+            last_name: true,
+            email: true,
+            defaultPaymentTerms: true,
+          },
+        },
+        budgets: {
+          where: { deletedAt: null },
+          include: {
+            lineItems: true,
+          },
+        },
+      },
+      orderBy: { eventDate: "desc" },
+      take: 1000,
+    });
+
+    // Map Prisma result to the shape expected by eventToInvoice
+    const events = rawEvents.map((e) => ({
+      id: e.id,
+      eventNumber: e.eventNumber,
+      title: e.title,
+      eventDate: e.eventDate,
+      guestCount: e.guestCount,
+      budget: e.budget ? Number(e.budget) : null,
+      status: e.status,
+      client: e.client
+        ? {
+            id: e.client.id,
+            companyName: e.client.company_name,
+            firstName: e.client.first_name,
+            lastName: e.client.last_name,
+            email: e.client.email,
+            defaultPaymentTerms: e.client.defaultPaymentTerms,
+          }
+        : null,
+      budgetItems: e.budgets.flatMap((b) =>
+        b.lineItems.map((li) => ({
+          category: li.category,
+          description: li.description,
+          budgetedAmount: li.budgetedAmount ? Number(li.budgetedAmount) : null,
+          actualAmount: li.actualAmount ? Number(li.actualAmount) : null,
+        }))
+      ),
+    }));
 
     if (events.length === 0) {
       return NextResponse.json(

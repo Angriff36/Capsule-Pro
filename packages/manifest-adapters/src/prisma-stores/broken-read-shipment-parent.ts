@@ -17,9 +17,9 @@ import {
   asNullableDate,
   asNullableNumber,
   asNullableString,
-  toDecimalInput,
   type EntityInstance,
   reportOp,
+  toDecimalInput,
 } from "./shared.js";
 
 // ---------------------------------------------------------------------------
@@ -29,7 +29,7 @@ import {
 export class ShipmentPrismaStore implements Store<EntityInstance> {
   constructor(
     private readonly prisma: PrismaClient,
-    private readonly tenantId: string,
+    private readonly tenantId: string
   ) {}
 
   async getAll(): Promise<EntityInstance[]> {
@@ -82,7 +82,7 @@ export class ShipmentPrismaStore implements Store<EntityInstance> {
 
   async update(
     id: string,
-    data: Partial<EntityInstance>,
+    data: Partial<EntityInstance>
   ): Promise<EntityInstance | undefined> {
     try {
       const patch: Record<string, unknown> = {};
@@ -99,7 +99,9 @@ export class ShipmentPrismaStore implements Store<EntityInstance> {
       if (data.shippedDate !== undefined)
         patch.shippedDate = asNullableDate(data.shippedDate);
       if (data.estimatedDeliveryDate !== undefined)
-        patch.estimatedDeliveryDate = asNullableDate(data.estimatedDeliveryDate);
+        patch.estimatedDeliveryDate = asNullableDate(
+          data.estimatedDeliveryDate
+        );
       if (data.actualDeliveryDate !== undefined)
         patch.actualDeliveryDate = asNullableDate(data.actualDeliveryDate);
       if (data.totalItems !== undefined)
@@ -169,14 +171,17 @@ export class ShipmentPrismaStore implements Store<EntityInstance> {
       eventId: r.eventId ?? null,
       supplierId: r.supplierId ?? null,
       locationId: r.locationId ?? null,
-      scheduledDate: r.scheduledDate instanceof Date ? r.scheduledDate.getTime() : 0,
+      scheduledDate:
+        r.scheduledDate instanceof Date ? r.scheduledDate.getTime() : 0,
       shippedDate: r.shippedDate instanceof Date ? r.shippedDate.getTime() : 0,
       estimatedDeliveryDate:
         r.estimatedDeliveryDate instanceof Date
           ? r.estimatedDeliveryDate.getTime()
           : 0,
       actualDeliveryDate:
-        r.actualDeliveryDate instanceof Date ? r.actualDeliveryDate.getTime() : 0,
+        r.actualDeliveryDate instanceof Date
+          ? r.actualDeliveryDate.getTime()
+          : 0,
       totalItems: (r.totalItems as number) ?? 0,
       shippingCost: r.shippingCost != null ? Number(r.shippingCost) : 0,
       totalValue: r.totalValue != null ? Number(r.totalValue) : 0,

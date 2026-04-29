@@ -20,63 +20,92 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const status = searchParams.get("status");
 
-    // Map frontend status to DB status
-    // "pending" maps to "submitted" status
-    let statusFilter = "";
-    const params: any[] = [tenantId];
+    // Build where clause — "pending" maps to "submitted" status
+    const where: Record<string, unknown> = {
+      tenantId,
+      deletedAt: null,
+    };
 
     if (status && status !== "all") {
-      if (status === "pending") {
-        statusFilter = "AND po.status = $2";
-        params.push("submitted");
-      } else {
-        statusFilter = "AND po.status = $2";
-        params.push(status);
-      }
+      where.status = status === "pending" ? "submitted" : status;
     }
 
-    const orders = await database.$queryRawUnsafe(
-      `
-      SELECT
-        po.id, po.po_number, po.vendor_id, po.status,
-        po.total, po.submitted_by, po.submitted_at, po.created_at,
-        v.name as vendor_name,
-        COUNT(poi.id)::int as item_count,
-        COALESCE(
-          json_agg(
-            json_build_object(
-              'id', ah.id,
-              'entityType', ah.entity_type,
-              'entityId', ah.entity_id,
-              'action', ah.action,
-              'performedBy', ah.performed_by,
-              'performedAt', ah.performed_at,
-              'previousStatus', ah.previous_status,
-              'newStatus', ah.new_status,
-              'notes', ah.notes,
-              'metadata', ah.metadata
-            )
-            ORDER BY ah.performed_at DESC
-          ) FILTER (WHERE ah.id IS NOT NULL),
-          '[]'::json
-        ) as approval_history
-      FROM tenant_inventory.purchase_orders po
-      LEFT JOIN tenant_inventory.inventory_suppliers v ON v.id = po.vendor_id
-      LEFT JOIN tenant_inventory.purchase_order_items poi ON poi.purchase_order_id = po.id AND poi.deleted_at IS NULL
-      LEFT JOIN tenant_staff.approval_history ah ON ah.entity_type = 'purchase_order' AND ah.entity_id = po.id
-      WHERE po.tenant_id = $1::uuid AND po.deleted_at IS NULL
-        ${statusFilter}
-      GROUP BY po.id, po.po_number, po.vendor_id, po.status,
-        po.total, po.submitted_by, po.submitted_at, po.created_at, v.name
-      ORDER BY 
-        CASE WHEN po.status = 'submitted' THEN 0 ELSE 1 END,
-        po.submitted_at DESC NULLS LAST,
-        po.created_at DESC
-    `,
-      ...params
-    );
+    // Fetch POs with item count
+    const orders = await database.purchaseOrder.findMany({
+      where,
+      include: {
+        items: {
+          where: { deletedAt: null },
+          select: { id: true },
+        },
+      },
+      orderBy: [
+        { status: "asc" },
+        { submittedAt: { sort: "desc", nulls: "last" } },
+        { createdAt: "desc" },
+      ],
+    });
 
-    return manifestSuccessResponse({ orders });
+    if (orders.length === 0) {
+      return manifestSuccessResponse({ orders: [] });
+    }
+
+    // Fetch vendor names for these POs
+    const vendorIds = [...new Set(orders.map((o) => o.vendorId))];
+    const vendors = await database.inventorySupplier.findMany({
+      where: {
+        id: { in: vendorIds },
+        tenantId,
+      },
+      select: { id: true, name: true },
+    });
+    const vendorMap = new Map(vendors.map((v) => [v.id, v.name]));
+
+    // Fetch approval history for these POs
+    const orderIds = orders.map((o) => o.id);
+    const approvalHistory = await database.approvalHistory.findMany({
+      where: {
+        entityType: "purchase_order",
+        entityId: { in: orderIds },
+      },
+      orderBy: { performedAt: "desc" },
+    });
+
+    // Group approval history by entity ID
+    const historyByEntity = new Map<string, typeof approvalHistory>();
+    for (const entry of approvalHistory) {
+      const list = historyByEntity.get(entry.entityId) ?? [];
+      list.push(entry);
+      historyByEntity.set(entry.entityId, list);
+    }
+
+    // Combine into response shape matching the original raw SQL output
+    const result = orders.map((po) => ({
+      id: po.id,
+      po_number: po.poNumber,
+      vendor_id: po.vendorId,
+      status: po.status,
+      total: po.total,
+      submitted_by: po.submittedBy,
+      submitted_at: po.submittedAt,
+      created_at: po.createdAt,
+      vendor_name: vendorMap.get(po.vendorId) ?? null,
+      item_count: po.items.length,
+      approval_history: (historyByEntity.get(po.id) ?? []).map((ah) => ({
+        id: ah.id,
+        entityType: ah.entityType,
+        entityId: ah.entityId,
+        action: ah.action,
+        performedBy: ah.performedBy,
+        performedAt: ah.performedAt,
+        previousStatus: ah.previousStatus,
+        newStatus: ah.newStatus,
+        notes: ah.notes,
+        metadata: ah.metadata,
+      })),
+    }));
+
+    return manifestSuccessResponse({ orders: result });
   } catch (error) {
     captureException(error);
     console.error("Error listing approval orders:", error);

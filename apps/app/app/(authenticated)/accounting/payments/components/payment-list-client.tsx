@@ -139,15 +139,20 @@ export function PaymentListClient() {
     const reason = prompt("Enter refund reason:");
     if (!reason) return;
 
-    const amountStr = prompt("Enter refund amount (leave blank for full refund):");
+    const amountStr = prompt(
+      "Enter refund amount (leave blank for full refund):"
+    );
     const refundAmount = amountStr ? Number.parseFloat(amountStr) : undefined;
 
     try {
-      const response = await apiFetch(`/api/accounting/payments/${payment.id}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ reason, amount: refundAmount }),
-      });
+      const response = await apiFetch(
+        `/api/accounting/payments/${payment.id}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ reason, amount: refundAmount }),
+        }
+      );
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -157,7 +162,9 @@ export function PaymentListClient() {
       toast.success("Refund processed successfully");
       fetchPayments();
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Failed to process refund");
+      toast.error(
+        error instanceof Error ? error.message : "Failed to process refund"
+      );
     }
   };
 
@@ -220,7 +227,11 @@ export function PaymentListClient() {
             View
           </Button>
           {payment.status === "COMPLETED" && (
-            <Button onClick={() => handleRefund(payment)} size="sm" variant="ghost">
+            <Button
+              onClick={() => handleRefund(payment)}
+              size="sm"
+              variant="ghost"
+            >
               Refund
             </Button>
           )}
