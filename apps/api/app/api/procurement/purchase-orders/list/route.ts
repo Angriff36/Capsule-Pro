@@ -1,6 +1,5 @@
-// List purchase orders with vendor name and item count. Pagination policy is
-// centralized in `@/lib/pagination` so a hostile or buggy client cannot
-// request the entire purchase-orders table for a tenant in one round trip.
+// List purchase orders with vendor name and item count.
+// Converted from $queryRawUnsafe to Prisma ORM.
 import { auth } from "@repo/auth/server";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
@@ -25,47 +24,72 @@ export async function GET(request: NextRequest) {
     const limit = clampLimit(searchParams.get("limit"));
     const offset = clampOffset(searchParams.get("offset"));
 
-    let statusFilter = "";
-    const params: (string | number)[] = [tenantId];
+    const where: Record<string, unknown> = {
+      tenantId,
+      deletedAt: null,
+    };
     if (status && status !== "all") {
-      statusFilter = "AND po.status = $2";
-      params.push(status);
+      where.status = status;
     }
-    // LIMIT/OFFSET param indices are dynamic because the optional status
-    // filter consumes $2 when present; mirrors procurement/vendors/list.
-    const limitIdx = params.length + 1;
-    const offsetIdx = params.length + 2;
-    params.push(limit, offset);
 
-    const orders = await database.$queryRawUnsafe(
-      `
-      SELECT
-        po.id, po.po_number, po.vendor_id, po.location_id, po.order_date,
-        po.expected_delivery_date, po.actual_delivery_date, po.status,
-        po.subtotal, po.tax_amount, po.shipping_amount, po.total,
-        po.notes, po.submitted_at, po.received_at, po.created_at,
-        v.name as vendor_name,
-        COUNT(poi.id)::int as item_count,
-        SUM(CASE WHEN poi.quantity_received < poi.quantity_ordered THEN 1 ELSE 0 END)::int as pending_items
-      FROM tenant_inventory.purchase_orders po
-      LEFT JOIN tenant_inventory.inventory_suppliers v ON v.id = po.vendor_id
-      LEFT JOIN tenant_inventory.purchase_order_items poi ON poi.purchase_order_id = po.id AND poi.deleted_at IS NULL
-      WHERE po.tenant_id = $1::uuid AND po.deleted_at IS NULL
-        ${statusFilter}
-      GROUP BY po.id, po.po_number, po.vendor_id, po.location_id, po.order_date,
-        po.expected_delivery_date, po.actual_delivery_date, po.status,
-        po.subtotal, po.tax_amount, po.shipping_amount, po.total,
-        po.notes, po.submitted_at, po.received_at, po.created_at, v.name
-      ORDER BY po.order_date DESC, po.created_at DESC
-      LIMIT $${limitIdx} OFFSET $${offsetIdx}
-    `,
-      ...params
-    );
+    const orders = await database.purchaseOrder.findMany({
+      where,
+      include: {
+        items: {
+          where: { deletedAt: null },
+          select: {
+            quantityOrdered: true,
+            quantityReceived: true,
+          },
+        },
+      },
+      orderBy: [{ orderDate: "desc" }, { createdAt: "desc" }],
+      take: limit,
+      skip: offset,
+    });
 
-    return manifestSuccessResponse({ orders, limit, offset });
+    // Batch fetch vendor names
+    const vendorIds = [...new Set(orders.map((o) => o.vendorId))];
+    const vendors =
+      vendorIds.length > 0
+        ? await database.inventorySupplier.findMany({
+            where: { id: { in: vendorIds } },
+            select: { id: true, name: true },
+          })
+        : [];
+    const vendorMap = new Map(vendors.map((v) => [v.id, v.name]));
+
+    const shaped = orders.map((po) => {
+      const items = po.items ?? [];
+      const pendingItems = items.filter(
+        (i) => Number(i.quantityReceived) < Number(i.quantityOrdered),
+      ).length;
+      return {
+        id: po.id,
+        po_number: po.poNumber,
+        vendor_id: po.vendorId,
+        location_id: po.locationId,
+        order_date: po.orderDate,
+        expected_delivery_date: po.expectedDeliveryDate,
+        actual_delivery_date: po.actualDeliveryDate,
+        status: po.status,
+        subtotal: po.subtotal,
+        tax_amount: po.taxAmount,
+        shipping_amount: po.shippingAmount,
+        total: po.total,
+        notes: po.notes,
+        submitted_at: po.submittedAt,
+        received_at: po.receivedAt,
+        created_at: po.createdAt,
+        vendor_name: vendorMap.get(po.vendorId) || null,
+        item_count: items.length,
+        pending_items: pendingItems,
+      };
+    });
+
+    return manifestSuccessResponse({ orders: shaped, limit, offset });
   } catch (error) {
     captureException(error);
-    console.error("Error listing purchase orders:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

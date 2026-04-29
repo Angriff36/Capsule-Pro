@@ -1,4 +1,5 @@
 // List procurement budgets with calculated spend and alerts
+// Converted from $queryRawUnsafe to Prisma ORM
 import { auth } from "@repo/auth/server";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
@@ -21,36 +22,57 @@ export async function GET(request: NextRequest) {
     const fiscalYear = searchParams.get("fiscalYear");
     const status = searchParams.get("status") || "active";
 
-    const budgets = await database.$queryRawUnsafe(
-      `
-      SELECT
-        b.*,
-        COALESCE(a.unacknowledged_alerts, 0)::int as unacknowledged_alert_count
-      FROM tenant_inventory.procurement_budgets b
-      LEFT JOIN LATERAL (
-        SELECT COUNT(*) as unacknowledged_alerts
-        FROM tenant_inventory.procurement_budget_alerts ba
-        WHERE ba.budget_id = b.id AND ba.tenant_id = b.tenant_id
-          AND ba.is_acknowledged = false AND ba.deleted_at IS NULL
-      ) a ON true
-      WHERE b.tenant_id = $1::uuid AND b.deleted_at IS NULL
-        ${status !== "all" ? "AND b.status = $2" : ""}
-        ${fiscalYear ? (status !== "all" ? "AND b.fiscal_year = $3" : "AND b.fiscal_year = $2") : ""}
-      ORDER BY b.category NULLS LAST, b.name
-    `,
-      fiscalYear
-        ? status !== "all"
-          ? [tenantId, status, Number.parseInt(fiscalYear)]
-          : [tenantId, Number.parseInt(fiscalYear)]
-        : status !== "all"
-          ? [tenantId, status]
-          : [tenantId]
-    );
+    const where: Record<string, unknown> = {
+      tenantId,
+      deletedAt: null,
+    };
+    if (status !== "all") {
+      where.status = status;
+    }
+    if (fiscalYear) {
+      where.fiscalYear = Number.parseInt(fiscalYear);
+    }
 
-    return manifestSuccessResponse({ budgets });
+    const budgets = await database.procurementBudget.findMany({
+      where,
+      include: {
+        _count: {
+          select: {
+            alerts: {
+              where: { isAcknowledged: false, deletedAt: null },
+            },
+          },
+        },
+      },
+      orderBy: [{ category: "asc" }, { name: "asc" }],
+    });
+
+    const shaped = budgets.map((b) => ({
+      tenant_id: b.tenantId,
+      id: b.id,
+      name: b.name,
+      description: b.description,
+      category: b.category,
+      fiscal_year: b.fiscalYear,
+      period_type: b.periodType,
+      period_start: b.periodStart,
+      period_end: b.periodEnd,
+      budget_amount: b.budgetAmount,
+      spent_amount: b.spentAmount,
+      committed_amount: b.committedAmount,
+      threshold_warning_pct: b.thresholdWarningPct,
+      threshold_critical_pct: b.thresholdCriticalPct,
+      status: b.status,
+      notes: b.notes,
+      created_at: b.createdAt,
+      updated_at: b.updatedAt,
+      deleted_at: b.deletedAt,
+      unacknowledged_alert_count: b._count.alerts,
+    }));
+
+    return manifestSuccessResponse({ budgets: shaped });
   } catch (error) {
     captureException(error);
-    console.error("Error listing budgets:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

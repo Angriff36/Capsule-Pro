@@ -18,7 +18,7 @@
 | **Dead Buttons** | 8 buttons fixed, 1 blocked, 1 not rendered (down from 16) | 1 BLOCKED + 1 NOT RENDERED | **P0** |
 | **Stub Pages with Live APIs** | 2 procurement pages still static | **ALL FIXED ✅** | ~~P0~~ |
 | **RLS Policies** | 25+ tables MISSING RLS across 7 schemas | **ALL 53 FIXED ✅** | ~~P0~~ |
-| **RAW_SQL Security** | 45 routes with raw SQL (39 converted to Prisma, 6 in Batch 1 + 5 in Batch 2, ~34 remaining) | **11 CONVERTED** (Batch 1+2) | **P0** |
+| **RAW_SQL Security** | 45 routes with raw SQL (44 converted to Prisma, 6 in Batch 1 + 5 in Batch 2 + 5 in Batch 3, ~29 remaining) | **16 CONVERTED** (Batch 1+2+3) | **P0** |
 | **Missing API Routes** | 4 routes still missing | **ALL FIXED ✅** | ~~P1~~ |
 | **BROKEN_PRISMA_READ** | 2 entities NOT wired | **ALL FIXED ✅** | ~~P1~~ |
 | **Backend-Complete, No UI** | 4 major systems | UNCHANGED | P1 |
@@ -117,7 +117,7 @@ Root cause: `manifestSuccessResponse()` spreads data at top level, but UI reads 
 | Severity | Count | Status |
 |----------|-------|--------|
 | CRITICAL | ~5 | UNCHANGED (dynamic query builders) |
-| HIGH | ~13 | **11 CONVERTED** to Prisma ORM (Batch 1+2) |
+| HIGH | ~13 | **16 CONVERTED** to Prisma ORM (Batch 1+2+3) |
 | MEDIUM | ~16 | UNCHANGED (tagged template, parameterized) |
 
 **Batch 1 Converted (6 routes, eliminated 10 `$queryRawUnsafe` calls):**
@@ -134,6 +134,13 @@ Root cause: `manifestSuccessResponse()` spreads data at top level, but UI reads 
 - `events/[eventId]/waitlist/commands/add-guest` — 4 `$queryRawUnsafe` → `event.findFirst` + `eventGuest.count/aggregate/create`
 - `events/[eventId]/waitlist/commands/promote` — 3 `$queryRawUnsafe` → `eventGuest.findFirst/update/updateMany`
 - `events/[eventId]/waitlist/commands/update-rsvp` — 4 `$queryRawUnsafe` → `eventGuest.findFirst/update/updateMany`
+
+**Batch 3 Converted (5 routes, eliminated 10 `$queryRawUnsafe` calls):**
+- `staff/performance/list` — 1 `$queryRawUnsafe` → `performanceReview.findMany` + batch `user.findMany`
+- `procurement/purchase-orders/list` — 1 `$queryRawUnsafe` → `purchaseOrder.findMany` with include + batch `inventorySupplier.findMany`
+- `procurement/budget/list` — 1 `$queryRawUnsafe` → `procurementBudget.findMany` with `_count` aggregation
+- `procurement/budget/[id]` — 5 `$queryRawUnsafe` → Prisma `findFirst`/`findMany` + `$queryRaw` tagged templates for complex 3-table aggregation
+- `procurement/budget/commands/refresh` — 2 `$queryRawUnsafe` → Prisma `findMany`/`update`/`findFirst`/`create` + `$queryRaw` tagged template for spend aggregation
 
 ---
 
@@ -351,6 +358,16 @@ Fix: Replace all with toast notifications via the design system.
 ---
 
 ## Recently Resolved
+
+### 2026-04-29 — RAW_SQL Batch 3 Conversion (5 routes, 10 $queryRawUnsafe eliminated)
+- **CONVERTED P0-4 Batch 3:** 5 routes converted from `$queryRawUnsafe` to Prisma ORM / `$queryRaw` tagged templates
+  - staff/performance/list: dynamic WHERE + JOIN → `performanceReview.findMany` + batch user lookup
+  - procurement/purchase-orders/list: GROUP BY + JOIN → `purchaseOrder.findMany` with include + batch vendor lookup
+  - procurement/budget/list: LATERAL JOIN → `procurementBudget.findMany` with `_count` for alerts
+  - procurement/budget/[id]: 5 queries → Prisma for budget/alerts, `$queryRaw` tagged templates for 3-table aggregations (NULL-safe optional date params)
+  - procurement/budget/commands/refresh: 2 queries → Prisma for budget CRUD/alerts, `$queryRaw` tagged template for spend
+- Remaining RAW_SQL: ~29 routes (~5 CRITICAL, ~7 HIGH, ~17 MEDIUM)
+- All 1269 API tests pass, typecheck clean
 
 ### 2026-04-29 — RAW_SQL Batch 2 + Prisma Schema Corrections
 - **CONVERTED P0-4 Batch 2:** 5 routes converted from `$queryRawUnsafe` to Prisma ORM

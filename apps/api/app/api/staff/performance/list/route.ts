@@ -1,4 +1,4 @@
-// List performance reviews
+// List performance reviews — converted from $queryRawUnsafe to Prisma ORM
 import { auth } from "@repo/auth/server";
 import { captureException } from "@sentry/nextjs";
 import type { NextRequest } from "next/server";
@@ -21,45 +21,63 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status");
     const employeeId = searchParams.get("employeeId");
 
-    let whereClause = "WHERE pr.tenant_id = $1::uuid AND pr.deleted_at IS NULL";
-    const params: any[] = [tenantId];
-    let paramIndex = 2;
-
+    const where: Record<string, unknown> = {
+      tenantId,
+      deletedAt: null,
+    };
     if (status && status !== "all") {
-      whereClause += ` AND pr.status = $${paramIndex}::text`;
-      params.push(status);
-      paramIndex++;
+      where.status = status;
     }
-
     if (employeeId) {
-      whereClause += ` AND pr.employee_id = $${paramIndex}::uuid`;
-      params.push(employeeId);
-      paramIndex++;
+      where.employee_id = employeeId;
     }
 
-    const reviews = await database.$queryRawUnsafe(
-      `
-      SELECT
-        pr.id, pr.employee_id, pr.reviewer_id, pr.review_type,
-        pr.scheduled_date, pr.completed_date, pr.status,
-        pr.rating, pr.strengths, pr.areas_for_improvement,
-        pr.goals_next_period, pr.manager_comments, pr.employee_comments,
-        pr.created_at,
-        e.first_name || ' ' || e.last_name as employee_name,
-        r.first_name || ' ' || r.last_name as reviewer_name
-      FROM tenant_staff.performance_reviews pr
-      LEFT JOIN accounts.users e ON e.id = pr.employee_id
-      LEFT JOIN accounts.users r ON r.id = pr.reviewer_id
-      ${whereClause}
-      ORDER BY pr.scheduled_date DESC
-    `,
-      ...params
+    const reviews = await database.performanceReview.findMany({
+      where,
+      orderBy: { scheduled_date: "desc" },
+    });
+
+    if (reviews.length === 0) {
+      return manifestSuccessResponse({ reviews: [] });
+    }
+
+    // Batch fetch employee and reviewer names
+    const userIds = [
+      ...new Set([
+        ...reviews.map((r) => r.employee_id),
+        ...reviews.map((r) => r.reviewer_id),
+      ]),
+    ];
+    const users = await database.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, firstName: true, lastName: true },
+    });
+    const userMap = new Map(
+      users.map((u) => [u.id, `${u.firstName} ${u.lastName}`]),
     );
 
-    return manifestSuccessResponse({ reviews });
+    const shaped = reviews.map((r) => ({
+      id: r.id,
+      employee_id: r.employee_id,
+      reviewer_id: r.reviewer_id,
+      review_type: r.review_type,
+      scheduled_date: r.scheduled_date,
+      completed_date: r.completed_date,
+      status: r.status,
+      rating: r.rating,
+      strengths: r.strengths,
+      areas_for_improvement: r.areas_for_improvement,
+      goals_next_period: r.goals_next_period,
+      manager_comments: r.manager_comments,
+      employee_comments: r.employee_comments,
+      created_at: r.created_at,
+      employee_name: userMap.get(r.employee_id) || null,
+      reviewer_name: userMap.get(r.reviewer_id) || null,
+    }));
+
+    return manifestSuccessResponse({ reviews: shaped });
   } catch (error) {
     captureException(error);
-    console.error("Error listing performance reviews:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }
