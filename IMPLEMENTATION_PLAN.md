@@ -210,7 +210,7 @@ These have full API backends but zero or placeholder frontend. Each is a signifi
 
 ### GS-4: Outbound Webhooks
 - Backend: 9 API routes, retry, DLQ, cron
-- UI: Only dev-console placeholder. ZERO production UI
+- UI: **IMPLEMENTED** — Dev-console/webhooks page with 3 tabs (Webhooks CRUD, Delivery Logs, Dead Letter Queue), create/edit dialogs, toggle status, retry failed deliveries, resolve DLQ entries
 
 ---
 
@@ -257,9 +257,9 @@ These have full API backends but zero or placeholder frontend. Each is a signifi
 | 52 | `tools/ai/page.tsx` | ModuleSection placeholder | Build AI tools UI |
 | 53 | `tools/battleboards/page.tsx` | ModuleSection placeholder | Build battleboard tools UI |
 | 54 | `tools/autofill-reports/page.tsx` | ModuleSection placeholder | Build autofill UI |
-| 55 | `dev-console/api-keys/page.tsx` | "Placeholder screen" | Build API key management |
-| 56 | `dev-console/users/page.tsx` | "Placeholder screen" | Build user management |
-| 57 | `dev-console/webhooks/page.tsx` | "Placeholder screen" | Build webhook management |
+| 55 | `dev-console/api-keys/page.tsx` | ✅ FIXED — Full CRUD (list, create, revoke, delete, rotate) |
+| 56 | `dev-console/users/page.tsx` | ✅ FIXED — Employee directory with role management, deactivate/terminate, detail view, active/inactive filter |
+| 57 | `dev-console/webhooks/page.tsx` | ✅ FIXED — Full webhook management with 3 tabs (Webhooks/Delivery Logs/DLQ), create/edit/delete, toggle status, retry failed |
 | 58 | `dev-console/dashboard` | All buttons hardcoded/no-op | Wire to real data |
 | 59 | `dev-console/tenants` | All buttons hardcoded/no-op, fake data | Wire to real data |
 
@@ -363,6 +363,12 @@ All 16 `alert()` calls across 7 files replaced with `toast.success()` / `toast.e
 ---
 
 ## Recently Resolved
+
+### 2026-04-29 — Dev-console Webhooks (#57, GS-4) + Users (#56) Pages
+- **FIXED #57 + GS-4:** Dev-console/webhooks — replaced placeholder with full webhook management UI: 3-tab layout (Webhooks CRUD, Delivery Logs, Dead Letter Queue). Create/edit dialog with URL, HMAC secret, API key, event/entity filters, retry config. Toggle active/inactive, delete, retry failed deliveries, resolve DLQ entries. Summary stat cards (total, active, failed, DLQ).
+- **FIXED #56:** Dev-console/users — replaced placeholder with employee directory UI: user list with avatar initials, role badges, status indicators. Filter by active/inactive. View details dialog. Change role dialog (admin/manager/supervisor/staff). Deactivate and terminate with confirmation. Summary stat cards (total, active, inactive, admins).
+- Resolves: GS-4 Outbound Webhooks (now has production UI), placeholder #56, placeholder #57
+- Biome: 0 errors on all files. App + API typecheck: clean.
 
 ### 2026-04-29 — Placeholder Page Implementation: Settings/Integrations (#51), Settings/Security (#50), Dev-console/API Keys (#55)
 - **FIXED #51:** Settings/Integrations — replaced ModuleSection placeholder with full GoodShuffle + Nowsta integration management UI (config forms, status cards, sync controls, edit/delete with confirmation dialogs, test connection)

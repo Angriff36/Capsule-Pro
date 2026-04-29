@@ -1,14 +1,15 @@
+import { UsersClient } from "./users-client";
+
 const DevConsoleUsersPage = () => (
-  <div className="dev-console-panel">
-    <div className="dev-console-panel-header">
+  <div className="dev-console-stack">
+    <header className="dev-console-header">
       <div>
-        <h2>Users</h2>
-        <p>Account directory and access controls.</p>
+        <p className="dev-console-breadcrumb">Developers / Directory</p>
+        <h1 className="dev-console-title">Users</h1>
       </div>
-    </div>
-    <p className="text-slate-400 text-sm">
-      Placeholder screen. We can wire this to the actual user directory next.
-    </p>
+    </header>
+
+    <UsersClient />
   </div>
 );
 

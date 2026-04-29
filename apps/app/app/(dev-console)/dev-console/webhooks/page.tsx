@@ -1,14 +1,15 @@
+import { WebhooksClient } from "./webhooks-client";
+
 const DevConsoleWebhooksPage = () => (
-  <div className="dev-console-panel">
-    <div className="dev-console-panel-header">
+  <div className="dev-console-stack">
+    <header className="dev-console-header">
       <div>
-        <h2>Webhooks</h2>
-        <p>Monitor delivery, retries, and signatures.</p>
+        <p className="dev-console-breadcrumb">Developers / Integrations</p>
+        <h1 className="dev-console-title">Webhooks</h1>
       </div>
-    </div>
-    <p className="text-slate-400 text-sm">
-      Placeholder screen. Wire to webhook delivery logs when ready.
-    </p>
+    </header>
+
+    <WebhooksClient />
   </div>
 );
 

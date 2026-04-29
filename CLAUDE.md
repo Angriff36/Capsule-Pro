@@ -154,7 +154,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[pre-compact bridge — saved before context compaction]
-(no changes or facts recorded in this session segment)
+[auto-bridge snapshot @ 10 changes]
+Files: apps/app/app/(authenticated)/settings/security/page.tsx (edit), apps/app/app/(dev-console)/dev-console/api-keys/api-keys-client.tsx (edit)
 
 # === END COGNILAYER ===
