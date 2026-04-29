@@ -24,7 +24,7 @@
 | **Backend-Complete, No UI** | 4 major systems | **ALL IMPLEMENTED** ✅ | ~~P1~~ |
 | **SPEC Coverage** | 36/46 complete (78%) — All AI conflict detection + payroll approvals implemented | UPDATED COUNT | P2 |
 | **Placeholder Pages** | 5 pages remain stubs (down from 12) | **7 FIXED ✅** | P2 |
-| **Test Coverage** | ~70 of ~126 API domains untested (5 critical domains being covered) | IN PROGRESS | P3 |
+| **Test Coverage** | ~65 of ~126 API domains untested (10 critical domains now covered, 1874 tests total) | IN PROGRESS | P3 |
 
 ### Audit Statistics (14 agents, 2026-04-29)
 
@@ -38,7 +38,7 @@
 - **Manifest routes:** 725
 - **Filesystem route dirs:** 710
 - **Specs total:** 46 (36 COMPLETE, 10 TODO)
-- **API domains without tests:** ~70 of ~126 (new events + kitchen tests added)
+- **API domains without tests:** ~65 of ~126 (new scheduling, timecards, communications, settings, training tests added)
 
 ---
 
@@ -366,6 +366,15 @@ All 33 placeholder occurrences across 12 event files replaced with consistent, u
 ---
 
 ## Recently Resolved
+
+### 2026-04-29 — Critical Domain Test Coverage Wave 2 (5 suites, ~350 tests)
+- **ADDED** test coverage for 5 critical previously-untested API domains:
+  - `__tests__/scheduling/schedules.test.ts` — 37 tests (create, update, close, release schedule commands)
+  - `__tests__/timecards/timecards.test.ts` — ~65 tests (time entries list/detail, clock-in/out, add-entry, edit requests list/approve/reject, time-off requests list/approve/reject)
+  - `__tests__/communications/communications.test.ts` — ~80 tests (email templates list/detail/create/update/soft-delete, email workflows CRUD, SMS automation rules CRUD with filtering/pagination)
+  - `__tests__/settings/settings.test.ts` — 90 tests (API keys lifecycle, rate limits config, alerts config, role policies grant/revoke, notifications CRUD, audit log)
+  - `__tests__/training/training.test.ts` — ~80 tests (training modules list/detail/create/update/soft-delete, assignments list/detail/create/soft-delete, completion workflow)
+- All 1,874 API tests pass across 91 test files. Full monorepo typecheck clean (41 packages).
 
 ### 2026-04-29 — Events + Kitchen API Test Coverage (175 tests, 7 suites)
 - **ADDED** test coverage: 7 new test suites with 175 tests for previously untested critical API domains:
