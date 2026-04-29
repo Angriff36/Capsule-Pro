@@ -21,7 +21,7 @@
 | **RAW_SQL Security** | $queryRawUnsafe ELIMINATED. 136 files with safe $queryRaw (Prisma tagged template literals) + 23 with $executeRaw (safe tagged templates) | **$queryRawUnsafe ELIMINATED ✅** | ~~P0~~ |
 | **Missing API Routes** | 4 routes still missing | **ALL FIXED ✅** | ~~P1~~ |
 | **BROKEN_PRISMA_READ** | 2 entities NOT wired | **ALL FIXED ✅** | ~~P1~~ |
-| **Backend-Complete, No UI** | 4 major systems | UNCHANGED | P1 |
+| **Backend-Complete, No UI** | 4 major systems | **ALL IMPLEMENTED** ✅ | ~~P1~~ |
 | **SPEC Coverage** | 9/45 complete (20%) | UPDATED COUNT | P2 |
 | **Placeholder Pages** | 12 pages are stubs or "Coming Soon" | UNCHANGED | P2 |
 | **Test Coverage** | ~80 API domains with zero tests | UNCHANGED | P3 |
@@ -206,7 +206,7 @@ These have full API backends but zero or placeholder frontend. Each is a signifi
 
 ### GS-3: SMS Notification System
 - Backend: 9+ API routes, Twilio integration, automation engine, 5 Prisma models
-- UI: ZERO frontend pages
+- UI: **IMPLEMENTED** — Settings/Notifications page with 2 tabs (Automation Rules CRUD, SMS History with status filtering), create/edit rule dialog, toggle active/inactive, delete confirmation, summary stat cards
 
 ### GS-4: Outbound Webhooks
 - Backend: 9 API routes, retry, DLQ, cron
@@ -363,6 +363,14 @@ All 16 `alert()` calls across 7 files replaced with `toast.success()` / `toast.e
 ---
 
 ## Recently Resolved
+
+### 2026-04-29 — GS-3 SMS Notification System UI (last TIER 1.5 item)
+- **IMPLEMENTED GS-3:** Settings/Notifications page with 2 tabs (Automation Rules, SMS History)
+  - Automation Rules tab: list rules in table, create/edit dialog (name, description, trigger type, recipient type, custom message, status, priority), toggle active/inactive, delete with confirmation, summary stat cards (total, active, inactive)
+  - SMS History tab: delivery log table with status badges (delivered/sent/failed/pending), status filter dropdown, refresh button, summary stat cards (total, delivered, failed, pending)
+- Resolves: GS-3 SMS Notification System (last remaining "Backend Complete, No UI" item — all 4 GS systems now have production UI)
+- API routes consumed: GET/POST `/api/communications/sms/automation-rules`, GET/PATCH/DELETE `/api/communications/sms/automation-rules/[id]`, GET `/api/collaboration/notifications/sms/history`
+- Biome: 2 warnings (style suggestions only, 0 errors). App + API typecheck: clean.
 
 ### 2026-04-29 — Dev-console Webhooks (#57, GS-4) + Users (#56) Pages
 - **FIXED #57 + GS-4:** Dev-console/webhooks — replaced placeholder with full webhook management UI: 3-tab layout (Webhooks CRUD, Delivery Logs, Dead Letter Queue). Create/edit dialog with URL, HMAC secret, API key, event/entity filters, retry config. Toggle active/inactive, delete, retry failed deliveries, resolve DLQ entries. Summary stat cards (total, active, failed, DLQ).
