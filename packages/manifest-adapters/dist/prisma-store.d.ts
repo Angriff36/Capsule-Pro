@@ -7,6 +7,16 @@
  */
 import type { Store } from "@angriff36/manifest";
 import type { PrismaClient } from "@repo/database/standalone";
+import { DishPrismaStore } from "./prisma-stores/broken-read-batch06-cycle-dish.js";
+export { DishPrismaStore };
+import { EmailTemplatePrismaStore } from "./prisma-stores/broken-read-batch06-email.js";
+export { EmailTemplatePrismaStore };
+import { EventPrismaStore } from "./prisma-stores/broken-read-batch07-event.js";
+export { EventPrismaStore };
+import { IngredientPrismaStore } from "./prisma-stores/broken-read-batch09-ingredient.js";
+export { IngredientPrismaStore };
+import { InventoryItemPrismaStore } from "./prisma-stores/broken-read-batch09-inventory.js";
+export { InventoryItemPrismaStore };
 export interface EntityInstance {
     id: string;
     [key: string]: unknown;
@@ -81,23 +91,6 @@ export declare class RecipeVersionPrismaStore implements Store<EntityInstance> {
     private mapToManifestEntity;
 }
 /**
- * Prisma-backed store for Ingredient entities
- *
- * Maps Manifest Ingredient entities to the Prisma Ingredient table.
- */
-export declare class IngredientPrismaStore implements Store<EntityInstance> {
-    private readonly prisma;
-    private readonly tenantId;
-    constructor(prisma: PrismaClient, tenantId: string);
-    getAll(): Promise<EntityInstance[]>;
-    getById(id: string): Promise<EntityInstance | undefined>;
-    create(data: Partial<EntityInstance>): Promise<EntityInstance>;
-    update(id: string, data: Partial<EntityInstance>): Promise<EntityInstance | undefined>;
-    delete(id: string): Promise<boolean>;
-    clear(): Promise<void>;
-    private mapToManifestEntity;
-}
-/**
  * Prisma-backed store for RecipeIngredient entities
  *
  * Maps Manifest RecipeIngredient entities to the Prisma RecipeIngredient table.
@@ -121,23 +114,6 @@ export declare class RecipeIngredientPrismaStore implements Store<EntityInstance
  * Note: Prisma model uses snake_case (recipe_steps).
  */
 export declare class RecipeStepPrismaStore implements Store<EntityInstance> {
-    private readonly prisma;
-    private readonly tenantId;
-    constructor(prisma: PrismaClient, tenantId: string);
-    getAll(): Promise<EntityInstance[]>;
-    getById(id: string): Promise<EntityInstance | undefined>;
-    create(data: Partial<EntityInstance>): Promise<EntityInstance>;
-    update(id: string, data: Partial<EntityInstance>): Promise<EntityInstance | undefined>;
-    delete(id: string): Promise<boolean>;
-    clear(): Promise<void>;
-    private mapToManifestEntity;
-}
-/**
- * Prisma-backed store for Dish entities
- *
- * Maps Manifest Dish entities to the Prisma Dish table.
- */
-export declare class DishPrismaStore implements Store<EntityInstance> {
     private readonly prisma;
     private readonly tenantId;
     constructor(prisma: PrismaClient, tenantId: string);
@@ -197,24 +173,44 @@ export declare class AllergenWarningPrismaStore implements Store<EntityInstance>
     private arrayToString;
     private mapToManifestEntity;
 }
-export declare class EventPrismaStore implements Store<EntityInstance> {
+/**
+ * Prisma-backed store for AlertsConfig (`tenant_inventory.alerts_config`).
+ *
+ * Manifest commands for this entity previously used `PrismaJsonStore` while
+ * list/detail routes under `/api/kitchen/alerts-config/*` read
+ * `database.alertsConfig` — writes never appeared in the UI.
+ */
+export declare class AlertsConfigPrismaStore implements Store<EntityInstance> {
     private readonly prisma;
     private readonly tenantId;
     constructor(prisma: PrismaClient, tenantId: string);
-    private mapToEntity;
     getAll(): Promise<EntityInstance[]>;
     getById(id: string): Promise<EntityInstance | undefined>;
     create(data: Partial<EntityInstance>): Promise<EntityInstance>;
     update(id: string, data: Partial<EntityInstance>): Promise<EntityInstance | undefined>;
     delete(id: string): Promise<boolean>;
     clear(): Promise<void>;
+    private mapToManifestEntity;
 }
 /**
- * Prisma-backed store for EmailTemplate entities
+ * Prisma-backed store for PrepTaskPlanWorkflow entities
  *
- * Maps Manifest EmailTemplate entities to the Prisma email_templates table.
+ * Backs the 16 lifecycle command routes for the prep-task plan pipeline
+ * (generate -> review -> approve -> instantiate tasks -> schedule windows).
+ *
+ * Why this exists: prior to this store, command routes wrote workflow state
+ * via `PrismaJsonStore` (the generic `manifest_entities` JSON blob table),
+ * but read routes (`/api/kitchen/prep-task-plan-workflows/*`) queried the
+ * dedicated `tenant_kitchen.prep_task_plan_workflows` table. Writes and
+ * reads never connected — every workflow created via a command was invisible
+ * to the UI. This store closes that mismatch.
+ *
+ * Field mapping: every manifest property is stored 1:1 (same name) in the
+ * dedicated table; JSON-shaped properties (generatedTasks, scheduledWindows,
+ * errors, etc.) are typed as `string` in the manifest and stored as TEXT in
+ * Postgres holding serialized JSON payloads (e.g. `"[]"`, `"{}"`).
  */
-export declare class EmailTemplatePrismaStore implements Store<EntityInstance> {
+export declare class PrepTaskPlanWorkflowPrismaStore implements Store<EntityInstance> {
     private readonly prisma;
     private readonly tenantId;
     constructor(prisma: PrismaClient, tenantId: string);
@@ -225,10 +221,11 @@ export declare class EmailTemplatePrismaStore implements Store<EntityInstance> {
     delete(id: string): Promise<boolean>;
     clear(): Promise<void>;
     /**
-     * Normalize mergeFields to a valid Prisma Json value.
-     * Accepts string (parsed), array/object (passed through), or null (defaults to []).
+     * Map the Prisma row to a Manifest EntityInstance.
+     * Timestamps become epoch-millis numbers (manifest contract); nullable
+     * scalars get manifest-default empty strings/zero numbers so guards like
+     * `self.status == ""` behave consistently.
      */
-    private normalizeMergeFields;
     private mapToManifestEntity;
 }
 /**
@@ -396,23 +393,6 @@ export declare function syncPrepListItemToPrisma(prisma: PrismaClient, tenantId:
  * Maps Manifest Station entities to the Prisma Station table.
  */
 export declare class StationPrismaStore implements Store<EntityInstance> {
-    private readonly prisma;
-    private readonly tenantId;
-    constructor(prisma: PrismaClient, tenantId: string);
-    getAll(): Promise<EntityInstance[]>;
-    getById(id: string): Promise<EntityInstance | undefined>;
-    create(data: Partial<EntityInstance>): Promise<EntityInstance>;
-    update(id: string, data: Partial<EntityInstance>): Promise<EntityInstance | undefined>;
-    delete(id: string): Promise<boolean>;
-    clear(): Promise<void>;
-    private mapToManifestEntity;
-}
-/**
- * Prisma-backed store for InventoryItem entities
- *
- * Maps Manifest InventoryItem entities to the Prisma InventoryItem table.
- */
-export declare class InventoryItemPrismaStore implements Store<EntityInstance> {
     private readonly prisma;
     private readonly tenantId;
     constructor(prisma: PrismaClient, tenantId: string);

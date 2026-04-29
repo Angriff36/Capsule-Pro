@@ -16,11 +16,11 @@
 |----------|---------|--------|----------|
 | **Pages That Never Load** | 7 pages with `data.data` mismatch | **ALL 7 FIXED** ✅ | ~~P0~~ |
 | **Dead Buttons** | 8 buttons fixed, 1 blocked, 1 not rendered (down from 16) | 1 BLOCKED + 1 NOT RENDERED | **P0** |
-| **Stub Pages with Live APIs** | 2 procurement pages still static | 2 REMAIN | **P0** |
+| **Stub Pages with Live APIs** | 2 procurement pages still static | **ALL FIXED ✅** | ~~P0~~ |
 | **RLS Policies** | 25+ tables MISSING RLS across 7 schemas | UNCHANGED | **P0** |
 | **RAW_SQL Security** | 45 routes using $queryRawUnsafe (down from 67) | IMPROVED | **P0** |
-| **Missing API Routes** | 4 routes still missing | UNCHANGED | P1 |
-| **BROKEN_PRISMA_READ** | 2 entities NOT wired | UNCHANGED | P1 |
+| **Missing API Routes** | 4 routes still missing | **ALL FIXED ✅** | ~~P1~~ |
+| **BROKEN_PRISMA_READ** | 2 entities NOT wired | **ALL FIXED ✅** | ~~P1~~ |
 | **Backend-Complete, No UI** | 4 major systems | UNCHANGED | P1 |
 | **SPEC Coverage** | 9/45 complete (20%) | UPDATED COUNT | P2 |
 | **Placeholder Pages** | 12 pages are stubs or "Coming Soon" | UNCHANGED | P2 |
@@ -85,12 +85,12 @@ Root cause: `manifestSuccessResponse()` spreads data at top level, but UI reads 
 
 ---
 
-### T0-C: Stub Pages with Live APIs (2 REMAIN)
+### T0-C: Stub Pages with Live APIs — ALL FIXED ✅
 
 | # | File | Bug | API Status | Status |
 |---|------|-----|------------|--------|
-| 24 | `procurement/requisitions/page.tsx` | Static placeholder, zero API calls | 8 command routes functional | ❌ STILL STUB |
-| 25 | `procurement/vendor-contracts/page.tsx` | Static placeholder, zero API calls | 10 command routes functional | ❌ STILL STUB |
+| 24 | `procurement/requisitions/page.tsx` | Static placeholder, zero API calls | 8 command routes functional | ✅ FIXED — Full list page with search, tabs, summary cards, line items. New requisition page with line item picker. Detail page with workflow actions. |
+| 25 | `procurement/vendor-contracts/page.tsx` | Static placeholder, zero API calls | 10 command routes functional | ✅ FIXED — Full list page with search, tabs, summary cards, create dialog. Detail page with workflow actions and compliance metrics. |
 | 26 | `procurement/purchase-orders/new/page.tsx` | PO creation broken | API returns `{ data: [...], pagination }` | ✅ FIXED (fully implemented) |
 
 ---
@@ -132,25 +132,26 @@ Root cause: `manifestSuccessResponse()` spreads data at top level, but UI reads 
 
 ---
 
-## TIER 1 — Missing API Routes / Broken Deletes
+## TIER 1 — Missing API Routes — ALL FIXED ✅
 
 | # | Entity/Route | Bug | Status |
 |---|-------------|-----|--------|
-| 27 | `logistics/vehicles/commands/delete` | Vehicle delete route doesn't exist | ❌ MISSING |
-| 28 | `facilities/areas/commands/edit|delete` | No edit/delete command routes | ❌ MISSING |
-| 29 | `facilities/commands/edit|delete` | No facility edit/delete routes | ❌ MISSING |
+| 27 | `logistics/vehicles/commands/delete` | Vehicle delete route doesn't exist | ✅ FIXED (soft-delete via raw SQL) |
+| 28 | `facilities/areas/commands/edit|delete` | No edit/delete command routes | ✅ FIXED (COALESCE update, soft-delete) |
+| 29 | `facilities/commands/edit|delete` | No facility edit/delete routes | ✅ FIXED (COALESCE update, soft-delete) |
 | 30 | `facilities/work-orders/commands/update-status` | Status transitions not wired in UI | ✅ ROUTE EXISTS (UI needs wiring) |
-| 31 | `facilities/schedules/commands/edit|delete` | No schedule edit/delete routes | ❌ MISSING |
+| 31 | `facilities/schedules/commands/edit|delete` | No schedule edit/delete routes | ✅ FIXED |
 | 32 | `facilities/components/facilities-navigation.tsx` | "Work Orders" link | ✅ FIXED (points to /facilities) |
 
 ---
 
-## TIER 1 — Broken Prisma Read (2 entities remain)
+## TIER 1 — Broken Prisma Read — ALL FIXED ✅
 
 | # | Entity | Fix |
 |---|--------|-----|
-| 33 | VendorCatalog | Add case in `createPrismaStoreProvider` in prisma-store.ts |
-| 34 | VarianceReport | Add import + case in `createPrismaStoreProvider` |
+| 33 | VendorCatalog | ✅ FIXED — import + case added to `createPrismaStoreProvider` |
+| 34 | VarianceReport | ✅ FIXED — import + case added to `createPrismaStoreProvider` |
+| — | TrainingModule | ✅ FIXED (bonus) — same pattern, was also unwired |
 
 ---
 
@@ -326,8 +327,8 @@ Fix: Replace all with toast notifications via the design system.
 
 | Claim | Actual Status |
 |-------|---------------|
-| "vendor-contracts commands are functional" | PARTIAL — directory exists, routes functional, but UI is stub |
-| "Procurement requisitions routes functional" | PARTIAL — models exist, routes still raw SQL |
+| "vendor-contracts commands are functional" | RESOLVED (2026-04-29) — UI fully implemented with list, detail, create dialog |
+| "Procurement requisitions routes functional" | RESOLVED (2026-04-29) — UI fully implemented with list, new, detail pages |
 | "RLS on vendor_contacts missing" | RESOLVED (2026-04-28) |
 
 ### Generator Block
@@ -345,6 +346,19 @@ Fix: Replace all with toast notifications via the design system.
 ---
 
 ## Recently Resolved
+
+### 2026-04-29 — Procurement UI + Missing Routes + Prisma Reads
+- **FIXED T0-C #24:** Procurement requisitions list/new/detail pages implemented with API integration
+- **FIXED T0-C #25:** Vendor contracts list/detail pages implemented with create dialog and workflow actions
+- **FIXED T1 #27:** Vehicle delete route (soft-delete via raw SQL)
+- **FIXED T1 #28:** Facility areas edit + delete routes (COALESCE update, soft-delete)
+- **FIXED T1 #29:** Facility edit + delete routes (COALESCE update, soft-delete)
+- **FIXED T1 #31:** Preventive maintenance schedule edit + delete routes
+- **FIXED T1 #33:** VendorCatalog PrismaStore wired (import + case in createPrismaStoreProvider)
+- **FIXED T1 #34:** VarianceReport PrismaStore wired (import + case in createPrismaStoreProvider)
+- **BONUS:** TrainingModule PrismaStore wired (same pattern, was also unwired)
+- All 17 requisition end-to-end tests pass
+- API typecheck passes
 
 ### 2026-04-29 — Dead Button Fixes (T0-B batch 2)
 - **FIXED T0-B #8:** "New Invoice" button navigates to /accounting/invoices/new

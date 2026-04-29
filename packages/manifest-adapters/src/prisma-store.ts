@@ -144,7 +144,14 @@ import { NotificationPrismaStore } from "./prisma-stores/broken-read-notificatio
 import { SchedulePrismaStore } from "./prisma-stores/broken-read-schedule-parent.js";
 import { ScheduleShiftPrismaStore } from "./prisma-stores/broken-read-batch13-schedule-shipment.js";
 import { ShipmentPrismaStore } from "./prisma-stores/broken-read-shipment-parent.js";
-import { VendorContractPrismaStore } from "./prisma-stores/broken-read-batch13-vendor.js";
+import {
+  VendorCatalogPrismaStore,
+  VendorContractPrismaStore,
+} from "./prisma-stores/broken-read-batch13-vendor.js";
+import {
+  TrainingModulePrismaStore,
+  VarianceReportPrismaStore,
+} from "./prisma-stores/broken-read-batch13-training-variance.js";
 import { PurchaseRequisitionPrismaStore } from "./prisma-stores/broken-read-requisition-parent.js";
 import {
   InvoicePrismaStore,
@@ -1811,6 +1818,12 @@ export function createPrismaStoreProvider(
         return new CollectionActionPrismaStore(prisma, tenantId);
       case "CollectionPaymentPlan":
         return new CollectionPaymentPlanPrismaStore(prisma, tenantId);
+      case "VendorCatalog":
+        return new VendorCatalogPrismaStore(prisma, tenantId);
+      case "VarianceReport":
+        return new VarianceReportPrismaStore(prisma, tenantId);
+      case "TrainingModule":
+        return new TrainingModulePrismaStore(prisma, tenantId);
       default:
         console.error(
           `[createPrismaStoreProvider] No store for entity "${entityName}" — commands will fail`

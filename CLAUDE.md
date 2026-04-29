@@ -154,7 +154,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[Emergency bridge — running bridge was not updated]
-Files: apps/api/__tests__/collaboration/notifications/notification-end-to-end.test.ts (edit), apps/api/__tests__/staff/schedules/schedule-end-to-end.test.ts (edit), IMPLEMENTATION_PLAN.md (edit), AGENTS.md (edit)
+[auto-bridge snapshot @ 10 changes]
+Files: apps/app/app/(authenticated)/payroll/timecards/page.tsx (edit), apps/app/app/(authenticated)/accounting/payments/components/payment-list-client.tsx (edit), apps/app/app/(authenticated)/accounting/invoices/invoices-client.tsx (edit)
 
 # === END COGNILAYER ===
