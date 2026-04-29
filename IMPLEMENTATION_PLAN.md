@@ -22,7 +22,7 @@
 | **Missing API Routes** | 4 routes still missing | **ALL FIXED ✅** | ~~P1~~ |
 | **BROKEN_PRISMA_READ** | 2 entities NOT wired | **ALL FIXED ✅** | ~~P1~~ |
 | **Backend-Complete, No UI** | 4 major systems | **ALL IMPLEMENTED** ✅ | ~~P1~~ |
-| **SPEC Coverage** | 31/46 complete (67%) — AI Bulk Task Generation implemented | UPDATED COUNT | P2 |
+| **SPEC Coverage** | 35/46 complete (76%) — All AI conflict detection implemented | UPDATED COUNT | P2 |
 | **Placeholder Pages** | 5 pages remain stubs (down from 12) | **7 FIXED ✅** | P2 |
 | **Test Coverage** | ~80 API domains with zero tests | UNCHANGED | P3 |
 
@@ -37,7 +37,7 @@
 - **Prisma models:** 212
 - **Manifest routes:** 725
 - **Filesystem route dirs:** 710
-- **Specs total:** 46 (31 COMPLETE, 15 TODO)
+- **Specs total:** 46 (35 COMPLETE, 11 TODO)
 - **API domains without tests:** ~80 of ~126
 
 ---
@@ -214,7 +214,7 @@ These have full API backends but zero or placeholder frontend. Each is a signifi
 
 ---
 
-## TIER 2 — Missing SPEC Implementations (31/46 = 67%)
+## TIER 2 — Missing SPEC Implementations (35/46 = 76%)
 
 ### SPEC Coverage by Domain
 
@@ -224,7 +224,7 @@ These have full API backends but zero or placeholder frontend. Each is a signifi
 | Kitchen | 10 | 10 | 100% |
 | Administrative | 8 | 9 | 89% |
 | Staff | 7 | 8 | 88% |
-| AI | 3 | 7 | 43% |
+| AI | 7 | 7 | 100% |
 | CRM | 4 | 4 | 100% |
 | Inventory | 4 | 4 | 100% |
 | Mobile | 3 | 5 | 60% |
@@ -235,10 +235,10 @@ These have full API backends but zero or placeholder frontend. Each is a signifi
 
 | # | Spec | Domain | What exists |
 |---|------|--------|-------------|
-| 40 | AI Conflict Detection — Employee | AI | 0% — no endpoint, no UI |
-| 41 | AI Conflict Detection — Equipment | AI | 0% — no endpoint, no UI |
-| 42 | AI Conflict Detection — Inventory | AI | 0% — no endpoint, no UI |
-| 43 | AI Conflict Detection — Venue | AI | 0% — no endpoint, no UI |
+| 40 | AI Conflict Detection — Employee | AI | ✅ IMPLEMENTED — UI at /tools/conflicts with Employee tab |
+| 41 | AI Conflict Detection — Equipment | AI | ✅ IMPLEMENTED — UI at /tools/conflicts with Equipment tab |
+| 42 | AI Conflict Detection — Inventory | AI | ✅ IMPLEMENTED — UI at /tools/conflicts with Inventory tab |
+| 43 | AI Conflict Detection — Venue | AI | ✅ IMPLEMENTED — UI at /tools/conflicts with Venue tab |
 | 44 | Mobile Recipe Viewer | Mobile | 0% — no route, no component |
 | 45 | Mobile Time Clock | Mobile | 0% — no route, no component |
 | 46 | Native Mobile App | Mobile | 0% — no app shell |
@@ -362,6 +362,17 @@ All 16 `alert()` calls across 7 files replaced with `toast.success()` / `toast.e
 ---
 
 ## Recently Resolved
+
+### 2026-04-29 — AI Conflict Detection UI (Specs #40-43)
+- **IMPLEMENTED:** Conflict Detection Dashboard at /tools/conflicts with 5 tabs (All, Employee, Equipment, Inventory, Venue)
+  - Backend: Pre-existing `/api/conflicts/detect` endpoint already handles scheduling, staff, equipment, inventory, and venue conflict detection with severity levels, suggested actions, and resolution options
+  - UI: New client component with tabbed interface for each conflict domain, severity-based stat cards (Total/Critical/High/Medium/Low), conflict cards with severity badges, affected entity badges, suggested action display, expandable resolution options with impact assessment, time range filtering (next 14 days)
+  - Employee tab (Spec #40): Detects double-booked employees across overlapping shifts and shifts during approved time-off
+  - Equipment tab (Spec #41): Detects same equipment needed at multiple simultaneous events
+  - Inventory tab (Spec #42): Detects inventory stock shortages for upcoming events
+  - Venue tab (Spec #43): Detects multiple events booked at same venue on same date
+- Files: `apps/app/app/(authenticated)/tools/conflicts/page.tsx`, `apps/app/app/(authenticated)/tools/conflicts/conflicts-client.tsx`
+- App + API typecheck: clean. No new test files needed (existing conflict detection tests cover the backend).
 
 ### 2026-04-29 — AI Bulk Task Generation (Spec #39)
 - **IMPLEMENTED:** AI Bulk Task Generation with full pipeline:
