@@ -121,6 +121,12 @@ export const database: Record<string, unknown> = {
   // Shipment models
   shipment: createMockModel(),
   shipmentItem: createMockModel(),
+  // Payroll models
+  payroll_periods: createMockModel(),
+  payroll_runs: createMockModel(),
+  employeeDeduction: createMockModel(),
+  employeeBankAccount: createMockModel(),
+  payrollApprovalHistory: createMockModel(),
 };
 
 database.$transaction = vi.fn((fn: (tx: unknown) => unknown) => fn(database));

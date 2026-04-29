@@ -276,7 +276,7 @@ function getTicketPriceLabel(
   fmt: (n: number) => string
 ): string {
   if (ticketPrice === null) {
-    return "Ticketing not set";
+    return "Not specified";
   }
   if (ticketPrice <= 0) {
     return "Free";

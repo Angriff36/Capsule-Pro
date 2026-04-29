@@ -216,7 +216,7 @@ export function BattleBoardEditorClient({
           role: "Staff",
           shiftStart: "",
           shiftEnd: "",
-          station: "TBD",
+          station: "Unassigned",
         },
       ],
     }));
@@ -254,7 +254,7 @@ export function BattleBoardEditorClient({
         {
           time: "",
           item: "",
-          team: "TBD",
+          team: "Unassigned",
           location: "Main Hall",
           style: "other",
           notes: "",

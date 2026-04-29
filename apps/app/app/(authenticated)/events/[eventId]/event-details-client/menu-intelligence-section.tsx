@@ -247,7 +247,7 @@ export function MenuIntelligenceSection({
                     <div className="flex flex-wrap items-start justify-between gap-4">
                       <div className="space-y-1">
                         <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
-                          {row.dish.course ?? "Course not set"}
+                          {row.dish.course ?? "Not specified"}
                         </p>
                         <p className="text-lg font-semibold">{row.dish.name}</p>
                         <p className="text-xs text-muted-foreground">

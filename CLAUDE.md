@@ -155,6 +155,6 @@ Last: [first session]
 
 ## Last Session Bridge
 [Emergency bridge — running bridge was not updated]
-Files: apps/app/app/(authenticated)/tools/conflicts/page.tsx (create), apps/app/app/(authenticated)/tools/conflicts/conflicts-client.tsx (create), IMPLEMENTATION_PLAN.md (edit)
+Files: apps/app/app/(authenticated)/payroll/layout.tsx (edit), apps/app/app/(authenticated)/payroll/approvals/page.tsx (create), apps/app/app/(authenticated)/payroll/page.tsx (edit), IMPLEMENTATION_PLAN.md (edit)
 
 # === END COGNILAYER ===

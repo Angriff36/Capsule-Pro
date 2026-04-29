@@ -451,7 +451,7 @@ export function EventExplorer({
               </SelectItem>
             ))}
             {locationOptions.hasUnassigned && (
-              <SelectItem value="unassigned">Location not set</SelectItem>
+              <SelectItem value="unassigned">No location</SelectItem>
             )}
           </SelectContent>
         </Select>
@@ -470,7 +470,7 @@ export function EventExplorer({
               </SelectItem>
             ))}
             {organizerOptions.hasUnassigned && (
-              <SelectItem value="unassigned">Organizer not set</SelectItem>
+              <SelectItem value="unassigned">No organizer</SelectItem>
             )}
           </SelectContent>
         </Select>
@@ -810,7 +810,7 @@ export function EventExplorer({
                       </div>
                       <p className="text-sm font-semibold">{related.title}</p>
                       <p className="text-xs text-muted-foreground">
-                        {related.venueName ?? "Venue TBD"}
+                        {related.venueName ?? "No venue assigned"}
                       </p>
                       <div className="mt-2 flex items-center gap-1 text-[11px] text-success">
                         <ShieldCheckIcon className="size-3" />
@@ -849,7 +849,7 @@ export function EventExplorer({
                       <div>
                         <p className="font-semibold">{related.title}</p>
                         <p className="text-xs text-muted-foreground">
-                          {related.venueName ?? "Venue TBD"}
+                          {related.venueName ?? "No venue assigned"}
                         </p>
                       </div>
                       <Badge
@@ -1010,14 +1010,14 @@ export function EventExplorer({
                       <p className="text-lg font-semibold">{related.title}</p>
                       <p className="text-xs text-muted-foreground">
                         {shortDateFormatter.format(relatedDate)} •{" "}
-                        {related.venueName ?? "Venue TBD"}
+                        {related.venueName ?? "No venue assigned"}
                       </p>
                     </div>
                     <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
                       <span>{related.eventType}</span>
                       <span>
                         {related.ticketPrice === null
-                          ? "Ticketing not set"
+                          ? "Not specified"
                           : related.ticketPrice <= 0
                             ? "Free"
                             : formatCurrency(related.ticketPrice)}
@@ -1099,7 +1099,7 @@ export function EventExplorer({
                           <div className="space-y-1">
                             <p className="font-semibold">{related.title}</p>
                             <p className="text-xs text-muted-foreground">
-                              {related.venueName ?? "Venue TBD"} •{" "}
+                              {related.venueName ?? "No venue assigned"} •{" "}
                               {related.eventType}
                             </p>
                           </div>

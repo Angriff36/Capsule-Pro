@@ -198,7 +198,7 @@ const ContractsPage = async () => {
                       Expires:{" "}
                       {contract.expiresAt
                         ? new Date(contract.expiresAt).toLocaleDateString()
-                        : "N/A"}
+                        : "--"}
                     </span>
                   </li>
                 ))}

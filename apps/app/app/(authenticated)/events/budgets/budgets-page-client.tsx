@@ -281,7 +281,7 @@ export function BudgetsPageClient() {
               <p className="text-xs text-muted-foreground">
                 {totalBudget > 0
                   ? `${((totalActual / totalBudget) * 100).toFixed(1)}% utilized`
-                  : "N/A"}
+                  : "--"}
               </p>
             </CardContent>
           </Card>

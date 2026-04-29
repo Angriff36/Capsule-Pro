@@ -993,7 +993,7 @@ export const KitchenDashboardClient = ({
                               <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
                                 <span className="flex items-center gap-1">
                                   <MapPin className="size-3.5" />
-                                  {event.venueName?.trim() || "Venue not set"}
+                                  {event.venueName?.trim() || "No venue assigned"}
                                 </span>
                                 <span className="flex items-center gap-1">
                                   <Users className="size-3.5" />
@@ -1142,7 +1142,7 @@ export const KitchenDashboardClient = ({
                                       <p className="text-xs text-muted-foreground">
                                         {event.eventType} ·{" "}
                                         {event.venueName?.trim() ||
-                                          "Venue not set"}
+                                          "No venue assigned"}
                                       </p>
                                     </div>
                                   </div>
@@ -1268,7 +1268,7 @@ export const KitchenDashboardClient = ({
                                 </span>
                                 <span className="flex items-center gap-1">
                                   <MapPin className="size-3.5" />
-                                  {event.venueName?.trim() || "Venue not set"}
+                                  {event.venueName?.trim() || "No venue assigned"}
                                 </span>
                                 <span className="flex items-center gap-1">
                                   <Users className="size-3.5" />
@@ -1318,7 +1318,7 @@ export const KitchenDashboardClient = ({
                   <DrawerDescription>
                     {selectedEvent.eventNumber
                       ? `Event #${selectedEvent.eventNumber}`
-                      : "Event number not set"}
+                      : "No event number"}
                   </DrawerDescription>
                   <div className="mt-3 flex flex-wrap items-center gap-2">
                     <Badge
@@ -1372,7 +1372,7 @@ export const KitchenDashboardClient = ({
                     <div className="flex items-center justify-between">
                       <span className="text-muted-foreground">Location</span>
                       <span className="font-medium">
-                        {selectedEvent.venueName?.trim() || "Venue not set"}
+                        {selectedEvent.venueName?.trim() || "No venue assigned"}
                       </span>
                     </div>
                     {selectedEvent.venueAddress && (

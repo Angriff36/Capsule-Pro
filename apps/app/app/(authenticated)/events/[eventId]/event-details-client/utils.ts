@@ -67,7 +67,7 @@ export const createCalendarDateFormatter = () => {
  */
 export const formatEventFormat = (value?: string | null): string => {
   if (!value) {
-    return "Format not set";
+    return "Not specified";
   }
   if (value === "in_person") {
     return "In-person";

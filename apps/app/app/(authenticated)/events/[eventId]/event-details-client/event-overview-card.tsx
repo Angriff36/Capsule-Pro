@@ -110,7 +110,7 @@ function getAvailabilityLabel(
   if (capacity > 0) {
     return `${Math.max(availability, 0)} seats available`;
   }
-  return "Availability not set";
+  return "Not specified";
 }
 
 function getRsvpProgressLabel(isSoldOut: boolean, isLimited: boolean): string {
@@ -375,7 +375,7 @@ export function EventOverviewCard({
                 <CardDescription className="text-muted-foreground">
                   {event.eventType}{" "}
                   <span className="text-muted-foreground">•</span>{" "}
-                  {event.venueName ?? "Venue TBD"}
+                  {event.venueName ?? "No venue assigned"}
                 </CardDescription>
               </div>
               <div className="flex flex-wrap items-center gap-2">
@@ -411,7 +411,7 @@ export function EventOverviewCard({
                     }).format(eventDate)}
                   </div>
                   <div className="text-sm text-muted-foreground">
-                    Time not set • {timeZoneLabel}
+                    Not scheduled • {timeZoneLabel}
                   </div>
                   <div className="mt-1 text-xs text-muted-foreground">
                     {timeStatusLabel}
@@ -423,10 +423,10 @@ export function EventOverviewCard({
                     Organizer / Venue
                   </div>
                   <div className="mt-2 text-sm font-semibold">
-                    {event.venueName ?? "Organizer not set"}
+                    {event.venueName ?? "No organizer assigned"}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    {event.venueAddress ?? "Venue address not set"}
+                    {event.venueAddress ?? "No address"}
                   </div>
                   <div className="mt-2 inline-flex items-center gap-1 rounded-full border border-success/30 bg-success/10 px-2 py-1 text-[11px] text-success">
                     <ShieldCheckIcon className="size-3" />
@@ -442,7 +442,7 @@ export function EventOverviewCard({
                     {ticketPriceLabel}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    {event.ticketTier ?? "Ticket tier not set"}
+                    {event.ticketTier ?? "No tier assigned"}
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {formatEventFormat(event.eventFormat)}
@@ -459,7 +459,7 @@ export function EventOverviewCard({
                   <div className="text-xs text-muted-foreground">
                     {capacity > 0
                       ? `${capacity} total capacity`
-                      : "Capacity not set"}
+                      : "Not specified"}
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {getAvailabilityLabel(
@@ -554,7 +554,7 @@ export function EventOverviewCard({
               ) : (
                 <div className="flex h-72 flex-col items-center justify-center gap-2 text-muted-foreground">
                   <SparklesIcon className="size-10 text-foreground/60" />
-                  <p className="text-sm">Featured media not set</p>
+                  <p className="text-sm">No media</p>
                 </div>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-muted/80 via-muted/20 to-transparent" />
@@ -564,7 +564,7 @@ export function EventOverviewCard({
                 </p>
                 <p className="mt-1 text-lg font-semibold">{event.eventType}</p>
                 <p className="text-xs text-muted-foreground">
-                  {event.venueName ?? "Venue TBD"} •{" "}
+                  {event.venueName ?? "No venue assigned"} •{" "}
                   {new Intl.DateTimeFormat("en-US", {
                     month: "short",
                     day: "numeric",

@@ -106,7 +106,7 @@ export function EventCard({ event }: { event: EventCardEvent }) {
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <MapPinIcon className="size-3.5 shrink-0" />
             <span className="line-clamp-1">
-              {event.venueName ?? "Venue TBD"}
+              {event.venueName ?? "No venue assigned"}
             </span>
           </div>
           {displayTags.length > 0 && (
