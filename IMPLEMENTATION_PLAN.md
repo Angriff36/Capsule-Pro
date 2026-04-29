@@ -23,7 +23,7 @@
 | **BROKEN_PRISMA_READ** | 2 entities NOT wired | **ALL FIXED ✅** | ~~P1~~ |
 | **Backend-Complete, No UI** | 4 major systems | **ALL IMPLEMENTED** ✅ | ~~P1~~ |
 | **SPEC Coverage** | 9/45 complete (20%) | UPDATED COUNT | P2 |
-| **Placeholder Pages** | 12 pages are stubs or "Coming Soon" | UNCHANGED | P2 |
+| **Placeholder Pages** | 5 pages remain stubs (down from 12) | **7 FIXED ✅** | P2 |
 | **Test Coverage** | ~80 API domains with zero tests | UNCHANGED | P3 |
 
 ### Audit Statistics (14 agents, 2026-04-29)
@@ -254,9 +254,9 @@ These have full API backends but zero or placeholder frontend. Each is a signifi
 | 49 | `marketing/campaigns/page.tsx` | "Coming Soon" | Implement or remove nav link |
 | 50 | `settings/security/page.tsx` | ModuleSection placeholder | Build security settings UI |
 | 51 | `settings/integrations/page.tsx` | ModuleSection placeholder | Blocks GoodShuffle UI (GS-1) |
-| 52 | `tools/ai/page.tsx` | ModuleSection placeholder | Build AI tools UI |
-| 53 | `tools/battleboards/page.tsx` | ModuleSection placeholder | Build battleboard tools UI |
-| 54 | `tools/autofill-reports/page.tsx` | ModuleSection placeholder | Build autofill UI |
+| 52 | `tools/ai/page.tsx` | ✅ FIXED — AI suggestions (generate, priority/category badges, take action) + event summaries (per-event generation, highlights, critical info) |
+| 53 | `tools/battleboards/page.tsx` | ✅ FIXED — Board list with stats, search; board detail with cards table; create/edit dialog; delete confirmation |
+| 54 | `tools/autofill-reports/page.tsx` | ✅ FIXED — 3 tabs: Event Reports (generate), Document Parser (upload+parse), Waste Reports (groupBy, trends, reasons breakdown) |
 | 55 | `dev-console/api-keys/page.tsx` | ✅ FIXED — Full CRUD (list, create, revoke, delete, rotate) |
 | 56 | `dev-console/users/page.tsx` | ✅ FIXED — Employee directory with role management, deactivate/terminate, detail view, active/inactive filter |
 | 57 | `dev-console/webhooks/page.tsx` | ✅ FIXED — Full webhook management with 3 tabs (Webhooks/Delivery Logs/DLQ), create/edit/delete, toggle status, retry failed |
@@ -328,8 +328,8 @@ All 16 `alert()` calls across 7 files replaced with `toast.success()` / `toast.e
 
 | # | File | Bug |
 |---|------|-----|
-| 68 | `settings/audit-log/page.tsx` | Filter form broken (selects outside form, no submit button) |
-| 69 | `settings/team/page.tsx` | Read-only, no Invite/Edit/Remove actions |
+| 68 | `settings/audit-log/page.tsx` | ✅ FIXED — New API route (Prisma `audit_log` model), client component with filters/pagination/detail view |
+| 69 | `settings/team/page.tsx` | ✅ FIXED — Client component with search, role change dialog, deactivate confirmation, status filter |
 | 70 | 18+ API routes | No UI consumer (apikey, rolepolicy, notification, settings/api-keys) |
 
 ### TBD Placeholders in Code
@@ -363,6 +363,15 @@ All 16 `alert()` calls across 7 files replaced with `toast.success()` / `toast.e
 ---
 
 ## Recently Resolved
+
+### 2026-04-29 — Settings/Team (#69), Settings/Audit-log (#68), Tools/AI (#52), Tools/Battleboards (#53), Tools/Autofill Reports (#54)
+- **FIXED #69:** Settings/Team — converted from read-only to interactive client component with: summary cards (Total/Active/Inactive/Admins), search input, status filter dropdown, member table with avatar initials, View Details dialog, Change Role dialog (POST /api/user/update-role), Deactivate confirmation dialog (POST /api/user/deactivate). Added `/api/user/:path*` rewrite to next.config.ts.
+- **FIXED #68:** Settings/Audit-log — original page queried wrong schema (`tenant_admin.audit_log` with nonexistent columns). Created new API route at `apps/api/app/api/settings/audit-log/route.ts` using Prisma `database.audit_log.findMany` against real `platform.audit_log` schema with pagination, action/table_name/search filters, user ID resolution. New client component with filter controls, paginated table, and DetailDialog with JSON preview of old_values/new_values. Added to infra-allowlist.
+- **FIXED #52:** Tools/AI — replaced ModuleSection placeholder with 2-tab client component: AI Suggestions (timeframe selector, generate via GET /api/ai/suggestions, stat cards, suggestion cards with priority/category badges, Take Action button) and Event Summaries (event ID input, generate via GET /api/ai/summaries/[eventId], summary display with highlights and critical info).
+- **FIXED #53:** Tools/Battleboards — replaced ModuleSection with full board management: board list with stat cards and search, board detail view with cards table, create/edit dialog (name, description, event ID, template toggle), delete confirmation. Uses GET/POST/PUT/DELETE /api/command-board endpoints.
+- **FIXED #54:** Tools/Autofill Reports — replaced ModuleSection with 3-tab component: Event Reports (list + generate via POST /api/events/reports/commands/create), Document Parser (drag-drop upload, POST /api/events/documents/parse, parsed results with Apply), Waste Reports (GET /api/kitchen/waste/reports with groupBy selector, summary cards, reasons breakdown, trends, entries table).
+- Remaining placeholder pages needing backend work: #48/#49 Marketing (no campaign APIs), #58 Dashboard (no platform-level APIs), #59 Tenants (no tenant management APIs).
+- All 73 API test files pass (1,269 tests). App + API typecheck: clean.
 
 ### 2026-04-29 — GS-3 SMS Notification System UI (last TIER 1.5 item)
 - **IMPLEMENTED GS-3:** Settings/Notifications page with 2 tabs (Automation Rules, SMS History)

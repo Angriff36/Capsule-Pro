@@ -154,7 +154,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[auto-bridge snapshot @ 10 changes]
-Files: apps/app/app/(authenticated)/settings/security/page.tsx (edit), apps/app/app/(dev-console)/dev-console/api-keys/api-keys-client.tsx (edit)
+[Emergency bridge — running bridge was not updated]
+Files: apps/app/app/(authenticated)/settings/notifications/page.tsx (create), apps/app/app/(authenticated)/settings/notifications/notifications-client.tsx (create), apps/app/app/(authenticated)/settings/notifications/notifications-client.tsx (edit), IMPLEMENTATION_PLAN.md (edit)
 
 # === END COGNILAYER ===

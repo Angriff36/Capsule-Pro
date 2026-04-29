@@ -322,11 +322,10 @@ packages/database/generated
 fix-supabase-publication.sql
 fix-supabase-roles.sql
 .vscode/
-tools/
+/tools/
 ui-design-images/
 ui-design-images/Mangia Brand Guideline.pdf
 apps/web/new 2.txt
-tools/
 .automaker/
 # scripts/ directory is ignored, except for manifest validation and build scripts
 scripts/*

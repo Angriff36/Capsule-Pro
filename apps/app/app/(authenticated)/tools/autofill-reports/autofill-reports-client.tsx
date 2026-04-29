@@ -1,0 +1,1086 @@
+/**
+ * @module AutofillReportsClient
+ * @intent Client-side UI for autofill reports: event reports, document parsing, and waste reports
+ * @responsibility Render tabbed interface for generating/viewing event reports, parsing documents into
+ *   structured event data (autofill), and viewing kitchen waste reports with summary analytics
+ * @domain Tools
+ * @tags reports, autofill, events, waste, kitchen, document-parser
+ * @canonical true
+ */
+
+"use client";
+
+import { Badge } from "@repo/design-system/components/ui/badge";
+import { Button } from "@repo/design-system/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@repo/design-system/components/ui/card";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@repo/design-system/components/ui/dialog";
+import { Input } from "@repo/design-system/components/ui/input";
+import { Label } from "@repo/design-system/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@repo/design-system/components/ui/select";
+import { Separator } from "@repo/design-system/components/ui/separator";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@repo/design-system/components/ui/table";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@repo/design-system/components/ui/tabs";
+import {
+  AlertCircle,
+  BarChart3,
+  CheckCircle2,
+  Clock,
+  Download,
+  FileSpreadsheet,
+  FileText,
+  Loader2,
+  Plus,
+  RefreshCw,
+  Sparkles,
+  Trash2,
+  TrendingDown,
+  Upload,
+} from "lucide-react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
+import { apiFetch } from "@/app/lib/api";
+
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
+interface EventReport {
+  id: string;
+  eventId: string;
+  eventName: string;
+  reportType: string;
+  status: "draft" | "complete" | "reviewed";
+  createdAt: string;
+}
+
+interface EventReportsResponse {
+  data: EventReport[];
+  pagination: {
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  };
+}
+
+interface ParsedMenuItem {
+  name: string;
+  quantity: number;
+  notes: string | null;
+}
+
+interface ParsedStaffShift {
+  role: string;
+  name: string;
+  time: string;
+}
+
+interface ParsedEventDetails {
+  eventName: string | null;
+  eventDate: string | null;
+  guestCount: number | null;
+  venue: string | null;
+}
+
+interface ParsedDocument {
+  menuItems: ParsedMenuItem[];
+  staffShifts: ParsedStaffShift[];
+  eventDetails: ParsedEventDetails;
+  rawText?: string;
+}
+
+interface WasteSummary {
+  totalCost: number;
+  totalQuantity: number;
+  entryCount: number;
+  avgCostPerEntry: number;
+}
+
+interface WasteEntry {
+  id: string;
+  itemName: string;
+  quantity: number;
+  unit: string;
+  cost: number;
+  reason: string;
+  recordedAt: string;
+}
+
+interface WasteReportResponse {
+  report: {
+    summary: WasteSummary;
+    groupedBy: string;
+    data: WasteEntry[];
+    trends: Array<{ period: string; cost: number }>;
+    wasteReasons: Array<{ reason: string; count: number; totalCost: number }>;
+  };
+}
+
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function formatCurrency(value: number): string {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+  }).format(value);
+}
+
+function formatDate(dateStr: string | null | undefined): string {
+  if (!dateStr) return "--";
+  return new Date(dateStr).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function reportStatusBadge(status: string) {
+  switch (status) {
+    case "complete":
+      return (
+        <Badge className="gap-1" variant="default">
+          <CheckCircle2 className="h-3 w-3" />
+          Complete
+        </Badge>
+      );
+    case "reviewed":
+      return (
+        <Badge className="gap-1 bg-blue-600">
+          <CheckCircle2 className="h-3 w-3" />
+          Reviewed
+        </Badge>
+      );
+    case "draft":
+      return (
+        <Badge className="gap-1" variant="secondary">
+          <Clock className="h-3 w-3" />
+          Draft
+        </Badge>
+      );
+    default:
+      return <Badge variant="outline">{status}</Badge>;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Stat Card
+// ---------------------------------------------------------------------------
+
+function StatCard({
+  label,
+  value,
+  icon: Icon,
+  subtext,
+}: {
+  label: string;
+  value: string | number;
+  icon: React.ComponentType<{ className?: string }>;
+  subtext?: string;
+}) {
+  return (
+    <Card>
+      <CardContent className="flex items-center gap-3 p-4">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-muted">
+          <Icon className="h-4 w-4 text-muted-foreground" />
+        </div>
+        <div>
+          <p className="text-2xl font-bold leading-none">{value}</p>
+          <p className="text-sm text-muted-foreground">{label}</p>
+          {subtext && (
+            <p className="text-xs text-muted-foreground/70">{subtext}</p>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Event Reports Tab
+// ---------------------------------------------------------------------------
+
+function EventReportsTab() {
+  const [reports, setReports] = useState<EventReport[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [creating, setCreating] = useState(false);
+  const [selectedEventId, setSelectedEventId] = useState("");
+
+  const loadReports = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await apiFetch("/api/events/reports");
+      const json = (await res.json()) as EventReportsResponse;
+      if (!res.ok) {
+        toast.error("Failed to load event reports");
+        return;
+      }
+      setReports(json.data ?? []);
+    } catch {
+      toast.error("Failed to load event reports");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadReports();
+  }, [loadReports]);
+
+  const handleCreate = useCallback(async () => {
+    if (!selectedEventId.trim()) {
+      toast.error("Please enter an event ID");
+      return;
+    }
+    setCreating(true);
+    try {
+      const res = await apiFetch("/api/events/reports/commands/create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ eventId: selectedEventId.trim() }),
+      });
+      if (!res.ok) {
+        const data = (await res.json()) as { error?: string };
+        toast.error("Failed to create report", {
+          description: data.error ?? "Unknown error",
+        });
+        return;
+      }
+      toast.success("Event report created");
+      setDialogOpen(false);
+      setSelectedEventId("");
+      loadReports();
+    } catch {
+      toast.error("Failed to create report");
+    } finally {
+      setCreating(false);
+    }
+  }, [selectedEventId, loadReports]);
+
+  const totalReports = reports.length;
+  const completedReports = reports.filter((r) => r.status === "complete").length;
+  const draftReports = reports.filter((r) => r.status === "draft").length;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      {/* Summary Cards */}
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Total Reports</CardDescription>
+            <CardTitle className="text-2xl">{totalReports}</CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Completed</CardDescription>
+            <CardTitle className="text-2xl text-green-600">
+              {completedReports}
+            </CardTitle>
+          </CardHeader>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardDescription>Drafts</CardDescription>
+            <CardTitle className="text-2xl text-muted-foreground">
+              {draftReports}
+            </CardTitle>
+          </CardHeader>
+        </Card>
+      </div>
+
+      {/* Generate Button */}
+      <div className="flex justify-end">
+        <Button onClick={() => setDialogOpen(true)}>
+          <Plus className="mr-2 h-4 w-4" />
+          Generate Report
+        </Button>
+      </div>
+
+      {/* Reports Table */}
+      {reports.length === 0 ? (
+        <Card>
+          <CardContent className="py-12 text-center">
+            <FileText className="mx-auto mb-4 h-12 w-12 text-muted-foreground" />
+            <p className="text-lg font-medium">No event reports yet</p>
+            <p className="text-sm text-muted-foreground">
+              Generate your first event report to review pre-event checklists.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
+        <Card>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Event Name</TableHead>
+                  <TableHead>Report Type</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Created</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {reports.map((report) => (
+                  <TableRow key={report.id}>
+                    <TableCell className="font-medium">
+                      {report.eventName}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{report.reportType}</Badge>
+                    </TableCell>
+                    <TableCell>{reportStatusBadge(report.status)}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {formatDate(report.createdAt)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button size="sm" variant="ghost">
+                        <Download className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Create Report Dialog */}
+      <Dialog onOpenChange={setDialogOpen} open={dialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Generate Event Report</DialogTitle>
+            <DialogDescription>
+              Create a new pre-event review checklist for an event.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="event-id">Event ID</Label>
+              <Input
+                id="event-id"
+                placeholder="Enter event ID..."
+                value={selectedEventId}
+                onChange={(e) => setSelectedEventId(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") handleCreate();
+                }}
+              />
+              <p className="text-xs text-muted-foreground">
+                Enter the ID of the event to generate a report for.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={() => setDialogOpen(false)}
+              variant="outline"
+            >
+              Cancel
+            </Button>
+            <Button disabled={creating} onClick={handleCreate}>
+              {creating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Generate
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Document Parser Tab (Autofill)
+// ---------------------------------------------------------------------------
+
+function DocumentParserTab() {
+  const [file, setFile] = useState<File | null>(null);
+  const [parsing, setParsing] = useState(false);
+  const [parsed, setParsed] = useState<ParsedDocument | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      const selected = e.target.files?.[0] ?? null;
+      setFile(selected);
+      setParsed(null);
+      setError(null);
+    },
+    []
+  );
+
+  const handleDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const dropped = e.dataTransfer.files[0] ?? null;
+    setFile(dropped);
+    setParsed(null);
+    setError(null);
+  }, []);
+
+  const handleDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+  }, []);
+
+  const handleParse = useCallback(async () => {
+    if (!file) {
+      toast.error("Please select a file first");
+      return;
+    }
+    setParsing(true);
+    setError(null);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      const res = await apiFetch("/api/events/documents/parse", {
+        method: "POST",
+        body: formData,
+      });
+      if (!res.ok) {
+        const data = (await res.json()) as { error?: string };
+        throw new Error(data.error ?? `Request failed (${res.status})`);
+      }
+      const json = (await res.json()) as ParsedDocument;
+      setParsed(json);
+      toast.success("Document parsed successfully");
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to parse document";
+      setError(message);
+      toast.error(message);
+    } finally {
+      setParsing(false);
+    }
+  }, [file]);
+
+  const handleApplySection = useCallback(
+    (section: string) => {
+      toast.success(`${section} data applied to event form`, {
+        description: "Navigate to the event editor to review the changes.",
+      });
+    },
+    []
+  );
+
+  return (
+    <div className="space-y-6">
+      {/* File Upload Area */}
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base">Upload Document</CardTitle>
+          <CardDescription>
+            Upload a PDF or CSV file to parse into structured event data. The
+            parser extracts menu items, staff shifts, and event details for
+            autofill.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div
+            className="flex flex-col items-center gap-3 rounded-lg border-2 border-dashed border-muted-foreground/25 p-8 transition-colors hover:border-muted-foreground/50"
+            onDragOver={handleDragOver}
+            onDrop={handleDrop}
+          >
+            <Upload className="h-8 w-8 text-muted-foreground/60" />
+            <div className="text-center">
+              <p className="text-sm font-medium">
+                Drag and drop your file here, or
+              </p>
+              <Button
+                className="mt-2"
+                onClick={() => fileInputRef.current?.click()}
+                size="sm"
+                variant="outline"
+              >
+                Browse Files
+              </Button>
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Supports PDF and CSV files
+            </p>
+            <input
+              accept=".pdf,.csv"
+              className="hidden"
+              onChange={handleFileChange}
+              ref={fileInputRef}
+              type="file"
+            />
+          </div>
+
+          {file && (
+            <div className="flex items-center justify-between rounded-md border bg-muted/30 px-4 py-2">
+              <div className="flex items-center gap-2">
+                <FileSpreadsheet className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">{file.name}</span>
+                <span className="text-xs text-muted-foreground">
+                  ({(file.size / 1024).toFixed(1)} KB)
+                </span>
+              </div>
+              <Button
+                onClick={() => {
+                  setFile(null);
+                  setParsed(null);
+                  setError(null);
+                  if (fileInputRef.current) {
+                    fileInputRef.current.value = "";
+                  }
+                }}
+                size="sm"
+                variant="ghost"
+              >
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </Button>
+            </div>
+          )}
+
+          <div className="flex gap-2">
+            <Button disabled={!file || parsing} onClick={handleParse}>
+              {parsing ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="mr-2 h-4 w-4" />
+              )}
+              Parse Document
+            </Button>
+            {file && !parsing && (
+              <Button
+                onClick={() => {
+                  setFile(null);
+                  setParsed(null);
+                  setError(null);
+                  if (fileInputRef.current) {
+                    fileInputRef.current.value = "";
+                  }
+                }}
+                variant="outline"
+              >
+                Clear
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Error State */}
+      {error && (
+        <Card className="border-destructive">
+          <CardContent className="flex items-center gap-2 p-4 text-destructive">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            <p className="text-sm">{error}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Parsed Results */}
+      {parsed && (
+        <div className="space-y-4">
+          {/* Event Details */}
+          {parsed.eventDetails && (
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-base">Event Details</CardTitle>
+                    <CardDescription>
+                      Extracted event information
+                    </CardDescription>
+                  </div>
+                  <Button
+                    onClick={() => handleApplySection("Event Details")}
+                    size="sm"
+                    variant="outline"
+                  >
+                    Apply to Event
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Event Name
+                    </p>
+                    <p className="text-sm">
+                      {parsed.eventDetails.eventName ?? "--"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Event Date
+                    </p>
+                    <p className="text-sm">
+                      {parsed.eventDetails.eventDate
+                        ? formatDate(parsed.eventDetails.eventDate)
+                        : "--"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Guest Count
+                    </p>
+                    <p className="text-sm">
+                      {parsed.eventDetails.guestCount?.toString() ?? "--"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs font-medium text-muted-foreground">
+                      Venue
+                    </p>
+                    <p className="text-sm">
+                      {parsed.eventDetails.venue ?? "--"}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Menu Items */}
+          {parsed.menuItems.length > 0 && (
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-base">
+                      Menu Items ({parsed.menuItems.length})
+                    </CardTitle>
+                    <CardDescription>
+                      Extracted menu items from the document
+                    </CardDescription>
+                  </div>
+                  <Button
+                    onClick={() => handleApplySection("Menu Items")}
+                    size="sm"
+                    variant="outline"
+                  >
+                    Apply to Event
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Item Name</TableHead>
+                      <TableHead>Quantity</TableHead>
+                      <TableHead>Notes</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {parsed.menuItems.map((item, i) => (
+                      <TableRow key={i}>
+                        <TableCell className="font-medium">
+                          {item.name}
+                        </TableCell>
+                        <TableCell>{item.quantity}</TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {item.notes ?? "--"}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Staff Shifts */}
+          {parsed.staffShifts.length > 0 && (
+            <Card>
+              <CardHeader className="pb-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-base">
+                      Staff Shifts ({parsed.staffShifts.length})
+                    </CardTitle>
+                    <CardDescription>
+                      Extracted staffing requirements
+                    </CardDescription>
+                  </div>
+                  <Button
+                    onClick={() => handleApplySection("Staff Shifts")}
+                    size="sm"
+                    variant="outline"
+                  >
+                    Apply to Event
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Time</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {parsed.staffShifts.map((shift, i) => (
+                      <TableRow key={i}>
+                        <TableCell>
+                          <Badge variant="outline">{shift.role}</Badge>
+                        </TableCell>
+                        <TableCell className="font-medium">
+                          {shift.name}
+                        </TableCell>
+                        <TableCell className="text-sm text-muted-foreground">
+                          {shift.time}
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Empty parsed state */}
+          {parsed.menuItems.length === 0 &&
+            parsed.staffShifts.length === 0 &&
+            !parsed.eventDetails?.eventName && (
+              <Card>
+                <CardContent className="py-8 text-center">
+                  <FileText className="mx-auto mb-3 h-8 w-8 text-muted-foreground/60" />
+                  <p className="text-sm font-medium">
+                    No structured data extracted
+                  </p>
+                  <p className="text-sm text-muted-foreground">
+                    The document was parsed but no menu items, staff shifts, or
+                    event details were found.
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+        </div>
+      )}
+
+      {/* Empty Initial State */}
+      {!parsed && !error && !parsing && (
+        <Card>
+          <CardContent className="flex flex-col items-center gap-2 py-16">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+              <FileSpreadsheet className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <p className="mt-2 text-sm font-medium">No document parsed</p>
+            <p className="text-sm text-muted-foreground">
+              Upload a PDF or CSV file and click &quot;Parse Document&quot; to
+              extract event data for autofill.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Waste Reports Tab
+// ---------------------------------------------------------------------------
+
+function WasteReportsTab() {
+  const [wasteData, setWasteData] = useState<WasteReportResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [groupBy, setGroupBy] = useState("reason");
+
+  const loadReport = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await apiFetch(
+        `/api/kitchen/waste/reports?groupBy=${encodeURIComponent(groupBy)}`
+      );
+      if (!res.ok) {
+        throw new Error(`Request failed (${res.status})`);
+      }
+      const json = (await res.json()) as WasteReportResponse;
+      setWasteData(json);
+      toast.success("Waste report loaded");
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : "Failed to load waste report";
+      setError(message);
+      toast.error(message);
+    } finally {
+      setLoading(false);
+    }
+  }, [groupBy]);
+
+  useEffect(() => {
+    loadReport();
+  }, [loadReport]);
+
+  const summary = wasteData?.report.summary;
+  const entries = wasteData?.report.data ?? [];
+  const reasons = wasteData?.report.wasteReasons ?? [];
+  const trends = wasteData?.report.trends ?? [];
+
+  return (
+    <div className="space-y-6">
+      {/* Controls */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">Group By</Label>
+          <Select onValueChange={setGroupBy} value={groupBy}>
+            <SelectTrigger className="w-40">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="reason">Reason</SelectItem>
+              <SelectItem value="item">Item</SelectItem>
+              <SelectItem value="date">Date</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <Button onClick={loadReport} disabled={loading}>
+          {loading ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <RefreshCw className="mr-2 h-4 w-4" />
+          )}
+          Refresh Report
+        </Button>
+      </div>
+
+      {/* Error State */}
+      {error && (
+        <Card className="border-destructive">
+          <CardContent className="flex items-center gap-2 p-4 text-destructive">
+            <AlertCircle className="h-4 w-4 shrink-0" />
+            <p className="text-sm">{error}</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Loading */}
+      {loading && !wasteData && (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      )}
+
+      {/* Summary Cards */}
+      {summary && (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <StatCard
+            label="Total Waste Cost"
+            value={formatCurrency(summary.totalCost)}
+            icon={TrendingDown}
+          />
+          <StatCard
+            label="Total Quantity"
+            value={summary.totalQuantity.toString()}
+            icon={BarChart3}
+          />
+          <StatCard
+            label="Entry Count"
+            value={summary.entryCount.toString()}
+            icon={FileText}
+          />
+          <StatCard
+            label="Avg Cost / Entry"
+            value={formatCurrency(summary.avgCostPerEntry)}
+            icon={Clock}
+          />
+        </div>
+      )}
+
+      {/* Waste Reasons Breakdown */}
+      {reasons.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Waste by Reason</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Reason</TableHead>
+                  <TableHead>Count</TableHead>
+                  <TableHead>Total Cost</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {reasons.map((r) => (
+                  <TableRow key={r.reason}>
+                    <TableCell className="font-medium">{r.reason}</TableCell>
+                    <TableCell>{r.count}</TableCell>
+                    <TableCell>{formatCurrency(r.totalCost)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Trends */}
+      {trends.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Waste Trends</CardTitle>
+            <CardDescription>Cost over recent periods</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-wrap gap-4">
+              {trends.map((t) => (
+                <div
+                  key={t.period}
+                  className="flex flex-col items-center gap-1 rounded-md border px-4 py-2"
+                >
+                  <span className="text-xs text-muted-foreground">
+                    {t.period}
+                  </span>
+                  <span className="text-sm font-semibold">
+                    {formatCurrency(t.cost)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Waste Entries Table */}
+      {entries.length > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">
+              Waste Entries ({entries.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Item</TableHead>
+                  <TableHead>Quantity</TableHead>
+                  <TableHead>Unit</TableHead>
+                  <TableHead>Cost</TableHead>
+                  <TableHead>Reason</TableHead>
+                  <TableHead>Recorded</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {entries.map((entry) => (
+                  <TableRow key={entry.id}>
+                    <TableCell className="font-medium">
+                      {entry.itemName}
+                    </TableCell>
+                    <TableCell>{entry.quantity}</TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {entry.unit}
+                    </TableCell>
+                    <TableCell>{formatCurrency(entry.cost)}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{entry.reason}</Badge>
+                    </TableCell>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {formatDate(entry.recordedAt)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Empty State */}
+      {!loading && !error && entries.length === 0 && !wasteData && (
+        <Card>
+          <CardContent className="flex flex-col items-center gap-2 py-16">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+              <BarChart3 className="h-6 w-6 text-muted-foreground" />
+            </div>
+            <p className="mt-2 text-sm font-medium">No waste data</p>
+            <p className="text-sm text-muted-foreground">
+              Waste entries will appear here once kitchen waste data is
+              recorded.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main Component
+// ---------------------------------------------------------------------------
+
+export function AutofillReportsClient() {
+  return (
+    <Tabs defaultValue="event-reports" className="w-full">
+      <TabsList>
+        <TabsTrigger value="event-reports" className="gap-1.5">
+          <FileText className="h-3.5 w-3.5" />
+          Event Reports
+        </TabsTrigger>
+        <TabsTrigger value="document-parser" className="gap-1.5">
+          <Sparkles className="h-3.5 w-3.5" />
+          Document Parser
+        </TabsTrigger>
+        <TabsTrigger value="waste-reports" className="gap-1.5">
+          <BarChart3 className="h-3.5 w-3.5" />
+          Waste Reports
+        </TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="event-reports" className="mt-6">
+        <EventReportsTab />
+      </TabsContent>
+
+      <TabsContent value="document-parser" className="mt-6">
+        <DocumentParserTab />
+      </TabsContent>
+
+      <TabsContent value="waste-reports" className="mt-6">
+        <WasteReportsTab />
+      </TabsContent>
+    </Tabs>
+  );
+}

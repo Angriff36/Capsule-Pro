@@ -343,6 +343,11 @@
       "comment": "Infrastructure: Rate limit configuration CRUD for tenant-specific limits"
     },
     {
+      "prefix": "/api/settings/audit-log",
+      "methods": ["GET"],
+      "comment": "Infrastructure: Audit log read-only endpoint for settings page"
+    },
+    {
       "prefix": "/api/payroll/export",
       "methods": ["POST"],
       "comment": "Infrastructure: Export routes for QuickBooks integration"
