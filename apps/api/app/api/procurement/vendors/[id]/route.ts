@@ -22,56 +22,33 @@ export async function GET(
 
     const { id } = await params;
 
-    const vendors = await database.$queryRawUnsafe(
-      `
-      SELECT * FROM tenant_inventory.inventory_suppliers
-      WHERE tenant_id = $1::uuid AND id = $2::uuid AND deleted_at IS NULL
-    `,
-      tenantId,
-      id
-    );
+    const vendor = await database.inventorySupplier.findFirst({
+      where: { tenantId, id, deletedAt: null },
+      include: {
+        vendorContacts: {
+          where: { deletedAt: null },
+          orderBy: [{ isPrimary: "desc" }, { contactName: "asc" }],
+        },
+        vendorRatings: {
+          where: { deletedAt: null },
+          orderBy: { createdAt: "desc" },
+          take: 20,
+        },
+      },
+    });
 
-    if (!(vendors as any[]).length)
-      return manifestErrorResponse("Vendor not found", 404);
-    const vendor = (vendors as any[])[0];
+    if (!vendor) return manifestErrorResponse("Vendor not found", 404);
 
-    const contacts = await database.$queryRawUnsafe(
-      `
-      SELECT * FROM tenant_inventory.vendor_contacts
-      WHERE tenant_id = $1::uuid AND supplier_id = $2::uuid AND deleted_at IS NULL
-      ORDER BY is_primary DESC, contact_name
-    `,
-      tenantId,
-      id
-    );
-
-    const ratings = await database.$queryRawUnsafe(
-      `
-      SELECT r.*, a.name as rated_by_name
-      FROM tenant_inventory.vendor_ratings r
-      LEFT JOIN platform.accounts a ON a.id = r.rated_by
-      WHERE r.tenant_id = $1::uuid AND r.supplier_id = $2::uuid AND r.deleted_at IS NULL
-      ORDER BY r.created_at DESC
-      LIMIT 20
-    `,
-      tenantId,
-      id
-    );
-
-    const catalogCount = await database.$queryRawUnsafe(
-      `
-      SELECT COUNT(*)::int as count FROM tenant_inventory.vendor_catalogs
-      WHERE tenant_id = $1::uuid AND supplier_id = $2::uuid AND deleted_at IS NULL AND is_active = true
-    `,
-      tenantId,
-      id
-    );
+    // Count active catalog items (separate query — no relation on InventorySupplier)
+    const catalogItemCount = await database.vendorCatalog.count({
+      where: { tenantId, supplierId: id, deletedAt: null, isActive: true },
+    });
 
     return manifestSuccessResponse({
       vendor,
-      contacts,
-      ratings,
-      catalogItemCount: (catalogCount as any[])[0]?.count || 0,
+      contacts: vendor.vendorContacts,
+      ratings: vendor.vendorRatings,
+      catalogItemCount,
     });
   } catch (error) {
     captureException(error);

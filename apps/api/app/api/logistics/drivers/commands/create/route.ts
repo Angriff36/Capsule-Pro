@@ -30,19 +30,27 @@ export async function POST(request: NextRequest) {
 
     if (!name) return manifestErrorResponse("name is required", 400);
 
-    const result = await database.$queryRaw`
-      INSERT INTO tenant_logistics.drivers (
-        tenant_id, name, phone, email, license_number, license_expiry,
-        vehicle_id, status, notes
-      ) VALUES (
-        ${tenantId}::uuid, ${name}, ${phone || null}, ${email || null},
-        ${licenseNumber || null}, ${licenseExpiry ? new Date(licenseExpiry) : null}::date,
-        ${vehicleId || null}::uuid, 'available', ${notes || null}
-      )
-      RETURNING id, name, status, created_at
-    `;
+    const driver = await database.driver.create({
+      data: {
+        tenantId,
+        name,
+        phone: phone || null,
+        email: email || null,
+        licenseNumber: licenseNumber || null,
+        licenseExpiry: licenseExpiry ? new Date(licenseExpiry) : null,
+        vehicleId: vehicleId || null,
+        status: "available",
+        notes: notes || null,
+      },
+      select: {
+        id: true,
+        name: true,
+        status: true,
+        createdAt: true,
+      },
+    });
 
-    return manifestSuccessResponse({ driver: (result as any[])[0] });
+    return manifestSuccessResponse({ driver });
   } catch (error) {
     captureException(error);
     console.error("Error creating driver:", error);

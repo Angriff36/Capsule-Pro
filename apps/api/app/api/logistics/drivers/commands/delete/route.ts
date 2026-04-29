@@ -20,11 +20,10 @@ export async function POST(request: NextRequest) {
     const { driverId } = await request.json();
     if (!driverId) return manifestErrorResponse("driverId is required", 400);
 
-    await database.$queryRaw`
-      UPDATE tenant_logistics.drivers
-      SET deleted_at = NOW()
-      WHERE tenant_id = ${tenantId}::uuid AND id = ${driverId}::uuid
-    `;
+    await database.driver.update({
+      where: { tenantId_id: { tenantId, id: driverId } },
+      data: { deletedAt: new Date() },
+    });
 
     return manifestSuccessResponse({ deleted: true });
   } catch (error) {

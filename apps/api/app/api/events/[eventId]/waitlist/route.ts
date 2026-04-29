@@ -23,18 +23,19 @@ export async function GET(
     return NextResponse.json({ error: "No tenant" }, { status: 403 });
   }
 
-  // Fetch event with capacity info
-  const event = await database.$queryRawUnsafe<
+  // Fetch event with capacity info — uses $queryRaw (tagged template, parameterized)
+  // because max_capacity is not modeled in the Prisma Event schema
+  const event = await database.$queryRaw<
     Array<{ max_capacity: number | null }>
-  >(
-    "SELECT max_capacity FROM tenant_events.events WHERE id = $1 AND tenant_id = $2 AND deleted_at IS NULL",
-    eventId,
-    tenantId
-  );
+  >`
+    SELECT max_capacity FROM tenant_events.events
+    WHERE id = ${eventId}::uuid AND tenant_id = ${tenantId}::uuid AND deleted_at IS NULL
+  `;
   const maxCapacity = event[0]?.max_capacity ?? null;
 
-  // Fetch all guests
-  const guests = await database.$queryRawUnsafe<
+  // Fetch all guests — uses $queryRaw because rsvp_status, waitlist_position,
+  // rsvp_responded_at are not modeled in the Prisma EventGuest schema
+  const guests = await database.$queryRaw<
     Array<{
       id: string;
       guest_name: string;
@@ -45,17 +46,15 @@ export async function GET(
       rsvp_responded_at: string | null;
       created_at: string;
     }>
-  >(
-    `SELECT id, guest_name, guest_email, guest_phone, rsvp_status, waitlist_position, rsvp_responded_at, created_at
-     FROM tenant_events.event_guests
-     WHERE event_id = $1 AND tenant_id = $2 AND deleted_at IS NULL
-     ORDER BY
-       CASE WHEN waitlist_position IS NOT NULL THEN 1 ELSE 0 END,
-       waitlist_position ASC NULLS LAST,
-       created_at DESC`,
-    eventId,
-    tenantId
-  );
+  >`
+    SELECT id, guest_name, guest_email, guest_phone, rsvp_status, waitlist_position, rsvp_responded_at, created_at
+    FROM tenant_events.event_guests
+    WHERE event_id = ${eventId}::uuid AND tenant_id = ${tenantId}::uuid AND deleted_at IS NULL
+    ORDER BY
+      CASE WHEN waitlist_position IS NOT NULL THEN 1 ELSE 0 END,
+      waitlist_position ASC NULLS LAST,
+      created_at DESC
+  `;
 
   // Compute summary
   const confirmed = guests.filter((g) => g.rsvp_status === "confirmed").length;

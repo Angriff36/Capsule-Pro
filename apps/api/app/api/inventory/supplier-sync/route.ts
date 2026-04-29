@@ -167,32 +167,12 @@ export async function GET(request: NextRequest) {
     }
 
     // Query the sync log for the most recent sync for this supplier
-    // Uses raw query since supplier_sync_log may not have a Prisma model yet
-    const syncLogs = await database
-      .$queryRawUnsafe<
-        Array<{
-          id: string;
-          connector_id: string;
-          status: string;
-          products_synced: number;
-          products_created: number;
-          products_updated: number;
-          products_deactivated: number;
-          errors: unknown;
-          duration_ms: number;
-          created_at: Date;
-          triggered_by: string | null;
-        }>
-      >(
-        `SELECT id, connector_id, status, products_synced, products_created, products_updated,
-              products_deactivated, errors, duration_ms, created_at, triggered_by
-       FROM tenant_inventory.supplier_sync_logs
-       WHERE tenant_id = $1 AND supplier_id = $2 AND deleted_at IS NULL
-       ORDER BY created_at DESC
-       LIMIT 10`,
-        tenantId,
-        supplierId
-      )
+    const syncLogs = await database.supplierSyncLog
+      .findMany({
+        where: { tenantId, supplierId, deletedAt: null },
+        orderBy: { createdAt: "desc" },
+        take: 10,
+      })
       .catch(() => {
         // Table may not exist yet — return empty
         return [];

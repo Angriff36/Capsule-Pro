@@ -473,6 +473,11 @@
       "comment": "Infrastructure: Single revenue schedule update"
     },
     {
+      "prefix": "/api/inventory/supplier-sync",
+      "methods": ["GET", "POST"],
+      "comment": "Infrastructure: Supplier catalog sync service (SupplierSyncService)"
+    },
+    {
       "prefix": "/api/logistics/routes/commands/optimize",
       "methods": ["POST"],
       "comment": "Infrastructure: Route optimization command using direct DB access"

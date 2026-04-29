@@ -22,36 +22,53 @@ export async function GET(
 
     const { id } = await params;
 
-    const orders = await database.$queryRawUnsafe(
-      `
-      SELECT
-        po.*, v.name as vendor_name
-      FROM tenant_inventory.purchase_orders po
-      LEFT JOIN tenant_inventory.inventory_suppliers v ON v.id = po.vendor_id
-      WHERE po.tenant_id = $1::uuid AND po.id = $2::uuid AND po.deleted_at IS NULL
-    `,
-      tenantId,
-      id
-    );
+    const order = await database.purchaseOrder.findFirst({
+      where: { tenantId, id, deletedAt: null },
+    });
 
-    if (!(orders as any[]).length)
-      return manifestErrorResponse("PO not found", 404);
+    if (!order) return manifestErrorResponse("PO not found", 404);
 
-    const order = (orders as any[])[0];
+    // Fetch vendor name (no relation on PurchaseOrder → InventorySupplier)
+    const vendor = order.vendorId
+      ? await database.inventorySupplier.findFirst({
+          where: { tenantId, id: order.vendorId, deletedAt: null },
+          select: { name: true },
+        })
+      : null;
 
-    const items = await database.$queryRawUnsafe(
-      `
-      SELECT poi.*, ii.name as item_name, ii.item_number, ii.unit_of_measure
-      FROM tenant_inventory.purchase_order_items poi
-      LEFT JOIN tenant_inventory.inventory_items ii ON ii.id = poi.item_id
-      WHERE poi.tenant_id = $1::uuid AND poi.purchase_order_id = $2::uuid AND poi.deleted_at IS NULL
-      ORDER BY poi.created_at
-    `,
-      tenantId,
-      id
-    );
+    // Fetch items with item names (no relation on PurchaseOrderItem → InventoryItem)
+    const items = await database.purchaseOrderItem.findMany({
+      where: { tenantId, purchaseOrderId: id, deletedAt: null },
+      orderBy: { createdAt: "asc" },
+    });
 
-    return manifestSuccessResponse({ order, items });
+    // Resolve item names for display
+    const itemIds = items.map((i) => i.itemId);
+    const inventoryItems =
+      itemIds.length > 0
+        ? await database.inventoryItem.findMany({
+            where: { tenantId, id: { in: itemIds } },
+            select: {
+              id: true,
+              name: true,
+              item_number: true,
+              unitOfMeasure: true,
+            },
+          })
+        : [];
+
+    const itemMap = new Map(inventoryItems.map((i) => [i.id, i]));
+    const itemsWithNames = items.map((poi) => ({
+      ...poi,
+      itemName: itemMap.get(poi.itemId)?.name ?? null,
+      itemNumber: itemMap.get(poi.itemId)?.item_number ?? null,
+      unitOfMeasure: itemMap.get(poi.itemId)?.unitOfMeasure ?? null,
+    }));
+
+    return manifestSuccessResponse({
+      order: { ...order, vendorName: vendor?.name ?? null },
+      items: itemsWithNames,
+    });
   } catch (error) {
     captureException(error);
     console.error("Error fetching purchase order:", error);
