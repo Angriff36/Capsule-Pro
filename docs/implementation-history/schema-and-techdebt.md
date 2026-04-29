@@ -10,7 +10,7 @@ Long-form audit of schema drift, manifest coverage, technical debt, recommended 
 |---|---|---|
 | `vendor_contacts` | 20260327000000 | Procurement vendors (raw SQL) |
 | `vendor_ratings` | 20260327000000 | Procurement vendors (raw SQL) |
-| `employee_bank_accounts` | 20260327020000 | Payroll bank-accounts routes (currently crashing — Blocker 3) |
+| `employee_bank_accounts` | 20260327020000 | Payroll bank-accounts routes — **RESOLVED**: Prisma model `EmployeeBankAccount` exists, all 6 routes use Prisma ORM, RLS enabled. Resolved 2026-04-28. |
 | `audit_log` | 20260327030000 + duplicate 20260327100000 | Needs dedup + model |
 | `crm_scoring_rules` | 20260327040000 | CRM scoring |
 | `procurement_budgets` | 20260327010000 | Procurement budget (raw SQL) |
@@ -21,7 +21,7 @@ Plus **raw-SQL-only tables** with no model: `facility_assets`, `drivers`, `vehic
 
 ### Missing models referenced by code
 - `PurchaseRequisition`, `VendorContract` (Blocker 2)
-- `BankAccount` (Blocker 3)
+- ~~`BankAccount` (Blocker 3)~~ **RESOLVED 2026-04-28**: Prisma model exists as `EmployeeBankAccount`, all 6 routes use Prisma ORM, RLS enabled.
 - `RevenueRecognitionSchedule`
 - `TaxInfo`, `PayrollPrefs`, `TipPool` (payroll engine TODOs)
 
@@ -117,7 +117,7 @@ Also dead:
 ### Raw SQL usage
 **1,577 occurrences across 250 files** (sixth-pass full grep; prior passes said "527 across 187" — was a line-count not occurrence-count). Full audit in Raw-SQL Audit (6th Pass) section. Legitimate in analytics/reporting; concerning in:
 - Procurement (≥21 instances)
-- Payroll (≥20 instances, including bank-accounts which currently has no Prisma model)
+- Payroll (≥20 instances; bank-accounts now uses Prisma ORM — resolved 2026-04-28)
 - Shipments (≥11 instances)
 - Logistics drivers/vehicles (no Prisma models)
 - Facilities assets (no Prisma model)
@@ -152,7 +152,7 @@ Each tier should be complete before the next, except where items can be parallel
 ### Tier 1 — Runtime Crash + Correctness Bugs (parallelize)
 2. ~~Procurement requisitions (**8 routes**, missing `delete/`): add `PurchaseRequisition` model + manifest, or remove the fabricated routes (Blocker 2a).~~ ✅ **RESOLVED 2026-04-26**: promoted `procurement-requisition-rules.manifest` from `manifests-disabled/`, added `PurchaseRequisition` + `PurchaseRequisitionItem` Prisma models (mapped to pre-existing `purchase_requisitions` / `purchase_requisition_items` tables in `tenant_inventory` schema), fixed `list/route.ts` bug (was querying `database.purchaseOrder`), and registered domain mappings in `generate.mjs` / `generate-all-routes.mjs` / `generate-route-manifest.ts`. Manifest grammar fixes: converted `:block` constraint to curly-brace form, removed undeclared `submittedBy` mutation, replaced unsupported `if/else` block in `approveManager` with ternary expressions. Compile clean (91 entities, 395 commands); no new typecheck errors in `procurement/requisitions/*`. The 8 commands (create/update/submit/approveManager/approveFinance/reject/convertToPo/cancel) are intentional — `delete` is replaced by `cancel` per workflow design.
 3. ~~Procurement vendor-contracts (**7 routes**, missing `update/`): add `VendorContract` model + manifest, or remove the fabricated routes (Blocker 2b).~~ ✅ **RESOLVED 2026-04-26**: promoted `vendor-contract-rules.manifest` from `manifests-disabled/` with grammar fixes (no `if/else`, no `max()` builtin), added `VendorContract` Prisma model + `Account` back-relation, fixed `list/route.ts` bug (was querying `database.eventContract`), registered domain mapping in 3 generator scripts, and created the 3 missing command routes (`update`, `renew`, `record-sla-breach`). All 10 manifest commands now have route handlers. Compile clean.
-4. Payroll bank-accounts: add `BankAccount` model to schema to replace the 5 raw-SQL routes (Blocker 3 — not a crash, a schema/ORM break).
+4. ~~Payroll bank-accounts: add `BankAccount` model to schema to replace the 5 raw-SQL routes (Blocker 3 — not a crash, a schema/ORM break).~~ ✅ **RESOLVED 2026-04-28**: Prisma model exists (`EmployeeBankAccount`), all 6 routes use Prisma ORM, RLS enabled.
 5. Accounting collections RouteContext: fix `params` type at `.../cases/[id]/route.ts:47` (Blocker 5).
 6. Logistics drivers update: fix the broken ternary at `.../drivers/commands/update/route.ts:41` — rewrite as two explicit branches or use `Prisma.sql` fragment (Blocker 6 — correctness bug, not injection).
 7. Duplicate `softDelete/` directories: remove camelCase variants in the 3 inventory modules (Blocker 4 — 23 modules use one of the two spellings; only 3 need cleanup).

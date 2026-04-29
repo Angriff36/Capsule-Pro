@@ -114,8 +114,8 @@
           "overrideable": false
         },
         {
-          "name": "blockStatus",
-          "code": "blockStatus",
+          "name": "validStatus",
+          "code": "validStatus",
           "expression": {
             "kind": "binary",
             "operator": "in",

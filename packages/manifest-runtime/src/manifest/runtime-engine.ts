@@ -2624,9 +2624,11 @@ export class RuntimeEngine {
     );
 
     // Hybrid constraint semantics:
-    // - Negative-type constraints (name starts with "severity"): fire when TRUE (bad state detected)
+    // - Negative-type constraints (name starts with "severity" or "block"): fire when TRUE (bad state detected)
     // - Positive-type constraints: fail when FALSE (required condition not met)
-    const isNegativeType = constraint.name.startsWith("severity");
+    const isNegativeType =
+      constraint.name.startsWith("severity") ||
+      constraint.name.startsWith("block");
     const passed = isNegativeType ? !result : !!result;
 
     // Build details mapping if specified

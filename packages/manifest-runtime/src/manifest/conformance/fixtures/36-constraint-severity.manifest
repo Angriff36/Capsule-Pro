@@ -24,8 +24,8 @@ entity Task {
     message: "Priority is higher than recommended (> 5)"
   }
 
-  // BLOCK severity - blocks execution when constraint fails
-  constraint blockStatus {
+  // BLOCK severity - blocks execution when constraint fails (positive polarity)
+  constraint validStatus {
     expression: status in ["pending", "in_progress", "completed", "cancelled"]
     severity: block
     message: "Status must be one of: pending, in_progress, completed, cancelled"

@@ -51,7 +51,7 @@
       },
       "expectedConstraintFailures": [
         {
-          "constraintName": "blockStatus",
+          "constraintName": "validStatus",
           "expression": "status in [\"pending\", \"in_progress\", \"completed\", \"cancelled\"]"
         }
       ]

@@ -162,7 +162,7 @@ E2E tests run in the `e2e-workflows` job of `.github/workflows/ci.yml`. The job:
 
 New migrations must include matching Prisma models in the same PR. The repo currently has several orphaned cases — treat them as tech debt and fix alongside related work:
 
-- Migrations that create tables without Prisma models: `20260327000000_add_vendor_management`, `20260327010000_add_procurement_budgets`, `20260327020000_add_employee_bank_accounts`, `20260327040000_add_event_waitlist`, `20260327040000_add_lead_scoring`.
+- Migrations that create tables without Prisma models: `20260327000000_add_vendor_management`, `20260327010000_add_procurement_budgets`, `20260327040000_add_event_waitlist`, `20260327040000_add_lead_scoring`. (~~`20260327020000_add_employee_bank_accounts`~~ — resolved: `EmployeeBankAccount` model exists, 2026-04-28.)
 - Routes that use raw SQL against non-existent Prisma entities: `Driver`, `Vehicle`, `FacilityAsset`, `Equipment`, `Vendor`, `Budget`, `ProcurementApproval`, `Deal`, `RevenueRecognitionSchedule`.
 
 Before adding a route that queries a table, check `packages/database/prisma/schema.prisma` first — if the model is missing, add it before the route.
@@ -172,7 +172,7 @@ Before adding a route that queries a table, check `packages/database/prisma/sche
 Tenant isolation is enforced via Postgres RLS policies on `tenant_*` schemas, but coverage is incomplete. Current critical gaps (no RLS policy):
 - `tenant_accounting.*` (all tables)
 - `tenant_inventory.vendor_catalogs`, `pricing_tiers`, `bulk_order_rules`, `procurement_budgets`, `vendor_contacts`
-- `tenant_staff.employee_bank_accounts`
+- ~~`tenant_staff.employee_bank_accounts`~~ **RLS now enabled** (resolved 2026-04-28)
 
 When adding a new `tenant_*`-schema table migration, include `ALTER TABLE ... ENABLE ROW LEVEL SECURITY;` + `CREATE POLICY tenant_isolation ON ...;` in the same migration.
 
@@ -197,7 +197,7 @@ Operational pitfalls discovered during the 2026-04-24 post-expansion audit. Read
 - **17 manifests are quarantined in `packages/manifest-adapters/manifests-disabled/`.** Before authoring a new `.manifest` file for Accounting, Facilities, Procurement, Payment, Shipment, Equipment, Knowledge Base, Quality Control, Rate Limit, or Payment Reconciliation domains — **check `manifests-disabled/` first**. The file may already exist, and re-integration (add the matching Prisma model, then move into `manifests/`) is usually cheaper than a new authoring pass. See `IMPLEMENTATION_PLAN.md` "Quarantined manifests" for the full list.
 - **Procurement requisitions/vendor-contracts command routes are now functional.** Both `PurchaseRequisition` and `VendorContract` have Prisma models (in `tenant_inventory`), active manifests (NOT in `manifests-disabled/`), and dedicated PrismaStores wired into `createPrismaStoreProvider`. All command routes now pass `instanceId` to `runtime.runCommand()`. Route inventory: requisitions has **8 command dirs** (create, update, submit, approve-manager, approve-finance, reject, convert-to-po, cancel), vendor-contracts has **10** (create, update, submit, approve, reject, activate, terminate, renew, update-compliance, record-sla-breach).
 - **Fabricated routes pattern.** Multiple new-module routes bind manifests that exist in `manifests-disabled/` plus Prisma models that do not exist at all. Before trusting any module listed as "DONE", (1) open `schema.prisma` and confirm the models exist, (2) grep `manifests-disabled/` to confirm the manifest is actually active. See Blocker 2a/2b and P2.D Bank Accounts in `IMPLEMENTATION_PLAN.md`.
-- **Payroll bank-accounts routes do NOT crash — they bypass Prisma.** All 5 commands use `database.$queryRaw` directly against `tenant_staff.employee_bank_accounts`. They return data but sit outside the ORM (and outside any RLS the tenant schema should enforce). Don't conclude from a 200 response that the module is sound; the missing `BankAccount` Prisma model is still tech debt.
+- **Payroll bank-accounts routes are fully functional.** All 6 routes (create, update, delete, verify, set-default, list) use Prisma ORM (`database.employeeBankAccount.*`) against the `EmployeeBankAccount` model in `tenant_staff`. RLS is enabled and enforced. The prior raw-SQL claim was stale.
 - **`$queryRaw` template interpolation IS parameterized, but JS-composed values are not safe-by-assumption.** Example: `logistics/drivers/commands/update/route.ts:41` writes `vehicle_id = ${vehicleId !== undefined ? (vehicleId || null) + "::uuid" : "vehicle_id"}::uuid` — Prisma parameterizes the ternary's output string, so there's no classical injection, BUT the ternary emits nonsense values (`"<uuid>::uuid"` as a literal, or `"vehicle_id"` as a parameter when the author wanted a column ref). Always branch explicitly or use `Prisma.sql` fragments for optional predicates. Don't copy this pattern.
 - **`planning/route-audit.md` numbers are stale (dated 2026-04-13).** It says 163 bypass-dispatcher routes; current count is closer to ~490. The b8c31eef expansion landed after the audit. Re-run the scan before quoting or citing these figures.
 - **`routes.manifest.json` only tracks POST handlers.** PUT/PATCH/DELETE are not in the IR — so "manifest coverage" numbers computed only from the IR undercount the gap. Real coverage gap: ~617 of 1,001 write handlers (61.6%), not the 46% previously quoted.
