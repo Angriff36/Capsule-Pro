@@ -9,7 +9,6 @@ import {
   manifestSuccessResponse,
 } from "@/lib/manifest-response";
 import { clampLimit, clampOffset } from "@/lib/pagination";
-import { likeContains } from "@/lib/sql-like";
 
 export async function GET(request: NextRequest) {
   try {
@@ -24,61 +23,77 @@ export async function GET(request: NextRequest) {
     const limit = clampLimit(searchParams.get("limit"));
     const offset = clampOffset(searchParams.get("offset"));
 
-    // SQL LIKE/ILIKE has its own pattern metacharacters (`%`, `_`, `\`) that
-    // are NOT neutralized by Prisma parameterization — so a search for "100%"
-    // would otherwise match every row containing "100". `likeContains` escapes
-    // those metacharacters and wraps the value as a `%value%` substring match;
-    // the `ESCAPE '\'` clause below tells PostgreSQL we are using `\` as our
-    // escape character (default, but stated explicitly to make the contract
-    // auditable).
-    const searchPattern = search ? likeContains(search) : "";
+    const where = {
+      tenantId,
+      deletedAt: null as string | null,
+      ...(search
+        ? {
+            OR: [
+              { name: { contains: search, mode: "insensitive" as const } },
+              {
+                contact_person: {
+                  contains: search,
+                  mode: "insensitive" as const,
+                },
+              },
+              { email: { contains: search, mode: "insensitive" as const } },
+              {
+                supplier_number: {
+                  contains: search,
+                  mode: "insensitive" as const,
+                },
+              },
+            ],
+          }
+        : {}),
+    };
 
-    // Build the parameter list dynamically. We always bind tenantId, limit,
-    // and offset; search adds one extra parameter (reused four times in the
-    // OR-block).
-    const params: (string | number)[] = search
-      ? [tenantId, searchPattern, limit, offset]
-      : [tenantId, limit, offset];
-    const limitIdx = search ? 3 : 2;
-    const offsetIdx = search ? 4 : 3;
+    const vendors = await database.inventorySupplier.findMany({
+      where,
+      include: {
+        _count: {
+          select: {
+            vendorContacts: { where: { deletedAt: null } },
+            vendorCatalogs: {
+              where: { deletedAt: null, isActive: true },
+            },
+          },
+        },
+      },
+      orderBy: { name: "asc" },
+      take: limit,
+      skip: offset,
+    });
 
-    const vendors = await database.$queryRawUnsafe(
-      `
-      SELECT
-        s.id, s.supplier_number, s.name, s.contact_person, s.email, s.phone,
-        s.payment_terms, s.address_line1, s.address_line2, s.city, s.state,
-        s.postal_code, s.country, s.tax_id, s.website, s.performance_rating,
-        s.notes, s.tags, s.created_at, s.updated_at,
-        COUNT(DISTINCT vc.id)::int as contact_count,
-        COUNT(DISTINCT cat.id)::int as catalog_item_count
-      FROM tenant_inventory.inventory_suppliers s
-      LEFT JOIN tenant_inventory.vendor_contacts vc
-        ON vc.supplier_id = s.id AND vc.tenant_id = s.tenant_id AND vc.deleted_at IS NULL
-      LEFT JOIN tenant_inventory.vendor_catalogs cat
-        ON cat.supplier_id = s.id AND cat.tenant_id = s.tenant_id AND cat.deleted_at IS NULL AND cat.is_active = true
-      WHERE s.tenant_id = $1::uuid AND s.deleted_at IS NULL
-        ${
-          search
-            ? `AND (s.name ILIKE $2 ESCAPE '\\'
-                     OR s.contact_person ILIKE $2 ESCAPE '\\'
-                     OR s.email ILIKE $2 ESCAPE '\\'
-                     OR s.supplier_number ILIKE $2 ESCAPE '\\')`
-            : ""
-        }
-      GROUP BY s.id, s.supplier_number, s.name, s.contact_person, s.email, s.phone,
-        s.payment_terms, s.address_line1, s.address_line2, s.city, s.state,
-        s.postal_code, s.country, s.tax_id, s.website, s.performance_rating,
-        s.notes, s.tags, s.created_at, s.updated_at
-      ORDER BY s.name
-      LIMIT $${limitIdx} OFFSET $${offsetIdx}
-    `,
-      ...params
-    );
+    // Shape to match the original raw SQL response format (snake_case)
+    const shaped = vendors.map((v) => ({
+      id: v.id,
+      supplier_number: v.supplier_number,
+      name: v.name,
+      contact_person: v.contact_person,
+      email: v.email,
+      phone: v.phone,
+      payment_terms: v.payment_terms,
+      address_line1: v.addressLine1,
+      address_line2: v.addressLine2,
+      city: v.city,
+      state: v.state,
+      postal_code: v.postalCode,
+      country: v.country,
+      tax_id: v.taxId,
+      website: v.website,
+      performance_rating: v.performanceRating,
+      notes: v.notes,
+      tags: v.tags,
+      created_at: v.createdAt,
+      updated_at: v.updatedAt,
+      contact_count: v._count.vendorContacts,
+      catalog_item_count: v._count.vendorCatalogs,
+    }));
 
-    return manifestSuccessResponse({ vendors, limit, offset });
+    return manifestSuccessResponse({ vendors: shaped, limit, offset });
   } catch (error) {
     captureException(error);
-    console.error("Error listing vendors:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

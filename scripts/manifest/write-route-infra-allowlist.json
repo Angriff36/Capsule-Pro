@@ -553,6 +553,11 @@
       "comment": "Infrastructure: Budget spend refresh and alert generation"
     },
     {
+      "prefix": "/api/procurement/vendors/commands/rate",
+      "methods": ["POST"],
+      "comment": "Infrastructure: Vendor performance rating — direct Prisma write, not a manifest command"
+    },
+    {
       "prefix": "/api/crm/scoring/calculate",
       "methods": ["POST"],
       "comment": "Infrastructure: Lead score recomputation across all leads (rule engine, no single domain command)"

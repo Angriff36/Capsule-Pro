@@ -18,7 +18,7 @@
 | **Dead Buttons** | 8 buttons fixed, 1 blocked, 1 not rendered (down from 16) | 1 BLOCKED + 1 NOT RENDERED | **P0** |
 | **Stub Pages with Live APIs** | 2 procurement pages still static | **ALL FIXED ✅** | ~~P0~~ |
 | **RLS Policies** | 25+ tables MISSING RLS across 7 schemas | **ALL 53 FIXED ✅** | ~~P0~~ |
-| **RAW_SQL Security** | 45 routes using $queryRawUnsafe (down from 67) | **6 CONVERTED** (39 remaining) | **P0** |
+| **RAW_SQL Security** | 45 routes with raw SQL (39 converted to Prisma, 6 in Batch 1 + 5 in Batch 2, ~34 remaining) | **11 CONVERTED** (Batch 1+2) | **P0** |
 | **Missing API Routes** | 4 routes still missing | **ALL FIXED ✅** | ~~P1~~ |
 | **BROKEN_PRISMA_READ** | 2 entities NOT wired | **ALL FIXED ✅** | ~~P1~~ |
 | **Backend-Complete, No UI** | 4 major systems | UNCHANGED | P1 |
@@ -112,13 +112,13 @@ Root cause: `manifestSuccessResponse()` spreads data at top level, but UI reads 
 
 **All 53 previously missing tables now have RLS.** ✅ FIXED via migration `20260429140000_add_rls_missing_tables`.
 
-### P0-4: RAW_SQL Security — 45 routes using $queryRawUnsafe → 39 remaining
+### P0-4: RAW_SQL Security — 45 routes with raw SQL → ~34 remaining
 
 | Severity | Count | Status |
 |----------|-------|--------|
 | CRITICAL | ~5 | UNCHANGED (dynamic query builders) |
-| HIGH | ~15 | **6 CONVERTED** to Prisma ORM (Batch 1 quick wins) |
-| MEDIUM | ~25 | UNCHANGED (tagged template, parameterized) |
+| HIGH | ~13 | **11 CONVERTED** to Prisma ORM (Batch 1+2) |
+| MEDIUM | ~16 | UNCHANGED (tagged template, parameterized) |
 
 **Batch 1 Converted (6 routes, eliminated 10 `$queryRawUnsafe` calls):**
 - `procurement/vendors/[id]` — 4 `$queryRawUnsafe` → `findFirst` with `include` + `count`
@@ -127,6 +127,13 @@ Root cause: `manifestSuccessResponse()` spreads data at top level, but UI reads 
 - `logistics/drivers/commands/delete` — 1 `$queryRaw` → `driver.update` (soft delete)
 - `events/[eventId]/waitlist` — 2 `$queryRawUnsafe` → 2 `$queryRaw` (tagged template, safer)
 - `inventory/supplier-sync` GET — 1 `$queryRawUnsafe` → `supplierSyncLog.findMany`
+
+**Batch 2 Converted (5 routes, eliminated 13 `$queryRawUnsafe` calls):**
+- `logistics/drivers/list` — 1 `$queryRawUnsafe` → `driver.findMany` with `include: { vehicle }`
+- `procurement/vendors/list` — 1 `$queryRawUnsafe` → `inventorySupplier.findMany` with `_count` includes
+- `events/[eventId]/waitlist/commands/add-guest` — 4 `$queryRawUnsafe` → `event.findFirst` + `eventGuest.count/aggregate/create`
+- `events/[eventId]/waitlist/commands/promote` — 3 `$queryRawUnsafe` → `eventGuest.findFirst/update/updateMany`
+- `events/[eventId]/waitlist/commands/update-rsvp` — 4 `$queryRawUnsafe` → `eventGuest.findFirst/update/updateMany`
 
 ---
 
@@ -344,6 +351,22 @@ Fix: Replace all with toast notifications via the design system.
 ---
 
 ## Recently Resolved
+
+### 2026-04-29 — RAW_SQL Batch 2 + Prisma Schema Corrections
+- **CONVERTED P0-4 Batch 2:** 5 routes converted from `$queryRawUnsafe` to Prisma ORM
+  - logistics/drivers/list: dynamic SQL → driver.findMany with vehicle include
+  - procurement/vendors/list: dynamic SQL with ILIKE → inventorySupplier.findMany with _count
+  - events/[eventId]/waitlist/commands/add-guest: 4 raw queries → Prisma create + count + aggregate
+  - events/[eventId]/waitlist/commands/promote: 3 raw queries → Prisma update + updateMany
+  - events/[eventId]/waitlist/commands/update-rsvp: 4 raw queries → Prisma update + findFirst + updateMany
+- **FIXED Prisma schema drift:**
+  - Added 9 missing fields to InventorySupplier (address, tax, website, performanceRating)
+  - Added vendorCatalogs relation to InventorySupplier + supplier relation to VendorCatalog
+  - Fixed VendorCatalog @@map from `vendor_catalog` to `vendor_catalogs` (matching actual DB table)
+  - Added 3 RSVP fields to EventGuest (rsvpStatus, waitlistPosition, rsvpRespondedAt) — from waitlist migration
+  - Added maxCapacity to Event — from waitlist migration
+- Remaining RAW_SQL: 34 routes (~5 CRITICAL, ~13 HIGH, ~16 MEDIUM)
+- All 1269 API tests pass, typecheck clean
 
 ### 2026-04-29 — RLS + RAW_SQL Security Hardening
 - **FIXED T0.5 RLS:** 53 tables across 7 schemas now have RLS policies (migration `20260429140000`)

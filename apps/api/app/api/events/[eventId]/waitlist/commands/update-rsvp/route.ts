@@ -42,75 +42,96 @@ export async function POST(
   }
 
   // Get current guest
-  const current = await database.$queryRawUnsafe<
-    Array<{ rsvp_status: string; waitlist_position: number | null }>
-  >(
-    "SELECT rsvp_status, waitlist_position FROM tenant_events.event_guests WHERE id = $1 AND tenant_id = $2 AND event_id = $3 AND deleted_at IS NULL",
-    guestId,
-    tenantId,
-    eventId
-  );
+  const current = await database.eventGuest.findFirst({
+    where: {
+      tenantId,
+      id: guestId,
+      eventId,
+      deletedAt: null,
+    },
+    select: { rsvpStatus: true, waitlistPosition: true },
+  });
 
-  if (!current.length) {
+  if (!current) {
     return NextResponse.json({ error: "Guest not found" }, { status: 404 });
   }
 
-  const now = status === "pending" ? null : new Date().toISOString();
+  const now = status === "pending" ? null : new Date();
   let autoPromoted: { id: string; guest_name: string } | null = null;
 
-  // Update RSVP status
-  const updated = await database.$queryRawUnsafe<
-    Array<{
-      id: string;
-      guest_name: string;
-      rsvp_status: string;
-      waitlist_position: number | null;
-    }>
-  >(
-    `UPDATE tenant_events.event_guests
-     SET rsvp_status = $1, waitlist_position = CASE WHEN $1 = 'confirmed' THEN NULL ELSE waitlist_position END, rsvp_responded_at = $4, updated_at = NOW()
-     WHERE id = $2 AND tenant_id = $3 AND event_id = $5 AND deleted_at IS NULL
-     RETURNING id, guest_name, rsvp_status, waitlist_position`,
-    status,
-    guestId,
-    tenantId,
-    now,
-    eventId
-  );
+  // Update RSVP status — clear waitlist position when confirming
+  const updated = await database.eventGuest.update({
+    where: { tenantId_id: { tenantId, id: guestId } },
+    data: {
+      rsvpStatus: status,
+      waitlistPosition:
+        status === "confirmed" ? null : current.waitlistPosition,
+      rsvpRespondedAt: now,
+    },
+    select: {
+      id: true,
+      guestName: true,
+      rsvpStatus: true,
+      waitlistPosition: true,
+    },
+  });
 
   // Auto-promote: if declining/leaving and there's a waitlist
-  if (status === "declined" && current[0].rsvp_status === "confirmed") {
-    const nextOnWaitlist = await database.$queryRawUnsafe<
-      Array<{ id: string; guest_name: string; waitlist_position: number }>
-    >(
-      `SELECT id, guest_name, waitlist_position FROM tenant_events.event_guests
-       WHERE event_id = $1 AND tenant_id = $2 AND rsvp_status = 'waitlisted' AND deleted_at IS NULL
-       ORDER BY waitlist_position ASC LIMIT 1`,
-      eventId,
-      tenantId
-    );
-
-    if (nextOnWaitlist.length > 0) {
-      const promoted = nextOnWaitlist[0];
-      await database.$queryRawUnsafe(
-        `UPDATE tenant_events.event_guests SET rsvp_status = 'confirmed', waitlist_position = NULL, rsvp_responded_at = NOW(), updated_at = NOW()
-         WHERE id = $1 AND tenant_id = $2`,
-        promoted.id,
-        tenantId
-      );
-
-      // Shift remaining waitlist positions down
-      await database.$queryRawUnsafe(
-        `UPDATE tenant_events.event_guests SET waitlist_position = waitlist_position - 1, updated_at = NOW()
-         WHERE event_id = $1 AND tenant_id = $2 AND rsvp_status = 'waitlisted' AND waitlist_position > $3 AND deleted_at IS NULL`,
+  if (status === "declined" && current.rsvpStatus === "confirmed") {
+    const nextOnWaitlist = await database.eventGuest.findFirst({
+      where: {
         eventId,
         tenantId,
-        promoted.waitlist_position
-      );
+        rsvpStatus: "waitlisted",
+        deletedAt: null,
+      },
+      orderBy: { waitlistPosition: "asc" },
+      select: { id: true, guestName: true, waitlistPosition: true },
+    });
 
-      autoPromoted = { id: promoted.id, guest_name: promoted.guest_name };
+    if (nextOnWaitlist) {
+      await database.eventGuest.update({
+        where: {
+          tenantId_id: {
+            tenantId,
+            id: nextOnWaitlist.id,
+          },
+        },
+        data: {
+          rsvpStatus: "confirmed",
+          waitlistPosition: null,
+          rsvpRespondedAt: new Date(),
+        },
+      });
+
+      // Shift remaining waitlist positions down
+      await database.eventGuest.updateMany({
+        where: {
+          eventId,
+          tenantId,
+          rsvpStatus: "waitlisted",
+          waitlistPosition: { gt: nextOnWaitlist.waitlistPosition! },
+          deletedAt: null,
+        },
+        data: {
+          waitlistPosition: { decrement: 1 },
+        },
+      });
+
+      autoPromoted = {
+        id: nextOnWaitlist.id,
+        guest_name: nextOnWaitlist.guestName,
+      };
     }
   }
 
-  return NextResponse.json({ data: updated[0], autoPromoted });
+  return NextResponse.json({
+    data: {
+      id: updated.id,
+      guest_name: updated.guestName,
+      rsvp_status: updated.rsvpStatus,
+      waitlist_position: updated.waitlistPosition,
+    },
+    autoPromoted,
+  });
 }

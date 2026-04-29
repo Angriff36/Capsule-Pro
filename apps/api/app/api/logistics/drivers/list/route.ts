@@ -25,39 +25,45 @@ export async function GET(request: NextRequest) {
     const limit = clampLimit(searchParams.get("limit"));
     const offset = clampOffset(searchParams.get("offset"));
 
-    // Build the parameter list dynamically. We always bind tenantId, limit,
-    // and offset; the optional status filter adds one extra parameter
-    // between tenantId and limit.
-    const params: (string | number)[] = [tenantId];
-    let statusFilter = "";
-    if (status && status !== "all") {
-      statusFilter = " AND d.status = $2";
-      params.push(status);
-    }
-    const limitIdx = params.length + 1;
-    const offsetIdx = params.length + 2;
-    params.push(limit, offset);
+    const where = {
+      tenantId,
+      deletedAt: null as string | null,
+      ...(status && status !== "all" ? { status } : {}),
+    };
 
-    const drivers = await database.$queryRawUnsafe(
-      `
-      SELECT
-        d.id, d.name, d.phone, d.email, d.license_number, d.license_expiry,
-        d.status, d.vehicle_id, d.notes, d.created_at,
-        v.make || ' ' || v.model as vehicle_name, v.plate_number
-      FROM tenant_logistics.drivers d
-      LEFT JOIN tenant_logistics.vehicles v ON v.id = d.vehicle_id
-      WHERE d.tenant_id = $1::uuid AND d.deleted_at IS NULL
-        ${statusFilter}
-      ORDER BY d.name
-      LIMIT $${limitIdx} OFFSET $${offsetIdx}
-    `,
-      ...params
-    );
+    const drivers = await database.driver.findMany({
+      where,
+      include: {
+        vehicle: {
+          select: { make: true, model: true, plateNumber: true },
+        },
+      },
+      orderBy: { name: "asc" },
+      take: limit,
+      skip: offset,
+    });
 
-    return manifestSuccessResponse({ drivers, limit, offset });
+    // Shape to match the original raw SQL response format
+    const shaped = drivers.map((d) => ({
+      id: d.id,
+      name: d.name,
+      phone: d.phone,
+      email: d.email,
+      license_number: d.licenseNumber,
+      license_expiry: d.licenseExpiry,
+      status: d.status,
+      vehicle_id: d.vehicleId,
+      notes: d.notes,
+      created_at: d.createdAt,
+      vehicle_name: d.vehicle
+        ? `${d.vehicle.make} ${d.vehicle.model}`
+        : null,
+      plate_number: d.vehicle?.plateNumber ?? null,
+    }));
+
+    return manifestSuccessResponse({ drivers: shaped, limit, offset });
   } catch (error) {
     captureException(error);
-    console.error("Error listing drivers:", error);
     return manifestErrorResponse("Internal server error", 500);
   }
 }

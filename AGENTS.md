@@ -249,8 +249,7 @@ currently has several orphaned cases — treat them as tech debt and fix alongsi
 related work:
 
 - Migrations that create tables without Prisma models:
-  `20260327040000_add_event_waitlist` (adds columns to `event_guests` only).
-  (~~`20260327000000_add_vendor_management`~~ — resolved: `VendorContact`,
+  (~~`20260327040000_add_event_waitlist`~~ — resolved: `EventGuest` RSVP fields + `Event.maxCapacity` now in schema. ~~`20260327000000_add_vendor_management`~~ — resolved: `VendorContact`,
   `VendorRating` models exist. ~~`20260327010000_add_procurement_budgets`~~ —
   resolved: `ProcurementBudget`, `ProcurementBudgetAlert` models exist.
   ~~`20260327040000_add_lead_scoring`~~ — resolved: `CrmScoringRule` model
