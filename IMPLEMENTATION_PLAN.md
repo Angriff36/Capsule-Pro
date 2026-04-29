@@ -58,7 +58,7 @@ All in-scope parent entities are complete (Steps 1–8). No further entities are
 These are the structural blockers this phase will hit. Don't rediscover them — link to them.
 
 1. **Generator — `instanceId` on instance-scoped commands.** Generated HTTP command handlers that mutate an existing row must pass `instanceId` into `runtime.runCommand(...)`. **Partially resolved:** all 8 in-scope parent routes were fixed manually; the generator still does not emit `instanceId` automatically for new routes.
-2. **Runtime — manifest constraint polarity for `:block` / `block*` entity constraints.** IR entities carry constraints such as `blockVoteIfFinalized` (expressions describe a **bad** state; severity `block`). `RuntimeEngine.evaluateConstraint` classifies negative constraints only when `constraint.name.startsWith("severity")`; names like `blockVoteIfFinalized` are treated as positive. Result: legitimate creates/updates are blocked. **In-phase rule:** if a valid write is rejected, file a focused sub-task with a failing test; pause the entity until the polarity fix lands.
+2. **Runtime — manifest constraint polarity for `:block` / `block*` entity constraints.** IR entities carry constraints such as `blockVoteIfFinalized` (expressions describe a **bad** state; severity `block`). `RuntimeEngine.evaluateConstraint` classifies negative constraints only when `constraint.name.startsWith("severity")`; names like `blockVoteIfFinalized` are treated as positive. Result: legitimate creates/updates are blocked. **RESOLVED 2026-04-28:** `evaluateConstraint` now also checks `constraint.name.startsWith('block')` for negative-type detection. 39 production block* constraints now correctly fire when bad-state conditions are met. Conformance fixture renamed to avoid false detection. **In-phase rule:** if a valid write is rejected, file a focused sub-task with a failing test; pause the entity until the polarity fix lands.
 3. **`@angriff36/manifest` publish/version coordination.** `apps/api` pins the npm package, but Vitest aliases the workspace runtime. Tests can pass while deployed bundles still run the previously-published runtime.
 4. **Bypass / camelCase duplicate routes.** Many entities have stale camelCase route directories that the frontend does not call. Don't fix them in this phase.
 
@@ -70,6 +70,7 @@ Full write-ups live in the archive. Bullet summaries:
 
 - **BROKEN_RAW_SQL parent workflows (2026-04-28):** All 8 parent entities (Proposal, PurchaseOrder, Notification, Schedule, Shipment, User, PurchaseRequisition, VendorContract) now have PrismaStore bridges, fixed `instanceId` on all command routes, and passing HTTP integration tests. 103 total assertions across 8 test files. Archive: `docs/implementation-history/passes-38-63.md` (Passes 64–71 section).
 - **BROKEN_PRISMA_READ Batches 03–13 (closed 2026-04-28):** Twelve mechanical batches landed dedicated Prisma stores for AlertsConfig and 50+ other entities. All BROKEN_PRISMA_READ candidates with a Prisma model now have stores. Archive: `docs/implementation-history/passes-38-63.md`.
+- **Payroll bank-accounts (confirmed resolved 2026-04-28):** all 6 routes use Prisma ORM, EmployeeBankAccount model exists, RLS enabled. Prior raw-SQL claim was stale.
 
 ---
 
@@ -80,7 +81,7 @@ Full write-ups live in the archive. Bullet summaries:
 - **A2-1** — adapter audit follow-up captured in `docs/audits/pass-15-input-validation.md`.
 - **D3-1 / D3-2** — DB performance follow-ups (`docs/audits/pass-13-db-performance.md`).
 - **Manifest republish** — `@angriff36/manifest` version bump + rebuild + repin (Blocker #3).
-- **Quarantined manifests** — re-evaluate after generator + polarity fixes land.
+- **Quarantined manifests** — re-evaluate after generator + polarity fixes land. Blocker #2 (constraint polarity) is now resolved, unblocking manifest re-integration evaluation.
 - ~~**Procurement requisitions / vendor-contracts 500s**~~ — **RESOLVED** in Passes 70–71. Both PurchaseRequisition and VendorContract have Prisma stores wired, manifests are active (not disabled), and instanceId is fixed on all command routes. The stale claims in AGENTS.md Known Gotchas should be updated accordingly.
 - **AGENTS.md stale corrections** — Known Gotchas entries for PurchaseRequisition ("no Prisma model", "manifests in manifests-disabled/") are now stale. Update to reflect completion.
 
