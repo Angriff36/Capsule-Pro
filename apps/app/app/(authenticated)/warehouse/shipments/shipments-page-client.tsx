@@ -139,7 +139,7 @@ export const ShipmentsPageClient = () => {
   });
 
   // Available inventory items for adding to shipment
-  const [_inventoryItems, setInventoryItems] = useState<
+  const [inventoryItems, setInventoryItems] = useState<
     Array<{
       id: string;
       item_number: string;
@@ -157,6 +157,7 @@ export const ShipmentsPageClient = () => {
     condition_notes: "",
     lot_number: "",
   });
+  const [isAddItemModalOpen, setIsAddItemModalOpen] = useState(false);
 
   // Load shipments
   const loadShipments = useCallback(async () => {
@@ -284,7 +285,7 @@ export const ShipmentsPageClient = () => {
   };
 
   // Handle add item to shipment
-  const _handleAddItem = async () => {
+  const handleAddItem = async () => {
     if (!selectedShipment) {
       return;
     }
@@ -309,6 +310,7 @@ export const ShipmentsPageClient = () => {
 
       if (response.ok) {
         toast.success("Item added to shipment");
+        setIsAddItemModalOpen(false);
         setAddItemForm({
           item_id: "",
           quantity_shipped: 0,
@@ -720,9 +722,7 @@ export const ShipmentsPageClient = () => {
                   Packing List ({selectedShipment.total_items} items)
                 </h3>
                 <Button
-                  onClick={() => {
-                    /* Open add item modal */
-                  }}
+                  onClick={() => setIsAddItemModalOpen(true)}
                   size="sm"
                 >
                   <PlusIcon className="mr-2 h-4 w-4" />
@@ -1052,6 +1052,130 @@ export const ShipmentsPageClient = () => {
             </Button>
             <Button disabled={isSubmitting} onClick={handleStatusUpdate}>
               {isSubmitting ? "Updating..." : "Update Status"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Item Modal */}
+      <Dialog open={isAddItemModalOpen} onOpenChange={setIsAddItemModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Item to Shipment</DialogTitle>
+            <DialogDescription>
+              Select an inventory item to add to this shipment.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>Item</Label>
+              <Select
+                value={addItemForm.item_id}
+                onValueChange={(v) =>
+                  setAddItemForm((f) => ({ ...f, item_id: v }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select item" />
+                </SelectTrigger>
+                <SelectContent>
+                  {inventoryItems.map((item) => (
+                    <SelectItem key={item.id} value={item.id}>
+                      {item.name} ({item.item_number}) — Qty:{" "}
+                      {item.quantity_on_hand}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Quantity</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  value={addItemForm.quantity_shipped || ""}
+                  onChange={(e) =>
+                    setAddItemForm((f) => ({
+                      ...f,
+                      quantity_shipped: Number(e.target.value),
+                    }))
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Unit Cost</Label>
+                <Input
+                  type="number"
+                  min={0}
+                  step={0.01}
+                  value={addItemForm.unit_cost || ""}
+                  onChange={(e) =>
+                    setAddItemForm((f) => ({
+                      ...f,
+                      unit_cost: Number(e.target.value),
+                    }))
+                  }
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Condition</Label>
+              <Select
+                value={addItemForm.condition}
+                onValueChange={(v) =>
+                  setAddItemForm((f) => ({ ...f, condition: v }))
+                }
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="good">Good</SelectItem>
+                  <SelectItem value="damaged">Damaged</SelectItem>
+                  <SelectItem value="expired">Expired</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Lot Number</Label>
+              <Input
+                value={addItemForm.lot_number}
+                onChange={(e) =>
+                  setAddItemForm((f) => ({
+                    ...f,
+                    lot_number: e.target.value,
+                  }))
+                }
+                placeholder="Optional"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Condition Notes</Label>
+              <Input
+                value={addItemForm.condition_notes}
+                onChange={(e) =>
+                  setAddItemForm((f) => ({
+                    ...f,
+                    condition_notes: e.target.value,
+                  }))
+                }
+                placeholder="Optional"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setIsAddItemModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={isSubmitting || !addItemForm.item_id}
+              onClick={handleAddItem}
+            >
+              {isSubmitting ? "Adding..." : "Add Item"}
             </Button>
           </DialogFooter>
         </DialogContent>

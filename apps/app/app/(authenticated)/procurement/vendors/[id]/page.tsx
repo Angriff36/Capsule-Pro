@@ -49,6 +49,7 @@ import {
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import { formatDate } from "../../components/po-shared";
 import {
@@ -166,7 +167,7 @@ export default function VendorDetailPage() {
         setEditing(false);
         loadVendor();
       } else {
-        alert(data.error || "Failed to update vendor");
+        toast.error(data.error || "Failed to update vendor");
       }
     } catch (error) {
       console.error("Failed to update vendor:", error);

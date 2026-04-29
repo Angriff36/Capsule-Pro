@@ -23,6 +23,7 @@ import {
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 
 interface SyncStatus {
@@ -104,12 +105,12 @@ export default function CalendarSyncPage() {
         window.location.href = data.authUrl;
       } else {
         const error = await response.json();
-        alert(`Failed to connect: ${error.error}`);
+        toast.error(`Failed to connect: ${error.error}`);
         setActionLoading(null);
       }
     } catch (error) {
       console.error("Connect error:", error);
-      alert("Failed to initiate connection");
+      toast.error("Failed to initiate connection");
       setActionLoading(null);
     }
   };
@@ -131,11 +132,11 @@ export default function CalendarSyncPage() {
         await fetchSyncStatus();
       } else {
         const error = await response.json();
-        alert(`Failed to disconnect: ${error.error}`);
+        toast.error(`Failed to disconnect: ${error.error}`);
       }
     } catch (error) {
       console.error("Disconnect error:", error);
-      alert("Failed to disconnect");
+      toast.error("Failed to disconnect");
     } finally {
       setActionLoading(null);
     }
@@ -152,15 +153,15 @@ export default function CalendarSyncPage() {
 
       if (response.ok) {
         const data = await response.json();
-        alert(`Sync complete! Imported ${data.imported} events.`);
+        toast.success(`Sync complete! Imported ${data.imported} events.`);
         await fetchSyncStatus();
       } else {
         const error = await response.json();
-        alert(`Sync failed: ${error.error}`);
+        toast.error(`Sync failed: ${error.error}`);
       }
     } catch (error) {
       console.error("Sync error:", error);
-      alert("Failed to trigger sync");
+      toast.error("Failed to trigger sync");
     } finally {
       setActionLoading(null);
     }

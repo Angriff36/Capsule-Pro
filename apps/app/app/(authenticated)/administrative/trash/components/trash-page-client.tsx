@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
+import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import { Header } from "../../../components/header";
 import { DependencyAnalysisDialog } from "./dependency-analysis-dialog";
@@ -340,7 +341,7 @@ export function TrashPageClient({
       await fetchTrashItems();
     } catch (error) {
       console.error("Error permanently deleting:", error);
-      alert("Failed to permanently delete the item.");
+      toast.error("Failed to permanently delete the item.");
     }
   };
 

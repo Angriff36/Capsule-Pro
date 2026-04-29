@@ -20,6 +20,7 @@ import { captureException } from "@sentry/nextjs";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
+import { toast } from "sonner";
 import { createKitchenTask } from "../actions";
 
 const PRIORITIES = [
@@ -42,7 +43,7 @@ export default function NewKitchenTaskPage() {
         router.refresh();
       } catch (error) {
         captureException(error);
-        alert(
+        toast.error(
           error instanceof Error
             ? error.message
             : "Failed to create task. Please try again."

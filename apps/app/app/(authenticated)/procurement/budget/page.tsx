@@ -36,6 +36,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import {
   type Budget,
@@ -165,7 +166,7 @@ export default function BudgetPage() {
         });
         loadBudgets();
       } else {
-        alert(data.error || "Failed to create budget");
+        toast.error(data.error || "Failed to create budget");
       }
     } catch (error) {
       console.error("Failed to create budget:", error);
@@ -192,7 +193,7 @@ export default function BudgetPage() {
         }
         loadBudgets();
       } else {
-        alert(data.error || "Failed to delete budget");
+        toast.error(data.error || "Failed to delete budget");
       }
     } catch (error) {
       console.error("Failed to delete budget:", error);

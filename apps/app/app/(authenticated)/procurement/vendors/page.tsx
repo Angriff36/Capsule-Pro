@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 import {
   formatPaymentTerms,
@@ -140,7 +141,7 @@ export default function VendorsPage() {
       if (data.success) {
         loadVendors();
       } else {
-        alert(data.error || "Failed to delete vendor");
+        toast.error(data.error || "Failed to delete vendor");
       }
     } catch (error) {
       console.error("Failed to delete vendor:", error);

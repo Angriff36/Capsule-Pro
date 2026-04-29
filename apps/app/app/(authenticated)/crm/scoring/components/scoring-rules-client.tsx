@@ -442,9 +442,29 @@ export function ScoringRulesClient({
                       <TableCell className="text-right">
                         <Button
                           className="text-muted-foreground"
-                          disabled
+                          onClick={async () => {
+                            if (
+                              !confirm(
+                                `Delete rule "${rule.rule_name}"? This cannot be undone.`
+                              )
+                            ) {
+                              return;
+                            }
+                            try {
+                              const res = await apiFetch(
+                                `/api/crm/scoring/${rule.id}`,
+                                { method: "DELETE" }
+                              );
+                              if (!res.ok) {
+                                throw new Error("Failed to delete rule");
+                              }
+                              toast.success("Scoring rule deleted");
+                              loadData();
+                            } catch {
+                              toast.error("Failed to delete scoring rule");
+                            }
+                          }}
                           size="sm"
-                          title="Delete not implemented yet"
                           variant="ghost"
                         >
                           <Trash2 className="size-4" />

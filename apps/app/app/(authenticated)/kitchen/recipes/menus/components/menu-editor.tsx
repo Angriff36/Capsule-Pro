@@ -25,6 +25,7 @@ import { PlusIcon } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useState, useTransition } from "react";
+import { toast } from "sonner";
 import {
   addDishToMenu,
   createDishInline,
@@ -71,7 +72,7 @@ export function MenuEditor({ menuId }: MenuEditorProps) {
     e.preventDefault();
 
     if (!name.trim()) {
-      alert("Menu name is required");
+      toast.error("Menu name is required");
       return;
     }
 
@@ -117,7 +118,7 @@ export function MenuEditor({ menuId }: MenuEditorProps) {
       router.push("/kitchen/recipes/menus");
     } catch (error) {
       captureException(error);
-      alert("Error saving menu. Please try again.");
+      toast.error("Error saving menu. Please try again.");
     }
   };
 
