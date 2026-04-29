@@ -20,7 +20,7 @@ const PayrollPage = () => (
         title: "Approvals",
         description:
           "Review pending approvals and payroll risks before the next run.",
-        href: "/payroll/overview",
+        href: "/payroll/approvals",
         actionLabel: "Review Approvals",
         icon: ClipboardCheckIcon,
       },

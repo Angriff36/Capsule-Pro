@@ -22,7 +22,7 @@
 | **Missing API Routes** | 4 routes still missing | **ALL FIXED ✅** | ~~P1~~ |
 | **BROKEN_PRISMA_READ** | 2 entities NOT wired | **ALL FIXED ✅** | ~~P1~~ |
 | **Backend-Complete, No UI** | 4 major systems | **ALL IMPLEMENTED** ✅ | ~~P1~~ |
-| **SPEC Coverage** | 35/46 complete (76%) — All AI conflict detection implemented | UPDATED COUNT | P2 |
+| **SPEC Coverage** | 36/46 complete (78%) — All AI conflict detection + payroll approvals implemented | UPDATED COUNT | P2 |
 | **Placeholder Pages** | 5 pages remain stubs (down from 12) | **7 FIXED ✅** | P2 |
 | **Test Coverage** | ~80 API domains with zero tests | UNCHANGED | P3 |
 
@@ -37,7 +37,7 @@
 - **Prisma models:** 212
 - **Manifest routes:** 725
 - **Filesystem route dirs:** 710
-- **Specs total:** 46 (35 COMPLETE, 11 TODO)
+- **Specs total:** 46 (36 COMPLETE, 10 TODO)
 - **API domains without tests:** ~80 of ~126
 
 ---
@@ -214,7 +214,7 @@ These have full API backends but zero or placeholder frontend. Each is a signifi
 
 ---
 
-## TIER 2 — Missing SPEC Implementations (35/46 = 76%)
+## TIER 2 — Missing SPEC Implementations (36/46 = 78%)
 
 ### SPEC Coverage by Domain
 
@@ -223,7 +223,7 @@ These have full API backends but zero or placeholder frontend. Each is a signifi
 | Performance | 3 | 3 | 100% |
 | Kitchen | 10 | 10 | 100% |
 | Administrative | 8 | 9 | 89% |
-| Staff | 7 | 8 | 88% |
+| Staff | 8 | 8 | 100% |
 | AI | 7 | 7 | 100% |
 | CRM | 4 | 4 | 100% |
 | Inventory | 4 | 4 | 100% |
@@ -239,6 +239,7 @@ These have full API backends but zero or placeholder frontend. Each is a signifi
 | 41 | AI Conflict Detection — Equipment | AI | ✅ IMPLEMENTED — UI at /tools/conflicts with Equipment tab |
 | 42 | AI Conflict Detection — Inventory | AI | ✅ IMPLEMENTED — UI at /tools/conflicts with Inventory tab |
 | 43 | AI Conflict Detection — Venue | AI | ✅ IMPLEMENTED — UI at /tools/conflicts with Venue tab |
+| — | Payroll Approval Workflow | Staff | ✅ IMPLEMENTED — UI at /payroll/approvals with Approval Queue + History tabs |
 | 44 | Mobile Recipe Viewer | Mobile | 0% — no route, no component |
 | 45 | Mobile Time Clock | Mobile | 0% — no route, no component |
 | 46 | Native Mobile App | Mobile | 0% — no app shell |
@@ -362,6 +363,17 @@ All 16 `alert()` calls across 7 files replaced with `toast.success()` / `toast.e
 ---
 
 ## Recently Resolved
+
+### 2026-04-29 — Payroll Approval Workflow UI
+- **IMPLEMENTED:** Payroll Approval Workflow UI at /payroll/approvals
+  - Backend: Pre-existing API routes at `/api/payroll/approvals` (GET list, POST create, PUT approve/reject) and `/api/payroll/approvals/history` (GET)
+  - UI: New client component with 2 tabs (Approval Queue, Approval History)
+  - Approval Queue: List payroll runs needing approval with status filter, bulk select, approve/reject actions, detail dialog with approval history timeline, summary stat cards
+  - Approval History: Filter by Run ID, view approval history entries with performer info, action badges, status transitions
+  - Added "Approvals" nav item to payroll layout between "Payroll Runs" and "Tax Setup"
+  - Updated payroll overview landing page "Approvals" card to link to /payroll/approvals instead of /payroll/overview
+  - App + API typecheck: clean. All 1,269 API tests pass.
+- Files: `apps/app/app/(authenticated)/payroll/approvals/page.tsx`, `apps/app/app/(authenticated)/payroll/layout.tsx`, `apps/app/app/(authenticated)/payroll/page.tsx`
 
 ### 2026-04-29 — AI Conflict Detection UI (Specs #40-43)
 - **IMPLEMENTED:** Conflict Detection Dashboard at /tools/conflicts with 5 tabs (All, Employee, Equipment, Inventory, Venue)

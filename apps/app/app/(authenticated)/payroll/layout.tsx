@@ -27,6 +27,10 @@ const navigationItems = [
     label: "Payroll Runs",
   },
   {
+    href: "/payroll/approvals",
+    label: "Approvals",
+  },
+  {
     href: "/payroll/tax-setup",
     label: "Tax Setup",
   },
