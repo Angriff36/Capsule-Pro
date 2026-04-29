@@ -154,7 +154,15 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[Emergency bridge — running bridge was not updated]
-Files: apps/app/app/(authenticated)/payroll/layout.tsx (edit), apps/app/app/(authenticated)/payroll/approvals/page.tsx (create), apps/app/app/(authenticated)/payroll/page.tsx (edit), IMPLEMENTATION_PLAN.md (edit)
+[pre-compact bridge — saved before context compaction]
+Files (8):
+  apps/api/__tests__/kitchen/menus.test.ts (create)
+  apps/api/__tests__/events/event-budgets.test.ts (create)
+  apps/api/__tests__/events/event-contracts.test.ts (create)
+  apps/api/__tests__/events/catering-orders.test.ts (create)
+  apps/api/__tests__/kitchen/dishes.test.ts (create)
+  apps/api/__tests__/kitchen/stations.test.ts (create)
+  apps/api/__tests__/events/catering-orders.test.ts (edit)
+  apps/api/__tests__/kitchen/ingredients.test.ts (create)
 
 # === END COGNILAYER ===
