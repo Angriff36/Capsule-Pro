@@ -659,6 +659,13 @@ export class NextJsProjection implements ProjectionTarget {
       `    const result = await runtime.runCommand("${command.name}", body, {`
     );
     lines.push(`      entityName: "${entity.name}",`);
+    // Pass instanceId for instance-scoped (non-create) commands so the
+    // runtime engine targets the correct entity for mutate/update.
+    if (command.name !== "create") {
+      lines.push(
+        '      ...(body.id ? { instanceId: String(body.id) } : {}),'
+      );
+    }
     lines.push("    });");
     lines.push("");
     lines.push("    if (!result.success) {");

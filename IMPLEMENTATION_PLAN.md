@@ -1,6 +1,6 @@
 # Capsule-Pro Implementation Plan — Live Queue
 
-> **Last updated:** 2026-04-28 (BROKEN_RAW_SQL parent workflows complete; all 8 steps done). **Convention:** this file is the **live queue only**. Completed pass write-ups are archived, not appended here. See the **Archive Map** at the bottom for where to look up history.
+> **Last updated:** 2026-04-28 (E3-2 generator instanceId fix + AGENTS.md stale corrections). **Convention:** this file is the **live queue only**. Completed pass write-ups are archived, not appended here. See the **Archive Map** at the bottom for where to look up history.
 
 ---
 
@@ -57,7 +57,7 @@ All in-scope parent entities are complete (Steps 1–8). No further entities are
 
 These are the structural blockers this phase will hit. Don't rediscover them — link to them.
 
-1. **Generator — `instanceId` on instance-scoped commands.** Generated HTTP command handlers that mutate an existing row must pass `instanceId` into `runtime.runCommand(...)`. **Partially resolved:** all 8 in-scope parent routes were fixed manually; the generator still does not emit `instanceId` automatically for new routes.
+1. **Generator — `instanceId` on instance-scoped commands.** **RESOLVED 2026-04-28:** The Next.js projection generator (`nextjs/generator.ts`) now emits `...(body.id ? { instanceId: String(body.id) } : {})` for all non-`create` commands. The 8 manually-patched parent routes still carry the explicit `instanceId` (harmless — the generator fix applies to *newly generated* routes). The `manifest-command-handler.ts` shared handler already had this logic; the generator now matches it.
 2. **Runtime — manifest constraint polarity for `:block` / `block*` entity constraints.** IR entities carry constraints such as `blockVoteIfFinalized` (expressions describe a **bad** state; severity `block`). `RuntimeEngine.evaluateConstraint` classifies negative constraints only when `constraint.name.startsWith("severity")`; names like `blockVoteIfFinalized` are treated as positive. Result: legitimate creates/updates are blocked. **RESOLVED 2026-04-28:** `evaluateConstraint` now also checks `constraint.name.startsWith('block')` for negative-type detection. 39 production block* constraints now correctly fire when bad-state conditions are met. Conformance fixture renamed to avoid false detection. **In-phase rule:** if a valid write is rejected, file a focused sub-task with a failing test; pause the entity until the polarity fix lands.
 3. **`@angriff36/manifest` publish/version coordination.** `apps/api` pins the npm package, but Vitest aliases the workspace runtime. Tests can pass while deployed bundles still run the previously-published runtime.
 4. **Bypass / camelCase duplicate routes.** Many entities have stale camelCase route directories that the frontend does not call. Don't fix them in this phase.
@@ -71,19 +71,21 @@ Full write-ups live in the archive. Bullet summaries:
 - **BROKEN_RAW_SQL parent workflows (2026-04-28):** All 8 parent entities (Proposal, PurchaseOrder, Notification, Schedule, Shipment, User, PurchaseRequisition, VendorContract) now have PrismaStore bridges, fixed `instanceId` on all command routes, and passing HTTP integration tests. 103 total assertions across 8 test files. Archive: `docs/implementation-history/passes-38-63.md` (Passes 64–71 section).
 - **BROKEN_PRISMA_READ Batches 03–13 (closed 2026-04-28):** Twelve mechanical batches landed dedicated Prisma stores for AlertsConfig and 50+ other entities. All BROKEN_PRISMA_READ candidates with a Prisma model now have stores. Archive: `docs/implementation-history/passes-38-63.md`.
 - **Payroll bank-accounts (confirmed resolved 2026-04-28):** all 6 routes use Prisma ORM, EmployeeBankAccount model exists, RLS enabled. Prior raw-SQL claim was stale.
+- **Generator instanceId (E3-2, resolved 2026-04-28):** `nextjs/generator.ts` now emits `...(body.id ? { instanceId: String(body.id) } : {})` for non-create commands. 3 new test cases (create omits instanceId, update includes it, approve-like includes it). All 738 manifest-runtime tests pass.
+- **AGENTS.md stale corrections (resolved 2026-04-28):** Updated "17 quarantined" to "12", removed stale "no Prisma model" entries for Vendor/Driver/Vehicle/FacilityAsset/RevenueRecognitionSchedule/ProcurementBudget/VendorContact, updated schema drift section.
 
 ---
 
 ## Open Followups (parked, not in current task)
 
-- **E1, E3, E5** — runtime/generator items tied to Blockers #1 and #2.
-- **E3-2** — generator emit `instanceId` on instance-scoped HTTP routes (depends on Blocker #1; partially addressed by manual fixes in Passes 64–71).
+- **E1, E3, E5** — runtime/generator items tied to Blockers #1 and #2 (both now resolved).
+- ~~**E3-2** — generator emit `instanceId` on instance-scoped HTTP routes~~ — **RESOLVED 2026-04-28.** Generator now emits instanceId for all non-create commands.
 - **A2-1** — adapter audit follow-up captured in `docs/audits/pass-15-input-validation.md`.
 - **D3-1 / D3-2** — DB performance follow-ups (`docs/audits/pass-13-db-performance.md`).
-- **Manifest republish** — `@angriff36/manifest` version bump + rebuild + repin (Blocker #3).
-- **Quarantined manifests** — re-evaluate after generator + polarity fixes land. Blocker #2 (constraint polarity) is now resolved, unblocking manifest re-integration evaluation.
-- ~~**Procurement requisitions / vendor-contracts 500s**~~ — **RESOLVED** in Passes 70–71. Both PurchaseRequisition and VendorContract have Prisma stores wired, manifests are active (not disabled), and instanceId is fixed on all command routes. The stale claims in AGENTS.md Known Gotchas should be updated accordingly.
-- **AGENTS.md stale corrections** — Known Gotchas entries for PurchaseRequisition ("no Prisma model", "manifests in manifests-disabled/") are now stale. Update to reflect completion.
+- **Manifest republish** — `@angriff36/manifest` version bump + rebuild + repin (Blocker #3). Local source now has instanceId fix + polarity fix; published package is stale.
+- **Quarantined manifests** — re-evaluate after generator + polarity fixes land. Blockers #1 and #2 are now resolved. 12 disabled manifests remain; 2 are stale duplicates (Equipment, RevenueRecognition). Candidates for re-enablement with existing Prisma models: `invoice-rules`, `payment-method-rules`, `knowledge-base-rules`, `collections-rules`.
+- ~~**Procurement requisitions / vendor-contracts 500s**~~ — **RESOLVED** in Passes 70–71.
+- ~~**AGENTS.md stale corrections**~~ — **RESOLVED 2026-04-28.** Updated quarantined count (17→12), removed stale "no Prisma model" entries, updated schema drift section.
 
 ---
 

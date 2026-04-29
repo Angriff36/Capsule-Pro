@@ -155,6 +155,6 @@ Last: [first session]
 
 ## Last Session Bridge
 [auto-bridge snapshot @ 10 changes]
-Files: apps/api/app/api/procurement/requisitions/commands/convert-to-po/route.ts (edit), apps/api/app/api/procurement/requisitions/commands/reject/route.ts (edit), apps/api/app/api/procurement/requisitions/commands/approve-finance/route.ts (edit), apps/api/app/api/procurement/requisitions/commands/approve-manager/route.ts (edit), apps/api/app/api/procurement/requisitions/commands/submit/route.ts (edit), apps/api/app/api/procurement/requisitions/commands/update/route.ts (edit), packages/manifest-adapters/src/manifest-runtime-factory.ts (edit), packages/manifest-adapters/src/prisma-store.ts (edit), packages/manifest-adapters/src/prisma-stores/broken-read-requisition-parent.ts (create)
+Files: docs/implementation-history/schema-and-techdebt.md (edit), AGENTS.md (edit), .gitignore (edit), IMPLEMENTATION_PLAN.md (create), docs/implementation-history/passes-38-63.md (edit)
 
 # === END COGNILAYER ===

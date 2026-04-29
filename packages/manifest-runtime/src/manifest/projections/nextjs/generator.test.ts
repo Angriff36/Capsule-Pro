@@ -643,6 +643,84 @@ describe("NextJsProjection", () => {
       expect(firstCode(noAuthResult)).toContain("Auth disabled");
     });
 
+    it("omits instanceId for create commands", async () => {
+      const result = await compileToIR(commandSource);
+      expect(result.diagnostics).toHaveLength(0);
+      expect(result.ir).not.toBeNull();
+
+      const commandResult = projection.generate(result.ir!, {
+        surface: "nextjs.command",
+        entity: "Recipe",
+        command: "create",
+      });
+
+      const code = firstCode(commandResult);
+
+      // Contract: create commands must NOT include instanceId — the runtime
+      // uses createInstance() when instanceId is absent + command is "create".
+      expect(code).not.toContain("instanceId");
+    });
+
+    it("emits instanceId for non-create commands (update)", async () => {
+      const updateSource = `
+        entity Recipe {
+          property id: string
+          property name: string
+          property status: string
+
+          command update(name: string) {
+            guard name != ""
+            mutate name = name
+          }
+        }
+      `;
+      const result = await compileToIR(updateSource);
+      expect(result.diagnostics).toHaveLength(0);
+      expect(result.ir).not.toBeNull();
+
+      const commandResult = projection.generate(result.ir!, {
+        surface: "nextjs.command",
+        entity: "Recipe",
+        command: "update",
+      });
+
+      const code = firstCode(commandResult);
+
+      // Contract: non-create commands MUST pass instanceId so the runtime
+      // engine targets the correct entity for mutate/update actions.
+      expect(code).toContain("instanceId");
+      expect(code).toContain("body.id");
+      expect(code).toContain('entityName: "Recipe"');
+    });
+
+    it("emits instanceId for approve-like commands", async () => {
+      const approveSource = `
+        entity Proposal {
+          property id: string
+          property status: string
+
+          command approve() {
+            mutate status = "approved"
+          }
+        }
+      `;
+      const result = await compileToIR(approveSource);
+      expect(result.diagnostics).toHaveLength(0);
+      expect(result.ir).not.toBeNull();
+
+      const commandResult = projection.generate(result.ir!, {
+        surface: "nextjs.command",
+        entity: "Proposal",
+        command: "approve",
+      });
+
+      const code = firstCode(commandResult);
+
+      // Contract: approve/reject/submit etc. are instance-scoped and need instanceId
+      expect(code).toContain("instanceId");
+      expect(code).toContain("body.id");
+    });
+
     it("artifact has correct id and pathHint", async () => {
       const result = await compileToIR(commandSource);
       expect(result.ir).not.toBeNull();
