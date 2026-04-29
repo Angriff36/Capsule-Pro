@@ -103,24 +103,14 @@ function KitchenClock() {
 }
 
 function WeatherWidget() {
-  // Mock weather data - replace with real API in production
-  const weather = {
-    temp: 72,
-    condition: "sunny",
-    icon: Sun,
-  };
-
-  const Icon = weather.icon;
-
   return (
     <div className="flex items-center gap-3 rounded-lg bg-white px-3 py-2 shadow-sm ring-1 ring-slate-100">
       <div className="flex items-center gap-1.5 text-amber-500">
-        <Icon className="h-5 w-5" />
-        <span className="font-semibold text-lg">{weather.temp}</span>
+        <Sun className="h-5 w-5" />
       </div>
       <div className="hidden sm:block">
-        <div className="font-medium text-slate-600 text-xs">Sunny</div>
-        <div className="text-slate-400 text-xs">Kitchen temp normal</div>
+        <div className="font-medium text-slate-600 text-xs">Production Board</div>
+        <div className="text-slate-400 text-xs">Kitchen operations</div>
       </div>
     </div>
   );

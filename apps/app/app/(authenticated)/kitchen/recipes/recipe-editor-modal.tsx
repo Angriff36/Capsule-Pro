@@ -86,7 +86,7 @@ export const RecipeEditorModal = ({
     setIngredients([
       ...ingredients,
       {
-        id: Math.random().toString(),
+        id: crypto.randomUUID(),
         quantity: "",
         unit: "",
         name: "",
@@ -115,7 +115,7 @@ export const RecipeEditorModal = ({
     setInstructions([
       ...instructions,
       {
-        id: Math.random().toString(),
+        id: crypto.randomUUID(),
         stepNumber: instructions.length + 1,
         text: "",
       },
@@ -184,7 +184,7 @@ export const RecipeEditorModal = ({
     }
 
     const newImages: RecipeImage[] = files.map((file) => ({
-      id: Math.random().toString(),
+      id: crypto.randomUUID(),
       file,
       url: URL.createObjectURL(file),
       isMain: images.length === 0,

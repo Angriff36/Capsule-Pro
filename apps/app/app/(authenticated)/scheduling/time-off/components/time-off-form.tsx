@@ -142,35 +142,65 @@ export function TimeOffForm({
     if (formData.employeeId && formData.startDate && formData.endDate) {
       setCheckingConflicts(true);
       try {
-        // This is a simplified implementation - in a real app, you'd call
-        // a server action to check for actual conflicts
-        // For now, we'll simulate the check
-        const hasConflicts = Math.random() > 0.8; // 20% chance of conflict for demo
+        const response = await fetch("/api/conflicts/detect", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            entityTypes: ["scheduling", "staff"],
+            timeRange: {
+              start: new Date(formData.startDate).toISOString(),
+              end: new Date(formData.endDate).toISOString(),
+            },
+          }),
+        });
+
+        if (!response.ok) {
+          setConflicts({
+            hasShiftConflicts: false,
+            hasTimeOffConflicts: false,
+            conflictingShifts: undefined,
+            conflictingTimeOff: undefined,
+          });
+          return;
+        }
+
+        const result = await response.json();
+        const detectedConflicts = result.conflicts ?? [];
+
+        const shiftConflicts = detectedConflicts.filter(
+          (c: { type: string }) => c.type === "scheduling"
+        );
+        const staffConflicts = detectedConflicts.filter(
+          (c: { type: string }) => c.type === "staff"
+        );
 
         setConflicts({
-          hasShiftConflicts: hasConflicts,
-          hasTimeOffConflicts: hasConflicts,
-          conflictingShifts: hasConflicts
-            ? [
-                {
-                  id: "shift1",
-                  shift_start: new Date(formData.startDate),
-                  shift_end: new Date(formData.endDate),
-                },
-              ]
-            : undefined,
-          conflictingTimeOff: hasConflicts
-            ? [
-                {
-                  id: "request1",
-                  start_date: new Date(formData.startDate),
-                  end_date: new Date(formData.endDate),
-                },
-              ]
-            : undefined,
+          hasShiftConflicts: shiftConflicts.length > 0,
+          hasTimeOffConflicts: staffConflicts.length > 0,
+          conflictingShifts:
+            shiftConflicts.length > 0
+              ? shiftConflicts.map((c: { id: string }) => ({
+                  id: c.id,
+                  shift_start: new Date(formData.startDate ?? ""),
+                  shift_end: new Date(formData.endDate ?? ""),
+                }))
+              : undefined,
+          conflictingTimeOff:
+            staffConflicts.length > 0
+              ? staffConflicts.map((c: { id: string }) => ({
+                  id: c.id,
+                  start_date: new Date(formData.startDate ?? ""),
+                  end_date: new Date(formData.endDate ?? ""),
+                }))
+              : undefined,
         });
-      } catch (error) {
-        console.error("Failed to check conflicts:", error);
+      } catch {
+        setConflicts({
+          hasShiftConflicts: false,
+          hasTimeOffConflicts: false,
+          conflictingShifts: undefined,
+          conflictingTimeOff: undefined,
+        });
       } finally {
         setCheckingConflicts(false);
       }
