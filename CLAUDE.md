@@ -155,6 +155,6 @@ Last: [first session]
 
 ## Last Session Bridge
 [auto-bridge snapshot @ 10 changes]
-Files: apps/api/app/api/crm/proposals/commands/withdraw/route.ts (edit), apps/api/app/api/crm/proposals/commands/reject/route.ts (edit), apps/api/app/api/crm/proposals/commands/accept/route.ts (edit), apps/api/app/api/crm/proposals/commands/send/route.ts (edit), apps/api/app/api/crm/proposals/commands/update/route.ts (edit), apps/api/lib/manifest-command-handler.ts (edit), packages/manifest-adapters/src/manifest-runtime-factory.ts (edit), packages/manifest-adapters/src/prisma-store.ts (edit), packages/manifest-adapters/src/prisma-stores/broken-read-proposal-parent.ts (create)
+Files: apps/api/app/api/procurement/requisitions/commands/convert-to-po/route.ts (edit), apps/api/app/api/procurement/requisitions/commands/reject/route.ts (edit), apps/api/app/api/procurement/requisitions/commands/approve-finance/route.ts (edit), apps/api/app/api/procurement/requisitions/commands/approve-manager/route.ts (edit), apps/api/app/api/procurement/requisitions/commands/submit/route.ts (edit), apps/api/app/api/procurement/requisitions/commands/update/route.ts (edit), packages/manifest-adapters/src/manifest-runtime-factory.ts (edit), packages/manifest-adapters/src/prisma-store.ts (edit), packages/manifest-adapters/src/prisma-stores/broken-read-requisition-parent.ts (create)
 
 # === END COGNILAYER ===

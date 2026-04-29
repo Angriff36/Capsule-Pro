@@ -6,6 +6,7 @@
 /codex-plans/
 .codex/
 .claude/
+.pi/
 /nul
 
 # Agent session files (ledger, todo, lessons — local only)

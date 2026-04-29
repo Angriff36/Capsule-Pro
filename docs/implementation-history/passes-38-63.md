@@ -1147,3 +1147,227 @@ Test file uses the `vi.hoisted` mock pattern from `invoice-send-email.test.ts` t
 
 ---
 
+## Passes 64–71: BROKEN_RAW_SQL Parent Workflows (2026-04-28)
+
+All 8 in-scope parent entities completed. Each step followed the same pattern:
+1. Trace the live frontend route to find canonical API paths.
+2. Classify each route's storage path (raw SQL, Prisma, Manifest store, or mixed).
+3. Add a parent `<Entity>PrismaStore`, wire into `ENTITIES_WITH_SPECIFIC_STORES` and `createPrismaStoreProvider` switch.
+4. Fix `instanceId` on all instance-scoped command routes (Blocker #1).
+5. Add an HTTP-route integration test proving command write → read-path visibility.
+
+### Pass 64 — Proposal (CRM)
+
+**Status:** DONE. **Date:** 2026-04-28.
+
+**Changes:**
+- Added `ProposalPrismaStore` at `packages/manifest-adapters/src/prisma-stores/broken-read-proposal-parent.ts`
+- Wired `Proposal`, `ProposalLineItem`, `PurchaseOrderItem` into `createPrismaStoreProvider` switch + `ENTITIES_WITH_SPECIFIC_STORES`
+- Fixed `instanceId` on all 6 instance-scoped command routes (update, send, accept, reject, withdraw, mark-viewed)
+- Fixed `instanceId` in `executeManifestCommand` helper for all non-create commands (this fix benefits ALL entities using the shared helper)
+- Added `apps/api/__tests__/crm/proposals/proposal-end-to-end.test.ts` (11 assertions)
+
+**Test counts:** manifest-adapters: 436 tests, api: 1178 tests. All pass.
+
+**Frontend entry:** `apps/app/app/(authenticated)/crm/proposals/...` calls `GET /api/crm/proposals/list` for the index and `POST /api/crm/proposals/commands/{create|update|send|accept|reject|withdraw|mark-viewed}` for actions.
+
+**Canonical routes (under `apps/api/app/api/crm/proposals/`):**
+- `GET .../list` — Prisma (`database.proposal.findMany`) ✅
+- `GET .../[id]` — Prisma read ✅
+- `POST .../commands/create` — manifest runtime (no instanceId needed) ✅
+- Status-transition commands (update, send, accept, reject, withdraw, mark-viewed) — manifest runtime (instanceId fixed) ✅
+
+**Key findings:**
+- Manifest (`proposal-rules.manifest`) declares `store ... in memory` — now bridged to Prisma via `ProposalPrismaStore`.
+- Batch 13 stores (`ProposalLineItemPrismaStore`, `PurchaseOrderItemPrismaStore`) were in `ENTITIES_WITH_SPECIFIC_STORES` but had no switch case — wired in this pass.
+- The `executeManifestCommand` helper fix for `instanceId` on non-create commands benefits all entities that use this helper for writes.
+
+**Visible behavior:** A user can open the Proposals page, click New Proposal, fill the form, save, and see the proposal in the index immediately and after a hard refresh. Status transitions (Send / Accept / Reject / Withdraw) persist to Postgres, not lost on server restart.
+
+### Pass 65 — PurchaseOrder (Inventory)
+
+**Status:** DONE. **Date:** 2026-04-28.
+
+**Changes:**
+- Added `PurchaseOrderPrismaStore` at `packages/manifest-adapters/src/prisma-stores/broken-read-po-parent.ts`
+- Wired `PurchaseOrder` into `ENTITIES_WITH_SPECIFIC_STORES` and `createPrismaStoreProvider` switch
+- Fixed `instanceId` on all 6 instance-scoped command routes (submit, approve, reject, cancel, mark-ordered, mark-received)
+- Added `apps/api/__tests__/inventory/purchase-orders/purchase-order-end-to-end.test.ts` (10 assertions)
+
+**Test counts:** manifest-adapters: 436 tests, api: 1188 tests. All pass.
+
+**Key finding:** Frontend uses `/api/procurement/purchase-orders/` routes (raw SQL for both reads and writes), NOT the `/api/inventory/purchase-orders/` manifest command routes. The procurement routes are self-consistent. The inventory manifest command routes are now also functional with the Prisma store, providing an alternative API surface.
+
+**Frontend entry:** `apps/app/app/(authenticated)/procurement/purchase-orders/...` calls `GET /api/procurement/purchase-orders/list` for the index and `POST /api/procurement/purchase-orders/commands/{create|update-status|receive}` for actions. These all use raw SQL directly against `tenant_inventory.purchase_orders`.
+
+### Pass 66 — Notification (Collaboration)
+
+**Status:** DONE. **Date:** 2026-04-28.
+
+**Changes:**
+- Added `NotificationPrismaStore` at `packages/manifest-adapters/src/prisma-stores/broken-read-notification-parent.ts`
+- Wired `Notification` into `ENTITIES_WITH_SPECIFIC_STORES` and `createPrismaStoreProvider` switch
+- Fixed `instanceId` on all 3 instance-scoped command routes (mark-read, mark-dismissed, remove)
+- Added `apps/api/__tests__/collaboration/notifications/notification-end-to-end.test.ts` (11 assertions)
+
+**Test counts:** manifest-adapters: 436 tests, api: 1197 tests. All pass.
+
+**Frontend entry:** No dedicated notification page. Frontend uses Knock SDK (3rd party popover from sidebar bell icon) for real-time notification display. The Knock SDK communicates directly with Knock's cloud API — it does NOT call any of the app's own `/api/collaboration/notifications/` routes.
+
+**Canonical routes (under `apps/api/app/api/collaboration/notifications/`):**
+- `GET .../list` — Prisma (`database.notification.findMany`) ✅
+- `GET .../[id]` — Prisma (`database.notification.findFirst`) ✅
+- `POST .../commands/create` — manifest runtime ✅
+- `POST .../commands/mark-read` — manifest runtime (instanceId fixed) ✅
+- `POST .../commands/mark-dismissed` — manifest runtime (instanceId fixed) ✅
+- `POST .../commands/remove` — manifest runtime (instanceId fixed) ✅
+
+**Key findings:**
+- Notification lives in `tenant_admin` schema (not `tenant_core` as originally assumed). Table: `notifications`.
+- No soft-delete — `delete()` in the store is a hard delete (no `deletedAt` column in the Prisma model).
+- Duplicate legacy routes under `apps/api/app/api/notification/` (4 routes) — these are NOT called by the frontend and use the older `createManifestRuntime()` directly without `executeManifestCommand`. Only the canonical routes under `collaboration/notifications/` matter.
+- 4 commands: create, markRead, markDismissed, remove. No update command.
+
+### Pass 67 — Schedule (Staff)
+
+**Status:** DONE. **Date:** 2026-04-28.
+
+**Changes:**
+- Added `SchedulePrismaStore` at `packages/manifest-adapters/src/prisma-stores/broken-read-schedule-parent.ts`
+- Wired `Schedule` and `ScheduleShift` into `ENTITIES_WITH_SPECIFIC_STORES` and `createPrismaStoreProvider` switch
+- Fixed `instanceId` on all 3 instance-scoped command routes (update, release, close)
+- Added `apps/api/__tests__/staff/schedules/schedule-end-to-end.test.ts` (9 assertions)
+
+**Test counts:** manifest-adapters: 436 tests, api: 1206 tests. All pass.
+
+**Frontend entry:** `apps/app/app/(authenticated)/scheduling/...` calls `GET /api/staff/schedules/list` for the index and `POST /api/staff/schedules/commands/{create|update|release|close}` for actions.
+
+**Canonical routes (under `apps/api/app/api/staff/schedules/`):**
+- `GET .../list` — Prisma (`database.schedule.findMany`) ✅
+- `GET .../[id]` — Prisma (`database.schedule.findFirst`) ✅
+- `POST .../commands/create` — manifest runtime (no instanceId needed) ✅
+- `POST .../commands/update` — manifest runtime (instanceId fixed) ✅
+- `POST .../commands/release` — manifest runtime (instanceId fixed) ✅
+- `POST .../commands/close` — manifest runtime (instanceId fixed) ✅
+
+**Key findings:**
+- Schedule lives in `tenant_staff` schema. Table: `schedules`.
+- `schedule_date` stored as `DateTime @db.Date`; manifest uses ms epoch. Store handles conversion.
+- `published_at` / `published_by` are nullable columns mapped from manifest `publishedAt` / `publishedBy`.
+- Manifest-only fields `notes` and `shiftCount` have no Prisma columns — accepted on write, dropped; returned as defaults on read.
+- **ScheduleShift wiring gap found and fixed:** `ScheduleShiftPrismaStore` (from batch 13) was in `ENTITIES_WITH_SPECIFIC_STORES` but had **no switch case** in `createPrismaStoreProvider`. Added it alongside Schedule.
+- **Blocker #2 polarity bug observed:** The `close` command has `blockNotPublished:block self.status != "published"` which may incorrectly block legitimate close operations due to constraint polarity misclassification. Documented but not fixed per plan rules.
+- **Response format difference:** `apps/api/lib/manifest-response.ts` spreads data objects at the top level (`{success: true, ...data}`) rather than nesting under `data.data`. Tests use `data.schedules` / `data.schedule` accordingly.
+
+### Pass 68 — Shipment (Inventory)
+
+**Status:** DONE. **Date:** 2026-04-28.
+
+**Changes:**
+- Added `ShipmentPrismaStore` at `packages/manifest-adapters/src/prisma-stores/broken-read-shipment-parent.ts`
+- Wired `Shipment` into `ENTITIES_WITH_SPECIFIC_STORES` and `createPrismaStoreProvider` switch
+- Fixed `instanceId` on all 6 instance-scoped command routes (update, cancel, schedule, ship, start-preparing, mark-delivered)
+- Added `apps/api/__tests__/logistics/shipments/shipment-end-to-end.test.ts` (11 assertions)
+- Added `shipment` and `shipmentItem` models to API test database mock
+
+**Test counts:** manifest-adapters: 436 tests, api: 1218 tests. All pass.
+
+**Frontend entry:** Two pages: `/logistics/shipments` and `/warehouse/shipments`. `GET /api/shipments` (with filters/pagination) for the index. `POST /api/shipments/shipment/commands/{create|update|cancel|schedule|ship|start-preparing|mark-delivered}` for actions.
+
+**Canonical routes (under `apps/api/app/api/shipments/`):**
+- `GET .../shipment/list` — Prisma (`database.shipment.findMany`) ✅
+- `GET .../shipment/[id]` — Prisma (`database.shipment.findUnique`) ✅
+- `POST .../shipment/commands/create` — manifest runtime (no instanceId needed) ✅
+- 6 instance-scoped commands — manifest runtime (instanceId fixed) ✅
+
+**Key findings:**
+- Shipment lives in `tenant_inventory` schema. Table: `shipments`.
+- `status` is a `ShipmentStatus` Prisma enum (not plain string) — store uses `as any` cast.
+- Multiple nullable DateTime fields (scheduledDate, shippedDate, estimatedDeliveryDate, actualDeliveryDate).
+- Nullable Decimal fields (shippingCost, totalValue) handled with `toDecimalInput`.
+- Root routes (`/api/shipments`, `/api/shipments/[id]`) provide richer APIs with filters, pagination, includes — these use Prisma for reads and `executeManifestCommand` for writes (instanceId already handled by the shared helper fix from Pass 64).
+- Auto-generated command routes under `/shipment/commands/` directly call `runtime.runCommand` — these needed the individual instanceId fix.
+- Manifest (`shipment-rules.manifest`) declares `store Shipment in memory` — now bridged to Prisma via `ShipmentPrismaStore`.
+
+### Pass 69 — User (Staff)
+
+**Status:** DONE. **Date:** 2026-04-28.
+
+**Changes:**
+- Added `UserPrismaStore` at `packages/manifest-adapters/src/prisma-stores/broken-read-user-parent.ts`
+- Wired `User` into `ENTITIES_WITH_SPECIFIC_STORES`
+- Fixed `instanceId` on all 4 instance-scoped command routes (update, deactivate, terminate, update-role)
+- Added `apps/api/__tests__/staff/users/user-end-to-end.test.ts` (15 assertions)
+
+**Test counts:** manifest-adapters: 436 tests, api: 1,233 tests. All pass.
+
+**Frontend entry:** `apps/app/app/(authenticated)/settings/team/page.tsx` reads directly from `database.user.findMany()` — no API list route. Frontend currently has a read-only team view; no create/edit UI exists for users.
+
+**Canonical routes (under `apps/api/app/api/user/`):**
+- `POST .../create` — manifest runtime (no instanceId needed) ✅
+- `POST .../update` — manifest runtime (instanceId from `body.id`) ✅
+- `POST .../deactivate` — manifest runtime (instanceId from `body.userId`) ✅
+- `POST .../terminate` — manifest runtime (instanceId from `body.userId`) ✅
+- `POST .../update-role` — manifest runtime (instanceId from `body.userId`) ✅
+
+**Key findings:**
+- User lives in `tenant_staff` schema (not `tenant_core` as originally assumed). Table: `employees`.
+- Composite key: `tenantId_id`. Soft-delete via `deletedAt` column.
+- `EmploymentType` is a Prisma enum — store uses `as any` cast.
+- Nullable Decimal fields (`hourlyRate`, `salaryAnnual`) handled with `toDecimalInput`.
+- `hireDate` is `@db.Date` (required); `terminationDate` is nullable `@db.Date`.
+- No list/detail GET API routes — frontend reads directly from Prisma.
+- 5 manifest commands: create, update, deactivate, terminate, updateRole.
+- `payoutMethod` field exists in Prisma model but not in manifest — accepted but dropped on write.
+
+**Visible behavior:** Server-side code that creates users through `POST /api/user/create` persists to `tenant_staff.employees` and the record is visible through `database.user.findMany()`. The update, deactivate, terminate, and update-role commands correctly target specific user instances (via `instanceId`) and persist changes.
+
+### Pass 70 — PurchaseRequisition (Procurement)
+
+**Status:** DONE. **Date:** 2026-04-28.
+
+**Changes:**
+- Added `PurchaseRequisitionPrismaStore` at `packages/manifest-adapters/src/prisma-stores/broken-read-requisition-parent.ts`
+- Wired `PurchaseRequisition` into `ENTITIES_WITH_SPECIFIC_STORES` and `createPrismaStoreProvider` switch
+- Fixed `instanceId` on all 7 instance-scoped command routes (update, submit, approve-manager, approve-finance, reject, convert-to-po, cancel)
+- Added `apps/api/__tests__/procurement/requisitions/requisition-end-to-end.test.ts` (17 assertions)
+
+**Test counts:** manifest-adapters: 436 tests, api: 1,269 tests. All pass.
+
+**Frontend entry:** Frontend procurement requisition pages call `GET /api/procurement/requisitions/list` for the index and `POST /api/procurement/requisitions/commands/{create|update|submit|approve-manager|approve-finance|reject|convert-to-po|cancel}` for actions.
+
+**Key findings:**
+- PurchaseRequisition lives in `tenant_inventory` schema. Table: `purchase_requisitions`.
+- Composite key: `tenantId_id`. Soft-delete via `deletedAt` column.
+- 4 Decimal fields: subtotal, estimatedTax, estimatedShipping, estimatedTotal — all handled with `toDecimalRequired`.
+- 2 @db.Date fields: requestDate (required), requiredBy (nullable).
+- Multiple nullable timestamp fields: approvedAt, managerApprovalAt, financeApprovalAt, convertedAt, submittedAt.
+- Manifest (`procurement-requisition-rules.manifest`) declares `store PurchaseRequisition in memory` — now bridged to Prisma via `PurchaseRequisitionPrismaStore`.
+- **CRITICAL CORRECTION:** Both IMPLEMENTATION_PLAN.md and AGENTS.md previously stated "PurchaseRequisition has no Prisma model" and "Procurement requisitions/vendor-contracts command routes will 500 on POST. They call createManifestRuntime() against manifests that live in manifests-disabled/ and reference Prisma models (PurchaseRequisition, VendorContract) that do not exist." These claims were **stale/wrong**: the Prisma models DO exist, the manifests ARE active (not disabled).
+
+### Pass 71 — VendorContract (Procurement)
+
+**Status:** DONE. **Date:** 2026-04-28.
+
+**Changes:**
+- Added `VendorContractPrismaStore` switch case in `createPrismaStoreProvider` (store class already existed in `broken-read-batch13-vendor.ts`)
+- Fixed `instanceId` on all 10 command routes (create, update, submit, approve, reject, activate, terminate, renew, update-compliance, record-sla-breach)
+- Added `apps/api/__tests__/procurement/vendor-contracts/vendor-contract-end-to-end.test.ts` (19 assertions)
+
+**Test counts:** manifest-adapters: 436 tests, api: 1,269 tests. All pass.
+
+**Frontend entry:** Frontend vendor contract pages call `GET /api/procurement/vendor-contracts/list` for the index and `POST /api/procurement/vendor-contracts/commands/{create|update|submit|approve|reject|activate|terminate|renew|update-compliance|record-sla-breach}` for actions.
+
+**Key findings:**
+- VendorContract lives in `tenant_inventory` schema. Table: `vendor_contracts`.
+- Composite key: `tenantId_id`. Soft-delete via `deletedAt`.
+- **Wiring gap found and fixed:** `VendorContract` was in `ENTITIES_WITH_SPECIFIC_STORES` but had **no switch case** in `createPrismaStoreProvider` — the store class existed but was never wired up. Adding the switch case resolved the gap.
+- `VendorContractPrismaStore` already existed in `broken-read-batch13-vendor.ts` from batch 13 — only the switch case was missing.
+- 6 Decimal fields: minimumOrderQuantity, annualSpendCommitment, onTimeDeliveryRate, qualityRating — handled with conversion helpers.
+- 2 @db.Date fields: startDate (required), endDate (nullable).
+- Multiple nullable timestamp fields: approvedAt, terminatedAt, lastComplianceReview.
+- Manifest (`vendor-contract-rules.manifest`) declares `store VendorContract in memory` — now bridged to Prisma via `VendorContractPrismaStore`.
+
+**Visible behavior:** A user can create a vendor contract through the API, and it persists to `tenant_inventory.vendor_contracts`. The submit, approve, reject, activate, terminate, and renew commands correctly target specific contract instances (via `instanceId`) and persist changes.
+
+---
