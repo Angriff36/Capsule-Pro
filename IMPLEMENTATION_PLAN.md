@@ -24,6 +24,8 @@ In-scope parents (no new BROKEN_PRISMA_READ batches — those are done):
 | 4 | **Schedule** ✅   | tenant_staff     | `SchedulePrismaStore` + `ScheduleShiftPrismaStore` wired; instanceId fixed |
 | 5 | **Shipment** ✅   | tenant_inventory | `ShipmentPrismaStore` + `ShipmentItemPrismaStore` wired; instanceId fixed |
 | 6 | **User** ✅       | tenant_staff     | `UserPrismaStore` wired; instanceId fixed on 4 command routes |
+| 7 | **PurchaseRequisition** ✅ | tenant_inventory | `PurchaseRequisitionPrismaStore` wired; instanceId fixed on 7 command routes |
+| 8 | **VendorContract** ✅ | tenant_inventory | `VendorContractPrismaStore` switch case added; instanceId fixed on 10 command routes |
 
 **Start with Proposal**, then PurchaseOrder. ProposalLineItem /
 PurchaseOrderItem stores already exist, so the parent fix is the missing piece
@@ -324,13 +326,68 @@ team view; no create/edit UI exists for users.
 
 ---
 
+## Step 7 — PurchaseRequisition (Procurement) ✅ DONE
+
+**Completed 2026-04-28.** Changes:
+- Added `PurchaseRequisitionPrismaStore` at `packages/manifest-adapters/src/prisma-stores/broken-read-requisition-parent.ts`
+- Wired `PurchaseRequisition` into `ENTITIES_WITH_SPECIFIC_STORES` and `createPrismaStoreProvider` switch
+- Fixed `instanceId` on all 7 instance-scoped command routes (update, submit, approve-manager, approve-finance, reject, convert-to-po, cancel)
+- Added `apps/api/__tests__/procurement/requisitions/requisition-end-to-end.test.ts` (17 assertions)
+- All typechecks and tests pass (manifest-adapters: 436 tests, api: 1,269 tests)
+
+**Frontend entry:** Frontend procurement requisition pages call
+`GET /api/procurement/requisitions/list` for the index and
+`POST /api/procurement/requisitions/commands/{create|update|submit|approve-manager|approve-finance|reject|convert-to-po|cancel}`
+for actions.
+
+**Key findings:**
+- PurchaseRequisition lives in `tenant_inventory` schema. Table: `purchase_requisitions`.
+- Composite key: `tenantId_id` (same as other entities).
+- Soft-delete via `deletedAt` column.
+- 4 Decimal fields: subtotal, estimatedTax, estimatedShipping, estimatedTotal — all handled with `toDecimalRequired`.
+- 2 @db.Date fields: requestDate (required), requiredBy (nullable).
+- Multiple nullable timestamp fields: approvedAt, managerApprovalAt, financeApprovalAt, convertedAt, submittedAt.
+- Manifest (`procurement-requisition-rules.manifest`) declares `store PurchaseRequisition in memory` — now bridged to Prisma via `PurchaseRequisitionPrismaStore`.
+- **CRITICAL CORRECTION:** Both IMPLEMENTATION_PLAN.md and AGENTS.md previously stated "PurchaseRequisition has no Prisma model" and "Procurement requisitions/vendor-contracts command routes will 500 on POST. They call createManifestRuntime() against manifests that live in manifests-disabled/ and reference Prisma models (PurchaseRequisition, VendorContract) that do not exist." These claims were **stale/wrong**: the Prisma models DO exist, the manifests ARE active (not disabled).
+
+---
+
+## Step 8 — VendorContract (Procurement) ✅ DONE
+
+**Completed 2026-04-28.** Changes:
+- Added `VendorContractPrismaStore` switch case in `createPrismaStoreProvider` (store class already existed in `broken-read-batch13-vendor.ts`)
+- Fixed `instanceId` on all 10 command routes (create, update, submit, approve, reject, activate, terminate, renew, update-compliance, record-sla-breach)
+- Added `apps/api/__tests__/procurement/vendor-contracts/vendor-contract-end-to-end.test.ts` (19 assertions)
+- All typechecks and tests pass (manifest-adapters: 436 tests, api: 1,269 tests)
+
+**Frontend entry:** Frontend vendor contract pages call
+`GET /api/procurement/vendor-contracts/list` for the index and
+`POST /api/procurement/vendor-contracts/commands/{create|update|submit|approve|reject|activate|terminate|renew|update-compliance|record-sla-breach}`
+for actions.
+
+**Key findings:**
+- VendorContract lives in `tenant_inventory` schema. Table: `vendor_contracts`.
+- Composite key: `tenantId_id`. Soft-delete via `deletedAt`.
+- **Wiring gap found and fixed:** `VendorContract` was in `ENTITIES_WITH_SPECIFIC_STORES` but had **no switch case** in `createPrismaStoreProvider` — the store class existed but was never wired up. Adding the switch case resolved the gap.
+- `VendorContractPrismaStore` already existed in `broken-read-batch13-vendor.ts` from batch 13 — only the switch case was missing.
+- 6 Decimal fields: minimumOrderQuantity, annualSpendCommitment, onTimeDeliveryRate, qualityRating — handled with conversion helpers.
+- 2 @db.Date fields: startDate (required), endDate (nullable).
+- Multiple nullable timestamp fields: approvedAt, terminatedAt, lastComplianceReview.
+- Manifest (`vendor-contract-rules.manifest`) declares `store VendorContract in memory` — now bridged to Prisma via `VendorContractPrismaStore`.
+
+**Visible behavior on completion:**
+- A user can create a vendor contract through the API, and it persists to `tenant_inventory.vendor_contracts`.
+- The submit, approve, reject, activate, terminate, and renew commands correctly target specific contract instances (via `instanceId`) and persist changes.
+
+---
+
 ## Tracked but not started (in priority order)
 
-All in-scope parent entities are complete (Steps 1–6). No further entities are
+All in-scope parent entities are complete (Steps 1–8). No further entities are
 queued. Future work items live in **Open Followups** below.
 
 When you start one of these, lift it into its own numbered step section above,
-identical in shape to Steps 1–5.
+identical in shape to Steps 1–8.
 
 ---
 
@@ -380,12 +437,15 @@ Full write-ups live in the archive. Highlights:
 - **Notification parent workflow (completed 2026-04-28).** `NotificationPrismaStore` bridges manifest command writes to Prisma `tenant_admin.notifications`. All 3 instance-scoped command routes (mark-read, mark-dismissed, remove) now pass `instanceId` to `runCommand`. Key finding: Notification lives in `tenant_admin` (not `tenant_core`); frontend uses Knock SDK directly and does not call the app's notification API routes.
 - **Shipment parent workflow (completed 2026-04-28).** `ShipmentPrismaStore` bridges manifest command writes to Prisma `tenant_inventory.shipments`. All 6 instance-scoped command routes (update, cancel, schedule, ship, start-preparing, mark-delivered) now pass `instanceId` to `runCommand`. Key finding: `status` is a Prisma enum (`ShipmentStatus`), not plain string — store uses `as any` cast. Root routes (`/api/shipments`, `/api/shipments/[id]`) use `executeManifestCommand` for writes (instanceId handled by shared helper); auto-generated routes under `/shipment/commands/` directly call `runtime.runCommand` and needed individual fixes.
 - **User parent workflow (completed 2026-04-28).** `UserPrismaStore` bridges manifest command writes to Prisma `tenant_staff.employees`. All 4 instance-scoped command routes (update, deactivate, terminate, update-role) now pass `instanceId` to `runCommand`. Key finding: User lives in `tenant_staff` (not `tenant_core` as originally assumed); table name is `employees`. No list/detail GET API routes — frontend reads directly from `database.user.findMany()`. `EmploymentType` is a Prisma enum; `payoutMethod` exists in Prisma but not in manifest.
+- **PurchaseRequisition parent workflow (completed 2026-04-28).** `PurchaseRequisitionPrismaStore` bridges manifest command writes to Prisma `tenant_inventory.purchase_requisitions`. All 7 instance-scoped command routes (update, submit, approve-manager, approve-finance, reject, convert-to-po, cancel) now pass `instanceId` to `runCommand`. Key finding: prior claims that "PurchaseRequisition has no Prisma model" and "manifests live in manifests-disabled/" were **stale/wrong** — the Prisma model exists, the manifest is active. 4 Decimal fields, 2 @db.Date fields, multiple nullable timestamps.
+- **VendorContract parent workflow (completed 2026-04-28).** `VendorContractPrismaStore` switch case wired in `createPrismaStoreProvider` (store class already existed from batch 13). All 10 command routes (create, update, submit, approve, reject, activate, terminate, renew, update-compliance, record-sla-breach) now pass `instanceId` to `runCommand`. Key finding: VendorContract was in `ENTITIES_WITH_SPECIFIC_STORES` but had no switch case — the store existed but was never wired up. Same stale-model claim corrected.
 - **BROKEN_PRISMA_READ Batches 03–13 (closed 2026-04-28).** Twelve mechanical
   batches landed dedicated Prisma stores for AlertsConfig and 50+ other
   entities, including ProposalLineItem, PurchaseOrderItem, ScheduleShift,
   ShipmentItem (batch 13). All BROKEN_PRISMA_READ candidates with a Prisma model
-  now have stores. PurchaseRequisition is the only skip — no Prisma model (see
-  Known Gotchas). Detailed batch logs:
+  now have stores. (PurchaseRequisition was previously listed as "no Prisma model"
+  but this was corrected in Step 7 — the model exists and is now wired.)
+  Detailed batch logs:
   `docs/implementation-history/passes-38-63.md`.
 - The line-item / shift / shipment-item stores from batch 13 are pre-requisites
   for the current phase — that's why this phase is unblocked.
@@ -405,9 +465,10 @@ Full write-ups live in the archive. Highlights:
 - **Manifest republish** — `@angriff36/manifest` version bump + rebuild + repin
   (Blocker #3).
 - **Quarantined manifests** — re-evaluate after generator + polarity fixes land.
-- **Procurement requisitions / vendor-contracts 500s** — see Known Gotchas in
-  `AGENTS.md`; needs Prisma model + manifest re-integration before the route can
-  return real data.
+- ~~**Procurement requisitions / vendor-contracts 500s**~~ — **RESOLVED** in Steps 7–8.
+  Both PurchaseRequisition and VendorContract now have Prisma stores wired, manifests
+  are active (not disabled), and instanceId is fixed on all command routes. The stale
+  claims in AGENTS.md Known Gotchas should be updated accordingly.
 
 ---
 

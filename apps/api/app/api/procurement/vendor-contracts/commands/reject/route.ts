@@ -54,6 +54,7 @@ export async function POST(request: NextRequest) {
 
     const result = await runtime.runCommand("reject", body, {
       entityName: "VendorContract",
+      instanceId: body.id,
     });
 
     if (!result.success) {

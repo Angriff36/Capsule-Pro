@@ -54,6 +54,7 @@ export async function POST(request: NextRequest) {
 
     const result = await runtime.runCommand("cancel", body, {
       entityName: "PurchaseRequisition",
+      instanceId: body.id,
     });
 
     if (!result.success) {
