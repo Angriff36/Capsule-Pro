@@ -40,11 +40,13 @@ import {
   Sparkles,
   AlertCircle,
   FileText,
+  ListChecks,
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { apiFetch } from "@/app/lib/api";
+import { BulkTaskGeneratorTab } from "./bulk-task-generator";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -639,6 +641,10 @@ export function AiClient() {
           <FileText className="h-3.5 w-3.5" />
           Event Summaries
         </TabsTrigger>
+        <TabsTrigger value="bulk-tasks" className="gap-1.5">
+          <ListChecks className="h-3.5 w-3.5" />
+          Task Generator
+        </TabsTrigger>
       </TabsList>
 
       <TabsContent value="suggestions" className="mt-6">
@@ -647,6 +653,10 @@ export function AiClient() {
 
       <TabsContent value="summaries" className="mt-6">
         <EventSummariesTab />
+      </TabsContent>
+
+      <TabsContent value="bulk-tasks" className="mt-6">
+        <BulkTaskGeneratorTab />
       </TabsContent>
     </Tabs>
   );

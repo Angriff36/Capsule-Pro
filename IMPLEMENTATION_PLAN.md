@@ -22,7 +22,7 @@
 | **Missing API Routes** | 4 routes still missing | **ALL FIXED ✅** | ~~P1~~ |
 | **BROKEN_PRISMA_READ** | 2 entities NOT wired | **ALL FIXED ✅** | ~~P1~~ |
 | **Backend-Complete, No UI** | 4 major systems | **ALL IMPLEMENTED** ✅ | ~~P1~~ |
-| **SPEC Coverage** | 30/45 complete (67%) — comprehensive re-audit found 21 additional specs already implemented but marked TODO | UPDATED COUNT | P2 |
+| **SPEC Coverage** | 31/46 complete (67%) — AI Bulk Task Generation implemented | UPDATED COUNT | P2 |
 | **Placeholder Pages** | 5 pages remain stubs (down from 12) | **7 FIXED ✅** | P2 |
 | **Test Coverage** | ~80 API domains with zero tests | UNCHANGED | P3 |
 
@@ -37,7 +37,7 @@
 - **Prisma models:** 212
 - **Manifest routes:** 725
 - **Filesystem route dirs:** 710
-- **Specs total:** 45 (30 COMPLETE, 15 TODO)
+- **Specs total:** 46 (31 COMPLETE, 15 TODO)
 - **API domains without tests:** ~80 of ~126
 
 ---
@@ -214,7 +214,7 @@ These have full API backends but zero or placeholder frontend. Each is a signifi
 
 ---
 
-## TIER 2 — Missing SPEC Implementations (30/45 = 67%)
+## TIER 2 — Missing SPEC Implementations (31/46 = 67%)
 
 ### SPEC Coverage by Domain
 
@@ -224,7 +224,7 @@ These have full API backends but zero or placeholder frontend. Each is a signifi
 | Kitchen | 10 | 10 | 100% |
 | Administrative | 8 | 9 | 89% |
 | Staff | 7 | 8 | 88% |
-| AI | 2 | 7 | 29% |
+| AI | 3 | 7 | 43% |
 | CRM | 4 | 4 | 100% |
 | Inventory | 4 | 4 | 100% |
 | Mobile | 3 | 5 | 60% |
@@ -235,7 +235,6 @@ These have full API backends but zero or placeholder frontend. Each is a signifi
 
 | # | Spec | Domain | What exists |
 |---|------|--------|-------------|
-| 39 | AI Bulk Task Generation | AI | 0% — no endpoint, no UI |
 | 40 | AI Conflict Detection — Employee | AI | 0% — no endpoint, no UI |
 | 41 | AI Conflict Detection — Equipment | AI | 0% — no endpoint, no UI |
 | 42 | AI Conflict Detection — Inventory | AI | 0% — no endpoint, no UI |
@@ -363,6 +362,15 @@ All 16 `alert()` calls across 7 files replaced with `toast.success()` / `toast.e
 ---
 
 ## Recently Resolved
+
+### 2026-04-29 — AI Bulk Task Generation (Spec #39)
+- **IMPLEMENTED:** AI Bulk Task Generation with full pipeline:
+  - API: `POST /api/ai/bulk-tasks` (generate proposed tasks via GPT-4o-mini with fallback to rule-based generation) + `POST /api/ai/bulk-tasks/confirm` (persist selected tasks as PrepTask records via Prisma transaction)
+  - Generate route gathers event context (event details, dishes with allergens/lead times, kitchen stations, existing tasks, prep methods), sends structured prompt to AI requesting tasks grouped by station with day-offset timing
+  - Confirm route validates no past dates, deduplicates against existing tasks, creates PrepTask records in transaction
+  - UI: New "Task Generator" tab in Tools/AI page with event ID input, AI-powered generation, station-grouped task review with per-task select/edit/remove, bulk accept/reject, and edit dialog for modifying task properties before confirmation
+- Files: `apps/api/app/api/ai/bulk-tasks/route.ts`, `apps/api/app/api/ai/bulk-tasks/confirm/route.ts`, `apps/app/app/(authenticated)/tools/ai/bulk-task-generator.tsx`, modified `apps/app/app/(authenticated)/tools/ai/ai-client.tsx`
+- App + API typecheck: clean. All 1,269 API tests pass.
 
 ### 2026-04-29 — Automated Email Workflows UI + SPEC Coverage Re-Audit
 - **IMPLEMENTED:** Automated Email Workflows UI at settings/email-workflows with full CRUD: list page (search, trigger type filter, status filter, stat cards, data table), create page (name, trigger type selector with grouped options, email template selector, recipient config, trigger config JSON, active toggle), edit page (pre-populated form, delete with AlertDialog), server actions with direct Prisma access.

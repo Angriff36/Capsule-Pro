@@ -63,6 +63,16 @@
       "comment": "AI-generated prep task bulk creation using PrepTask.create command"
     },
     {
+      "prefix": "/api/ai/bulk-tasks",
+      "methods": ["POST"],
+      "comment": "AI Bulk Task Generation: propose tasks via GPT-4o-mini (no persistence)"
+    },
+    {
+      "prefix": "/api/ai/bulk-tasks/confirm",
+      "methods": ["POST"],
+      "comment": "AI Bulk Task Generation: persist accepted tasks as PrepTask records via Prisma"
+    },
+    {
       "prefix": "/api/kitchen/manifest/",
       "methods": ["POST", "PUT", "PATCH", "DELETE"],
       "comment": "Legacy infrastructure routes using Manifest runtime (to be migrated)"
