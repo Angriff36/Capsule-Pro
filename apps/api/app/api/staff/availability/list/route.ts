@@ -20,17 +20,16 @@ export async function GET(request: NextRequest) {
     return manifestErrorResponse("Tenant not found", 400);
   }
 
-const employeeAvailabilitys = await database.employeeAvailability.findMany({
+const employeeAvailabilities = await database.employee_availability.findMany({
     where: {
-        tenantId,
-        deletedAt: null
+        tenant_id: tenantId,
       },
     orderBy: {
-      createdAt: "desc",
+      created_at: "desc",
     },
   });
 
-    return manifestSuccessResponse({ employeeAvailabilitys });
+    return manifestSuccessResponse({ employeeAvailabilities });
   } catch (error) {
     console.error("Error fetching employeeAvailabilitys:", error);
     return manifestErrorResponse("Internal server error", 500);

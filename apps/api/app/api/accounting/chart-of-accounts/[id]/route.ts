@@ -25,11 +25,10 @@ export async function GET(
 
     const { id } = await params;
 
-    const chartOfAccount = await database.chartOfAccount.findUnique({
+    const chartOfAccount = await database.chartOfAccount.findFirst({
       where: {
         id,
         tenantId,
-        deletedAt: null
       },
     });
 

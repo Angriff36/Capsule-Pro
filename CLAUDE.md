@@ -155,6 +155,6 @@ Last: [first session]
 
 ## Last Session Bridge
 [Emergency bridge — running bridge was not updated]
-Files: packages/manifest-runtime/src/manifest/projections/nextjs/generator.ts (edit), packages/manifest-runtime/src/manifest/projections/nextjs/generator.test.ts (edit), AGENTS.md (edit), IMPLEMENTATION_PLAN.md (edit)
+Files: apps/api/__tests__/collaboration/notifications/notification-end-to-end.test.ts (edit), apps/api/__tests__/staff/schedules/schedule-end-to-end.test.ts (edit), IMPLEMENTATION_PLAN.md (edit), AGENTS.md (edit)
 
 # === END COGNILAYER ===

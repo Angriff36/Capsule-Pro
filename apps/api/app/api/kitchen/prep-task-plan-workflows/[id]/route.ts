@@ -25,7 +25,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const prepTaskPlanWorkflow = await database.prepTaskPlanWorkflow.findUnique({
+    const prepTaskPlanWorkflow = await database.prepTaskPlanWorkflow.findFirst({
       where: {
         id,
         tenantId,

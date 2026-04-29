@@ -23,10 +23,9 @@ export async function GET(request: NextRequest) {
 const chartOfAccounts = await database.chartOfAccount.findMany({
     where: {
         tenantId,
-        deletedAt: null
       },
     orderBy: {
-      createdAt: "desc",
+      accountName: "asc",
     },
   });
 

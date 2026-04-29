@@ -20,17 +20,16 @@ export async function GET(request: NextRequest) {
     return manifestErrorResponse("Tenant not found", 400);
   }
 
-const payrollApprovalHistorys = await database.payrollApprovalHistory.findMany({
+const approvalHistories = await database.approvalHistory.findMany({
     where: {
         tenantId,
-        deletedAt: null
       },
     orderBy: {
       createdAt: "desc",
     },
   });
 
-    return manifestSuccessResponse({ payrollApprovalHistorys });
+    return manifestSuccessResponse({ approvalHistories });
   } catch (error) {
     console.error("Error fetching payrollApprovalHistorys:", error);
     return manifestErrorResponse("Internal server error", 500);

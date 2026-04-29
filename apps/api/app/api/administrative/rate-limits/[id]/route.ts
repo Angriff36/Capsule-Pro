@@ -25,7 +25,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const rateLimitConfig = await database.rateLimitConfig.findUnique({
+    const rateLimitConfig = await database.rateLimitConfig.findFirst({
       where: {
         id,
         tenantId,

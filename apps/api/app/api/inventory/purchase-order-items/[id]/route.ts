@@ -25,7 +25,7 @@ export async function GET(
 
     const { id } = await params;
 
-    const purchaseOrderItem = await database.purchaseOrderItem.findUnique({
+    const purchaseOrderItem = await database.purchaseOrderItem.findFirst({
       where: {
         id,
         tenantId,
