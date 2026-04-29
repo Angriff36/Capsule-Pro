@@ -12,7 +12,9 @@ import { ButtonGroup } from "@repo/design-system/components/ui/button-group";
 import { Card } from "@repo/design-system/components/ui/card";
 import { format } from "date-fns";
 import { Download, Filter, Plus, Search } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { apiFetch } from "@/app/lib/api";
 
 type PaymentStatus =
@@ -77,6 +79,7 @@ const fraudStatusColors: Record<FraudStatus, string> = {
 };
 
 export function PaymentListClient() {
+  const router = useRouter();
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -106,8 +109,8 @@ export function PaymentListClient() {
       setPayments(data.data);
       setTotalPages(data.pagination.totalPages);
       setTotal(data.pagination.total);
-    } catch (error) {
-      console.error("Failed to fetch payments:", error);
+    } catch {
+      toast.error("Failed to fetch payments");
     } finally {
       setLoading(false);
     }
@@ -128,7 +131,33 @@ export function PaymentListClient() {
       a.download = `payments-${format(new Date(), "yyyy-MM-dd")}.csv`;
       a.click();
     } catch (error) {
-      console.error("Failed to export payments:", error);
+      toast.error("Failed to export payments");
+    }
+  };
+
+  const handleRefund = async (payment: Payment) => {
+    const reason = prompt("Enter refund reason:");
+    if (!reason) return;
+
+    const amountStr = prompt("Enter refund amount (leave blank for full refund):");
+    const refundAmount = amountStr ? Number.parseFloat(amountStr) : undefined;
+
+    try {
+      const response = await apiFetch(`/api/accounting/payments/${payment.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reason, amount: refundAmount }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || "Refund failed");
+      }
+
+      toast.success("Refund processed successfully");
+      fetchPayments();
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to process refund");
     }
   };
 
@@ -191,7 +220,7 @@ export function PaymentListClient() {
             View
           </Button>
           {payment.status === "COMPLETED" && (
-            <Button size="sm" variant="ghost">
+            <Button onClick={() => handleRefund(payment)} size="sm" variant="ghost">
               Refund
             </Button>
           )}
@@ -247,7 +276,7 @@ export function PaymentListClient() {
             <Download className="w-4 h-4 mr-2" />
             Export
           </Button>
-          <Button>
+          <Button onClick={() => router.push("/accounting/payments/new")}>
             <Plus className="w-4 h-4 mr-2" />
             New Payment
           </Button>

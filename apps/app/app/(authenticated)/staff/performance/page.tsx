@@ -158,7 +158,7 @@ function formatDate(dateStr: string | null) {
   });
 }
 
-export function PerformancePageClient() {
+export default function PerformancePageClient() {
   const [reviews, setReviews] = useState<PerformanceReview[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);

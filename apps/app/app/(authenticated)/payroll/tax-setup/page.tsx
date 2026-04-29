@@ -250,6 +250,19 @@ export default function TaxSetupPage() {
     await loadData();
   };
 
+  const handleDeleteStateTax = async (configId: string) => {
+    try {
+      await apiFetch("/api/payroll/tax/list", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ configId, isActive: false }),
+      });
+      setConfigs((prev) => prev.filter((c) => c.id !== configId));
+    } catch (error) {
+      console.error("Failed to delete tax config:", error);
+    }
+  };
+
   const runTaxPreview = async () => {
     const income = Number.parseFloat(previewIncome);
     if (!income || income <= 0) return;
@@ -608,6 +621,7 @@ export default function TaxSetupPage() {
                             </Button>
                             <Button
                               className="h-8 w-8 text-red-500"
+                              onClick={() => handleDeleteStateTax(config.id)}
                               size="icon"
                               variant="ghost"
                             >

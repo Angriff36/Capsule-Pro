@@ -333,6 +333,32 @@ export default function TimecardsPage() {
     setDetailModalOpen(true);
   };
 
+  const handleClockOut = async () => {
+    if (!selectedTimeEntry) return;
+    setActionLoading(true);
+    try {
+      const response = await apiFetch(`/api/timecards/${selectedTimeEntry.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ clockOut: new Date().toISOString() }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to clock out");
+      }
+
+      toast.success("Clocked out successfully");
+      setDetailModalOpen(false);
+      setSelectedTimeEntry(null);
+      fetchTimecards();
+    } catch (error) {
+      console.error("Error clocking out:", error);
+      toast.error("Failed to clock out");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const toggleSelectEntry = (entryId: string) => {
     setSelectedEntries((prev) => {
       const newSet = new Set(prev);
@@ -693,6 +719,14 @@ export default function TimecardsPage() {
                             )}
                             <Button
                               className="h-8 w-8 text-blue-600 hover:text-blue-700"
+                              disabled={actionLoading}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const reason = prompt("Enter edit request reason:");
+                                if (reason) {
+                                  handleEditRequest(entry.id, reason);
+                                }
+                              }}
                               size="icon"
                               variant="ghost"
                             >
@@ -700,6 +734,17 @@ export default function TimecardsPage() {
                             </Button>
                             <Button
                               className="h-8 w-8 text-orange-600 hover:text-orange-700"
+                              disabled={actionLoading}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const type = prompt("Exception type (missing_clock_out, late_arrival, excessive_break, other):");
+                                if (type) {
+                                  const notes = prompt("Exception notes:");
+                                  if (notes) {
+                                    handleFlagException(entry.id, type, notes);
+                                  }
+                                }
+                              }}
                               size="icon"
                               variant="ghost"
                             >
@@ -747,6 +792,7 @@ export default function TimecardsPage() {
       {selectedTimeEntry && (
         <TimecardDetailModal
           onApprove={() => handleApprove(selectedTimeEntry.id)}
+          onClockOut={handleClockOut}
           onClose={() => {
             setDetailModalOpen(false);
             setSelectedTimeEntry(null);

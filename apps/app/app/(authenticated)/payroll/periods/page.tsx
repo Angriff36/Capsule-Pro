@@ -98,7 +98,7 @@ function getStatusBadge(status: PayrollPeriod["status"]) {
 }
 
 export default function PayrollPeriodsPage() {
-  const _router = useRouter();
+  const router = useRouter();
   const _searchParams = useSearchParams();
   const [periods, setPeriods] = useState<PayrollPeriod[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo>({
@@ -328,7 +328,7 @@ export default function PayrollPeriodsPage() {
                           {formatDate(period.createdAt)}
                         </TableCell>
                         <TableCell className="text-right">
-                          <Button size="sm" variant="outline">
+                          <Button onClick={() => router.push(`/payroll/periods/${period.id}`)} size="sm" variant="outline">
                             View Details
                           </Button>
                         </TableCell>

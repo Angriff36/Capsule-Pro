@@ -23,7 +23,6 @@ import {
   DollarSignIcon,
   MapPinIcon,
 } from "lucide-react";
-import { toast } from "sonner";
 
 interface TimeEntry {
   id: string;
@@ -69,6 +68,7 @@ interface TimecardDetailModalProps {
     }
   ) => void;
   onFlagException: (type: string, notes: string) => void;
+  onClockOut: () => void;
 }
 
 function formatCurrency(value: number | null) {
@@ -117,6 +117,7 @@ export default function TimecardDetailModal({
   onApprove,
   onEditRequest,
   onFlagException,
+  onClockOut,
 }: TimecardDetailModalProps) {
   if (!timeEntry) {
     return null;
@@ -370,9 +371,7 @@ export default function TimecardDetailModal({
             )}
             {isOpen && (
               <Button
-                onClick={() => {
-                  toast.info("Clock out functionality to be implemented");
-                }}
+                onClick={onClockOut}
                 variant="outline"
               >
                 Clock Out

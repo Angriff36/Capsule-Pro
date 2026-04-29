@@ -9,6 +9,7 @@ import {
   CardTitle,
 } from "@repo/design-system/components/ui/card";
 import { FileText, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { usePostHog } from "posthog-js/react";
 import { useEffect } from "react";
 
@@ -50,6 +51,7 @@ const formatDate = (date: string) =>
 
 export function InvoicesClient({ invoices }: { invoices: Invoice[] }) {
   const posthog = usePostHog();
+  const router = useRouter();
 
   useEffect(() => {
     posthog?.capture("billing:invoice_viewed", {
@@ -64,7 +66,7 @@ export function InvoicesClient({ invoices }: { invoices: Invoice[] }) {
           <h1 className="text-2xl font-bold tracking-tight">Invoices</h1>
           <p className="text-muted-foreground">Manage and track all invoices</p>
         </div>
-        <Button>
+        <Button onClick={() => router.push("/accounting/invoices/new")}>
           <Plus className="mr-2 h-4 w-4" />
           New Invoice
         </Button>
