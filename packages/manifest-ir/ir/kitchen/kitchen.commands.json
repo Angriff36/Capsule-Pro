@@ -335,6 +335,141 @@
     "commandId": "ClientPreference.update"
   },
   {
+    "entity": "CollectionAction",
+    "command": "complete",
+    "commandId": "CollectionAction.complete"
+  },
+  {
+    "entity": "CollectionAction",
+    "command": "fail",
+    "commandId": "CollectionAction.fail"
+  },
+  {
+    "entity": "CollectionAction",
+    "command": "reschedule",
+    "commandId": "CollectionAction.reschedule"
+  },
+  {
+    "entity": "CollectionAction",
+    "command": "skip",
+    "commandId": "CollectionAction.skip"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "assignTo",
+    "commandId": "CollectionCase.assignTo"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "close",
+    "commandId": "CollectionCase.close"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "createPaymentPlan",
+    "commandId": "CollectionCase.createPaymentPlan"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "escalateDunning",
+    "commandId": "CollectionCase.escalateDunning"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "escalateToLegal",
+    "commandId": "CollectionCase.escalateToLegal"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "escalateToLegalWithDetails",
+    "commandId": "CollectionCase.escalateToLegalWithDetails"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "markDisputed",
+    "commandId": "CollectionCase.markDisputed"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "markResolved",
+    "commandId": "CollectionCase.markResolved"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "recordPayment",
+    "commandId": "CollectionCase.recordPayment"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "resetDunning",
+    "commandId": "CollectionCase.resetDunning"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "resolve",
+    "commandId": "CollectionCase.resolve"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "resolveDispute",
+    "commandId": "CollectionCase.resolveDispute"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "setHighPriority",
+    "commandId": "CollectionCase.setHighPriority"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "setPriority",
+    "commandId": "CollectionCase.setPriority"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "setUrgentPriority",
+    "commandId": "CollectionCase.setUrgentPriority"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "updateAging",
+    "commandId": "CollectionCase.updateAging"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "updateStatus",
+    "commandId": "CollectionCase.updateStatus"
+  },
+  {
+    "entity": "CollectionCase",
+    "command": "writeOff",
+    "commandId": "CollectionCase.writeOff"
+  },
+  {
+    "entity": "CollectionPaymentPlan",
+    "command": "cancel",
+    "commandId": "CollectionPaymentPlan.cancel"
+  },
+  {
+    "entity": "CollectionPaymentPlan",
+    "command": "markCompleted",
+    "commandId": "CollectionPaymentPlan.markCompleted"
+  },
+  {
+    "entity": "CollectionPaymentPlan",
+    "command": "markDefaulted",
+    "commandId": "CollectionPaymentPlan.markDefaulted"
+  },
+  {
+    "entity": "CollectionPaymentPlan",
+    "command": "modify",
+    "commandId": "CollectionPaymentPlan.modify"
+  },
+  {
+    "entity": "CollectionPaymentPlan",
+    "command": "recordInstallment",
+    "commandId": "CollectionPaymentPlan.recordInstallment"
+  },
+  {
     "entity": "CommandBoard",
     "command": "activate",
     "commandId": "CommandBoard.activate"
@@ -578,6 +713,61 @@
     "entity": "EmployeeDeduction",
     "command": "create",
     "commandId": "EmployeeDeduction.create"
+  },
+  {
+    "entity": "EntityVersion",
+    "command": "approve",
+    "commandId": "EntityVersion.approve"
+  },
+  {
+    "entity": "EntityVersion",
+    "command": "create",
+    "commandId": "EntityVersion.create"
+  },
+  {
+    "entity": "EntityVersion",
+    "command": "reject",
+    "commandId": "EntityVersion.reject"
+  },
+  {
+    "entity": "EntityVersion",
+    "command": "restore",
+    "commandId": "EntityVersion.restore"
+  },
+  {
+    "entity": "Equipment",
+    "command": "create",
+    "commandId": "Equipment.create"
+  },
+  {
+    "entity": "Equipment",
+    "command": "recordMaintenance",
+    "commandId": "Equipment.recordMaintenance"
+  },
+  {
+    "entity": "Equipment",
+    "command": "recordUsage",
+    "commandId": "Equipment.recordUsage"
+  },
+  {
+    "entity": "Equipment",
+    "command": "retire",
+    "commandId": "Equipment.retire"
+  },
+  {
+    "entity": "Equipment",
+    "command": "scheduleMaintenance",
+    "commandId": "Equipment.scheduleMaintenance"
+  },
+  {
+    "entity": "Equipment",
+    "command": "updateCondition",
+    "commandId": "Equipment.updateCondition"
+  },
+  {
+    "entity": "Equipment",
+    "command": "updateStatus",
+    "commandId": "Equipment.updateStatus"
   },
   {
     "entity": "Event",
@@ -945,6 +1135,56 @@
     "commandId": "InventoryTransaction.create"
   },
   {
+    "entity": "Invoice",
+    "command": "applyPayment",
+    "commandId": "Invoice.applyPayment"
+  },
+  {
+    "entity": "Invoice",
+    "command": "markAsPaid",
+    "commandId": "Invoice.markAsPaid"
+  },
+  {
+    "entity": "Invoice",
+    "command": "markOverdue",
+    "commandId": "Invoice.markOverdue"
+  },
+  {
+    "entity": "Invoice",
+    "command": "markViewed",
+    "commandId": "Invoice.markViewed"
+  },
+  {
+    "entity": "Invoice",
+    "command": "recordRefund",
+    "commandId": "Invoice.recordRefund"
+  },
+  {
+    "entity": "Invoice",
+    "command": "send",
+    "commandId": "Invoice.send"
+  },
+  {
+    "entity": "Invoice",
+    "command": "sendReminder",
+    "commandId": "Invoice.sendReminder"
+  },
+  {
+    "entity": "Invoice",
+    "command": "updateLineItems",
+    "commandId": "Invoice.updateLineItems"
+  },
+  {
+    "entity": "Invoice",
+    "command": "voidInvoice",
+    "commandId": "Invoice.voidInvoice"
+  },
+  {
+    "entity": "Invoice",
+    "command": "writeOff",
+    "commandId": "Invoice.writeOff"
+  },
+  {
     "entity": "KitchenTask",
     "command": "addTag",
     "commandId": "KitchenTask.addTag"
@@ -1103,6 +1343,86 @@
     "entity": "OverrideAudit",
     "command": "create",
     "commandId": "OverrideAudit.create"
+  },
+  {
+    "entity": "Payment",
+    "command": "markChargeback",
+    "commandId": "Payment.markChargeback"
+  },
+  {
+    "entity": "Payment",
+    "command": "markFraudFailed",
+    "commandId": "Payment.markFraudFailed"
+  },
+  {
+    "entity": "Payment",
+    "command": "markFraudPassed",
+    "commandId": "Payment.markFraudPassed"
+  },
+  {
+    "entity": "Payment",
+    "command": "markFraudReviewed",
+    "commandId": "Payment.markFraudReviewed"
+  },
+  {
+    "entity": "Payment",
+    "command": "partialRefund",
+    "commandId": "Payment.partialRefund"
+  },
+  {
+    "entity": "Payment",
+    "command": "process",
+    "commandId": "Payment.process"
+  },
+  {
+    "entity": "Payment",
+    "command": "processFailed",
+    "commandId": "Payment.processFailed"
+  },
+  {
+    "entity": "Payment",
+    "command": "refund",
+    "commandId": "Payment.refund"
+  },
+  {
+    "entity": "Payment",
+    "command": "updateFraudStatus",
+    "commandId": "Payment.updateFraudStatus"
+  },
+  {
+    "entity": "PaymentMethod",
+    "command": "flagForFraud",
+    "commandId": "PaymentMethod.flagForFraud"
+  },
+  {
+    "entity": "PaymentMethod",
+    "command": "markAsDefault",
+    "commandId": "PaymentMethod.markAsDefault"
+  },
+  {
+    "entity": "PaymentMethod",
+    "command": "markExpired",
+    "commandId": "PaymentMethod.markExpired"
+  },
+  {
+    "entity": "PaymentMethod",
+    "command": "markInvalid",
+    "commandId": "PaymentMethod.markInvalid"
+  },
+  {
+    "entity": "PaymentMethod",
+    "command": "markNotDefault",
+    "commandId": "PaymentMethod.markNotDefault"
+  },
+  {
+    "entity": "PaymentMethod",
+    "command": "updateToken",
+    "commandId": "PaymentMethod.updateToken"
+  },
+  {
+    "entity": "PaymentMethod",
+    "command": "verify",
+    "commandId": "PaymentMethod.verify"
   },
   {
     "entity": "PayrollApprovalHistory",
@@ -2090,6 +2410,46 @@
     "commandId": "VendorContract.updateCompliance"
   },
   {
+    "entity": "VersionApproval",
+    "command": "approve",
+    "commandId": "VersionApproval.approve"
+  },
+  {
+    "entity": "VersionApproval",
+    "command": "cancel",
+    "commandId": "VersionApproval.cancel"
+  },
+  {
+    "entity": "VersionApproval",
+    "command": "create",
+    "commandId": "VersionApproval.create"
+  },
+  {
+    "entity": "VersionApproval",
+    "command": "reject",
+    "commandId": "VersionApproval.reject"
+  },
+  {
+    "entity": "VersionedEntity",
+    "command": "lock",
+    "commandId": "VersionedEntity.lock"
+  },
+  {
+    "entity": "VersionedEntity",
+    "command": "register",
+    "commandId": "VersionedEntity.register"
+  },
+  {
+    "entity": "VersionedEntity",
+    "command": "unlock",
+    "commandId": "VersionedEntity.unlock"
+  },
+  {
+    "entity": "VersionedEntity",
+    "command": "updateName",
+    "commandId": "VersionedEntity.updateName"
+  },
+  {
     "entity": "WasteEntry",
     "command": "create",
     "commandId": "WasteEntry.create"
@@ -2146,6 +2506,11 @@
   },
   {
     "entity": "WorkOrder",
+    "command": "assign",
+    "commandId": "WorkOrder.assign"
+  },
+  {
+    "entity": "WorkOrder",
     "command": "cancel",
     "commandId": "WorkOrder.cancel"
   },
@@ -2153,6 +2518,11 @@
     "entity": "WorkOrder",
     "command": "complete",
     "commandId": "WorkOrder.complete"
+  },
+  {
+    "entity": "WorkOrder",
+    "command": "completeWork",
+    "commandId": "WorkOrder.completeWork"
   },
   {
     "entity": "WorkOrder",
@@ -2171,7 +2541,17 @@
   },
   {
     "entity": "WorkOrder",
+    "command": "startWork",
+    "commandId": "WorkOrder.startWork"
+  },
+  {
+    "entity": "WorkOrder",
     "command": "updatePriority",
     "commandId": "WorkOrder.updatePriority"
+  },
+  {
+    "entity": "WorkOrder",
+    "command": "updateStatus",
+    "commandId": "WorkOrder.updateStatus"
   }
 ]

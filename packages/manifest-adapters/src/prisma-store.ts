@@ -146,6 +146,16 @@ import { ScheduleShiftPrismaStore } from "./prisma-stores/broken-read-batch13-sc
 import { ShipmentPrismaStore } from "./prisma-stores/broken-read-shipment-parent.js";
 import { VendorContractPrismaStore } from "./prisma-stores/broken-read-batch13-vendor.js";
 import { PurchaseRequisitionPrismaStore } from "./prisma-stores/broken-read-requisition-parent.js";
+import {
+  InvoicePrismaStore,
+  PaymentMethodPrismaStore,
+  PaymentPrismaStore,
+} from "./prisma-stores/broken-read-batch14-invoice-payment.js";
+import {
+  CollectionCasePrismaStore,
+  CollectionActionPrismaStore,
+  CollectionPaymentPlanPrismaStore,
+} from "./prisma-stores/broken-read-batch14-collections.js";
 
 /**
  * Report a silent store error to Sentry without blocking the return path.
@@ -1789,6 +1799,18 @@ export function createPrismaStoreProvider(
         return new VendorContractPrismaStore(prisma, tenantId);
       case "PurchaseRequisition":
         return new PurchaseRequisitionPrismaStore(prisma, tenantId);
+      case "Invoice":
+        return new InvoicePrismaStore(prisma, tenantId);
+      case "PaymentMethod":
+        return new PaymentMethodPrismaStore(prisma, tenantId);
+      case "Payment":
+        return new PaymentPrismaStore(prisma, tenantId);
+      case "CollectionCase":
+        return new CollectionCasePrismaStore(prisma, tenantId);
+      case "CollectionAction":
+        return new CollectionActionPrismaStore(prisma, tenantId);
+      case "CollectionPaymentPlan":
+        return new CollectionPaymentPlanPrismaStore(prisma, tenantId);
       default:
         console.error(
           `[createPrismaStoreProvider] No store for entity "${entityName}" — commands will fail`

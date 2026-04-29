@@ -219,6 +219,12 @@ const ENTITIES_WITH_SPECIFIC_STORES = new Set([
   "Notification",
   "VendorContract",
   "PurchaseRequisition",
+  "Invoice",
+  "PaymentMethod",
+  "Payment",
+  "CollectionCase",
+  "CollectionAction",
+  "CollectionPaymentPlan",
 ]);
 
 /** Default precompiled IR path (relative to monorepo root). */

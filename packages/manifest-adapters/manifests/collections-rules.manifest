@@ -1,0 +1,529 @@
+// Collections Rules Manifest
+// Defines collections workflows, aging, and dunning management
+
+entity CollectionCase {
+  property required id: string
+  property required tenantId: string
+
+  // Reference information
+  property required invoiceId: string = ""
+  property required invoiceNumber: string = ""
+  property required eventId: string = ""
+  property required clientId: string = ""
+  property required clientName: string = ""
+
+  // Amount details
+  property required originalAmount: number = 0
+  property required outstandingAmount: number = 0
+  property required collectedAmount: number = 0
+
+  // Collection status
+  property required status: string = "ACTIVE"
+  property required priority: string = "MEDIUM"
+  property required dunningStage: string = "CURRENT"
+
+  // Aging
+  property required daysOverdue: number = 0
+  property agingBucket: string = ""
+
+  // Assignment
+  property assignedTo: string = ""
+  property assignedAt: number = 0
+
+  // Payment plan
+  property hasPaymentPlan: boolean = false
+  property paymentPlanId: string = ""
+  property nextPaymentDue: number = 0
+
+  // Dispute handling
+  property isDisputed: boolean = false
+  property disputeReason: string = ""
+  property disputeResolvedAt: number = 0
+
+  // Legal escalation
+  property isEscalatedToLegal: boolean = false
+  property legalCaseNumber: string = ""
+  property legalFirm: string = ""
+
+  // Metadata
+  property notes: string = ""
+  property internalNotes: string = ""
+  property lastActivityAt: number = 0
+  property metadata: string = "{}"
+
+  // Timestamps
+  property required createdAt: number = 0
+  property required updatedAt: number = 0
+  property resolvedAt: number = 0
+  property closedAt: number = 0
+
+  // Computed properties
+  computed collectionPercentage: number = self.originalAmount > 0 ? (self.collectedAmount / self.originalAmount) * 100 : 0
+  computed isHighRisk: boolean = self.daysOverdue > 90 or self.status == "LEGAL"
+  computed estimatedLoss: number = self.status == "WRITTEN_OFF" ? self.outstandingAmount : 0
+
+  // Constraints
+  constraint amount_positive: self.originalAmount > 0 "Original amount must be positive"
+  constraint collected_valid: self.collectedAmount <= self.originalAmount "Collected amount cannot exceed original"
+
+  // Commands
+  command assignTo(userId: string) {
+    guard self.status in ["ACTIVE", "IN_PROGRESS"] "Can only assign active cases"
+    mutate assignedTo = userId
+    mutate assignedAt = now()
+    mutate updatedAt = now()
+    emit CollectionAssigned
+  }
+
+  command updateStatus(newStatus: string, newNotes: string) {
+    mutate status = newStatus
+    mutate notes = newNotes
+    mutate updatedAt = now()
+    emit CollectionStatusChanged
+  }
+
+  command resolve(notes: string) {
+    mutate status = "RESOLVED"
+    mutate resolvedAt = now()
+    mutate notes = notes
+    mutate updatedAt = now()
+    emit CollectionStatusChanged
+  }
+
+  command recordPayment(amount: number, paymentId: string, paymentDate: number) {
+    guard amount > 0 "Payment amount must be positive"
+    guard amount <= self.outstandingAmount "Payment cannot exceed outstanding amount"
+    mutate collectedAmount = self.collectedAmount + amount
+    mutate outstandingAmount = self.outstandingAmount - amount
+    mutate lastActivityAt = now()
+    mutate updatedAt = now()
+    emit CollectionPaymentRecorded
+  }
+
+  command markResolved() {
+    guard self.outstandingAmount <= 0.01 "Outstanding amount must be near zero"
+    mutate status = "RESOLVED"
+    mutate resolvedAt = now()
+    mutate closedAt = now()
+    mutate updatedAt = now()
+    emit CollectionResolved
+  }
+
+  command escalateDunning() {
+    guard self.status == "ACTIVE" "Can only escalate active cases"
+    mutate dunningStage = self.dunningStage + 1
+    mutate updatedAt = now()
+    emit DunningEscalated
+  }
+
+  command escalateToLegal() {
+    mutate status = "LEGAL"
+    mutate isEscalatedToLegal = true
+    mutate priority = "URGENT"
+    mutate updatedAt = now()
+    emit DunningEscalated
+  }
+
+  command setUrgentPriority() {
+    mutate priority = "URGENT"
+  }
+
+  command setHighPriority() {
+    mutate priority = "HIGH"
+  }
+
+  command resetDunning(stage: string, reason: string) {
+    guard self.status in ["ACTIVE", "IN_PROGRESS"] "Can only reset active/in-progress cases"
+    mutate dunningStage = stage
+    mutate updatedAt = now()
+    emit DunningReset
+  }
+
+  command createPaymentPlan(planId: string, nextPaymentDue: number) {
+    guard self.hasPaymentPlan == false "Payment plan already exists"
+    guard self.status == "ACTIVE" "Can only create plan for active cases"
+    mutate hasPaymentPlan = true
+    mutate paymentPlanId = planId
+    mutate nextPaymentDue = nextPaymentDue
+    mutate priority = "MEDIUM"
+    mutate updatedAt = now()
+    emit PaymentPlanCreated
+  }
+
+  command markDisputed(reason: string) {
+    guard self.isDisputed == false "Case already disputed"
+    mutate isDisputed = true
+    mutate disputeReason = reason
+    mutate status = "DISPUTED"
+    mutate updatedAt = now()
+    emit CollectionDisputed
+  }
+
+  command resolveDispute(resolutionNotes: string) {
+    guard self.isDisputed == true "Case is not disputed"
+    mutate isDisputed = false
+    mutate disputeResolvedAt = now()
+    mutate status = "ACTIVE"
+    mutate updatedAt = now()
+    emit DisputeResolved
+  }
+
+  command escalateToLegalWithDetails(legalCaseNumber: string, legalFirm: string) {
+    guard self.isEscalatedToLegal == false "Already escalated to legal"
+    guard self.status in ["ACTIVE", "IN_PROGRESS"] "Cannot escalate resolved cases"
+    mutate isEscalatedToLegal = true
+    mutate legalCaseNumber = legalCaseNumber
+    mutate legalFirm = legalFirm
+    mutate status = "LEGAL"
+    mutate dunningStage = "LEGAL"
+    mutate priority = "URGENT"
+    mutate updatedAt = now()
+    emit EscalatedToLegal
+  }
+
+  command writeOff(amount: number, reason: string, approvedBy: string) {
+    guard self.status in ["ACTIVE", "IN_PROGRESS", "LEGAL"] "Cannot write off resolved cases"
+    guard amount <= self.outstandingAmount "Write-off amount cannot exceed outstanding"
+    mutate collectedAmount = self.collectedAmount + (self.outstandingAmount - amount)
+    mutate outstandingAmount = amount
+    mutate status = "WRITTEN_OFF"
+    mutate closedAt = now()
+    mutate updatedAt = now()
+    emit CollectionWrittenOff
+  }
+
+  command updateAging(daysOverdue: number, agingBucket: string) {
+    mutate daysOverdue = daysOverdue
+    mutate agingBucket = agingBucket
+    mutate updatedAt = now()
+    emit AgingUpdated
+  }
+
+  command setPriority(newPriority: string, reason: string) {
+    mutate priority = newPriority
+    mutate updatedAt = now()
+    emit PriorityChanged
+  }
+
+  command close(resolution: string) {
+    guard self.status in ["ACTIVE", "IN_PROGRESS", "DISPUTED"] "Case already closed"
+    mutate status = "RESOLVED"
+    mutate closedAt = now()
+    mutate updatedAt = now()
+    emit CollectionClosed
+  }
+}
+
+entity CollectionAction {
+  property required id: string
+  property required tenantId: string
+  property required caseId: string = ""
+
+  // Action details
+  property required actionType: string = ""
+  property required direction: string = ""
+  property required status: string = "PENDING"
+
+  // Contact information
+  property contactedBy: string = ""
+  property contactName: string = ""
+  property contactMethod: string = ""
+
+  // Action content
+  property subject: string = ""
+  property description: string = ""
+  property outcome: string = ""
+  property nextActionDate: number = 0
+
+  // Promise to pay
+  property promiseAmount: number = 0
+  property promiseDate: number = 0
+
+  // Metadata
+  property notes: string = ""
+  property metadata: string = "{}"
+
+  // Timestamps
+  property required scheduledFor: number = 0
+  property completedAt: number = 0
+  property required createdAt: number = 0
+  property required updatedAt: number = 0
+
+  // Computed properties
+  computed isCompleted: boolean = self.status == "COMPLETED"
+  computed isOverdue: boolean = self.status == "PENDING" and self.scheduledFor < now()
+  computed hasPromiseToPay: boolean = self.promiseAmount > 0
+
+  // Constraints
+  constraint valid_direction: self.direction in ["INBOUND", "OUTBOUND"] "Invalid direction"
+  constraint valid_status: self.status in ["PENDING", "COMPLETED", "FAILED", "SKIPPED"] "Invalid status"
+
+  // Commands
+  command complete(outcome: string, promiseAmount: number, promiseDate: number, nextActionDate: number) {
+    guard self.status == "PENDING" "Can only complete pending actions"
+    mutate status = "COMPLETED"
+    mutate completedAt = now()
+    mutate outcome = outcome
+    mutate promiseAmount = promiseAmount
+    mutate promiseDate = promiseDate
+    mutate nextActionDate = nextActionDate
+    mutate updatedAt = now()
+    emit ActionCompleted
+  }
+
+  command fail(reason: string) {
+    guard self.status == "PENDING" "Can only fail pending actions"
+    mutate status = "FAILED"
+    mutate outcome = "Failed: " + reason
+    mutate completedAt = now()
+    mutate updatedAt = now()
+    emit ActionFailed
+  }
+
+  command skip(reason: string) {
+    guard self.status == "PENDING" "Can only skip pending actions"
+    mutate status = "SKIPPED"
+    mutate outcome = "Skipped: " + reason
+    mutate completedAt = now()
+    mutate updatedAt = now()
+    emit ActionSkipped
+  }
+
+  command reschedule(newScheduledFor: number, reason: string) {
+    guard self.status == "PENDING" "Can only reschedule pending actions"
+    mutate scheduledFor = newScheduledFor
+    mutate updatedAt = now()
+    emit ActionRescheduled
+  }
+}
+
+// Payment plan entity for installment arrangements
+entity CollectionPaymentPlan {
+  property required id: string
+  property required tenantId: string
+  property required caseId: string = ""
+
+  // Plan details
+  property required totalAmount: number = 0
+  property required installmentAmount: number = 0
+  property required installmentCount: number = 1
+  property required completedInstallments: number = 0
+
+  // Status
+  property required status: string = "ACTIVE"
+
+  // Schedule
+  property required startDate: number = 0
+  property required endDate: number = 0
+  property frequency: string = ""
+  property nextPaymentDate: number = 0
+
+  // Metadata
+  property notes: string = ""
+  property metadata: string = "{}"
+
+  // Timestamps
+  property required createdAt: number = 0
+  property required updatedAt: number = 0
+  property completedAt: number = 0
+  property defaultedAt: number = 0
+
+  // Computed properties
+  computed isCompleted: boolean = self.status == "COMPLETED"
+  computed isDefaulted: boolean = self.status == "DEFAULTED"
+  computed completionPercentage: number = self.installmentCount > 0 ? (self.completedInstallments / self.installmentCount) * 100 : 0
+  computed remainingAmount: number = (self.installmentCount - self.completedInstallments) * self.installmentAmount
+  computed paidAmount: number = self.completedInstallments * self.installmentAmount
+
+  // Constraints
+  constraint amount_positive: self.totalAmount > 0 and self.installmentAmount > 0 "Amounts must be positive"
+  constraint installments_valid: self.installmentCount > 0 "Must have at least one installment"
+  constraint completed_valid: self.completedInstallments <= self.installmentCount "Completed cannot exceed total"
+
+  // Commands
+  command recordInstallment(amount: number, paymentDate: number) {
+    guard self.status == "ACTIVE" "Can only record payments for active plans"
+    guard amount == self.installmentAmount "Payment must match installment amount"
+    mutate completedInstallments = self.completedInstallments + 1
+    mutate updatedAt = now()
+    emit InstallmentRecorded
+  }
+
+  command markCompleted() {
+    guard self.status == "ACTIVE" "Can only complete active plans"
+    mutate status = "COMPLETED"
+    mutate completedAt = now()
+    mutate updatedAt = now()
+    emit PaymentPlanCompleted
+  }
+
+  command markDefaulted(reason: string) {
+    guard self.status == "ACTIVE" "Can only default active plans"
+    mutate status = "DEFAULTED"
+    mutate defaultedAt = now()
+    mutate updatedAt = now()
+    emit PaymentPlanDefaulted
+  }
+
+  command cancel(reason: string) {
+    guard self.status == "ACTIVE" "Can only cancel active plans"
+    mutate status = "CANCELLED"
+    mutate updatedAt = now()
+    emit PaymentPlanCancelled
+  }
+
+  command modify(newInstallmentAmount: number, newInstallmentCount: number, reason: string) {
+    guard self.status == "ACTIVE" "Can only modify active plans"
+    mutate installmentAmount = newInstallmentAmount
+    mutate installmentCount = newInstallmentCount
+    mutate updatedAt = now()
+    emit PaymentPlanModified
+  }
+}
+
+// Events
+event CollectionAssigned: "collections.case.assigned" {
+  caseId: string
+  invoiceId: string
+  assignedTo: string
+}
+
+event CollectionStatusChanged: "collections.case.status-changed" {
+  caseId: string
+  invoiceId: string
+  oldStatus: string
+  newStatus: string
+}
+
+event CollectionPaymentRecorded: "collections.case.payment-recorded" {
+  caseId: string
+  invoiceId: string
+  amount: number
+  outstandingAmount: number
+}
+
+event CollectionResolved: "collections.case.resolved" {
+  caseId: string
+  invoiceId: string
+}
+
+event DunningEscalated: "collections.case.dunning-escalated" {
+  caseId: string
+  invoiceId: string
+  previousStage: string
+  newStage: string
+}
+
+event DunningReset: "collections.case.dunning-reset" {
+  caseId: string
+  invoiceId: string
+  newStage: string
+  reason: string
+}
+
+event PaymentPlanCreated: "collections.case.payment-plan-created" {
+  caseId: string
+  planId: string
+  nextPaymentDue: number
+}
+
+event CollectionDisputed: "collections.case.disputed" {
+  caseId: string
+  invoiceId: string
+  reason: string
+}
+
+event DisputeResolved: "collections.case.dispute-resolved" {
+  caseId: string
+  invoiceId: string
+  resolution: string
+}
+
+event EscalatedToLegal: "collections.case.escalated-to-legal" {
+  caseId: string
+  invoiceId: string
+  legalCaseNumber: string
+  legalFirm: string
+}
+
+event CollectionWrittenOff: "collections.case.written-off" {
+  caseId: string
+  invoiceId: string
+  amount: number
+  reason: string
+}
+
+event AgingUpdated: "collections.case.aging-updated" {
+  caseId: string
+  daysOverdue: number
+  agingBucket: string
+}
+
+event PriorityChanged: "collections.case.priority-changed" {
+  caseId: string
+  oldPriority: string
+  newPriority: string
+}
+
+event CollectionClosed: "collections.case.closed" {
+  caseId: string
+  invoiceId: string
+  resolution: string
+}
+
+event ActionCompleted: "collections.action.completed" {
+  actionId: string
+  caseId: string
+  actionType: string
+  outcome: string
+  promiseAmount: number
+}
+
+event ActionFailed: "collections.action.failed" {
+  actionId: string
+  caseId: string
+  reason: string
+}
+
+event ActionSkipped: "collections.action.skipped" {
+  actionId: string
+  caseId: string
+  reason: string
+}
+
+event ActionRescheduled: "collections.action.rescheduled" {
+  actionId: string
+  caseId: string
+  newDate: number
+}
+
+event InstallmentRecorded: "collections.payment-plan.installment-recorded" {
+  planId: string
+  caseId: string
+  installmentNumber: number
+  amount: number
+}
+
+event PaymentPlanCompleted: "collections.payment-plan.completed" {
+  planId: string
+  caseId: string
+}
+
+event PaymentPlanDefaulted: "collections.payment-plan.defaulted" {
+  planId: string
+  caseId: string
+  reason: string
+}
+
+event PaymentPlanCancelled: "collections.payment-plan.cancelled" {
+  planId: string
+  caseId: string
+  reason: string
+}
+
+event PaymentPlanModified: "collections.payment-plan.modified" {
+  planId: string
+  caseId: string
+  newInstallmentAmount: number
+  newInstallmentCount: number
+}

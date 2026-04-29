@@ -13,9 +13,11 @@ entity VersionedEntity {
   property createdAt: number = 0
   property updatedAt: number = 0
 
-  computed versionCount: number = 0 // Derived from EntityVersion count
+  // Derived from EntityVersion count
+  computed versionCount: number = 0
   computed canEdit: boolean = self.isLocked == false
-  computed hasPendingApprovals: boolean = false // Derived from VersionApproval status
+  // Derived from VersionApproval status
+  computed hasPendingApprovals: boolean = false
 
   constraint validEntityType: self.entityType != null and self.entityType != "" "Entity type is required"
   constraint validEntityId: self.entityId != null and self.entityId != "" "Entity ID is required"
@@ -29,7 +31,7 @@ entity VersionedEntity {
     }
   }
 
-  command register(entityType: string, entityId: string, entityName: string, initialSnapshot: unknown) {
+  command register(entityType: string, entityId: string, entityName: string, initialSnapshot: string) {
     guard entityType != null and entityType != "" "Entity type is required"
     guard entityId != null and entityId != "" "Entity ID is required"
     guard entityName != null and entityName != "" "Entity name is required"
@@ -78,8 +80,6 @@ entity VersionedEntity {
 
     emit VersionedEntityRenamed
   }
-
-  store VersionedEntity in memory
 }
 
 entity EntityVersion {
@@ -90,8 +90,8 @@ entity EntityVersion {
   property changeReason: string = ""
   property changeSummary: string = ""
   property required changeType: string
-  property snapshotData: unknown = {}
-  property metadata: unknown = {}
+  property snapshotData: string = {}
+  property metadata: string = {}
   property isApproved: boolean = false
   property approvedAt: number = 0
   property approvedBy: string = ""
@@ -106,15 +106,7 @@ entity EntityVersion {
   constraint validChangeType: self.changeType in ["create", "update", "restore", "approve", "auto"] "Change type must be valid"
   constraint validSnapshot: self.snapshotData != null "Snapshot data is required"
 
-  constraint warnLargeSnapshot:warn size(string(self.snapshotData)) > 100000 {
-    messageTemplate: "Version snapshot is large ({size} bytes) - may affect performance"
-    details: {
-      snapshotSize: size(string(self.snapshotData))
-      versionNumber: self.versionNumber
-    }
-  }
-
-  command create(versionedEntityId: string, versionNumber: number, changeType: string, snapshot: unknown, reason: string, summary: string, userId: string) {
+  command create(versionedEntityId: string, versionNumber: number, changeType: string, snapshot: string, reason: string, summary: string, userId: string) {
     guard versionedEntityId != null and versionedEntityId != "" "Versioned entity ID is required"
     guard versionNumber != null and versionNumber > 0 "Version number must be positive"
     guard changeType in ["create", "update", "restore", "approve", "auto"] "Invalid change type"
@@ -164,8 +156,6 @@ entity EntityVersion {
 
     emit EntityVersionRestored
   }
-
-  store EntityVersion in memory
 }
 
 entity VersionApproval {
@@ -234,8 +224,6 @@ entity VersionApproval {
 
     emit VersionApprovalCancelled
   }
-
-  store VersionApproval in memory
 }
 
 // Policy definitions

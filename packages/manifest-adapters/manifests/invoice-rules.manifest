@@ -1,0 +1,201 @@
+// Invoice Rules Manifest
+// Defines invoice creation, management, and payment tracking
+
+entity Invoice {
+  property required id: string
+  property required tenantId: string
+
+  // Invoice details
+  property required invoiceNumber: string = ""
+  property required type: string = "FINAL_PAYMENT"
+  property required status: string = "DRAFT"
+  property required clientId: string = ""
+  property required eventId: string = ""
+
+  // Amounts
+  property required subtotal: number = 0
+  property taxAmount: number = 0
+  property required discountAmount: number = 0
+  property required total: number = 0
+  property required amountPaid: number = 0
+  property required amountDue: number = 0
+
+  // Payment terms
+  property required paymentTerms: number = 30
+  property required dueDate: number = 0
+  property paidAt: number = 0
+
+  // Deposit specific
+  property depositPercentage: number = 0
+  property depositRequired: number = 0
+  property depositPaid: number = 0
+
+  // Timestamps
+  property required issuedAt: number = 0
+  property sentAt: number = 0
+  property viewedAt: number = 0
+  property overdueSince: number = 0
+
+  // Reminders
+  property reminderCount: number = 0
+  property lastReminderAt: number = 0
+
+  // External references
+  property quickBooksId: string = ""
+  property goodshuffleId: string = ""
+  property externalSyncStatus: string = ""
+
+  // Metadata
+  property notes: string = ""
+  property internalNotes: string = ""
+  property lineItems: string = "[]"
+  property metadata: string = "{}"
+
+  // Computed properties
+  computed isPaidInFull: boolean = self.amountDue <= 0
+  computed isOverdue: boolean = self.status in ["SENT", "VIEWED", "PARTIALLY_PAID"] and self.dueDate < now()
+
+  // Constraints
+  constraint amount_non_negative: self.subtotal >= 0 and self.total >= 0 "Amounts cannot be negative"
+
+  // Commands
+  command send(clientContactId: string) {
+    guard self.status == "DRAFT" "Can only send draft invoices"
+    guard self.amountDue > 0 "Cannot send invoices with zero balance"
+    mutate status = "SENT"
+    mutate sentAt = now()
+    emit InvoiceSent
+  }
+
+  command markViewed() {
+    guard self.status in ["SENT", "VIEWED"] "Invoice must be sent to be viewed"
+    mutate status = "VIEWED"
+    mutate viewedAt = now()
+    emit InvoiceViewed
+  }
+
+  command applyPayment(paymentAmount: number, paymentId: string) {
+    guard self.status in ["SENT", "VIEWED", "OVERDUE", "PARTIALLY_PAID"] "Cannot apply payment to invoice in current status"
+    guard paymentAmount > 0 "Payment amount must be positive"
+    guard paymentAmount <= self.amountDue "Payment amount cannot exceed amount due"
+    mutate amountPaid = self.amountPaid + paymentAmount
+    mutate amountDue = self.amountDue - paymentAmount
+    mutate status = "PARTIALLY_PAID"
+    emit PaymentApplied
+  }
+
+  command markAsPaid() {
+    mutate status = "PAID"
+    mutate paidAt = now()
+    mutate amountDue = 0
+    emit PaymentApplied
+  }
+
+  command recordRefund(refundAmount: number, paymentId: string) {
+    guard refundAmount > 0 "Refund amount must be positive"
+    guard refundAmount <= self.amountPaid "Refund amount cannot exceed amount paid"
+    mutate amountPaid = self.amountPaid - refundAmount
+    mutate amountDue = self.amountDue + refundAmount
+    mutate status = "PARTIALLY_PAID"
+    emit RefundRecorded
+  }
+
+  command markOverdue() {
+    guard self.status in ["SENT", "VIEWED", "PARTIALLY_PAID"] "Invoice must be sent to be marked overdue"
+    guard self.dueDate < now() "Invoice must be past due date"
+    guard self.status != "OVERDUE" "Invoice already marked as overdue"
+    mutate status = "OVERDUE"
+    mutate overdueSince = now()
+    emit InvoiceMarkedOverdue
+  }
+
+  command sendReminder() {
+    guard self.status in ["SENT", "VIEWED", "OVERDUE", "PARTIALLY_PAID"] "Cannot send reminder for invoice in current status"
+    guard self.isPaidInFull == false "Cannot send reminder for paid invoices"
+    mutate reminderCount = self.reminderCount + 1
+    mutate lastReminderAt = now()
+    emit InvoiceReminderSent
+  }
+
+  command voidInvoice(reason: string) {
+    guard self.status in ["DRAFT", "SENT", "VIEWED", "OVERDUE"] "Cannot void invoices that are paid or partially paid"
+    guard self.amountPaid == 0 "Cannot void invoices with payments"
+    mutate status = "VOID"
+    emit InvoiceVoided
+  }
+
+  command writeOff(reason: string, writeOffAmount: number) {
+    guard self.status in ["OVERDUE", "PARTIALLY_PAID"] "Can only write off overdue or partially paid invoices"
+    guard writeOffAmount <= self.amountDue "Write off amount must not exceed amount due"
+    mutate status = "WRITE_OFF"
+    mutate amountDue = 0
+    emit InvoiceWrittenOff
+  }
+
+  command updateLineItems(lineItems: string) {
+    guard self.status == "DRAFT" "Can only modify line items in draft invoices"
+    mutate lineItems = lineItems
+    emit InvoiceLineItemsUpdated
+  }
+}
+
+// Events
+event InvoiceSent: "invoice.sent" {
+  invoiceId: string
+  invoiceNumber: string
+  clientId: string
+  eventId: string
+  amount: number
+  dueDate: number
+}
+
+event InvoiceViewed: "invoice.viewed" {
+  invoiceId: string
+  invoiceNumber: string
+  clientId: string
+  viewedAt: number
+}
+
+event PaymentApplied: "invoice.payment-applied" {
+  invoiceId: string
+  paymentId: string
+  amount: number
+  remainingBalance: number
+}
+
+event RefundRecorded: "invoice.refund-recorded" {
+  invoiceId: string
+  paymentId: string
+  refundAmount: number
+  newBalance: number
+}
+
+event InvoiceMarkedOverdue: "invoice.marked-overdue" {
+  invoiceId: string
+  invoiceNumber: string
+  daysOverdue: number
+}
+
+event InvoiceReminderSent: "invoice.reminder-sent" {
+  invoiceId: string
+  invoiceNumber: string
+  reminderCount: number
+}
+
+event InvoiceVoided: "invoice.voided" {
+  invoiceId: string
+  invoiceNumber: string
+  reason: string
+}
+
+event InvoiceWrittenOff: "invoice.written-off" {
+  invoiceId: string
+  invoiceNumber: string
+  writeOffAmount: number
+  reason: string
+}
+
+event InvoiceLineItemsUpdated: "invoice.line-items-updated" {
+  invoiceId: string
+  lineItems: string
+}

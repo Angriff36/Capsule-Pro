@@ -154,7 +154,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[auto-bridge snapshot @ 10 changes]
-Files: docs/implementation-history/schema-and-techdebt.md (edit), AGENTS.md (edit), .gitignore (edit), IMPLEMENTATION_PLAN.md (create), docs/implementation-history/passes-38-63.md (edit)
+[Emergency bridge — running bridge was not updated]
+Files: packages/manifest-runtime/src/manifest/projections/nextjs/generator.ts (edit), packages/manifest-runtime/src/manifest/projections/nextjs/generator.test.ts (edit), AGENTS.md (edit), IMPLEMENTATION_PLAN.md (edit)
 
 # === END COGNILAYER ===

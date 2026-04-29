@@ -196,7 +196,7 @@ describe("Schedule Persistence (write → read alignment)", () => {
 
       vi.mocked(auth).mockResolvedValue({ orgId: TEST_ORG_ID, userId: TEST_CLERK_ID } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.schedule.findFirst).mockResolvedValue(
+      vi.mocked(database.schedule.findUnique).mockResolvedValue(
         mockSchedule as never,
       );
 
@@ -216,8 +216,8 @@ describe("Schedule Persistence (write → read alignment)", () => {
       expect(data.schedule.id).toBe("sched-002");
       expect(data.schedule.status).toBe("published");
 
-      // Verify the read uses Prisma findFirst with tenant + id scoping
-      expect(database.schedule.findFirst).toHaveBeenCalledWith(
+      // Verify the read uses Prisma findUnique with tenant + id scoping
+      expect(database.schedule.findUnique).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
             id: "sched-002",
@@ -231,7 +231,7 @@ describe("Schedule Persistence (write → read alignment)", () => {
     it("returns 404 for non-existent schedule", async () => {
       vi.mocked(auth).mockResolvedValue({ orgId: TEST_ORG_ID, userId: TEST_CLERK_ID } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.schedule.findFirst).mockResolvedValue(null);
+      vi.mocked(database.schedule.findUnique).mockResolvedValue(null);
 
       const { GET } = await import(
         "@/app/api/staff/schedules/[id]/route"

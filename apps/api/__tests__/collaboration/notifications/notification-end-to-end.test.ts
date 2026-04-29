@@ -24,6 +24,7 @@ const { mockDatabase } = vi.hoisted(() => {
   const mockNotificationStore = {
     findMany: vi.fn(),
     findFirst: vi.fn(),
+    findUnique: vi.fn(),
     create: vi.fn(),
     update: vi.fn(),
     delete: vi.fn(),
@@ -226,7 +227,7 @@ describe("Notification Persistence (write → read alignment)", () => {
         userId: TEST_CLERK_ID,
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.notification.findFirst).mockResolvedValue(
+      vi.mocked(database.notification.findUnique).mockResolvedValue(
         mockNotification as never,
       );
 
@@ -247,8 +248,8 @@ describe("Notification Persistence (write → read alignment)", () => {
       expect(data.notification.title).toBe("Shift Updated");
       expect(data.notification.isRead).toBe(true);
 
-      // Verify the read uses Prisma findFirst with tenant + id scoping
-      expect(database.notification.findFirst).toHaveBeenCalledWith(
+      // Verify the read uses Prisma findUnique with tenant + id scoping
+      expect(database.notification.findUnique).toHaveBeenCalledWith(
         expect.objectContaining({
           where: expect.objectContaining({
             id: "notif-002",
@@ -264,7 +265,7 @@ describe("Notification Persistence (write → read alignment)", () => {
         userId: TEST_CLERK_ID,
       } as any);
       vi.mocked(getTenantIdForOrg).mockResolvedValue(TEST_TENANT_ID);
-      vi.mocked(database.notification.findFirst).mockResolvedValue(null);
+      vi.mocked(database.notification.findUnique).mockResolvedValue(null);
 
       const { GET } = await import(
         "@/app/api/collaboration/notifications/[id]/route"

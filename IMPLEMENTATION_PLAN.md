@@ -1,6 +1,6 @@
 # Capsule-Pro Implementation Plan — Live Queue
 
-> **Last updated:** 2026-04-28 (E3-2 generator instanceId fix + AGENTS.md stale corrections). **Convention:** this file is the **live queue only**. Completed pass write-ups are archived, not appended here. See the **Archive Map** at the bottom for where to look up history.
+> **Last updated:** 2026-04-28 (BROKEN_PRISMA_READ batch 14 — Invoice/PaymentMethod/Payment/CollectionCase/CollectionAction/CollectionPaymentPlan PrismaStores + 4 manifests re-enabled + 2 stale duplicates deleted). **Convention:** this file is the **live queue only**. Completed pass write-ups are archived, not appended here. See the **Archive Map** at the bottom for where to look up history.
 
 ---
 
@@ -68,6 +68,7 @@ These are the structural blockers this phase will hit. Don't rediscover them —
 
 Full write-ups live in the archive. Bullet summaries:
 
+- **BROKEN_PRISMA_READ Batch 14 (2026-04-28):** Re-enabled 4 quarantined manifests (invoice-rules, payment-method-rules, payment-rules, collections-rules) by creating 6 PrismaStore classes (InvoicePrismaStore, PaymentMethodPrismaStore, PaymentPrismaStore, CollectionCasePrismaStore, CollectionActionPrismaStore, CollectionPaymentPlanPrismaStore). Deleted 2 stale duplicate manifests from manifests-disabled/ (equipment-rules, revenue-recognition-rules — active copies already in manifests/). Fixed pre-existing manifest syntax errors in equipment-rules and version-control-rules. Wired 6 entities into ENTITIES_WITH_SPECIFIC_STORES and createPrismaStoreProvider switch. manifest:build produces 107 entities, 511 commands. Fixed test mocks for notification and schedule detail routes (findFirst→findUnique after generator regeneration). All 73 API test files pass (1269 tests).
 - **BROKEN_RAW_SQL parent workflows (2026-04-28):** All 8 parent entities (Proposal, PurchaseOrder, Notification, Schedule, Shipment, User, PurchaseRequisition, VendorContract) now have PrismaStore bridges, fixed `instanceId` on all command routes, and passing HTTP integration tests. 103 total assertions across 8 test files. Archive: `docs/implementation-history/passes-38-63.md` (Passes 64–71 section).
 - **BROKEN_PRISMA_READ Batches 03–13 (closed 2026-04-28):** Twelve mechanical batches landed dedicated Prisma stores for AlertsConfig and 50+ other entities. All BROKEN_PRISMA_READ candidates with a Prisma model now have stores. Archive: `docs/implementation-history/passes-38-63.md`.
 - **Payroll bank-accounts (confirmed resolved 2026-04-28):** all 6 routes use Prisma ORM, EmployeeBankAccount model exists, RLS enabled. Prior raw-SQL claim was stale.
@@ -83,7 +84,7 @@ Full write-ups live in the archive. Bullet summaries:
 - **A2-1** — adapter audit follow-up captured in `docs/audits/pass-15-input-validation.md`.
 - **D3-1 / D3-2** — DB performance follow-ups (`docs/audits/pass-13-db-performance.md`).
 - **Manifest republish** — `@angriff36/manifest` version bump + rebuild + repin (Blocker #3). Local source now has instanceId fix + polarity fix; published package is stale.
-- **Quarantined manifests** — re-evaluate after generator + polarity fixes land. Blockers #1 and #2 are now resolved. 12 disabled manifests remain; 2 are stale duplicates (Equipment, RevenueRecognition). Candidates for re-enablement with existing Prisma models: `invoice-rules`, `payment-method-rules`, `knowledge-base-rules`, `collections-rules`.
+- **Quarantined manifests** — 6 disabled manifests remain in `manifests-disabled/`. Candidates for re-enablement with existing Prisma models: `facility-rules` (Facility). Remaining 5 need Prisma models first: `knowledge-base-rules`, `payment-reconciliation-rules`, `quality-control-rules`, `digital-twin-rules`, `prep-task-dependency`. (~~4 re-enabled in batch 14~~: invoice-rules, payment-method-rules, payment-rules, collections-rules. ~~2 stale duplicates deleted~~: equipment-rules, revenue-recognition-rules.)
 - ~~**Procurement requisitions / vendor-contracts 500s**~~ — **RESOLVED** in Passes 70–71.
 - ~~**AGENTS.md stale corrections**~~ — **RESOLVED 2026-04-28.** Updated quarantined count (17→12), removed stale "no Prisma model" entries, updated schema drift section.
 

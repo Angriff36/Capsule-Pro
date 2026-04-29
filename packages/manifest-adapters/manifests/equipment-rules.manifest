@@ -25,16 +25,10 @@ entity Equipment {
   property updatedAt: number = 0
 
   computed isOverdueForMaintenance: boolean = self.nextMaintenanceDate > 0 and now() > self.nextMaintenanceDate
-  computed daysUntilMaintenance: number = self.nextMaintenanceDate > 0 ? floor((self.nextMaintenanceDate - now()) / 86400000) : -1
+  computed daysUntilMaintenance: number = self.nextMaintenanceDate > 0 ? (self.nextMaintenanceDate - now()) / 86400000 : -1
   computed usagePercentage: number = self.maxUsageHours > 0 ? (self.usageHours / self.maxUsageHours) * 100 : 0
   computed isNearEndOfLife: boolean = self.usagePercentage >= 80
-  computed predictiveFailureRisk: string =
-    self.isOverdueForMaintenance ? "critical" :
-    self.daysUntilMaintenance >= 0 and self.daysUntilMaintenance <= 7 ? "high" :
-    self.condition == "poor" ? "high" :
-    self.isNearEndOfLife ? "medium" :
-    self.daysUntilMaintenance >= 0 and self.daysUntilMaintenance <= 14 ? "low" :
-    "none"
+  computed predictiveFailureRisk: string = self.isOverdueForMaintenance ? "critical" : self.daysUntilMaintenance >= 0 and self.daysUntilMaintenance <= 7 ? "high" : self.condition == "poor" ? "high" : self.isNearEndOfLife ? "medium" : self.daysUntilMaintenance >= 0 and self.daysUntilMaintenance <= 14 ? "low" : "none"
 
   constraint validEquipmentType: self.type in ["cooking", "refrigeration", "prep", "baking", "cleaning", "transport", "general"] "Invalid equipment type"
   constraint validStatus: self.status in ["active", "maintenance", "out_of_service", "retired"] "Invalid equipment status"
@@ -206,7 +200,6 @@ entity Equipment {
     emit EquipmentRetired
   }
 
-  store Equipment in memory
 }
 
 entity WorkOrder {
@@ -230,7 +223,7 @@ entity WorkOrder {
   property updatedAt: number = 0
 
   computed isOverdue: boolean = self.scheduledDate > 0 and self.status in ["open", "in_progress"] and now() > self.scheduledDate
-  computed daysUntilDue: number = self.scheduledDate > 0 ? floor((self.scheduledDate - now()) / 86400000) : -1
+  computed daysUntilDue: number = self.scheduledDate > 0 ? (self.scheduledDate - now()) / 86400000 : -1
 
   constraint validWorkOrderType: self.type in ["repair", "replacement", "inspection", "upgrade"] "Invalid work order type"
   constraint validPriority: self.priority in ["low", "medium", "high", "critical"] "Invalid priority"
@@ -332,8 +325,6 @@ entity WorkOrder {
 
     emit WorkOrderCreated
   }
-
-  store WorkOrder in memory
 }
 
 policy ManagersCanManageEquipment execute: user.role in ["kitchen_lead", "manager", "admin"] "Only managers can manage equipment"
