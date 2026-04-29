@@ -127,6 +127,10 @@ export const database: Record<string, unknown> = {
   employeeDeduction: createMockModel(),
   employeeBankAccount: createMockModel(),
   payrollApprovalHistory: createMockModel(),
+  // Communications models
+  email_templates: createMockModel(),
+  emailWorkflow: createMockModel(),
+  sms_automation_rules: createMockModel(),
 };
 
 database.$transaction = vi.fn((fn: (tx: unknown) => unknown) => fn(database));

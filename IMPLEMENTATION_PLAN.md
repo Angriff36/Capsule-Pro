@@ -24,7 +24,7 @@
 | **Backend-Complete, No UI** | 4 major systems | **ALL IMPLEMENTED** ✅ | ~~P1~~ |
 | **SPEC Coverage** | 36/46 complete (78%) — All AI conflict detection + payroll approvals implemented | UPDATED COUNT | P2 |
 | **Placeholder Pages** | 5 pages remain stubs (down from 12) | **7 FIXED ✅** | P2 |
-| **Test Coverage** | ~80 API domains with zero tests | UNCHANGED | P3 |
+| **Test Coverage** | ~70 of ~126 API domains untested (5 critical domains being covered) | IN PROGRESS | P3 |
 
 ### Audit Statistics (14 agents, 2026-04-29)
 
@@ -38,7 +38,7 @@
 - **Manifest routes:** 725
 - **Filesystem route dirs:** 710
 - **Specs total:** 46 (36 COMPLETE, 10 TODO)
-- **API domains without tests:** ~80 of ~126 (now ~75 of ~126 with new payroll/CRM/facilities tests)
+- **API domains without tests:** ~70 of ~126 (new events + kitchen tests added)
 
 ---
 
@@ -250,8 +250,8 @@ These have full API backends but zero or placeholder frontend. Each is a signifi
 
 | # | File | Status | Action |
 |---|------|--------|--------|
-| 48 | `marketing/page.tsx` | "Coming Soon" | Implement or remove nav link |
-| 49 | `marketing/campaigns/page.tsx` | "Coming Soon" | Implement or remove nav link |
+| 48 | `marketing/page.tsx` | "Coming Soon" | BLOCKED — no marketing backend APIs or Prisma models exist. Manifest IR exists at packages/manifest-ir/ir/marketing/ but is orphaned (no active manifest, no routes). |
+| 49 | `marketing/campaigns/page.tsx` | "Coming Soon" | BLOCKED — no marketing backend APIs or Prisma models exist. Manifest IR exists at packages/manifest-ir/ir/marketing/ but is orphaned (no active manifest, no routes). |
 | 50 | `settings/security/page.tsx` | ModuleSection placeholder | Build security settings UI |
 | 51 | `settings/integrations/page.tsx` | ModuleSection placeholder | Blocks GoodShuffle UI (GS-1) |
 | 52 | `tools/ai/page.tsx` | ✅ FIXED — AI suggestions (generate, priority/category badges, take action) + event summaries (per-event generation, highlights, critical info) |
@@ -260,8 +260,8 @@ These have full API backends but zero or placeholder frontend. Each is a signifi
 | 55 | `dev-console/api-keys/page.tsx` | ✅ FIXED — Full CRUD (list, create, revoke, delete, rotate) |
 | 56 | `dev-console/users/page.tsx` | ✅ FIXED — Employee directory with role management, deactivate/terminate, detail view, active/inactive filter |
 | 57 | `dev-console/webhooks/page.tsx` | ✅ FIXED — Full webhook management with 3 tabs (Webhooks/Delivery Logs/DLQ), create/edit/delete, toggle status, retry failed |
-| 58 | `dev-console/dashboard` | All buttons hardcoded/no-op | Wire to real data |
-| 59 | `dev-console/tenants` | All buttons hardcoded/no-op, fake data | Wire to real data |
+| 58 | `dev-console/dashboard` | All buttons hardcoded/no-op | BLOCKED — requires platform-level metrics/tenants/activity APIs that don't exist |
+| 59 | `dev-console/tenants` | All buttons hardcoded/no-op, fake data | BLOCKED — requires tenant provisioning API (/api/auth/register) and tenant management APIs that don't exist |
 
 ---
 
@@ -307,18 +307,19 @@ All 16 `alert()` calls across 7 files replaced with `toast.success()` / `toast.e
 
 | Domain | Status | Action |
 |--------|--------|--------|
-| Recipe/Prep system | NO TESTS | Add unit tests |
+| Recipe/Prep system | PARTIAL — stations (27), ingredients (27) covered | Add remaining unit tests |
 | Payroll workflows | NO INTEGRATION | Add integration tests |
-| Menu/Dish management | NO TESTS | Add unit tests |
+| Menu/Dish management | PARTIAL — menus (14), dishes (25) covered | Add remaining unit tests |
 | Training management | NO TESTS | Add unit tests |
-| Event lifecycle | PARTIAL (1 file) | Expand coverage |
+| Event lifecycle | PARTIAL (4 files) — catering-orders (35), budgets (23), contracts (24), lifecycle (1) | Expand coverage |
 | 80+ API domains | ZERO TESTS | Prioritize core business domains |
 
 ### Skipped Tests
 
 - **API:** 1 skipped `describe` block in `sales-reporting/generate.test.ts`
 - **E2E:** 41 skipped tests across 13 files
-- **API test files:** 46 files covering 20 domains (of ~126 total)
+- **API test files:** 85 files covering 27 domains (of ~126 total)
+- **All 1,520 API tests pass**
 
 ---
 
@@ -365,6 +366,17 @@ All 33 placeholder occurrences across 12 event files replaced with consistent, u
 ---
 
 ## Recently Resolved
+
+### 2026-04-29 — Events + Kitchen API Test Coverage (175 tests, 7 suites)
+- **ADDED** test coverage: 7 new test suites with 175 tests for previously untested critical API domains:
+  - `__tests__/events/catering-orders.test.ts` — 35 tests (CRUD + command flow with auth/guard/policy)
+  - `__tests__/events/event-budgets.test.ts` — 23 tests (list, detail, create, update with auth)
+  - `__tests__/events/event-contracts.test.ts` — 24 tests (CRUD with auth, tenant isolation, guards)
+  - `__tests__/kitchen/dishes.test.ts` — 25 tests (list, detail, create, update with auth)
+  - `__tests__/kitchen/ingredients.test.ts` — 27 tests (CRUD with auth, tenant isolation, filtering)
+  - `__tests__/kitchen/menus.test.ts` — 14 tests (list, detail with auth, pagination)
+  - `__tests__/kitchen/stations.test.ts` — 27 tests (CRUD with auth, tenant isolation, ordering)
+- All 1,520 API tests pass. Typecheck clean.
 
 ### 2026-04-29 — TBD Placeholder Cleanup + Payroll/CRM/Facilities Test Coverage
 - **FIXED TIER 3 TBD Placeholders:** All 33 placeholder text occurrences across 12 event files replaced with consistent, professional fallback text. "Venue TBD" → "No venue assigned", "Time not set" → "Not scheduled", Battle Board "TBD" defaults → "Unassigned". Other "X not set" patterns standardized to "Not specified" or "No X assigned".
