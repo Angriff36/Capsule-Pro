@@ -224,7 +224,7 @@
     },
     {
       "prefix": "/api/accounting/invoices",
-      "methods": ["POST", "PUT", "DELETE"],
+      "methods": ["POST", "PUT", "PATCH", "DELETE"],
       "comment": "Legacy infrastructure: Direct DB access for invoices (needs manifest migration)"
     },
     {
