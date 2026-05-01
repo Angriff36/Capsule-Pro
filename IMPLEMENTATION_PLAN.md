@@ -379,6 +379,18 @@ All 33 placeholder occurrences across 12 event files replaced with consistent, u
 
 ## Recently Resolved
 
+### 2026-05-01 — Test Coverage: Procurement Purchase Orders (35 tests, 1 suite)
+
+- **ADDED** `__tests__/procurement/purchase-orders/purchase-orders.test.ts` covering all 5 procurement PO routes that previously had zero coverage:
+  - `GET /api/procurement/purchase-orders/list` — auth guards (401, 400 missing tenant), shaped response (vendor_name/item_count/pending_items), status filter, `?status=all` bypass, soft-delete exclusion, vendor null fallback, 500 on Prisma error.
+  - `GET /api/procurement/purchase-orders/[id]` — 401, 404 not-found, full enrichment with vendor + items + inventory item names, vendor_name null when vendorId missing.
+  - `POST /api/procurement/purchase-orders/commands/create` — 401, 400 validation (missing vendorId, empty items), success path proves the `count → INSERT po → INSERT items` `$queryRaw` sequence, 500 when INSERT returns no row.
+  - `POST /api/procurement/purchase-orders/commands/update-status` — full state machine: legal transitions (draft→submitted, submitted→approved, submitted→rejected, approved→ordered) and illegal transitions (received→ordered, draft→received, cancelled→approved) per `VALID_TRANSITIONS`, plus 401/400/404/500.
+  - `POST /api/procurement/purchase-orders/commands/receive` — partial vs full receive, `allReceived` flag flip when remaining count hits 0, inventory `quantity_on_hand` update skipped when receive qty is 0, items missing `itemId` or `qty` are filtered out.
+- **WHY:** procurement PO routes drive a state machine with inventory side-effects; an illegal transition or skipped inventory increment silently corrupts on-hand counts and budget realization. The state-machine and inventory-skip assertions are the load-bearing ones.
+- **Updated** shared database mock (`apps/api/test/mocks/@repo/database.ts`): added `purchaseOrder` and `purchaseOrderItem` models so future procurement tests can use the global mock instead of inline `vi.mock` blocks.
+- Full API suite green: **3,196 tests pass** across 110 files (1 skipped, 8 todo). No regressions from the mock surface expansion.
+
 ### 2026-05-01 — Public Contracts/Proposals Test Fixes (3 tests)
 
 - **FIXED** 3 failing tests in `__tests__/public/contracts-proposals.test.ts`:

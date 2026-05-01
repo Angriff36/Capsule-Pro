@@ -156,6 +156,9 @@ export const database: Record<string, unknown> = {
   // Supplier / vendor catalog models (webhook)
   inventorySupplier: createMockModel(),
   vendorCatalog: createMockModel(),
+  // Procurement models
+  purchaseOrder: createMockModel(),
+  purchaseOrderItem: createMockModel(),
   // Contract & proposal models (public endpoints)
   eventContract: createMockModel(),
   contractSignature: createMockModel(),
