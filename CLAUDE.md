@@ -155,6 +155,6 @@ Last: [first session]
 
 ## Last Session Bridge
 [Emergency bridge — running bridge was not updated]
-Files: IMPLEMENTATION_PLAN.md (edit)
+Files: apps/api/__tests__/events/battle-boards.test.ts (create), IMPLEMENTATION_PLAN.md (edit)
 
 # === END COGNILAYER ===

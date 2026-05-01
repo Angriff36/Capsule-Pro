@@ -1,6 +1,6 @@
 # Capsule-Pro Implementation Plan — Live Queue
 
-> **Last updated:** 2026-05-01 (notification commands test coverage added — 44 tests). **Convention:** this file is the **live queue only**. Completed pass write-ups are archived, not appended here. See the **Archive Map** at the bottom for history.
+> **Last updated:** 2026-05-01 (workforce-optimization commands test coverage added — 36 tests). **Convention:** this file is the **live queue only**. Completed pass write-ups are archived, not appended here. See the **Archive Map** at the bottom for history.
 
 **ULTIMATE GOAL:** Every UI button, modal, and form must actually work when clicked.
 
@@ -24,7 +24,7 @@
 | **Backend-Complete, No UI** | 4 major systems | **ALL IMPLEMENTED** ✅ | ~~P1~~ |
 | **SPEC Coverage** | 36/46 complete (78%) — All AI conflict detection + payroll approvals implemented | UPDATED COUNT | P2 |
 | **Placeholder Pages** | 5 pages remain stubs (down from 12) | **7 FIXED ✅** | P2 |
-| **Test Coverage** | ~45 of ~126 API domains untested (3,452 tests across 115 files; +44 notification commands, +130 prep-tasks, +98 prep-lists CRUD + 10 commands, +35 procurement POs + 71 shipment commands since wave 4) | IN PROGRESS | P3 |
+| **Test Coverage** | ~44 of ~126 API domains untested (3,844 tests across 123 files; +36 workforce-optimization, +44 notification commands, +130 prep-tasks, +98 prep-lists CRUD + 10 commands, +35 procurement POs + 71 shipment commands since wave 4) | IN PROGRESS | P3 |
 
 ### Audit Statistics (14 agents, 2026-04-29)
 
@@ -390,6 +390,57 @@ All 33 placeholder occurrences across 12 event files replaced with consistent, u
 ---
 
 ## Recently Resolved
+
+### 2026-05-01 — Test Coverage: WorkforceOptimization Commands (36 tests, 4 routes)
+
+**Why this matters:**
+- WorkforceOptimization is the AI-driven scheduling primitive. A tenant
+  triggers an optimization run (`schedule | assignment | performance`) and
+  the runtime moves it through the state machine `pending → in_progress →
+  completed | failed`. Downstream consumers (manager dashboards, schedule
+  suggestions) read the resulting `results` blob. A regression on the
+  verb mapping silently strands an in-flight run, leaves the UI showing
+  "pending" forever, and the failure mode is operationally invisible
+  until somebody opens a stale dashboard.
+- All 4 routes are **entity-scoped** (NOT instance-scoped) — manifest
+  defines `command create()`, `command start()`, `command complete()`,
+  `command fail()` and the routes do NOT pass `instanceId` to
+  `runtime.runCommand()`. Tests pin the exact 3-arg shape
+  `runCommand(verb, body, { entityName: "WorkforceOptimization" })` AND
+  assert `callArgs.length === 3` and `callArgs[2]` has no `instanceId`
+  property. A future "helpful" patch that copies the instance-scoped
+  pattern from notifications/shipments would silently misroute every
+  state transition; this dual assertion catches it.
+- Routes use the **direct-clerk-id** user-context shape:
+  `createManifestRuntime({ user: { id: userId, tenantId } })` — they do
+  NOT call `database.user.findFirst` to resolve an internal user (unlike
+  notification commands, which do). Tests pin this shape so a copy/paste
+  from a different domain doesn't accidentally introduce a database
+  round-trip on every optimization invocation. The mock surface
+  intentionally omits `database.user.findFirst` to make a regression
+  surface as a missing-mock failure.
+- Policy denial format is `Access denied: ${policyName}` (no `role=`
+  suffix) — different from notification-commands which appends `role=`.
+  Tests pin this domain's exact format AND explicitly assert the message
+  does NOT contain "role=" so a refactor across both domains can't
+  silently merge them.
+- Coverage per route: 401 unauth, 400 tenant-missing, 200 success +
+  user-context shape pin, 403 policy denial (with no-role-suffix
+  invariant), 422 guard failure, 400 generic, 400 default-error
+  fallback ("Command failed"), 500 runtime throw, runtime-invocation pin
+  (camelCase verb + entityName + no-instanceId). 9 cases × 4 commands =
+  36 tests via `describe.each`.
+
+**Files added:**
+- `apps/api/__tests__/staff/workforce-optimization.test.ts` — 36 tests
+  across all 4 command routes (create, start, complete, fail).
+
+**Coverage delta:** TIER 2 untested API domains: ~45 → ~44. Total API
+tests: 3,808 → 3,844.
+
+**VALIDATION:** `pnpm --filter api test __tests__/staff/workforce-optimization.test.ts`
+— 36/36 pass. Full API suite: **3,844 tests pass** across 123 files (1
+skipped, 8 todo). `pnpm --filter api typecheck` clean. No regressions.
 
 ### 2026-05-01 — Test Coverage: Events Battle Boards API (88 tests, 9 routes)
 
