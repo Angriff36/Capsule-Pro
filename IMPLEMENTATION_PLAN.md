@@ -391,6 +391,51 @@ All 33 placeholder occurrences across 12 event files replaced with consistent, u
 
 ## Recently Resolved
 
+### 2026-05-01 — Test Coverage: Events Battle Boards API (88 tests, 9 routes)
+
+**Why this matters:**
+- Battle Boards are the in-event competition primitive (chefs vs chefs, dishes
+  vs dishes, votes from guests). The state machine has a strict legal-edge
+  ordering — `create → open → start-voting → vote* → finalize` plus
+  `add-dish/remove-dish` only valid before `voting` — so a misrouted command
+  verb can silently corrupt a live competition. Tests pin every kebab→camel
+  mapping (`add-dish→addDish`, `remove-dish→removeDish`,
+  `start-voting→startVoting`) so a manifest-codegen rename can't silently
+  break voting.
+- All 7 command routes pass `{ entityName: "BattleBoard" }` only — they do
+  NOT pass `instanceId` even for instance-scoped verbs like `vote`/`open`/
+  `finalize` (the runtime resolves the instance from `body.id`). Tests pin
+  this exact options-object shape so a future "helpful" patch that adds
+  `instanceId: body.id` doesn't double-route or break.
+- The list endpoint (`GET /api/events/battle-boards`) carries `eventId` and
+  `status` filters plus pagination with a `limit` clamped to `[1, 100]` and
+  a `take/skip` derived from `page`/`limit`. Tests pin: tenant + soft-delete
+  filter is always present, eventId/status thread through `whereClause`,
+  limit clamps both upper (500→100) and lower (0→1), and `totalPages =
+  ceil(total/limit)`.
+- The root POST is a thin delegator to `executeManifestCommand({ entityName:
+  "BattleBoard", commandName: "create" })`. A test pin ensures the delegated
+  shape stays exact and the delegated response propagates verbatim.
+- Standard 9-test pattern per command: 401 unauth, 400 tenant-missing, 400
+  user-not-found, 200 success + user-context shape pin (`{ id, tenantId,
+  role }`), 403 policy denial (with `role=` suffix in error), 422 guard
+  failure, 400 generic, 400 default-error fallback ("Command failed"), 500
+  runtime throw, runtime-invocation pin (camelCase verb), tenant+clerk-scoped
+  user lookup pin.
+
+**Files added:**
+- `apps/api/__tests__/events/battle-boards.test.ts` — 88 tests across 7
+  command routes (10 tests each via `describe.each`) + 8 list/delegated-POST
+  tests for the root route.
+
+**Coverage delta:** TIER 2 untested API domains: Battle Boards (8 routes, 0
+tests) → fully covered. Events sub-domain: previously ~5 tests for 141
+routes; this lifts a cohesive 9-route slice (state machine + list + create
+delegation) to full pin coverage.
+
+**VALIDATION:** `pnpm --filter api test __tests__/events/battle-boards.test.ts`
+— 88/88 pass.
+
 ### 2026-05-01 — Test Coverage: Collaboration Notifications Commands (44 tests, 4 routes)
 
 **Why this matters:**
