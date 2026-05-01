@@ -154,7 +154,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[pre-compact bridge — saved before context compaction]
-(no changes or facts recorded in this session segment)
+[Emergency bridge — running bridge was not updated]
+Files: IMPLEMENTATION_PLAN.md (edit)
 
 # === END COGNILAYER ===

@@ -1,6 +1,6 @@
 # Capsule-Pro Implementation Plan — Live Queue
 
-> **Last updated:** 2026-05-01 (shipment-items updateReceived instanceId bug fixed). **Convention:** this file is the **live queue only**. Completed pass write-ups are archived, not appended here. See the **Archive Map** at the bottom for history.
+> **Last updated:** 2026-05-01 (notification commands test coverage added — 44 tests). **Convention:** this file is the **live queue only**. Completed pass write-ups are archived, not appended here. See the **Archive Map** at the bottom for history.
 
 **ULTIMATE GOAL:** Every UI button, modal, and form must actually work when clicked.
 
@@ -24,7 +24,7 @@
 | **Backend-Complete, No UI** | 4 major systems | **ALL IMPLEMENTED** ✅ | ~~P1~~ |
 | **SPEC Coverage** | 36/46 complete (78%) — All AI conflict detection + payroll approvals implemented | UPDATED COUNT | P2 |
 | **Placeholder Pages** | 5 pages remain stubs (down from 12) | **7 FIXED ✅** | P2 |
-| **Test Coverage** | ~46 of ~126 API domains untested (3,408 tests across 114 files; +98 prep-lists CRUD + 10 commands, +35 procurement POs + 71 shipment commands since wave 4) | IN PROGRESS | P3 |
+| **Test Coverage** | ~45 of ~126 API domains untested (3,452 tests across 115 files; +44 notification commands, +130 prep-tasks, +98 prep-lists CRUD + 10 commands, +35 procurement POs + 71 shipment commands since wave 4) | IN PROGRESS | P3 |
 
 ### Audit Statistics (14 agents, 2026-04-29)
 
@@ -390,6 +390,39 @@ All 33 placeholder occurrences across 12 event files replaced with consistent, u
 ---
 
 ## Recently Resolved
+
+### 2026-05-01 — Test Coverage: Collaboration Notifications Commands (44 tests, 4 routes)
+
+**Why this matters:**
+- Notifications are the multi-tenant alert spine: a leaked notification across
+  tenants or a silently-dropped `instanceId` on `markRead`/`markDismissed`/
+  `remove` means dismissed alerts re-appear or, worse, one tenant's user
+  toggles read state on another tenant's notification row. Tests pin
+  `instanceId: body.id` for all 3 instance-scoped verbs and prove `create`
+  does NOT pass an instanceId.
+- Routes call `database.user.findFirst({ AND: [{ tenantId }, { authUserId: clerkId }] })`
+  to resolve the internal user before invoking runtime. Tests pin this
+  composed `AND` clause so a refactor can't silently drop the tenant filter
+  and resolve any user with a matching Clerk ID.
+- All 4 commands (create, mark-dismissed, mark-read, remove) get the full
+  test pattern: 401 unauth, 400 tenant-missing, 400 user-not-found, 200
+  success + user-context shape pin (`{ id, tenantId, role }`), 403 policy
+  denial (with `role=` suffix in error), 422 guard failure, 400 generic, 400
+  default-error fallback, 500 runtime throw, runtime invocation pin.
+- Coverage pins kebab-case URL → camelCase verb mapping (`mark-dismissed` →
+  `markDismissed`, `mark-read` → `markRead`) so a manifest-codegen change
+  can't silently misroute.
+
+**Files added:**
+- `apps/api/__tests__/collaboration/notifications/notification-commands.test.ts`
+  — 44 tests across all 4 command routes (11 tests each via `describe.each`).
+
+**Coverage delta:** TIER 2 untested API domains: ~46 → ~45. Notification
+domain now has both end-to-end persistence pinning (existing) AND full
+command-route auth/policy/guard/error coverage (new).
+
+**VALIDATION:** `pnpm --filter api test __tests__/collaboration/notifications/notification-commands.test.ts`
+— 44/44 pass. `pnpm --filter api typecheck` — clean.
 
 ### 2026-05-01 — Test Coverage: Kitchen Prep-Tasks API (130 tests, 16 routes)
 
