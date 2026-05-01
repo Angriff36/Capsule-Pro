@@ -61,6 +61,7 @@ function createMockModel() {
     createMany: vi.fn(),
     update: vi.fn(),
     updateMany: vi.fn(),
+    upsert: vi.fn(),
     delete: vi.fn(),
     deleteMany: vi.fn(),
     count: vi.fn(),
@@ -72,6 +73,7 @@ function createMockModel() {
 // Mock database instance
 export const database: Record<string, unknown> = {
   $queryRaw: vi.fn(),
+  $executeRaw: vi.fn(),
   $transaction: vi.fn(),
   $connect: vi.fn(),
   $disconnect: vi.fn(),
@@ -135,6 +137,31 @@ export const database: Record<string, unknown> = {
   driver: createMockModel(),
   vehicle: createMockModel(),
   deliveryRoute: createMockModel(),
+  // Activity feed model
+  activityFeed: createMockModel(),
+  // Allergen warning model
+  allergenWarning: createMockModel(),
+  // Accounting models
+  laborBudget: createMockModel(),
+  // Search models
+  clientContact: createMockModel(),
+  venue: createMockModel(),
+  knowledgeBaseEntry: createMockModel(),
+  // Document versioning models
+  documentVersion: createMockModel(),
+  // Kitchen task model
+  kitchenTask: createMockModel(),
+  // Workforce optimization model
+  workforceOptimization: createMockModel(),
+  // Supplier / vendor catalog models (webhook)
+  inventorySupplier: createMockModel(),
+  vendorCatalog: createMockModel(),
+  // Contract & proposal models (public endpoints)
+  eventContract: createMockModel(),
+  contractSignature: createMockModel(),
+  proposal: createMockModel(),
+  proposalLineItem: createMockModel(),
+  account: createMockModel(),
 };
 
 database.$transaction = vi.fn((fn: (tx: unknown) => unknown) => fn(database));

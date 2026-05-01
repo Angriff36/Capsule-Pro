@@ -35,13 +35,13 @@ export async function GET(request: NextRequest) {
 
     const areas = await database.$queryRaw`
       SELECT
-        id, venue_id, name, code, area_type, floor, description,
+        id, venue_id, name, code, "areaType" AS area_type, floor, description,
         square_feet, status, created_at, updated_at
       FROM tenant_facilities.facility_areas
       WHERE tenant_id = ${tenantId}::uuid
         AND deleted_at IS NULL
         ${venueId ? Prisma.sql`AND venue_id = ${venueId}::uuid` : Prisma.empty}
-        ${areaType ? Prisma.sql`AND area_type = ${areaType}` : Prisma.empty}
+        ${areaType ? Prisma.sql`AND "areaType" = ${areaType}` : Prisma.empty}
         ${status !== "all" ? Prisma.sql`AND status = ${status}` : Prisma.empty}
       ORDER BY name
       LIMIT ${limit} OFFSET ${offset}

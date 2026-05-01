@@ -154,28 +154,7 @@ Active: [new session]
 Last: [first session]
 
 ## Last Session Bridge
-[pre-compact bridge — saved before context compaction]
-Files (10):
-  apps/api/__tests__/logistics/logistics.test.ts (create)
-  apps/api/__tests__/administrative/admin-tasks.test.ts (create)
-  apps/api/__tests__/calendar/calendar.test.ts (create)
-  apps/api/test/mocks/@repo/database.ts (edit)
-  apps/api/__tests__/facilities/facilities-commands.test.ts (create)
-  apps/api/__tests__/knowledge-base/knowledge-base.test.ts (create)
-  apps/api/__tests__/analytics/analytics.test.ts (create)
-  apps/api/__tests__/facilities/facilities-commands.test.ts (edit)
-  apps/api/__tests__/calendar/calendar.test.ts (edit)
-  apps/api/__tests__/administrative/admin-tasks.test.ts (edit)
-Manual bridge:
-[proactive bridge @ 83% context — saved before compacting]
-Files (8):
-  apps/api/__tests__/logistics/logistics.test.ts (create)
-  apps/api/__tests__/administrative/admin-tasks.test.ts (create)
-  apps/api/__tests__/calendar/calendar.test.ts (create)
-  apps/api/test/mocks/@repo/database.ts (edit)
-  apps/api/__tests__/facilities/facilities-commands.test.ts (create)
-  apps/api/__tests__/knowledge-base/knowledge-base.test.ts (create)
-  apps/api/__tests__/analytics/analytics.test.ts (create)
-  apps/api/__tests__/facilities/facilities-commands.test.ts (edit)
+[Emergency bridge — running bridge was not updated]
+No changes or facts in this session.
 
 # === END COGNILAYER ===

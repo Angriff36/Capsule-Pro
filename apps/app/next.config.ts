@@ -21,12 +21,14 @@ const PACK_FILE_CACHE_WARNING =
  * 3. localhost fallback for local development
  */
 const apiBaseUrl = (
-  process.env.NEXT_PUBLIC_API_URL ||
-  process.env.VERCEL_API_URL ||
-  (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== "development"
-    ? "https://capsule-pro-api.vercel.app"
-    : null) ||
-  "http://127.0.0.1:2223"
+  process.env.NODE_ENV !== "production" && !process.env.VERCEL
+    ? "http://127.0.0.1:2223"
+    : process.env.NEXT_PUBLIC_API_URL ||
+      process.env.VERCEL_API_URL ||
+      (process.env.VERCEL_ENV && process.env.VERCEL_ENV !== "development"
+        ? "https://capsule-pro-api.vercel.app"
+        : null) ||
+      "http://127.0.0.1:2223"
 ).replace(/\/$/, "");
 const distDir = process.env.NEXT_DIST_DIR?.trim() || ".next";
 

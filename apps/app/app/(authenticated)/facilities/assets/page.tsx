@@ -110,6 +110,8 @@ const ASSET_TYPE_LABELS: Record<string, string> = {
   other: "Other",
 };
 
+const NO_AREA_ID = "__none__";
+
 const formatCurrency = (n: number | null) =>
   n
     ? new Intl.NumberFormat("en-US", {
@@ -154,8 +156,12 @@ export default function AssetsPage() {
       ]);
       const assetsData = await assetsRes.json();
       const areasData = await areasRes.json();
-      if (assetsData.success) setAssets(assetsData.data.assets || []);
-      if (areasData.success) setAreas(areasData.data.areas || []);
+      if (assetsData.success) {
+        setAssets(assetsData.assets || []);
+      }
+      if (areasData.success) {
+        setAreas(areasData.areas || []);
+      }
     } catch (e) {
       console.error("Failed to load:", e);
     } finally {
@@ -209,7 +215,9 @@ export default function AssetsPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.name.trim()) return;
+    if (!form.name.trim()) {
+      return;
+    }
     setSaving(true);
     try {
       const endpoint = editing
@@ -597,14 +605,19 @@ export default function AssetsPage() {
               <div className="space-y-2">
                 <Label>Facility Area</Label>
                 <Select
-                  onValueChange={(v) => setForm((p) => ({ ...p, areaId: v }))}
-                  value={form.areaId}
+                  onValueChange={(v) =>
+                    setForm((p) => ({
+                      ...p,
+                      areaId: v === NO_AREA_ID ? "" : v,
+                    }))
+                  }
+                  value={form.areaId || NO_AREA_ID}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="No area assigned" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value={NO_AREA_ID}>None</SelectItem>
                     {areas.map((area) => (
                       <SelectItem key={area.id} value={area.id}>
                         {area.name}
