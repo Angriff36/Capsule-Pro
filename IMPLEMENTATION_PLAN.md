@@ -24,7 +24,7 @@
 | **Backend-Complete, No UI** | 4 major systems | **ALL IMPLEMENTED** ✅ | ~~P1~~ |
 | **SPEC Coverage** | 36/46 complete (78%) — All AI conflict detection + payroll approvals implemented | UPDATED COUNT | P2 |
 | **Placeholder Pages** | 5 pages remain stubs (down from 12) | **7 FIXED ✅** | P2 |
-| **Test Coverage** | ~47 of ~126 API domains untested (3,267 tests across 111 files; +35 procurement POs + 71 shipment commands since wave 4) | IN PROGRESS | P3 |
+| **Test Coverage** | ~46 of ~126 API domains untested (3,408 tests across 114 files; +98 prep-lists CRUD + 10 commands, +35 procurement POs + 71 shipment commands since wave 4) | IN PROGRESS | P3 |
 
 ### Audit Statistics (14 agents, 2026-04-29)
 
@@ -317,7 +317,7 @@ All 16 `alert()` calls across 7 files replaced with `toast.success()` / `toast.e
 
 | Domain | Status | Action |
 |--------|--------|--------|
-| Recipe/Prep system | PARTIAL — stations (27), ingredients (27) covered | Add remaining unit tests |
+| Recipe/Prep system | COVERED — stations (27), ingredients (27), prep-lists (98 — CRUD + 10 commands) | Add edge cases for autogeneration + items |
 | Payroll workflows | COVERED — periods (18), runs (13), deductions (11) | Add approval workflow tests |
 | Menu/Dish management | COVERED — menus (14), dishes (25) covered | Add remaining unit tests |
 | Training management | COVERED — ~80 tests (modules, assignments, completion) | Expand edge cases |
@@ -341,8 +341,8 @@ All 16 `alert()` calls across 7 files replaced with `toast.success()` / `toast.e
 
 - **API:** 1 skipped `describe` block in `sales-reporting/generate.test.ts`
 - **E2E:** 41 skipped tests across 13 files
-- **API test files:** 110 files covering 45+ domains (of ~126 total)
-- **All 3,187 API tests pass**
+- **API test files:** 114 files covering 46+ domains (of ~126 total)
+- **All 3,408 API tests pass** (1 skipped, 8 todo)
 
 ---
 
@@ -389,6 +389,17 @@ All 33 placeholder occurrences across 12 event files replaced with consistent, u
 ---
 
 ## Recently Resolved
+
+### 2026-05-01 — Test Coverage: Kitchen Prep Lists (98 tests, 1 suite)
+
+- **ADDED** `apps/api/__tests__/kitchen/prep-lists.test.ts` covering the entire prep-lists surface (route.ts root + [id]/route.ts + 10 command routes under /commands/*):
+  - **GET /api/kitchen/prep-lists** (10 tests): 401 unauth, default pagination shape, eventId/status/search filter threading, station filter via `prepListItem` lookup (including the early-empty-result short-circuit when no items exist for the station — verifies `prepList.findMany` is NOT called), custom page/limit, limit clamping at 100, 500 on Prisma throw.
+  - **GET /api/kitchen/prep-lists/[id]** (5 tests): 401 unauth, 404 not-found, station-grouping output (multi-station + sortOrder), null-stationId fallback (groups by stationName), 500 on Prisma throw.
+  - **PATCH + DELETE /api/kitchen/prep-lists/[id]** (2 tests): asserts each correctly delegates to `executeManifestCommand` with the right `entityName`/`commandName` ("PrepList"/"update", "PrepList"/"cancel") and that the `transformBody` callbacks inject `id` (PATCH) and synthesize the cancel payload `{ id, reason: "Deleted via API", canceledBy: ctx.userId }` (DELETE) using user context.
+  - **POST /api/kitchen/prep-lists** (1 test): root POST delegates to `PrepList.create` via `executeManifestCommand`.
+  - **All 10 command routes** (`activate`, `cancel`, `create`, `create-from-seed`, `deactivate`, `finalize`, `mark-completed`, `reopen`, `update`, `update-batch-multiplier`) × 7 paths each = **70 tests**: 401 unauth, 400 missing tenant, 200 success (validates runtime user context `{ id, tenantId }`), 403 policy denial, 422 guard failure, 400 generic command failure, 500 on runtime exception, plus a parameterized assertion that the manifest command name reaches `runtime.runCommand` in **camelCase** (`createFromSeed`, `markCompleted`, `updateBatchMultiplier`) even though the URL slug is kebab-case.
+- **WHY THIS MATTERS:** Prep lists are the kitchen execution-plan backbone. The 10-command state machine (`draft → active → completed`, plus `cancel`/`reopen`/batch-multiplier scaling) is invoked from event prep flows; a regression in any guard would silently allow illegal transitions (e.g. completing a draft, reopening a cancelled list). The kebab-case → camelCase mapping is also a load-bearing pin: a new route generated from the manifest IR that forgot to camelCase its `runCommand("...")` argument would silently route to a non-existent command and return 400 in production. The station-filter early-exit (no `prepList.findMany` call when there are no items) is also pinned because forgetting it would issue an `id IN ([])` query that some Prisma versions translate to `false` and others to `1=0` — both correct, but easy to break with a refactor.
+- **VALIDATION:** `pnpm --filter api test __tests__/kitchen/prep-lists.test.ts` — 98/98 pass. Full API suite: **3,408 tests pass** across 114 files (1 skipped, 8 todo). No regressions.
 
 ### 2026-05-01 — Test coverage: Activity Feed (list + stats)
 
