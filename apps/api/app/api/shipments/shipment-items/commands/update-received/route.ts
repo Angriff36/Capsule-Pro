@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
 
     const result = await runtime.runCommand("updateReceived", body, {
       entityName: "ShipmentItem",
+      instanceId: body.shipmentItemId,
     });
 
     if (!result.success) {

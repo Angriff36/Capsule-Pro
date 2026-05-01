@@ -712,7 +712,7 @@ describe("ShipmentItem.updateReceived command", () => {
     expect(response.status).toBe(400);
   });
 
-  it("forwards body to runtime — pins missing-instanceId bug", async () => {
+  it("forwards body and instanceId to runtime", async () => {
     authedAsAdmin();
     mockRuntime(runCommand);
 
@@ -735,11 +735,10 @@ describe("ShipmentItem.updateReceived command", () => {
     );
 
     expect(response.status).toBe(200);
-    // BUG (tracked in IMPLEMENTATION_PLAN.md): the route does NOT pass
-    // `instanceId` to runCommand even though `updateReceived` is an
-    // instance-scoped verb. Pinning current behavior so a regression that
-    // makes the bug worse (e.g. forwarding the wrong field as instanceId)
-    // is caught by this suite.
+    // `updateReceived` is an instance-scoped manifest verb; the runtime
+    // requires `instanceId` to load the target ShipmentItem before the
+    // guards/mutations run. The route extracts it from `body.shipmentItemId`
+    // (analogous to how Shipment.* commands extract `body.id`).
     expect(runCommand).toHaveBeenCalledWith(
       "updateReceived",
       expect.objectContaining({
@@ -747,10 +746,10 @@ describe("ShipmentItem.updateReceived command", () => {
         quantityDamaged: 2,
         condition: "damaged",
       }),
-      { entityName: "ShipmentItem" }
+      { entityName: "ShipmentItem", instanceId: "item-001" }
     );
     const callArgs = runCommand.mock.calls[0]?.[2] ?? {};
-    expect(callArgs.instanceId).toBeUndefined();
+    expect(callArgs.instanceId).toBe("item-001");
   });
 
   it("returns 422 when manifest guard rejects (e.g. quantityReceived < 0)", async () => {

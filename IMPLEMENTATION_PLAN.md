@@ -1,6 +1,6 @@
 # Capsule-Pro Implementation Plan — Live Queue
 
-> **Last updated:** 2026-04-29 (14-agent comprehensive re-audit). **Convention:** this file is the **live queue only**. Completed pass write-ups are archived, not appended here. See the **Archive Map** at the bottom for history.
+> **Last updated:** 2026-05-01 (shipment-items updateReceived instanceId bug fixed). **Convention:** this file is the **live queue only**. Completed pass write-ups are archived, not appended here. See the **Archive Map** at the bottom for history.
 
 **ULTIMATE GOAL:** Every UI button, modal, and form must actually work when clicked.
 
@@ -379,6 +379,14 @@ All 33 placeholder occurrences across 12 event files replaced with consistent, u
 
 ## Recently Resolved
 
+### 2026-05-01 — Fix: ShipmentItem.updateReceived missing instanceId
+
+- **FIXED** `apps/api/app/api/shipments/shipment-items/commands/update-received/route.ts:56-59` — added `instanceId: body.shipmentItemId` to the `runtime.runCommand()` options dict. The route is now consistent with every other instance-scoped shipment command (Shipment.cancel/schedule/ship/start-preparing/mark-delivered/update all pass `instanceId: body.id`).
+- **WHY THIS MATTERS:** `updateReceived` is an instance-scoped manifest verb — the runtime needs to load the target ShipmentItem into `self` before guards (`quantityReceived >= 0`) and mutations (`quantityReceived = quantityReceived`, `quantityDamaged = quantityDamaged`, `condition = condition`, `conditionNotes = conditionNotes`, `updatedAt = now()`) execute. Without `instanceId`, the runtime cannot identify which item to receive, so the call would silently no-op or update the wrong record. The bug existed because the auto-generated route template didn't account for ShipmentItem using `shipmentItemId` (vs. the more common `id`) as its instance identifier in command bodies.
+- **TEST FLIPPED:** `apps/api/__tests__/logistics/shipments/shipment-commands.test.ts:715-753` — the previous "pins missing-instanceId bug" test (which asserted `callArgs.instanceId).toBeUndefined()`) was renamed to "forwards body and instanceId to runtime" and now asserts `instanceId: "item-001"` is passed. This was the explicit acceptance criterion in the prior commit: a one-line flip in the test, paired with a one-line fix in the route.
+- **VALIDATION:** `pnpm --filter api test __tests__/logistics/shipments/shipment-commands.test.ts` — 71/71 pass. Full API suite: **3,267 tests pass** across 111 files (1 skipped, 8 todo). API typecheck clean.
+- Files: `apps/api/app/api/shipments/shipment-items/commands/update-received/route.ts`, `apps/api/__tests__/logistics/shipments/shipment-commands.test.ts`.
+
 ### 2026-05-01 — Test Coverage: Shipments Command Coverage (71 tests, 1 suite)
 
 - **ADDED** `__tests__/logistics/shipments/shipment-commands.test.ts` — companion to the existing `shipment-end-to-end.test.ts` (which only covered list/detail GETs + instanceId wiring). The new file exhaustively exercises every shipment write path:
@@ -386,10 +394,10 @@ All 33 placeholder occurrences across 12 event files replaced with consistent, u
   - **7 Shipment commands** × 3 runtime-failure paths (403 policy denial, 422 guard failure, 400 constraint violation) = **21 failure tests**.
   - **7 Shipment commands** × success body-forwarding paths = **7 success tests**, each asserting that `runtime.runCommand()` is invoked with the correct `entityName` and that the response body shape comes from the runtime.
   - **ShipmentItem.create**: 6 tests covering 401, 400 (missing tenant + user), success forwarding to `runtime.runCommand("create", body, { entityName: "ShipmentItem" })`, 422 guard failure on `quantityShipped <= 0`, and 500 on uncaught error.
-  - **ShipmentItem.updateReceived**: 5 tests including a **bug-pin test** that asserts the route currently does NOT pass `instanceId` to `runtime.runCommand()` — the manifest store cannot uniquely identify which item to update. Pinning the broken behavior prevents silent regressions.
+  - **ShipmentItem.updateReceived**: 5 tests covering the runtime forwarding (now with correct `instanceId`), 401, 400 missing tenant, 422 guard failure on negative `quantityReceived`, and 500 on uncaught error. The original "bug-pin test" was flipped in the 2026-05-01 fix above — the route now correctly passes `instanceId: body.shipmentItemId`.
   - **GET /api/shipments/shipment-items/list**: 4 tests (401, 400 missing tenant, success body shape, 500 on Prisma throw).
 - **WHY:** shipments encode a 5-state machine (draft → scheduled → preparing → in_transit → delivered, plus cancelled). The existing test only proved instanceId reached the runtime; it did not exercise auth, policy, or guard paths. A regression in any guard would silently allow illegal state transitions, untracked cancellations by non-managers (`ManagersCanCancelShipment`), or unauthorized inventory receipts (`StaffCanReceiveShipment`). The 71 new assertions pin all of those.
-- **KNOWN BUG documented (not fixed):** `apps/api/app/api/shipments/shipment-items/commands/update-received/route.ts` invokes `runtime.runCommand("updateReceived", body, { entityName: "ShipmentItem" })` with **no `instanceId`** — every other instance-scoped command on this domain (cancel/schedule/ship/start-preparing/mark-delivered/update) does pass it. The test file pins this behavior in a section labeled "pins missing-instanceId bug" so a fix can flip that assertion in the same PR. Track-only for now; fix lives in a future increment so this commit stays test-only.
+- **FOLLOW-UP RESOLVED:** The "missing-instanceId" bug noted with the test additions was fixed on 2026-05-01 (see entry above). The shipment-items/update-received route now correctly passes `instanceId: body.shipmentItemId` to `runtime.runCommand()`.
 - Full API suite green: **3,267 tests pass** across 111 files (1 skipped, 8 todo). No regressions from the shipments-commands additions.
 
 ### 2026-05-01 — Test Coverage: Procurement Purchase Orders (35 tests, 1 suite)
