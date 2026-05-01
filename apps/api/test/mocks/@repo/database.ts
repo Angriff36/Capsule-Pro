@@ -115,6 +115,9 @@ export const database: Record<string, unknown> = {
   inventoryForecast: createMockModel(),
   reorderSuggestion: createMockModel(),
   inventoryTransaction: createMockModel(),
+  // Inventory transfer models (5-state machine: pending → approved → in_transit → completed, or cancelled)
+  inventoryTransfer: createMockModel(),
+  inventoryTransferItem: createMockModel(),
   // Event model for forecasting tests
   event: createMockModel(),
   // Schedule models

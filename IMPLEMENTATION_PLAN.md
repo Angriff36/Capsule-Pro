@@ -336,7 +336,8 @@ All 16 `alert()` calls across 7 files replaced with `toast.success()` / `toast.e
 | Webhook: Supplier Catalog | COVERED — ~19 tests (HMAC verification, payload validation, upsert) | — |
 | Activity Feed | COVERED — 26 tests (list filters/pagination/auth + stats bigint coercion + error paths) | — |
 | Goodshuffle Integration | COVERED — 66 tests (config GET/POST/DELETE, status, test, sync, events/inventory/invoices list, inventory-sync, invoices-sync) | — |
-| ~46 remaining API domains | ZERO TESTS | Prioritize core business domains |
+| Inventory Transfers | COVERED — 41 tests (create + 5-state machine commands + list, transaction integrity) | — |
+| ~45 remaining API domains | ZERO TESTS | Prioritize core business domains |
 
 ### Skipped Tests
 
@@ -390,6 +391,45 @@ All 33 placeholder occurrences across 12 event files replaced with consistent, u
 ---
 
 ## Recently Resolved
+
+### 2026-05-01 — Test Coverage: Inventory Transfers 5-State Machine (41 tests, 6 routes)
+
+**Why this matters:**
+- Inventory transfers move stock between physical locations. A bug in
+  `receive()` can double-credit on-hand quantities (only `transfer_in`
+  fires) or silently lose stock (only `transfer_out` fires). Both
+  failures are invisible until cycle-count audits or month-end margin
+  reports — by which point cost-of-goods has already been mis-attributed
+  across locations and the financial close uses incorrect figures.
+- The 5-state machine (`pending → approved → in_transit → completed`,
+  plus `cancelled` from `pending|approved`) is enforced by guard
+  clauses, not by manifest constraints. Each illegal transition
+  (`approve` after `ship`, `receive` while `pending`, `cancel` after
+  `completed`) returns 400 — the tests pin every legal AND illegal
+  transition explicitly so a refactor can't relax a guard without a
+  test failure.
+- The `receive` route runs **inside `$transaction`** and emits
+  **two** offsetting `inventoryTransaction` rows per received item:
+  positive `transfer_in` at `toLocationId` and negative `transfer_out`
+  at `fromLocationId`. Tests verify the **count (4 calls for 2 items)**,
+  **direction (positive vs negative quantity)**, and **location
+  attribution** so any future refactor that drops the offsetting row,
+  swaps the locations, or breaks the sign convention is caught
+  immediately.
+- The `create` route uses `requireCurrentUser` (full user resolution)
+  while the other 4 commands use `auth + getTenantIdForOrg` — the tests
+  exercise both auth shapes, preventing a "helpful" auth-pattern
+  unification from breaking the user-attribution path
+  (`requestedBy: currentUser.id`).
+- Pagination is clamped at `MAX_LIMIT=200` via `clampLimit` — verified
+  by sending `?limit=999999` and asserting body shows `limit: 200`,
+  preventing a hostile or buggy client from requesting the entire
+  transfers table.
+- Test scope: `commands/{create,approve,ship,receive,cancel}` + `list`.
+  Mock surface added: `inventoryTransfer` and `inventoryTransferItem`
+  models in `apps/api/test/mocks/@repo/database.ts`.
+- Test count: 41 (`__tests__/inventory/transfers/transfers.test.ts`).
+  All passing. API typecheck clean.
 
 ### 2026-05-01 — Test Coverage: Kitchen Recipes API (59 tests, 7 routes)
 
