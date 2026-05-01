@@ -155,6 +155,11 @@ Last: [first session]
 
 ## Last Session Bridge
 [pre-compact bridge — saved before context compaction]
-(no changes or facts recorded in this session segment)
+Files (1):
+  apps/api/test/mocks/@repo/database.ts (edit)
+Manual bridge:
+[proactive bridge @ 78% context — saved before compacting]
+Files (1):
+  apps/api/test/mocks/@repo/database.ts (edit)
 
 # === END COGNILAYER ===

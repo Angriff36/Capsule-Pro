@@ -162,6 +162,8 @@ export const database: Record<string, unknown> = {
   // Procurement models
   purchaseOrder: createMockModel(),
   purchaseOrderItem: createMockModel(),
+  vendorContact: createMockModel(),
+  vendorRating: createMockModel(),
   // Contract & proposal models (public endpoints)
   eventContract: createMockModel(),
   contractSignature: createMockModel(),

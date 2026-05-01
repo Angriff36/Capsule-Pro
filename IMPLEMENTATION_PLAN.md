@@ -1,6 +1,6 @@
 # Capsule-Pro Implementation Plan — Live Queue
 
-> **Last updated:** 2026-05-01 (kitchen recipes API surface test coverage added — 59 tests, 7 routes). **Convention:** this file is the **live queue only**. Completed pass write-ups are archived, not appended here. See the **Archive Map** at the bottom for history.
+> **Last updated:** 2026-05-01 (procurement vendors API surface test coverage added — 45 tests, 7 routes). **Convention:** this file is the **live queue only**. Completed pass write-ups are archived, not appended here. See the **Archive Map** at the bottom for history.
 
 **ULTIMATE GOAL:** Every UI button, modal, and form must actually work when clicked.
 
@@ -24,7 +24,7 @@
 | **Backend-Complete, No UI** | 4 major systems | **ALL IMPLEMENTED** ✅ | ~~P1~~ |
 | **SPEC Coverage** | 36/46 complete (78%) — All AI conflict detection + payroll approvals implemented | UPDATED COUNT | P2 |
 | **Placeholder Pages** | 5 pages remain stubs (down from 12) | **7 FIXED ✅** | P2 |
-| **Test Coverage** | ~43 of ~126 API domains untested (3,903 tests across 124 files; +59 kitchen recipes, +36 workforce-optimization, +44 notification commands, +130 prep-tasks, +98 prep-lists CRUD + 10 commands, +35 procurement POs + 71 shipment commands since wave 4) | IN PROGRESS | P3 |
+| **Test Coverage** | ~42 of ~126 API domains untested (3,989 tests across 127 files; +45 procurement vendors, +59 kitchen recipes, +36 workforce-optimization, +44 notification commands, +130 prep-tasks, +98 prep-lists CRUD + 10 commands, +35 procurement POs + 71 shipment commands since wave 4) | IN PROGRESS | P3 |
 
 ### Audit Statistics (14 agents, 2026-04-29)
 
@@ -391,6 +391,92 @@ All 33 placeholder occurrences across 12 event files replaced with consistent, u
 ---
 
 ## Recently Resolved
+
+### 2026-05-01 — Test Coverage: Procurement Vendors API (45 tests, 7 routes)
+
+**Why this matters:**
+- Vendors (`InventorySupplier`) are the foundational entity behind every
+  downstream procurement object: catalog items, purchase orders, purchase
+  requisitions, and vendor contracts all FK back here. A regression on
+  create/update/delete cascades silently into PO creation failures, missing
+  vendor contacts on order forms, and orphaned ratings. The failure mode is
+  invisible until purchasing tries to place an order against a "deleted"
+  vendor or receives an order from a vendor whose primary contact got
+  silently demoted.
+- The `commands/create` route auto-generates `supplier_number` as
+  `VND-####` from a tenant-scoped `COUNT(*) + 1`, zero-padded to 4 digits.
+  Tests pin the exact format via regex `^VND-\d{4}$` AND assert the
+  count query is tenant-isolated — a buggy refactor that drops the
+  `tenantId` predicate would generate colliding numbers across tenants
+  (since the count crosses tenants) and the resulting INSERT would fail
+  on the unique constraint, breaking vendor creation tenant-wide.
+- The `create` route writes a **secondary** `vendor_contacts` row only
+  when `contactPerson && (email || phone)` is true. Tests assert both
+  paths: contact INSERT runs when conditions are met, contact INSERT is
+  SKIPPED when `email` and `phone` are both missing. This conditional is
+  fragile — the wrong boolean operator (`&&` vs `||`) creates orphaned
+  contact rows or silently drops primary contacts; both branches are pinned.
+- The `commands/delete` route is a **soft-delete** that BLOCKS with HTTP
+  400 if the vendor has any PO with status NOT IN
+  (`'received'`, `'cancelled'`). Tests pin both the active-PO block path
+  (status code 400 + error message includes the count of blocking POs)
+  AND the success path (no active POs → `deleted_at = NOW()` UPDATE).
+  A regression that removes the active-PO check would let an operator
+  delete a vendor mid-delivery, causing receiving to fail and AP to lose
+  the matching PO reference.
+- The `commands/add-contact` route, when `isPrimary === true`, must
+  **first** clear the existing primary contact (UPDATE) and **then**
+  INSERT the new primary — otherwise both contacts have `is_primary =
+  true` simultaneously and downstream UIs that pick "the primary" become
+  non-deterministic. Tests pin the call ORDER explicitly: existence
+  check (call 1), clear-primary UPDATE (call 2), INSERT (call 3). A
+  refactor that reorders these or drops the clear-primary step is
+  caught by the call-count assertion AND the per-call SQL fragment
+  match.
+- The `commands/rate` route validates `category` against a literal
+  allow-list (`overall`, `quality`, `delivery`, `value`, `communication`)
+  and `rating` in `[1, 5]`. Tests assert the 422-equivalent (400 +
+  message) path for each invalid input AND assert that when category is
+  `overall`, the route ALSO calls `vendorRating.aggregate` and
+  `inventorySupplier.update` to propagate the new average to
+  `performanceRating`. Non-`overall` categories must NOT update the
+  supplier (otherwise quality-only ratings would overwrite the
+  composite-score-driven `performanceRating`). Both branches are pinned.
+- The supplier write uses Prisma's composite-PK shape:
+  `{ where: { tenantId_id: { tenantId, id } } }`. Tests pin this exact
+  shape — a "helpful" refactor to `{ where: { id } }` would silently
+  break tenant isolation on the update path, allowing a malicious tenant
+  with the same `id` collision to overwrite another tenant's supplier
+  rating.
+- Coverage shape: `GET /list` (8 tests: auth/tenant/shape/search filter
+  with OR/no-OR-without-search/MAX_LIMIT clamp/orderBy+include
+  pin/Sentry-500), `GET /[id]` (5 tests: auth/tenant/404/full
+  shape+findFirst predicates+catalog count `isActive: true`
+  pin/Sentry-500), `POST /commands/create` (6 tests:
+  auth/tenant/missing-name/auto VND-#### format/secondary contact
+  INSERT branches × 2/empty-RETURNING 500), `POST /commands/update`
+  (5 tests), `POST /commands/delete` (5 tests including blocked-by-active-POs),
+  `POST /commands/add-contact` (6 tests including 3-call ORDER assertion
+  for `isPrimary=true`), `POST /commands/rate` (10 tests covering
+  category allow-list, [1,5] bound, overall-only aggregate path, composite-PK
+  update shape). **45 tests total**.
+
+**Files added:**
+- `apps/api/__tests__/procurement/vendors/vendors.test.ts` — 45 tests
+  covering all 7 procurement vendors routes (2 GETs + 5 commands).
+
+**Mock surface added:**
+- `vendorContact` and `vendorRating` Prisma models in
+  `apps/api/test/mocks/@repo/database.ts` (the rate route uses
+  `database.vendorRating.create` + `database.vendorRating.aggregate`,
+  not raw SQL).
+
+**Coverage delta:** TIER 2 untested API domains: ~43 → ~42. Total API
+tests: 3,944 → 3,989 (+45). Test files: 126 → 127.
+
+**VALIDATION:** `pnpm --filter api test __tests__/procurement/vendors/vendors.test.ts`
+— 45/45 pass. Full API suite: **3,989 tests pass** across 127 files (1
+skipped, 8 todo). No regressions.
 
 ### 2026-05-01 — Test Coverage: Inventory Transfers 5-State Machine (41 tests, 6 routes)
 
