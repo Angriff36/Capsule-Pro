@@ -390,6 +390,71 @@ All 33 placeholder occurrences across 12 event files replaced with consistent, u
 
 ## Recently Resolved
 
+### 2026-05-01 — Test Coverage: Accounting PATCH Action Dispatchers (72 tests, 4 suites)
+
+- **ADDED** four new test files pinning the PATCH action-dispatcher contract on
+  the accounting domain's detail routes:
+  - `apps/api/__tests__/accounting/invoice-patch-actions.test.ts` (20 tests):
+    `apply-payment` (zero/negative reject, `PARTIALLY_PAID` math, `PAID`
+    transition, overpayment clamp, 0.01 boundary), `mark-as-paid` (forces
+    `amountPaid=total`, `amountDue=0`, stamps `paidAt`), `mark-overdue`
+    (rejects `VOID`/`PAID`, allows `SENT→OVERDUE`), `send-reminder` (rejects
+    `DRAFT`, sends Resend email best-effort, falls back when no template id,
+    treats Resend failure as non-fatal so the status transition is the source
+    of truth), `DELETE` void with `validateInvoiceBusinessRules` guard
+    rejecting paid invoices.
+  - `apps/api/__tests__/accounting/payment-method-patch-actions.test.ts` (11
+    tests): `mark-as-default` (asserts the `updateMany` filter shape so a
+    typo can't demote every default in the tenant; pins call-order so the
+    target update happens AFTER siblings are unset), `verify`,
+    `flag-for-fraud`, `mark-expired`, `remove` (returns `{ success: true }`,
+    not the entity — clients reading `response.id` would break), 404 + cross-
+    tenant invariant rejection (500), unknown action 400.
+  - `apps/api/__tests__/accounting/revenue-recognition-patch-actions.test.ts`
+    (16 tests): `start` (PENDING-only → `IN_PROGRESS`), `recognize` (creates
+    a line and updates aggregates atomically in `$transaction`; pins the
+    `COMPLETED` transition at remaining ≤ 0.01), `reverse` (soft-deletes the
+    line, restores amounts, transitions back to `IN_PROGRESS` from
+    `COMPLETED`), `cancel` (rejects `COMPLETED`), `adjust` (recomputes
+    `remainingAmount` when `totalAmount` changes), unknown action 200 (no-op
+    update — pinned so a future "throw on unknown" change is intentional).
+  - `apps/api/__tests__/accounting/collection-case-patch-actions.test.ts`
+    (25 tests): `recordPayment` (Zod 400, partial vs `PAID` transition at
+    0.01 floor, overpayment clamp), `escalateDunning` (priority derivation
+    for `FINAL_NOTICE`/`COLLECTIONS` → `URGENT`, `REMINDER_2`/`REMINDER_3`
+    → `HIGH`), `setPriority` (Zod 400 + notes append), `markDisputed` /
+    `resolveDispute`, `escalateToLegal` (atomic `isEscalatedToLegal=true` +
+    `status=LEGAL` + `priority=URGENT`), `writeOff` (Zod 400 +
+    `Math.min(amount, outstandingAmount)` clamp + `status=WRITE_OFF`),
+    `updateAging` (default `daysOverdue=0`, `agingBucket=null`), `close`,
+    `createPaymentPlan` (Zod 400 + `priority=MEDIUM` downgrade), `reopen`
+    (resets `status=ACTIVE`, `dunningStage=CURRENT`, clears legal flag),
+    404 + unknown-action 400, 500 + Sentry on DB error.
+- **EDITED** `apps/api/test/mocks/@repo/database.ts`: added Prisma model
+  surface for `paymentMethod`, `invoice`, `payment`,
+  `revenueRecognitionSchedule`, `revenueRecognitionLine`, `collectionCase`,
+  `collectionAction`, `collectionPaymentPlan` so the accounting routes can be
+  imported into vitest without the real `@repo/database` package.
+- **EDITED** `apps/api/app/api/accounting/payment-methods/[id]/route.ts`:
+  replaced the stale header comment that claimed `status` was not in the
+  schema. Schema confirms `status String @default("ACTIVE")` at
+  `packages/database/prisma/schema.prisma:4456` — comment now points at the
+  schema and lists the canonical status values
+  (`ACTIVE`/`VERIFIED`/`FLAGGED`/`EXPIRED`).
+- **WHY THIS MATTERS:** These four PATCH dispatchers carry the entire
+  invoice → payment → revenue-recognition → collections financial lifecycle.
+  Every action is a state-machine edge with money on it: a regression on
+  `apply-payment`'s `0.01` boundary leaves PAID invoices stuck in
+  `PARTIALLY_PAID`; a regression on `writeOff`'s clamp creates negative
+  receivables that bleed into financial reporting; a missing `unset siblings`
+  call on `mark-as-default` leaves two payment methods both `isDefault=true`
+  and silently picks an arbitrary card at charge time; a regression on
+  `escalateToLegal`'s atomicity creates half-escalated cases that legal teams
+  never see. None of these surfaces had any test coverage before this pass.
+- **VALIDATION:** `pnpm --filter api test __tests__/accounting/` — **135/135
+  pass** (9 files). Full API suite: **3,480 tests pass** across 118 files
+  (1 skipped, 8 todo). `pnpm --filter api typecheck` clean. No regressions.
+
 ### 2026-05-01 — Test Coverage: Kitchen Prep Lists (98 tests, 1 suite)
 
 - **ADDED** `apps/api/__tests__/kitchen/prep-lists.test.ts` covering the entire prep-lists surface (route.ts root + [id]/route.ts + 10 command routes under /commands/*):

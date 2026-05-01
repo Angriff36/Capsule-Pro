@@ -165,6 +165,15 @@ export const database: Record<string, unknown> = {
   proposal: createMockModel(),
   proposalLineItem: createMockModel(),
   account: createMockModel(),
+  // Accounting command models (PATCH dispatchers)
+  paymentMethod: createMockModel(),
+  invoice: createMockModel(),
+  payment: createMockModel(),
+  revenueRecognitionSchedule: createMockModel(),
+  revenueRecognitionLine: createMockModel(),
+  collectionCase: createMockModel(),
+  collectionAction: createMockModel(),
+  collectionPaymentPlan: createMockModel(),
 };
 
 database.$transaction = vi.fn((fn: (tx: unknown) => unknown) => fn(database));

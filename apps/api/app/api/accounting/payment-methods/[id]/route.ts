@@ -3,12 +3,13 @@
  *
  * Handles operations on individual payment methods.
  *
- * NOTE: The Prisma PaymentMethod model has been simplified to:
- * - tenantId, id, clientId, type, cardLastFour, cardNetwork, isDefault
+ * Schema (see packages/database/prisma/schema.prisma model PaymentMethod):
+ * - tenantId, id, clientId, type, cardLastFour, cardNetwork, isDefault, status
  * - createdAt, updatedAt, deletedAt
  *
- * Many fields referenced in this file (cardExpiryMonth, cardExpiryYear, status, etc.)
- * do not exist in the current schema.
+ * `status` is a free-text column with values: ACTIVE | VERIFIED | FLAGGED |
+ * EXPIRED. Card expiry month/year fields are NOT in the schema — do not
+ * reintroduce references to them without a matching migration.
  */
 
 import { database } from "@repo/database";
