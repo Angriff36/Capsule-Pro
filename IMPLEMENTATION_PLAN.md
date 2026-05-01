@@ -334,14 +334,15 @@ All 16 `alert()` calls across 7 files replaced with `toast.success()` / `toast.e
 | Public Contracts/Proposals | COVERED — ~35 tests (contract viewing/signing, proposals) | — |
 | Locations | COVERED — ~13 tests (GET with $queryRaw) | — |
 | Webhook: Supplier Catalog | COVERED — ~19 tests (HMAC verification, payload validation, upsert) | — |
-| ~49 remaining API domains | ZERO TESTS | Prioritize core business domains |
+| Activity Feed | COVERED — 26 tests (list filters/pagination/auth + stats bigint coercion + error paths) | — |
+| ~48 remaining API domains | ZERO TESTS | Prioritize core business domains |
 
 ### Skipped Tests
 
 - **API:** 1 skipped `describe` block in `sales-reporting/generate.test.ts`
 - **E2E:** 41 skipped tests across 13 files
-- **API test files:** 109 files covering 44+ domains (of ~126 total)
-- **All 3,161 API tests pass**
+- **API test files:** 110 files covering 45+ domains (of ~126 total)
+- **All 3,187 API tests pass**
 
 ---
 
@@ -388,6 +389,13 @@ All 33 placeholder occurrences across 12 event files replaced with consistent, u
 ---
 
 ## Recently Resolved
+
+### 2026-05-01 — Test coverage: Activity Feed (list + stats)
+
+- **ADDED** `apps/api/__tests__/activity-feed/activity-feed.test.ts` — 26 tests covering both read endpoints in `apps/api/app/api/activity-feed/`.
+  - **`GET /list`** (16 tests): auth guards (401 when unauthenticated, 401 when only userId, 400 when no tenant), happy-path response shape (empty + populated + hasMore), filter threading (default tenant scope, all 7 optional filters at once, three date-range variants — both sides, only startDate, only endDate), pagination (default limit/offset, custom values, max-200 clamp, NaN fallback, orderBy desc), error paths (count throws + Sentry capture, findMany throws after count succeeds).
+  - **`GET /stats`** (10 tests): auth guards (401 + 400), happy-path (full payload with bigint→number coercion across `totalActivities`/`todayCount`/`weekCount`/`byType`/`byEntity`, empty-tenant zero state, `Number.MAX_SAFE_INTEGER` boundary), error paths (each of the three sequential `$queryRaw` calls failing in turn).
+- **WHY THIS MATTERS:** Activity feed is the system-wide audit timeline — a regression in the tenant guard silently leaks who-did-what records across organizations. The stats route returns `BigInt` from `COUNT(*)`; forgetting `Number(...)` either crashes the JSON layer or breaks UI arithmetic. The list route hand-builds a Prisma `where` clause from query params, and a single missing thread-through (e.g. `entityId`) makes drill-down filtering silently dead. All three failure modes are operationally invisible without tests, so they are now pinned.
 
 ### 2026-05-01 — Fix: ShipmentItem.updateReceived missing instanceId
 
