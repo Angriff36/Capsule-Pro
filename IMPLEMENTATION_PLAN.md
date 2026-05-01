@@ -182,12 +182,22 @@ Root cause: `manifestSuccessResponse()` spreads data at top level, but UI reads 
 
 All 4 entities now have complete command implementations with Prisma models in `schema.prisma`.
 
-### Venue Migration
+### Venue Migration ✅ RESOLVED (2026-05-01)
 
-- Prisma model EXISTS, database table does NOT
-- API routes at `apps/api/app/api/venues/` return 404
-- Frontend works via server actions (bypasses API)
-- Fix: Create migration for `venues` table + enable RLS
+- ~~Prisma model EXISTS, database table does NOT~~ — table created in
+  `20260501000000_add_venues_table` (composite PK, indexes, FK to
+  `platform.accounts`, RLS with soft-delete-aware policies, service_role bypass,
+  `update_timestamp` + `prevent_tenant_mutation` triggers, `REPLICA IDENTITY FULL`).
+- ~~API routes at `apps/api/app/api/venues/` return 404~~ — re-enabled the four
+  stubbed files under `apps/api/app/api/crm/venues/` (`route.ts`, `[id]/route.ts`,
+  `[id]/events/route.ts`, plus `validation.ts` + `types.ts`). Routes use direct
+  Prisma (Venue has no manifest); pattern mirrors the working server actions in
+  `apps/app/app/(authenticated)/crm/venues/actions.ts`.
+- DELETE blocks when there are linked events with status `confirmed`/`pending`
+  (returns 409 + `activeEvents` count); otherwise soft-deletes via `deletedAt`.
+- Coverage: `apps/api/__tests__/crm/venues/venue-crud.test.ts` — 17 tests
+  covering auth, list filters, validation, soft-delete + active-events guard,
+  events list. All green.
 
 ---
 

@@ -611,6 +611,16 @@
       "prefix": "/api/user/",
       "methods": ["POST"],
       "comment": "Uses createManifestRuntime — User.create/update/deactivate/terminate/updateRole (instanceId fix)"
+    },
+    {
+      "prefix": "/api/crm/venues",
+      "methods": ["POST"],
+      "comment": "Direct Prisma — Venue create (no manifest yet, mirrors server actions)"
+    },
+    {
+      "pattern": "^/api/crm/venues/[^/]+$",
+      "methods": ["PUT", "DELETE"],
+      "comment": "Direct Prisma — Venue update + soft-delete (no manifest yet, active-events guard enforced)"
     }
   ]
 }
