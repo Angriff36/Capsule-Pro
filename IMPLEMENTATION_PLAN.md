@@ -1,6 +1,6 @@
 # Capsule-Pro Implementation Plan — Live Queue
 
-> **Last updated:** 2026-05-01 (workforce-optimization commands test coverage added — 36 tests). **Convention:** this file is the **live queue only**. Completed pass write-ups are archived, not appended here. See the **Archive Map** at the bottom for history.
+> **Last updated:** 2026-05-01 (kitchen recipes API surface test coverage added — 59 tests, 7 routes). **Convention:** this file is the **live queue only**. Completed pass write-ups are archived, not appended here. See the **Archive Map** at the bottom for history.
 
 **ULTIMATE GOAL:** Every UI button, modal, and form must actually work when clicked.
 
@@ -24,7 +24,7 @@
 | **Backend-Complete, No UI** | 4 major systems | **ALL IMPLEMENTED** ✅ | ~~P1~~ |
 | **SPEC Coverage** | 36/46 complete (78%) — All AI conflict detection + payroll approvals implemented | UPDATED COUNT | P2 |
 | **Placeholder Pages** | 5 pages remain stubs (down from 12) | **7 FIXED ✅** | P2 |
-| **Test Coverage** | ~44 of ~126 API domains untested (3,844 tests across 123 files; +36 workforce-optimization, +44 notification commands, +130 prep-tasks, +98 prep-lists CRUD + 10 commands, +35 procurement POs + 71 shipment commands since wave 4) | IN PROGRESS | P3 |
+| **Test Coverage** | ~43 of ~126 API domains untested (3,903 tests across 124 files; +59 kitchen recipes, +36 workforce-optimization, +44 notification commands, +130 prep-tasks, +98 prep-lists CRUD + 10 commands, +35 procurement POs + 71 shipment commands since wave 4) | IN PROGRESS | P3 |
 
 ### Audit Statistics (14 agents, 2026-04-29)
 
@@ -390,6 +390,81 @@ All 33 placeholder occurrences across 12 event files replaced with consistent, u
 ---
 
 ## Recently Resolved
+
+### 2026-05-01 — Test Coverage: Kitchen Recipes API (59 tests, 7 routes)
+
+**Why this matters:**
+- Recipes are the **foundation** of every downstream cost / yield / pricing
+  calculation in the platform. A regression on the create/update path
+  silently breaks `costPerPortion`, `yieldPerBatch`, and the dish-pricing
+  roll-up. The failure is invisible until end-of-month margin reports come
+  in wrong, by which point the affected service revenue is already
+  recognized. Test pins on policy denial format and error envelope shape
+  catch silent message-shape regressions that would otherwise propagate to
+  the recipe UI as "Unknown error".
+- All 4 commands (`create`, `update`, `activate`, `deactivate`) are
+  **entity-scoped** — manifest defines `command create()`,
+  `command update()`, `command activate()`, `command deactivate()` and the
+  routes do NOT pass `instanceId` to `runtime.runCommand()` even for
+  stateful verbs (the runtime resolves the instance from `body.id`). Tests
+  pin the exact 3-arg shape `runCommand(verb, body, { entityName: "Recipe" })`
+  AND assert `callArgs.length === 3` and `callArgs[2]` has no `instanceId`
+  property. A future "helpful" patch that copies the instance-scoped
+  pattern from notifications/shipments would silently misroute every
+  `activate`/`deactivate`/`update`; this dual assertion catches it.
+- Routes use the **direct-clerk-id** user-context shape:
+  `createManifestRuntime({ user: { id: userId, tenantId } })` — they do
+  NOT call `database.user.findFirst` to resolve an internal user (unlike
+  notification commands and battle-boards, which do). Tests pin this
+  shape so a copy/paste from a different domain doesn't accidentally
+  introduce a per-write database round-trip on every recipe save.
+- Policy denial format is `Access denied: ${policyName}` (no `role=`
+  suffix) — different from notification/battle-boards which appends
+  `role=`. Tests pin this domain's exact format AND explicitly assert
+  the message does NOT contain `role=` so a refactor across multiple
+  domains can't silently merge them.
+- The **root GET** (`/api/kitchen/recipes`) is the load-bearing list for
+  menu builder, recipe browser, and dish-wiring UIs. Filter threading
+  (`category`, `cuisineType`, `search` OR over `name|description`,
+  `tag` via Postgres array `has`, `isActive` boolean coercion) and the
+  1..100 limit clamp must be defended — a regression silently widens
+  the tenant query (DOS via `limit=999999`) or narrows the visible
+  recipe set (UI looks empty). Tests pin every filter clause shape
+  AND the upper/lower clamp boundaries.
+- The **list GET** (`/api/kitchen/recipes/list`) is the manifest
+  projection that feeds external callers via `clampLimit`/`clampOffset`.
+  Tests pin that the default limit is 50 (`DEFAULT_LIMIT`) and the cap
+  is 200 (`MAX_LIMIT`) so a deploy that swaps in a different pagination
+  policy does not silently change the documented SLA. Also pins the
+  `orderBy: { createdAt: "desc" }` invariant.
+- The **detail GET** (`/api/kitchen/recipes/[id]`) defends the
+  soft-delete filter (`deletedAt: null`) AND tenant isolation in the
+  same `findFirst` where clause. Test pins both predicates literally so
+  a refactor that splits them or drops one returns 404 (or worse, leaks
+  cross-tenant data) and surfaces immediately.
+- Coverage shape per command: 401 unauth, 400 tenant-missing, 200
+  success + user-context shape pin, 403 policy denial (with
+  no-role-suffix invariant), 422 guard failure, 400 generic, 400
+  default-error fallback ("Command failed"), 500 runtime throw,
+  runtime-invocation pin (verb + entityName + no-instanceId). 9 cases ×
+  4 commands = 36 command tests via `describe.each`. Plus 13 root-GET
+  tests (auth, default paging, tenant scoping, 5 filters, both clamps,
+  page→offset arithmetic, 500 path), 5 list-GET tests (auth,
+  tenant-missing, default clamps + projection shape pin, MAX_LIMIT
+  clamp, 500 path), and 5 detail-GET tests (auth, tenant-missing, found
+  + soft-delete pin, 404, 500 path). **59 tests total**.
+
+**Files added:**
+- `apps/api/__tests__/kitchen/recipes/recipes.test.ts` — 59 tests
+  covering all 7 routes (4 command routes + root list + manifest list +
+  detail).
+
+**Coverage delta:** TIER 2 untested API domains: ~44 → ~43. Total API
+tests: 3,844 → 3,903 (+59). Test files: 123 → 124.
+
+**VALIDATION:** `pnpm --filter api test __tests__/kitchen/recipes/recipes.test.ts`
+— 59/59 pass. Full API suite: **3,903 tests pass** across 124 files (1
+skipped, 8 todo). No regressions.
 
 ### 2026-05-01 — Test Coverage: WorkforceOptimization Commands (36 tests, 4 routes)
 
