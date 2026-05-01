@@ -24,7 +24,7 @@
 | **Backend-Complete, No UI** | 4 major systems | **ALL IMPLEMENTED** ✅ | ~~P1~~ |
 | **SPEC Coverage** | 36/46 complete (78%) — All AI conflict detection + payroll approvals implemented | UPDATED COUNT | P2 |
 | **Placeholder Pages** | 5 pages remain stubs (down from 12) | **7 FIXED ✅** | P2 |
-| **Test Coverage** | ~49 of ~126 API domains untested (3,161 tests across 109 files, 7 new domains + database mock fixes in wave 4) | IN PROGRESS | P3 |
+| **Test Coverage** | ~47 of ~126 API domains untested (3,267 tests across 111 files; +35 procurement POs + 71 shipment commands since wave 4) | IN PROGRESS | P3 |
 
 ### Audit Statistics (14 agents, 2026-04-29)
 
@@ -38,7 +38,7 @@
 - **Manifest routes:** 725
 - **Filesystem route dirs:** 710
 - **Specs total:** 46 (36 COMPLETE, 10 TODO)
-- **API domains without tests:** ~49 of ~126 (wave 4 added: staffing, documents/versions, search, public contracts/proposals, locations, webhooks/supplier-catalog)
+- **API domains without tests:** ~47 of ~126 (post-wave 4 additions: procurement purchase-orders, shipments command coverage)
 
 ---
 
@@ -378,6 +378,19 @@ All 33 placeholder occurrences across 12 event files replaced with consistent, u
 ---
 
 ## Recently Resolved
+
+### 2026-05-01 — Test Coverage: Shipments Command Coverage (71 tests, 1 suite)
+
+- **ADDED** `__tests__/logistics/shipments/shipment-commands.test.ts` — companion to the existing `shipment-end-to-end.test.ts` (which only covered list/detail GETs + instanceId wiring). The new file exhaustively exercises every shipment write path:
+  - **7 Shipment commands** (`create`, `update`, `cancel`, `schedule`, `ship`, `start-preparing`, `mark-delivered`) × 4 guard cases each (401 unauth, 400 missing tenant, 400 missing user, 500 on auth throw) = **28 guard tests**.
+  - **7 Shipment commands** × 3 runtime-failure paths (403 policy denial, 422 guard failure, 400 constraint violation) = **21 failure tests**.
+  - **7 Shipment commands** × success body-forwarding paths = **7 success tests**, each asserting that `runtime.runCommand()` is invoked with the correct `entityName` and that the response body shape comes from the runtime.
+  - **ShipmentItem.create**: 6 tests covering 401, 400 (missing tenant + user), success forwarding to `runtime.runCommand("create", body, { entityName: "ShipmentItem" })`, 422 guard failure on `quantityShipped <= 0`, and 500 on uncaught error.
+  - **ShipmentItem.updateReceived**: 5 tests including a **bug-pin test** that asserts the route currently does NOT pass `instanceId` to `runtime.runCommand()` — the manifest store cannot uniquely identify which item to update. Pinning the broken behavior prevents silent regressions.
+  - **GET /api/shipments/shipment-items/list**: 4 tests (401, 400 missing tenant, success body shape, 500 on Prisma throw).
+- **WHY:** shipments encode a 5-state machine (draft → scheduled → preparing → in_transit → delivered, plus cancelled). The existing test only proved instanceId reached the runtime; it did not exercise auth, policy, or guard paths. A regression in any guard would silently allow illegal state transitions, untracked cancellations by non-managers (`ManagersCanCancelShipment`), or unauthorized inventory receipts (`StaffCanReceiveShipment`). The 71 new assertions pin all of those.
+- **KNOWN BUG documented (not fixed):** `apps/api/app/api/shipments/shipment-items/commands/update-received/route.ts` invokes `runtime.runCommand("updateReceived", body, { entityName: "ShipmentItem" })` with **no `instanceId`** — every other instance-scoped command on this domain (cancel/schedule/ship/start-preparing/mark-delivered/update) does pass it. The test file pins this behavior in a section labeled "pins missing-instanceId bug" so a fix can flip that assertion in the same PR. Track-only for now; fix lives in a future increment so this commit stays test-only.
+- Full API suite green: **3,267 tests pass** across 111 files (1 skipped, 8 todo). No regressions from the shipments-commands additions.
 
 ### 2026-05-01 — Test Coverage: Procurement Purchase Orders (35 tests, 1 suite)
 
