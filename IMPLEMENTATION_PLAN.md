@@ -335,7 +335,8 @@ All 16 `alert()` calls across 7 files replaced with `toast.success()` / `toast.e
 | Locations | COVERED — ~13 tests (GET with $queryRaw) | — |
 | Webhook: Supplier Catalog | COVERED — ~19 tests (HMAC verification, payload validation, upsert) | — |
 | Activity Feed | COVERED — 26 tests (list filters/pagination/auth + stats bigint coercion + error paths) | — |
-| ~48 remaining API domains | ZERO TESTS | Prioritize core business domains |
+| Goodshuffle Integration | COVERED — 66 tests (config GET/POST/DELETE, status, test, sync, events/inventory/invoices list, inventory-sync, invoices-sync) | — |
+| ~47 remaining API domains | ZERO TESTS | Prioritize core business domains |
 
 ### Skipped Tests
 
@@ -389,6 +390,38 @@ All 33 placeholder occurrences across 12 event files replaced with consistent, u
 ---
 
 ## Recently Resolved
+
+### 2026-05-01 — Test Coverage: Goodshuffle Integration API (66 tests, 9 routes)
+
+**Why this matters:**
+- Goodshuffle is the SOURCE-OF-TRUTH credentials store for the tenant's
+  event-rental sync. A regression that leaks `apiSecret` or `webhookSecret`
+  over GET `/config` is a real customer-impact security bug. Tests assert
+  `apiSecret` is always returned as `"********"` and `apiKey` is always
+  masked to first-4 + last-4 (or `"****"` if ≤ 8 chars).
+- POST `/config` MUST test the connection BEFORE persisting; otherwise we
+  save broken creds and silently corrupt every subsequent scheduled sync.
+  Test asserts `testConnection` is called BEFORE `upsert`, and that an
+  upsert never happens when the connection check fails.
+- Every handler is tenant-scoped via Clerk org → `getTenantIdForOrg`. All 9
+  routes are tested for both unauthenticated (401) and missing-tenant (401)
+  paths so a future refactor can't silently drop the tenant guard.
+- Sync routes (`/sync`, `/inventory/sync`, `/invoices/sync`) are tested for
+  date-range validation including the `startDate === endDate` boundary —
+  prior plan history shows these off-by-one bugs are common when ported
+  to a new sync target.
+- List routes thread `status`, `limit`, `offset` query params into the
+  Prisma `where` and pagination clauses. Regressions that drop the status
+  filter would ship the wrong records to a "Failed Syncs" UI tab.
+- All error paths assert `captureException` so ops can detect upstream
+  Goodshuffle outages even though the route returns 500.
+
+**Files added:**
+- `apps/api/__tests__/integrations/goodshuffle.test.ts` — 66 tests across
+  the 9 handlers (config GET/POST/DELETE, status, test POST/GET, sync,
+  events list, inventory list, invoices list, inventory/sync, invoices/sync).
+
+**Coverage delta:** TIER 2 untested API domains: ~48 → ~47.
 
 ### 2026-05-01 — Test Coverage: Accounting PATCH Action Dispatchers (72 tests, 4 suites)
 
