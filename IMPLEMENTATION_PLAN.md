@@ -317,7 +317,7 @@ All 16 `alert()` calls across 7 files replaced with `toast.success()` / `toast.e
 
 | Domain | Status | Action |
 |--------|--------|--------|
-| Recipe/Prep system | COVERED — stations (27), ingredients (27), prep-lists (98 — CRUD + 10 commands) | Add edge cases for autogeneration + items |
+| Recipe/Prep system | COVERED — stations (27), ingredients (27), prep-lists (98 — CRUD + 10 commands), prep-tasks (130 — CRUD + 13 commands) | Add edge cases for autogeneration + items |
 | Payroll workflows | COVERED — periods (18), runs (13), deductions (11) | Add approval workflow tests |
 | Menu/Dish management | COVERED — menus (14), dishes (25) covered | Add remaining unit tests |
 | Training management | COVERED — ~80 tests (modules, assignments, completion) | Expand edge cases |
@@ -336,14 +336,14 @@ All 16 `alert()` calls across 7 files replaced with `toast.success()` / `toast.e
 | Webhook: Supplier Catalog | COVERED — ~19 tests (HMAC verification, payload validation, upsert) | — |
 | Activity Feed | COVERED — 26 tests (list filters/pagination/auth + stats bigint coercion + error paths) | — |
 | Goodshuffle Integration | COVERED — 66 tests (config GET/POST/DELETE, status, test, sync, events/inventory/invoices list, inventory-sync, invoices-sync) | — |
-| ~47 remaining API domains | ZERO TESTS | Prioritize core business domains |
+| ~46 remaining API domains | ZERO TESTS | Prioritize core business domains |
 
 ### Skipped Tests
 
 - **API:** 1 skipped `describe` block in `sales-reporting/generate.test.ts`
 - **E2E:** 41 skipped tests across 13 files
-- **API test files:** 114 files covering 46+ domains (of ~126 total)
-- **All 3,408 API tests pass** (1 skipped, 8 todo)
+- **API test files:** 121 files covering 47+ domains (of ~126 total)
+- **All 3,676 API tests pass** (1 skipped, 8 todo)
 
 ---
 
@@ -390,6 +390,58 @@ All 33 placeholder occurrences across 12 event files replaced with consistent, u
 ---
 
 ## Recently Resolved
+
+### 2026-05-01 — Test Coverage: Kitchen Prep-Tasks API (130 tests, 16 routes)
+
+**Why this matters:**
+- Prep-tasks are the live work-queue every line cook hits during service. A
+  silent bug in claim/release/reassign means food doesn't get prepped on
+  time — the worst possible failure mode for a catering tenant on a
+  Saturday-night gig. Tests pin every command's kebab-case URL → camelCase
+  runtime mapping (e.g., `update-due-date` → `updateDueDate`) so a future
+  rename can't silently misroute commands.
+- The root GET `/api/kitchen/prep-tasks` carries 8 filters (`eventId`,
+  `status`, `priority`, `stationId`, `locationId`, `taskType`, `search`,
+  `isOverdue`) AND a custom `orderBy` `[priority desc, dueByDate asc,
+  startByDate asc]`. A regression that drops the priority sort would push
+  CRITICAL tasks below routine ones in the kitchen UI. Tests pin the orderBy
+  array shape AND assert each filter threads into the correct `where.AND`
+  clause.
+- `isOverdue=true` requires `dueByDate < now()` AND `status NOT IN
+  ['done','completed','canceled']`. A simple bug here floods the "overdue"
+  badge with already-completed tasks and trains operators to ignore it.
+  Tests assert both halves of the filter.
+- `search` is a case-insensitive `contains` over `name OR notes`. Tests pin
+  the `OR` array shape so a refactor can't silently drop one of the two
+  fields.
+- All 13 commands (`cancel`, `claim`, `complete`, `create`, `reassign`,
+  `release`, `start`, `unclaim`, `update-assignment`, `update-due-date`,
+  `update-priority`, `update-quantity`, `update-status`) follow the
+  manifest-runtime pattern. Each command has 7 tests: 401 unauth, 400
+  tenant-missing, 200 success + user-context shape pin (`{ id: userId,
+  tenantId }`), 403 policy denial, 422 guard failure, 400 generic-error,
+  500 runtime-throw. That's 91 of the 130 tests — a single `runCommand`
+  signature change would surface as 13 simultaneous failures, making a
+  contract break impossible to miss.
+- Detail GET passes `where: { id, tenantId, deletedAt: null }`. Tests pin
+  the soft-delete + tenant guard so a query refactor can't accidentally
+  return cross-tenant rows or tombstoned tasks.
+- List projection clamps `limit` to `MAX_LIMIT=200`. Tests pass `limit=500`
+  and assert Prisma is called with `take: 200` to prove the clamp is the
+  Prisma-call argument, not just the response field.
+- All error paths assert `Sentry.captureException` so an upstream Prisma
+  outage surfaces in alerting even when the route returns 500 to the user.
+
+**Files added:**
+- `apps/api/__tests__/kitchen/prep-tasks.test.ts` — 130 tests across all
+  16 routes (root GET + list GET + [id] detail GET + 13 command POSTs).
+
+**Coverage delta:** TIER 2 untested API domains: ~47 → ~46. API test files:
+120 → 121. Total API tests: 3,546 → 3,676.
+
+**VALIDATION:** `pnpm --filter api test __tests__/kitchen/prep-tasks.test.ts`
+— 130/130 pass. Full API suite: **3,676 tests pass** across 121 files (1
+skipped, 8 todo). No regressions.
 
 ### 2026-05-01 — Test Coverage: Goodshuffle Integration API (66 tests, 9 routes)
 
