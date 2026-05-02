@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "cd ../.. && pnpm turbo build --filter=web",
+  "buildCommand": "cd ../.. && pnpm turbo build --filter=docs",
   "installCommand": "corepack enable && corepack prepare pnpm@10.24.0 --activate && bash ../../scripts/ensure-github-packages-npmrc.sh && pnpm install",
   "ignoreCommand": "exit 0",
   "framework": "nextjs",
